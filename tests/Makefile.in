@@ -14831,6 +14831,7 @@ pythondir = @pythondir@
 runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+sixel_have_compare = @sixel_have_compare@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
@@ -24919,7 +24920,9 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-assessment-fopen.sh \
 	_static/sh/staticcheck-test-tool-capabilities.sh \
 	_static/sh/staticcheck-comparator-absolute-probe.sh \
-	_static/awk/assessment-fopen.awk
+	_static/awk/assessment-fopen.awk \
+	_static/sh/staticcheck-palette-option-storage.sh \
+	_static/awk/palette-option-storage.awk
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it

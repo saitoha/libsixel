@@ -3384,21 +3384,25 @@ sixel_set_kmedoids_algo_override(int enabled,
     sixel_kmedoids_override_lock_release(lock_acquired);
 }
 
+/* Independent palette builds can resolve defaults concurrently. Parse into
+ * caller-local storage; only the shared cache helper may read or publish
+ * the persistent first value, under the environment lock. */
 SIXEL_INTERNAL_API sixel_kmedoids_algo_t
 sixel_get_kmedoids_algo(void)
 {
-    static int loaded = 0;
-    static sixel_kmedoids_algo_t cached = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
+    static int cache_loaded;
+    static sixel_kmedoids_algo_t cache_value;
+    sixel_kmedoids_algo_t selected_value = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
     int value;
 
     value = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
     if (sixel_kmedoids_algo_override_enabled) {
         return sixel_kmedoids_algo_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
 
     if (sixel_option_resolve_registered_int_binding(
             SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
@@ -3407,10 +3411,12 @@ sixel_get_kmedoids_algo(void)
                 quantize_model_kmedoids_algo,
                 quantize_model_kmedoids_algo_override),
             &value)) {
-        cached = (sixel_kmedoids_algo_t)value;
+        selected_value = (sixel_kmedoids_algo_t)value;
     }
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3428,18 +3434,19 @@ sixel_set_kmedoids_seed_override(int enabled,
 SIXEL_INTERNAL_API uint32_t
 sixel_get_kmedoids_seed(void)
 {
-    static int loaded = 0;
-    static uint32_t cached = 1u;
+    static int cache_loaded;
+    static uint32_t cache_value;
+    uint32_t selected_value = 1u;
     unsigned int value;
 
     value = 1u;
     if (sixel_kmedoids_seed_override_enabled) {
         return sixel_kmedoids_seed_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
 
     if (sixel_option_resolve_registered_uint_binding(
             SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
@@ -3448,10 +3455,12 @@ sixel_get_kmedoids_seed(void)
                 quantize_model_kmedoids_seed,
                 quantize_model_kmedoids_seed_override),
             &value)) {
-        cached = (uint32_t)value;
+        selected_value = (uint32_t)value;
     }
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3469,8 +3478,9 @@ sixel_set_kmedoids_iter_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_iter(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_iter_override_enabled) {
         return sixel_kmedoids_clamp_uint(
@@ -3478,16 +3488,18 @@ sixel_get_kmedoids_iter(void)
             1u,
             64u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_iter,
             quantize_model_kmedoids_iter_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3505,8 +3517,9 @@ sixel_set_kmedoids_sample_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_sample(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_sample_override_enabled) {
         if (sixel_kmedoids_sample_override_value == 0u) {
@@ -3517,16 +3530,18 @@ sixel_get_kmedoids_sample(void)
             64u,
             1048576u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_sample,
             quantize_model_kmedoids_sample_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3544,8 +3559,9 @@ sixel_set_kmedoids_clara_trials_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_clara_trials(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_clara_trials_override_enabled) {
         return sixel_kmedoids_clamp_uint(
@@ -3553,16 +3569,18 @@ sixel_get_kmedoids_clara_trials(void)
             1u,
             32u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_clara_trials,
             quantize_model_kmedoids_clara_trials_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3580,8 +3598,9 @@ sixel_set_kmedoids_clara_sample_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_clara_sample(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_clara_sample_override_enabled) {
         if (sixel_kmedoids_clara_sample_override_value == 0u) {
@@ -3592,16 +3611,18 @@ sixel_get_kmedoids_clara_sample(void)
             64u,
             1048576u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_clara_sample,
             quantize_model_kmedoids_clara_sample_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3619,8 +3640,9 @@ sixel_set_kmedoids_clarans_local_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_clarans_local(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_clarans_local_override_enabled) {
         return sixel_kmedoids_clamp_uint(
@@ -3628,16 +3650,18 @@ sixel_get_kmedoids_clarans_local(void)
             1u,
             32u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_clarans_local,
             quantize_model_kmedoids_clarans_local_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3655,8 +3679,9 @@ sixel_set_kmedoids_clarans_neighbors_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_clarans_neighbors(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_clarans_neighbors_override_enabled) {
         if (sixel_kmedoids_clarans_neighbors_override_value == 0u) {
@@ -3667,16 +3692,18 @@ sixel_get_kmedoids_clarans_neighbors(void)
             1u,
             5000000u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_clarans_neighbors,
             quantize_model_kmedoids_clarans_neighbors_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3694,8 +3721,9 @@ sixel_set_kmedoids_bandit_iter_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_bandit_iter(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_bandit_iter_override_enabled) {
         return sixel_kmedoids_clamp_uint(
@@ -3703,16 +3731,18 @@ sixel_get_kmedoids_bandit_iter(void)
             1u,
             64u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_bandit_iter,
             quantize_model_kmedoids_bandit_iter_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3730,8 +3760,9 @@ sixel_set_kmedoids_bandit_candidates_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_bandit_candidates(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_bandit_candidates_override_enabled) {
         return sixel_kmedoids_clamp_uint(
@@ -3739,16 +3770,18 @@ sixel_get_kmedoids_bandit_candidates(void)
             8u,
             4096u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_bandit_candidates,
             quantize_model_kmedoids_bandit_candidates_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3766,8 +3799,9 @@ sixel_set_kmedoids_bandit_batch_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_bandit_batch(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_bandit_batch_override_enabled) {
         return sixel_kmedoids_clamp_uint(
@@ -3775,16 +3809,18 @@ sixel_get_kmedoids_bandit_batch(void)
             8u,
             4096u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_bandit_batch,
             quantize_model_kmedoids_bandit_batch_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3802,8 +3838,9 @@ sixel_set_kmedoids_histbits_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_histbits(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 5u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 5u;
 
     if (sixel_kmedoids_histbits_override_enabled) {
         return sixel_kmedoids_clamp_uint(
@@ -3811,16 +3848,18 @@ sixel_get_kmedoids_histbits(void)
             3u,
             6u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_histbits,
             quantize_model_kmedoids_histbits_override),
         5u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3838,8 +3877,9 @@ sixel_set_kmedoids_point_budget_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_point_budget(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmedoids_point_budget_override_enabled) {
         return sixel_kmedoids_clamp_uint(
@@ -3847,16 +3887,18 @@ sixel_get_kmedoids_point_budget(void)
             64u,
             16384u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_point_budget,
             quantize_model_kmedoids_point_budget_override),
         0u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3874,8 +3916,9 @@ sixel_set_kmedoids_rare_keep_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmedoids_rare_keep(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 64u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 64u;
 
     if (sixel_kmedoids_rare_keep_override_enabled) {
         if (sixel_kmedoids_rare_keep_override_value == 0u) {
@@ -3886,16 +3929,18 @@ sixel_get_kmedoids_rare_keep(void)
             0u,
             1024u);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_rare_keep,
             quantize_model_kmedoids_rare_keep_override),
         64u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3913,8 +3958,9 @@ sixel_set_kmedoids_prune_mass_override(int enabled,
 SIXEL_INTERNAL_API double
 sixel_get_kmedoids_prune_mass(void)
 {
-    static int loaded = 0;
-    static double cached = 0.995;
+    static int cache_loaded;
+    static double cache_value;
+    double selected_value = 0.995;
 
     if (sixel_kmedoids_prune_mass_override_enabled) {
         if (sixel_kmedoids_prune_mass_override_value !=
@@ -3929,16 +3975,18 @@ sixel_get_kmedoids_prune_mass(void)
         }
         return sixel_kmedoids_prune_mass_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_double(
+    selected_value = sixel_kmedoids_resolve_registered_double(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_prune_mass,
             quantize_model_kmedoids_prune_mass_override),
         0.995);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -3956,21 +4004,23 @@ sixel_set_kmedoids_auction_override(int enabled,
 static int
 sixel_kmedoids_get_auction_from_env(void)
 {
-    static int loaded = 0;
-    static int cached = 0;
-
-    if (loaded) {
-        return cached;
+    static int cache_loaded;
+    static int cache_value;
+    int selected_value = 0;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_option_resolve_registered_boolean_binding(
+    selected_value = sixel_option_resolve_registered_boolean_binding(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
         "medoids",
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_auction,
             quantize_model_kmedoids_auction_override),
         0);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 SIXEL_INTERNAL_API int
@@ -3997,19 +4047,22 @@ sixel_set_kmedoids_auction_shortlist_override(int enabled,
 static unsigned int
 sixel_kmedoids_get_auction_shortlist_from_env(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 4u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 4u;
 
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmedoids_resolve_registered_uint(
+    selected_value = sixel_kmedoids_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmedoids_auction_shortlist,
             quantize_model_kmedoids_auction_shortlist_override),
         4u);
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 SIXEL_INTERNAL_API unsigned int

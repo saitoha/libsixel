@@ -345,15 +345,18 @@ sixel_set_kmeans_init_type_override(int enabled,
     sixel_kmeans_override_lock_release(lock_acquired);
 }
 
+/* Independent palette workers can enter these getters together. Parse into
+ * caller-local storage and let the shared cache helper publish the first
+ * value under the environment lock, preserving first-read semantics. */
 SIXELAPI sixel_kmeans_init_type
 sixel_get_kmeans_init_type(void)
 {
+    static int cache_loaded;
+    static sixel_kmeans_init_type cache_value;
+    sixel_kmeans_init_type selected_value = 0;
     sixel_kmeans_init_type parsed;
     sixel_kmeans_init_type resolved;
     int value;
-    static int init_loaded = 0;
-    static sixel_kmeans_init_type cached_value
-        = SIXEL_PALETTE_KMEANS_INIT_PCA;
 
     parsed = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     resolved = SIXEL_PALETTE_KMEANS_INIT_PCA;
@@ -362,10 +365,10 @@ sixel_get_kmeans_init_type(void)
         return sixel_kmeans_resolve_init_type(
             sixel_kmeans_init_type_override_value);
     }
-    if (init_loaded) {
-        return cached_value;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    init_loaded = 1;
 
     if (sixel_option_resolve_registered_int_binding(
             SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
@@ -378,11 +381,13 @@ sixel_get_kmeans_init_type(void)
     }
 
     resolved = sixel_kmeans_resolve_init_type(parsed);
-    cached_value = resolved;
     sixel_debugf("k-means init type: %s",
                  sixel_kmeans_init_type_to_string(resolved));
 
-    return resolved;
+    selected_value = resolved;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -400,8 +405,9 @@ sixel_set_kmeans_binbits_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_binbits(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 6u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 6u;
 
     if (sixel_kmeans_binbits_override_enabled) {
         if (sixel_kmeans_binbits_override_value < 4u) {
@@ -412,10 +418,10 @@ sixel_get_kmeans_binbits(void)
         }
         return sixel_kmeans_binbits_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
 
     (void)sixel_option_resolve_registered_uint_binding(
             SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
@@ -423,9 +429,11 @@ sixel_get_kmeans_binbits(void)
             SIXEL_SUBOPTION_BINDING_ID_2(
                 quantize_model_kmeans_binbits,
                 quantize_model_kmeans_binbits_override),
-            &cached);
+            &selected_value);
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 static sixel_kmeans_mapping_mode
@@ -456,19 +464,20 @@ sixel_set_kmeans_mapping_mode_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_mapping_mode
 sixel_get_kmeans_mapping_mode(void)
 {
+    static int cache_loaded;
+    static sixel_kmeans_mapping_mode cache_value;
     int value;
-    static int loaded = 0;
-    static sixel_kmeans_mapping_mode cached
+    sixel_kmeans_mapping_mode selected_value
         = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
 
     value = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
     if (sixel_kmeans_mapping_mode_override_enabled) {
         return sixel_kmeans_mapping_mode_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
 
     if (sixel_option_resolve_registered_int_binding(
             SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
@@ -477,10 +486,12 @@ sixel_get_kmeans_mapping_mode(void)
                 quantize_model_kmeans_mapping_mode,
                 quantize_model_kmeans_mapping_override),
             &value)) {
-        cached = (sixel_kmeans_mapping_mode)value;
+        selected_value = (sixel_kmeans_mapping_mode)value;
     }
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 static sixel_kmeans_softdist_mode
@@ -510,19 +521,20 @@ sixel_set_kmeans_softdist_mode_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_softdist_mode
 sixel_get_kmeans_softdist_mode(void)
 {
+    static int cache_loaded;
+    static sixel_kmeans_softdist_mode cache_value;
     int value;
-    static int loaded = 0;
-    static sixel_kmeans_softdist_mode cached
+    sixel_kmeans_softdist_mode selected_value
         = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
 
     value = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
     if (sixel_kmeans_softdist_mode_override_enabled) {
         return sixel_kmeans_softdist_mode_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
 
     if (sixel_option_resolve_registered_int_binding(
             SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
@@ -531,10 +543,12 @@ sixel_get_kmeans_softdist_mode(void)
                 quantize_model_kmeans_softdist_mode,
                 quantize_model_kmeans_softdist_override),
             &value)) {
-        cached = (sixel_kmeans_softdist_mode)value;
+        selected_value = (sixel_kmeans_softdist_mode)value;
     }
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 static unsigned int
@@ -581,59 +595,62 @@ sixel_set_kmeans_seed_override(int enabled,
 SIXEL_INTERNAL_API uint32_t
 sixel_get_kmeans_seed(void)
 {
-    static int loaded = 0;
-    static int cached_present = 0;
-    static uint32_t cached = 0u;
+    static int cache_loaded;
+    static uint32_t cache_value;
+    uint32_t selected_value = 0;
     unsigned int parsed;
-    int present;
 
     parsed = 0u;
-    present = 0;
     if (sixel_kmeans_seed_override_enabled) {
         return sixel_kmeans_seed_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
 
     parsed = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_seed,
             quantize_model_kmeans_seed_override),
         0u,
-        &present);
-    cached = (uint32_t)parsed;
-    cached_present = present;
-    (void)cached_present;
+        NULL);
 
-    return cached;
+    selected_value = (uint32_t)parsed;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 SIXEL_INTERNAL_API int
 sixel_get_kmeans_seed_enabled(void)
 {
-    static int loaded = 0;
-    static int cached_present = 0;
+    static int cache_loaded;
+    static int cache_value;
+    int selected_value = 0;
+    int present_value = 0;
     unsigned int parsed;
 
     parsed = 0u;
     if (sixel_kmeans_seed_override_enabled) {
         return 1;
     }
-    if (loaded) {
-        return cached_present;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
     parsed = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_seed,
             quantize_model_kmeans_seed_override),
         0u,
-        &cached_present);
+        &present_value);
     (void)parsed;
 
-    return cached_present;
+    selected_value = present_value;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -651,8 +668,9 @@ sixel_set_kmeans_restarts_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_restarts(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 1u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 1u;
 
     if (sixel_kmeans_restarts_override_enabled) {
         if (sixel_kmeans_restarts_override_value < 1u) {
@@ -663,18 +681,20 @@ sixel_get_kmeans_restarts(void)
         }
         return sixel_kmeans_restarts_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmeans_resolve_registered_uint(
+    selected_value = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_restarts,
             quantize_model_kmeans_restarts_override),
         1u,
         NULL);
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -692,9 +712,9 @@ sixel_set_kmeans_iter_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_iter(void)
 {
-    static int loaded = 0;
-    static int cached_present = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmeans_iter_override_enabled) {
         if (sixel_kmeans_iter_override_value < 1u) {
@@ -705,44 +725,51 @@ sixel_get_kmeans_iter(void)
         }
         return sixel_kmeans_iter_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmeans_resolve_registered_uint(
+    selected_value = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_iter,
             quantize_model_kmeans_iter_override),
         0u,
-        &cached_present);
+        NULL);
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 SIXEL_INTERNAL_API int
 sixel_get_kmeans_iter_enabled(void)
 {
-    static int loaded = 0;
-    static int cached_present = 0;
+    static int cache_loaded;
+    static int cache_value;
+    int selected_value = 0;
+    int present_value = 0;
     unsigned int parsed;
 
     parsed = 0u;
     if (sixel_kmeans_iter_override_enabled) {
         return 1;
     }
-    if (loaded) {
-        return cached_present;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
     parsed = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_iter,
             quantize_model_kmeans_iter_override),
         0u,
-        &cached_present);
+        &present_value);
     (void)parsed;
 
-    return cached_present;
+    selected_value = present_value;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -760,8 +787,9 @@ sixel_set_kmeans_miniter_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_miniter(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmeans_miniter_override_enabled) {
         if (sixel_kmeans_miniter_override_value > 100u) {
@@ -769,18 +797,20 @@ sixel_get_kmeans_miniter(void)
         }
         return sixel_kmeans_miniter_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmeans_resolve_registered_uint(
+    selected_value = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_miniter,
             quantize_model_kmeans_miniter_override),
         0u,
         NULL);
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -798,8 +828,9 @@ sixel_set_kmeans_polish_iter_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_polish_iter(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 0u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 0u;
 
     if (sixel_kmeans_polish_iter_override_enabled) {
         if (sixel_kmeans_polish_iter_override_value > 16u) {
@@ -807,18 +838,20 @@ sixel_get_kmeans_polish_iter(void)
         }
         return sixel_kmeans_polish_iter_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmeans_resolve_registered_uint(
+    selected_value = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_polish_iter,
             quantize_model_kmeans_polish_iter_override),
         0u,
         NULL);
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 static sixel_kmeans_feedback_mode
@@ -849,18 +882,19 @@ sixel_set_kmeans_feedback_mode_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_feedback_mode
 sixel_get_kmeans_feedback_mode(void)
 {
-    static int loaded = 0;
-    static sixel_kmeans_feedback_mode cached
+    static int cache_loaded;
+    static sixel_kmeans_feedback_mode cache_value;
+    sixel_kmeans_feedback_mode selected_value
         = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
 
     if (sixel_kmeans_feedback_mode_override_enabled) {
         return sixel_kmeans_feedback_mode_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = (sixel_kmeans_feedback_mode)
+    selected_value = (sixel_kmeans_feedback_mode)
         sixel_option_resolve_registered_boolean_binding(
             SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
             "kmeans",
@@ -869,7 +903,9 @@ sixel_get_kmeans_feedback_mode(void)
                 quantize_model_kmeans_feedback_override),
             SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 static char const *
@@ -952,9 +988,9 @@ sixel_set_kmeans_prune_policy_override(int enabled,
 SIXEL_INTERNAL_API sixel_kmeans_prune_policy
 sixel_get_kmeans_prune_policy(void)
 {
-    static int loaded = 0;
-    static sixel_kmeans_prune_policy cached
-        = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    static int cache_loaded;
+    static sixel_kmeans_prune_policy cache_value;
+    sixel_kmeans_prune_policy selected_value = 0;
     sixel_kmeans_prune_policy parsed;
     sixel_kmeans_prune_policy resolved;
     int value;
@@ -966,10 +1002,10 @@ sixel_get_kmeans_prune_policy(void)
         return sixel_kmeans_resolve_prune_policy(
             sixel_kmeans_prune_policy_override_value);
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
     if (sixel_option_resolve_registered_int_binding(
             SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
             "kmeans",
@@ -980,10 +1016,12 @@ sixel_get_kmeans_prune_policy(void)
         parsed = (sixel_kmeans_prune_policy)value;
     }
     resolved = sixel_kmeans_resolve_prune_policy(parsed);
-    cached = resolved;
     sixel_debugf("k-means prune policy: %s",
                  sixel_kmeans_prune_policy_to_string(parsed));
-    return cached;
+    selected_value = resolved;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -1001,8 +1039,9 @@ sixel_set_kmeans_feedback_slots_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_feedback_slots(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 1u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 1u;
 
     if (sixel_kmeans_feedback_slots_override_enabled) {
         if (sixel_kmeans_feedback_slots_override_value < 1u) {
@@ -1013,18 +1052,20 @@ sixel_get_kmeans_feedback_slots(void)
         }
         return sixel_kmeans_feedback_slots_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmeans_resolve_registered_uint(
+    selected_value = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_feedback_slots,
             quantize_model_kmeans_feedback_slots_override),
         1u,
         NULL);
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 void
@@ -1042,8 +1083,9 @@ sixel_set_kmeans_feedback_interval_override(int enabled,
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kmeans_feedback_interval(void)
 {
-    static int loaded = 0;
-    static unsigned int cached = 1u;
+    static int cache_loaded;
+    static unsigned int cache_value;
+    unsigned int selected_value = 1u;
 
     if (sixel_kmeans_feedback_interval_override_enabled) {
         if (sixel_kmeans_feedback_interval_override_value < 1u) {
@@ -1054,18 +1096,20 @@ sixel_get_kmeans_feedback_interval(void)
         }
         return sixel_kmeans_feedback_interval_override_value;
     }
-    if (loaded) {
-        return cached;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
-    loaded = 1;
-    cached = sixel_kmeans_resolve_registered_uint(
+    selected_value = sixel_kmeans_resolve_registered_uint(
         SIXEL_SUBOPTION_BINDING_ID_2(
             quantize_model_kmeans_feedback_interval,
             quantize_model_kmeans_feedback_interval_override),
         1u,
         NULL);
 
-    return cached;
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 static int

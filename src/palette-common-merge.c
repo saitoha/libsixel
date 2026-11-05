@@ -194,6 +194,34 @@ sixel_final_merge_env_lock_release(int acquired)
 #endif
 }
 
+int
+sixel_palette_option_cache(int *loaded, void *cached, void *value,
+                           size_t size, int publish)
+{
+    int acquired;
+    int available;
+
+    acquired = sixel_final_merge_env_lock_acquire();
+#if SIXEL_ENABLE_THREADS
+    if (!acquired) {
+        return 0;
+    }
+#endif
+    /* Parsing happens outside this lock. Publish the value before the ready
+     * flag, and copy the winner back to every concurrent first caller.
+     * Never inspect shared cache storage if lock initialization fails. */
+    if (!*loaded && publish) {
+        memcpy(cached, value, size);
+        *loaded = 1;
+    }
+    available = *loaded;
+    if (available) {
+        memcpy(value, cached, size);
+    }
+    sixel_final_merge_env_lock_release(acquired);
+    return available;
+}
+
 /*
  * Reuse the environment lock when TLS is unavailable.  In that configuration
  * override storage degrades to process globals and requires serialization.

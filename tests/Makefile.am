@@ -12082,3 +12082,6 @@ EXTRA_DIST += _static/sh/staticcheck-assessment-fopen.sh \
     _static/sh/staticcheck-test-tool-capabilities.sh \
     _static/sh/staticcheck-comparator-absolute-probe.sh \
     _static/awk/assessment-fopen.awk
+
+EXTRA_DIST += _static/sh/staticcheck-palette-option-storage.sh \
+    _static/awk/palette-option-storage.awk

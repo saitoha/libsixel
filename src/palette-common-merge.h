@@ -39,6 +39,13 @@
 extern "C" {
 #endif
 
+/* Read or publish a scalar default under the shared environment lock.
+ * A publish also returns the winning value if another caller got there
+ * first. On lock failure, leave caller-local storage unchanged. */
+SIXEL_INTERNAL_API int
+sixel_palette_option_cache(int *loaded, void *cached, void *value,
+                           size_t size, int publish);
+
 SIXEL_INTERNAL_API void
 sixel_final_merge_load_env(void);
 

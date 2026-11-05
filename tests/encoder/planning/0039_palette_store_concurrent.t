@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify concurrent palette store publication and selection.
+# Policy: docs/threading/encoder.md
 set -eux
 
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {

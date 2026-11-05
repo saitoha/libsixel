@@ -1,5 +1,6 @@
 #!/bin/sh
 # TAP test: cached k-means init type preserves PCA selection.
+# Policy: docs/threading/encoder.md
 
 set -eux
 

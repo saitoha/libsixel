@@ -1027,12 +1027,15 @@ sixel_set_kcenter_algo_override(int enabled,
     sixel_kcenter_override_lock_release(lock_acquired);
 }
 
+/* Preserve the first resolved default through the shared cache helper;
+ * independent palette builds must not access its storage directly. */
 SIXEL_INTERNAL_API sixel_kcenter_algo_t
 sixel_get_kcenter_algo(void)
 {
+    static int cache_loaded;
+    static sixel_kcenter_algo_t cache_value;
+    sixel_kcenter_algo_t selected_value = 0;
     sixel_kcenter_algo_t parsed;
-    static int cached = 0;
-    static sixel_kcenter_algo_t cached_value = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
     int value;
 
     value = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
@@ -1040,9 +1043,9 @@ sixel_get_kcenter_algo(void)
     if (sixel_kcenter_algo_override_enabled) {
         return sixel_kcenter_resolve_algo(sixel_kcenter_algo_override_value);
     }
-
-    if (cached) {
-        return cached_value;
+    if (sixel_palette_option_cache(&cache_loaded, &cache_value,
+            &selected_value, sizeof(selected_value), 0)) {
+        return selected_value;
     }
 
     parsed = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
@@ -1055,9 +1058,10 @@ sixel_get_kcenter_algo(void)
             &value)) {
         parsed = (sixel_kcenter_algo_t)value;
     }
-    cached_value = sixel_kcenter_resolve_algo(parsed);
-    cached = 1;
-    return cached_value;
+    selected_value = sixel_kcenter_resolve_algo(parsed);
+    (void)sixel_palette_option_cache(&cache_loaded, &cache_value,
+        &selected_value, sizeof(selected_value), 1);
+    return selected_value;
 }
 
 SIXEL_INTERNAL_API void
