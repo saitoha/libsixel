@@ -237,6 +237,34 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_BAND_BATCH \
+    -DBUILD_TEST_0001_COLD_SINGLE \
+    -DBUILD_TEST_0002_LIGHT_ONCE \
+    -DBUILD_TEST_0003_LIGHT_TWO \
+    -DBUILD_TEST_0004_LIGHT_FOUR \
+    -DBUILD_TEST_0005_HEAVY_SHRINK \
+    -DBUILD_TEST_0006_MODERATE_SHRINK \
+    -DBUILD_TEST_0007_INTERRUPTED_LIGHT \
+    -DBUILD_TEST_0008_MISSING_CLOCK \
+    -DBUILD_TEST_0009_BACKWARD_CLOCK \
+    -DBUILD_TEST_0010_PUBLISHED_ONE \
+    -DBUILD_TEST_0011_PUBLISHED_THREE \
+    -DBUILD_TEST_0012_QUEUE_ONE \
+    -DBUILD_TEST_0013_QUEUE_TWO \
+    -DBUILD_TEST_0014_TAIL_TWO \
+    -DBUILD_TEST_0015_TAIL_ONE \
+    -DBUILD_TEST_0016_FULL_FOUR \
+    -DBUILD_TEST_0017_BATCH_TWO_BYTES \
+    -DBUILD_TEST_0018_BATCH_FOUR_BYTES \
+    -DBUILD_TEST_0019_BATCH_PARTIAL_PREFIX \
+    -DBUILD_TEST_0020_BATCH_OFFSET_BYTES \
+    -DBUILD_TEST_0021_BATCH_KEEP_BYTES \
+    -DBUILD_TEST_0022_BATCH_QUEUE_ONE \
+    -DBUILD_TEST_0023_BATCH_QUEUE_TWO \
+    -DBUILD_TEST_0024_BATCH_ABORT_RESTART \
+    -DBUILD_TEST_0025_BATCH_SINK_RESTART \
+    -DBUILD_TEST_0026_BATCH_CLOCK_RESET \
+    -DBUILD_TEST_0027_BATCH_TAIL_BYTES \
     -DBUILD_TEST_0007_DRAIN_COMPLETES_JOBS \
     -DBUILD_TEST_0008_RESUME_KEEPS_WORKSPACE \
     -DBUILD_TEST_0009_RESUME_KEEPS_THREAD \
@@ -4963,6 +4991,34 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    encoder/scheduling/0001_cold_single.c \
+    encoder/scheduling/0002_light_once.c \
+    encoder/scheduling/0003_light_two.c \
+    encoder/scheduling/0004_light_four.c \
+    encoder/scheduling/0005_heavy_shrink.c \
+    encoder/scheduling/0006_moderate_shrink.c \
+    encoder/scheduling/0007_interrupted_light.c \
+    encoder/scheduling/0008_missing_clock.c \
+    encoder/scheduling/0009_backward_clock.c \
+    encoder/scheduling/0010_published_one.c \
+    encoder/scheduling/0011_published_three.c \
+    encoder/scheduling/0012_queue_one.c \
+    encoder/scheduling/0013_queue_two.c \
+    encoder/scheduling/0014_tail_two.c \
+    encoder/scheduling/0015_tail_one.c \
+    encoder/scheduling/0016_full_four.c \
+    encoder/scheduling/0017_batch_two_bytes.c \
+    encoder/scheduling/0018_batch_four_bytes.c \
+    encoder/scheduling/0019_batch_partial_prefix.c \
+    encoder/scheduling/0020_batch_offset_bytes.c \
+    encoder/scheduling/0021_batch_keep_bytes.c \
+    encoder/scheduling/0022_batch_queue_one.c \
+    encoder/scheduling/0023_batch_queue_two.c \
+    encoder/scheduling/0024_batch_abort_restart.c \
+    encoder/scheduling/0025_batch_sink_restart.c \
+    encoder/scheduling/0026_batch_clock_reset.c \
+    encoder/scheduling/0027_batch_tail_bytes.c \
+    _support/codec/band_batch.c \
     platform/threadpool/0007_drain_completes_jobs.c \
     platform/threadpool/0008_resume_keeps_workspace.c \
     platform/threadpool/0009_resume_keeps_thread.c \

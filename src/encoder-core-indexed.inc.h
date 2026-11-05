@@ -15,6 +15,8 @@ typedef struct sixel_indexed_core {
     int band;
     int palette_sent;
     int force_ormode;
+    double (*test_clock)(void *);
+    void *test_clock_context;
     SIXELSTATUS status;
 #if SIXEL_ENABLE_THREADS
     sixel_parallel_context_t parallel;
@@ -186,6 +188,13 @@ sixel_indexed_core_prepare(sixel_encoder_core_t *self,
         if (SIXEL_FAILED(status)) {
             sixel_parallel_context_cleanup(&core->parallel);
         } else {
+            core->parallel.clock = core->test_clock;
+            core->parallel.clock_context = core->test_clock_context;
+            core->parallel.adaptive_bands = 1;
+            core->parallel.batch_queue = sixel_band_schedule_span(
+                &core->parallel.schedule, core->parallel.band_count,
+                core->parallel.band_count, core->parallel.worker_capacity,
+                core->parallel.queue_capacity) > 1;
             core->parallel_active = 1;
         }
     } else
@@ -253,6 +262,10 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
     int start;
     int height;
     int ready;
+    int span;
+#if SIXEL_ENABLE_THREADS
+    int ready_bands;
+#endif
     SIXELSTATUS status;
 
     if (self == NULL) {
@@ -287,12 +300,19 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
         if (height > 6) {
             height = 6;
         }
+        span = 1;
         if (start + height > ready) {
             break;
         }
 #if SIXEL_ENABLE_THREADS
         if (core->parallel_active) {
-            sixel_parallel_submit_band(&core->parallel, core->band);
+            ready_bands = published_rows == desc->height
+                ? core->parallel.band_count : ready / 6;
+            span = sixel_band_schedule_span(&core->parallel.schedule,
+                ready_bands - core->band,
+                core->parallel.band_count - core->band,
+                core->parallel.worker_capacity, core->parallel.queue_capacity);
+            sixel_parallel_submit_span(&core->parallel, core->band, span);
             if (!sixel_parallel_jobs_allowed(&core->parallel)) {
                 status = SIXEL_RUNTIME_ERROR;
                 break;
@@ -324,7 +344,7 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
         if (SIXEL_FAILED(status)) {
             break;
         }
-        ++core->band;
+        core->band += span;
     }
     /* The parallel writer owns body_status until finish joins it. Submission
      * observes its failure through the queue lock, never through the sink's
@@ -405,6 +425,24 @@ static sixel_encoder_core_vtbl_t const g_indexed_core_vtbl = {
     sixel_indexed_core_finish,
     sixel_indexed_core_abort
 };
+
+/* Internal deterministic clock seam. It can be bound only while idle, so
+ * workers never race a changed callback or context. NULL restores real time. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoder_core_test_clock(sixel_encoder_core_t *self,
+    double (*clock)(void *), void *context)
+{
+    sixel_indexed_core_t *core;
+
+    if (self == NULL || self->vtbl != &g_indexed_core_vtbl) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    core = (sixel_indexed_core_t *)self;
+    if (core->image != NULL) return SIXEL_LOGIC_ERROR;
+    core->test_clock = clock;
+    core->test_clock_context = context;
+    return SIXEL_OK;
+}
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object)

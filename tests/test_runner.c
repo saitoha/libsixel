@@ -4924,7 +4924,90 @@ int test_0181_reuse_abort_storage(int, char **);
 int test_0182_reuse_allocation_failure(int, char **);
 int test_0183_reuse_scratch_allocations(int, char **);
 
+int test_schedule_0001_cold_single(int, char **);
+int test_schedule_0002_light_once(int, char **);
+int test_schedule_0003_light_two(int, char **);
+int test_schedule_0004_light_four(int, char **);
+int test_schedule_0005_heavy_shrink(int, char **);
+int test_schedule_0006_moderate_shrink(int, char **);
+int test_schedule_0007_interrupted_light(int, char **);
+int test_schedule_0008_missing_clock(int, char **);
+int test_schedule_0009_backward_clock(int, char **);
+int test_schedule_0010_published_one(int, char **);
+int test_schedule_0011_published_three(int, char **);
+int test_schedule_0012_queue_one(int, char **);
+int test_schedule_0013_queue_two(int, char **);
+int test_schedule_0014_tail_two(int, char **);
+int test_schedule_0015_tail_one(int, char **);
+int test_schedule_0016_full_four(int, char **);
+int test_schedule_0017_batch_two_bytes(int, char **);
+int test_schedule_0018_batch_four_bytes(int, char **);
+int test_schedule_0019_batch_partial_prefix(int, char **);
+int test_schedule_0020_batch_offset_bytes(int, char **);
+int test_schedule_0021_batch_keep_bytes(int, char **);
+int test_schedule_0022_batch_queue_one(int, char **);
+int test_schedule_0023_batch_queue_two(int, char **);
+int test_schedule_0024_batch_abort_restart(int, char **);
+int test_schedule_0025_batch_sink_restart(int, char **);
+int test_schedule_0026_batch_clock_reset(int, char **);
+int test_schedule_0027_batch_tail_bytes(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "encoder/scheduling/0001_cold_single",
+      test_schedule_0001_cold_single },
+    { "encoder/scheduling/0002_light_once",
+      test_schedule_0002_light_once },
+    { "encoder/scheduling/0003_light_two",
+      test_schedule_0003_light_two },
+    { "encoder/scheduling/0004_light_four",
+      test_schedule_0004_light_four },
+    { "encoder/scheduling/0005_heavy_shrink",
+      test_schedule_0005_heavy_shrink },
+    { "encoder/scheduling/0006_moderate_shrink",
+      test_schedule_0006_moderate_shrink },
+    { "encoder/scheduling/0007_interrupted_light",
+      test_schedule_0007_interrupted_light },
+    { "encoder/scheduling/0008_missing_clock",
+      test_schedule_0008_missing_clock },
+    { "encoder/scheduling/0009_backward_clock",
+      test_schedule_0009_backward_clock },
+    { "encoder/scheduling/0010_published_one",
+      test_schedule_0010_published_one },
+    { "encoder/scheduling/0011_published_three",
+      test_schedule_0011_published_three },
+    { "encoder/scheduling/0012_queue_one",
+      test_schedule_0012_queue_one },
+    { "encoder/scheduling/0013_queue_two",
+      test_schedule_0013_queue_two },
+    { "encoder/scheduling/0014_tail_two",
+      test_schedule_0014_tail_two },
+    { "encoder/scheduling/0015_tail_one",
+      test_schedule_0015_tail_one },
+    { "encoder/scheduling/0016_full_four",
+      test_schedule_0016_full_four },
+    { "encoder/scheduling/0017_batch_two_bytes",
+      test_schedule_0017_batch_two_bytes },
+    { "encoder/scheduling/0018_batch_four_bytes",
+      test_schedule_0018_batch_four_bytes },
+    { "encoder/scheduling/0019_batch_partial_prefix",
+      test_schedule_0019_batch_partial_prefix },
+    { "encoder/scheduling/0020_batch_offset_bytes",
+      test_schedule_0020_batch_offset_bytes },
+    { "encoder/scheduling/0021_batch_keep_bytes",
+      test_schedule_0021_batch_keep_bytes },
+    { "encoder/scheduling/0022_batch_queue_one",
+      test_schedule_0022_batch_queue_one },
+    { "encoder/scheduling/0023_batch_queue_two",
+      test_schedule_0023_batch_queue_two },
+    { "encoder/scheduling/0024_batch_abort_restart",
+      test_schedule_0024_batch_abort_restart },
+    { "encoder/scheduling/0025_batch_sink_restart",
+      test_schedule_0025_batch_sink_restart },
+    { "encoder/scheduling/0026_batch_clock_reset",
+      test_schedule_0026_batch_clock_reset },
+    { "encoder/scheduling/0027_batch_tail_bytes",
+      test_schedule_0027_batch_tail_bytes },
+
     { "platform/threadpool/0007_drain_completes_jobs",
       test_0007_drain_completes_jobs },
     { "platform/threadpool/0008_resume_keeps_workspace",

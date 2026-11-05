@@ -88,9 +88,11 @@
 #include "encoder-core-highcolor.h"
 #include "gpu-palette.h"
 #include "planner.h"
+#include "timer.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
 # include <6cells.h>
+# include "encoder-band-schedule.h"
 #endif
 
 #define DCS_START_7BIT       "\033P"
@@ -176,6 +178,8 @@ typedef struct sixel_parallel_band_buffer {
     SIXELSTATUS status;
     int ready;
     int dispatched;
+    int job_bands;
+    double job_seconds;
 } sixel_parallel_band_buffer_t;
 
 struct sixel_parallel_context;
@@ -219,6 +223,12 @@ typedef struct sixel_parallel_context {
     int pin_threads;
     int reuse_pool;
     int retained_ormode;
+    int adaptive_bands;
+    int batch_queue;
+    int queued_bands;
+    sixel_band_schedule_t schedule;
+    double (*clock)(void *);
+    void *clock_context;
 } sixel_parallel_context_t;
 
 typedef struct sixel_parallel_row_notifier {
@@ -1090,6 +1100,9 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     }
 
     ctx->pixels = pixels;
+    ctx->adaptive_bands = 0;
+    ctx->batch_queue = 0;
+    ctx->queued_bands = 0;
     ctx->width = width;
     ctx->height = height;
     ctx->encoded_width = encoded_width;
@@ -1129,6 +1142,8 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
             ctx->bands[i].status = SIXEL_OK;
             ctx->bands[i].ready = 0;
             ctx->bands[i].dispatched = 0;
+            ctx->bands[i].job_bands = 0;
+            ctx->bands[i].job_seconds = 0.0;
         }
         ctx->band_count = nbands;
 
@@ -1191,6 +1206,8 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
             ctx->bands[i].status = SIXEL_OK;
             ctx->bands[i].ready = 0;
             ctx->bands[i].dispatched = 0;
+            ctx->bands[i].job_bands = 0;
+            ctx->bands[i].job_seconds = 0.0;
         }
         sixel_parallel_prepare_band_source_rows(ctx);
         for (i = 0; i < ctx->worker_registered; ++i) {
@@ -1222,66 +1239,83 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     return SIXEL_OK;
 }
 
+/* Queue credits count bands, even when one pool descriptor contains several.
+ * Credit is released when the worker takes the job. Never hold this gate while
+ * acquiring a CPU-work reservation or invoking the pool's blocking push. */
 static void
-sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
+sixel_parallel_submit_span(sixel_parallel_context_t *ctx, int first, int span)
 {
     sixel_thread_pool_job_t job;
     SIXELSTATUS status;
     int dispatch;
+    int parked;
+    int i;
 
-    if (ctx == NULL || ctx->pool == NULL) {
+    if (ctx == NULL || ctx->pool == NULL || first < 0 || span < 1 ||
+            first >= ctx->band_count || span > ctx->band_count - first ||
+            span > ctx->queue_capacity) {
         return;
     }
-    if (band_index < 0 || band_index >= ctx->band_count) {
-        return;
-    }
-
     dispatch = 0;
-    /*
-     * Multiple producers may notify the same band when PaletteApply runs in
-     * parallel.  Guard the dispatched flag so only the first notifier pushes
-     * work into the encoder queue.
-     */
-    if (ctx->mutex_ready) {
-        sixel_mutex_lock(&ctx->mutex);
-        if (!ctx->bands[band_index].dispatched
-                && !ctx->writer_should_stop
-                && ctx->writer_error == SIXEL_OK) {
-            ctx->bands[band_index].dispatched = 1;
-            dispatch = 1;
-        }
+    parked = 0;
+    sixel_mutex_lock(&ctx->mutex);
+    if (ctx->batch_queue &&
+            ctx->queued_bands > ctx->queue_capacity - span &&
+            !ctx->writer_should_stop && ctx->writer_error == SIXEL_OK) {
         sixel_mutex_unlock(&ctx->mutex);
-    } else {
-        if (!ctx->bands[band_index].dispatched
-                && sixel_parallel_jobs_allowed(ctx)) {
-            ctx->bands[band_index].dispatched = 1;
-            dispatch = 1;
+        sixel_thread_work_end();
+        parked = 1;
+        sixel_mutex_lock(&ctx->mutex);
+        while (ctx->queued_bands > ctx->queue_capacity - span &&
+                !ctx->writer_should_stop && ctx->writer_error == SIXEL_OK) {
+            sixel_cond_wait(&ctx->cond_band_ready, &ctx->mutex);
         }
     }
-
-    if (!dispatch) {
-        return;
+    if (!ctx->writer_should_stop && ctx->writer_error == SIXEL_OK) {
+        dispatch = 1;
+        for (i = first; i < first + span; ++i) {
+            if (ctx->bands[i].dispatched) dispatch = 0;
+        }
+        if (dispatch) {
+            for (i = first; i < first + span; ++i) {
+                ctx->bands[i].dispatched = 1;
+            }
+            ctx->bands[first].job_bands = span;
+            if (ctx->batch_queue) ctx->queued_bands += span;
+        }
     }
+    sixel_mutex_unlock(&ctx->mutex);
+    if (parked) sixel_thread_work_begin();
+    if (!dispatch) return;
 
     sixel_fence_release();
     if (ctx->logger != NULL) {
         sixel_timeline_logger_logf(ctx->logger,
-                          "controller",
-                          "encode",
-                          "dispatch",
-                          band_index);
+            "controller", "encode", "job_bands", span);
+        for (i = first; i < first + span; ++i) {
+            sixel_timeline_logger_logf(ctx->logger,
+                "controller", "encode", "dispatch", i);
+        }
     }
-    job.band_index = band_index;
+    job.band_index = first;
     status = ctx->pool->vtbl->push(ctx->pool, job);
     if (SIXEL_FAILED(status)) {
         sixel_parallel_context_abort_locked(ctx, status);
     }
 }
 
+static void
+sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
+{
+    sixel_parallel_submit_span(ctx, band_index, 1);
+}
+
 static SIXELSTATUS
 sixel_parallel_context_wait(sixel_parallel_context_t *ctx, int force_abort)
 {
     int pool_error;
+    int i;
+    double seconds;
 
     if (ctx == NULL || ctx->pool == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1297,6 +1331,21 @@ sixel_parallel_context_wait(sixel_parallel_context_t *ctx, int force_abort)
     sixel_parallel_writer_stop(ctx, force_abort || pool_error != SIXEL_OK);
     sixel_thread_work_begin();
 
+    if (ctx->adaptive_bands) {
+        seconds = 0.0;
+        if (!force_abort && pool_error == SIXEL_OK &&
+                ctx->writer_error == SIXEL_OK) {
+            for (i = 0; i < ctx->band_count; ++i) {
+                if (ctx->bands[i].job_bands != 0 &&
+                        !(ctx->bands[i].job_seconds > 0.0)) {
+                    seconds = 0.0;
+                    break;
+                }
+                seconds += ctx->bands[i].job_seconds;
+            }
+        }
+        sixel_band_schedule_observe(&ctx->schedule, seconds, ctx->band_count);
+    }
     if (pool_error != SIXEL_OK) {
         return pool_error;
     }
@@ -1427,7 +1476,7 @@ sixel_parallel_flush_band(sixel_parallel_context_t *ctx, int band_index)
 }
 
 static int
-sixel_parallel_worker_main(sixel_thread_pool_job_t job,
+sixel_parallel_worker_one(sixel_thread_pool_job_t job,
                            void *userdata,
                            void *workspace)
 {
@@ -1610,6 +1659,66 @@ cleanup:
         return status;
     }
     return SIXEL_OK;
+}
+
+/* A batch reuses one worker's scratch but publishes each six-row fragment
+ * separately. Errors stop the remaining members and wake blocked producers;
+ * the ordinary pool and writer drains still own resource lifetime. */
+static int
+sixel_parallel_worker_main(sixel_thread_pool_job_t job,
+    void *userdata, void *workspace)
+{
+    sixel_parallel_context_t *ctx;
+    SIXELSTATUS status;
+    double started;
+    double elapsed;
+    int first;
+    int span;
+    int i;
+
+    ctx = (sixel_parallel_context_t *)userdata;
+    first = job.band_index;
+    if (ctx == NULL || first < 0 || first >= ctx->band_count) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!ctx->adaptive_bands) {
+        return sixel_parallel_worker_one(job, userdata, workspace);
+    }
+    /* Single-band frames already have the pool's exact queue bound. Avoid
+     * a second queue gate and wakeup for that common heavy-scene path. */
+    span = ctx->bands[first].job_bands;
+    if (ctx->batch_queue) {
+        sixel_mutex_lock(&ctx->mutex);
+        if (span < 1 || span > ctx->band_count - first ||
+                span > ctx->queued_bands) {
+            sixel_mutex_unlock(&ctx->mutex);
+            sixel_parallel_context_abort_locked(ctx, SIXEL_LOGIC_ERROR);
+            return SIXEL_LOGIC_ERROR;
+        }
+        ctx->queued_bands -= span;
+        sixel_cond_broadcast(&ctx->cond_band_ready);
+        sixel_mutex_unlock(&ctx->mutex);
+    }
+    started = 0.0;
+    if (ctx->adaptive_bands) {
+        started = ctx->clock != NULL ? ctx->clock(ctx->clock_context)
+            : sixel_timer_monotonic();
+    }
+    status = SIXEL_OK;
+    for (i = 0; i < span; ++i) {
+        job.band_index = first + i;
+        status = sixel_parallel_worker_one(job, userdata, workspace);
+        if (SIXEL_FAILED(status)) break;
+    }
+    if (started > 0.0 && SIXEL_SUCCEEDED(status)) {
+        elapsed = (ctx->clock != NULL ? ctx->clock(ctx->clock_context)
+            : sixel_timer_monotonic()) - started;
+        if (elapsed > 0.0) ctx->bands[first].job_seconds = elapsed;
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_parallel_context_abort_locked(ctx, status);
+    }
+    return status;
 }
 
 static void

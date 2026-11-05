@@ -137,6 +137,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/encoder-core.h \
                 $(srcdir)/encoder-core-private.h \
                 $(srcdir)/encoder-core-packet.h \
+                $(srcdir)/encoder-band-schedule.h \
                 $(srcdir)/encoder-core-indexed.inc.h \
                 $(srcdir)/encoder-core-session.inc.h \
                 $(srcdir)/timer.c \

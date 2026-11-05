@@ -36,6 +36,7 @@ srcs = [
   'encoder-core.h',
   'encoder-core-private.h',
   'encoder-core-packet.h',
+  'encoder-band-schedule.h',
   'encoder-core-indexed.inc.h',
   'encoder-core-session.inc.h',
   'lookup-policy-fhedt-gpu.inc.h',

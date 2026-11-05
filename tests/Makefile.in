@@ -141,6 +141,34 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	encoder/scheduling/0001_cold_single.c \
+	encoder/scheduling/0002_light_once.c \
+	encoder/scheduling/0003_light_two.c \
+	encoder/scheduling/0004_light_four.c \
+	encoder/scheduling/0005_heavy_shrink.c \
+	encoder/scheduling/0006_moderate_shrink.c \
+	encoder/scheduling/0007_interrupted_light.c \
+	encoder/scheduling/0008_missing_clock.c \
+	encoder/scheduling/0009_backward_clock.c \
+	encoder/scheduling/0010_published_one.c \
+	encoder/scheduling/0011_published_three.c \
+	encoder/scheduling/0012_queue_one.c \
+	encoder/scheduling/0013_queue_two.c \
+	encoder/scheduling/0014_tail_two.c \
+	encoder/scheduling/0015_tail_one.c \
+	encoder/scheduling/0016_full_four.c \
+	encoder/scheduling/0017_batch_two_bytes.c \
+	encoder/scheduling/0018_batch_four_bytes.c \
+	encoder/scheduling/0019_batch_partial_prefix.c \
+	encoder/scheduling/0020_batch_offset_bytes.c \
+	encoder/scheduling/0021_batch_keep_bytes.c \
+	encoder/scheduling/0022_batch_queue_one.c \
+	encoder/scheduling/0023_batch_queue_two.c \
+	encoder/scheduling/0024_batch_abort_restart.c \
+	encoder/scheduling/0025_batch_sink_restart.c \
+	encoder/scheduling/0026_batch_clock_reset.c \
+	encoder/scheduling/0027_batch_tail_bytes.c \
+	_support/codec/band_batch.c \
 	platform/threadpool/0007_drain_completes_jobs.c \
 	platform/threadpool/0008_resume_keeps_workspace.c \
 	platform/threadpool/0009_resume_keeps_thread.c \
@@ -4902,6 +4930,34 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/path.c
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0001_cold_single.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0002_light_once.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0003_light_two.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0004_light_four.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0005_heavy_shrink.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0006_moderate_shrink.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0007_interrupted_light.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0008_missing_clock.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0009_backward_clock.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0010_published_one.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0011_published_three.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0012_queue_one.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0013_queue_two.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0014_tail_two.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0015_tail_one.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0016_full_four.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0017_batch_two_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0018_batch_four_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0019_batch_partial_prefix.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0020_batch_offset_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0021_batch_keep_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0022_batch_queue_one.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0023_batch_queue_two.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0024_batch_abort_restart.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0025_batch_sink_restart.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0026_batch_clock_reset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0027_batch_tail_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-band_batch.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0007_drain_completes_jobs.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0008_resume_keeps_workspace.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0009_resume_keeps_thread.$(OBJEXT) \
@@ -9681,6 +9737,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po \
 	_support/cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po \
 	_support/cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
+	_support/codec/$(DEPDIR)/test_runner-band_batch.Po \
 	_support/codec/$(DEPDIR)/test_runner-core_reuse.Po \
 	_support/codec/$(DEPDIR)/test_runner-highcolor_band_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-highcolor_mask_common.Po \
@@ -11975,6 +12032,33 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/progressive-transport/$(DEPDIR)/test_runner-0053_gpu_video_pair.Po \
 	encoder/progressive-transport/$(DEPDIR)/test_runner-0054_gpu_pending_before_admission.Po \
 	encoder/progressive-transport/$(DEPDIR)/test_runner-0055_gpu_pending_after_admission.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0004_light_four.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0005_heavy_shrink.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0006_moderate_shrink.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0007_interrupted_light.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0008_missing_clock.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0009_backward_clock.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0010_published_one.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0011_published_three.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0012_queue_one.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0013_queue_two.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0014_tail_two.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0015_tail_one.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0016_full_four.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0017_batch_two_bytes.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0018_batch_four_bytes.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0019_batch_partial_prefix.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0020_batch_offset_bytes.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0021_batch_keep_bytes.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0022_batch_queue_one.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0023_batch_queue_two.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0024_batch_abort_restart.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Po \
 	encoder/sixel-output/$(DEPDIR)/test_runner-0007_sixel_writer_factory.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po \
@@ -15012,6 +15096,34 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_BAND_BATCH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_COLD_SINGLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LIGHT_ONCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_LIGHT_TWO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_LIGHT_FOUR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_HEAVY_SHRINK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_MODERATE_SHRINK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_INTERRUPTED_LIGHT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_MISSING_CLOCK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_BACKWARD_CLOCK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_PUBLISHED_ONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_PUBLISHED_THREE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_QUEUE_ONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_QUEUE_TWO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_TAIL_TWO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_TAIL_ONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_FULL_FOUR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_BATCH_TWO_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_BATCH_FOUR_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_BATCH_PARTIAL_PREFIX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_BATCH_OFFSET_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_BATCH_KEEP_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_BATCH_QUEUE_ONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_BATCH_QUEUE_TWO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_BATCH_ABORT_RESTART \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_BATCH_SINK_RESTART \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_BATCH_CLOCK_RESET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_BATCH_TAIL_BYTES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_DRAIN_COMPLETES_JOBS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_RESUME_KEEPS_WORKSPACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_RESUME_KEEPS_THREAD \
@@ -19770,6 +19882,34 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0001_cold_single.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0002_light_once.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0003_light_two.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0004_light_four.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0005_heavy_shrink.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0006_moderate_shrink.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0007_interrupted_light.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0008_missing_clock.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0009_backward_clock.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0010_published_one.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0011_published_three.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0012_queue_one.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0013_queue_two.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0014_tail_two.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0015_tail_one.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0016_full_four.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0017_batch_two_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0018_batch_four_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0019_batch_partial_prefix.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0020_batch_offset_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0021_batch_keep_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0022_batch_queue_one.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0023_batch_queue_two.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0024_batch_abort_restart.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0025_batch_sink_restart.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0026_batch_clock_reset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0027_batch_tail_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/band_batch.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0007_drain_completes_jobs.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0008_resume_keeps_workspace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0009_resume_keeps_thread.c \
@@ -25017,6 +25157,102 @@ lookup/delaunay/libfloatlookuptests_la-0012_delaunay_float_bulk.lo:  \
 
 libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES)
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
+encoder/scheduling/$(am__dirstamp):
+	@$(MKDIR_P) encoder/scheduling
+	@: >>encoder/scheduling/$(am__dirstamp)
+encoder/scheduling/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) encoder/scheduling/$(DEPDIR)
+	@: >>encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0001_cold_single.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0002_light_once.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0003_light_two.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0004_light_four.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0005_heavy_shrink.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0006_moderate_shrink.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0007_interrupted_light.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0008_missing_clock.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0009_backward_clock.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0010_published_one.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0011_published_three.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0012_queue_one.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0013_queue_two.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0014_tail_two.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0015_tail_one.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0016_full_four.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0017_batch_two_bytes.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0018_batch_four_bytes.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0019_batch_partial_prefix.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0020_batch_offset_bytes.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0021_batch_keep_bytes.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0022_batch_queue_one.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0023_batch_queue_two.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0024_batch_abort_restart.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0025_batch_sink_restart.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0026_batch_clock_reset.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0027_batch_tail_bytes.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+_support/codec/$(am__dirstamp):
+	@$(MKDIR_P) _support/codec
+	@: >>_support/codec/$(am__dirstamp)
+_support/codec/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) _support/codec/$(DEPDIR)
+	@: >>_support/codec/$(DEPDIR)/$(am__dirstamp)
+_support/codec/test_runner-band_batch.$(OBJEXT):  \
+	_support/codec/$(am__dirstamp) \
+	_support/codec/$(DEPDIR)/$(am__dirstamp)
 platform/threadpool/$(am__dirstamp):
 	@$(MKDIR_P) platform/threadpool
 	@: >>platform/threadpool/$(am__dirstamp)
@@ -25137,12 +25373,6 @@ encoder/indexed/test_runner-0182_reuse_allocation_failure.$(OBJEXT):  \
 encoder/indexed/test_runner-0183_reuse_scratch_allocations.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
-_support/codec/$(am__dirstamp):
-	@$(MKDIR_P) _support/codec
-	@: >>_support/codec/$(am__dirstamp)
-_support/codec/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) _support/codec/$(DEPDIR)
-	@: >>_support/codec/$(DEPDIR)/$(am__dirstamp)
 _support/codec/test_runner-pool_reuse.$(OBJEXT):  \
 	_support/codec/$(am__dirstamp) \
 	_support/codec/$(DEPDIR)/$(am__dirstamp)
@@ -40226,6 +40456,7 @@ mostlyclean-compile:
 	-rm -f encoder/precision/*.$(OBJEXT)
 	-rm -f encoder/progressive-refinement/*.$(OBJEXT)
 	-rm -f encoder/progressive-transport/*.$(OBJEXT)
+	-rm -f encoder/scheduling/*.$(OBJEXT)
 	-rm -f encoder/sixel-output/*.$(OBJEXT)
 	-rm -f extension/gdk-pixbuf-loader/*.$(OBJEXT)
 	-rm -f frame/crop/*.$(OBJEXT)
@@ -40331,6 +40562,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-band_batch.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-core_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-highcolor_band_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-highcolor_mask_common.Po@am__quote@ # am--include-marker
@@ -42625,6 +42857,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/progressive-transport/$(DEPDIR)/test_runner-0053_gpu_video_pair.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/progressive-transport/$(DEPDIR)/test_runner-0054_gpu_pending_before_admission.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/progressive-transport/$(DEPDIR)/test_runner-0055_gpu_pending_after_admission.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0004_light_four.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0005_heavy_shrink.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0006_moderate_shrink.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0007_interrupted_light.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0008_missing_clock.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0009_backward_clock.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0010_published_one.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0011_published_three.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0012_queue_one.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0013_queue_two.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0014_tail_two.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0015_tail_one.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0016_full_four.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0017_batch_two_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0018_batch_four_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0019_batch_partial_prefix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0020_batch_offset_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0021_batch_keep_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0022_batch_queue_one.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0023_batch_queue_two.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0024_batch_abort_restart.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/sixel-output/$(DEPDIR)/test_runner-0007_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po@am__quote@ # am--include-marker
@@ -45099,6 +45358,398 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+encoder/scheduling/test_runner-0001_cold_single.o: encoder/scheduling/0001_cold_single.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0001_cold_single.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Tpo -c -o encoder/scheduling/test_runner-0001_cold_single.o `test -f 'encoder/scheduling/0001_cold_single.c' || echo '$(srcdir)/'`encoder/scheduling/0001_cold_single.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0001_cold_single.c' object='encoder/scheduling/test_runner-0001_cold_single.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0001_cold_single.o `test -f 'encoder/scheduling/0001_cold_single.c' || echo '$(srcdir)/'`encoder/scheduling/0001_cold_single.c
+
+encoder/scheduling/test_runner-0001_cold_single.obj: encoder/scheduling/0001_cold_single.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0001_cold_single.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Tpo -c -o encoder/scheduling/test_runner-0001_cold_single.obj `if test -f 'encoder/scheduling/0001_cold_single.c'; then $(CYGPATH_W) 'encoder/scheduling/0001_cold_single.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0001_cold_single.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0001_cold_single.c' object='encoder/scheduling/test_runner-0001_cold_single.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0001_cold_single.obj `if test -f 'encoder/scheduling/0001_cold_single.c'; then $(CYGPATH_W) 'encoder/scheduling/0001_cold_single.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0001_cold_single.c'; fi`
+
+encoder/scheduling/test_runner-0002_light_once.o: encoder/scheduling/0002_light_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0002_light_once.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Tpo -c -o encoder/scheduling/test_runner-0002_light_once.o `test -f 'encoder/scheduling/0002_light_once.c' || echo '$(srcdir)/'`encoder/scheduling/0002_light_once.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0002_light_once.c' object='encoder/scheduling/test_runner-0002_light_once.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0002_light_once.o `test -f 'encoder/scheduling/0002_light_once.c' || echo '$(srcdir)/'`encoder/scheduling/0002_light_once.c
+
+encoder/scheduling/test_runner-0002_light_once.obj: encoder/scheduling/0002_light_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0002_light_once.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Tpo -c -o encoder/scheduling/test_runner-0002_light_once.obj `if test -f 'encoder/scheduling/0002_light_once.c'; then $(CYGPATH_W) 'encoder/scheduling/0002_light_once.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0002_light_once.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0002_light_once.c' object='encoder/scheduling/test_runner-0002_light_once.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0002_light_once.obj `if test -f 'encoder/scheduling/0002_light_once.c'; then $(CYGPATH_W) 'encoder/scheduling/0002_light_once.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0002_light_once.c'; fi`
+
+encoder/scheduling/test_runner-0003_light_two.o: encoder/scheduling/0003_light_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0003_light_two.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Tpo -c -o encoder/scheduling/test_runner-0003_light_two.o `test -f 'encoder/scheduling/0003_light_two.c' || echo '$(srcdir)/'`encoder/scheduling/0003_light_two.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0003_light_two.c' object='encoder/scheduling/test_runner-0003_light_two.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0003_light_two.o `test -f 'encoder/scheduling/0003_light_two.c' || echo '$(srcdir)/'`encoder/scheduling/0003_light_two.c
+
+encoder/scheduling/test_runner-0003_light_two.obj: encoder/scheduling/0003_light_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0003_light_two.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Tpo -c -o encoder/scheduling/test_runner-0003_light_two.obj `if test -f 'encoder/scheduling/0003_light_two.c'; then $(CYGPATH_W) 'encoder/scheduling/0003_light_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0003_light_two.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0003_light_two.c' object='encoder/scheduling/test_runner-0003_light_two.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0003_light_two.obj `if test -f 'encoder/scheduling/0003_light_two.c'; then $(CYGPATH_W) 'encoder/scheduling/0003_light_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0003_light_two.c'; fi`
+
+encoder/scheduling/test_runner-0004_light_four.o: encoder/scheduling/0004_light_four.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0004_light_four.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0004_light_four.Tpo -c -o encoder/scheduling/test_runner-0004_light_four.o `test -f 'encoder/scheduling/0004_light_four.c' || echo '$(srcdir)/'`encoder/scheduling/0004_light_four.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0004_light_four.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0004_light_four.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0004_light_four.c' object='encoder/scheduling/test_runner-0004_light_four.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0004_light_four.o `test -f 'encoder/scheduling/0004_light_four.c' || echo '$(srcdir)/'`encoder/scheduling/0004_light_four.c
+
+encoder/scheduling/test_runner-0004_light_four.obj: encoder/scheduling/0004_light_four.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0004_light_four.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0004_light_four.Tpo -c -o encoder/scheduling/test_runner-0004_light_four.obj `if test -f 'encoder/scheduling/0004_light_four.c'; then $(CYGPATH_W) 'encoder/scheduling/0004_light_four.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0004_light_four.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0004_light_four.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0004_light_four.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0004_light_four.c' object='encoder/scheduling/test_runner-0004_light_four.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0004_light_four.obj `if test -f 'encoder/scheduling/0004_light_four.c'; then $(CYGPATH_W) 'encoder/scheduling/0004_light_four.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0004_light_four.c'; fi`
+
+encoder/scheduling/test_runner-0005_heavy_shrink.o: encoder/scheduling/0005_heavy_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0005_heavy_shrink.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0005_heavy_shrink.Tpo -c -o encoder/scheduling/test_runner-0005_heavy_shrink.o `test -f 'encoder/scheduling/0005_heavy_shrink.c' || echo '$(srcdir)/'`encoder/scheduling/0005_heavy_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0005_heavy_shrink.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0005_heavy_shrink.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0005_heavy_shrink.c' object='encoder/scheduling/test_runner-0005_heavy_shrink.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0005_heavy_shrink.o `test -f 'encoder/scheduling/0005_heavy_shrink.c' || echo '$(srcdir)/'`encoder/scheduling/0005_heavy_shrink.c
+
+encoder/scheduling/test_runner-0005_heavy_shrink.obj: encoder/scheduling/0005_heavy_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0005_heavy_shrink.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0005_heavy_shrink.Tpo -c -o encoder/scheduling/test_runner-0005_heavy_shrink.obj `if test -f 'encoder/scheduling/0005_heavy_shrink.c'; then $(CYGPATH_W) 'encoder/scheduling/0005_heavy_shrink.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0005_heavy_shrink.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0005_heavy_shrink.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0005_heavy_shrink.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0005_heavy_shrink.c' object='encoder/scheduling/test_runner-0005_heavy_shrink.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0005_heavy_shrink.obj `if test -f 'encoder/scheduling/0005_heavy_shrink.c'; then $(CYGPATH_W) 'encoder/scheduling/0005_heavy_shrink.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0005_heavy_shrink.c'; fi`
+
+encoder/scheduling/test_runner-0006_moderate_shrink.o: encoder/scheduling/0006_moderate_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0006_moderate_shrink.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0006_moderate_shrink.Tpo -c -o encoder/scheduling/test_runner-0006_moderate_shrink.o `test -f 'encoder/scheduling/0006_moderate_shrink.c' || echo '$(srcdir)/'`encoder/scheduling/0006_moderate_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0006_moderate_shrink.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0006_moderate_shrink.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0006_moderate_shrink.c' object='encoder/scheduling/test_runner-0006_moderate_shrink.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0006_moderate_shrink.o `test -f 'encoder/scheduling/0006_moderate_shrink.c' || echo '$(srcdir)/'`encoder/scheduling/0006_moderate_shrink.c
+
+encoder/scheduling/test_runner-0006_moderate_shrink.obj: encoder/scheduling/0006_moderate_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0006_moderate_shrink.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0006_moderate_shrink.Tpo -c -o encoder/scheduling/test_runner-0006_moderate_shrink.obj `if test -f 'encoder/scheduling/0006_moderate_shrink.c'; then $(CYGPATH_W) 'encoder/scheduling/0006_moderate_shrink.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0006_moderate_shrink.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0006_moderate_shrink.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0006_moderate_shrink.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0006_moderate_shrink.c' object='encoder/scheduling/test_runner-0006_moderate_shrink.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0006_moderate_shrink.obj `if test -f 'encoder/scheduling/0006_moderate_shrink.c'; then $(CYGPATH_W) 'encoder/scheduling/0006_moderate_shrink.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0006_moderate_shrink.c'; fi`
+
+encoder/scheduling/test_runner-0007_interrupted_light.o: encoder/scheduling/0007_interrupted_light.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0007_interrupted_light.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0007_interrupted_light.Tpo -c -o encoder/scheduling/test_runner-0007_interrupted_light.o `test -f 'encoder/scheduling/0007_interrupted_light.c' || echo '$(srcdir)/'`encoder/scheduling/0007_interrupted_light.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0007_interrupted_light.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0007_interrupted_light.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0007_interrupted_light.c' object='encoder/scheduling/test_runner-0007_interrupted_light.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0007_interrupted_light.o `test -f 'encoder/scheduling/0007_interrupted_light.c' || echo '$(srcdir)/'`encoder/scheduling/0007_interrupted_light.c
+
+encoder/scheduling/test_runner-0007_interrupted_light.obj: encoder/scheduling/0007_interrupted_light.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0007_interrupted_light.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0007_interrupted_light.Tpo -c -o encoder/scheduling/test_runner-0007_interrupted_light.obj `if test -f 'encoder/scheduling/0007_interrupted_light.c'; then $(CYGPATH_W) 'encoder/scheduling/0007_interrupted_light.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0007_interrupted_light.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0007_interrupted_light.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0007_interrupted_light.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0007_interrupted_light.c' object='encoder/scheduling/test_runner-0007_interrupted_light.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0007_interrupted_light.obj `if test -f 'encoder/scheduling/0007_interrupted_light.c'; then $(CYGPATH_W) 'encoder/scheduling/0007_interrupted_light.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0007_interrupted_light.c'; fi`
+
+encoder/scheduling/test_runner-0008_missing_clock.o: encoder/scheduling/0008_missing_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0008_missing_clock.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0008_missing_clock.Tpo -c -o encoder/scheduling/test_runner-0008_missing_clock.o `test -f 'encoder/scheduling/0008_missing_clock.c' || echo '$(srcdir)/'`encoder/scheduling/0008_missing_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0008_missing_clock.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0008_missing_clock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0008_missing_clock.c' object='encoder/scheduling/test_runner-0008_missing_clock.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0008_missing_clock.o `test -f 'encoder/scheduling/0008_missing_clock.c' || echo '$(srcdir)/'`encoder/scheduling/0008_missing_clock.c
+
+encoder/scheduling/test_runner-0008_missing_clock.obj: encoder/scheduling/0008_missing_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0008_missing_clock.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0008_missing_clock.Tpo -c -o encoder/scheduling/test_runner-0008_missing_clock.obj `if test -f 'encoder/scheduling/0008_missing_clock.c'; then $(CYGPATH_W) 'encoder/scheduling/0008_missing_clock.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0008_missing_clock.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0008_missing_clock.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0008_missing_clock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0008_missing_clock.c' object='encoder/scheduling/test_runner-0008_missing_clock.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0008_missing_clock.obj `if test -f 'encoder/scheduling/0008_missing_clock.c'; then $(CYGPATH_W) 'encoder/scheduling/0008_missing_clock.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0008_missing_clock.c'; fi`
+
+encoder/scheduling/test_runner-0009_backward_clock.o: encoder/scheduling/0009_backward_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0009_backward_clock.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0009_backward_clock.Tpo -c -o encoder/scheduling/test_runner-0009_backward_clock.o `test -f 'encoder/scheduling/0009_backward_clock.c' || echo '$(srcdir)/'`encoder/scheduling/0009_backward_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0009_backward_clock.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0009_backward_clock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0009_backward_clock.c' object='encoder/scheduling/test_runner-0009_backward_clock.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0009_backward_clock.o `test -f 'encoder/scheduling/0009_backward_clock.c' || echo '$(srcdir)/'`encoder/scheduling/0009_backward_clock.c
+
+encoder/scheduling/test_runner-0009_backward_clock.obj: encoder/scheduling/0009_backward_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0009_backward_clock.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0009_backward_clock.Tpo -c -o encoder/scheduling/test_runner-0009_backward_clock.obj `if test -f 'encoder/scheduling/0009_backward_clock.c'; then $(CYGPATH_W) 'encoder/scheduling/0009_backward_clock.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0009_backward_clock.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0009_backward_clock.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0009_backward_clock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0009_backward_clock.c' object='encoder/scheduling/test_runner-0009_backward_clock.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0009_backward_clock.obj `if test -f 'encoder/scheduling/0009_backward_clock.c'; then $(CYGPATH_W) 'encoder/scheduling/0009_backward_clock.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0009_backward_clock.c'; fi`
+
+encoder/scheduling/test_runner-0010_published_one.o: encoder/scheduling/0010_published_one.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0010_published_one.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0010_published_one.Tpo -c -o encoder/scheduling/test_runner-0010_published_one.o `test -f 'encoder/scheduling/0010_published_one.c' || echo '$(srcdir)/'`encoder/scheduling/0010_published_one.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0010_published_one.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0010_published_one.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0010_published_one.c' object='encoder/scheduling/test_runner-0010_published_one.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0010_published_one.o `test -f 'encoder/scheduling/0010_published_one.c' || echo '$(srcdir)/'`encoder/scheduling/0010_published_one.c
+
+encoder/scheduling/test_runner-0010_published_one.obj: encoder/scheduling/0010_published_one.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0010_published_one.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0010_published_one.Tpo -c -o encoder/scheduling/test_runner-0010_published_one.obj `if test -f 'encoder/scheduling/0010_published_one.c'; then $(CYGPATH_W) 'encoder/scheduling/0010_published_one.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0010_published_one.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0010_published_one.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0010_published_one.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0010_published_one.c' object='encoder/scheduling/test_runner-0010_published_one.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0010_published_one.obj `if test -f 'encoder/scheduling/0010_published_one.c'; then $(CYGPATH_W) 'encoder/scheduling/0010_published_one.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0010_published_one.c'; fi`
+
+encoder/scheduling/test_runner-0011_published_three.o: encoder/scheduling/0011_published_three.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0011_published_three.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0011_published_three.Tpo -c -o encoder/scheduling/test_runner-0011_published_three.o `test -f 'encoder/scheduling/0011_published_three.c' || echo '$(srcdir)/'`encoder/scheduling/0011_published_three.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0011_published_three.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0011_published_three.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0011_published_three.c' object='encoder/scheduling/test_runner-0011_published_three.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0011_published_three.o `test -f 'encoder/scheduling/0011_published_three.c' || echo '$(srcdir)/'`encoder/scheduling/0011_published_three.c
+
+encoder/scheduling/test_runner-0011_published_three.obj: encoder/scheduling/0011_published_three.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0011_published_three.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0011_published_three.Tpo -c -o encoder/scheduling/test_runner-0011_published_three.obj `if test -f 'encoder/scheduling/0011_published_three.c'; then $(CYGPATH_W) 'encoder/scheduling/0011_published_three.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0011_published_three.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0011_published_three.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0011_published_three.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0011_published_three.c' object='encoder/scheduling/test_runner-0011_published_three.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0011_published_three.obj `if test -f 'encoder/scheduling/0011_published_three.c'; then $(CYGPATH_W) 'encoder/scheduling/0011_published_three.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0011_published_three.c'; fi`
+
+encoder/scheduling/test_runner-0012_queue_one.o: encoder/scheduling/0012_queue_one.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0012_queue_one.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0012_queue_one.Tpo -c -o encoder/scheduling/test_runner-0012_queue_one.o `test -f 'encoder/scheduling/0012_queue_one.c' || echo '$(srcdir)/'`encoder/scheduling/0012_queue_one.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0012_queue_one.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0012_queue_one.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0012_queue_one.c' object='encoder/scheduling/test_runner-0012_queue_one.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0012_queue_one.o `test -f 'encoder/scheduling/0012_queue_one.c' || echo '$(srcdir)/'`encoder/scheduling/0012_queue_one.c
+
+encoder/scheduling/test_runner-0012_queue_one.obj: encoder/scheduling/0012_queue_one.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0012_queue_one.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0012_queue_one.Tpo -c -o encoder/scheduling/test_runner-0012_queue_one.obj `if test -f 'encoder/scheduling/0012_queue_one.c'; then $(CYGPATH_W) 'encoder/scheduling/0012_queue_one.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0012_queue_one.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0012_queue_one.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0012_queue_one.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0012_queue_one.c' object='encoder/scheduling/test_runner-0012_queue_one.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0012_queue_one.obj `if test -f 'encoder/scheduling/0012_queue_one.c'; then $(CYGPATH_W) 'encoder/scheduling/0012_queue_one.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0012_queue_one.c'; fi`
+
+encoder/scheduling/test_runner-0013_queue_two.o: encoder/scheduling/0013_queue_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0013_queue_two.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0013_queue_two.Tpo -c -o encoder/scheduling/test_runner-0013_queue_two.o `test -f 'encoder/scheduling/0013_queue_two.c' || echo '$(srcdir)/'`encoder/scheduling/0013_queue_two.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0013_queue_two.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0013_queue_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0013_queue_two.c' object='encoder/scheduling/test_runner-0013_queue_two.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0013_queue_two.o `test -f 'encoder/scheduling/0013_queue_two.c' || echo '$(srcdir)/'`encoder/scheduling/0013_queue_two.c
+
+encoder/scheduling/test_runner-0013_queue_two.obj: encoder/scheduling/0013_queue_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0013_queue_two.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0013_queue_two.Tpo -c -o encoder/scheduling/test_runner-0013_queue_two.obj `if test -f 'encoder/scheduling/0013_queue_two.c'; then $(CYGPATH_W) 'encoder/scheduling/0013_queue_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0013_queue_two.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0013_queue_two.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0013_queue_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0013_queue_two.c' object='encoder/scheduling/test_runner-0013_queue_two.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0013_queue_two.obj `if test -f 'encoder/scheduling/0013_queue_two.c'; then $(CYGPATH_W) 'encoder/scheduling/0013_queue_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0013_queue_two.c'; fi`
+
+encoder/scheduling/test_runner-0014_tail_two.o: encoder/scheduling/0014_tail_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0014_tail_two.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0014_tail_two.Tpo -c -o encoder/scheduling/test_runner-0014_tail_two.o `test -f 'encoder/scheduling/0014_tail_two.c' || echo '$(srcdir)/'`encoder/scheduling/0014_tail_two.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0014_tail_two.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0014_tail_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0014_tail_two.c' object='encoder/scheduling/test_runner-0014_tail_two.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0014_tail_two.o `test -f 'encoder/scheduling/0014_tail_two.c' || echo '$(srcdir)/'`encoder/scheduling/0014_tail_two.c
+
+encoder/scheduling/test_runner-0014_tail_two.obj: encoder/scheduling/0014_tail_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0014_tail_two.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0014_tail_two.Tpo -c -o encoder/scheduling/test_runner-0014_tail_two.obj `if test -f 'encoder/scheduling/0014_tail_two.c'; then $(CYGPATH_W) 'encoder/scheduling/0014_tail_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0014_tail_two.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0014_tail_two.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0014_tail_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0014_tail_two.c' object='encoder/scheduling/test_runner-0014_tail_two.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0014_tail_two.obj `if test -f 'encoder/scheduling/0014_tail_two.c'; then $(CYGPATH_W) 'encoder/scheduling/0014_tail_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0014_tail_two.c'; fi`
+
+encoder/scheduling/test_runner-0015_tail_one.o: encoder/scheduling/0015_tail_one.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0015_tail_one.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0015_tail_one.Tpo -c -o encoder/scheduling/test_runner-0015_tail_one.o `test -f 'encoder/scheduling/0015_tail_one.c' || echo '$(srcdir)/'`encoder/scheduling/0015_tail_one.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0015_tail_one.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0015_tail_one.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0015_tail_one.c' object='encoder/scheduling/test_runner-0015_tail_one.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0015_tail_one.o `test -f 'encoder/scheduling/0015_tail_one.c' || echo '$(srcdir)/'`encoder/scheduling/0015_tail_one.c
+
+encoder/scheduling/test_runner-0015_tail_one.obj: encoder/scheduling/0015_tail_one.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0015_tail_one.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0015_tail_one.Tpo -c -o encoder/scheduling/test_runner-0015_tail_one.obj `if test -f 'encoder/scheduling/0015_tail_one.c'; then $(CYGPATH_W) 'encoder/scheduling/0015_tail_one.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0015_tail_one.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0015_tail_one.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0015_tail_one.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0015_tail_one.c' object='encoder/scheduling/test_runner-0015_tail_one.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0015_tail_one.obj `if test -f 'encoder/scheduling/0015_tail_one.c'; then $(CYGPATH_W) 'encoder/scheduling/0015_tail_one.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0015_tail_one.c'; fi`
+
+encoder/scheduling/test_runner-0016_full_four.o: encoder/scheduling/0016_full_four.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0016_full_four.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0016_full_four.Tpo -c -o encoder/scheduling/test_runner-0016_full_four.o `test -f 'encoder/scheduling/0016_full_four.c' || echo '$(srcdir)/'`encoder/scheduling/0016_full_four.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0016_full_four.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0016_full_four.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0016_full_four.c' object='encoder/scheduling/test_runner-0016_full_four.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0016_full_four.o `test -f 'encoder/scheduling/0016_full_four.c' || echo '$(srcdir)/'`encoder/scheduling/0016_full_four.c
+
+encoder/scheduling/test_runner-0016_full_four.obj: encoder/scheduling/0016_full_four.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0016_full_four.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0016_full_four.Tpo -c -o encoder/scheduling/test_runner-0016_full_four.obj `if test -f 'encoder/scheduling/0016_full_four.c'; then $(CYGPATH_W) 'encoder/scheduling/0016_full_four.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0016_full_four.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0016_full_four.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0016_full_four.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0016_full_four.c' object='encoder/scheduling/test_runner-0016_full_four.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0016_full_four.obj `if test -f 'encoder/scheduling/0016_full_four.c'; then $(CYGPATH_W) 'encoder/scheduling/0016_full_four.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0016_full_four.c'; fi`
+
+encoder/scheduling/test_runner-0017_batch_two_bytes.o: encoder/scheduling/0017_batch_two_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0017_batch_two_bytes.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0017_batch_two_bytes.Tpo -c -o encoder/scheduling/test_runner-0017_batch_two_bytes.o `test -f 'encoder/scheduling/0017_batch_two_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0017_batch_two_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0017_batch_two_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0017_batch_two_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0017_batch_two_bytes.c' object='encoder/scheduling/test_runner-0017_batch_two_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0017_batch_two_bytes.o `test -f 'encoder/scheduling/0017_batch_two_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0017_batch_two_bytes.c
+
+encoder/scheduling/test_runner-0017_batch_two_bytes.obj: encoder/scheduling/0017_batch_two_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0017_batch_two_bytes.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0017_batch_two_bytes.Tpo -c -o encoder/scheduling/test_runner-0017_batch_two_bytes.obj `if test -f 'encoder/scheduling/0017_batch_two_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0017_batch_two_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0017_batch_two_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0017_batch_two_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0017_batch_two_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0017_batch_two_bytes.c' object='encoder/scheduling/test_runner-0017_batch_two_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0017_batch_two_bytes.obj `if test -f 'encoder/scheduling/0017_batch_two_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0017_batch_two_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0017_batch_two_bytes.c'; fi`
+
+encoder/scheduling/test_runner-0018_batch_four_bytes.o: encoder/scheduling/0018_batch_four_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0018_batch_four_bytes.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0018_batch_four_bytes.Tpo -c -o encoder/scheduling/test_runner-0018_batch_four_bytes.o `test -f 'encoder/scheduling/0018_batch_four_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0018_batch_four_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0018_batch_four_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0018_batch_four_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0018_batch_four_bytes.c' object='encoder/scheduling/test_runner-0018_batch_four_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0018_batch_four_bytes.o `test -f 'encoder/scheduling/0018_batch_four_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0018_batch_four_bytes.c
+
+encoder/scheduling/test_runner-0018_batch_four_bytes.obj: encoder/scheduling/0018_batch_four_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0018_batch_four_bytes.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0018_batch_four_bytes.Tpo -c -o encoder/scheduling/test_runner-0018_batch_four_bytes.obj `if test -f 'encoder/scheduling/0018_batch_four_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0018_batch_four_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0018_batch_four_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0018_batch_four_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0018_batch_four_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0018_batch_four_bytes.c' object='encoder/scheduling/test_runner-0018_batch_four_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0018_batch_four_bytes.obj `if test -f 'encoder/scheduling/0018_batch_four_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0018_batch_four_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0018_batch_four_bytes.c'; fi`
+
+encoder/scheduling/test_runner-0019_batch_partial_prefix.o: encoder/scheduling/0019_batch_partial_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0019_batch_partial_prefix.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0019_batch_partial_prefix.Tpo -c -o encoder/scheduling/test_runner-0019_batch_partial_prefix.o `test -f 'encoder/scheduling/0019_batch_partial_prefix.c' || echo '$(srcdir)/'`encoder/scheduling/0019_batch_partial_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0019_batch_partial_prefix.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0019_batch_partial_prefix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0019_batch_partial_prefix.c' object='encoder/scheduling/test_runner-0019_batch_partial_prefix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0019_batch_partial_prefix.o `test -f 'encoder/scheduling/0019_batch_partial_prefix.c' || echo '$(srcdir)/'`encoder/scheduling/0019_batch_partial_prefix.c
+
+encoder/scheduling/test_runner-0019_batch_partial_prefix.obj: encoder/scheduling/0019_batch_partial_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0019_batch_partial_prefix.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0019_batch_partial_prefix.Tpo -c -o encoder/scheduling/test_runner-0019_batch_partial_prefix.obj `if test -f 'encoder/scheduling/0019_batch_partial_prefix.c'; then $(CYGPATH_W) 'encoder/scheduling/0019_batch_partial_prefix.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0019_batch_partial_prefix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0019_batch_partial_prefix.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0019_batch_partial_prefix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0019_batch_partial_prefix.c' object='encoder/scheduling/test_runner-0019_batch_partial_prefix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0019_batch_partial_prefix.obj `if test -f 'encoder/scheduling/0019_batch_partial_prefix.c'; then $(CYGPATH_W) 'encoder/scheduling/0019_batch_partial_prefix.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0019_batch_partial_prefix.c'; fi`
+
+encoder/scheduling/test_runner-0020_batch_offset_bytes.o: encoder/scheduling/0020_batch_offset_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0020_batch_offset_bytes.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0020_batch_offset_bytes.Tpo -c -o encoder/scheduling/test_runner-0020_batch_offset_bytes.o `test -f 'encoder/scheduling/0020_batch_offset_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0020_batch_offset_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0020_batch_offset_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0020_batch_offset_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0020_batch_offset_bytes.c' object='encoder/scheduling/test_runner-0020_batch_offset_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0020_batch_offset_bytes.o `test -f 'encoder/scheduling/0020_batch_offset_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0020_batch_offset_bytes.c
+
+encoder/scheduling/test_runner-0020_batch_offset_bytes.obj: encoder/scheduling/0020_batch_offset_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0020_batch_offset_bytes.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0020_batch_offset_bytes.Tpo -c -o encoder/scheduling/test_runner-0020_batch_offset_bytes.obj `if test -f 'encoder/scheduling/0020_batch_offset_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0020_batch_offset_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0020_batch_offset_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0020_batch_offset_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0020_batch_offset_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0020_batch_offset_bytes.c' object='encoder/scheduling/test_runner-0020_batch_offset_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0020_batch_offset_bytes.obj `if test -f 'encoder/scheduling/0020_batch_offset_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0020_batch_offset_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0020_batch_offset_bytes.c'; fi`
+
+encoder/scheduling/test_runner-0021_batch_keep_bytes.o: encoder/scheduling/0021_batch_keep_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0021_batch_keep_bytes.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0021_batch_keep_bytes.Tpo -c -o encoder/scheduling/test_runner-0021_batch_keep_bytes.o `test -f 'encoder/scheduling/0021_batch_keep_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0021_batch_keep_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0021_batch_keep_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0021_batch_keep_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0021_batch_keep_bytes.c' object='encoder/scheduling/test_runner-0021_batch_keep_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0021_batch_keep_bytes.o `test -f 'encoder/scheduling/0021_batch_keep_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0021_batch_keep_bytes.c
+
+encoder/scheduling/test_runner-0021_batch_keep_bytes.obj: encoder/scheduling/0021_batch_keep_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0021_batch_keep_bytes.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0021_batch_keep_bytes.Tpo -c -o encoder/scheduling/test_runner-0021_batch_keep_bytes.obj `if test -f 'encoder/scheduling/0021_batch_keep_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0021_batch_keep_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0021_batch_keep_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0021_batch_keep_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0021_batch_keep_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0021_batch_keep_bytes.c' object='encoder/scheduling/test_runner-0021_batch_keep_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0021_batch_keep_bytes.obj `if test -f 'encoder/scheduling/0021_batch_keep_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0021_batch_keep_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0021_batch_keep_bytes.c'; fi`
+
+encoder/scheduling/test_runner-0022_batch_queue_one.o: encoder/scheduling/0022_batch_queue_one.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0022_batch_queue_one.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0022_batch_queue_one.Tpo -c -o encoder/scheduling/test_runner-0022_batch_queue_one.o `test -f 'encoder/scheduling/0022_batch_queue_one.c' || echo '$(srcdir)/'`encoder/scheduling/0022_batch_queue_one.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0022_batch_queue_one.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0022_batch_queue_one.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0022_batch_queue_one.c' object='encoder/scheduling/test_runner-0022_batch_queue_one.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0022_batch_queue_one.o `test -f 'encoder/scheduling/0022_batch_queue_one.c' || echo '$(srcdir)/'`encoder/scheduling/0022_batch_queue_one.c
+
+encoder/scheduling/test_runner-0022_batch_queue_one.obj: encoder/scheduling/0022_batch_queue_one.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0022_batch_queue_one.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0022_batch_queue_one.Tpo -c -o encoder/scheduling/test_runner-0022_batch_queue_one.obj `if test -f 'encoder/scheduling/0022_batch_queue_one.c'; then $(CYGPATH_W) 'encoder/scheduling/0022_batch_queue_one.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0022_batch_queue_one.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0022_batch_queue_one.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0022_batch_queue_one.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0022_batch_queue_one.c' object='encoder/scheduling/test_runner-0022_batch_queue_one.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0022_batch_queue_one.obj `if test -f 'encoder/scheduling/0022_batch_queue_one.c'; then $(CYGPATH_W) 'encoder/scheduling/0022_batch_queue_one.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0022_batch_queue_one.c'; fi`
+
+encoder/scheduling/test_runner-0023_batch_queue_two.o: encoder/scheduling/0023_batch_queue_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0023_batch_queue_two.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0023_batch_queue_two.Tpo -c -o encoder/scheduling/test_runner-0023_batch_queue_two.o `test -f 'encoder/scheduling/0023_batch_queue_two.c' || echo '$(srcdir)/'`encoder/scheduling/0023_batch_queue_two.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0023_batch_queue_two.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0023_batch_queue_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0023_batch_queue_two.c' object='encoder/scheduling/test_runner-0023_batch_queue_two.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0023_batch_queue_two.o `test -f 'encoder/scheduling/0023_batch_queue_two.c' || echo '$(srcdir)/'`encoder/scheduling/0023_batch_queue_two.c
+
+encoder/scheduling/test_runner-0023_batch_queue_two.obj: encoder/scheduling/0023_batch_queue_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0023_batch_queue_two.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0023_batch_queue_two.Tpo -c -o encoder/scheduling/test_runner-0023_batch_queue_two.obj `if test -f 'encoder/scheduling/0023_batch_queue_two.c'; then $(CYGPATH_W) 'encoder/scheduling/0023_batch_queue_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0023_batch_queue_two.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0023_batch_queue_two.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0023_batch_queue_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0023_batch_queue_two.c' object='encoder/scheduling/test_runner-0023_batch_queue_two.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0023_batch_queue_two.obj `if test -f 'encoder/scheduling/0023_batch_queue_two.c'; then $(CYGPATH_W) 'encoder/scheduling/0023_batch_queue_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0023_batch_queue_two.c'; fi`
+
+encoder/scheduling/test_runner-0024_batch_abort_restart.o: encoder/scheduling/0024_batch_abort_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0024_batch_abort_restart.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0024_batch_abort_restart.Tpo -c -o encoder/scheduling/test_runner-0024_batch_abort_restart.o `test -f 'encoder/scheduling/0024_batch_abort_restart.c' || echo '$(srcdir)/'`encoder/scheduling/0024_batch_abort_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0024_batch_abort_restart.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0024_batch_abort_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0024_batch_abort_restart.c' object='encoder/scheduling/test_runner-0024_batch_abort_restart.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0024_batch_abort_restart.o `test -f 'encoder/scheduling/0024_batch_abort_restart.c' || echo '$(srcdir)/'`encoder/scheduling/0024_batch_abort_restart.c
+
+encoder/scheduling/test_runner-0024_batch_abort_restart.obj: encoder/scheduling/0024_batch_abort_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0024_batch_abort_restart.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0024_batch_abort_restart.Tpo -c -o encoder/scheduling/test_runner-0024_batch_abort_restart.obj `if test -f 'encoder/scheduling/0024_batch_abort_restart.c'; then $(CYGPATH_W) 'encoder/scheduling/0024_batch_abort_restart.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0024_batch_abort_restart.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0024_batch_abort_restart.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0024_batch_abort_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0024_batch_abort_restart.c' object='encoder/scheduling/test_runner-0024_batch_abort_restart.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0024_batch_abort_restart.obj `if test -f 'encoder/scheduling/0024_batch_abort_restart.c'; then $(CYGPATH_W) 'encoder/scheduling/0024_batch_abort_restart.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0024_batch_abort_restart.c'; fi`
+
+encoder/scheduling/test_runner-0025_batch_sink_restart.o: encoder/scheduling/0025_batch_sink_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0025_batch_sink_restart.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Tpo -c -o encoder/scheduling/test_runner-0025_batch_sink_restart.o `test -f 'encoder/scheduling/0025_batch_sink_restart.c' || echo '$(srcdir)/'`encoder/scheduling/0025_batch_sink_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0025_batch_sink_restart.c' object='encoder/scheduling/test_runner-0025_batch_sink_restart.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0025_batch_sink_restart.o `test -f 'encoder/scheduling/0025_batch_sink_restart.c' || echo '$(srcdir)/'`encoder/scheduling/0025_batch_sink_restart.c
+
+encoder/scheduling/test_runner-0025_batch_sink_restart.obj: encoder/scheduling/0025_batch_sink_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0025_batch_sink_restart.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Tpo -c -o encoder/scheduling/test_runner-0025_batch_sink_restart.obj `if test -f 'encoder/scheduling/0025_batch_sink_restart.c'; then $(CYGPATH_W) 'encoder/scheduling/0025_batch_sink_restart.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0025_batch_sink_restart.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0025_batch_sink_restart.c' object='encoder/scheduling/test_runner-0025_batch_sink_restart.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0025_batch_sink_restart.obj `if test -f 'encoder/scheduling/0025_batch_sink_restart.c'; then $(CYGPATH_W) 'encoder/scheduling/0025_batch_sink_restart.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0025_batch_sink_restart.c'; fi`
+
+encoder/scheduling/test_runner-0026_batch_clock_reset.o: encoder/scheduling/0026_batch_clock_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0026_batch_clock_reset.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Tpo -c -o encoder/scheduling/test_runner-0026_batch_clock_reset.o `test -f 'encoder/scheduling/0026_batch_clock_reset.c' || echo '$(srcdir)/'`encoder/scheduling/0026_batch_clock_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0026_batch_clock_reset.c' object='encoder/scheduling/test_runner-0026_batch_clock_reset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0026_batch_clock_reset.o `test -f 'encoder/scheduling/0026_batch_clock_reset.c' || echo '$(srcdir)/'`encoder/scheduling/0026_batch_clock_reset.c
+
+encoder/scheduling/test_runner-0026_batch_clock_reset.obj: encoder/scheduling/0026_batch_clock_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0026_batch_clock_reset.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Tpo -c -o encoder/scheduling/test_runner-0026_batch_clock_reset.obj `if test -f 'encoder/scheduling/0026_batch_clock_reset.c'; then $(CYGPATH_W) 'encoder/scheduling/0026_batch_clock_reset.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0026_batch_clock_reset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0026_batch_clock_reset.c' object='encoder/scheduling/test_runner-0026_batch_clock_reset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0026_batch_clock_reset.obj `if test -f 'encoder/scheduling/0026_batch_clock_reset.c'; then $(CYGPATH_W) 'encoder/scheduling/0026_batch_clock_reset.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0026_batch_clock_reset.c'; fi`
+
+encoder/scheduling/test_runner-0027_batch_tail_bytes.o: encoder/scheduling/0027_batch_tail_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0027_batch_tail_bytes.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Tpo -c -o encoder/scheduling/test_runner-0027_batch_tail_bytes.o `test -f 'encoder/scheduling/0027_batch_tail_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0027_batch_tail_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0027_batch_tail_bytes.c' object='encoder/scheduling/test_runner-0027_batch_tail_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0027_batch_tail_bytes.o `test -f 'encoder/scheduling/0027_batch_tail_bytes.c' || echo '$(srcdir)/'`encoder/scheduling/0027_batch_tail_bytes.c
+
+encoder/scheduling/test_runner-0027_batch_tail_bytes.obj: encoder/scheduling/0027_batch_tail_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0027_batch_tail_bytes.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Tpo -c -o encoder/scheduling/test_runner-0027_batch_tail_bytes.obj `if test -f 'encoder/scheduling/0027_batch_tail_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0027_batch_tail_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0027_batch_tail_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0027_batch_tail_bytes.c' object='encoder/scheduling/test_runner-0027_batch_tail_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0027_batch_tail_bytes.obj `if test -f 'encoder/scheduling/0027_batch_tail_bytes.c'; then $(CYGPATH_W) 'encoder/scheduling/0027_batch_tail_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0027_batch_tail_bytes.c'; fi`
+
+_support/codec/test_runner-band_batch.o: _support/codec/band_batch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-band_batch.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-band_batch.Tpo -c -o _support/codec/test_runner-band_batch.o `test -f '_support/codec/band_batch.c' || echo '$(srcdir)/'`_support/codec/band_batch.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-band_batch.Tpo _support/codec/$(DEPDIR)/test_runner-band_batch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/band_batch.c' object='_support/codec/test_runner-band_batch.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-band_batch.o `test -f '_support/codec/band_batch.c' || echo '$(srcdir)/'`_support/codec/band_batch.c
+
+_support/codec/test_runner-band_batch.obj: _support/codec/band_batch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-band_batch.obj -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-band_batch.Tpo -c -o _support/codec/test_runner-band_batch.obj `if test -f '_support/codec/band_batch.c'; then $(CYGPATH_W) '_support/codec/band_batch.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/band_batch.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-band_batch.Tpo _support/codec/$(DEPDIR)/test_runner-band_batch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/band_batch.c' object='_support/codec/test_runner-band_batch.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-band_batch.obj `if test -f '_support/codec/band_batch.c'; then $(CYGPATH_W) '_support/codec/band_batch.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/band_batch.c'; fi`
 
 platform/threadpool/test_runner-0007_drain_completes_jobs.o: platform/threadpool/0007_drain_completes_jobs.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0007_drain_completes_jobs.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Tpo -c -o platform/threadpool/test_runner-0007_drain_completes_jobs.o `test -f 'platform/threadpool/0007_drain_completes_jobs.c' || echo '$(srcdir)/'`platform/threadpool/0007_drain_completes_jobs.c
@@ -111340,6 +111991,8 @@ distclean-generic:
 	-$(am__rm_f) encoder/progressive-refinement/$(am__dirstamp)
 	-$(am__rm_f) encoder/progressive-transport/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) encoder/progressive-transport/$(am__dirstamp)
+	-$(am__rm_f) encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) encoder/scheduling/$(am__dirstamp)
 	-$(am__rm_f) encoder/sixel-output/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) encoder/sixel-output/$(am__dirstamp)
 	-$(am__rm_f) extension/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)

@@ -39,6 +39,12 @@ sixel_output_storage_ref(sixel_output_t *output);
 SIXEL_INTERNAL_API void
 sixel_output_storage_unref(sixel_output_t *output);
 
+/* Internal fault-injection seam; the callback/context borrow ends at the
+ * next idle replacement or core destruction. NULL restores the host clock. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoder_core_test_clock(sixel_encoder_core_t *core,
+    double (*clock)(void *), void *context);
+
 /* @classid codec/encoder-core */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object);

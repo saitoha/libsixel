@@ -36,6 +36,10 @@ With eligible GPU playback, the next frame can run CPU sampling and palette cons
 
 K-means, K-medoids and K-center setting getters parse registry defaults into caller-local storage, after applying the existing override precedence. Their first resolved defaults remain cached for later calls. The shared environment mutex protects both the ready flag and cached value through `sixel_palette_option_cache()`: concurrent first callers publish once and receive the same winning value. Parsing occurs outside the lock; a lock failure leaves the local result uncached without accessing shared storage. Build setup retains the selected settings outside pixel loops. The concurrent palette-store test exercises publication and first-use K-means resolution under ThreadSanitizer; a separate test changes the environment between calls to verify first-value retention.
 
+The indexed EncoderCore groups one, two or four contiguous six-row bands into a pool job. It starts with one and learns from completed worker time per band across compatible frames. A 200-microsecond estimated job budget, a smoothed cost and two consecutive light observations limit expansion; a sudden expensive frame reduces the next frame's grouping immediately. This is a scheduling heuristic, independent of video frame rate. Failed frames or unavailable timing discard the estimate.
+
+Only complete, already published bands may be grouped. The controller never waits for future rows to fill a group, limits groups by the queue's band capacity, and reduces grouping near the tail to leave work for the reserved workers. Queue credits still count bands, rather than job descriptors. Each band publishes its own output fragment; the ordered writer, cancellation and pool drain retain their existing responsibilities. Timeline `controller/encode/job_bands` events report the admitted group size; per-band dispatch events remain available.
+
 ## Float colorspace transactions
 
 The frame API and the float path of `sixel_helper_convert_colorspace()` share the same driver in [src/colorspace.c](../../src/colorspace.c). Above `SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS`, it resolves the available budget through `sixel_threads_resolve_fanout()`, starts at most `N-1` pool workers, and includes the caller in conversion. Standalone conversions use one chunk per slot; an overlapping conversion larger than 16,384 pixels uses 16,384-pixel chunks and a bounded queue, with one caller chunk per submission batch. Every chunk converts into disjoint temporary RGB float32 storage using the same double-intermediate arithmetic as serial conversion. Only after all jobs have joined and succeeded does the controller copy the result into the original image. A nonfinite input, domain error, or float32 overflow leaves all original pixels and frame format tags unchanged; the caller receives the serial diagnostic for the earliest failing chunk.
@@ -521,6 +525,33 @@ The fixed-budget colorspace tests select `greedy` explicitly so their worker cou
 | TE-132 | Concurrent palette-store jobs publish ordered selection events; ThreadSanitizer also checks their first-use K-means option resolution. | [tests/encoder/planning/0039_palette_store_concurrent.t](../../tests/encoder/planning/0039_palette_store_concurrent.t) |
 | TE-133 | Quantizer getters access their shared first-value cache only through the synchronized helper. | [tests/_static/sh/staticcheck-palette-option-storage.sh](../../tests/_static/sh/staticcheck-palette-option-storage.sh) |
 | TE-134 | A cached K-means initialization choice survives subsequent environment changes. | [tests/palette/initialization/0005_kmeans_init_cache.t](../../tests/palette/initialization/0005_kmeans_init_cache.t) |
+| TE-135 | Cold admission uses one band. | [tests/encoder/scheduling/0001_cold_single.t](../../tests/encoder/scheduling/0001_cold_single.t) |
+| TE-136 | One light frame does not expand admission. | [tests/encoder/scheduling/0002_light_once.t](../../tests/encoder/scheduling/0002_light_once.t) |
+| TE-137 | Two light frames expand to two bands. | [tests/encoder/scheduling/0003_light_two.t](../../tests/encoder/scheduling/0003_light_two.t) |
+| TE-138 | Four light frames expand to four bands. | [tests/encoder/scheduling/0004_light_four.t](../../tests/encoder/scheduling/0004_light_four.t) |
+| TE-139 | An expensive frame shrinks four bands to one. | [tests/encoder/scheduling/0005_heavy_shrink.t](../../tests/encoder/scheduling/0005_heavy_shrink.t) |
+| TE-140 | A moderate frame shrinks four bands to two. | [tests/encoder/scheduling/0006_moderate_shrink.t](../../tests/encoder/scheduling/0006_moderate_shrink.t) |
+| TE-141 | Interrupted light observations do not expand. | [tests/encoder/scheduling/0007_interrupted_light.t](../../tests/encoder/scheduling/0007_interrupted_light.t) |
+| TE-142 | A missing clock sample resets admission. | [tests/encoder/scheduling/0008_missing_clock.t](../../tests/encoder/scheduling/0008_missing_clock.t) |
+| TE-143 | A backward clock sample resets admission. | [tests/encoder/scheduling/0009_backward_clock.t](../../tests/encoder/scheduling/0009_backward_clock.t) |
+| TE-144 | A single published band is submitted immediately. | [tests/encoder/scheduling/0010_published_one.t](../../tests/encoder/scheduling/0010_published_one.t) |
+| TE-145 | Three published bands admit only two together. | [tests/encoder/scheduling/0011_published_three.t](../../tests/encoder/scheduling/0011_published_three.t) |
+| TE-146 | One-band queue capacity limits admission to one. | [tests/encoder/scheduling/0012_queue_one.t](../../tests/encoder/scheduling/0012_queue_one.t) |
+| TE-147 | Two-band queue capacity limits admission to two. | [tests/encoder/scheduling/0013_queue_two.t](../../tests/encoder/scheduling/0013_queue_two.t) |
+| TE-148 | Seven remaining bands retain work for two workers. | [tests/encoder/scheduling/0014_tail_two.t](../../tests/encoder/scheduling/0014_tail_two.t) |
+| TE-149 | Three remaining bands use single-band jobs. | [tests/encoder/scheduling/0015_tail_one.t](../../tests/encoder/scheduling/0015_tail_one.t) |
+| TE-150 | Four published bands can form a four-band job. | [tests/encoder/scheduling/0016_full_four.t](../../tests/encoder/scheduling/0016_full_four.t) |
+| TE-151 | Two-band jobs preserve exact ordered bytes. | [tests/encoder/scheduling/0017_batch_two_bytes.t](../../tests/encoder/scheduling/0017_batch_two_bytes.t) |
+| TE-152 | Four-band jobs preserve exact ordered bytes. | [tests/encoder/scheduling/0018_batch_four_bytes.t](../../tests/encoder/scheduling/0018_batch_four_bytes.t) |
+| TE-153 | A batched stream submits no unpublished rows. | [tests/encoder/scheduling/0019_batch_partial_prefix.t](../../tests/encoder/scheduling/0019_batch_partial_prefix.t) |
+| TE-154 | Batched virtual offsets preserve exact bytes. | [tests/encoder/scheduling/0020_batch_offset_bytes.t](../../tests/encoder/scheduling/0020_batch_offset_bytes.t) |
+| TE-155 | Batched keep masks preserve exact bytes. | [tests/encoder/scheduling/0021_batch_keep_bytes.t](../../tests/encoder/scheduling/0021_batch_keep_bytes.t) |
+| TE-156 | A one-band queue stays within its band limit. | [tests/encoder/scheduling/0022_batch_queue_one.t](../../tests/encoder/scheduling/0022_batch_queue_one.t) |
+| TE-157 | A two-band queue stays within its band limit. | [tests/encoder/scheduling/0023_batch_queue_two.t](../../tests/encoder/scheduling/0023_batch_queue_two.t) |
+| TE-158 | A batched abort drains before a fresh frame. | [tests/encoder/scheduling/0024_batch_abort_restart.t](../../tests/encoder/scheduling/0024_batch_abort_restart.t) |
+| TE-159 | A rejected batched sink drains before a fresh frame. | [tests/encoder/scheduling/0025_batch_sink_restart.t](../../tests/encoder/scheduling/0025_batch_sink_restart.t) |
+| TE-160 | A missing worker clock resets the next frame. | [tests/encoder/scheduling/0026_batch_clock_reset.t](../../tests/encoder/scheduling/0026_batch_clock_reset.t) |
+| TE-161 | A partial final band preserves exact bytes. | [tests/encoder/scheduling/0027_batch_tail_bytes.t](../../tests/encoder/scheduling/0027_batch_tail_bytes.t) |
 
 Helper-lane tests use `SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED`, the same internal capability as production: threading is required, and PCC and TinyCC retain serial preparation. They skip before installing gates when that capability is absent; the explicit-serial test still runs. The GPU overlap and byte-comparison cases require an observed palette-apply kernel dispatch. Their small fixed-time streams compare scheduling consistency, not independent color accuracy.
 
@@ -531,3 +562,5 @@ The bit comparisons establish scheduling consistency, not independent color accu
 Cancellation and wait tests use synchronization gates: one writer is held while the queue and waiter state are observed. They require interrupted queued results, ordered single completion, source release and retained writer failure. The finite waits bound a hung test; they do not assert scheduling latency.
 
 The reuse byte comparisons isolate state rebinding against a fresh core; they do not independently validate pixel accuracy. The warm allocation case gates two workers to initialize both workspaces, then counts calls through the core allocator. It does not assert zero native-thread or per-band `realloc` activity. Resident memory, thread stacks, performance and OS-specific scheduling require separate measurement.
+
+The scheduling unit cases use explicit costs; integration cases inject a monotonic clock and assert the selected group size before comparing against a fresh single-band parallel core. They establish admission, prefix and recovery behavior, not speed or a perceptual quality change. The queue-size cases verify the maximum submitted group and completion with the selected capacity; native scheduling fairness remains platform-dependent.
