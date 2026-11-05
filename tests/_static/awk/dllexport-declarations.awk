@@ -55,7 +55,9 @@ function emit_declaration(    text, prefix, name, offset, location, exported,
     # compat_stub.h defines SIXEL_COMPAT_API as __declspec(dllexport).
     exported = prefix ~ /(^|[[:space:]])(SIXELAPI|SIXEL_INTERNAL_API|SIXEL_COMPAT_API)([[:space:]]|$)/
     location = declaration_line + gsub(/\n/, "\n", prefix)
-    if (self_test) {
+    if (collect_definitions && !self_test) {
+        external_definition[header SUBSEP name] = name
+    } else if (self_test) {
         observed[name] = exported
     } else {
         if (declarations_file != "") {
@@ -131,9 +133,9 @@ function scan_line(line, number,    i, ch, next_ch, trimmed) {
             declaration = ""
             declaration_line = 0
         } else if (ch == ";" || ch == "}") {
-            if (ch == ";") {
+            if (ch == ";" && !collect_definitions) {
                 emit_declaration()
-            } else if (linkage_depth) {
+            } else if (ch == "}" && linkage_depth) {
                 --linkage_depth
             }
             declaration = ""
@@ -186,5 +188,5 @@ BEGIN {
     }
     self_test = 0
 }
-FNR == 1 { start_header(FILENAME) }
-{ scan_line($0, FNR) }
+!manual_scan && FNR == 1 { start_header(FILENAME) }
+!manual_scan { scan_line($0, FNR) }

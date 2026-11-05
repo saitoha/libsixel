@@ -12085,3 +12085,6 @@ EXTRA_DIST += _static/sh/staticcheck-assessment-fopen.sh \
 
 EXTRA_DIST += _static/sh/staticcheck-palette-option-storage.sh \
     _static/awk/palette-option-storage.awk
+
+EXTRA_DIST += _static/sh/staticcheck-test-source-isolation.sh \
+    _static/awk/test-source-isolation.awk

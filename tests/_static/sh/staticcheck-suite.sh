@@ -1079,6 +1079,10 @@ run_case_tap "staticcheck-palette-option-storage" \
     sh "$src_root/tests/_static/sh/staticcheck-palette-option-storage.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-source-isolation" \
+    sh "$src_root/tests/_static/sh/staticcheck-test-source-isolation.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-tool-capabilities" \
     sh "$src_root/tests/_static/sh/staticcheck-test-tool-capabilities.sh" \
     "$src_root" || fail_and_exit $?

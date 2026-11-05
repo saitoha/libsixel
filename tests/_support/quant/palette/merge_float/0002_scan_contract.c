@@ -23,6 +23,7 @@ ward_scan_malloc(size_t size)
 typedef struct ward_scan_cluster ward_scan_cluster_t;
 #define sixel_resolve_final_merge_mode ward_scan_resolve_mode
 #define sixel_final_merge_load_env ward_scan_load_env
+#define sixel_palette_option_cache ward_scan_option_cache
 #define sixel_set_final_merge_channel_factor_override ward_scan_set_channel
 #define sixel_palette_kmeans_iter_max ward_scan_get_iter
 #define sixel_set_kmeans_iter_max_override ward_scan_set_iter
@@ -80,6 +81,7 @@ typedef struct ward_scan_cluster ward_scan_cluster_t;
 #undef malloc
 #undef sixel_resolve_final_merge_mode
 #undef sixel_final_merge_load_env
+#undef sixel_palette_option_cache
 #undef sixel_set_final_merge_channel_factor_override
 #undef sixel_palette_kmeans_iter_max
 #undef sixel_set_kmeans_iter_max_override
