@@ -50,6 +50,8 @@ sixel_indexed_core_release(sixel_indexed_core_t *core, int aborting)
         if (status == SIXEL_OK) status = wait_status;
         sixel_parallel_context_cleanup(&core->parallel);
         core->parallel_active = 0;
+        /* Cleanup discards the pool; it cannot also remain a warm cache. */
+        core->parallel_cached = 0;
     }
     if (core->parallel_cached && aborting) {
         sixel_parallel_context_cleanup(&core->parallel);

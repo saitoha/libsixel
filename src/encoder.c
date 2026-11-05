@@ -16493,8 +16493,8 @@ sixel_encoder_pipeline_prepare_ahead_eligible(
     sixel_encoder_t const *encoder;
 
     encoder = NULL;
-#if defined(__PCC__) || defined(__TINYC__)
-    /* These compilers keep palette application serial as well. */
+#if !SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
+    /* Unsupported compilers keep palette application serial as well. */
     (void)encoder;
     (void)pipeline;
     return 0;

@@ -566,6 +566,9 @@ sixel_parallel_context_cleanup(sixel_parallel_context_t *ctx)
         free(ctx->workers);
         ctx->workers = NULL;
     }
+    /* Released storage has no registered workers or reusable capacity. */
+    ctx->worker_registered = 0;
+    ctx->worker_capacity = 0;
     if (ctx->bands != NULL) {
         if (ctx->band_count < 0) {
             ctx->band_count = 0;

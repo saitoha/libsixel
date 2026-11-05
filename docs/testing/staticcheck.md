@@ -166,6 +166,8 @@ The independent MSVC shared-CRT check protects Meson's explicit default and fata
 
 The independent MSVC archive transport check runs the production shell adapter with a large synthetic object inventory and a mock native archiver. It checks bounded native arguments, ordered command files, quoting, cleanup and failure status, together with the CI call site. It uses shell/awk and a mock path converter, without Python, Bash, MSVC or compilation; native LIB interpretation remains Windows build evidence. The [test harness](../build/test-harness.md#test-coverage) owns the transport contract.
 
+The independent preparation-capability check protects the [helper-lane test contract](../threading/encoder.md#test-coverage). It inspects the shared capability, the production eligibility branch and planning tests that wait on helper gates or compare ahead schedules. Controls reject a thread-only guard, missing skip, and commented-out guard, while an explicit-serial test remains applicable. It checks these owned source forms with awk, without evaluating arbitrary preprocessor expressions or requiring a compiler. Worker-pointer lifetime remains a compiler-analyzer and runtime-test concern.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -247,6 +249,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-63 | Meson unity tests select their feature namespace before system headers. | [tests/_static/sh/staticcheck-test-unity-feature-namespace.sh](../../tests/_static/sh/staticcheck-test-unity-feature-namespace.sh) |
 | SC-64 | Amalgamation test headers follow transitive consumer selection without unconditional bodies. | [tests/_static/sh/staticcheck-amalgamation-header-scope.sh](../../tests/_static/sh/staticcheck-amalgamation-header-scope.sh) |
 | SC-65 | MSYS2 MSVC CI retains the bounded native archive adapter and its source-only protocol fixture. | [tests/_static/sh/staticcheck-msvc-lib-response.sh](../../tests/_static/sh/staticcheck-msvc-lib-response.sh) |
+| SC-66 | Production and helper-gated planning tests share the preparation capability instead of assuming thread support is sufficient. | [tests/_static/sh/staticcheck-prepare-ahead-capability.sh](../../tests/_static/sh/staticcheck-prepare-ahead-capability.sh) |
 
 ### Coverage boundary
 

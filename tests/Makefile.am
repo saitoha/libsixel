@@ -12047,6 +12047,7 @@ EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
     _static/sh/staticcheck-ci-haiku-test-deps.sh \
     _static/sh/staticcheck-configure-wic-scope.sh \
     _static/sh/staticcheck-test-unity-feature-namespace.sh \
+    _static/sh/staticcheck-prepare-ahead-capability.sh \
     _static/sh/staticcheck-msvc-lib-response.sh \
     _static/sh/staticcheck-amalgamation-header-scope.sh \
     _static/sh/staticcheck-dragonfly-feature-namespace.sh \

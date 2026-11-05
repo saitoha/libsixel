@@ -36,6 +36,15 @@
 #include "delta-residual.h"
 #include <stdint.h>
 
+/* Keep helper-lane tests aligned with the compiler restrictions used by
+ * production. A thread-capable build need not support frame preparation
+ * overlap; waiting for its helper notification would never complete. */
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
+#define SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED 1
+#else
+#define SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED 0
+#endif
+
 /* The caller serializes encoder access. Returns an owned, unquantized
  * float frame and source-domain mask; failure publishes neither. */
 SIXEL_INTERNAL_API SIXELSTATUS

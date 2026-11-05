@@ -4,7 +4,7 @@
 int
 test_gpu_ahead_overlap(int argc, char **argv)
 {
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
     struct gpu_ahead_fixture s;
     int ok;
 

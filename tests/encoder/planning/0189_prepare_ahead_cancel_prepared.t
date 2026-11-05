@@ -8,7 +8,7 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder/planning/0189_prepare_ahead_cancel_prepared >/dev/null || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP required thread or GPU support unavailable'
+    echo 'ok 1 # SKIP preparation overlap unavailable for this build'
     exit 0
 }
 test "$status" -eq 0 || {

@@ -9,7 +9,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract ${SIXEL_RUNTIME-} \
     "${TEST_RUNNER_PATH}" --require-gpu-palette \
     encoder/planning/0185_gpu_ahead_overlap 2>&1) || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP required thread or GPU support unavailable'
+    echo 'ok 1 # SKIP required preparation overlap or GPU support unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
