@@ -131,6 +131,7 @@ site/
 /docs/tutorial/sixel-codec/code/*.six
 
 # Programs and pictures made while following the dithering tutorial.
+!/docs/tutorial/dithering/code/Makefile
 /docs/tutorial/dithering/code/step[1-4]
 /docs/tutorial/dithering/code/dtool
 /docs/tutorial/dithering/code/mydither
