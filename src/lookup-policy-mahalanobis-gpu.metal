@@ -34,3 +34,37 @@ static uint lookup_rgb8(uchar3 query, constant uchar *palette,
     }
     return best&255u;
 }
+
+/* Palette packing is exact. Keep fractional coordinates in distance tests;
+ * a packed integer score would discard the information diffusion needs. */
+static uint mahalanobis_fractional(float3 query, uint count,
+    device const uint *table)
+{
+    uint i, packed, best, index;
+    float minimum, distance;
+    float3 gap;
+
+    best = 0;
+    minimum = INFINITY;
+    for (i = 0; i < count; ++i) {
+        packed = table[i];
+        index = packed >> 24;
+        gap = query-float3(packed&255u, (packed>>8)&255u,
+            (packed>>16)&255u);
+        distance = dot(gap, gap);
+        if (distance < minimum || (distance == minimum && index < best)) {
+            minimum = distance;
+            best = index;
+        }
+    }
+    return best;
+}
+static uint lookup_rgb8_fractional(float3 query, constant uchar *palette,
+    uint count, constant uchar *configuration,
+    device const uchar *workspace)
+{
+    device const uint *table;
+    (void)palette; (void)configuration;
+    table = (device const uint *)workspace;
+    return mahalanobis_fractional(query,count,table);
+}

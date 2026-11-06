@@ -26,6 +26,7 @@ typedef struct phased_params {
     uint32_t tiles_x, keycolor, delta, threshold;
     uint32_t metric, columns, rows, tiled, selected_threshold;
     uint32_t selection[128];
+    uint32_t batch_stage;
 } phased_params_t;
 
 typedef struct phased_plan {
@@ -43,7 +44,7 @@ typedef struct phased_plan {
     sixel_indexed_frame_description_t output;
     id<MTLCommandQueue> queue;
     NSArray *pipelines;
-    id<MTLBuffer> buffers[16];
+    id<MTLBuffer> buffers[18];
     phased_params_t params;
 } phased_plan_t;
 
@@ -53,7 +54,7 @@ typedef struct phased_plan {
  * rewrites every readable state value before use; no error crosses images. */
 typedef struct phased_idle {
     id<MTLCommandQueue> queue;
-    id<MTLBuffer> buffers[16];
+    id<MTLBuffer> buffers[18];
 } phased_idle_t;
 
 static pthread_mutex_t phased_scratch_gate = PTHREAD_MUTEX_INITIALIZER;
@@ -68,19 +69,19 @@ phased_recycle(phased_plan_t *plan)
     unsigned int slot;
 
     bytes = 0;
-    for (i = 0; i < 16; ++i) bytes += [plan->buffers[i] length];
+    for (i = 0; i < 18; ++i) bytes += [plan->buffers[i] length];
     if (plan->queue == nil || bytes > 128U*1024U*1024U) return;
     (void)pthread_mutex_lock(&phased_scratch_gate);
     slot = phased_idle_next++ % 2;
     old = phased_idle[slot];
     phased_idle[slot].queue = plan->queue;
     plan->queue = nil;
-    for (i = 0; i < 16; ++i) {
+    for (i = 0; i < 18; ++i) {
         phased_idle[slot].buffers[i] = plan->buffers[i];
         plan->buffers[i] = nil;
     }
     (void)pthread_mutex_unlock(&phased_scratch_gate);
-    for (i = 0; i < 16; ++i) [old.buffers[i] release];
+    for (i = 0; i < 18; ++i) [old.buffers[i] release];
     [old.queue release];
 }
 
@@ -95,12 +96,12 @@ phased_borrow(phased_plan_t *plan, id<MTLDevice> device,
     for (slot = 0; slot < 2; ++slot) {
         fits = phased_idle[slot].queue != nil &&
             [phased_idle[slot].queue device] == device;
-        for (i = 0; fits && i < 16; ++i)
+        for (i = 0; fits && i < 18; ++i)
             fits = [phased_idle[slot].buffers[i] length] >= lengths[i];
         if (!fits) continue;
         plan->queue = phased_idle[slot].queue;
         phased_idle[slot].queue = nil;
-        for (i = 0; i < 16; ++i) {
+        for (i = 0; i < 18; ++i) {
             plan->buffers[i] = phased_idle[slot].buffers[i];
             phased_idle[slot].buffers[i] = nil;
         }
@@ -139,6 +140,11 @@ phased_compile(id<MTLDevice> device,
     options = nil;
     error = nil;
     status = SIXEL_FEATURE_ERROR;
+    [source appendFormat:@"#define PHASED_BATCH %d\n", view->batch != NULL];
+    if (view->batch != NULL && (view->batch->entry_point == NULL ||
+            view->batch->tile[0] == 0 || view->batch->tile[1] == 0 ||
+            view->batch->tile[0] > UINT32_MAX ||
+            view->batch->tile[1] > UINT32_MAX)) return SIXEL_BAD_ARGUMENT;
     for (i = 0; i < view->chunk_count; ++i) {
         if (view->chunks[i] == NULL) return SIXEL_BAD_ARGUMENT;
         [source appendString:@(view->chunks[i])];
@@ -152,6 +158,8 @@ phased_compile(id<MTLDevice> device,
             return SIXEL_BAD_ARGUMENT;
         [key appendFormat:@"|%s", view->build_passes[i].entry_point];
     }
+    if (view->batch != NULL)
+        [key appendFormat:@"|batch:%s", view->batch->entry_point];
     (void)pthread_mutex_lock(&phased_code_gate);
     if (phased_code_cache == nil) {
         phased_code_cache = [[NSMutableDictionary alloc] init];
@@ -172,8 +180,11 @@ phased_compile(id<MTLDevice> device,
             goto end;
         }
         pipelines = [NSMutableArray array];
-        for (i = 0; i < view->build_pass_count + 5; ++i) {
-            entry = i < view->build_pass_count
+        for (i = 0; i < view->build_pass_count+5+(view->batch != NULL);
+                ++i) {
+            entry = i == view->build_pass_count+5
+                ? @(view->batch->entry_point)
+                : i < view->build_pass_count
                 ? @(view->build_passes[i].entry_point)
                 : @[@"phased_initialize", @"phased_iterate",
                     @"phased_finish", @"phased_solve_tail",
@@ -206,6 +217,19 @@ phased_compile(id<MTLDevice> device,
                 view->build_passes[i].threads[0] > limits.width ||
                 view->build_passes[i].threads[1] > limits.height ||
                 view->build_passes[i].threads[2] > limits.depth) goto end;
+    }
+    if (view->batch != NULL) {
+        threads = 1;
+        for (j = 0; j < 3; ++j) {
+            if (view->batch->threads[j] == 0 ||
+                    view->batch->threads[j] > SIZE_MAX/threads) goto end;
+            threads *= view->batch->threads[j];
+        }
+        pipeline = pipelines[view->build_pass_count+5];
+        if (threads > [pipeline maxTotalThreadsPerThreadgroup] ||
+                view->batch->threads[0] > limits.width ||
+                view->batch->threads[1] > limits.height ||
+                view->batch->threads[2] > limits.depth) goto end;
     }
     *result = [pipelines retain];
     status = SIXEL_OK;
@@ -240,7 +264,7 @@ phased_plan_unref(sixel_gpu_dither_plan_interface_t *self)
     if (plan->output.palette != NULL)
         sixel_wire_palette_unref(plan->output.palette);
     phased_recycle(plan);
-    for (i = 0; i < 16; ++i) [plan->buffers[i] release];
+    for (i = 0; i < 18; ++i) [plan->buffers[i] release];
     [plan->pipelines release];
     [plan->queue release];
     sixel_allocator_free(allocator, plan);
@@ -343,6 +367,40 @@ phased_validate(phased_plan_t *plan,
     return SIXEL_OK;
 }
 
+/* A batch lookup borrows only corrected queries and its output indexes.
+ * Separate encoders order query writes, collective lookup and state writes;
+ * the point path continues to use a single fused dispatch per subpass. */
+static SIXELSTATUS
+phased_encode_batch(phased_plan_t *plan, id<MTLCommandBuffer> commands,
+    id<MTLBuffer> workspace)
+{
+    sixel_gpu_lookup_batch_dispatch_t const *batch;
+    id<MTLComputeCommandEncoder> encoder;
+    uint32_t extent[2], count;
+
+    batch = plan->view.batch;
+    count = plan->params.ncolors;
+    extent[0] = plan->params.width; extent[1] = plan->params.height;
+    encoder = [commands computeCommandEncoder];
+    if (encoder == nil) return SIXEL_BAD_ALLOCATION;
+    [encoder setComputePipelineState:
+        plan->pipelines[plan->view.build_pass_count+5]];
+    [encoder setBuffer:plan->buffers[1] offset:0 atIndex:0];
+    [encoder setBytes:&count length:sizeof(count) atIndex:1];
+    [encoder setBuffer:plan->buffers[12] offset:0 atIndex:2];
+    [encoder setBuffer:workspace offset:0 atIndex:3];
+    [encoder setBuffer:plan->buffers[16] offset:0 atIndex:4];
+    [encoder setBuffer:plan->buffers[17] offset:0 atIndex:5];
+    [encoder setBytes:extent length:sizeof(extent) atIndex:6];
+    [encoder dispatchThreadgroups:MTLSizeMake(
+        1+((size_t)extent[0]-1)/batch->tile[0],
+        1+((size_t)extent[1]-1)/batch->tile[1],1)
+        threadsPerThreadgroup:MTLSizeMake(batch->threads[0],
+            batch->threads[1],batch->threads[2])];
+    [encoder endEncoding];
+    return SIXEL_OK;
+}
+
 /* Both deferred calls drain their commands. Only solve owns a lookup
  * lease; resolve uses the completed private planes and current history. */
 static SIXELSTATUS
@@ -360,7 +418,7 @@ phased_run_impl(phased_plan_t *plan,
     id<MTLComputeCommandEncoder> encoder;
     id<MTLComputePipelineState> pipeline;
     phased_params_t params;
-    size_t pixels, i, y, offset, count, threads;
+    size_t pixels, i, y, offset, count, threads, stage, stages;
     uint32_t ncolors, zero;
     SIXELSTATUS status, finish;
 
@@ -454,25 +512,33 @@ phased_run_impl(phased_plan_t *plan,
             (i == 0 ? 0 : i == 9 ? (mode == 0 ? 2 :
                 mode == 1 ? 3 : 4) : 1)];
         params.step = i == 0 ? 0 : (uint32_t)(i-1);
-        encoder = [commands computeCommandEncoder];
-        if (encoder == nil) { status = SIXEL_BAD_ALLOCATION; goto end; }
-        [encoder setComputePipelineState:pipeline];
-        for (y = 0; y < 16; ++y) {
-            if (y == 4) {
-                [encoder setBytes:&params length:sizeof(params) atIndex:y];
-            } else if (y == 13) {
-                [encoder setBuffer:workspace offset:0 atIndex:y];
-            } else {
-                [encoder setBuffer:plan->buffers[y] offset:0 atIndex:y];
+        stages = plan->view.batch != NULL && mode != 2 ? 2 : 1;
+        for (stage = 0; stage < stages; ++stage) {
+            params.batch_stage = stages == 2 ? (uint32_t)stage+1 : 0;
+            encoder = [commands computeCommandEncoder];
+            if (encoder == nil) { status = SIXEL_BAD_ALLOCATION; goto end; }
+            [encoder setComputePipelineState:pipeline];
+            for (y = 0; y < 18; ++y) {
+                if (y == 4) {
+                    [encoder setBytes:&params length:sizeof(params) atIndex:y];
+                } else if (y == 13) {
+                    [encoder setBuffer:workspace offset:0 atIndex:y];
+                } else {
+                    [encoder setBuffer:plan->buffers[y] offset:0 atIndex:y];
+                }
+            }
+            count = i == 0 || i == 9 || plan->view.batch != NULL ? pixels
+                : (size_t)params.tiles_x*((params.height+63)/64)*1024;
+            threads = [pipeline maxTotalThreadsPerThreadgroup];
+            if (threads > 128) threads = 128;
+            [encoder dispatchThreads:MTLSizeMake(count,1,1)
+                threadsPerThreadgroup:MTLSizeMake(threads,1,1)];
+            [encoder endEncoding];
+            if (stages == 2 && stage == 0) {
+                status = phased_encode_batch(plan, commands, workspace);
+                if (status != SIXEL_OK) goto end;
             }
         }
-        count = i == 0 || i == 9 ? pixels
-            : (size_t)params.tiles_x*((params.height+63)/64)*1024;
-        threads = [pipeline maxTotalThreadsPerThreadgroup];
-        if (threads > 128) threads = 128;
-        [encoder dispatchThreads:MTLSizeMake(count,1,1)
-            threadsPerThreadgroup:MTLSizeMake(threads,1,1)];
-        [encoder endEncoding];
     }
     [commands commit];
     [commands waitUntilCompleted];
@@ -675,7 +741,7 @@ phased_prepare_impl(sixel_allocator_t *allocator,
     uint32_t positions[4096], counts[4];
     float weights[256*8], ratio;
     double gain;
-    size_t lengths[16], pixels, i, j, k, x, y, bucket;
+    size_t lengths[18], pixels, i, j, k, x, y, bucket;
     SIXELSTATUS status;
 
     if (request->device == NULL || request->lookup == NULL ||
@@ -728,6 +794,7 @@ phased_prepare_impl(sixel_allocator_t *allocator,
     lookup_request.pixelformat = request->pixelformat;
     lookup_request.colorspace = request->colorspace;
     lookup_request.query_kind = SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL;
+    lookup_request.allow_batch = 1;
     status = request->lookup->vtbl->prepare(request->lookup, &lookup_request,
         request->device, &plan->lookup);
     if (status != SIXEL_OK) goto end;
@@ -775,9 +842,13 @@ phased_prepare_impl(sixel_allocator_t *allocator,
     lengths[9] = pixels*3; lengths[10] = lengths[11] = pixels;
     lengths[12] = plan->view.constants_size ? plan->view.constants_size : 1;
     lengths[14] = 4; lengths[15] = pixels;
+    if (plan->view.batch != NULL) {
+        lengths[16] = pixels*16;
+        lengths[17] = pixels*4;
+    }
     phased_borrow(plan, device, lengths);
     if (plan->queue == nil) plan->queue = [device newCommandQueue];
-    for (i = 0; i < 16; ++i) {
+    for (i = 0; i < 18; ++i) {
         if (lengths[i] == 0 || plan->buffers[i] != nil) continue;
         plan->buffers[i] = [device newBufferWithLength:lengths[i]
             options:MTLResourceStorageModeShared];

@@ -40,6 +40,8 @@ The table occupies `4096 * 65 = 266240` bytes: one count and 64 byte indexes per
 
 Lookup runs after positional or blue-noise dither, using the same transparency, delta keep and retained-plane update stages as other GPU policies. A kept pixel performs no candidate lookup. GPU admission otherwise follows the byte RGB palette-application rules; unsupported shapes use the CPU path under GPU `auto`. With `SIXEL_TRACE_TOPIC=gpu_contract`, the selected path reports `LSXGPU2|consumer=palette-apply|kernel=gridlut`.
 
+Fractional `phased` queries use an independent provider in [`lookup-policy-gridlut-gpu.c`](../../../../src/lookup-policy-gridlut-gpu.c) and [`lookup-policy-gridlut-fractional-gpu.metal`](../../../../src/lookup-policy-gridlut-fractional-gpu.metal). Each cell's closed upper bound is `min(low+16,255)`, covering the fractional strip above the last integer. Integer box-distance bounds retain every possible winner, the 64-entry overflow path scans the full palette, and final distances keep the original fractional query. Palette order breaks ties. Byte execution retains its byte-cell bounds. Plans key precision independently and lease their own workspace through completion.
+
 ## Guarantee
 
 Byte lookup is scan-index exact: it returns the same palette index as `none` for the same working palette and query, including the lowest index at a tie. Integer bounds preserve every possible winner, and overflow returns to an exhaustive scan. Float selection retains the exactness contract of its delegated backend.
@@ -105,3 +107,11 @@ The GPU construction cost is paid once per palette change, even if delta keeps m
 GL-03 skips without a Metal palette backend. The shared [CLI prefix contract](../../../cli/prefix-matching.md) checks that every registered lookup policy has a unique initial. These tests establish selection and exactness, not performance or perceived quality.
 
 The native-float matrix covers five colorspaces, fractional and extended coordinates, palette sizes and instance isolation. GPU failure cases inject allocation, encoder-creation and post-completion errors around real backend execution, then require AUTO CPU fallback, cache rebuilding and later reuse. They do not simulate a device reset or an operating-system allocation failure.
+
+The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FRAC-01 | Gridlut fractional reference. | [tests/lookup/gridlut/0040_gridlut_fractional_reference.t](../../../../tests/lookup/gridlut/0040_gridlut_fractional_reference.t) |
+| FRAC-02 | Gridlut fractional ties. | [tests/lookup/gridlut/0041_gridlut_fractional_ties.t](../../../../tests/lookup/gridlut/0041_gridlut_fractional_ties.t) |
+| FRAC-03 | Gridlut fractional cache. | [tests/lookup/gridlut/0042_gridlut_fractional_cache.t](../../../../tests/lookup/gridlut/0042_gridlut_fractional_cache.t) |

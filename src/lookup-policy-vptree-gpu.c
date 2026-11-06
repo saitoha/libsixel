@@ -22,6 +22,7 @@ typedef struct vptree_plan {
     sixel_mutex_t gate;
     unsigned char palette[768];
     unsigned int count;
+    sixel_gpu_lookup_query_kind_t query_kind;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
@@ -84,6 +85,7 @@ vptree_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->palette = plan->palette;
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
+    view->query_kind = plan->query_kind;
     view->workspace_size = 163840U * sizeof(uint32_t);
     view->build_passes = plan->passes;
     view->build_pass_count = 2;
@@ -241,7 +243,8 @@ vptree_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
-    if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE) {
+    if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
+            request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
@@ -264,6 +267,7 @@ vptree_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     plan = preparer->cached;
     if (plan == NULL || plan->device != device ||
             plan->count != request->ncolors ||
+            plan->query_kind != request->query_kind ||
             memcmp(plan->palette, entries.entries, request->ncolors * 3U)) {
         plan = sixel_allocator_calloc(preparer->allocator, 1, sizeof(*plan));
         if (plan == NULL) {
@@ -285,6 +289,7 @@ vptree_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->device = device;
         device->vtbl->ref(device);
         plan->count = request->ncolors;
+        plan->query_kind = request->query_kind;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         width = 32;
         while (width < plan->count) width *= 2;

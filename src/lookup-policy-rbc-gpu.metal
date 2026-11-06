@@ -65,7 +65,9 @@ kernel void rbc_pack_clusters(constant uchar *p [[buffer(0)]],
 }
 
 kernel void rbc_seed(constant uchar *palette [[buffer(0)]],
-    constant uint& ncolors [[buffer(1)]], device uint *table [[buffer(3)]],
+    constant uint& ncolors [[buffer(1)]],
+    constant uint& fractional [[buffer(2)]],
+    device uint *table [[buffer(3)]],
     uint cell [[thread_position_in_grid]])
 {
     int3 q, c, d;
@@ -85,13 +87,14 @@ kernel void rbc_seed(constant uchar *palette [[buffer(0)]],
     }
     table[4400u+cell] = rbc_pack(palette,best);
     lo = int3(cell>>10, (cell>>5)&31u, cell&31u)*8;
-    hi = lo+7;
+    hi = min(lo+7+int(fractional), int3(255));
     c = rbc_rgb(rbc_pack(palette,best));
     d = max(abs(lo-c),abs(hi-c));
     limit = uint(d.x*d.x+d.y*d.y+d.z*d.z);
     mask = 0;
     // A whole cluster may be excluded only if its cell-to-box lower bound
-    // exceeds the worst seed distance anywhere in this integer RGB cell.
+    // exceeds the worst seed distance anywhere in the selected integer
+    // or continuous RGB cell.
     for (j = 0; j < min(ncolors,16u); ++j) {
         if (table[4352u+j] == 0) continue;
         low = rbc_rgb(table[4368u+j]);
@@ -144,4 +147,47 @@ static uint lookup_rgb8(uchar3 query, constant uchar *palette,
         }
     }
     return best & 255u;
+}
+
+/* The mask builder covers the continuous cell for fractional plans.
+ * Runtime box bounds and member distances retain the unrounded query. */
+static uint lookup_rgb8_fractional(float3 query, constant uchar *palette,
+    uint ncolors, constant uchar *configuration,
+    device const uchar *workspace)
+{
+    device const uint *table;
+    uint3 code;
+    uint cell, seed, best, mask, j, at, packed, index;
+    float minimum, distance;
+    float3 gap;
+
+    (void)palette; (void)ncolors; (void)configuration;
+    table = (device const uint *)workspace;
+    code = uint3(query) >> 3;
+    cell = (code.x<<10) | (code.y<<5) | code.z;
+    seed = table[4400u+cell];
+    best = seed>>24;
+    gap = query-float3(rbc_rgb(seed));
+    minimum = dot(gap,gap);
+    mask = table[37168u+cell];
+    while (mask != 0) {
+        j = ctz(mask);
+        mask &= mask-1u;
+        gap = max(max(float3(rbc_rgb(table[4368u+j]))-query,
+            query-float3(rbc_rgb(table[4384u+j]))),float3(0));
+        // A conservative slack protects pruning near float ties only.
+        if (dot(gap,gap) > minimum+1.f) continue;
+        for (at = 0; at < table[4352u+j]; ++at) {
+            packed = table[j*256u+at];
+            index = packed>>24;
+            gap = query-float3(rbc_rgb(packed));
+            distance = dot(gap,gap);
+            if (distance < minimum ||
+                    (distance == minimum && index < best)) {
+                minimum = distance;
+                best = index;
+            }
+        }
+    }
+    return best;
 }

@@ -2,6 +2,8 @@
 #ifndef TEST_GPU_COMPONENT_COMMON_H
 #define TEST_GPU_COMPONENT_COMMON_H
 #include "src/lookup-policy-ordered-gpu.h"
+#include "src/lookup-policy-none-gpu.h"
+#include "src/lookup-policy-delaunay-gpu.h"
 #include "src/lookup-policy-vptree-gpu.h"
 #include "src/lookup-policy-rbc-gpu.h"
 #include "src/lookup-policy-mahalanobis-gpu.h"

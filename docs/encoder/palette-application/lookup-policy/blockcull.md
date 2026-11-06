@@ -51,6 +51,10 @@ On the Metal palette-application path, one simdgroup handles an 8-by-8 pixel blo
 
 All four kernels return the same indexes. GPU admission follows the existing Metal palette-application rules for `none`: 8-bit RGB samples, no error diffusion, and positional or blue-noise dithering. Other requests use the CPU policy. With `SIXEL_TRACE_TOPIC=gpu_contract`, `LSXGPU2|consumer=palette-apply|kernel=...` names the kernel that ran.
 
+For `phased`, the independent fractional provider uses the [tile-batch ABI](../../execution-map/README.md). One 8×8 tile includes only active corrected queries. Their outward-rounded integer box gives conservative integer culling bounds; final squared distances use the original fractional coordinates. Survivors remain in palette order. More than 64 candidates selects a full scan instead of truncation. This path does not rely on integer-exact matrix scores, which would not establish the same property for fractional queries.
+
+The dither owns query generation and residual updates; the lookup receives neither original pixels nor retained history. Partial tiles and fully inactive tiles remain valid. The additional dispatches and 20 bytes per pixel of dither scratch can make batch execution slower than a fused point policy. [`lookup-policy-blockcull-gpu.c`](../../../../src/lookup-policy-blockcull-gpu.c) and [`lookup-policy-blockcull-fractional-gpu.metal`](../../../../src/lookup-policy-blockcull-fractional-gpu.metal) own this program independently of byte matrix execution.
+
 ## Guarantee
 
 `blockcull` is scan-index exact in its representation's metric. The 8-bit class returns the same index as the `none` 8-bit scan, and the float32 class returns the same index as an exhaustive scan in the VP-tree float metric. Float arithmetic follows the [isolated noncontracting build gate](vptree.md#float-bulk-lookup) in split builds; amalgamation retains native scalar arithmetic.
@@ -116,3 +120,16 @@ The CPU bulk path groups samples along a row only, which limits how small the bo
 BC-04 skips when the Metal palette backend is unavailable. The tests establish index equality, not speed; they do not cover the per-call cost or the crossover between culling and exhaustive scans.
 
 The native-float cases below the byte contracts cover five colorspaces, fractional and extended coordinates, several palette sizes, independent metric decisions and instance isolation. GPU selection assertions use device capability independently of pipeline compilation; unavailable devices skip rather than count as matrix-kernel evidence.
+
+The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FRAC-01 | Blockcull batch partial tiles. | [tests/lookup/blockcull/0037_blockcull_batch_partial_tiles.t](../../../../tests/lookup/blockcull/0037_blockcull_batch_partial_tiles.t) |
+| FRAC-02 | Blockcull batch overflow. | [tests/lookup/blockcull/0038_blockcull_batch_overflow.t](../../../../tests/lookup/blockcull/0038_blockcull_batch_overflow.t) |
+| FRAC-03 | Blockcull batch transparent. | [tests/lookup/blockcull/0039_blockcull_batch_transparent.t](../../../../tests/lookup/blockcull/0039_blockcull_batch_transparent.t) |
+| FRAC-04 | Blockcull batch all inactive. | [tests/lookup/blockcull/0040_blockcull_batch_all_inactive.t](../../../../tests/lookup/blockcull/0040_blockcull_batch_all_inactive.t) |
+| FRAC-05 | Blockcull batch deferred. | [tests/lookup/blockcull/0041_blockcull_batch_deferred.t](../../../../tests/lookup/blockcull/0041_blockcull_batch_deferred.t) |
+| FRAC-06 | Blockcull batch refresh. | [tests/lookup/blockcull/0042_blockcull_batch_refresh.t](../../../../tests/lookup/blockcull/0042_blockcull_batch_refresh.t) |
+| FRAC-07 | Blockcull batch deferred refresh. | [tests/lookup/blockcull/0043_blockcull_batch_deferred_refresh.t](../../../../tests/lookup/blockcull/0043_blockcull_batch_deferred_refresh.t) |
+| FRAC-08 | Blockcull fractional cache. | [tests/lookup/blockcull/0044_blockcull_fractional_cache.t](../../../../tests/lookup/blockcull/0044_blockcull_fractional_cache.t) |

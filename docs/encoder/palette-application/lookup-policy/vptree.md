@@ -135,9 +135,11 @@ The memo is initialized while the new table is private, before configuration ret
 
 The GPU implementation uses VP-tree's exact neighbor-list bound rather than traversing a divergent tree per pixel. It constructs distance-sorted palette rows and a 32x32x32 seed grid on the GPU. The grid supplies a starting palette index, not a quantized answer. Every candidate that improves or ties that seed lies within twice the seed distance; one complete bounded row scan with integer distances therefore returns the same lowest-index minimum as exhaustive byte lookup. Four-lane tails repeat valid entries, including short palettes and duplicate coordinates.
 
-[`lookup-policy-vptree-gpu.c`](../../../../src/lookup-policy-vptree-gpu.c) and its [private shader](../../../../src/lookup-policy-vptree-gpu-shader.inc.h) own preparation, row layout, query and cache lifetime together. They do not call or include `ordered` implementation code. The two algorithms currently use similar integer geometry, but each can change independently. Each retained plan uses 640 KiB of GPU workspace. A preparer reuses its last unchanged palette on the same device; separately live plans pin separate storage. Completion, unsupported-capability fallback and fused execution follow the [injected lookup contract](../../execution-map/README.md#lookup-preparation-is-policy-specific).
+[`lookup-policy-vptree-gpu.c`](../../../../src/lookup-policy-vptree-gpu.c) and its [private shader](../../../../src/lookup-policy-vptree-gpu.metal) own preparation, row layout, query and cache lifetime together. They do not call or include `ordered` implementation code. The two algorithms currently use similar integer geometry, but each can change independently. Each retained plan uses 640 KiB of GPU workspace. A preparer reuses its last unchanged palette on the same device; separately live plans pin separate storage. Completion, unsupported-capability fallback and fused execution follow the [injected lookup contract](../../execution-map/README.md#lookup-preparation-is-policy-specific).
 
-GPU support is limited to gamma RGB888, 1–256 searchable colors, and independent NONE, A, X or blue-noise dithering. Transparency and delta keeps precede lookup; emitted-color comparison follows it. Native float coordinates and causal diffusion remain CPU operations and are never narrowed to bytes to obtain GPU eligibility. `SIXEL_TRACE_TOPIC=gpu_contract` reports `kernel=vptree` and `lookup=vptree|table=rebuild` or `lookup=vptree|table=reuse`.
+GPU support is limited to gamma RGB888, 1–256 searchable colors, and independent NONE, A, X or blue-noise dithering, plus fractional `phased` execution. Transparency and delta keeps precede lookup; emitted-color comparison follows it. Native float coordinates and causal diffusion remain CPU operations and are never narrowed to bytes to obtain GPU eligibility. `SIXEL_TRACE_TOPIC=gpu_contract` reports `kernel=vptree` and `lookup=vptree|table=rebuild` or `lookup=vptree|table=reuse`.
+
+The same provider also serves [`phased`](../dithering/phased.md) through an independent scalar fractional entry over its own sorted rows and seed grid. Integer cell selection chooses only the seed; distance comparisons use the unrounded query. The row cutoff is `4 * seed_distance_squared + 1`, with one squared code-value unit of conservative pruning slack. It preserves the complete candidate bound without quantizing the winner. Byte vector queries are unchanged. Fractional precision and cache identity follow the [parent reference](README.md).
 
 ## Test coverage
 
@@ -157,6 +159,16 @@ Each case selects one fixed palette size, diffusion and retention configuration.
 | VPG-08 | A dither, 33 colors produces exact indexes. | [tests/lookup/vptree/0052_gpu_exact_4_0_33.t](../../../../tests/lookup/vptree/0052_gpu_exact_4_0_33.t), [tests/lookup/vptree/0052_gpu_exact_4_0_33.c](../../../../tests/lookup/vptree/0052_gpu_exact_4_0_33.c) |
 | VPG-09 | NONE with delta retention, 33 colors produces exact indexes. | [tests/lookup/vptree/0053_gpu_exact_0_1_33.t](../../../../tests/lookup/vptree/0053_gpu_exact_0_1_33.t), [tests/lookup/vptree/0053_gpu_exact_0_1_33.c](../../../../tests/lookup/vptree/0053_gpu_exact_0_1_33.c) |
 | VPG-10 | Blue noise with delta retention, 33 colors produces exact indexes. | [tests/lookup/vptree/0054_gpu_exact_1_1_33.t](../../../../tests/lookup/vptree/0054_gpu_exact_1_1_33.t), [tests/lookup/vptree/0054_gpu_exact_1_1_33.c](../../../../tests/lookup/vptree/0054_gpu_exact_1_1_33.c) |
+
+### Fractional GPU queries
+
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| VPTREEF-01 | Fractional candidate selection agrees with the independent nearest-color oracle. | [tests/lookup/vptree/0055_gpu_vptree_fractional_exact.t](../../../../tests/lookup/vptree/0055_gpu_vptree_fractional_exact.t) |
+| VPTREEF-02 | Equal-distance queries and duplicate colors retain the lowest index. | [tests/lookup/vptree/0056_gpu_vptree_fractional_ties.t](../../../../tests/lookup/vptree/0056_gpu_vptree_fractional_ties.t) |
+| VPTREEF-03 | Changing query precision creates a separate plan without mutating the held byte plan. | [tests/lookup/vptree/0057_gpu_vptree_fractional_cache.t](../../../../tests/lookup/vptree/0057_gpu_vptree_fractional_cache.t) |
 
 ## Name and sources
 

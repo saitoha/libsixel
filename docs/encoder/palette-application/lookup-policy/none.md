@@ -41,6 +41,10 @@ Each simdgroup multiplies 32 byte queries, as rows `(r, g, b, 1)`, by tiles of e
 
 Unlike the accelerated float32 policies, `none` does not divide each channel by its declared range. It is therefore the exhaustive reference for its own stored-coordinate metric, not for every other policy's normalized metric.
 
+For [`phased`](../dithering/phased.md), the policy supplies a separate scalar fractional entry that evaluates direct squared differences without rounding the query. It does not use simdgroup matrix operations: phase-selected pixels do not guarantee converged participation. The byte matrix-product executor remains unchanged. Fractional preparation copies the palette and needs no construction pass or search table; each query scans all colors. [`lookup-policy-none-gpu.c`](../../../../src/lookup-policy-none-gpu.c) owns the plan and its [fractional shader](../../../../src/lookup-policy-none-fractional-gpu.metal). The fractional precision and cache contract is defined in the [parent reference](README.md).
+
+The palette builder's `none` histogram policy also retains full byte samples where accelerated policies normally bin them. An end-to-end comparison must hold the completed palette fixed to isolate lookup differences.
+
 ## Guarantee
 
 The ordinary direct path is scan-index exact by definition. It evaluates every entry and preserves the first-index tie rule.
@@ -69,3 +73,17 @@ For a SIXEL palette, `K` is bounded, but the factor remains important because th
 `none` is a libsixel descriptive name: no lookup acceleration. It is not the claim that palette application does no work.
 
 The implementation is [`lookup-policy-none.c`](../../../../src/lookup-policy-none.c), and selector-level monochrome handling is in [`lookup-policy.c`](../../../../src/lookup-policy.c). The Metal palette-application path, including its matrix-product direct lookup, is in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m).
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Fractional GPU queries
+
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| NONEF-01 | Fractional candidate selection agrees with the independent nearest-color oracle. | [tests/lookup/none/0004_gpu_none_fractional_exact.t](../../../../tests/lookup/none/0004_gpu_none_fractional_exact.t) |
+| NONEF-02 | Equal-distance queries and duplicate colors retain the lowest index. | [tests/lookup/none/0005_gpu_none_fractional_ties.t](../../../../tests/lookup/none/0005_gpu_none_fractional_ties.t) |
+| NONEF-03 | Changing query precision creates a separate plan without mutating the held byte plan. | [tests/lookup/none/0006_gpu_none_fractional_cache.t](../../../../tests/lookup/none/0006_gpu_none_fractional_cache.t) |

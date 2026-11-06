@@ -60,13 +60,17 @@ The Metal backend eagerly builds all `64^3` entries at palette application. Each
 
 Both are approximate for an arbitrary query inside a cell. CPU and GPU output can differ even with the same palette and dither settings; this path does not promise index equivalence to CPU memoization or exhaustive `none` lookup.
 
-The table is always process-global and shared under the Metal dispatch mutex. GPU packing is linear; the CPU `shared_instance` and `packing` suboptions do not change this behavior. The active table contains 256 KiB of entries, with palette index 255 available as an ordinary value for 256-color palettes. Reuse requires identical bit width, palette count and ordered palette bytes. Geometry and dither parameters do not affect table identity. The shared allocation grows to the largest requested table and retains that capacity, so using `6bit` can leave a 256 KiB allocation resident during later `5bit` calls.
+For byte-query dithers, the table is always process-global and shared under the Metal dispatch mutex. GPU packing is linear; the CPU `shared_instance` and `packing` suboptions do not change this behavior. The active table contains 256 KiB of entries, with palette index 255 available as an ordinary value for 256-color palettes. Reuse requires identical bit width, palette count and ordered palette bytes. Geometry and dither parameters do not affect table identity. The shared allocation grows to the largest requested table and retains that capacity, so using `6bit` can leave a 256 KiB allocation resident during later `5bit` calls.
 
 Construction and application use the same command buffer with an encoder boundary. Cache identity is published only after successful completion. A failed rebuild invalidates the table so a subsequent call rebuilds it; failed application does not publish indexes. A cold application costs `Theta(G K + P)` and a reusable application costs `Theta(P + K)`, where `G = 64^3`. Shader compilation is a separate first-use cost.
 
 RGB888 application supports `none`, arithmetic `a`/`x`, and `bluenoise` dithering, transparency, and eligible partial-rectangle delta comparison. Native float lookup remains CPU-only. The public feature macro `SIXEL_HAVE_GPU_PREBUILT_BIT_LOOKUP` lets clients admit this policy without relying on older libraries that could reinterpret forced unsupported lookup as direct scanning. GPU-only preparation needs the existing lookup kind and builds no CPU memo table; an automatic GPU rejection can still prepare the CPU policy before output.
 
 The Metal implementation is [lookup-policy-bitlut-gpu.inc.h](../../../../src/lookup-policy-bitlut-gpu.inc.h). The [execution map](../../execution-map/README.md) describes component ownership.
+
+`phased` uses an independent fractional program in [`lookup-policy-bitlut-gpu.c`](../../../../src/lookup-policy-bitlut-gpu.c) and [`lookup-policy-bitlut-fractional-gpu.metal`](../../../../src/lookup-policy-bitlut-fractional-gpu.metal). The continuous query selects the rounded `6bit` address directly, without an intermediate RGB8 rounding. Representatives remain the centers of the integer byte intervals, preserving the declared approximation. The table is completely prebuilt; there is no first-query memoization.
+
+A process-wide idle slot always shares completed fractional workspace across preparers, independent of CPU `shared_instance` and packing. Active bindings keep exclusive allocations and cannot overwrite another palette's table. Reuse requires matching device, bit width, ordered palette and successful completion. Completed solves return workspace to the slot while a deferred solution may still retain its frozen plan. The slot holds at most one idle allocation; in-flight plans may temporarily hold additional tables. Byte and fractional execution retain separate caches.
 
 ## Cost
 
@@ -123,3 +127,12 @@ The bounded byte-ramp oracle independently enumerates each channel's bucket prei
 | GPU-25 | GPU table reuse ignores CPU shared-instance overrides. | [tests/lookup/6bit/0058_6bit_gpu_shared_override.t](../../../../tests/lookup/6bit/0058_6bit_gpu_shared_override.t) |
 | GPU-26 | GPU table reuse ignores CPU packing overrides. | [tests/lookup/6bit/0059_6bit_gpu_packing_override.t](../../../../tests/lookup/6bit/0059_6bit_gpu_packing_override.t) |
 | GPU-27 | Declined GPU planning constructs the CPU memo. | [tests/lookup/6bit/0060_6bit_gpu_cpu_fallback.t](../../../../tests/lookup/6bit/0060_6bit_gpu_cpu_fallback.t) |
+
+The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FRAC-01 | 6bit fractional reference. | [tests/lookup/6bit/0061_6bit_fractional_reference.t](../../../../tests/lookup/6bit/0061_6bit_fractional_reference.t) |
+| FRAC-02 | 6bit fractional ties. | [tests/lookup/6bit/0062_6bit_fractional_ties.t](../../../../tests/lookup/6bit/0062_6bit_fractional_ties.t) |
+| FRAC-03 | 6bit fractional cache. | [tests/lookup/6bit/0063_6bit_fractional_cache.t](../../../../tests/lookup/6bit/0063_6bit_fractional_cache.t) |
+| FRAC-04 | A completed fractional solve returns its shared table for reuse without rebuilding on the next solve. | [tests/lookup/6bit/0064_6bit_fractional_reuse.t](../../../../tests/lookup/6bit/0064_6bit_fractional_reuse.t) |

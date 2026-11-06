@@ -1643,6 +1643,71 @@ int test_phased_raster_rejected(int, char **);
 int test_phased_invalid_gain_atomic(int, char **);
 int test_phased_delta_t0(int, char **);
 int test_phased_delta_refresh(int, char **);
+int test_gpu_gridlut_fractional_reference(int, char **);
+int test_gpu_gridlut_fractional_ties(int, char **);
+int test_gpu_eytzinger_fractional_reference(int, char **);
+int test_gpu_eytzinger_fractional_ties(int, char **);
+int test_gpu_5bit_fractional_reuse(int, char **);
+int test_gpu_6bit_fractional_reuse(int, char **);
+int test_gpu_fhedt_fractional_reuse(int, char **);
+int test_gpu_5bit_fractional_reference(int, char **);
+int test_gpu_5bit_fractional_ties(int, char **);
+int test_gpu_6bit_fractional_reference(int, char **);
+int test_gpu_6bit_fractional_ties(int, char **);
+int test_gpu_fhedt_fractional_r64_f0_d0(int, char **);
+int test_gpu_fhedt_fractional_r64_f0_d1(int, char **);
+int test_gpu_fhedt_fractional_r64_f1_d0(int, char **);
+int test_gpu_fhedt_fractional_r64_f1_d1(int, char **);
+int test_gpu_fhedt_fractional_r128_f0_d0(int, char **);
+int test_gpu_fhedt_fractional_r128_f0_d1(int, char **);
+int test_gpu_fhedt_fractional_r128_f1_d0(int, char **);
+int test_gpu_fhedt_fractional_r128_f1_d1(int, char **);
+int test_gpu_fhedt_fractional_r256_f0_d0(int, char **);
+int test_gpu_fhedt_fractional_r256_f0_d1(int, char **);
+int test_gpu_fhedt_fractional_r256_f1_d0(int, char **);
+int test_gpu_fhedt_fractional_r256_f1_d1(int, char **);
+int test_gpu_blockcull_batch_partial_tiles(int, char **);
+int test_gpu_blockcull_batch_overflow(int, char **);
+int test_gpu_blockcull_batch_transparent(int, char **);
+int test_gpu_blockcull_batch_all_inactive(int, char **);
+int test_gpu_blockcull_batch_deferred(int, char **);
+int test_gpu_blockcull_batch_refresh(int, char **);
+int test_gpu_blockcull_batch_deferred_refresh(int, char **);
+int test_phased_gridlut_refresh(int, char **);
+int test_gpu_batch_zero_tile(int, char **);
+int test_gpu_batch_thread_overflow(int, char **);
+int test_gpu_batch_invalid_index(int, char **);
+int test_gpu_eytzinger_fractional_cache(int, char **);
+int test_gpu_gridlut_fractional_cache(int, char **);
+int test_gpu_blockcull_fractional_cache(int, char **);
+int test_gpu_5bit_fractional_cache(int, char **);
+int test_gpu_6bit_fractional_cache(int, char **);
+int test_gpu_fhedt_fractional_cache(int, char **);
+int test_gpu_blockcull_batch_opt_in(int, char **);
+int test_phased_none_refresh(int, char **);
+int test_phased_delaunay_refresh(int, char **);
+int test_phased_vptree_refresh(int, char **);
+int test_phased_rbc_refresh(int, char **);
+int test_phased_mahalanobis_refresh(int, char **);
+int test_phased_certlut_refresh(int, char **);
+int test_gpu_none_fractional_cache(int, char **);
+int test_gpu_delaunay_fractional_cache(int, char **);
+int test_gpu_vptree_fractional_cache(int, char **);
+int test_gpu_rbc_fractional_cache(int, char **);
+int test_gpu_mahalanobis_fractional_cache(int, char **);
+int test_gpu_certlut_fractional_cache(int, char **);
+int test_gpu_none_fractional_exact(int, char **);
+int test_gpu_none_fractional_ties(int, char **);
+int test_gpu_delaunay_fractional_exact(int, char **);
+int test_gpu_delaunay_fractional_ties(int, char **);
+int test_gpu_vptree_fractional_exact(int, char **);
+int test_gpu_vptree_fractional_ties(int, char **);
+int test_gpu_rbc_fractional_exact(int, char **);
+int test_gpu_rbc_fractional_ties(int, char **);
+int test_gpu_mahalanobis_fractional_exact(int, char **);
+int test_gpu_mahalanobis_fractional_ties(int, char **);
+int test_gpu_certlut_fractional_exact(int, char **);
+int test_gpu_certlut_fractional_ties(int, char **);
 int test_phased_partial_rectangle(int, char **);
 int test_phased_retained_immutable(int, char **);
 int test_gpu_rows_ordered_indexes(int, char **);
@@ -6908,6 +6973,76 @@ static test_entry_t const test_entries[] = {
     { "phased/invalid_gain_atomic", test_phased_invalid_gain_atomic },
     { "phased/delta_t0", test_phased_delta_t0 },
     { "phased/delta_refresh", test_phased_delta_refresh },
+    { "gpu/gridlut_fractional_reference",
+        test_gpu_gridlut_fractional_reference },
+    { "gpu/gridlut_fractional_ties", test_gpu_gridlut_fractional_ties },
+    { "gpu/eytzinger_fractional_reference",
+        test_gpu_eytzinger_fractional_reference },
+    { "gpu/eytzinger_fractional_ties", test_gpu_eytzinger_fractional_ties },
+    { "gpu/5bit_fractional_reuse", test_gpu_5bit_fractional_reuse },
+    { "gpu/6bit_fractional_reuse", test_gpu_6bit_fractional_reuse },
+    { "gpu/fhedt_fractional_reuse", test_gpu_fhedt_fractional_reuse },
+    { "gpu/5bit_fractional_reference", test_gpu_5bit_fractional_reference },
+    { "gpu/5bit_fractional_ties", test_gpu_5bit_fractional_ties },
+    { "gpu/6bit_fractional_reference", test_gpu_6bit_fractional_reference },
+    { "gpu/6bit_fractional_ties", test_gpu_6bit_fractional_ties },
+    { "gpu/fhedt_fractional_r64_f0_d0", test_gpu_fhedt_fractional_r64_f0_d0 },
+    { "gpu/fhedt_fractional_r64_f0_d1", test_gpu_fhedt_fractional_r64_f0_d1 },
+    { "gpu/fhedt_fractional_r64_f1_d0", test_gpu_fhedt_fractional_r64_f1_d0 },
+    { "gpu/fhedt_fractional_r64_f1_d1", test_gpu_fhedt_fractional_r64_f1_d1 },
+    { "gpu/fhedt_fractional_r128_f0_d0", test_gpu_fhedt_fractional_r128_f0_d0 },
+    { "gpu/fhedt_fractional_r128_f0_d1", test_gpu_fhedt_fractional_r128_f0_d1 },
+    { "gpu/fhedt_fractional_r128_f1_d0", test_gpu_fhedt_fractional_r128_f1_d0 },
+    { "gpu/fhedt_fractional_r128_f1_d1", test_gpu_fhedt_fractional_r128_f1_d1 },
+    { "gpu/fhedt_fractional_r256_f0_d0", test_gpu_fhedt_fractional_r256_f0_d0 },
+    { "gpu/fhedt_fractional_r256_f0_d1", test_gpu_fhedt_fractional_r256_f0_d1 },
+    { "gpu/fhedt_fractional_r256_f1_d0", test_gpu_fhedt_fractional_r256_f1_d0 },
+    { "gpu/fhedt_fractional_r256_f1_d1", test_gpu_fhedt_fractional_r256_f1_d1 },
+    { "gpu/blockcull_batch_partial_tiles",
+        test_gpu_blockcull_batch_partial_tiles },
+    { "gpu/blockcull_batch_overflow", test_gpu_blockcull_batch_overflow },
+    { "gpu/blockcull_batch_transparent", test_gpu_blockcull_batch_transparent },
+    { "gpu/blockcull_batch_all_inactive",
+        test_gpu_blockcull_batch_all_inactive },
+    { "gpu/blockcull_batch_deferred", test_gpu_blockcull_batch_deferred },
+    { "gpu/blockcull_batch_refresh", test_gpu_blockcull_batch_refresh },
+    { "gpu/blockcull_batch_deferred_refresh",
+        test_gpu_blockcull_batch_deferred_refresh },
+    { "gpu/gridlut_refresh", test_phased_gridlut_refresh },
+    { "gpu/batch_zero_tile", test_gpu_batch_zero_tile },
+    { "gpu/batch_thread_overflow", test_gpu_batch_thread_overflow },
+    { "gpu/batch_invalid_index", test_gpu_batch_invalid_index },
+    { "gpu/eytzinger_fractional_cache", test_gpu_eytzinger_fractional_cache },
+    { "gpu/gridlut_fractional_cache", test_gpu_gridlut_fractional_cache },
+    { "gpu/blockcull_fractional_cache", test_gpu_blockcull_fractional_cache },
+    { "gpu/5bit_fractional_cache", test_gpu_5bit_fractional_cache },
+    { "gpu/6bit_fractional_cache", test_gpu_6bit_fractional_cache },
+    { "gpu/fhedt_fractional_cache", test_gpu_fhedt_fractional_cache },
+    { "gpu/blockcull_batch_opt_in", test_gpu_blockcull_batch_opt_in },
+    { "phased/none_refresh", test_phased_none_refresh },
+    { "phased/delaunay_refresh", test_phased_delaunay_refresh },
+    { "phased/vptree_refresh", test_phased_vptree_refresh },
+    { "phased/rbc_refresh", test_phased_rbc_refresh },
+    { "phased/mahalanobis_refresh", test_phased_mahalanobis_refresh },
+    { "phased/certlut_refresh", test_phased_certlut_refresh },
+    { "gpu/none_fractional_cache", test_gpu_none_fractional_cache },
+    { "gpu/delaunay_fractional_cache", test_gpu_delaunay_fractional_cache },
+    { "gpu/vptree_fractional_cache", test_gpu_vptree_fractional_cache },
+    { "gpu/rbc_fractional_cache", test_gpu_rbc_fractional_cache },
+    { "gpu/mahalanobis_fractional_cache", test_gpu_mahalanobis_fractional_cache },
+    { "gpu/certlut_fractional_cache", test_gpu_certlut_fractional_cache },
+    { "gpu/none_fractional_exact", test_gpu_none_fractional_exact },
+    { "gpu/none_fractional_ties", test_gpu_none_fractional_ties },
+    { "gpu/delaunay_fractional_exact", test_gpu_delaunay_fractional_exact },
+    { "gpu/delaunay_fractional_ties", test_gpu_delaunay_fractional_ties },
+    { "gpu/vptree_fractional_exact", test_gpu_vptree_fractional_exact },
+    { "gpu/vptree_fractional_ties", test_gpu_vptree_fractional_ties },
+    { "gpu/rbc_fractional_exact", test_gpu_rbc_fractional_exact },
+    { "gpu/rbc_fractional_ties", test_gpu_rbc_fractional_ties },
+    { "gpu/mahalanobis_fractional_exact", test_gpu_mahalanobis_fractional_exact },
+    { "gpu/mahalanobis_fractional_ties", test_gpu_mahalanobis_fractional_ties },
+    { "gpu/certlut_fractional_exact", test_gpu_certlut_fractional_exact },
+    { "gpu/certlut_fractional_ties", test_gpu_certlut_fractional_ties },
     { "phased/partial_rectangle", test_phased_partial_rectangle },
     { "phased/retained_immutable", test_phased_retained_immutable },
     { "component/gpu_rows_ordered_indexes",
