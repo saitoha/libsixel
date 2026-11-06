@@ -50,6 +50,28 @@ SETS = {
 METRICS = ("MS-SSIM", "GMSD", "DE00_region_mean", "HighFreqRatio_delta",
            "StripeScore_rel", "BandingIndex_grad_rel")
 PPDS = (16, 32, 60, 120)
+LIGHT_SETS = ("gradient-cube27", "snake-cube27", "snake-16")
+CLAMPS = ("soft", "hard", "none")
+DEADZONES = (0, 5, 10, 20)
+DEADZONE_SETS = {
+    "flat": "Flat gray 100, 320×240, 16 grays",
+    "snake16": "Photograph, 600×450, its 16-color palette",
+    "snake256": "Photograph, 600×450, its 255-color palette",
+    "cube27": "Photograph, 600×450, 27-color cube",
+}
+LOOKUPS = (("scan", "Compare with every color"),
+           ("cache", "Remember recent colors"),
+           ("memo", "One answer per cell"),
+           ("grid", "A list of candidates per cell"))
+THREADS = (1, 2, 4, 8, 14)
+THREAD_METHODS = (("Floyd–Steinberg, 16 colors", "fs", "snake16"),
+                  ("Floyd–Steinberg, 255 colors", "fs", "snake256"),
+                  ("Bayer pattern, 16 colors", "bayer", "snake16"),
+                  ("Bayer pattern, 255 colors", "bayer", "snake256"))
+SEAM_BANDS = (("One band", 1, 0), ("Four bands", 4, 0),
+              ("Four bands, 6 warm-up rows", 4, 6))
+SEAM_SETS = {"gradient": "Gradient, 640×240", "flat": "Flat gray 64, 640×240",
+             "snake": "Photograph, 600×450"}
 PAGES = {
     "step4-kernels.md": ("speed",),
     "step5-good-dither.md": ("simple",),
@@ -57,11 +79,19 @@ PAGES = {
                            "score-snake-16", "light", "ppd"),
     "measurements.md": ("environment", "speed", "simple",
                         "score-gradient-cube27", "score-snake-cube27",
-                        "score-snake-16", "light", "ppd"),
+                        "score-snake-16", "light", "ppd", "linear",
+                        "carry-speed", "clamp", "deadzone", "lookup",
+                        "threads", "seams"),
+    "step7-linear-light.md": ("linear",),
+    "step8-integer-error.md": ("carry-speed", "clamp", "deadzone"),
+    "step9-lookup.md": ("lookup",),
+    "step10-threads.md": ("threads", "seams"),
 }
 SIMPLE_RE = re.compile(r"pixel error ([\d.]+), area error ([\d.]+), "
                        r"flat runs ([\d.]+) \(original ([\d.]+)\)")
 BENCH_RE = re.compile(r"\(([\d.]+) ns per pixel\)")
+COMPARED_RE = re.compile(r"([\d.]+) colors compared per pixel")
+SEAMS_RE = re.compile(r"([\d.]+) at band starts, ([\d.]+) elsewhere")
 
 
 def run(command: list[str], **kwargs) -> subprocess.CompletedProcess:
@@ -139,6 +169,7 @@ def measure_all(arguments: argparse.Namespace) -> dict:
                     line = run(command).stdout.decode()
                     best = min(best, float(BENCH_RE.search(line)[1]))
                 results["speed"][method][palette] = best
+        results.update(measure_lessons(arguments, out, codec, inputs))
 
     def output(*command: str) -> str:
         return run(list(command), cwd=ROOT).stdout.decode().strip()
@@ -181,6 +212,107 @@ def measure_light(arguments: argparse.Namespace, out: Path,
         run([str(arguments.sixel2png), "-i", str(stream), "-o", str(decoded)])
         report[space] = float(run(score + [str(decoded)]).stdout)
     return report
+
+
+def bench(command: list[str], rounds: int, **kwargs) -> float:
+    """The fastest time per pixel of several runs of a bench command."""
+    return min(float(BENCH_RE.search(run(command, **kwargs).stdout.decode())[1])
+               for _ in range(rounds))
+
+
+def measure_lessons(arguments: argparse.Namespace, out: Path, codec: Path,
+                    inputs: dict[str, Path]) -> dict:
+    """Measure lessons 7 to 10."""
+    rounds = arguments.rounds
+    path = out / "lesson.ppm"
+    extra = dict(inputs)
+    for name, command in (("flat100", ("flat", "320", "240", "100", "100",
+                                       "100")),
+                          ("flat64", ("flat", "640", "240", "64", "64", "64")),
+                          ("gray16", ("gray", "16"))):
+        extra[name] = out / f"input-{name}.ppm"
+        extra[name].write_bytes(run([str(out / "dtool"), *command]).stdout)
+
+    def produce(step: str, picture: str, palette: str,
+                option: str | None) -> subprocess.CompletedProcess:
+        command = [str(out / step), str(extra[picture]), str(extra[palette])]
+        if option is not None:
+            command.append(option)
+        done = run(command)
+        path.write_bytes(done.stdout)
+        return done
+
+    def score(picture: str) -> dict:
+        report = json.loads(run([str(arguments.lsqa), str(extra[picture]),
+                                 str(path)]).stdout)["quality"]
+        stream = run([str(codec / "step2"), "encode", str(path)]).stdout
+        return {"area": report["DE00_region_mean"],
+                "ms_ssim": report["MS-SSIM"], "bytes": len(stream)}
+
+    result: dict[str, dict] = {"linear": {}, "carry_speed": {}, "clamp": {},
+                               "deadzone": {}, "lookup": {}, "threads": {},
+                               "seams": {}}
+    for key in LIGHT_SETS:
+        _, picture, palette = SETS[key]
+        result["linear"][key] = {}
+        for step in ("step3", "step7"):
+            produce(step, picture, palette, None)
+            result["linear"][key][step] = score(picture)
+    for palette in ("snake16", "snake256"):
+        result["carry_speed"][palette] = {
+            step: bench([str(out / step), "bench", str(SNAKE),
+                         str(extra[palette])], rounds)
+            for step in ("step3", "step8")}
+    for clamp in CLAMPS:
+        produce("step8", "snake", "snake16", f"clamp={clamp}")
+        result["clamp"][clamp] = score("snake")
+    for key, (picture, palette) in {"flat": ("flat100", "gray16"),
+                                    "snake16": ("snake", "snake16"),
+                                    "snake256": ("snake", "snake256"),
+                                    "cube27": ("snake", "cube27")}.items():
+        result["deadzone"][key] = {}
+        for zone in DEADZONES:
+            produce("step8", picture, palette, f"deadzone={zone}")
+            result["deadzone"][key][str(zone)] = score(picture)
+    for palette in ("snake16", "snake256"):
+        result["lookup"][palette] = {}
+        reference = run([str(out / "step3"), str(SNAKE),
+                         str(extra[palette])]).stdout
+        for method, _ in LOOKUPS:
+            done = produce("step9", "snake", palette, f"{method},stats")
+            pixels = len(reference) // 3
+            result["lookup"][palette][method] = {
+                "ns": bench([str(out / "step9"), "bench", str(SNAKE),
+                             str(extra[palette]), method], rounds),
+                "compared": float(COMPARED_RE.search(done.stderr.decode())[1]),
+                "changed": sum(reference[i:i + 3] != done.stdout[i:i + 3]
+                               for i in range(0, len(reference), 3)) / pixels,
+                "area": score("snake")["area"],
+            }
+    for _, method, palette in THREAD_METHODS:
+        entry = result["threads"].setdefault(f"{method}-{palette}", {})
+        for count in THREADS:
+            environment = dict(os.environ, TUTORIAL_THREADS=str(count))
+            entry[str(count)] = bench(
+                [str(out / "step10"), "bench", str(SNAKE),
+                 str(extra[palette]), f"{method},bands=14"], rounds,
+                env=environment)
+    for picture, source in (("gradient", "gradient"), ("flat", "flat64"),
+                            ("snake", "snake")):
+        result["seams"][picture] = {}
+        height = int(re.match(rb"P[36]\s+\d+\s+(\d+)",
+                              extra[source].read_bytes())[1])
+        band = ((height + 3) // 4 + 5) // 6 * 6
+        for _, bands, overlap in SEAM_BANDS:
+            produce("step10", source, "snake16",
+                    f"bands={bands},overlap={overlap}")
+            match = SEAMS_RE.search(run([str(out / "dtool"), "seams",
+                                         str(path), str(band)]).stdout.decode())
+            scores = score(source)
+            result["seams"][picture][f"{bands}-{overlap}"] = {
+                "start": float(match[1]), "elsewhere": float(match[2]),
+                "bytes": scores["bytes"], "area": scores["area"]}
+    return result
 
 
 def png_palette(path: Path) -> bytes:
@@ -309,13 +441,102 @@ def render_light(results: dict) -> str:
     ])
 
 
+def render_linear(results: dict) -> str:
+    """Stored numbers against linear light, in the tutorial's own programs."""
+    rows = []
+    for key in LIGHT_SETS:
+        stored = results["linear"][key]["step3"]
+        light = results["linear"][key]["step7"]
+        rows.append([SETS[key][0], f"{stored['area']:.2f} → {light['area']:.2f}",
+                     f"{stored['ms_ssim']:.3f} → {light['ms_ssim']:.3f}",
+                     f"{stored['bytes']:,} → {light['bytes']:,}"])
+    return table(["Picture and palette", "Area ΔE00", "MS-SSIM", "Bytes"], rows)
+
+
+def render_carry_speed(results: dict) -> str:
+    """Floats against whole numbers."""
+    return table(["Palette", "Floats (step 3), ns per pixel",
+                  "Whole numbers (step 8), ns per pixel"], [
+        [name, f"{results['carry_speed'][key]['step3']:.1f}",
+         f"{results['carry_speed'][key]['step8']:.1f}"]
+        for name, key in (("16 colors", "snake16"), ("255 colors", "snake256"))
+    ])
+
+
+def render_clamp(results: dict) -> str:
+    """The three limits on one picture."""
+    names = {"soft": "`soft`", "hard": "`hard`", "none": "`none`"}
+    return table(["Limit", "Area ΔE00", "MS-SSIM", "Bytes"], [
+        [names[clamp], f"{results['clamp'][clamp]['area']:.2f}",
+         f"{results['clamp'][clamp]['ms_ssim']:.3f}",
+         f"{results['clamp'][clamp]['bytes']:,}"] for clamp in CLAMPS])
+
+
+def render_deadzone(results: dict) -> str:
+    """The deadzone against the picture and the palette."""
+    rows = []
+    for key, name in DEADZONE_SETS.items():
+        for zone in DEADZONES:
+            cell = results["deadzone"][key][str(zone)]
+            rows.append([name, str(zone), f"{cell['area']:.2f}",
+                         f"{cell['ms_ssim']:.3f}", f"{cell['bytes']:,}"])
+    return table(["Picture and palette", "Deadzone", "Area ΔE00", "MS-SSIM",
+                  "Bytes"], rows)
+
+
+def render_lookup(results: dict) -> str:
+    """Four ways to find the nearest color."""
+    rows = []
+    for key, palette in (("snake16", "16 colors"), ("snake256", "255 colors")):
+        for method, name in LOOKUPS:
+            cell = results["lookup"][key][method]
+            rows.append([palette, name, f"{cell['ns']:.1f}",
+                         f"{cell['compared']:.1f}",
+                         f"{cell['changed'] * 100:.1f}%",
+                         f"{cell['area']:.3f}"])
+    return table(["Palette", "Method", "ns per pixel",
+                  "Colors compared per pixel", "Pixels changed", "Area ΔE00"],
+                 rows)
+
+
+def render_threads(results: dict) -> str:
+    """Time against the number of threads."""
+    rows = []
+    for name, method, palette in THREAD_METHODS:
+        cell = results["threads"][f"{method}-{palette}"]
+        one = cell["1"]
+        rows.append([name] + [f"{cell[str(count)]:.1f} ({one / cell[str(count)]:.1f}×)"
+                              for count in THREADS])
+    return table(["14 bands, ns per pixel"]
+                 + [f"{count} threads" if count > 1 else "1 thread"
+                    for count in THREADS], rows)
+
+
+def render_seams(results: dict) -> str:
+    """What a band start does to the picture."""
+    rows = []
+    for key, picture in SEAM_SETS.items():
+        for name, bands, overlap in SEAM_BANDS:
+            cell = results["seams"][key][f"{bands}-{overlap}"]
+            rows.append([picture, name, f"{cell['start']:.0f}",
+                         f"{cell['elsewhere']:.0f}", f"{cell['bytes']:,}",
+                         f"{cell['area']:.2f}"])
+    return table(["Picture, 16-color palette", "Bands",
+                  "Color changes per row, band starts",
+                  "Color changes per row, elsewhere", "Bytes", "Area ΔE00"],
+                 rows)
+
+
 def render(results: dict, block: str) -> str:
     """Return the Markdown of one measurement block."""
     if block.startswith("score-"):
         return render_score(results, block[len("score-"):])
     return {"environment": render_environment, "speed": render_speed,
             "simple": render_simple, "ppd": render_ppd,
-            "light": render_light}[block](results)
+            "light": render_light, "linear": render_linear,
+            "carry-speed": render_carry_speed, "clamp": render_clamp,
+            "deadzone": render_deadzone, "lookup": render_lookup,
+            "threads": render_threads, "seams": render_seams}[block](results)
 
 
 def update_pages(check: bool) -> None:

@@ -1,6 +1,7 @@
 {
   "assets": [
     "bayer-cells.svg",
+    "candidates.svg",
     "color-cube27-atkinson.png",
     "color-cube27-fs-average.png",
     "color-cube27-fs.png",
@@ -20,22 +21,42 @@
     "gray16-nearest.png",
     "gray16-random-zoom.png",
     "gray16-random.png",
+    "gray2-linear-light.png",
+    "gray2-linear.png",
+    "gray2-stored-light.png",
+    "gray2-stored.png",
     "gray4-fs-zoom.png",
     "gray4-fs.png",
     "kernels.svg",
+    "light-curve.svg",
     "nearest-staircase.svg",
+    "seam-bayer.png",
+    "seam-cold.png",
+    "seam-one-band.png",
+    "seam-warm.png",
     "snake-cube216-fs.png",
     "snake-cube27-bayer.png",
     "snake-cube27-fs.png",
+    "snake-cube27-linear.png",
     "snake-cube27-nearest.png",
     "snake-original.png",
     "snake-palette16-fs.png",
+    "snake-palette16-hard.png",
     "snake-palette16-nearest.png",
-    "snake-palette256-fs.png"
+    "snake-palette16-none.png",
+    "snake-palette16-soft.png",
+    "snake-palette256-fs.png",
+    "snake-palette256-zone0.png",
+    "snake-palette256-zone10.png",
+    "warm-up.svg"
   ],
   "averages": {
     "color-cube27-fs-average": "color-cube27-fs",
     "color-cube27-nearest-average": "color-cube27-nearest"
+  },
+  "light_averages": {
+    "gray2-linear-light": "gray2-linear",
+    "gray2-stored-light": "gray2-stored"
   },
   "pictures": {
     "color-cube27-atkinson": {
@@ -181,6 +202,22 @@
       "step": "step2",
       "zoom": 4
     },
+    "gray2-linear": {
+      "crop": null,
+      "option": null,
+      "palette": "gray2",
+      "picture": "gray",
+      "step": "step7",
+      "zoom": 1
+    },
+    "gray2-stored": {
+      "crop": null,
+      "option": null,
+      "palette": "gray2",
+      "picture": "gray",
+      "step": "step3",
+      "zoom": 1
+    },
     "gray4-fs": {
       "crop": null,
       "option": null,
@@ -200,6 +237,58 @@
       "palette": "gray4",
       "picture": "gray",
       "step": "step3",
+      "zoom": 4
+    },
+    "seam-bayer": {
+      "crop": [
+        240,
+        48,
+        160,
+        24
+      ],
+      "option": "bayer,bands=2",
+      "palette": "snake16",
+      "picture": "tall",
+      "step": "step10",
+      "zoom": 4
+    },
+    "seam-cold": {
+      "crop": [
+        240,
+        48,
+        160,
+        24
+      ],
+      "option": "bands=2,overlap=0",
+      "palette": "snake16",
+      "picture": "tall",
+      "step": "step10",
+      "zoom": 4
+    },
+    "seam-one-band": {
+      "crop": [
+        240,
+        48,
+        160,
+        24
+      ],
+      "option": "bands=1",
+      "palette": "snake16",
+      "picture": "tall",
+      "step": "step10",
+      "zoom": 4
+    },
+    "seam-warm": {
+      "crop": [
+        240,
+        48,
+        160,
+        24
+      ],
+      "option": "bands=2,overlap=6",
+      "palette": "snake16",
+      "picture": "tall",
+      "step": "step10",
       "zoom": 4
     },
     "snake-cube216-fs": {
@@ -241,6 +330,19 @@
       "step": "step3",
       "zoom": 1
     },
+    "snake-cube27-linear": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": "cube27",
+      "picture": "snake",
+      "step": "step7",
+      "zoom": 1
+    },
     "snake-cube27-nearest": {
       "crop": [
         270,
@@ -280,6 +382,19 @@
       "step": "step3",
       "zoom": 1
     },
+    "snake-palette16-hard": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": "clamp=hard",
+      "palette": "snake16",
+      "picture": "snake",
+      "step": "step8",
+      "zoom": 1
+    },
     "snake-palette16-nearest": {
       "crop": [
         270,
@@ -291,6 +406,32 @@
       "palette": "snake16",
       "picture": "snake",
       "step": "step1",
+      "zoom": 1
+    },
+    "snake-palette16-none": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": "clamp=none",
+      "palette": "snake16",
+      "picture": "snake",
+      "step": "step8",
+      "zoom": 1
+    },
+    "snake-palette16-soft": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": "clamp=soft",
+      "palette": "snake16",
+      "picture": "snake",
+      "step": "step8",
       "zoom": 1
     },
     "snake-palette256-fs": {
@@ -305,6 +446,32 @@
       "picture": "snake",
       "step": "step3",
       "zoom": 1
+    },
+    "snake-palette256-zone0": {
+      "crop": [
+        420,
+        30,
+        160,
+        60
+      ],
+      "option": "deadzone=0",
+      "palette": "snake256",
+      "picture": "snake",
+      "step": "step8",
+      "zoom": 4
+    },
+    "snake-palette256-zone10": {
+      "crop": [
+        420,
+        30,
+        160,
+        60
+      ],
+      "option": "deadzone=10",
+      "palette": "snake256",
+      "picture": "snake",
+      "step": "step8",
+      "zoom": 4
     }
   },
   "sources": {

@@ -128,7 +128,7 @@ libsixel can do the diffusion in either space, so the effect can be measured dir
 
 The first row is the method you wrote, and libsixel gets about the same score when it also works with the stored numbers. Doing the arithmetic in linear light removes most of the error. The [working color space](../../encoder/palette-application/working-colorspace/README.md) reference describes this option.
 
-> **Try it.** Make `step3` do its arithmetic in linear light: convert each input channel from sRGB to linear before adding the error, and compare in linear when looking for the nearest color. In a test of this change, the score fell from 6.74 to 0.57 on the photograph. Does your eye agree?
+> **Try it.** Make `step3` do its arithmetic in linear light: convert each input channel from sRGB to linear before adding the error, and compare in linear when looking for the nearest color. Does the score fall as far as libsixel's? Does your eye agree? [Lesson 7](step7-linear-light.md) is a worked answer.
 
 ## How far away, measured
 
@@ -166,4 +166,4 @@ There is also something no column here measures: how much the grain itself distu
 
 ## Where to go from here
 
-You can now write a dither, say what is wrong with it, and measure that. libsixel's [dithering reference](../../encoder/palette-application/dithering/README.md#measured-static-image-quality-size-and-speed) applies the same approach to all its methods, including error spectra measured on flat fields.
+You can now write a dither, say what is wrong with it, and measure that. libsixel's [dithering reference](../../encoder/palette-application/dithering/README.md#measured-static-image-quality-size-and-speed) applies the same approach to all its methods, including error spectra measured on flat fields. The next four lessons use these measurements to improve the program, and [step 7](step7-linear-light.md) starts with the error that this lesson uncovered.

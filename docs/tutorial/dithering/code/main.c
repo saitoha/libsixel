@@ -101,8 +101,15 @@ selftest(void)
         sum += out.rgb[i * 3];
     }
     mean = (double)sum / (64.0 * 64.0);
-    if (dither_keeps_tone && (mean < 60.0 || mean > 68.0)) {
+    if (dither_keeps_tone == DITHER_KEEPS_NUMBERS &&
+            (mean < 60.0 || mean > 68.0)) {
         printf("flat gray 64 averages %.2f\n", mean);
+        failures++;
+    }
+    /* Gray 64 is 5.1% of white's light, which is 13 as a mean of 0 and 255. */
+    if (dither_keeps_tone == DITHER_KEEPS_LIGHT &&
+            (mean < 10.0 || mean > 16.0)) {
+        printf("flat gray 64 should average 13 in light, not %.2f\n", mean);
         failures++;
     }
     if (!dither_keeps_tone && mean != 0.0) {

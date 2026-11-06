@@ -42,6 +42,8 @@ CODE = ROOT / "docs/tutorial/dithering/code"
 SNAKE = ROOT / "images/snake.ppm"
 WIDTH = 720
 SNAKE_CROP = (270, 30, 330, 225)
+SMOOTH_CROP = (420, 30, 160, 60)
+SEAM_CROP = (240, 48, 160, 24)
 GRAY_ENDS = ("0", "0", "0", "255", "255", "255")
 
 # name: picture, palette, step, option, (x, y, width, height) or None, zoom
@@ -75,13 +77,38 @@ PICTURES = {
                                 SNAKE_CROP, 1),
     "snake-palette16-fs": ("snake", "snake16", "step3", None, SNAKE_CROP, 1),
     "snake-palette256-fs": ("snake", "snake256", "step3", None, SNAKE_CROP, 1),
+    "gray2-stored": ("gray", "gray2", "step3", None, None, 1),
+    "gray2-linear": ("gray", "gray2", "step7", None, None, 1),
+    "snake-cube27-linear": ("snake", "cube27", "step7", None, SNAKE_CROP, 1),
+    "snake-palette16-soft": ("snake", "snake16", "step8", "clamp=soft",
+                             SNAKE_CROP, 1),
+    "snake-palette16-hard": ("snake", "snake16", "step8", "clamp=hard",
+                             SNAKE_CROP, 1),
+    "snake-palette16-none": ("snake", "snake16", "step8", "clamp=none",
+                             SNAKE_CROP, 1),
+    "snake-palette256-zone0": ("snake", "snake256", "step8", "deadzone=0",
+                               SMOOTH_CROP, 4),
+    "snake-palette256-zone10": ("snake", "snake256", "step8", "deadzone=10",
+                                SMOOTH_CROP, 4),
+    "seam-one-band": ("tall", "snake16", "step10", "bands=1", SEAM_CROP, 4),
+    "seam-cold": ("tall", "snake16", "step10", "bands=2,overlap=0", SEAM_CROP,
+                  4),
+    "seam-warm": ("tall", "snake16", "step10", "bands=2,overlap=6", SEAM_CROP,
+                  4),
+    "seam-bayer": ("tall", "snake16", "step10", "bayer,bands=2", SEAM_CROP, 4),
 }
 AVERAGES = {
     "color-cube27-nearest-average": "color-cube27-nearest",
     "color-cube27-fs-average": "color-cube27-fs",
 }
+# name: the picture to average in light, as an eye far away sees it
+LIGHT_AVERAGES = {
+    "gray2-stored-light": "gray2-stored",
+    "gray2-linear-light": "gray2-linear",
+}
 DIAGRAMS = ("nearest-staircase.svg", "bayer-cells.svg", "error-walk.svg",
-            "kernels.svg")
+            "kernels.svg", "light-curve.svg", "candidates.svg",
+            "warm-up.svg")
 MANIFEST = "dither-tutorial-figures.json"
 
 
@@ -158,6 +185,7 @@ class Programs:
         self.files = {
             "gray": self.tool("gray", "gradient", "640", "64", *GRAY_ENDS),
             "color": self.tool("color", "gradient", "640", "64"),
+            "tall": self.tool("tall", "gradient", "640", "120"),
             "flat": self.tool("flat", "flat", "160", "40", "32", "32", "32"),
             "snake": SNAKE,
             "gray2": self.tool("gray2", "gray", "2"),
@@ -187,11 +215,11 @@ class Programs:
         return subprocess.run(command, check=True,
                               capture_output=True).stdout
 
-    def average(self, data: bytes, size: int) -> bytes:
-        """Run dtool average on a picture."""
+    def average(self, data: bytes, size: int, command: str = "average") -> bytes:
+        """Run dtool average, or dtool light, on a picture."""
         path = self.bin / "to-average.ppm"
         path.write_bytes(data)
-        return subprocess.run([str(self.bin / "dtool"), "average", str(size),
+        return subprocess.run([str(self.bin / "dtool"), command, str(size),
                                str(path)], check=True,
                               capture_output=True).stdout
 
@@ -209,6 +237,9 @@ def make_pictures(programs: Programs) -> dict[str, bytes]:
         result[f"{name}.png"] = png(crop(read_ppm(data), box, zoom))
     for name, source in AVERAGES.items():
         averaged = programs.average(outputs[source], 16)
+        result[f"{name}.png"] = png(read_ppm(averaged))
+    for name, source in LIGHT_AVERAGES.items():
+        averaged = programs.average(outputs[source], 16, "light")
         result[f"{name}.png"] = png(read_ppm(averaged))
     return result
 
@@ -404,11 +435,158 @@ def kernels() -> str:
                     body)
 
 
+def stored_to_light(stored: float) -> float:
+    """The sRGB curve, with the same formula as step7.c."""
+    value = stored / 255
+    return value / 12.92 if value <= 0.04045 \
+        else ((value + 0.055) / 1.055) ** 2.4
+
+
+def light_curve() -> str:
+    """Stored numbers against amounts of light."""
+    x0, y0, size = 90, 490, 380
+    body = [title("A stored number is not an amount of light",
+                  "The sRGB curve: most numbers are spent on dark tones.")]
+    body.append(rect(x0, y0 - size, size, size, PAPER, GRID, 1.2, 2))
+    for stored in (0, 64, 128, 188, 255):
+        x = x0 + stored / 255 * size
+        body.append(line(x, y0, x, y0 - size, GRID, 1))
+        body.append(text(x, y0 + 22, str(stored), 15, 600, MUTED, "middle"))
+    for percent in (0, 25, 50, 75, 100):
+        y = y0 - percent / 100 * size
+        body.append(line(x0, y, x0 + size, y, GRID, 1))
+        body.append(text(x0 - 12, y + 5, f"{percent}%", 15, 600, MUTED, "end"))
+    previous = None
+    for stored in range(256):
+        point = (x0 + stored / 255 * size,
+                 y0 - stored_to_light(stored) * size)
+        if previous is not None:
+            body.append(line(previous[0], previous[1], point[0], point[1],
+                             BLUE, 4))
+        previous = point
+    for stored, color in ((128, MAGENTA), (188, TEAL)):
+        x = x0 + stored / 255 * size
+        y = y0 - stored_to_light(stored) * size
+        body.append(line(x, y0, x, y, color, 2.5))
+        body.append(line(x0, y, x, y, color, 2.5))
+    body.append(text(x0 + size / 2, y0 + 50, "stored number", 16, 650, INK,
+                     "middle"))
+    side = x0 + size + 20
+    body.append(text(side, y0 - size + 60, "Number 128:", 17, 750, MAGENTA))
+    body.append(text(side, y0 - size + 84,
+                     f"{stored_to_light(128) * 100:.0f}% of white's light", 16,
+                     500, INK))
+    body.append(text(side, y0 - size + 140, "50% of the light:", 17, 750, TEAL))
+    body.append(text(side, y0 - size + 164, "number 188", 16, 500, INK))
+    return document(560, "A stored number is not an amount of light",
+                    "The sRGB curve from stored number to light: the number "
+                    "128 is 22 percent of the light of white, and half of the "
+                    "light is the number 188.", body)
+
+
+def candidates() -> str:
+    """Which palette colors a grid cell has to keep."""
+    scale = 3.0
+    x0, y0 = 40, 112
+    extent = 128
+    cell = (56.0, 56.0, 16.0)
+    center = (cell[0] + cell[2] / 2, cell[1] + cell[2] / 2)
+    radius = cell[2] / 2 * 2 ** 0.5
+    colors = []
+    state = 2463534242
+    for _ in range(40):
+        pair = []
+        for _ in range(2):
+            state ^= state << 13 & 0xffffffff
+            state ^= state >> 17
+            state ^= state << 5 & 0xffffffff
+            pair.append(state % extent)
+        colors.append(tuple(pair))
+    distance = [((c[0] - center[0]) ** 2 + (c[1] - center[1]) ** 2) ** 0.5
+                for c in colors]
+    nearest = min(distance)
+    limit = nearest + 2 * radius
+
+    def px(x: float, y: float) -> tuple[float, float]:
+        return x0 + x * scale, y0 + y * scale
+    body = [title("Most colors can never win inside a cell",
+                  f"One slice of the color cube, with {len(colors)} palette "
+                  "colors.")]
+    corner = px(0, 0)
+    body.append(rect(corner[0], corner[1], extent * scale, extent * scale,
+                     PAPER, GRID, 1.2, 2))
+    box = px(cell[0], cell[1])
+    body.append(rect(box[0], box[1], cell[2] * scale, cell[2] * scale,
+                     GOLD_LIGHT, GOLD, 2, 2))
+    middle = px(*center)
+    body.append(f'<circle cx="{middle[0]:.1f}" cy="{middle[1]:.1f}" '
+                f'r="{limit * scale:.1f}" fill="none" stroke="{TEAL}" '
+                'stroke-width="2.5"/>')
+    body.append(f'<circle cx="{middle[0]:.1f}" cy="{middle[1]:.1f}" r="4" '
+                f'fill="{INK}"/>')
+    kept = 0
+    for color, length in zip(colors, distance):
+        point = px(*color)
+        inside = length <= limit
+        kept += inside
+        fill = TEAL if inside else MUTED
+        if length == nearest:
+            fill = BLUE
+            body.append(line(middle[0], middle[1], point[0], point[1], BLUE, 2))
+        body.append(f'<circle cx="{point[0]:.1f}" cy="{point[1]:.1f}" r="6" '
+                    f'fill="{fill}"/>')
+    side = x0 + extent * scale + 24
+    rows = ((BLUE, "n: nearest to the", "center, at distance d"),
+            (GOLD, "The cell: every color", "in it is within r"),
+            (TEAL, f"Inside d + 2r: {kept} of", f"{len(colors)} colors stay"),
+            (MUTED, "Outside: can never", "be the nearest"))
+    for number, (color, first, second) in enumerate(rows):
+        y = y0 + 30 + number * 84
+        body.append(text(side, y, first, 16, 750, color))
+        body.append(text(side, y + 24, second, 16, 500, INK))
+    return document(520, "Most colors can never win inside a cell",
+                    "A grid cell, the nearest color to its center, and the "
+                    "circle of radius d plus 2r that holds every color which "
+                    "can be nearest for some color of the cell.", body)
+
+
+def warm_up() -> str:
+    """Bands of rows, each with its own error history."""
+    body = [title("Each band has its own history",
+                  "A worker starts above its band and throws those rows away.")]
+    rows = (("Band 1", 120, 110, BLUE, None),
+            ("Band 2", 262, 110, TEAL, 58),
+            ("Band 3", 404, 110, MAGENTA, 58))
+    x0, width = 150, 400
+    for name, y, height, color, overlap in rows:
+        body.append(rect(x0, y, width, height, PAPER, color, 2, 4))
+        body.append(text(x0 + width / 2, y + height / 2 + 6,
+                         "rows this worker keeps", 16, 650, color, "middle"))
+        body.append(text(32, y + height / 2 + 6, name, 17, 750, INK))
+        if overlap is not None:
+            body.append(rect(x0 + 40, y - overlap, width - 80, overlap,
+                             GOLD_LIGHT, GOLD, 1.5, 4))
+            body.append(text(x0 + width / 2, y - overlap / 2 + 6,
+                             "warm-up rows, computed and not kept", 15, 600,
+                             INK, "middle"))
+    body.append(text(32, 556, "A band starts with no error from above. Warm-up "
+                     "rows let its pattern", 17, 500, MUTED))
+    body.append(text(32, 582, "get going first. No two workers ever share "
+                     "error, so none has to wait.", 17, 500, MUTED))
+    return document(606, "Each band has its own history",
+                    "Three bands of rows; each band after the first has a "
+                    "worker that starts above it on warm-up rows it does not "
+                    "keep.", body)
+
+
 FACTORIES = {
     "nearest-staircase.svg": nearest_staircase,
     "bayer-cells.svg": bayer_cells,
     "error-walk.svg": error_walk,
     "kernels.svg": kernels,
+    "light-curve.svg": light_curve,
+    "candidates.svg": candidates,
+    "warm-up.svg": warm_up,
 }
 
 
@@ -425,6 +603,7 @@ def generate_all() -> dict[str, bytes]:
                             "crop": value[4], "zoom": value[5]}
                      for name, value in PICTURES.items()},
         "averages": AVERAGES,
+        "light_averages": LIGHT_AVERAGES,
         "sources": {"programs": "docs/tutorial/dithering/code"},
     }, indent=2, sort_keys=True) + "\n").encode("utf-8")
     return assets

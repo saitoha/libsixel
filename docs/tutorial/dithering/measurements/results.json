@@ -1,17 +1,226 @@
 {
+  "carry_speed": {
+    "snake16": {
+      "step3": 26.6,
+      "step8": 41.2
+    },
+    "snake256": {
+      "step3": 158.2,
+      "step8": 175.3
+    }
+  },
+  "clamp": {
+    "hard": {
+      "area": 2.063568,
+      "bytes": 128849,
+      "ms_ssim": 0.91498
+    },
+    "none": {
+      "area": 3.110033,
+      "bytes": 117388,
+      "ms_ssim": 0.871747
+    },
+    "soft": {
+      "area": 2.03331,
+      "bytes": 124089,
+      "ms_ssim": 0.921048
+    }
+  },
+  "deadzone": {
+    "cube27": {
+      "0": {
+        "area": 6.741651,
+        "bytes": 239568,
+        "ms_ssim": 0.777077
+      },
+      "10": {
+        "area": 6.737107,
+        "bytes": 239371,
+        "ms_ssim": 0.776268
+      },
+      "20": {
+        "area": 6.739542,
+        "bytes": 238699,
+        "ms_ssim": 0.776056
+      },
+      "5": {
+        "area": 6.734613,
+        "bytes": 239506,
+        "ms_ssim": 0.775934
+      }
+    },
+    "flat": {
+      "0": {
+        "area": 0.071348,
+        "bytes": 25831,
+        "ms_ssim": 0.95866
+      },
+      "10": {
+        "area": 0.748788,
+        "bytes": 349,
+        "ms_ssim": 0.999974
+      },
+      "20": {
+        "area": 0.748788,
+        "bytes": 349,
+        "ms_ssim": 0.999974
+      },
+      "5": {
+        "area": 0.748788,
+        "bytes": 349,
+        "ms_ssim": 0.999974
+      }
+    },
+    "snake16": {
+      "0": {
+        "area": 2.03331,
+        "bytes": 124089,
+        "ms_ssim": 0.921048
+      },
+      "10": {
+        "area": 2.066023,
+        "bytes": 119120,
+        "ms_ssim": 0.922936
+      },
+      "20": {
+        "area": 2.342535,
+        "bytes": 91089,
+        "ms_ssim": 0.926056
+      },
+      "5": {
+        "area": 2.034691,
+        "bytes": 123857,
+        "ms_ssim": 0.921169
+      }
+    },
+    "snake256": {
+      "0": {
+        "area": 0.391018,
+        "bytes": 325485,
+        "ms_ssim": 0.990714
+      },
+      "10": {
+        "area": 0.733529,
+        "bytes": 251202,
+        "ms_ssim": 0.990784
+      },
+      "20": {
+        "area": 0.85624,
+        "bytes": 240376,
+        "ms_ssim": 0.990844
+      },
+      "5": {
+        "area": 0.566707,
+        "bytes": 279258,
+        "ms_ssim": 0.990466
+      }
+    }
+  },
   "environment": {
     "compiler": "Apple clang version 21.0.0 (clang-2100.4.1.1)",
-    "date": "2026-11-05",
-    "load_after": 4.51,
-    "load_before": 4.79,
+    "date": "2026-11-06",
+    "load_after": 4.99,
+    "load_before": 5.52,
     "machine": "Apple M3 Max",
-    "revision": "7dba05582",
+    "revision": "80256a9c5",
     "system": "Darwin 27.0.0"
   },
   "light": {
     "gamma": 6.464525,
     "linear": 0.935028,
     "tutorial": 6.743547
+  },
+  "linear": {
+    "gradient-cube27": {
+      "step3": {
+        "area": 5.950624,
+        "bytes": 144441,
+        "ms_ssim": 0.640787
+      },
+      "step7": {
+        "area": 0.581634,
+        "bytes": 144731,
+        "ms_ssim": 0.632753
+      }
+    },
+    "snake-16": {
+      "step3": {
+        "area": 2.062797,
+        "bytes": 129015,
+        "ms_ssim": 0.914546
+      },
+      "step7": {
+        "area": 2.09467,
+        "bytes": 135126,
+        "ms_ssim": 0.925728
+      }
+    },
+    "snake-cube27": {
+      "step3": {
+        "area": 6.743547,
+        "bytes": 239701,
+        "ms_ssim": 0.777037
+      },
+      "step7": {
+        "area": 0.578387,
+        "bytes": 224816,
+        "ms_ssim": 0.764909
+      }
+    }
+  },
+  "lookup": {
+    "snake16": {
+      "cache": {
+        "area": 2.062797,
+        "changed": 0.0,
+        "compared": 12.0,
+        "ns": 24.4
+      },
+      "grid": {
+        "area": 2.062797,
+        "changed": 0.0,
+        "compared": 5.5,
+        "ns": 25.3
+      },
+      "memo": {
+        "area": 2.068973,
+        "changed": 0.3214903427714302,
+        "compared": 1.1,
+        "ns": 15.9
+      },
+      "scan": {
+        "area": 2.062797,
+        "changed": 0.0,
+        "compared": 16.0,
+        "ns": 24.1
+      }
+    },
+    "snake256": {
+      "cache": {
+        "area": 0.333478,
+        "changed": 0.0,
+        "compared": 166.7,
+        "ns": 120.4
+      },
+      "grid": {
+        "area": 0.333478,
+        "changed": 0.0,
+        "compared": 31.1,
+        "ns": 48.6
+      },
+      "memo": {
+        "area": 0.336721,
+        "changed": 0.5395714894168626,
+        "compared": 8.1,
+        "ns": 19.8
+      },
+      "scan": {
+        "area": 0.333478,
+        "changed": 0.0,
+        "compared": 255.0,
+        "ns": 154.7
+      }
+    }
   },
   "ppd": {
     "bayer": {
@@ -31,6 +240,68 @@
       "16": 16.166463,
       "32": 16.140341,
       "60": 16.116481
+    }
+  },
+  "seams": {
+    "flat": {
+      "1-0": {
+        "area": 18.811871,
+        "bytes": 52842,
+        "elsewhere": 233.9,
+        "start": 222.2
+      },
+      "4-0": {
+        "area": 18.658844,
+        "bytes": 56694,
+        "elsewhere": 238.3,
+        "start": 639.0
+      },
+      "4-6": {
+        "area": 18.815883,
+        "bytes": 52845,
+        "elsewhere": 233.0,
+        "start": 242.0
+      }
+    },
+    "gradient": {
+      "1-0": {
+        "area": 16.171704,
+        "bytes": 37564,
+        "elsewhere": 232.4,
+        "start": 231.2
+      },
+      "4-0": {
+        "area": 16.173872,
+        "bytes": 40263,
+        "elsewhere": 235.1,
+        "start": 375.5
+      },
+      "4-6": {
+        "area": 16.184978,
+        "bytes": 38208,
+        "elsewhere": 232.8,
+        "start": 229.5
+      }
+    },
+    "snake": {
+      "1-0": {
+        "area": 2.062797,
+        "bytes": 129015,
+        "elsewhere": 279.5,
+        "start": 296.2
+      },
+      "4-0": {
+        "area": 2.041841,
+        "bytes": 128972,
+        "elsewhere": 281.2,
+        "start": 283.7
+      },
+      "4-6": {
+        "area": 2.045718,
+        "bytes": 128955,
+        "elsewhere": 281.2,
+        "start": 301.8
+      }
     }
   },
   "sets": {
@@ -316,32 +587,62 @@
   },
   "speed": {
     "atkinson": {
-      "snake16": 28.4,
-      "snake256": 175.5
+      "snake16": 28.5,
+      "snake256": 170.4
     },
     "bayer": {
-      "snake16": 23.9,
-      "snake256": 164.3
+      "snake16": 24.3,
+      "snake256": 162.7
     },
     "fs": {
-      "snake16": 26.8,
-      "snake256": 166.3
+      "snake16": 26.6,
+      "snake256": 157.7
     },
     "jajuni": {
-      "snake16": 35.0,
-      "snake256": 187.9
+      "snake16": 36.1,
+      "snake256": 184.5
     },
     "nearest": {
-      "snake16": 10.8,
-      "snake256": 164.9
+      "snake16": 10.4,
+      "snake256": 153.6
     },
     "random": {
-      "snake16": 23.3,
-      "snake256": 162.9
+      "snake16": 23.4,
+      "snake256": 164.3
     },
     "serpentine": {
-      "snake16": 27.4,
-      "snake256": 176.5
+      "snake16": 27.3,
+      "snake256": 174.4
+    }
+  },
+  "threads": {
+    "bayer-snake16": {
+      "1": 22.3,
+      "14": 3.1,
+      "2": 11.9,
+      "4": 6.5,
+      "8": 4.0
+    },
+    "bayer-snake256": {
+      "1": 155.7,
+      "14": 21.8,
+      "2": 81.9,
+      "4": 44.8,
+      "8": 26.6
+    },
+    "fs-snake16": {
+      "1": 27.3,
+      "14": 3.7,
+      "2": 14.0,
+      "4": 7.5,
+      "8": 4.7
+    },
+    "fs-snake256": {
+      "1": 157.7,
+      "14": 22.9,
+      "2": 83.7,
+      "4": 45.7,
+      "8": 27.2
     }
   }
 }

@@ -39,7 +39,9 @@ make -C ../../sixel-codec/code
 | `./dtool flat W H R G B` | Writes one flat color |
 | `./dtool cube LEVELS`, `./dtool gray LEVELS` | Writes a fixed palette |
 | `./dtool average N IN.ppm` | Shows a picture as an eye averaging N × N pixels would |
+| `./dtool light N IN.ppm` | The same average, taken in light, for [lesson 7](step7-linear-light.md) |
 | `./dtool measure REFERENCE.ppm OUT.ppm` | Prints the three numbers of [lesson 5](step5-good-dither.md) |
+| `./dtool seams OUT.ppm HEIGHT` | Looks at the first rows of each band, for [lesson 10](step10-threads.md) |
 
 Pictures are PNM files, the format described in the [codec tutorial](../sixel-codec/README.md#pictures-as-pnm-files). A palette is also a PNM picture: each of its pixels is one palette color.
 
@@ -52,7 +54,7 @@ int dither(image_t *out, image_t const *in, palette_t const *pal,
            char const *option);
 ```
 
-[`code/mydither.c`](code/mydither.c) is a starting point: `make mydither && ./mydither selftest`. Steps 1 to 4 are worked answers.
+[`code/mydither.c`](code/mydither.c) is a starting point: `make mydither && ./mydither selftest`. Steps 1 to 4 and 7 to 10 are worked answers. Lessons 5 and 6 have no program of their own, because they measure the others.
 
 ## The palette is given
 
@@ -76,6 +78,10 @@ Palettes fit to a picture were made by libsixel. How to make one is a big subjec
 | [4. Kernels and scan order](step4-kernels.md) | Changing who receives the error | Patterns and lost tone |
 | [5. What makes a dither good?](step5-good-dither.md) | Tone, structure, noise and contours | Why no single number decides |
 | [6. Measuring a dither](step6-measuring.md) | Scoring your output with `lsqa` | Metrics that disagree, and why |
+| [7. Linear light](step7-linear-light.md) | Keeping the light of an area, not its numbers | The right brightness, with dots in the dark |
+| [8. The error as whole numbers](step8-integer-error.md) | Exact sums, limits on the error and a deadzone | Light patches, clean eyes and fewer bytes |
+| [9. Finding the nearest color faster](step9-lookup.md) | Remembering answers and ruling out colors | The same picture in a third of the time |
+| [10. Many cores](step10-threads.md) | Bands, seams and warm-up rows | A line across the picture, and how to remove it |
 
 ## Checking your work
 
@@ -83,7 +89,7 @@ Palettes fit to a picture were made by libsixel. How to make one is a big subjec
 make check
 ```
 
-[`code/check.sh`](code/check.sh) runs every self test and requires that the same input always gives the same output, that step 4 with its `fs` kernel is exactly step 3, and that the other kernels and scan orders really change the picture.
+[`code/check.sh`](code/check.sh) runs every self test and requires that the same input always gives the same output, that step 4 with its `fs` kernel is exactly step 3, and that the other kernels and scan orders really change the picture. It also requires that the exact searches of step 9 are exactly step 3, and that the output of step 10 does not depend on the number of threads.
 
 ## From the tutorial to libsixel
 

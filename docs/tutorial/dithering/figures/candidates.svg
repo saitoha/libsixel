@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="520" viewBox="0 0 720 520" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">Most colors can never win inside a cell</title>
+<desc id="figure-description">A grid cell, the nearest color to its center, and the circle of radius d plus 2r that holds every color which can be nearest for some color of the cell.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="520.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Most colors can never win inside a cell</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">One slice of the color cube, with 40 palette colors.</text>
+<rect x="40.0" y="112.0" width="384.0" height="384.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<rect x="208.0" y="280.0" width="48.0" height="48.0" rx="2.0" fill="#FEF3C7" stroke="#D97706" stroke-width="2.0"/>
+<circle cx="232.0" cy="304.0" r="97.6" fill="none" stroke="#0F766E" stroke-width="2.5"/>
+<circle cx="232.0" cy="304.0" r="4" fill="#172033"/>
+<circle cx="337.0" cy="478.0" r="6" fill="#556176"/>
+<circle cx="136.0" cy="490.0" r="6" fill="#556176"/>
+<circle cx="331.0" cy="430.0" r="6" fill="#556176"/>
+<circle cx="382.0" cy="295.0" r="6" fill="#556176"/>
+<line x1="232.0" y1="304.0" x2="253.0" y2="283.0" stroke="#2563EB" stroke-width="2.0" stroke-linecap="round"/>
+<circle cx="253.0" cy="283.0" r="6" fill="#2563EB"/>
+<circle cx="367.0" cy="151.0" r="6" fill="#556176"/>
+<circle cx="154.0" cy="472.0" r="6" fill="#556176"/>
+<circle cx="106.0" cy="112.0" r="6" fill="#556176"/>
+<circle cx="55.0" cy="166.0" r="6" fill="#556176"/>
+<circle cx="214.0" cy="229.0" r="6" fill="#0F766E"/>
+<circle cx="274.0" cy="394.0" r="6" fill="#556176"/>
+<circle cx="133.0" cy="472.0" r="6" fill="#556176"/>
+<circle cx="124.0" cy="448.0" r="6" fill="#556176"/>
+<circle cx="337.0" cy="112.0" r="6" fill="#556176"/>
+<circle cx="73.0" cy="418.0" r="6" fill="#556176"/>
+<circle cx="256.0" cy="223.0" r="6" fill="#0F766E"/>
+<circle cx="139.0" cy="295.0" r="6" fill="#0F766E"/>
+<circle cx="175.0" cy="214.0" r="6" fill="#556176"/>
+<circle cx="220.0" cy="448.0" r="6" fill="#556176"/>
+<circle cx="193.0" cy="127.0" r="6" fill="#556176"/>
+<circle cx="310.0" cy="211.0" r="6" fill="#556176"/>
+<circle cx="145.0" cy="409.0" r="6" fill="#556176"/>
+<circle cx="202.0" cy="181.0" r="6" fill="#556176"/>
+<circle cx="409.0" cy="313.0" r="6" fill="#556176"/>
+<circle cx="403.0" cy="487.0" r="6" fill="#556176"/>
+<circle cx="334.0" cy="436.0" r="6" fill="#556176"/>
+<circle cx="403.0" cy="418.0" r="6" fill="#556176"/>
+<circle cx="241.0" cy="451.0" r="6" fill="#556176"/>
+<circle cx="133.0" cy="295.0" r="6" fill="#556176"/>
+<circle cx="331.0" cy="409.0" r="6" fill="#556176"/>
+<circle cx="223.0" cy="484.0" r="6" fill="#556176"/>
+<circle cx="115.0" cy="160.0" r="6" fill="#556176"/>
+<circle cx="349.0" cy="457.0" r="6" fill="#556176"/>
+<circle cx="283.0" cy="184.0" r="6" fill="#556176"/>
+<circle cx="376.0" cy="148.0" r="6" fill="#556176"/>
+<circle cx="64.0" cy="361.0" r="6" fill="#556176"/>
+<circle cx="88.0" cy="268.0" r="6" fill="#556176"/>
+<circle cx="229.0" cy="172.0" r="6" fill="#556176"/>
+<circle cx="283.0" cy="238.0" r="6" fill="#0F766E"/>
+<circle cx="421.0" cy="454.0" r="6" fill="#556176"/>
+<text x="448.0" y="142.0" fill="#2563EB" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">n: nearest to the</text>
+<text x="448.0" y="166.0" fill="#172033" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">center, at distance d</text>
+<text x="448.0" y="226.0" fill="#D97706" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">The cell: every color</text>
+<text x="448.0" y="250.0" fill="#172033" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">in it is within r</text>
+<text x="448.0" y="310.0" fill="#0F766E" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Inside d + 2r: 5 of</text>
+<text x="448.0" y="334.0" fill="#172033" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">40 colors stay</text>
+<text x="448.0" y="394.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Outside: can never</text>
+<text x="448.0" y="418.0" fill="#172033" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">be the nearest</text>
+</svg>

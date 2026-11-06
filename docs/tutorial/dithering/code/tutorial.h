@@ -28,9 +28,14 @@ typedef struct palette {
 int dither(image_t *out, image_t const *in, palette_t const *pal,
            char const *option);
 
-/* Written by each step: does this step keep the average tone of a flat area
- * with its default option? The self test holds it to the answer; a step that
- * answers no must be the plain nearest color. */
+/* Written by each step: what does this step keep the same in a flat area with
+ * its default option? The self test holds it to the answer; a step that keeps
+ * nothing must be the plain nearest color. */
+enum {
+    DITHER_KEEPS_NOTHING = 0,
+    DITHER_KEEPS_NUMBERS = 1,   /* the mean of the stored numbers */
+    DITHER_KEEPS_LIGHT = 2      /* the mean amount of light (lesson 7) */
+};
 extern int const dither_keeps_tone;
 
 /* The index of the palette color closest to (r, g, b). */

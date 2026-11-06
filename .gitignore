@@ -132,7 +132,8 @@ site/
 
 # Programs and pictures made while following the dithering tutorial.
 !/docs/tutorial/dithering/code/Makefile
-/docs/tutorial/dithering/code/step[1-4]
+/docs/tutorial/dithering/code/step[1-9]
+/docs/tutorial/dithering/code/step10
 /docs/tutorial/dithering/code/dtool
 /docs/tutorial/dithering/code/mydither
 /docs/tutorial/dithering/code/mine

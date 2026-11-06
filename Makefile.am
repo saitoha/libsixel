@@ -291,12 +291,17 @@ EXTRA_DIST = tools/gen-phased.sh tools/gen_varcoefs.awk tools/embed-metal.sh too
 	docs/tutorial/dithering/measurements.md \
 	docs/tutorial/dithering/measurements/results.json \
 	docs/tutorial/dithering/step1-nearest.md \
+	docs/tutorial/dithering/step10-threads.md \
 	docs/tutorial/dithering/step2-ordered.md \
 	docs/tutorial/dithering/step3-error-diffusion.md \
 	docs/tutorial/dithering/step4-kernels.md \
 	docs/tutorial/dithering/step5-good-dither.md \
 	docs/tutorial/dithering/step6-measuring.md \
+	docs/tutorial/dithering/step7-linear-light.md \
+	docs/tutorial/dithering/step8-integer-error.md \
+	docs/tutorial/dithering/step9-lookup.md \
 	docs/tutorial/dithering/figures/bayer-cells.svg \
+	docs/tutorial/dithering/figures/candidates.svg \
 	docs/tutorial/dithering/figures/color-cube27-atkinson.png \
 	docs/tutorial/dithering/figures/color-cube27-fs-average.png \
 	docs/tutorial/dithering/figures/color-cube27-fs.png \
@@ -317,18 +322,34 @@ EXTRA_DIST = tools/gen-phased.sh tools/gen_varcoefs.awk tools/embed-metal.sh too
 	docs/tutorial/dithering/figures/gray16-nearest.png \
 	docs/tutorial/dithering/figures/gray16-random-zoom.png \
 	docs/tutorial/dithering/figures/gray16-random.png \
+	docs/tutorial/dithering/figures/gray2-linear-light.png \
+	docs/tutorial/dithering/figures/gray2-linear.png \
+	docs/tutorial/dithering/figures/gray2-stored-light.png \
+	docs/tutorial/dithering/figures/gray2-stored.png \
 	docs/tutorial/dithering/figures/gray4-fs-zoom.png \
 	docs/tutorial/dithering/figures/gray4-fs.png \
 	docs/tutorial/dithering/figures/kernels.svg \
+	docs/tutorial/dithering/figures/light-curve.svg \
 	docs/tutorial/dithering/figures/nearest-staircase.svg \
+	docs/tutorial/dithering/figures/seam-bayer.png \
+	docs/tutorial/dithering/figures/seam-cold.png \
+	docs/tutorial/dithering/figures/seam-one-band.png \
+	docs/tutorial/dithering/figures/seam-warm.png \
 	docs/tutorial/dithering/figures/snake-cube216-fs.png \
 	docs/tutorial/dithering/figures/snake-cube27-bayer.png \
 	docs/tutorial/dithering/figures/snake-cube27-fs.png \
+	docs/tutorial/dithering/figures/snake-cube27-linear.png \
 	docs/tutorial/dithering/figures/snake-cube27-nearest.png \
 	docs/tutorial/dithering/figures/snake-original.png \
 	docs/tutorial/dithering/figures/snake-palette16-fs.png \
+	docs/tutorial/dithering/figures/snake-palette16-hard.png \
 	docs/tutorial/dithering/figures/snake-palette16-nearest.png \
+	docs/tutorial/dithering/figures/snake-palette16-none.png \
+	docs/tutorial/dithering/figures/snake-palette16-soft.png \
 	docs/tutorial/dithering/figures/snake-palette256-fs.png \
+	docs/tutorial/dithering/figures/snake-palette256-zone0.png \
+	docs/tutorial/dithering/figures/snake-palette256-zone10.png \
+	docs/tutorial/dithering/figures/warm-up.svg \
 	docs/tutorial/dithering/code/Makefile \
 	docs/tutorial/dithering/code/check.sh \
 	docs/tutorial/dithering/code/common.c \
@@ -337,9 +358,13 @@ EXTRA_DIST = tools/gen-phased.sh tools/gen_varcoefs.awk tools/embed-metal.sh too
 	docs/tutorial/dithering/code/mydither.c \
 	docs/tutorial/dithering/code/score.sh \
 	docs/tutorial/dithering/code/step1.c \
+	docs/tutorial/dithering/code/step10.c \
 	docs/tutorial/dithering/code/step2.c \
 	docs/tutorial/dithering/code/step3.c \
 	docs/tutorial/dithering/code/step4.c \
+	docs/tutorial/dithering/code/step7.c \
+	docs/tutorial/dithering/code/step8.c \
+	docs/tutorial/dithering/code/step9.c \
 	docs/tutorial/dithering/code/tutorial.h \
 	docs/tutorial/dithering/code/palettes/snake16.ppm \
 	docs/tutorial/dithering/code/palettes/snake256.ppm \

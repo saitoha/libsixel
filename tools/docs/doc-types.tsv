@@ -157,6 +157,10 @@ docs/tutorial/dithering/step3-error-diffusion.md	tutorial	both	dithering lesson
 docs/tutorial/dithering/step4-kernels.md	tutorial	both	dithering lesson + measurements
 docs/tutorial/dithering/step5-good-dither.md	tutorial	both	dithering lesson + measurements
 docs/tutorial/dithering/step6-measuring.md	tutorial	both	hands-on quality measurement + measurements
+docs/tutorial/dithering/step7-linear-light.md	tutorial	both	dithering lesson + measurements
+docs/tutorial/dithering/step8-integer-error.md	tutorial	both	dithering lesson + measurements
+docs/tutorial/dithering/step9-lookup.md	tutorial	both	dithering lesson + measurements
+docs/tutorial/dithering/step10-threads.md	tutorial	both	dithering lesson + measurements
 docs/tutorial/sixel-codec/README.md	tutorial	both	codec-implementation learning path, CLI harness and exercise skeleton + measured results and links to libsixel internals
 docs/tutorial/sixel-codec/step0-by-hand.md	tutorial	user	
 docs/tutorial/sixel-codec/step1-run-length.md	tutorial	both	codec-implementation lesson + measurements

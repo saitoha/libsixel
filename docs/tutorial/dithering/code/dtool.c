@@ -8,7 +8,9 @@
  *   dtool cube LEVELS                  a palette with LEVELS per channel
  *   dtool gray LEVELS                  a palette of LEVELS grays
  *   dtool average N IN                 replace each pixel by an N x N average
+ *   dtool light N IN                   the same average, taken in light
  *   dtool measure REFERENCE OUT        lesson 5's three numbers
+ *   dtool seams OUT HEIGHT             lesson 10's look at band starts
  *
  * Pictures go to standard output as binary PPM.
  */
@@ -86,6 +88,79 @@ average(int n, char const *path)
             square_mean(&in, x, y, n, mean);
             for (c = 0; c < 3; c++) {
                 *q++ = (unsigned char)(mean[c] + 0.5);
+            }
+        }
+    }
+    c = image_write(&out);
+    image_free(&in);
+    image_free(&out);
+    return c;
+}
+
+/* The sRGB curve, from a stored number from 0 to 255 to light from 0 to 1. */
+static double
+to_light(double stored)
+{
+    double v = stored / 255.0;
+
+    return v <= 0.04045 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4);
+}
+
+static double
+to_stored(double light)
+{
+    return 255.0 * (light <= 0.0031308 ? light * 12.92
+                    : 1.055 * pow(light, 1.0 / 2.4) - 0.055);
+}
+
+/* What an eye sees from afar: the mean of the light of each N x N square. */
+static int
+light_average(int n, char const *path)
+{
+    image_t in;
+    image_t out;
+    double table[256];
+    double sum[3];
+    unsigned char const *p;
+    unsigned char *q;
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+    int x;
+    int y;
+    int i;
+    int j;
+    int c;
+
+    if (n < 1 || image_read(&in, path) != 0) {
+        return 1;
+    }
+    if (image_new(&out, in.width, in.height) != 0) {
+        return 1;
+    }
+    for (i = 0; i < 256; i++) {
+        table[i] = to_light(i);
+    }
+    q = out.rgb;
+    for (y = 0; y < in.height; y++) {
+        y0 = y - n / 2 < 0 ? 0 : y - n / 2;
+        y1 = y0 + n > in.height ? in.height : y0 + n;
+        for (x = 0; x < in.width; x++) {
+            x0 = x - n / 2 < 0 ? 0 : x - n / 2;
+            x1 = x0 + n > in.width ? in.width : x0 + n;
+            sum[0] = sum[1] = sum[2] = 0.0;
+            for (j = y0; j < y1; j++) {
+                p = in.rgb + ((size_t)j * (size_t)in.width + (size_t)x0) * 3;
+                for (i = x0; i < x1; i++, p += 3) {
+                    for (c = 0; c < 3; c++) {
+                        sum[c] += table[p[c]];
+                    }
+                }
+            }
+            for (c = 0; c < 3; c++) {
+                *q++ = (unsigned char)(to_stored(
+                    sum[c] / ((double)(x1 - x0) * (double)(y1 - y0))) + 0.5);
             }
         }
     }
@@ -185,6 +260,48 @@ measure(char const *reference, char const *output)
     return 0;
 }
 
+/* How many times the color changes along a row, in the first rows of each
+ * band and in all other rows. A dither that has not got going yet changes
+ * color less often, and that difference is what a seam looks like. */
+static int
+seams(char const *path, int height)
+{
+    enum { SEAM_ROWS = 2 };
+    image_t img;
+    double seam = 0.0;
+    double other = 0.0;
+    long seam_rows = 0;
+    long other_rows = 0;
+    long changes;
+    unsigned char const *p;
+    int x;
+    int y;
+
+    if (height < 1 || image_read(&img, path) != 0) {
+        return 1;
+    }
+    for (y = 0; y < img.height; y++) {
+        p = img.rgb + (size_t)y * (size_t)img.width * 3;
+        changes = 0;
+        for (x = 1; x < img.width; x++, p += 3) {
+            changes += memcmp(p, p + 3, 3) != 0;
+        }
+        /* The top of the picture starts cold in every method: not a seam. */
+        if (y >= height && y % height < SEAM_ROWS) {
+            seam += (double)changes;
+            seam_rows++;
+        } else if (y >= SEAM_ROWS) {
+            other += (double)changes;
+            other_rows++;
+        }
+    }
+    printf("color changes per row: %.1f at band starts, %.1f elsewhere\n",
+           seam_rows > 0 ? seam / (double)seam_rows : 0.0,
+           other_rows > 0 ? other / (double)other_rows : 0.0);
+    image_free(&img);
+    return 0;
+}
+
 static int
 usage(void)
 {
@@ -193,7 +310,9 @@ usage(void)
             "       dtool cube LEVELS\n"
             "       dtool gray LEVELS\n"
             "       dtool average N IN.ppm\n"
-            "       dtool measure REFERENCE.ppm OUT.ppm\n");
+            "       dtool light N IN.ppm\n"
+            "       dtool measure REFERENCE.ppm OUT.ppm\n"
+            "       dtool seams OUT.ppm HEIGHT\n");
     return 2;
 }
 
@@ -223,8 +342,14 @@ main(int argc, char **argv)
     if (strcmp(argv[1], "average") == 0 && argc == 4) {
         return average(atoi(argv[2]), argv[3]);
     }
+    if (strcmp(argv[1], "light") == 0 && argc == 4) {
+        return light_average(atoi(argv[2]), argv[3]);
+    }
     if (strcmp(argv[1], "measure") == 0 && argc == 4) {
         return measure(argv[2], argv[3]);
+    }
+    if (strcmp(argv[1], "seams") == 0 && argc == 4) {
+        return seams(argv[2], atoi(argv[3]));
     }
     if ((strcmp(argv[1], "gradient") == 0 && (argc == 4 || argc == 10)) ||
             (strcmp(argv[1], "flat") == 0 && argc == 7)) {

@@ -82,13 +82,13 @@ Each cell is the time per pixel on the 600×450 photograph, on one thread. The [
 <!-- measurements:begin:speed -->
 | Method | 16 colors, ns per pixel | 256 colors, ns per pixel |
 | --- | --- | --- |
-| Nearest color (step 1) | 10.8 | 164.9 |
-| Random nudge (step 2) | 23.3 | 162.9 |
-| Bayer pattern (step 2) | 23.9 | 164.3 |
-| Floyd–Steinberg (step 3) | 26.8 | 166.3 |
-| Floyd–Steinberg, serpentine (step 4) | 27.4 | 176.5 |
-| Atkinson (step 4) | 28.4 | 175.5 |
-| Jarvis, Judice, Ninke (step 4) | 35.0 | 187.9 |
+| Nearest color (step 1) | 10.4 | 153.6 |
+| Random nudge (step 2) | 23.4 | 164.3 |
+| Bayer pattern (step 2) | 24.3 | 162.7 |
+| Floyd–Steinberg (step 3) | 26.6 | 157.7 |
+| Floyd–Steinberg, serpentine (step 4) | 27.3 | 174.4 |
+| Atkinson (step 4) | 28.5 | 170.4 |
+| Jarvis, Judice, Ninke (step 4) | 36.1 | 184.5 |
 <!-- measurements:end -->
 
 With 256 colors, the method hardly matters. Nearly all the time goes into `nearest_color()`, which tries every palette color for every pixel. The kernels only matter at small palettes. This is why making dithering fast is mostly a question of [finding the color fast](../../encoder/palette-application/lookup-policy/README.md).
