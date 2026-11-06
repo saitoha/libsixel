@@ -24,6 +24,8 @@ test_png_delta_options(int mode)
     };
     sixel_encoder_t *encoder;
     char *png_path;
+    char *path_copy;
+    size_t path_size;
     char *sixel_path;
     SIXELSTATUS status;
     unsigned int threshold;
@@ -36,6 +38,7 @@ test_png_delta_options(int mode)
     int ok;
 
     encoder = NULL;
+    path_copy = NULL;
     ok = 0;
     png_first = mode < 6 && (mode & 1) == 0;
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL))) {
@@ -78,6 +81,15 @@ test_png_delta_options(int mode)
     png = encoder->output_is_png;
     to_stdout = encoder->output_png_to_stdout;
     png_path = encoder->png_output_path;
+    /* Preserve the configured bytes, including host path conversion. */
+    if (png_path != NULL) {
+        path_size = strlen(png_path) + 1u;
+        path_copy = malloc(path_size);
+        if (path_copy == NULL) {
+            goto end;
+        }
+        memcpy(path_copy, png_path, path_size);
+    }
     sixel_path = encoder->sixel_output_path;
     fd = encoder->outfd;
     status = sixel_encoder_setopt(encoder, png_first ? 'Z' : 'o',
@@ -92,7 +104,7 @@ test_png_delta_options(int mode)
         encoder->output_png_to_stdout == to_stdout &&
         encoder->png_output_path == png_path &&
         encoder->sixel_output_path == sixel_path && encoder->outfd == fd &&
-        (png_path == NULL || strcmp(png_path, "unused-snapshot.png") == 0) &&
+        (png_path == NULL || strcmp(png_path, path_copy) == 0) &&
         encoder->accumulation_valid &&
         encoder->accumulation_valid_mask != NULL &&
         encoder->accumulation_valid_mask[0] != 0 &&
@@ -103,6 +115,7 @@ end:
         fprintf(stderr, "PNG delta option mode=%d: %s\n", mode,
             sixel_helper_get_additional_message());
     }
+    free(path_copy);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -236,11 +249,14 @@ test_png_delta_file_guard(int mode)
     static unsigned char const retained[3] = { 51, 102, 153 };
     sixel_encoder_t *encoder;
     char *path;
+    char *path_copy;
+    size_t path_size;
     SIXELSTATUS status;
     int fd;
     int ok;
 
     encoder = NULL;
+    path_copy = NULL;
     ok = 0;
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "full")) ||
@@ -251,6 +267,15 @@ test_png_delta_file_guard(int mode)
         goto end;
     }
     path = encoder->png_output_path;
+    /* Preserve the configured bytes, including host path conversion. */
+    if (path != NULL) {
+        path_size = strlen(path) + 1u;
+        path_copy = malloc(path_size);
+        if (path_copy == NULL) {
+            goto end;
+        }
+        memcpy(path_copy, path, path_size);
+    }
     fd = encoder->outfd;
     encoder->sixdelta_enabled = 1;
     /* No input or staging file is needed: the conflict precedes all input
@@ -262,13 +287,14 @@ test_png_delta_file_guard(int mode)
         encoder->accumulation_valid &&
         memcmp(encoder->accumulation_pixels, retained, sizeof(retained)) == 0;
     if (ok && path != NULL) {
-        ok = strcmp(path, "unused-snapshot.png") == 0;
+        ok = strcmp(path, path_copy) == 0;
     }
 end:
     if (!ok) {
         fprintf(stderr, "PNG delta file guard mode=%d: %s\n", mode,
             sixel_helper_get_additional_message());
     }
+    free(path_copy);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

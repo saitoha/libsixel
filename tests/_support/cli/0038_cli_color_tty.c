@@ -318,6 +318,9 @@ color_tty_child(char const *name, int command, int report)
     fd_set writable;
     size_t written;
     int fill_ready;
+    ssize_t fill_count;
+    size_t fill_size;
+    char filler[4096];
     int flags;
     int pipes[2];
     int output_copy;
@@ -451,15 +454,37 @@ color_tty_child(char const *name, int command, int report)
         if (output_copy < 0 || output_copy >= FD_SETSIZE) {
             return color_tty_error("cannot open output filler");
         }
+        /* Batch filler writes: one syscall per byte can exhaust the
+         * watchdog on an RPC-backed PTY before the queue is full. */
+        memset(filler, 'x', sizeof(filler));
+        fill_size = sizeof(filler);
         fill_ready = 1;
-        for (written = 0u; written < 1024u * 1024u; ++written) {
+        for (written = 0u; written < 1024u * 1024u;) {
             immediate.tv_sec = 0;
             immediate.tv_usec = 0;
             FD_ZERO(&writable);
             FD_SET(output_copy, &writable);
             fill_ready = select(output_copy + 1, NULL, &writable,
                                 NULL, &immediate);
-            if (fill_ready <= 0 || write(output_copy, "x", 1u) != 1) {
+            if (fill_ready <= 0) {
+                break;
+            }
+            fill_count = write(output_copy, filler, fill_size);
+            if (fill_count > 0) {
+                written += (size_t)fill_count;
+            } else if (fill_count < 0 && errno == EINTR) {
+                continue;
+            } else {
+                if (fill_count < 0 &&
+                    (errno == EAGAIN || errno == EWOULDBLOCK)) {
+                    /* Some PTYs need room for the entire write. Finish
+                     * with smaller writes before declaring it full. */
+                    if (fill_size > 1u) {
+                        fill_size /= 2u;
+                        continue;
+                    }
+                    fill_ready = 0;
+                }
                 break;
             }
         }
@@ -643,6 +668,7 @@ color_tty_script(char const *name, int master, int command, int report,
         strcmp(name, "sigint-race") == 0 ||
         strcmp(name, "sigterm-race") == 0) {
         if (!color_tty_expect(report, "d")) {
+            color_tty_error("backpressure completion report");
             return 0;
         }
         /* Drain before waiting for child exit: BSD close can wait for its
@@ -910,8 +936,13 @@ test_cli_0038_color_tty(int argc, char **argv)
         close(master);
         master = -1;
     }
-    if (waitpid(child, &status, 0) != child || !WIFEXITED(status) ||
-        WEXITSTATUS(status) != 0) {
+    if (waitpid(child, &status, 0) != child) {
+        color_tty_error("wait for child");
+        result = 0;
+    } else if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        fprintf(stderr, "CLI color TTY: child status=%d signal=%d\n",
+                WIFEXITED(status) ? WEXITSTATUS(status) : -1,
+                WIFSIGNALED(status) ? WTERMSIG(status) : 0);
         result = 0;
     }
     if (master >= 0) {

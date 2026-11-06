@@ -862,7 +862,8 @@ lsqa_video_run(lsqa_video_options_t const *options,
     }
     status = SIXEL_RUNTIME_ERROR;
     if (options->report != NULL) {
-        v.report = tmpfile();
+        /* Use the shared CRT adapter, including in C-runner builds. */
+        v.report = sixel_compat_tmpfile();
         if (v.report == NULL) {
             sixel_helper_set_additional_message("cannot create report spool");
             goto cleanup;
@@ -937,7 +938,7 @@ lsqa_video_run(lsqa_video_options_t const *options,
         fputs("}\n", v.report);
     }
     if (options->error_map != NULL) {
-        v.maps = tmpfile();
+        v.maps = sixel_compat_tmpfile();
         if (v.maps == NULL) {
             sixel_helper_set_additional_message(
                 "cannot create error-map spool");

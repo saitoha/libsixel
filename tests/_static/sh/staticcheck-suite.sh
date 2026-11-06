@@ -1139,6 +1139,18 @@ run_case_tap "staticcheck-pkg-config-search-path" \
     sh "$src_root/tests/_static/sh/staticcheck-pkg-config-search-path.sh" \
     "$src_root"
 
+run_case_tap "staticcheck-assessment-stdio" \
+    sh "$src_root/tests/_static/sh/staticcheck-assessment-stdio.sh" \
+    "$src_root"
+
+run_case_tap "staticcheck-phased-coefficient-guard" \
+    sh "$src_root/tests/_static/sh/staticcheck-phased-coefficient-guard.sh" \
+    "$src_root"
+
+run_case_tap "staticcheck-msys-runtime-arguments" \
+    sh "$src_root/tests/_static/sh/staticcheck-msys-runtime-arguments.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-amalgamation-metal-guards" \
     sh "$src_root/tests/_static/sh/staticcheck-amalgamation-metal-guards.sh" \
     "$src_root"

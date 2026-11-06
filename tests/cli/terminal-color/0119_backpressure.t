@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify CLI terminal color transport backpressure.
+# Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
 result=0

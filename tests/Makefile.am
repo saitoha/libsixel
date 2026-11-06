@@ -12417,3 +12417,7 @@ EXTRA_DIST += _static/sh/staticcheck-comparator-search-order.sh
 EXTRA_DIST += _static/sh/staticcheck-tap-interpreter-skip.sh \
     _static/sh/staticcheck-pkg-config-search-path.sh \
     _static/sh/staticcheck-amalgamation-metal-guards.sh
+
+EXTRA_DIST += _static/sh/staticcheck-assessment-stdio.sh \
+    _static/sh/staticcheck-phased-coefficient-guard.sh \
+    _static/sh/staticcheck-msys-runtime-arguments.sh

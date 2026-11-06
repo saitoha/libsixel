@@ -4,6 +4,8 @@
 # shellcheck disable=SC2016
 set -eu
 : "${AWK:=awk}"
+# Amalgamation hoists this header outside the Objective-C source guard.
+printf '%s\n' '#if defined(HAVE_METAL)'
 "$AWK" -v NAME=phased_ratios -f "${0%/*}/gen_varcoefs.awk" "$1" |
     "$AWK" '
     /^   \{/ {
@@ -18,3 +20,4 @@ set -eu
     $1 == "gain" { printf "    { %s, %s },\n", $2, $3 }
     END { print "};" }
     ' "$1"
+printf '%s\n' '#endif /* HAVE_METAL */'

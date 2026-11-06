@@ -428,6 +428,10 @@ foreach t : tests
     # Assignment copies the environment, keeping artifact paths independent.
     test_env = env
   endif
+  # Compiler wrappers suppress MSYS argument conversion for slash options.
+  # Runtime children need it for absolute shell paths, including cmp.exe.
+  # Keep this per-test: Meson may still rebuild with the compiler environment.
+  test_env.set('MSYS2_ARG_CONV_EXCL', '')
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
   test_cmd = [meson.current_source_dir() / t]
   test_should_fail = xfail_tests.contains(t)
