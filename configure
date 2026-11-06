@@ -927,6 +927,7 @@ SIXEL_LIBTOOL_BUILD_LIBS
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH
 SIXEL_LIBTOOL_SHLIBPATH_VAR
 SIXEL_LIBTOOL_OBJDIR
+SIXEL_TEST_RUNNER_RESPONSE_FLAG
 SIXEL_TEST_RUNNER_USE_RESPONSE_FILE
 LT_SYS_LIBRARY_PATH
 OTOOL64
@@ -16052,14 +16053,14 @@ fi
 # linking a referenced object; accepting an unused option is not sufficient.
 # This is link-only so it also works while cross compiling. OpenVMS keeps
 # its native linker option-file implementation instead.
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler links objects from a response file" >&5
-printf %s "checking whether the C compiler links objects from a response file... " >&6; }
-if test ${sixel_cv_cc_object_response+y}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the C compiler object response-file flag" >&5
+printf %s "checking for the C compiler object response-file flag... " >&6; }
+if test ${sixel_cv_cc_object_response_flag+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
-  sixel_cv_cc_object_response=no
+  sixel_cv_cc_object_response_flag=no
   if test "x$sixel_openvms_mode" != xyes
 then :
 
@@ -16075,7 +16076,17 @@ then :
       mv conftest.$ac_objext conftest-response.$ac_objext
       printf '%s\n' "conftest-response.$ac_objext" > conftest-response.objects
       sixel_response_save_LIBS=$LIBS
-      LIBS="@conftest-response.objects $LIBS"
+      sixel_response_flag=@
+      # clang-cl otherwise expands @file and repacks all objects onto one
+      # linker response line, exceeding link.exe's response-line length limit.
+      # Forward the original one-object-per-line file to the linker instead.
+      if test "x$using_clangcl" = xyes
+then :
+
+        sixel_response_flag=-clang:-Wl,@
+
+fi
+      LIBS="${sixel_response_flag}conftest-response.objects $LIBS"
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -16091,7 +16102,9 @@ return sixel_response_probe();
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
-  sixel_cv_cc_object_response=yes
+
+        sixel_cv_cc_object_response_flag=$sixel_response_flag
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
@@ -16105,9 +16118,19 @@ fi
  ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_cc_object_response" >&5
-printf "%s\n" "$sixel_cv_cc_object_response" >&6; }
-SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=$sixel_cv_cc_object_response
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_cc_object_response_flag" >&5
+printf "%s\n" "$sixel_cv_cc_object_response_flag" >&6; }
+SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=no
+SIXEL_TEST_RUNNER_RESPONSE_FLAG=@
+if test "x$sixel_cv_cc_object_response_flag" != xno
+then :
+
+  SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=yes
+  SIXEL_TEST_RUNNER_RESPONSE_FLAG=$sixel_cv_cc_object_response_flag
+
+fi
+
+
 
 
 

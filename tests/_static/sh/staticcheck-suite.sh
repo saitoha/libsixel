@@ -754,6 +754,14 @@ run_case_tap "staticcheck-cli-string-copy" \
     "$src_root/tests/_static/sh/staticcheck-cli-string-copy.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-clangcl-link-response" \
+    sh "$src_root/tests/_static/sh/staticcheck-clangcl-link-response.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-amalgamation-nested-fragments" \
+    sh "$src_root/tests/_static/sh/staticcheck-amalgamation-nested-fragments.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-runner-link" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-link.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?

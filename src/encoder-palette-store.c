@@ -100,20 +100,23 @@ sixel_palette_store_reset(sixel_palette_store_t *store, uint64_t frontier)
 {
     sixel_palette_snapshot_t *retired[SIXEL_PALETTE_STORE_SLOTS + 1];
     int i;
+    int retired_count;
 
     sixel_mutex_lock(&store->mutex);
     ++store->epoch;
     store->frontier = frontier;
     store->selected_sequence = frontier;
     retired[0] = store->active.snapshot;
+    retired_count = 1;
     memset(&store->active, 0, sizeof(store->active));
     for (i = 0; i < store->capacity; ++i) {
         store->jobs[i].cancelled = 1;
-        retired[i + 1] = store->jobs[i].future.snapshot;
+        retired[retired_count++] = store->jobs[i].future.snapshot;
         memset(&store->jobs[i].future, 0, sizeof(store->jobs[i].future));
     }
     sixel_mutex_unlock(&store->mutex);
-    for (i = 0; i <= store->capacity; ++i) {
+    /* Use the inventory detached under lock, not mutable store state. */
+    for (i = 0; i < retired_count; ++i) {
         sixel_palette_snapshot_unref(retired[i]);
     }
 }

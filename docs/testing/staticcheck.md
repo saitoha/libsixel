@@ -148,6 +148,8 @@ The independent [test macro isolation check](../../tests/_static/sh/staticcheck-
 
 The [WIC probe scope check](../../tests/_static/sh/staticcheck-configure-wic-scope.sh) rejects missing flag saves or restores and restores outside the Windows probe branch. The [unity feature-namespace check](../../tests/_static/sh/staticcheck-test-unity-feature-namespace.sh) checks the common namespace setting on all three Meson C test targets and preserves the DragonFly exception. Both use one awk process with in-memory negative controls; neither requires compilation. Their contracts belong to the [test harness](../build/test-harness.md).
 
+The independent [nested-fragment check](../../tests/_static/sh/staticcheck-amalgamation-nested-fragments.sh) runs the generator on a tiny source tree with conditional, nested `.inc.h` fragments and generated shader bytes. The independent [clang-cl linker-response check](../../tests/_static/sh/staticcheck-clangcl-link-response.sh) checks configure wiring and runs the real Make recipe against a mock driver with an inventory larger than 128 KiB; a compiler-level response flag is a negative control. These checks require neither a compiler nor Python. The actual platform builds remain necessary to validate compiler and linker behavior.
+
 The independent [amalgamation header-scope check](../../tests/_static/sh/staticcheck-amalgamation-header-scope.sh) runs the real generator on a tiny fixture and checks transitive header selection for two consumers plus an unreferenced control. It does not generate the full repository amalgamation or compile it. The [Autotools reference](../build/autotools.md#library-linking-and-generated-translation-units) owns the selection boundary.
 
 The generated-amalgamation-input check runs the generator against a tiny tree before and after adding the generated runner wrapper and selection header. Both outputs must be identical, protecting in-tree incremental builds as well as the initial build. The [Autotools reference](../build/autotools.md#library-linking-and-generated-translation-units) owns this boundary.
@@ -293,6 +295,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-89 | Assessment temporary streams use the shared portable CRT adapters. | [tests/_static/sh/staticcheck-assessment-stdio.sh](../../tests/_static/sh/staticcheck-assessment-stdio.sh) |
 | SC-90 | Phased coefficient tables retain the Metal-only guard after header hoisting. | [tests/_static/sh/staticcheck-phased-coefficient-guard.sh](../../tests/_static/sh/staticcheck-phased-coefficient-guard.sh) |
 | SC-91 | Meson TAP runtime paths are not subject to compiler-only MSYS argument conversion exclusions. | [tests/_static/sh/staticcheck-msys-runtime-arguments.sh](../../tests/_static/sh/staticcheck-msys-runtime-arguments.sh) |
+| SC-92 | Nested implementation fragments retain include-site ordering, conditional scope and generated shader bytes. | [tests/_static/sh/staticcheck-amalgamation-nested-fragments.sh](../../tests/_static/sh/staticcheck-amalgamation-nested-fragments.sh) |
+| SC-93 | clang-cl preserves a multiline linker object response file rather than expanding it into a single native linker line. | [tests/_static/sh/staticcheck-clangcl-link-response.sh](../../tests/_static/sh/staticcheck-clangcl-link-response.sh) |
 
 ### Coverage boundary
 

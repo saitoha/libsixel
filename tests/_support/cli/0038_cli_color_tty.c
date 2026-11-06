@@ -454,10 +454,14 @@ color_tty_child(char const *name, int command, int report)
         if (output_copy < 0 || output_copy >= FD_SETSIZE) {
             return color_tty_error("cannot open output filler");
         }
-        /* Batch filler writes: one syscall per byte can exhaust the
-         * watchdog on an RPC-backed PTY before the queue is full. */
+        /* Batch where supported. Hurd can block a larger nonblocking
+         * write that only partly fits; readiness promises just one byte. */
         memset(filler, 'x', sizeof(filler));
+#if defined(__GNU__)
+        fill_size = 1u;
+#else
         fill_size = sizeof(filler);
+#endif
         fill_ready = 1;
         for (written = 0u; written < 1024u * 1024u;) {
             immediate.tv_sec = 0;

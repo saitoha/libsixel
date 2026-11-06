@@ -199,6 +199,12 @@ img2sixel_color_tty_wait(img2sixel_color_tty_t *tty, int writing,
     if (sigprocmask(SIG_SETMASK, &saved, NULL) != 0) {
         return IMG2SIXEL_COLOR_IO_ERROR;
     }
+    /* Readiness can win over a pending signal in pselect. Restoring the
+     * mask then delivers cancellation, before we perform the ready I/O. */
+    if (result == IMG2SIXEL_COLOR_IO_OK && !recovery &&
+        tty->cancel != NULL && tty->cancel(tty->cancel_context)) {
+        result = IMG2SIXEL_COLOR_IO_CANCELLED;
+    }
     errno = saved_errno;
     return result;
 }

@@ -15216,6 +15216,7 @@ SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
 SIXEL_TEST_DEPRECATED_CFLAGS = @SIXEL_TEST_DEPRECATED_CFLAGS@
 SIXEL_TEST_GZIP = @SIXEL_TEST_GZIP@
+SIXEL_TEST_RUNNER_RESPONSE_FLAG = @SIXEL_TEST_RUNNER_RESPONSE_FLAG@
 SIXEL_TEST_RUNNER_USE_RESPONSE_FILE = @SIXEL_TEST_RUNNER_USE_RESPONSE_FILE@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
@@ -25464,6 +25465,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-installcheck-launch.sh \
 	_static/sh/staticcheck-amalgamation-test-fragments.sh \
 	_static/sh/staticcheck-test-runner-link.sh \
+	_static/sh/staticcheck-clangcl-link-response.sh \
+	_static/sh/staticcheck-amalgamation-nested-fragments.sh \
 	_static/awk/test-runner-meson-link.awk \
 	_static/sh/check-test-runner-link.sh \
 	_static/awk/c-preprocessor-portability.awk \
@@ -115204,15 +115207,17 @@ test_runner.objects: Makefile
 	@mv -f $@.tmp $@
 
 # A successful configure link probe permits passing the object inventory
-# straight to the compiler. Libtool forwards @file unchanged, avoiding its
-# repeated argument/string processing for thousands of ordinary objects.
+# straight to the configured consumer. Libtool forwards it unchanged,
+# avoiding repeated string processing for thousands of ordinary objects.
 # Libraries remain visible to Libtool, preserving wrapper and runtime paths.
 # Compilers without this grammar retain the shell-expanded argv fallback;
 # -objectlist cannot replace it because that Libtool option requires .lo.
 SIXEL_TEST_RUNNER_OBJECT_LIST ?= test_runner.objects
+SIXEL_TEST_RUNNER_RESPONSE_FLAG ?= @
 SIXEL_TEST_RUNNER_LINK_COMMAND ?= $(if \
     $(filter yes,$(SIXEL_TEST_RUNNER_USE_RESPONSE_FILE)),\
-    $(test_runner_LINK) @test_runner.objects $(test_runner_LDADD) $(LIBS),\
+    $(test_runner_LINK) $(SIXEL_TEST_RUNNER_RESPONSE_FLAG)test_runner.objects \
+    $(test_runner_LDADD) $(LIBS),\
     set -f; objects=$$(cat test_runner.objects) && \
     $(test_runner_LINK) $$objects $(test_runner_LDADD) $(LIBS))
 

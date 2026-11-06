@@ -10111,6 +10111,7 @@ test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
 endif
 SIXEL_TEST_RUNNER_USE_RESPONSE_FILE = @SIXEL_TEST_RUNNER_USE_RESPONSE_FILE@
+SIXEL_TEST_RUNNER_RESPONSE_FLAG = @SIXEL_TEST_RUNNER_RESPONSE_FLAG@
 include $(top_srcdir)/build-aux/test-runner-link.am
 
 LOG_DRIVER = $(T_LOG_DRIVER)
@@ -12022,6 +12023,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin tools/compa
     _static/sh/staticcheck-installcheck-launch.sh \
     _static/sh/staticcheck-amalgamation-test-fragments.sh \
     _static/sh/staticcheck-test-runner-link.sh \
+    _static/sh/staticcheck-clangcl-link-response.sh \
+    _static/sh/staticcheck-amalgamation-nested-fragments.sh \
     _static/awk/test-runner-meson-link.awk _static/sh/check-test-runner-link.sh \
     _static/awk/c-preprocessor-portability.awk \
     _static/sh/staticcheck-c-preprocessor-portability.sh \

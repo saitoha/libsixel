@@ -387,8 +387,11 @@ function emit_metal_include(text,    name, path, value, result) {
 # These bodies must retain their original conditional include scope. Do not
 # mark them emitted in the generator: an earlier include can be compiled out.
 # C guards select the first active include, independently of source ordering.
+# Private .inc.h fragments also expand recursively here, after the owner
+# declarations they need, rather than relying on a list of known filenames.
 function deferred(name) {
-    return name == "cms-curv.h" || name == "loader-libpng-chrm.h" ||
+    return name ~ /\.inc\.h$/ ||
+        name == "cms-curv.h" || name == "loader-libpng-chrm.h" ||
         name == "loader-libpng-chrm-area.h";
 }
 function emit_deferred(name,    path, guard, line, included, number) {
@@ -402,6 +405,7 @@ function emit_deferred(name,    path, guard, line, included, number) {
     number = 0;
     while ((getline line < path) > 0) {
         number++;
+        if (emit_metal_include(line)) continue;
         if (line ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) continue;
         if (line ~ /^[ \t]*#[ \t]*include[ \t]*["<][^">]+[">]/) {
             included = line;
@@ -440,16 +444,6 @@ BEGIN {
 
     inline_once["stb_image.h"] = 1;
     inline_once["stb_image_write.h"] = 1;
-    inline_once["encoder-core-indexed.inc.h"] = 1;
-    inline_once["encoder-core-session.inc.h"] = 1;
-    # These private fragments must stay inside their owning component unit.
-    # Hoisting them would expose shader state or precede required definitions.
-    inline_once["dither-lookup-preparer.inc.h"] = 1;
-    inline_once["gpu-palette-fused-prefix.inc.h"] = 1;
-    inline_once["gpu-palette-fused-suffix.inc.h"] = 1;
-    inline_once["gpu-palette-program.inc.h"] = 1;
-    inline_once["lookup-policy-fhedt-gpu.inc.h"] = 1;
-    inline_once["lookup-policy-bitlut-gpu.inc.h"] = 1;
 }
 {
     if (emit_metal_include($0)) next;

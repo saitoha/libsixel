@@ -866,9 +866,9 @@ AS_IF([test "x$using_cl" = xyes && test "x$enable_shared" = xyes], [
 # linking a referenced object; accepting an unused option is not sufficient.
 # This is link-only so it also works while cross compiling. OpenVMS keeps
 # its native linker option-file implementation instead.
-AC_CACHE_CHECK([whether the C compiler links objects from a response file],
-  [sixel_cv_cc_object_response], [
-  sixel_cv_cc_object_response=no
+AC_CACHE_CHECK([for the C compiler object response-file flag],
+  [sixel_cv_cc_object_response_flag], [
+  sixel_cv_cc_object_response_flag=no
   AS_IF([test "x$sixel_openvms_mode" != xyes], [
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 int sixel_response_probe(void) { return 0; }
@@ -876,17 +876,34 @@ int sixel_response_probe(void) { return 0; }
       mv conftest.$ac_objext conftest-response.$ac_objext
       printf '%s\n' "conftest-response.$ac_objext" > conftest-response.objects
       sixel_response_save_LIBS=$LIBS
-      LIBS="@conftest-response.objects $LIBS"
+      sixel_response_flag=@
+      # clang-cl otherwise expands @file and repacks all objects onto one
+      # linker response line, exceeding link.exe's response-line length limit.
+      # Forward the original one-object-per-line file to the linker instead.
+      AS_IF([test "x$using_clangcl" = xyes], [
+        sixel_response_flag=-clang:-Wl,@
+      ])
+      LIBS="${sixel_response_flag}conftest-response.objects $LIBS"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 extern int sixel_response_probe(void);
-]], [[return sixel_response_probe();]])], [sixel_cv_cc_object_response=yes])
+]], [[return sixel_response_probe();]])], [
+        sixel_cv_cc_object_response_flag=$sixel_response_flag
+      ])
       LIBS=$sixel_response_save_LIBS
       rm -f conftest-response.$ac_objext conftest-response.objects
     ])
   ])
 ])
-AC_SUBST([SIXEL_TEST_RUNNER_USE_RESPONSE_FILE], [$sixel_cv_cc_object_response])
+SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=no
+SIXEL_TEST_RUNNER_RESPONSE_FLAG=@
+AS_IF([test "x$sixel_cv_cc_object_response_flag" != xno], [
+  SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=yes
+  SIXEL_TEST_RUNNER_RESPONSE_FLAG=$sixel_cv_cc_object_response_flag
+])
+AC_SUBST([SIXEL_TEST_RUNNER_USE_RESPONSE_FILE])
 AM_SUBST_NOTMAKE([SIXEL_TEST_RUNNER_USE_RESPONSE_FILE])
+AC_SUBST([SIXEL_TEST_RUNNER_RESPONSE_FLAG])
+AM_SUBST_NOTMAKE([SIXEL_TEST_RUNNER_RESPONSE_FLAG])
 
 # Expose libtool runtime metadata to test environments so shell tests can
 # execute the real binaries directly without probing stale build artifacts.

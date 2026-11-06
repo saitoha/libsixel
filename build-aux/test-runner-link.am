@@ -15,15 +15,17 @@ test_runner.objects: Makefile
 	@mv -f $@.tmp $@
 
 # A successful configure link probe permits passing the object inventory
-# straight to the compiler. Libtool forwards @file unchanged, avoiding its
-# repeated argument/string processing for thousands of ordinary objects.
+# straight to the configured consumer. Libtool forwards it unchanged,
+# avoiding repeated string processing for thousands of ordinary objects.
 # Libraries remain visible to Libtool, preserving wrapper and runtime paths.
 # Compilers without this grammar retain the shell-expanded argv fallback;
 # -objectlist cannot replace it because that Libtool option requires .lo.
 SIXEL_TEST_RUNNER_OBJECT_LIST ?= test_runner.objects
+SIXEL_TEST_RUNNER_RESPONSE_FLAG ?= @
 SIXEL_TEST_RUNNER_LINK_COMMAND ?= $(if \
     $(filter yes,$(SIXEL_TEST_RUNNER_USE_RESPONSE_FILE)),\
-    $(test_runner_LINK) @test_runner.objects $(test_runner_LDADD) $(LIBS),\
+    $(test_runner_LINK) $(SIXEL_TEST_RUNNER_RESPONSE_FLAG)test_runner.objects \
+    $(test_runner_LDADD) $(LIBS),\
     set -f; objects=$$(cat test_runner.objects) && \
     $(test_runner_LINK) $$objects $(test_runner_LDADD) $(LIBS))
 
