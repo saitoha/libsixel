@@ -110,6 +110,17 @@ struct sixel_encoder_prepare_test_hooks {
     void *context;
 };
 
+/* Deferred producer rendezvous. No hook executes under a queue gate. */
+struct sixel_encoder_solve_test_hooks {
+    void (*completed)(void *context, uint64_t sequence);
+    void *context;
+    void (*started)(void *context, uint64_t sequence);
+    void (*resolved)(void *context, uint64_t sequence);
+    void (*resolving)(void *context, uint64_t sequence);
+    void (*encoding)(void *context, uint64_t sequence);
+    void (*encoded)(void *context, uint64_t sequence);
+};
+
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
 #define SIXEL_COLOR_OPTION_MONOCHROME       1   /* use monochrome palette */
@@ -145,6 +156,7 @@ struct sixel_encoder {
     int playback_attached;
     struct sixel_encoder_palette_test_hooks const *palette_test_hooks;
     struct sixel_encoder_prepare_test_hooks const *prepare_test_hooks;
+    struct sixel_encoder_solve_test_hooks const *solve_test_hooks;
     struct sixel_playback_test_hooks const *playback_test_hooks;
     struct sixel_encoder_callback_scope *active_callbacks;
     /* A setting candidate borrows runtime state. Destructive cache/history

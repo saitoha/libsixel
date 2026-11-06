@@ -7,7 +7,7 @@
 #include "src/gpu-palette.h"
 
 static SIXELSTATUS
-retained_gpu_fixture_begin(indexed_fixture_t *f, int paint)
+retained_gpu_fixture_begin(indexed_fixture_t *f, int paint, int resolved)
 {
     sixel_retained_update_request_t request;
     SIXELSTATUS status;
@@ -21,6 +21,9 @@ retained_gpu_fixture_begin(indexed_fixture_t *f, int paint)
     request.image = f->image;
     request.sequence = f->view.sequence + 1;
     request.record_paint = paint;
+    if (resolved)
+        return f->plane->vtbl->begin_resolved_update(f->plane, &request,
+            &f->update);
     return f->plane->vtbl->begin_update(f->plane, &request, &f->update);
 }
 
@@ -62,8 +65,8 @@ retained_gpu_fixture_resize(indexed_fixture_t *f, int partial, int statistics)
     return 1;
 }
 
-int
-retained_gpu_observe(int observation)
+static int
+retained_gpu_observe_impl(int observation, int resolved)
 {
     indexed_fixture_t f;
     sixel_gpu_device_interface_t *device;
@@ -137,7 +140,7 @@ retained_gpu_observe(int observation)
         memset(f.image->skip, SIXEL_INDEXED_KEEP_APPROXIMATE, f.image->pixels);
         memset(f.image->indexes, 255, f.image->pixels);
     }
-    if (retained_gpu_fixture_begin(&f, observation != 10) != SIXEL_OK)
+    if (retained_gpu_fixture_begin(&f, observation != 10, resolved) != SIXEL_OK)
         goto end;
     if (observation == 3) {
         sixel_retained_read_unref(f.read);
@@ -177,7 +180,7 @@ retained_gpu_observe(int observation)
         ok = memcmp(f.view.rgb, "\12\24\36\12\24\36\12\24\36", 9) == 0;
         goto end;
     }
-    if (indexed_fixture_accept(&f) != SIXEL_OK) goto end;
+    if (!resolved && indexed_fixture_accept(&f) != SIXEL_OK) goto end;
     sixel_retained_read_unref(f.read);
     f.read = NULL;
     identity = f.image->identity;
@@ -192,7 +195,10 @@ retained_gpu_observe(int observation)
             memcmp(f.view.rgb, "\12\24\36\12\24\36\12\24\36", 9) == 0;
         goto end;
     }
-    if (indexed_fixture_commit(&f) != SIXEL_OK) goto end;
+    status = resolved
+        ? f.plane->vtbl->advance_resolved(f.plane, f.update, &f.stats)
+        : indexed_fixture_commit(&f);
+    if (status != SIXEL_OK) goto end;
     if (observation == 8) {
         ok = f.stats.worker_threads == 0 && f.stats.painted_pixels == 289;
         goto end;
@@ -433,7 +439,7 @@ retained_gpu_sequence_observe(int observation)
     if (f.plane->vtbl->set_device(f.plane, device) != SIXEL_OK) goto end;
     for (phase = 0; phase < 2; ++phase) {
         if (!retained_gpu_sequence_image(&f, phase) ||
-                retained_gpu_fixture_begin(&f, 0) != SIXEL_OK ||
+                retained_gpu_fixture_begin(&f, 0, 0) != SIXEL_OK ||
                 indexed_fixture_seal(&f) != SIXEL_OK) goto end;
         if (sixel_retained_plane_test_gpu_fault(f.plane,
                 phase == 0 && observation == 2 ? 2 : 0) != SIXEL_OK) goto end;
@@ -479,4 +485,16 @@ end:
     indexed_fixture_destroy(&f);
     if (device != NULL) device->vtbl->unref(device);
     return ok ? 0 : 1;
+}
+
+int
+retained_gpu_observe(int observation)
+{
+    return retained_gpu_observe_impl(observation, 0);
+}
+
+int
+retained_gpu_resolved_observe(int observation)
+{
+    return retained_gpu_observe_impl(observation, 1);
 }

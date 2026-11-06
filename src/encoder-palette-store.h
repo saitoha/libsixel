@@ -35,6 +35,10 @@ typedef struct sixel_palette_job_test_hooks {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_store_new(sixel_palette_store_t **out,
     sixel_allocator_t *allocator);
+SIXEL_INTERNAL_API void
+sixel_palette_store_set_capacity(sixel_palette_store_t *store, int capacity);
+SIXEL_INTERNAL_API double
+sixel_palette_store_job_seconds(sixel_palette_store_job_t *job);
 /* Reset invalidates both published records and running attempts. It does
  * not recycle worker slots or return their budgets before join. */
 SIXEL_INTERNAL_API void
@@ -46,8 +50,10 @@ sixel_palette_store_stop(sixel_palette_store_t *store);
 SIXEL_INTERNAL_API void
 sixel_palette_store_free(sixel_palette_store_t *store);
 
-/* At most two jobs and two future records, plus one eligible record. Move
- * request and private sample only on success. A full store returns FALSE;
+/* Default capacity is two jobs/future records, plus one eligible record.
+ * Independent playback sizes the job bound to its admission capacity before
+ * starting workers. Move request and private sample only on success.
+ * A full store returns FALSE;
  * the scheduler must finish current work before retrying admission. Each
  * job's start/join/release calls have one owner, independent of other jobs. */
 SIXEL_INTERNAL_API SIXELSTATUS

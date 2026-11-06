@@ -176,6 +176,11 @@ With coherent GPU history, the stream invokes RetainedPlane `stage` after Palett
 
 ## Timeline interpretation
 
+Playback diagnostics live in `6cells.h`; `sixel.h.in` and `sixel_playback_result_t` keep their layouts. `sixel_playback_get_stage_sample` retains its interval meanings; an interval that no longer exists, such as combined E-through-history, remains invalid in independent playback. `sixel_playback_get_pipeline_sample` reports P own construction, S preparation/solve, R resolve including H history, E private packet encoding, external delivery and their waits separately. GPU preparation is within S; H is within R. These subintervals must not be added twice. The sample is published before its exact-sequence callback, with explicit validity. Stale and short-buffer queries leave the destination unchanged; larger buffers preserve their unknown tail.
+
+Processing latency begins at S entry and includes downstream queue residence and source-owner completion. P build timing excludes capacity waits; explicit latest mode records the admission's own build even if S selects an earlier palette. Encode and completion intervals reset across failures, cancellation and geometry/configuration changes. Queue waits never masquerade as service. Host GPU waits are not CPU-utilization measurements. Independent workers can share a serialized GPU resource; report each measured lane and throughput interval rather than adding stage percentiles. [Animation threading](animation.md) owns scheduling and CPU grants.
+
+
 The encode controller records `context_begin` for cold preparation and `context_reuse` for a compatible retained context. These events establish the selected allocation path; their duration is not a speed guarantee.
 
 The `loader:builtin` spans in these figures decode the 900 by 675 source PNG;
@@ -247,7 +252,6 @@ previous 900 by 675 timeline.
 These charts use `tools/timeline.py --sort-order start`. Row numbering is local
 to the rendered worker group and must not be interpreted as a stable thread
 identity across separate runs.
-
 ## Worker-budget scaling
 
 The following experiment varies `img2sixel --threading-policy=greedy:global_budget=N` from one through sixteen while keeping the Full HD processed raster and all non-threading policies fixed. The horizontal axis is a configured worker budget, not a reservation of physical cores. Workers are unpinned, the host is not isolated, and this arm64 macOS host reports fourteen logical CPUs.
@@ -567,3 +571,9 @@ Cancellation and wait tests use synchronization gates: one writer is held while 
 The reuse byte comparisons isolate state rebinding against a fresh core; they do not independently validate pixel accuracy. The warm allocation case gates two workers to initialize both workspaces, then counts calls through the core allocator. It does not assert zero native-thread or per-band `realloc` activity. Resident memory, thread stacks, performance and OS-specific scheduling require separate measurement.
 
 The scheduling unit cases use explicit costs; integration cases inject a monotonic clock and assert the selected group size before comparing against a fresh single-band parallel core. They establish admission, prefix and recovery behavior, not speed or a perceptual quality change. The queue-size cases verify the maximum submitted group and completion with the selected capacity; native scheduling fairness remains platform-dependent.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TI-64 | pipeline sample stale. | [tests/dither/phased/0064_pipeline_sample_stale.t](../../tests/dither/phased/0064_pipeline_sample_stale.t) |
+| TI-65 | pipeline sample short. | [tests/dither/phased/0065_pipeline_sample_short.t](../../tests/dither/phased/0065_pipeline_sample_short.t) |
+| TI-66 | pipeline sample tail. | [tests/dither/phased/0066_pipeline_sample_tail.t](../../tests/dither/phased/0066_pipeline_sample_tail.t) |

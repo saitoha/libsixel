@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/encoder.h"
-#include "../../_support/planner/pipeline/playback_test_common.h"
+#include "playback_test_common.h"
 
 typedef struct fallback_state {
     int callbacks;
@@ -39,8 +39,8 @@ fallback_selected(void *context, uint64_t sequence,
 
 /* These valid feature requests must execute successfully with the same
  * bytes as frame mode; a successful latest selection is a wrong route. */
-static int
-fallback_compare(int feature)
+int
+palette_feature_fallback(int feature)
 {
     static int const flags[] = {
         SIXEL_OPTFLAG_GPU_POLICY, SIXEL_OPTFLAG_BUILTIN_PALETTE,
@@ -81,6 +81,9 @@ fallback_compare(int feature)
         hooks.context = &state;
         encoder->palette_test_hooks = &hooks;
         (void)sixel_playback_config_init(&config, sizeof(config));
+        /* GPU latest is admitted only by the independent controller.
+         * Capacity one exercises the unchanged serial fallback. */
+        config.capacity = feature == 0 ? 1 : 2;
         config.palette_mode = pass ? SIXEL_PLAYBACK_PALETTE_LATEST
                                   : SIXEL_PLAYBACK_PALETTE_PER_FRAME;
         config.done = fallback_done;
@@ -122,17 +125,4 @@ end:
     free(buffers[0].bytes);
     free(buffers[1].bytes);
     return failed;
-}
-
-int
-test_palette_features_0070(int argc, char **argv)
-{
-    int feature;
-
-    (void)argc;
-    (void)argv;
-    for (feature = 0; feature < 3; ++feature) {
-        if (fallback_compare(feature)) return 1;
-    }
-    return 0;
 }

@@ -99,6 +99,7 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
 {
     output->core = NULL;
     output->session = NULL;
+    output->deferred = NULL;
     output->indexed_disabled = 0;
     output->indexed_count = 0;
     output->body_status = SIXEL_OK;
@@ -505,4 +506,11 @@ sixel_output_bind_session(sixel_output_t *output,
     sixel_encode_session_t *session)
 {
     output->session = session;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_write_packet(sixel_output_t *output, char const *bytes, int size)
+{
+    if (output == NULL) return SIXEL_BAD_ARGUMENT;
+    return sixel_writer_write_packet(output->writer, bytes, size);
 }

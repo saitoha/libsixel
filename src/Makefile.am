@@ -147,6 +147,9 @@ libsixel_la_SOURCES = \
                 $(srcdir)/encoder-band-schedule.h \
                 $(srcdir)/encoder-core-indexed.inc.h \
                 $(srcdir)/encoder-core-session.inc.h \
+                $(srcdir)/encoder-playback-deferred.inc.h \
+                $(srcdir)/encoder-playback-independent.inc.h \
+                $(srcdir)/playback-ready.h \
                 $(srcdir)/timer.c \
                 $(srcdir)/timer.h \
                 $(srcdir)/sleep.c \

@@ -51,6 +51,7 @@ typedef struct sixel_node {
 struct sixel_output {
     sixel_encoder_core_t *core;
     sixel_encode_session_t *session;
+    sixel_output_deferred_t *deferred;
     /* Private validation switch and successful native-path observation. */
     int indexed_disabled;
     unsigned long indexed_count;

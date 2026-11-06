@@ -30,6 +30,10 @@ typedef struct phased_params {
 
 typedef struct phased_plan {
     sixel_gpu_dither_plan_interface_t iface;
+    sixel_gpu_dither_deferred_interface_t deferred;
+    sixel_gpu_dither_solution_interface_t solution;
+    sixel_atomic_u32_t solution_ref;
+    sixel_atomic_u32_t consumed;
     sixel_atomic_u32_t ref;
     sixel_atomic_u32_t busy;
     sixel_allocator_t *allocator;
@@ -168,11 +172,12 @@ phased_compile(id<MTLDevice> device,
             goto end;
         }
         pipelines = [NSMutableArray array];
-        for (i = 0; i < view->build_pass_count + 3; ++i) {
+        for (i = 0; i < view->build_pass_count + 5; ++i) {
             entry = i < view->build_pass_count
                 ? @(view->build_passes[i].entry_point)
                 : @[@"phased_initialize", @"phased_iterate",
-                    @"phased_finish"][i-view->build_pass_count];
+                    @"phased_finish", @"phased_solve_tail",
+                    @"phased_resolve"][i-view->build_pass_count];
             function = [library newFunctionWithName:entry];
             if (function == nil) goto end;
             pipeline = [device newComputePipelineStateWithFunction:function
@@ -242,29 +247,18 @@ phased_plan_unref(sixel_gpu_dither_plan_interface_t *self)
     sixel_allocator_unref(allocator);
 }
 
-/* One command buffer orders lookup construction, initialization, eight
- * subpasses and final display selection. Completion precedes lease release
- * and host publication, including every cancellation/error path. */
+/* Validate without touching scratch so bad arguments do not consume a
+ * ready solution. The caller must keep the borrowed request stable. */
 static SIXELSTATUS
-phased_run_impl(phased_plan_t *plan,
-    sixel_gpu_dither_run_request_t const *request)
+phased_validate(phased_plan_t *plan,
+    sixel_gpu_dither_run_request_t const *request, phased_params_t *resolved)
 {
-    sixel_frame_pixels_view_t source;
-    sixel_frame_transparency_t transparency;
-    sixel_retained_read_view_t baseline;
-    sixel_gpu_lookup_binding_interface_t *binding;
-    sixel_gpu_lookup_binding_view_t binding_view;
-    sixel_gpu_lookup_build_pass_t const *pass;
-    id<MTLBuffer> workspace;
-    id<MTLCommandBuffer> commands;
-    id<MTLComputeCommandEncoder> encoder;
-    id<MTLComputePipelineState> pipeline;
     phased_params_t params;
-    size_t pixels, i, y, offset, count, threads, cells;
-    uint32_t ncolors, zero;
-    SIXELSTATUS status, finish;
+    sixel_retained_read_view_t baseline;
+    size_t cells;
+    SIXELSTATUS status;
 
-    if (request == NULL || request->source == NULL || request->result == NULL)
+    if (request == NULL || request->result == NULL)
         return SIXEL_BAD_ARGUMENT;
     if (sixel_indexed_frame_get_state(request->result) !=
             SIXEL_INDEXED_BUILDING ||
@@ -297,30 +291,7 @@ phased_run_impl(phased_plan_t *plan,
             request->result->description.plane_height !=
                 plan->output.plane_height)
         return SIXEL_BAD_ARGUMENT;
-    if (request->cancel != NULL && request->cancel(request->cancel_context))
-        return SIXEL_INTERRUPTED;
     params = plan->params;
-    pixels = (size_t)params.width*params.height;
-    status = request->source->vtbl->get_pixels(request->source, &source);
-    if (status != SIXEL_OK) return status;
-    if (source.pixels == NULL || source.width != (int)params.width ||
-            source.height != (int)params.height ||
-            source.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            source.colorspace != SIXEL_COLORSPACE_GAMMA)
-        return SIXEL_BAD_ARGUMENT;
-    status = request->source->vtbl->get_transparency(request->source,
-        &transparency);
-    if (status != SIXEL_OK) return status;
-    if (transparency.transparent_mask != NULL &&
-            (transparency.transparent_mask_size < pixels ||
-             plan->output.keycolor < 0)) return SIXEL_BAD_ARGUMENT;
-    memcpy([plan->buffers[0] contents], source.pixels, pixels*3);
-    if (transparency.transparent_mask != NULL) {
-        memcpy([plan->buffers[8] contents], transparency.transparent_mask,
-            pixels);
-    } else {
-        memset([plan->buffers[8] contents], 0, pixels);
-    }
     params.delta = request->delta.enabled && request->baseline != NULL;
     params.threshold = request->delta.threshold;
     params.metric = request->delta.metric;
@@ -332,6 +303,8 @@ phased_run_impl(phased_plan_t *plan,
         request->delta.selection.rows;
     if (request->delta.selection.columns > 64 ||
             request->delta.selection.rows > 64 ||
+            ((request->delta.selection.columns == 0) !=
+             (request->delta.selection.rows == 0)) ||
             (cells != 0 && (request->delta.selection.words == NULL ||
              request->delta.selection.word_count < (cells+31)/32)))
         return SIXEL_BAD_ARGUMENT;
@@ -365,6 +338,67 @@ phased_run_impl(phased_plan_t *plan,
                 plan->output.height > baseline.description.height-
                     plan->output.origin_y || plan->output.keycolor < 0)
             return SIXEL_BAD_ARGUMENT;
+    }
+    *resolved = params;
+    return SIXEL_OK;
+}
+
+/* Both deferred calls drain their commands. Only solve owns a lookup
+ * lease; resolve uses the completed private planes and current history. */
+static SIXELSTATUS
+phased_run_impl(phased_plan_t *plan,
+    sixel_gpu_dither_run_request_t const *request, int mode)
+{
+    sixel_frame_pixels_view_t source;
+    sixel_frame_transparency_t transparency;
+    sixel_retained_read_view_t baseline;
+    sixel_gpu_lookup_binding_interface_t *binding;
+    sixel_gpu_lookup_binding_view_t binding_view;
+    sixel_gpu_lookup_build_pass_t const *pass;
+    id<MTLBuffer> workspace;
+    id<MTLCommandBuffer> commands;
+    id<MTLComputeCommandEncoder> encoder;
+    id<MTLComputePipelineState> pipeline;
+    phased_params_t params;
+    size_t pixels, i, y, offset, count, threads;
+    uint32_t ncolors, zero;
+    SIXELSTATUS status, finish;
+
+    if (request == NULL || (mode != 2 && request->source == NULL))
+        return SIXEL_BAD_ARGUMENT;
+    params = plan->params;
+    if (mode != 1) {
+        status = phased_validate(plan, request, &params);
+        if (status != SIXEL_OK) return status;
+    }
+    if (request->cancel != NULL && request->cancel(request->cancel_context))
+        return SIXEL_INTERRUPTED;
+    pixels = (size_t)params.width*params.height;
+    if (mode != 2) {
+        status = request->source->vtbl->get_pixels(request->source, &source);
+        if (status != SIXEL_OK) return status;
+        if (source.pixels == NULL || source.width != (int)params.width ||
+                source.height != (int)params.height ||
+                source.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+                source.colorspace != SIXEL_COLORSPACE_GAMMA)
+            return SIXEL_BAD_ARGUMENT;
+        status = request->source->vtbl->get_transparency(request->source,
+            &transparency);
+        if (status != SIXEL_OK) return status;
+        if (transparency.transparent_mask != NULL &&
+                (transparency.transparent_mask_size < pixels ||
+                 plan->output.keycolor < 0)) return SIXEL_BAD_ARGUMENT;
+        memcpy([plan->buffers[0] contents], source.pixels, pixels*3);
+        if (transparency.transparent_mask != NULL) {
+            memcpy([plan->buffers[8] contents], transparency.transparent_mask,
+                pixels);
+        } else {
+            memset([plan->buffers[8] contents], 0, pixels);
+        }
+    }
+    if (params.delta) {
+        status = sixel_retained_read_get_view(request->baseline, &baseline);
+        if (status != SIXEL_OK) return status;
         for (y = 0; y < params.height; ++y) {
             offset = y + (size_t)plan->output.origin_y;
             memcpy((unsigned char *)[plan->buffers[9] contents]
@@ -380,15 +414,21 @@ phased_run_impl(phased_plan_t *plan,
     memcpy([plan->buffers[14] contents], &zero, sizeof(zero));
     binding = NULL;
     commands = nil;
-    status = plan->lookup->vtbl->begin(plan->lookup, &binding);
-    if (status != SIXEL_OK) return status;
-    if (binding == NULL) return SIXEL_LOGIC_ERROR;
-    status = binding->vtbl->get_view(binding, &binding_view);
-    if (status != SIXEL_OK) goto end;
-    workspace = sixel_gpu_metal_buffer(plan->device, binding_view.workspace);
-    if (workspace == nil || [workspace length] < plan->view.workspace_size) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
+    workspace = nil;
+    memset(&binding_view, 0, sizeof(binding_view));
+    if (mode != 2) {
+        status = plan->lookup->vtbl->begin(plan->lookup, &binding);
+        if (status != SIXEL_OK) return status;
+        if (binding == NULL) return SIXEL_LOGIC_ERROR;
+        status = binding->vtbl->get_view(binding, &binding_view);
+        if (status != SIXEL_OK) goto end;
+        workspace = sixel_gpu_metal_buffer(plan->device,
+            binding_view.workspace);
+        if (workspace == nil ||
+                [workspace length] < plan->view.workspace_size) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
     }
     commands = [plan->queue commandBuffer];
     if (commands == nil) { status = SIXEL_BAD_ALLOCATION; goto end; }
@@ -409,9 +449,10 @@ phased_run_impl(phased_plan_t *plan,
                 pass->threads[1],pass->threads[2])];
         [encoder endEncoding];
     }
-    for (i = 0; i < 10; ++i) {
+    for (i = mode == 2 ? 9 : 0; i < 10; ++i) {
         pipeline = plan->pipelines[plan->view.build_pass_count+
-            (i == 0 ? 0 : i == 9 ? 2 : 1)];
+            (i == 0 ? 0 : i == 9 ? (mode == 0 ? 2 :
+                mode == 1 ? 3 : 4) : 1)];
         params.step = i == 0 ? 0 : (uint32_t)(i-1);
         encoder = [commands computeCommandEncoder];
         if (encoder == nil) { status = SIXEL_BAD_ALLOCATION; goto end; }
@@ -442,15 +483,18 @@ phased_run_impl(phased_plan_t *plan,
     if (status == SIXEL_OK && request->cancel != NULL &&
             request->cancel(request->cancel_context))
         status = SIXEL_INTERRUPTED;
-    if (status == SIXEL_OK) {
+    if (status == SIXEL_OK && mode != 1) {
         memcpy(request->result->indexes, [plan->buffers[11] contents], pixels);
         memcpy(request->result->skip, [plan->buffers[15] contents], pixels);
     }
 end:
     /* Uncommitted command buffers have no GPU work to drain. Submitted work
      * is always drained above before releasing the exclusive lookup lease. */
-    finish = binding->vtbl->finish(binding, status);
-    binding->vtbl->unref(binding);
+    finish = SIXEL_OK;
+    if (binding != NULL) {
+        finish = binding->vtbl->finish(binding, status);
+        binding->vtbl->unref(binding);
+    }
     return status != SIXEL_OK ? status : finish;
 }
 
@@ -466,13 +510,152 @@ phased_run(sixel_gpu_dither_plan_interface_t *self,
         (void)sixel_atomic_fetch_sub_u32(&plan->busy, 1);
         return SIXEL_LOGIC_ERROR;
     }
-    @autoreleasepool { status = phased_run_impl(plan, request); }
+    @autoreleasepool { status = phased_run_impl(plan, request, 0); }
     (void)sixel_atomic_fetch_sub_u32(&plan->busy, 1);
     return status;
 }
 
+/* Facets share the frozen plan but have independent reference ownership.
+ * A live solution holds busy until its final release, even after resolve. */
+static phased_plan_t *
+phased_from_deferred(sixel_gpu_dither_deferred_interface_t const *self)
+{
+    return (phased_plan_t *)((char *)self - offsetof(phased_plan_t, deferred));
+}
+
+static phased_plan_t *
+phased_from_solution(sixel_gpu_dither_solution_interface_t const *self)
+{
+    return (phased_plan_t *)((char *)self - offsetof(phased_plan_t, solution));
+}
+
+static void
+phased_deferred_ref(sixel_gpu_dither_deferred_interface_t *self)
+{
+    phased_plan_ref(&phased_from_deferred(self)->iface);
+}
+
+static void
+phased_deferred_unref(sixel_gpu_dither_deferred_interface_t *self)
+{
+    phased_plan_unref(&phased_from_deferred(self)->iface);
+}
+
+static void
+phased_solution_ref(sixel_gpu_dither_solution_interface_t *self)
+{
+    (void)sixel_atomic_fetch_add_u32(&phased_from_solution(self)->solution_ref,
+        1);
+}
+
+static void
+phased_solution_unref(sixel_gpu_dither_solution_interface_t *self)
+{
+    phased_plan_t *plan;
+
+    plan = phased_from_solution(self);
+    if (sixel_atomic_fetch_sub_u32(&plan->solution_ref, 1) != 1) return;
+    (void)sixel_atomic_fetch_sub_u32(&plan->busy, 1);
+    phased_plan_unref(&plan->iface);
+}
+
+static SIXELSTATUS
+phased_solution_description(sixel_gpu_dither_solution_interface_t const *self,
+    sixel_indexed_frame_description_t *description)
+{
+    if (self == NULL || description == NULL) return SIXEL_BAD_ARGUMENT;
+    *description = phased_from_solution(self)->output;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+phased_solve(sixel_gpu_dither_deferred_interface_t *self,
+    sixel_gpu_dither_solve_request_t const *request,
+    sixel_gpu_dither_solution_interface_t **solution)
+{
+    phased_plan_t *plan;
+    sixel_gpu_dither_run_request_t run;
+    SIXELSTATUS status;
+
+    if (self == NULL || request == NULL || solution == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    *solution = NULL;
+    plan = phased_from_deferred(self);
+    if (sixel_atomic_fetch_add_u32(&plan->busy, 1) != 0) {
+        (void)sixel_atomic_fetch_sub_u32(&plan->busy, 1);
+        return SIXEL_LOGIC_ERROR;
+    }
+    memset(&run, 0, sizeof(run));
+    run.source = request->source;
+    run.logger = request->logger;
+    run.cancel = request->cancel;
+    run.cancel_context = request->cancel_context;
+    @autoreleasepool { status = phased_run_impl(plan, &run, 1); }
+    if (status == SIXEL_OK) {
+        plan->solution_ref = 1;
+        plan->consumed = 0;
+        phased_plan_ref(&plan->iface);
+        *solution = &plan->solution;
+    } else {
+        (void)sixel_atomic_fetch_sub_u32(&plan->busy, 1);
+    }
+    return status;
+}
+
+static SIXELSTATUS
+phased_resolve(sixel_gpu_dither_solution_interface_t *self,
+    sixel_gpu_dither_resolve_request_t const *request)
+{
+    phased_plan_t *plan;
+    sixel_gpu_dither_run_request_t run;
+    phased_params_t params;
+    SIXELSTATUS status;
+
+    if (self == NULL || request == NULL) return SIXEL_BAD_ARGUMENT;
+    plan = phased_from_solution(self);
+    if (sixel_atomic_fetch_add_u32(&plan->consumed, 0) != 0)
+        return SIXEL_LOGIC_ERROR;
+    memset(&run, 0, sizeof(run));
+    run.result = request->result;
+    run.baseline = request->baseline;
+    run.delta = request->delta;
+    run.logger = request->logger;
+    run.cancel = request->cancel;
+    run.cancel_context = request->cancel_context;
+    status = phased_validate(plan, &run, &params);
+    if (status != SIXEL_OK) return status;
+    if (sixel_atomic_fetch_add_u32(&plan->consumed, 1) != 0) {
+        (void)sixel_atomic_fetch_sub_u32(&plan->consumed, 1);
+        return SIXEL_LOGIC_ERROR;
+    }
+    @autoreleasepool { status = phased_run_impl(plan, &run, 2); }
+    return status;
+}
+
+static SIXELSTATUS
+phased_get_deferred(sixel_gpu_dither_plan_interface_t const *self,
+    sixel_gpu_dither_deferred_interface_t **deferred)
+{
+    phased_plan_t *plan;
+
+    if (self == NULL || deferred == NULL) return SIXEL_BAD_ARGUMENT;
+    plan = (phased_plan_t *)self;
+    phased_plan_ref(&plan->iface);
+    *deferred = &plan->deferred;
+    return SIXEL_OK;
+}
+
+static sixel_gpu_dither_deferred_vtbl_t const phased_deferred_vtbl = {
+    phased_deferred_ref, phased_deferred_unref, phased_solve
+};
+
+static sixel_gpu_dither_solution_vtbl_t const phased_solution_vtbl = {
+    phased_solution_ref, phased_solution_unref, phased_solution_description,
+    phased_resolve
+};
+
 static sixel_gpu_dither_plan_vtbl_t const phased_plan_vtbl = {
-    phased_plan_ref, phased_plan_unref, phased_run
+    phased_plan_ref, phased_plan_unref, phased_run, phased_get_deferred
 };
 
 static SIXELSTATUS
@@ -521,6 +704,8 @@ phased_prepare_impl(sixel_allocator_t *allocator,
     plan = sixel_allocator_calloc(allocator, 1, sizeof(*plan));
     if (plan == NULL) return SIXEL_BAD_ALLOCATION;
     plan->iface.vtbl = &phased_plan_vtbl;
+    plan->deferred.vtbl = &phased_deferred_vtbl;
+    plan->solution.vtbl = &phased_solution_vtbl;
     plan->ref = 1;
     plan->allocator = allocator;
     sixel_allocator_ref(allocator);

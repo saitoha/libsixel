@@ -213,6 +213,8 @@ A native CPU commit scans final skip coverage once, expands only painted indexes
 
 Admission occurs before output. Highcolor, OR mode, non-gamma interpretation, authoritative float palettes, source-mask adapters, parallel CPU plans with worker-local lookup policies and gradient-modulated application use the explicit legacy adapter until their representation and lifetime contracts are migrated. The legacy low-level API can also supply retained pointers without a RetainedPlane owner; those requests retain their existing path. Unsupported plans never retry after external output has started, and no mode is changed to qualify for native execution.
 
+PaletteApply also exposes an optional prepared deferred facet. The playback controller obtains it through the interface, without checking a dither or lookup name. The facet owns immutable frame validation and wraps the GPU dither's opaque solution; the dither owns its solve/resolve kernels and scratch. The producer completes solve without a retained read. On the ordered lane, the session binds the current identity and baseline, resolves and publishes the IndexedFrame before beginning the writer. EncoderCore still sees only completed indexes. No lookup algorithm or queue service is shared into lower components. [Animation threading](../../threading/animation.md) defines the bounded ownership handoffs and independent execution, and [phased](../palette-application/dithering/phased.md#test-coverage) owns provider and integration evidence.
+
 ### Palette serialization and RGB/HLS output
 
 The legacy adapter copies byte and, when available, float palette entries so the reusable dither palette remains in `-W`. It converts the private copy from the core's source colorspace to `-U`, preferring the float copy to avoid an unnecessary byte-rounding cycle. Indexed rows and the converted palette then enter SIXEL serialization.
@@ -244,6 +246,8 @@ tools/reproduce_encoder_execution_map_figures.sh --check
 ```
 
 The semantic roles and implementation anchors used by the generator are recorded in [`encoder-execution-map-figures.json`](figures/encoder-execution-map-figures.json). When any referenced execution boundary changes, update the prose, both aspect-ratio variants, and the manifest together.
+
+For eligible independent playback, the [controller](../../../src/encoder-playback-independent.inc.h) composes existing components into P/S/R/E workers. PaletteStore publishes versioned snapshots; selection is a retained reference, not FIFO consumption. S owns PaletteApply solve, R owns all RetainedPlane access and advance, and E owns EncoderCore/private SixelWriter packet production. Typed bounded handoffs transfer complete solutions, images and packets. Algorithms do not depend on controller rings. The [animation owner](../../threading/animation.md) defines capacities, lifetime, cancellation and ordered callback delivery; the [delta owner](../output/delta-encoding.md#indexed-retained-state-transactions) defines history publication.
 
 ## Test coverage
 

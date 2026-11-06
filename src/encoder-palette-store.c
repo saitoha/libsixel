@@ -6,8 +6,9 @@
 #include "encoder-palette-store.h"
 #include "threading.h"
 #include "status.h"
+#include "timer.h"
 
-#define SIXEL_PALETTE_STORE_SLOTS 2
+#define SIXEL_PALETTE_STORE_SLOTS SIXEL_PLAYBACK_CAPACITY_MAX
 
 struct sixel_palette_store_job {
     sixel_palette_store_t *store;
@@ -28,6 +29,7 @@ struct sixel_palette_store_job {
     int finished;
     int retryable;
     int cancelled;
+    double seconds;
 };
 
 struct sixel_palette_store {
@@ -41,6 +43,7 @@ struct sixel_palette_store {
     uint64_t frontier;
     uint64_t selected_sequence;
     int stopped;
+    int capacity;
 };
 
 SIXELSTATUS
@@ -62,11 +65,32 @@ sixel_palette_store_new(sixel_palette_store_t **out,
     sixel_allocator_ref(allocator);
     store->allocator = allocator;
     store->epoch = 1;
-    for (i = 0; i < SIXEL_PALETTE_STORE_SLOTS; ++i) {
+    store->capacity = 2;
+    for (i = 0; i < store->capacity; ++i) {
         store->jobs[i].store = store;
     }
     *out = store;
     return SIXEL_OK;
+}
+
+/* Called by the controller before the first admission. Source lifetimes
+ * remain bounded by playback capacity even when E and callbacks lag behind. */
+void
+sixel_palette_store_set_capacity(sixel_palette_store_t *store, int capacity)
+{
+    if (store != NULL && capacity >= 2 && capacity <= SIXEL_PALETTE_STORE_SLOTS)
+        store->capacity = capacity;
+}
+
+double
+sixel_palette_store_job_seconds(sixel_palette_store_job_t *job)
+{
+    double seconds;
+
+    sixel_mutex_lock(&job->store->mutex);
+    seconds = job->seconds;
+    sixel_mutex_unlock(&job->store->mutex);
+    return seconds;
 }
 
 /* Detach under lock, destroy outside it: destructors can invoke an allocator
@@ -83,13 +107,13 @@ sixel_palette_store_reset(sixel_palette_store_t *store, uint64_t frontier)
     store->selected_sequence = frontier;
     retired[0] = store->active.snapshot;
     memset(&store->active, 0, sizeof(store->active));
-    for (i = 0; i < SIXEL_PALETTE_STORE_SLOTS; ++i) {
+    for (i = 0; i < store->capacity; ++i) {
         store->jobs[i].cancelled = 1;
         retired[i + 1] = store->jobs[i].future.snapshot;
         memset(&store->jobs[i].future, 0, sizeof(store->jobs[i].future));
     }
     sixel_mutex_unlock(&store->mutex);
-    for (i = 0; i <= SIXEL_PALETTE_STORE_SLOTS; ++i) {
+    for (i = 0; i <= store->capacity; ++i) {
         sixel_palette_snapshot_unref(retired[i]);
     }
 }
@@ -126,7 +150,7 @@ sixel_palette_store_admit(sixel_palette_store_t *store, uint64_t sequence,
         return SIXEL_INTERRUPTED;
     }
     job = NULL;
-    for (i = 0; i < SIXEL_PALETTE_STORE_SLOTS; ++i) {
+    for (i = 0; i < store->capacity; ++i) {
         if (store->jobs[i].admitted && !store->jobs[i].cancelled &&
                 store->jobs[i].result.sequence == sequence) {
             sixel_mutex_unlock(&store->mutex);
@@ -173,6 +197,7 @@ sixel_palette_store_build(sixel_palette_store_job_t *job)
     sixel_thread_budget_scope_t policy_scope;
     sixel_thread_budget_scope_t budget_scope;
     SIXELSTATUS status;
+    double start, elapsed;
 
     store = job->store;
     built = NULL;
@@ -181,6 +206,7 @@ sixel_palette_store_build(sixel_palette_store_job_t *job)
     sixel_thread_budget_enter(&budget_scope, job->threads);
     sixel_helper_set_additional_message(NULL);
     sixel_thread_work_begin();
+    start = sixel_timer_monotonic();
     status = sixel_palette_build_request_execute(job->request, job->sample,
         &built, &state, NULL, &job->retryable);
     if (status == SIXEL_OK) {
@@ -189,6 +215,7 @@ sixel_palette_store_build(sixel_palette_store_job_t *job)
     }
     sixel_dither_unref(built);
     /* Publication/test barriers are control work, not a borrowed CPU job. */
+    elapsed = sixel_timer_monotonic() - start;
     sixel_thread_work_end();
     if (job->hooks.before_publish != NULL) {
         job->hooks.before_publish(job->hooks.context);
@@ -208,6 +235,7 @@ sixel_palette_store_build(sixel_palette_store_job_t *job)
     /* Publish only a complete successful attempt. The own result remains
      * separate from the store reference and from any application dither. */
     sixel_mutex_lock(&store->mutex);
+    job->seconds = elapsed;
     job->result.snapshot = snapshot;
     job->status = status;
     if (snapshot != NULL && !store->stopped && !job->cancelled &&
@@ -421,7 +449,7 @@ sixel_palette_store_select(sixel_palette_store_t *store, uint64_t sequence,
         goto unlock;
     }
     store->frontier = sequence;
-    for (i = 0; i < SIXEL_PALETTE_STORE_SLOTS; ++i) {
+    for (i = 0; i < store->capacity; ++i) {
         if (store->jobs[i].admitted && !store->jobs[i].cancelled &&
                 store->jobs[i].result.epoch == store->epoch &&
                 store->jobs[i].result.sequence == sequence &&
@@ -431,7 +459,7 @@ sixel_palette_store_select(sixel_palette_store_t *store, uint64_t sequence,
             goto unlock;
         }
     }
-    for (i = 0; i < SIXEL_PALETTE_STORE_SLOTS; ++i) {
+    for (i = 0; i < store->capacity; ++i) {
         candidate = &store->jobs[i].future;
         if (candidate->snapshot == NULL || candidate->sequence > sequence) {
             continue;
@@ -468,7 +496,7 @@ sixel_palette_store_free(sixel_palette_store_t *store)
         return;
     }
     sixel_palette_store_stop(store);
-    for (i = 0; i < SIXEL_PALETTE_STORE_SLOTS; ++i) {
+    for (i = 0; i < store->capacity; ++i) {
         if (store->jobs[i].admitted) {
             sixel_palette_store_job_release(&store->jobs[i]);
         }

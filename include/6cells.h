@@ -445,13 +445,13 @@ typedef struct sixel_stream_receipt sixel_stream_receipt_t;
 
 /*
  * IDL responsibility:
- * - pin one committed retained-plane generation for readers
+ * - pin one published retained-plane generation for readers
  */
 
 /*
  * IDL contract:
  * [native, opaque, refcounted]
- * [responsibility("pin one committed retained-plane generation for readers")]
+ * [responsibility("pin one published retained-plane generation for readers")]
  * typedef sixel_retained_read_t retained_read;
  */
 
@@ -792,7 +792,37 @@ sixel_stream_receipt_unref(sixel_stream_receipt_t *receipt);
  * returning; body consumers may still read the immutable indexed image.
  * CPU staging is a no-op. A stage failure never changes committed history;
  * commit rejects missing or failed GPU staging. Abort discards the candidate.
- * Only a matching successful receipt allows candidate publication. */
+ * commit publishes only with a matching successful receipt. The explicit
+ * resolved-prefix contract below permits advance_resolved instead. */
+/* begin_resolved_update is the explicit alternative to begin_update for
+ * a controller that delivers every resolved frame in order, or discards the
+ * dependent suffix and invalidates history. It has the same geometry,
+ * identity, resource-reservation and lifetime rules as begin_update, but
+ * its update is published by advance_resolved without a stream receipt.
+ * A successful begin selects one publication contract for the current epoch.
+ * Either begin rejects the other contract in that epoch before mutation.
+ * Failed begin leaves the selection unchanged. Abort preserves the selection;
+ * invalidate clears it. An update records which begin created it.
+ *
+ * commit accepts only begin_update transactions and still requires a matching
+ * receipt. advance_resolved accepts only begin_resolved_update transactions;
+ * it requires a COMPLETE image, matching stream/epoch/base identity, no read
+ * leases or image users, and successful GPU staging when GPU-backed.
+ * All validation precedes mutation. GPU publication swaps completed surfaces;
+ * CPU publication uses the prepared allocation-free traversal. Success clears
+ * the active update and advances sequence, including for an all-keep image.
+ * Repeated/stale calls fail without mutation. Neither publication waits for
+ * another frame, emits bytes, allocates storage or submits GPU work.
+ *
+ * Resolved publication describes the reconstructed canvas after the resolved
+ * prefix, not callback acceptance or physical presentation. The controller
+ * owns ordered delivery and invalidation after cancellation/output loss.
+ * A read is immutable until its last unref. Two GPU surfaces remain sufficient
+ * when the single ordered resolver releases its read before each advance;
+ * output consumers retain only the independent indexed image and wire palette.
+ * No queue, writer receipt or transport callback is stored by this contract.
+ * This alternative does not weaken direct encoding's receipt validation. */
+    /* Ordered resolved-prefix publication; see the contract above. */
 typedef struct sixel_retained_plane_interface
     sixel_retained_plane_interface_t;
 
@@ -841,6 +871,13 @@ typedef struct sixel_retained_plane_interface
  *     SIXELSTATUS abort(in retained_update *update);
  *     [mutates]
  *     SIXELSTATUS invalidate(in retained_invalidation reason);
+ *     [mutates]
+ *     SIXELSTATUS begin_resolved_update(
+ *         in retained_update_request const *request,
+ *         out retained_update **update);
+ *     [mutates]
+ *     SIXELSTATUS advance_resolved(
+ *         in retained_update *update, out retained_update_stats *stats);
  * };
  */
 
@@ -874,6 +911,14 @@ typedef struct sixel_retained_plane_vtbl {
     SIXELSTATUS (*invalidate)(
         sixel_retained_plane_interface_t *self,
         sixel_retained_invalidation_t reason);
+    SIXELSTATUS (*begin_resolved_update)(
+        sixel_retained_plane_interface_t *self,
+        sixel_retained_update_request_t const *request,
+        sixel_retained_update_t **update);
+    SIXELSTATUS (*advance_resolved)(
+        sixel_retained_plane_interface_t *self,
+        sixel_retained_update_t *update,
+        sixel_retained_update_stats_t *stats);
 } sixel_retained_plane_vtbl_t;
 
 struct sixel_retained_plane_interface {
@@ -2169,6 +2214,150 @@ typedef struct sixel_gpu_dither_run_request {
     void *cancel_context;
 } sixel_gpu_dither_run_request_t;
 
+/* Optional deferred execution separates a history-independent solve from
+ * ordered history resolution. The solve request has no baseline or result:
+ * it cannot bind an encode identity, publish pixels or pin retained state.
+ * Source, logger and callback are borrowed only through the synchronous
+ * solve call. A returned solution owns all state needed by resolve. */
+typedef struct sixel_gpu_dither_solve_request {
+    sixel_frame_interface_t *source;
+    sixel_timeline_logger_t *logger;
+    sixel_cancel_function cancel;
+    void *cancel_context;
+} sixel_gpu_dither_solve_request_t;
+
+typedef struct sixel_gpu_dither_resolve_request {
+    sixel_retained_read_t *baseline;
+    sixel_indexed_frame_t *result;
+    sixel_palette_apply_delta_t delta;
+    sixel_timeline_logger_t *logger;
+    sixel_cancel_function cancel;
+    void *cancel_context;
+} sixel_gpu_dither_resolve_request_t;
+
+/* A solution owns immutable per-image state and its frozen palette/device.
+ * It has no retained lease, active lookup binding, writer or source borrow.
+ * get_description borrows its palette until the last solution unref.
+ *
+ * resolve borrows its request through GPU drain. The BUILDING result must
+ * match the description, and a retained update must already bind identity
+ * when delta is enabled. Missing baseline disables keeps, not transparency.
+ * The method performs no lookup acquisition or lookup query. It uses only
+ * the completed solution and the supplied current retained view.
+ *
+ * Argument rejection before execution preserves READY. Once execution
+ * starts, success, cancellation and runtime failure consume the solution;
+ * repeated or concurrent execution returns LOGIC_ERROR. Only unpublished
+ * indexes/skip may be written. Publication and sealing belong to PaletteApply.
+ * Source and baseline never change. Every return drains submitted work.
+ * Last unref of a READY solution only discards private state. */
+typedef struct sixel_gpu_dither_solution_interface
+    sixel_gpu_dither_solution_interface_t;
+
+/*
+ * IDL responsibility:
+ * - resolve one completed GPU dither against current history
+ */
+
+/*
+ * IDL forbidden state:
+ * - terminal_callback
+ * - transport_queue
+ * - retained_owner
+ * - active_lookup_binding
+ * - borrowed_source
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("resolve one completed GPU dither against current history")]
+ * [forbid_state("terminal_callback", "transport_queue", "retained_owner")]
+ * [forbid_state("active_lookup_binding", "borrowed_source")]
+ * interface gpu_dither_solution {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [const, borrows(description)]
+ *     SIXELSTATUS get_description(out indexed_frame_description *description);
+ *     [mutates]
+ *     SIXELSTATUS resolve(in gpu_dither_resolve_request const *request);
+ * };
+ */
+
+typedef struct sixel_gpu_dither_solution_vtbl {
+    void (*ref)(sixel_gpu_dither_solution_interface_t *self);
+    void (*unref)(sixel_gpu_dither_solution_interface_t *self);
+    SIXELSTATUS (*get_description)(
+        sixel_gpu_dither_solution_interface_t const *self,
+        sixel_indexed_frame_description_t *description);
+    SIXELSTATUS (*resolve)(
+        sixel_gpu_dither_solution_interface_t *self,
+        sixel_gpu_dither_resolve_request_t const *request);
+} sixel_gpu_dither_solution_vtbl_t;
+
+struct sixel_gpu_dither_solution_interface {
+    sixel_gpu_dither_solution_vtbl_t const *vtbl;
+};
+
+/* This retained capability freezes one prepared plan. solve executes on the
+ * producer thread and returns only after GPU completion and exactly-once
+ * lookup lease finish. Success transfers one retained solution; failures
+ * leave *solution NULL and never leave GPU users or lookup bindings live.
+ * Image scratch and solution capacity were reserved by prepare; solve does
+ * not compile programs or allocate image-sized storage. Small command/lease
+ * records follow their existing runtime contracts.
+ *
+ * One plan permits one live operation/solution. Monolithic run and deferred
+ * solve are mutually exclusive until the solution is released. Distinct
+ * prepared plans may execute on separate threads. Releasing the preparer or
+ * capability does not invalidate a returned solution. There is no temporal
+ * error state and no global queue or scheduling service in this component. */
+typedef struct sixel_gpu_dither_deferred_interface
+    sixel_gpu_dither_deferred_interface_t;
+
+/*
+ * IDL responsibility:
+ * - solve prepared GPU dither without retained history
+ */
+
+/*
+ * IDL forbidden state:
+ * - retained_pixels
+ * - terminal_callback
+ * - transport_queue
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("solve prepared GPU dither without retained history")]
+ * [forbid_state("retained_pixels", "terminal_callback", "transport_queue")]
+ * interface gpu_dither_deferred {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates]
+ *     SIXELSTATUS solve(in gpu_dither_solve_request const *request,
+ *         out gpu_dither_solution **solution);
+ * };
+ */
+
+typedef struct sixel_gpu_dither_deferred_vtbl {
+    void (*ref)(sixel_gpu_dither_deferred_interface_t *self);
+    void (*unref)(sixel_gpu_dither_deferred_interface_t *self);
+    SIXELSTATUS (*solve)(
+        sixel_gpu_dither_deferred_interface_t *self,
+        sixel_gpu_dither_solve_request_t const *request,
+        sixel_gpu_dither_solution_interface_t **solution);
+} sixel_gpu_dither_deferred_vtbl_t;
+
+struct sixel_gpu_dither_deferred_interface {
+    sixel_gpu_dither_deferred_vtbl_t const *vtbl;
+};
+
 /* The plan owns frozen configuration, compiled programs, scratch capacity
  * and retained device/lookup objects. Scratch is private to each invocation
  * or exclusively leased through completion; it is initialized on every run
@@ -2181,6 +2370,9 @@ typedef struct sixel_gpu_dither_run_request {
  * The concrete dither owns its pass ordering and state transitions. Backend
  * resource services expose device/buffer operations, not shared candidate,
  * distance, or search algorithms. No CPU implementation is implied. */
+    /* Return a retained optional capability, or FEATURE_ERROR with NULL.
+     * Admission was frozen by prepare. No allocation, probing, compilation,
+     * command submission or current-plan mutation occurs in this getter. */
 typedef struct sixel_gpu_dither_plan_interface
     sixel_gpu_dither_plan_interface_t;
 
@@ -2208,6 +2400,8 @@ typedef struct sixel_gpu_dither_plan_interface
  *     void unref();
  *     [mutates]
  *     SIXELSTATUS run(in gpu_dither_run_request const *request);
+ *     [const]
+ *     SIXELSTATUS get_deferred(out gpu_dither_deferred **deferred);
  * };
  */
 
@@ -2217,6 +2411,9 @@ typedef struct sixel_gpu_dither_plan_vtbl {
     SIXELSTATUS (*run)(
         sixel_gpu_dither_plan_interface_t *self,
         sixel_gpu_dither_run_request_t const *request);
+    SIXELSTATUS (*get_deferred)(
+        sixel_gpu_dither_plan_interface_t const *self,
+        sixel_gpu_dither_deferred_interface_t **deferred);
 } sixel_gpu_dither_plan_vtbl_t;
 
 struct sixel_gpu_dither_plan_interface {
@@ -2337,6 +2534,147 @@ typedef struct sixel_palette_apply_run_request {
     void *cancel_context;
 } sixel_palette_apply_run_request_t;
 
+/* Deferred application accepts no baseline during solve. The producer
+ * borrows source/logger/cancellation only until solve returns. A solution
+ * owns the frozen output description and all completed application state. */
+typedef struct sixel_palette_apply_solve_request {
+    sixel_frame_interface_t *source;
+    sixel_timeline_logger_t *logger;
+    sixel_cancel_function cancel;
+    void *cancel_context;
+} sixel_palette_apply_solve_request_t;
+
+typedef struct sixel_palette_apply_resolve_request {
+    sixel_retained_read_t *baseline;
+    sixel_indexed_frame_t *result;
+    sixel_palette_apply_delta_t delta;
+    sixel_timeline_logger_t *logger;
+    sixel_cancel_function cancel;
+    void *cancel_context;
+} sixel_palette_apply_resolve_request_t;
+
+/* The solution retains its validation context and concrete GPU solution.
+ * Neither get_description nor an idle solution acquires retained history.
+ * The returned description borrows its immutable palette through unref.
+ *
+ * resolve validates geometry/palette and the bound retained identity before
+ * execution. Bad arguments leave the solution READY and result unpublished.
+ * Once execution starts, resolve is single-use, drains the producer, validates
+ * all pixels, then publishes the full height and seals COMPLETE. Runtime
+ * error/cancellation seals FAILED; there is no partial-row callback, CPU
+ * substitution or backend replay. Concurrent/repeated execution is invalid.
+ * Every baseline, result, map and callback borrow ends on return.
+ * EncoderCore consumes COMPLETE only after success. It retains its own image
+ * reference; this solution never writes a SIXEL byte or commits history.
+ * Discarding a READY solution has no output or retained-state effect. */
+typedef struct sixel_palette_apply_solution_interface
+    sixel_palette_apply_solution_interface_t;
+
+/*
+ * IDL responsibility:
+ * - validate and publish one deferred palette application
+ */
+
+/*
+ * IDL forbidden state:
+ * - sixel_runs
+ * - terminal_callback
+ * - transport_queue
+ * - retained_owner
+ * - active_lookup_binding
+ * - borrowed_source
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("validate and publish one deferred palette application")]
+ * [forbid_state("sixel_runs", "terminal_callback", "transport_queue")]
+ * [forbid_state("retained_owner", "active_lookup_binding", "borrowed_source")]
+ * interface palette_apply_solution {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [const, borrows(description)]
+ *     SIXELSTATUS get_description(out indexed_frame_description *description);
+ *     [mutates]
+ *     SIXELSTATUS resolve(in palette_apply_resolve_request const *request);
+ * };
+ */
+
+typedef struct sixel_palette_apply_solution_vtbl {
+    void (*ref)(sixel_palette_apply_solution_interface_t *self);
+    void (*unref)(sixel_palette_apply_solution_interface_t *self);
+    SIXELSTATUS (*get_description)(
+        sixel_palette_apply_solution_interface_t const *self,
+        sixel_indexed_frame_description_t *description);
+    SIXELSTATUS (*resolve)(
+        sixel_palette_apply_solution_interface_t *self,
+        sixel_palette_apply_resolve_request_t const *request);
+} sixel_palette_apply_solution_vtbl_t;
+
+struct sixel_palette_apply_solution_interface {
+    sixel_palette_apply_solution_vtbl_t const *vtbl;
+};
+
+/* A retained capability of one successful PaletteApply preparation. It
+ * delegates to the injected deferred GPU dither without inspecting method
+ * names, pass counts or private state. CPU/stateless methods are not made
+ * deferred implicitly. Unsupported capability is resolved before execution.
+ * solve and monolithic run exclude each other on one prepared plan while a
+ * solution is live. Re-preparation cannot mutate a returned capability or
+ * solution: they retain the frozen preparation independently of PaletteApply.
+ * Success returns one retained solution; failure leaves *solution NULL.
+ * There are no outstanding GPU users, lookup bindings or source borrows when
+ * solve returns. The controller owns queue and cancellation order. */
+typedef struct sixel_palette_apply_deferred_interface
+    sixel_palette_apply_deferred_interface_t;
+
+/*
+ * IDL responsibility:
+ * - prepare owned palette results for ordered resolution
+ */
+
+/*
+ * IDL forbidden state:
+ * - retained_pixels
+ * - sixel_runs
+ * - terminal_callback
+ * - transport_queue
+ * - audio_clock
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("prepare owned palette results for ordered resolution")]
+ * [forbid_state("retained_pixels", "sixel_runs", "terminal_callback")]
+ * [forbid_state("transport_queue", "audio_clock")]
+ * interface palette_apply_deferred {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates]
+ *     SIXELSTATUS solve(in palette_apply_solve_request const *request,
+ *         out palette_apply_solution **solution);
+ * };
+ */
+
+typedef struct sixel_palette_apply_deferred_vtbl {
+    void (*ref)(sixel_palette_apply_deferred_interface_t *self);
+    void (*unref)(sixel_palette_apply_deferred_interface_t *self);
+    SIXELSTATUS (*solve)(
+        sixel_palette_apply_deferred_interface_t *self,
+        sixel_palette_apply_solve_request_t const *request,
+        sixel_palette_apply_solution_interface_t **solution);
+} sixel_palette_apply_deferred_vtbl_t;
+
+struct sixel_palette_apply_deferred_interface {
+    sixel_palette_apply_deferred_vtbl_t const *vtbl;
+};
+
 /* dither is the optional CPU capability; gpu_dither is the optional GPU
  * capability. At least one is required. If both exist, their frozen
  * configuration must agree. Missing CPU capability is never replaced by a
@@ -2384,10 +2722,14 @@ typedef struct sixel_palette_apply_run_request {
  * after completion. COMPLETE is set only after successful final publication.
  * Unsupported execution plans are resolved before output; a runtime failure
  * seals FAILED rather than rerunning a partially published image on CPU.
- * Frame statistics and retained state are published by retained_plane.commit,
+ * Frame statistics and retained state are published by the selected
+ * retained_plane commit or advance_resolved contract,
  * not by this component. No persistent per-pixel error buffer is introduced. */
     /* Borrow the actual prepared GPU device, or NULL for a CPU plan. This
      * never probes hardware or changes the prepared execution choice. */
+    /* Return a retained optional capability, or FEATURE_ERROR with NULL.
+     * No algorithm-name dispatch, probing, allocation or submission occurs.
+     * Existing preparations without the capability retain ordinary run. */
 typedef struct sixel_palette_apply_interface sixel_palette_apply_interface_t;
 
 /*
@@ -2421,6 +2763,8 @@ typedef struct sixel_palette_apply_interface sixel_palette_apply_interface_t;
  *     SIXELSTATUS run(in palette_apply_run_request const *request);
  *     [const, borrows(device)]
  *     SIXELSTATUS get_device(out gpu_device **device);
+ *     [const]
+ *     SIXELSTATUS get_deferred(out palette_apply_deferred **deferred);
  * };
  */
 
@@ -2436,11 +2780,158 @@ typedef struct sixel_palette_apply_vtbl {
     SIXELSTATUS (*get_device)(
         sixel_palette_apply_interface_t const *self,
         sixel_gpu_device_interface_t **device);
+    SIXELSTATUS (*get_deferred)(
+        sixel_palette_apply_interface_t const *self,
+        sixel_palette_apply_deferred_interface_t **deferred);
 } sixel_palette_apply_vtbl_t;
 
 struct sixel_palette_apply_interface {
     sixel_palette_apply_vtbl_t const *vtbl;
 };
+
+/* Stage diagnostics extend 6cells only; existing sixel.h playback result
+ * and stats structures retain their layouts. Native playback owns samples. */
+#define SIXEL_HAVE_PLAYBACK_STAGE_SAMPLE 1
+
+/*
+ * IDL responsibility:
+ * - refer to an existing playback session for diagnostics
+ */
+
+/*
+ * IDL contract:
+ * [native, opaque]
+ * [responsibility("refer to an existing playback session for diagnostics")]
+ * typedef sixel_playback_t playback;
+ */
+
+typedef enum sixel_playback_stage_valid {
+    SIXEL_PLAYBACK_STAGE_PREPARE = 1,
+    SIXEL_PLAYBACK_STAGE_SOLVE = 2,
+    SIXEL_PLAYBACK_STAGE_RESOLVE = 4,
+    SIXEL_PLAYBACK_STAGE_EMIT = 8,
+    SIXEL_PLAYBACK_STAGE_READY_WAIT = 16,
+    SIXEL_PLAYBACK_STAGE_COMPLETION_INTERVAL = 32,
+    SIXEL_PLAYBACK_STAGE_DEFERRED = 64
+} sixel_playback_stage_valid_t;
+
+/* Durations are monotonic host elapsed seconds. prepare excludes solve and
+ * credit/queue waits; solve includes upload/lookup/GPU wait; resolve includes
+ * delta selection and indexed publication. emit spans body start through
+ * writer acceptance and retained commit, excluding resolve. Ready wait spans
+ * solve completion through resolve entry. Completion interval compares this
+ * success with the immediately preceding success in the same generation;
+ * failure/cancellation/generation change breaks that comparison. These
+ * intervals overlap and must not be added as end-to-end latency. */
+typedef struct sixel_playback_stage_sample {
+    size_t struct_size;
+    uint64_t sequence;
+    unsigned int valid;
+    double prepare_seconds;
+    double solve_seconds;
+    double resolve_seconds;
+    double emit_seconds;
+    double ready_wait_seconds;
+    double completion_interval_seconds;
+} sixel_playback_stage_sample_t;
+
+/* Set sample.struct_size before calling. On success, copy the matching most
+ * recently completed sample without retaining pointers. Unknown/stale
+ * nonzero sequence returns SIXEL_FALSE with sample unchanged. Invalid args
+ * return BAD_ARGUMENT. Samples are published before the ordered completion
+ * callback, which may call this getter without encoder reentry. The callback
+ * owns no pipeline gate. The sample remains available until another frame
+ * completes, including a cancelled/failed frame. valid describes completed
+ * stages, not inferred zero-cost stages; an unobserved interval is unset.
+ * This operation never runs encoding, waits for GPU work or calls callbacks.
+ * Playback must remain alive. An undersized structure is rejected without
+ * writes; a larger supplied buffer is accepted with its unknown tail intact. */
+SIXELAPI SIXELSTATUS
+sixel_playback_get_stage_sample(sixel_playback_t *session,
+    uint64_t sequence,
+    sixel_playback_stage_sample_t *sample);
+
+/* Independent-pipeline diagnostics have a separate layout and getter.
+ * The older stage sample keeps its existing interval meanings and layout;
+ * an unrepresentable interval has its old validity bit unset, not redefined. */
+#define SIXEL_HAVE_PLAYBACK_PIPELINE_SAMPLE 1
+
+typedef enum sixel_playback_pipeline_valid {
+    SIXEL_PLAYBACK_PIPELINE_PALETTE = 1,
+    SIXEL_PLAYBACK_PIPELINE_SOLVE = 2,
+    SIXEL_PLAYBACK_PIPELINE_RESOLVE = 4,
+    SIXEL_PLAYBACK_PIPELINE_ENCODE = 8,
+    SIXEL_PLAYBACK_PIPELINE_PALETTE_WAIT = 16,
+    SIXEL_PLAYBACK_PIPELINE_READY_WAIT = 32,
+    SIXEL_PLAYBACK_PIPELINE_RESOLVED_WAIT = 64,
+    SIXEL_PLAYBACK_PIPELINE_COMPLETION_WAIT = 128,
+    SIXEL_PLAYBACK_PIPELINE_COMPLETION_INTERVAL = 256,
+    SIXEL_PLAYBACK_PIPELINE_INDEPENDENT = 512,
+    SIXEL_PLAYBACK_PIPELINE_ENCODE_INTERVAL = 1024,
+    SIXEL_PLAYBACK_PIPELINE_DELIVERY = 2048,
+    SIXEL_PLAYBACK_PIPELINE_ENCODED_WAIT = 4096
+} sixel_playback_pipeline_valid_t;
+
+/* Durations use monotonic host seconds; they do not measure CPU busy time.
+ * palette is this admission's own P build, even if its S selected an older
+ * palette_sequence. Each actual build is measured once. A missing build is
+ * invalid, not a fabricated zero duration. generation identifies the controller
+ * generation; it is not a retained-plane epoch or a palette-store epoch.
+ *
+ * solve spans S preparation and history-free execution; gpu_prepare is a
+ * subinterval. It excludes queue-space and palette waits. resolve spans R
+ * work through history advance and publication; history is its stage/advance
+ * subinterval. R first reserves downstream space, excluded from service.
+ * encode spans E preparation through private-packet finish and cleanup, with
+ * no external callback, history operation or own-palette join. delivery spans
+ * the dispatcher's external byte callbacks, excluding joins and done. Each
+ * stage bit covers its total and defined subinterval; do not add them twice.
+ *
+ * palette_wait measures S's compatible-palette wait. ready_wait spans solution
+ * publication to R service entry, including resolved-slot capacity waits.
+ * resolved_wait spans resolved-record publication to E service entry, including
+ * packet-space waits. encoded_wait spans packet publication to delivery entry.
+ * completion_wait spans external delivery completion to ordered done-callback
+ * readiness, including own-P joins and source-borrower release.
+ * Completion interval compares consecutive successful callback-ready frames;
+ * encode interval compares consecutive successful E completions. Failure,
+ * cancellation or generation changes reset the respective interval. Neither
+ * is physical presentation timing. Invalid fields carry no measurement.
+ * Parallel intervals must not be summed as end-to-end latency. */
+typedef struct sixel_playback_pipeline_sample {
+    size_t struct_size;
+    uint64_t sequence;
+    uint64_t palette_sequence;
+    uint64_t generation;
+    unsigned int valid;
+    double palette_seconds;
+    double solve_seconds;
+    double gpu_prepare_seconds;
+    double resolve_seconds;
+    double history_seconds;
+    double encode_seconds;
+    double delivery_seconds;
+    double palette_wait_seconds;
+    double ready_wait_seconds;
+    double resolved_wait_seconds;
+    double encoded_wait_seconds;
+    double completion_wait_seconds;
+    double completion_interval_seconds;
+    double encode_interval_seconds;
+} sixel_playback_pipeline_sample_t;
+
+/* Set sample.struct_size before calling. Copy the sample for the most recently
+ * callback-ready frame, published before its ordered completion callback.
+ * That callback may call this getter without encoder reentry. Unknown/stale
+ * nonzero sequence returns FALSE unchanged. Invalid arguments/undersized
+ * storage return BAD_ARGUMENT without writes; a larger buffer's unknown tail
+ * remains intact. Unsupported scheduling returns FALSE, not invented values.
+ * The getter holds no frame references and never submits, waits for GPU work
+ * or invokes callbacks. The playback object must remain alive. */
+SIXELAPI SIXELSTATUS
+sixel_playback_get_pipeline_sample(sixel_playback_t *session,
+    uint64_t sequence,
+    sixel_playback_pipeline_sample_t *sample);
 
 /*
  * IDL coclass:

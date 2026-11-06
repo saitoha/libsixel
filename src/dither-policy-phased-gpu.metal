@@ -177,3 +177,80 @@ kernel void phased_finish(constant uchar *palette [[buffer(1)]],
     result[i] = uchar(code ? p.keycolor : best);
     skip[i] = uchar(code);
 }
+
+/* Preserve both the iterative index and the reconstructed-query choice.
+ * The second state plane is dead after eight passes and owns the latter.
+ * This kernel finishes the lookup lease before any history is acquired. */
+kernel void phased_solve_tail(constant uchar *palette [[buffer(1)]],
+    device const float4 *a [[buffer(2)]],
+    device float4 *b [[buffer(3)]],
+    constant PhasedParams &p [[buffer(4)]],
+    device const uchar *transparent [[buffer(8)]],
+    constant uchar *configuration [[buffer(12)]],
+    device const uchar *workspace [[buffer(13)]],
+    device atomic_uint *invalid [[buffer(14)]],
+    uint i [[thread_position_in_grid]])
+{
+    float3 query;
+    uint best;
+
+    if (i >= p.width*p.height || transparent[i]) return;
+    query = a[i].xyz + phased_color(palette,uint(a[i].w));
+    best = lookup_rgb8_fractional(query, palette, p.ncolors,
+        configuration, workspace);
+    if (best >= p.ncolors) {
+        atomic_store_explicit(invalid, 1u, memory_order_relaxed);
+        return;
+    }
+    b[i] = float4(query,float(best));
+}
+
+kernel void phased_resolve(constant uchar *palette [[buffer(1)]],
+    device const float4 *a [[buffer(2)]],
+    device const float4 *b [[buffer(3)]],
+    constant PhasedParams &p [[buffer(4)]],
+    device const uchar *transparent [[buffer(8)]],
+    device const uchar *retained [[buffer(9)]],
+    device const uchar *valid [[buffer(10)]],
+    device uchar *result [[buffer(11)]],
+    device uchar *skip [[buffer(15)]],
+    uint i [[thread_position_in_grid]])
+{
+    uint best, code, threshold, x, y, cell;
+    float3 query, old, gap, fresh;
+    float old_distance, new_distance;
+    bool within;
+
+    if (i >= p.width*p.height) return;
+    best = uint(a[i].w);
+    code = 0;
+    if (transparent[i]) {
+        code = 1;
+    } else if (p.delta && valid[i]) {
+        /* The ready solution owns q and j; no lookup is needed here. */
+        query = b[i].xyz;
+        best = uint(b[i].w);
+        fresh = phased_color(palette,best);
+        old = float3(retained[3*i],retained[3*i+1],retained[3*i+2]);
+        gap = abs(query-old);
+        threshold = p.threshold;
+        if (p.columns) {
+            x = i % p.width; y = i / p.width;
+            cell = p.tiled ? (y & 63)*64 + (x & 63)
+                : (((y+1)*p.rows-1)/p.height)*p.columns
+                    + ((x+1)*p.columns-1)/p.width;
+            if (p.selection[cell/32] & (1u << (cell%32)))
+                threshold = min(threshold,p.selected_threshold);
+        }
+        within = all(gap <= float(threshold));
+        if (p.metric == 2)
+            within = dot(gap*gap,float3(2.f,4.f,1.f))
+                <= 7.f*float(threshold)*float(threshold);
+        old_distance = dot(query-old,query-old);
+        new_distance = dot(query-fresh,query-fresh);
+        if (within) code = any(gap != 0.f) ? 3 : 1;
+        else if (old_distance <= new_distance) code = 1;
+    }
+    result[i] = uchar(code ? p.keycolor : best);
+    skip[i] = uchar(code);
+}

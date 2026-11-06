@@ -31,6 +31,10 @@
 extern "C" {
 #endif
 
+/* A complete private packet already carries framing and penetration. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_writer_write_packet(sixel_writer_t *writer, char const *data, int size);
+
 /* @classid io/sixel-writer */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_writer_factory_new(sixel_allocator_t *allocator, void **object);

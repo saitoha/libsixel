@@ -49,6 +49,55 @@ typedef struct sixel_legacy_encode_request {
     sixel_output_t *output;
 } sixel_legacy_encode_request_t;
 
+/* Complete, immutable input for the independent body/packet worker. No
+ * source, dither, solution or retained-plane borrow crosses this boundary. */
+typedef struct sixel_output_resolved {
+    sixel_indexed_frame_t *image;
+    sixel_encoder_core_options_t options;
+    sixel_writer_image_header_t header;
+    int threads;
+} sixel_output_resolved_t;
+
+/* Playback owns this history-free preparation and transfers its solution.
+ * The output adapter borrows it only during ordered emission. It contains
+ * no retained read, speculative identity or writer receipt. */
+typedef struct sixel_output_deferred {
+    sixel_palette_apply_interface_t *apply;
+    sixel_palette_apply_deferred_interface_t *capability;
+    sixel_palette_apply_solution_interface_t *solution;
+    sixel_frame_t *source;
+    sixel_indexed_frame_description_t description;
+    sixel_playback_stage_sample_t stages;
+    double solve_started;
+    double solve_completed;
+    int output_started;
+    void (*resolved)(void *context);
+    void *resolved_context;
+    sixel_output_resolved_t *capture;
+    double history_seconds;
+} sixel_output_deferred_t;
+
+SIXEL_INTERNAL_API int
+sixel_output_is_resolve_only(sixel_output_t const *output);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_write_packet(sixel_output_t *output, char const *bytes, int size);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_encode_resolved(sixel_output_t *output,
+    sixel_output_resolved_t const *resolved);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_prepare_deferred(sixel_legacy_encode_request_t const *request,
+    sixel_output_deferred_t *prepared);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_solve_deferred(sixel_output_deferred_t *prepared,
+    sixel_timeline_logger_t *logger, sixel_cancel_function cancel,
+    void *cancel_context);
+SIXEL_INTERNAL_API void
+sixel_output_dispose_deferred(sixel_output_deferred_t *prepared);
+SIXEL_INTERNAL_API void
+sixel_output_bind_deferred(sixel_output_t *output,
+    sixel_output_deferred_t *prepared);
+
 /* Invocation-owned composition state, never part of encoder_core. A
  * successful session retains update only while optional paint is consumed. */
 typedef struct sixel_encode_session {

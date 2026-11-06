@@ -595,6 +595,23 @@ sixel_writer_factory_new(sixel_allocator_t *allocator, void **object)
     return SIXEL_OK;
 }
 
+/* The dispatcher supplies an already framed packet. Do not apply writer
+ * controls a second time, and never interleave it with an open image. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_writer_write_packet(sixel_writer_t *self, char const *data, int size)
+{
+    sixel_writer_storage_t *storage;
+    SIXELSTATUS status;
+
+    if (self == NULL || data == NULL || size < 0) return SIXEL_BAD_ARGUMENT;
+    storage = sixel_writer_storage_from_interface(self);
+    sixel_writer_lock(storage);
+    status = storage->image_active ? SIXEL_LOGIC_ERROR
+        : sixel_writer_write_raw_locked(storage, data, size);
+    sixel_writer_unlock(storage);
+    return status;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

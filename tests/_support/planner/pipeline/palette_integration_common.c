@@ -7,6 +7,7 @@
 #include <string.h>
 #include "src/encoder.h"
 #include "src/dither.h"
+#include "src/gpu-program.h"
 #include "playback_test_common.h"
 #include "palette_integration_common.h"
 
@@ -33,6 +34,8 @@ struct integration_state {
     int failed;
     int emitted;
     int budget;
+    int gpu;
+    sixel_playback_t *playback;
 };
 
 /* A timeout is a failure escape, never the source of the required order. */
@@ -244,8 +247,17 @@ integration_done(sixel_playback_result_t const *result, void *context)
 {
     integration_state_t *state;
     int sequence;
+    sixel_playback_pipeline_sample_t sample;
 
     state = context;
+    if (state->gpu) {
+        memset(&sample, 0, sizeof(sample));
+        sample.struct_size = sizeof(sample);
+        if (sixel_playback_get_pipeline_sample(state->playback,
+                result->sequence, &sample) != SIXEL_OK ||
+                !(sample.valid & SIXEL_PLAYBACK_PIPELINE_INDEPENDENT))
+            state->failed = 1;
+    }
     sequence = ++state->completed;
     if (sequence > 4 || result->sequence != (uint64_t)sequence) {
         state->failed = 1;
@@ -286,8 +298,8 @@ integration_frame(int sequence, int scenario)
 }
 #endif
 
-int
-palette_integration_test(int scenario)
+static int
+palette_integration_test_impl(int scenario, int gpu)
 {
 #if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
     integration_state_t state;
@@ -299,6 +311,7 @@ palette_integration_test(int scenario)
     sixel_playback_ticket_t ticket;
     sixel_frame_t *frame;
     SIXELSTATUS status;
+    sixel_gpu_device_interface_t *device;
     uint64_t expected;
     int index;
     int count;
@@ -313,6 +326,14 @@ palette_integration_test(int scenario)
     failed = 1;
     count = scenario == 3 ? 4 : scenario == 2 ? 3 : 2;
     state.scenario = scenario;
+    state.gpu = gpu;
+    device = NULL;
+    if (gpu) {
+        status = sixel_gpu_device_acquire(&device);
+        if (status == SIXEL_FEATURE_ERROR) return 77;
+        if (status != SIXEL_OK) return 1;
+        device->vtbl->unref(device);
+    }
     if (sixel_mutex_init(&state.mutex) != 0) {
         return 1;
     }
@@ -330,6 +351,11 @@ palette_integration_test(int scenario)
                 NULL) != SIXEL_OK) {
         goto end;
     }
+    if (gpu && (sixel_encoder_setopt(encoder, 'G', "force") ||
+            sixel_encoder_setopt(encoder, 'd', "phased") ||
+            sixel_encoder_setopt(encoder, '~', "ordered") ||
+            sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
+                "greedy:B4:palette=latest:prepare=ahead"))) goto end;
     /* Cover both sampling boundaries with the same actual reuse oracle. */
     encoder->palette_sampling_policy = scenario == 7
         ? SIXEL_PALETTE_SAMPLING_AUTO : scenario == 0
@@ -343,11 +369,11 @@ palette_integration_test(int scenario)
     encoder->palette_test_hooks = &hooks;
     (void)sixel_playback_config_init(&config, sizeof(config));
     config.palette_mode = SIXEL_PLAYBACK_PALETTE_LATEST;
-    config.capacity = scenario == 2 ? 16 : scenario == 3 ? 2 : 1;
+    config.capacity = gpu ? 4 : scenario == 2 ? 16 : scenario == 3 ? 2 : 1;
     config.done = integration_done;
     config.done_context = &state;
     /* Reattach verifies that sequence/store state cannot cross sessions. */
-    for (pass = 0; pass < 2; ++pass) {
+    for (pass = 0; pass < (gpu ? 1 : 2); ++pass) {
         if (scenario >= 8) {
             state.budget = scenario != 9 && pass == 1 ? 4 : 8;
             status = sixel_encoder_setopt(encoder,
@@ -376,6 +402,7 @@ palette_integration_test(int scenario)
         if (status != SIXEL_OK) {
             goto end;
         }
+        state.playback = playback;
         for (index = 1; index <= count; ++index) {
             frame = integration_frame(index, scenario);
             if (frame == NULL) {
@@ -455,6 +482,19 @@ end:
     return failed;
 #else
     (void)scenario;
+    (void)gpu;
     return 77;
 #endif
+}
+
+int
+palette_integration_test(int scenario)
+{
+    return palette_integration_test_impl(scenario, 0);
+}
+
+int
+palette_integration_gpu_test(int scenario)
+{
+    return palette_integration_test_impl(scenario, 1);
 }
