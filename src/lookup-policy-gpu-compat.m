@@ -15,6 +15,7 @@
  * Calls through the old synchronous API retain their serialized cache reuse. */
 typedef struct gpu_compat_provider {
     int kind;
+    sixel_lookup_policy_configuration_t configuration;
     sixel_gpu_lookup_preparer_interface_t *provider;
     struct gpu_compat_provider *next;
 } gpu_compat_provider_t;
@@ -38,6 +39,7 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     sixel_gpu_program_t *program;
     sixel_gpu_palette_request_t run;
     gpu_compat_provider_t *cached;
+    sixel_gpu_lookup_preparer_interface_t *provider;
     void *object;
     SIXELSTATUS status;
 
@@ -52,6 +54,14 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     program = NULL;
     object = NULL;
     memset(&configuration, 0, sizeof(configuration));
+    configuration.kind = request->lut_policy;
+    configuration.pixelformat = request->pixelformat;
+    configuration.fhedt_resolution = request->fhedt_resolution;
+    configuration.fhedt_refine = request->fhedt_refine;
+    configuration.fhedt_use_dist2 = request->fhedt_use_dist2;
+    configuration.fhedt_use_cache = request->fhedt_use_cache;
+    memcpy(configuration.fhedt_weights, request->fhedt_weights,
+        sizeof(configuration.fhedt_weights));
     memset(&execution, 0, sizeof(execution));
     (void)pthread_mutex_lock(&gpu_compat_gate);
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -66,8 +76,6 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        configuration.kind = request->lut_policy;
-        configuration.pixelformat = request->pixelformat;
         status = sixel_gpu_lookup_select(allocator, &configuration,
             &cached->provider);
         if (status != SIXEL_OK) {
@@ -75,8 +83,18 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
             goto end;
         }
         cached->kind = request->lut_policy;
+        cached->configuration = configuration;
         cached->next = gpu_compat_providers;
         gpu_compat_providers = cached;
+    } else if (memcmp(&cached->configuration, &configuration,
+            sizeof(configuration)) != 0) {
+        /* Providers freeze resolved settings. Replace only after successful
+         * construction, retaining at most one idle provider per policy. */
+        status = sixel_gpu_lookup_select(allocator, &configuration, &provider);
+        if (status != SIXEL_OK) goto end;
+        cached->provider->vtbl->unref(cached->provider);
+        cached->provider = provider;
+        cached->configuration = configuration;
     }
     status = sixel_palette_factory_new(allocator, &object);
     if (SIXEL_FAILED(status)) goto end;

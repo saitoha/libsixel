@@ -1219,6 +1219,8 @@ enum gpu_lookup_query_kind {
     SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL = 1
 };
 
+/* allow_batch opts into tile-batch execution as well as point queries.
+ * Zero requires point execution; CPU preparation ignores this capability. */
 struct lookup_execution_request {
     palette *working_palette;
     unsigned int ncolors;
@@ -1226,6 +1228,7 @@ struct lookup_execution_request {
     int colorspace;
     int parallel_dither_active;
     gpu_lookup_query_kind query_kind;
+    int allow_batch;
 };
 
 /* CPU and GPU preparation are separate capabilities. Creating either
@@ -1290,6 +1293,37 @@ struct gpu_lookup_build_pass {
     size_t threads[3];
 };
 
+/* Optional tile-batch query entry for "metal.lookup-rgb8.v1". This is a
+ * dispatch capability, not a lookup algorithm. Only an opted-in FRACTIONAL
+ * request may receive it. A point-only caller receives FEATURE_ERROR when
+ * the provider needs collective execution; no implicit per-point substitute.
+ *
+ * Each group owns one nonoverlapping tile. Groups cover ceil(width/tile[0])
+ * by ceil(height/tile[1]); local threads use the declared dimensions. The
+ * runtime checks positive dimensions, overflow and device pipeline limits.
+ * Padding lanes participate in collectives but never read/write out of range.
+ *
+ * The kernel uses builder bindings 0..3 unchanged, plus:
+ *   4: device const float4 *queries (row-major width * height)
+ *   5: device uint *indexes (same layout)
+ *   6: constant uint2 &extent (width, height)
+ * queries.xyz is finite in [0,255]^3 for active entries; w is 1 for active
+ * or 0 for inactive. Inactive xyz is unspecified and excluded from bounds.
+ * Every in-range index is written: an active result is < ncolors under the
+ * policy's search semantics; inactive entries contain ncolors. The consumer
+ * validates active indexes before using them. Invalid results fail the run.
+ *
+ * Query/index buffers belong to the dither runtime and are borrowed only
+ * for the dispatch. The provider owns grouping, candidate reduction and
+ * search. It never receives source pixels, residuals or retained history.
+ * Commands order query generation, lookup and result consumption with GPU
+ * write/read visibility. No CPU readback is part of this ABI. */
+struct gpu_lookup_batch_dispatch {
+    char const *entry_point;
+    size_t tile[2];
+    size_t threads[3];
+};
+
 /* Frozen program description borrowed from one retained plan. Chunk strings
  * are NUL-terminated; chunk_count is explicit. The runtime assembles/compiles
  * these chunks but does not inspect their algorithm or private table layout.
@@ -1312,7 +1346,8 @@ struct gpu_lookup_build_pass {
  * an ordinary palette index under the concrete policy's declared semantics;
  * transparency and delta keep are handled by the application component.
  * It does not read pixel position, previous queries or retained history.
- * Image storage remains RGB8; collective block lookup is not supported.
+ * Image storage remains RGB8. A non-NULL batch descriptor replaces these
+ * point entries with the explicitly opted-in tile-batch ABI.
  *
  * Providers own builders, constants, workspace layout and query code together.
  * VP-tree and ordered maintain separate implementations and caches. There is
@@ -1324,7 +1359,8 @@ struct gpu_lookup_build_pass {
  *     device const uchar *workspace);
  * This entry follows the provider's declared search semantics on the
  * continuous byte-code cube. The original BYTE entry remains intact.
- * A consumer verifies this field before compiling or submitting work. */
+ * A consumer verifies this field and the selected execution form before
+ * compiling or submitting work. Point/batch form is part of plan identity. */
 struct gpu_lookup_program_view {
     char const *program_format;
     char const *logical_name;
@@ -1339,6 +1375,7 @@ struct gpu_lookup_program_view {
     gpu_lookup_build_pass const *build_passes;
     size_t build_pass_count;
     gpu_lookup_query_kind query_kind;
+    gpu_lookup_batch_dispatch const *batch;
 };
 
 struct gpu_lookup_binding_view {

@@ -15,11 +15,11 @@ img2sixel --gpu-policy=auto --precision-policy=8bit \
 
 Metal, gamma RGB8 source storage and the indexed output component path are required. Float32 images, extended working spaces and legacy-only output modes are unsupported. A GPU policy of `off`, unavailable device, or incompatible lookup returns an error before output rather than substituting another dither. The GPU `auto` small-image cutoff cannot select CPU because this method has no CPU capability.
 
-`none`, `ordered`, `delaunay`, `vptree`, `rbc`, `mahalanobis` and `certlut` accept the fractional corrected queries used by this method. Lookup `auto` selects `ordered` specifically for `phased`; other methods retain their ordinary lookup resolution. Explicit byte-query-only policies are rejected. Fractional code-value queries in `[0,255]^3` do not imply support for float32 images. The method searches the actual emitted RGB8 palette and computes residuals against those same colors; the reserved transparency slot is excluded.
+All named GPU lookup policies accept this method's fractional corrected queries under their [declared search semantics](../lookup-policy/README.md). Lookup `auto` selects `ordered`; approximate lookup remains approximate, and FHEDT retains its GPU setting restrictions. Explicit byte-only injected providers are rejected. Fractional code-value queries in `[0,255]^3` do not imply float32 image support. Residuals use the actual emitted RGB8 colors, and the reserved transparency slot is excluded.
 
 ## Spatial update and coefficients
 
-Initialization selects the nearest emitted color without noise. Each pixel stores its selected index and the fractional residual of its corrected query. A fixed 64×64 blue-noise rank mask assigns pixels to four equally sized phases. The mask selects update order only; it is not added to RGB and does not change between frames.
+Initialization asks the selected lookup for an emitted color without noise. Each pixel stores its selected index and the fractional residual of its corrected query. A fixed 64×64 blue-noise rank mask assigns pixels to four equally sized phases. The mask selects update order only; it is not added to RGB and does not change between frames.
 
 Each subpass gathers six contributions from sender residuals. Horizontal orientation reverses on alternating rows; the far horizontal and vertical taps have radius four. Sender channel-error magnitude, rounded to the nearest integer with half values upward and clamped to 255, selects that channel's six coefficients. Out-of-image taps are omitted. Transparent pixels absorb incoming error and transmit zero residual; a farther tap can cross a transparent pixel.
 
@@ -34,6 +34,8 @@ The standard curve uses the generated rational sender ratios. The small-error mu
 The spatial solve does not consult retained history. After the last subpass, the corrected fractional query is reconstructed and the final display decision compares it with the retained RGB and the selected emitted color. Threshold and refresh selection come from the existing [delta configuration](../../output/delta-encoding.md), including partial rectangles. A refresh-selected T0 pixel is reevaluated; it is not forced to paint when the retained color remains no worse. `compare=target` and `compare=query` have the same corrected-query basis for this spatial method. Final skips do not feed back into the completed solve, so `error=skip` and `error=diffuse` do not alter its iteration.
 
 The GPU preparer freezes configuration, selects a fractional lookup capability and compiles its own program. The GPU plan exclusively owns two image-state buffers and its pass order. Completed plans return storage to a method-private idle pool, bounded to two bundles of at most 128 MiB each. Reuse changes allocation cost, not initialization or frame history. It consumes lookup through the independent prepare/program/binding interfaces without inspecting a policy name or private table. No shader source files are read at runtime; Metal sources are embedded during the build.
+
+Point-query providers execute inside each fused dither kernel. A tile-batch provider instead requires ordered GPU dispatches for corrected-query generation, collective lookup and residual update. The dither owns the temporary `float4` query and `uint32` index planes, adding 20 bytes per pixel only on this path. Inactive phase pixels and transparency do not enter the tile bounds. All same-phase queries are generated before any same-phase state write, preserving the two-generation schedule. There is no intermediate CPU readback. The [execution map](../../execution-map/README.md) owns the batch ABI and buffer lifetime.
 
 PaletteApply owns publication. The plan drains GPU work and finishes every acquired lookup binding before returning. Only a successful completed result is validated and published as a whole image; CPU SIXEL encoding cannot consume intermediate subpasses. The [retained publication contract](../../output/delta-encoding.md#indexed-retained-state-transactions) distinguishes receipt-checked direct output from independent playback history advance. Reconfiguration does not mutate an existing plan, and failed preparation leaves the prior PaletteApply plan usable.
 
@@ -116,3 +118,9 @@ A completed solution owns its source-derived state, frozen wire palette and geom
 ### Quality and verification limits
 
 The fixed reference fixture checks spatial arithmetic and final decisions, not a perceptual-quality threshold or all palettes. It does not establish a universal MS-SSIM, CAMBI, output-size or frame-time advantage. Video evaluation must include scene transitions, banding-sensitive regions and output-size distributions. GPU cases skip when Metal is unavailable; portable configuration tests still run.
+
+The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FRAC-01 | Gridlut refresh. | [tests/dither/phased/0074_gridlut_refresh.t](../../../../tests/dither/phased/0074_gridlut_refresh.t) |

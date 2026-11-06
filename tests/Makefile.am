@@ -237,6 +237,49 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0172_FHEDT_FRACTIONAL_REUSE \
+    -DBUILD_TEST_0064_6BIT_FRACTIONAL_REUSE \
+    -DBUILD_TEST_0064_5BIT_FRACTIONAL_REUSE \
+    -DBUILD_TEST_0075_BATCH_ZERO_TILE \
+    -DBUILD_TEST_0076_BATCH_THREAD_OVERFLOW \
+    -DBUILD_TEST_0077_BATCH_INVALID_INDEX \
+    -DBUILD_TEST_0062_EYTZINGER_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0042_GRIDLUT_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0044_BLOCKCULL_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0063_5BIT_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0063_6BIT_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0171_FHEDT_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0045_BLOCKCULL_BATCH_OPT_IN \
+    -DBUILD_FRACTIONAL_REFERENCE \
+    -DBUILD_BATCH \
+    -DBUILD_TEST_0040_GRIDLUT_FRACTIONAL_REFERENCE \
+    -DBUILD_TEST_0041_GRIDLUT_FRACTIONAL_TIES \
+    -DBUILD_TEST_0060_EYTZINGER_FRACTIONAL_REFERENCE \
+    -DBUILD_TEST_0061_EYTZINGER_FRACTIONAL_TIES \
+    -DBUILD_TEST_0061_5BIT_FRACTIONAL_REFERENCE \
+    -DBUILD_TEST_0062_5BIT_FRACTIONAL_TIES \
+    -DBUILD_TEST_0061_6BIT_FRACTIONAL_REFERENCE \
+    -DBUILD_TEST_0062_6BIT_FRACTIONAL_TIES \
+    -DBUILD_TEST_0159_FHEDT_FRACTIONAL_R64_F0_D0 \
+    -DBUILD_TEST_0160_FHEDT_FRACTIONAL_R64_F0_D1 \
+    -DBUILD_TEST_0161_FHEDT_FRACTIONAL_R64_F1_D0 \
+    -DBUILD_TEST_0162_FHEDT_FRACTIONAL_R64_F1_D1 \
+    -DBUILD_TEST_0163_FHEDT_FRACTIONAL_R128_F0_D0 \
+    -DBUILD_TEST_0164_FHEDT_FRACTIONAL_R128_F0_D1 \
+    -DBUILD_TEST_0165_FHEDT_FRACTIONAL_R128_F1_D0 \
+    -DBUILD_TEST_0166_FHEDT_FRACTIONAL_R128_F1_D1 \
+    -DBUILD_TEST_0167_FHEDT_FRACTIONAL_R256_F0_D0 \
+    -DBUILD_TEST_0168_FHEDT_FRACTIONAL_R256_F0_D1 \
+    -DBUILD_TEST_0169_FHEDT_FRACTIONAL_R256_F1_D0 \
+    -DBUILD_TEST_0170_FHEDT_FRACTIONAL_R256_F1_D1 \
+    -DBUILD_TEST_0037_BLOCKCULL_BATCH_PARTIAL_TILES \
+    -DBUILD_TEST_0038_BLOCKCULL_BATCH_OVERFLOW \
+    -DBUILD_TEST_0039_BLOCKCULL_BATCH_TRANSPARENT \
+    -DBUILD_TEST_0040_BLOCKCULL_BATCH_ALL_INACTIVE \
+    -DBUILD_TEST_0041_BLOCKCULL_BATCH_DEFERRED \
+    -DBUILD_TEST_0042_BLOCKCULL_BATCH_REFRESH \
+    -DBUILD_TEST_0043_BLOCKCULL_BATCH_DEFERRED_REFRESH \
+    -DBUILD_TEST_0074_GRIDLUT_REFRESH \
     -DBUILD_FRACTIONAL \
     -DBUILD_TEST_0068_NONE_REFRESH \
     -DBUILD_TEST_0069_DELAUNAY_REFRESH \
@@ -7297,6 +7340,49 @@ test_runner_SOURCES = test_runner.c \
     dither/phased/0063_latest_excludes_future.c \
     _support/phased/fixture.c \
     _support/phased/fractional.c \
+    lookup/fhedt/0172_fhedt_fractional_reuse.c \
+    lookup/6bit/0064_6bit_fractional_reuse.c \
+    lookup/5bit/0064_5bit_fractional_reuse.c \
+    _support/phased/fractional_reference.c \
+    _support/phased/batch.c \
+    dither/phased/0075_batch_zero_tile.c \
+    dither/phased/0076_batch_thread_overflow.c \
+    dither/phased/0077_batch_invalid_index.c \
+    lookup/eytzinger/0062_eytzinger_fractional_cache.c \
+    lookup/gridlut/0042_gridlut_fractional_cache.c \
+    lookup/blockcull/0044_blockcull_fractional_cache.c \
+    lookup/5bit/0063_5bit_fractional_cache.c \
+    lookup/6bit/0063_6bit_fractional_cache.c \
+    lookup/fhedt/0171_fhedt_fractional_cache.c \
+    lookup/blockcull/0045_blockcull_batch_opt_in.c \
+    lookup/gridlut/0040_gridlut_fractional_reference.c \
+    lookup/gridlut/0041_gridlut_fractional_ties.c \
+    lookup/eytzinger/0060_eytzinger_fractional_reference.c \
+    lookup/eytzinger/0061_eytzinger_fractional_ties.c \
+    lookup/5bit/0061_5bit_fractional_reference.c \
+    lookup/5bit/0062_5bit_fractional_ties.c \
+    lookup/6bit/0061_6bit_fractional_reference.c \
+    lookup/6bit/0062_6bit_fractional_ties.c \
+    lookup/fhedt/0159_fhedt_fractional_r64_f0_d0.c \
+    lookup/fhedt/0160_fhedt_fractional_r64_f0_d1.c \
+    lookup/fhedt/0161_fhedt_fractional_r64_f1_d0.c \
+    lookup/fhedt/0162_fhedt_fractional_r64_f1_d1.c \
+    lookup/fhedt/0163_fhedt_fractional_r128_f0_d0.c \
+    lookup/fhedt/0164_fhedt_fractional_r128_f0_d1.c \
+    lookup/fhedt/0165_fhedt_fractional_r128_f1_d0.c \
+    lookup/fhedt/0166_fhedt_fractional_r128_f1_d1.c \
+    lookup/fhedt/0167_fhedt_fractional_r256_f0_d0.c \
+    lookup/fhedt/0168_fhedt_fractional_r256_f0_d1.c \
+    lookup/fhedt/0169_fhedt_fractional_r256_f1_d0.c \
+    lookup/fhedt/0170_fhedt_fractional_r256_f1_d1.c \
+    lookup/blockcull/0037_blockcull_batch_partial_tiles.c \
+    lookup/blockcull/0038_blockcull_batch_overflow.c \
+    lookup/blockcull/0039_blockcull_batch_transparent.c \
+    lookup/blockcull/0040_blockcull_batch_all_inactive.c \
+    lookup/blockcull/0041_blockcull_batch_deferred.c \
+    lookup/blockcull/0042_blockcull_batch_refresh.c \
+    lookup/blockcull/0043_blockcull_batch_deferred_refresh.c \
+    dither/phased/0074_gridlut_refresh.c \
     lookup/none/0006_gpu_none_fractional_cache.c \
     lookup/delaunay/0120_gpu_delaunay_fractional_cache.c \
     lookup/vptree/0057_gpu_vptree_fractional_cache.c \

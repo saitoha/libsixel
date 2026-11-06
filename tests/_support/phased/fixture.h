@@ -43,7 +43,15 @@ typedef struct phased_fixture {
     unsigned char pixels[PHASED_PIXELS * 3];
 } phased_fixture_t;
 
+int phased_batch_fault_check(int);
+int phased_batch_equivalence(unsigned int, int, int, int);
 int phased_fractional_check(int kind, int ties);
+int phased_fractional_reuse_check(int kind);
+int phased_fractional_config_check(
+    sixel_lookup_policy_configuration_t const *, int);
+unsigned int phased_fractional_reference(
+    sixel_lookup_policy_configuration_t const *, unsigned char const *,
+    unsigned int, double const *);
 
 SIXELSTATUS phased_fixture_baseline(phased_fixture_t *f, int offset);
 int phased_fixture_open(phased_fixture_t *f, int require_gpu);

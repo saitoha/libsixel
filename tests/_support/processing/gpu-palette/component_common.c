@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "component_common.h"
+#include "src/lookup-policy-gpu.h"
 
 typedef struct fixture_buffer {
     sixel_gpu_buffer_interface_t iface;
@@ -84,6 +85,12 @@ int
 gpu_component_open(gpu_component_fixture_t *fixture, int kind)
 {
     void *object;
+    sixel_lookup_policy_configuration_t configuration;
+    static int const policies[] = {
+        SIXEL_LUT_POLICY_EYTZINGER, SIXEL_LUT_POLICY_GRIDLUT,
+        SIXEL_LUT_POLICY_BLOCKCULL, SIXEL_LUT_POLICY_5BIT,
+        SIXEL_LUT_POLICY_6BIT, SIXEL_LUT_POLICY_FHEDT
+    };
     SIXELSTATUS status;
 
     memset(fixture, 0, sizeof(*fixture));
@@ -96,7 +103,17 @@ gpu_component_open(gpu_component_fixture_t *fixture, int kind)
     }
     fixture->palette = object;
     if (!gpu_component_set_palette(fixture, 17)) return 0;
-    switch (kind) {
+    if (kind >= 7 && kind <= 12) {
+        memset(&configuration,0,sizeof(configuration));
+        configuration.kind = policies[kind-7];
+        configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        configuration.fhedt_resolution = 64;
+        configuration.fhedt_refine = 1;
+        configuration.fhedt_weights[0] = configuration.fhedt_weights[1] =
+            configuration.fhedt_weights[2] = 1.0;
+        status = sixel_gpu_lookup_select(fixture->allocator,&configuration,
+            &fixture->provider);
+    } else switch (kind) {
     case 0:
         status = sixel_gpu_lookup_vptree_create(fixture->allocator,
             &fixture->provider);

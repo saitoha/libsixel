@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 #include <stdlib.h>
+#include <stdint.h>
 #include "fixture.h"
 #include "src/lookup-policy-gpu.h"
 
@@ -13,12 +14,16 @@ typedef struct probe_plan {
     sixel_gpu_lookup_program_view_t view;
     char const **chunks;
     char *suffix;
+    sixel_gpu_lookup_batch_dispatch_t batch;
+    unsigned int *builds;
 } probe_plan_t;
 
 typedef struct probe_preparer {
     sixel_gpu_lookup_preparer_interface_t iface;
     sixel_gpu_lookup_preparer_interface_t *subject;
     char const *suffix;
+    int batch_fault;
+    unsigned int *builds;
 } probe_preparer_t;
 
 static void
@@ -53,9 +58,16 @@ probe_begin(sixel_gpu_lookup_plan_interface_t *self,
     sixel_gpu_lookup_binding_interface_t **binding)
 {
     probe_plan_t *p;
+    sixel_gpu_lookup_binding_view_t view;
+    SIXELSTATUS status;
 
     p = (probe_plan_t *)self;
-    return p->subject->vtbl->begin(p->subject, binding);
+    status = p->subject->vtbl->begin(p->subject, binding);
+    if (status == SIXEL_OK && p->builds != NULL) {
+        status = (*binding)->vtbl->get_view(*binding, &view);
+        if (status == SIXEL_OK) *p->builds += view.needs_build != 0;
+    }
+    return status;
 }
 
 static sixel_gpu_lookup_plan_vtbl_t const probe_plan_vtbl = {
@@ -91,6 +103,7 @@ probe_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     if (p == NULL) return SIXEL_BAD_ALLOCATION;
     p->iface.vtbl = &probe_plan_vtbl;
     p->refs = 1;
+    p->builds = provider->builds;
     status = provider->subject->vtbl->prepare(provider->subject, request,
         device, &p->subject);
     if (status != SIXEL_OK) { free(p); return status; }
@@ -99,6 +112,35 @@ probe_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     if (p->view.query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         status = SIXEL_LOGIC_ERROR;
         goto fail;
+    }
+    if (provider->batch_fault != 0) {
+        if (p->view.batch == NULL) { status = SIXEL_LOGIC_ERROR; goto fail; }
+        p->batch = *p->view.batch;
+        p->view.batch = &p->batch;
+        if (provider->batch_fault == 1) p->batch.tile[0] = 0;
+        if (provider->batch_fault == 2) p->batch.threads[0] = SIZE_MAX;
+        if (provider->batch_fault == 3) {
+            p->chunks = calloc(1,sizeof(*p->chunks));
+            if (p->chunks == NULL) { status = SIXEL_BAD_ALLOCATION; goto fail; }
+            p->chunks[0] = "#include <metal_stdlib>\nusing namespace metal;\n"
+                "kernel void bad_batch(constant uint& n [[buffer(1)]],"
+                "device uint *out [[buffer(5)]],"
+                "constant uint2& e [[buffer(6)]],"
+                "uint2 tile [[threadgroup_position_in_grid]],"
+                "uint lane [[thread_index_in_threadgroup]]) {"
+                "for(uint h=0;h<2;++h) { uint p=lane+32*h;"
+                "uint2 xy=tile*8+uint2(p%8,p/8);"
+                "if(all(xy<e)) out[xy.y*e.x+xy.x]=n; }}\n";
+            p->view.chunks = p->chunks;
+            p->view.chunk_count = 1;
+            p->batch.entry_point = "bad_batch";
+        }
+        *result = &p->iface;
+        return SIXEL_OK;
+    }
+    if (provider->suffix == NULL) {
+        *result = &p->iface;
+        return SIXEL_OK;
     }
     p->suffix = malloc(strlen(provider->suffix)+1);
     p->chunks = calloc(p->view.chunk_count+2, sizeof(*p->chunks));
@@ -128,19 +170,19 @@ static sixel_gpu_lookup_preparer_vtbl_t const probe_provider_vtbl = {
  * sixteen yields integers below 3*1020^2 < 2^24. Double enumeration is an
  * independent nearest-color oracle including exact lowest-index ties. */
 int
-phased_fractional_check(int kind, int ties)
+phased_fractional_config_check(
+    sixel_lookup_policy_configuration_t const *configuration, int ties)
 {
     phased_fixture_t f;
     probe_preparer_t probe;
-    sixel_lookup_policy_configuration_t configuration;
     sixel_palette_entries_request_t entries;
     sixel_wire_palette_request_t wire;
     sixel_wire_color_definition_t definitions[41];
     unsigned char colors[123];
     char suffix[16384];
     size_t used;
-    double q[3], gap, distance, minimum;
-    unsigned int i, j, c, count, seed, expected, value;
+    double q[3];
+    unsigned int i, c, count, seed, expected, value;
     int outcome, written;
 
     memset(&probe, 0, sizeof(probe));
@@ -204,16 +246,7 @@ phased_fractional_check(int kind, int ties)
          * cannot certify the upper fractional strip of this 16-code cell. */
         if (i == 2 && !ties) { q[0] = q[2] = 0; q[1] = 15.75; }
         if (i == 3 && ties) { q[0] = 15; q[1] = q[2] = 0; }
-        minimum = 1e30;
-        expected = 0;
-        for (j = 0; j < count; ++j) {
-            distance = 0;
-            for (c = 0; c < 3; ++c) {
-                gap = q[c]-colors[3*j+c];
-                distance += gap*gap;
-            }
-            if (distance < minimum) { minimum = distance; expected = j; }
-        }
+        expected = phased_fractional_reference(configuration,colors,count,q);
         written = snprintf(suffix+used, sizeof(suffix)-used,
             "float4(%.2ff,%.2ff,%.2ff,%u.0f),\n", q[0],q[1],q[2],expected);
         PHASED_CHECK(written > 0 && (size_t)written < sizeof(suffix)-used);
@@ -227,16 +260,105 @@ phased_fractional_check(int kind, int ties)
         "if (subject_fractional(probe.xyz,p,n,c,w) != uint(probe.w)) "
         "return n;\nreturn subject_fractional(q,p,n,c,w);\n}\n");
     PHASED_CHECK(written > 0 && (size_t)written < sizeof(suffix)-used);
-    memset(&configuration, 0, sizeof(configuration));
-    configuration.kind = kind;
-    configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    PHASED_CHECK(sixel_gpu_lookup_select(f.allocator, &configuration,
+    PHASED_CHECK(sixel_gpu_lookup_select(f.allocator, configuration,
         &probe.subject) == SIXEL_OK);
     probe.iface.vtbl = &probe_provider_vtbl;
     probe.suffix = suffix;
     f.prepare.gpu_lookup = &probe.iface;
     PHASED_CHECK(phased_fixture_prepare(&f) == SIXEL_OK);
     PHASED_CHECK(phased_fixture_run(&f) == SIXEL_OK);
+    outcome = 0;
+end:
+    phased_fixture_close(&f);
+    if (probe.subject != NULL) probe.subject->vtbl->unref(probe.subject);
+    return outcome;
+}
+
+int
+phased_fractional_check(int kind, int ties)
+{
+    sixel_lookup_policy_configuration_t configuration;
+
+    memset(&configuration, 0, sizeof(configuration));
+    configuration.kind = kind;
+    configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    return phased_fractional_config_check(&configuration, ties);
+}
+
+/* Keep the prepared plan alive across solves. Successful completion must
+ * return its table to the shared cache and the next solve must borrow that
+ * valid table, rather than rebuild it or read an empty workspace. */
+int
+phased_fractional_reuse_check(int kind)
+{
+    phased_fixture_t f;
+    probe_preparer_t probe;
+    sixel_lookup_policy_configuration_t configuration;
+    unsigned int builds;
+    int outcome;
+
+    memset(&probe, 0, sizeof(probe));
+    outcome = phased_fixture_open(&f, 1);
+    if (outcome != 0) goto end;
+    outcome = 1;
+    memset(&configuration, 0, sizeof(configuration));
+    configuration.kind = kind;
+    configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    configuration.fhedt_resolution = 64;
+    configuration.fhedt_refine = 1;
+    configuration.fhedt_weights[0] = 1;
+    configuration.fhedt_weights[1] = 1;
+    configuration.fhedt_weights[2] = 1;
+    PHASED_CHECK(sixel_gpu_lookup_select(f.allocator, &configuration,
+        &probe.subject) == SIXEL_OK);
+    probe.iface.vtbl = &probe_provider_vtbl;
+    probe.builds = &builds;
+    builds = 0;
+    f.prepare.gpu_lookup = &probe.iface;
+    PHASED_CHECK(phased_fixture_prepare(&f) == SIXEL_OK);
+    PHASED_CHECK(phased_fixture_run(&f) == SIXEL_OK);
+    builds = 0;
+    PHASED_CHECK(phased_fixture_run(&f) == SIXEL_OK);
+    PHASED_CHECK(builds == 0);
+    outcome = 0;
+end:
+    phased_fixture_close(&f);
+    if (probe.subject != NULL) probe.subject->vtbl->unref(probe.subject);
+    return outcome;
+}
+
+/* The consumer must reject malformed capabilities before execution and
+ * invalidate, rather than publish, an out-of-range collective result. */
+int
+phased_batch_fault_check(int fault)
+{
+    phased_fixture_t f;
+    probe_preparer_t probe;
+    sixel_lookup_policy_configuration_t configuration;
+    int outcome;
+    SIXELSTATUS status;
+
+    memset(&probe,0,sizeof(probe));
+    outcome = phased_fixture_open(&f,1);
+    if (outcome != 0) goto end;
+    outcome = 1;
+    memset(&configuration,0,sizeof(configuration));
+    configuration.kind = SIXEL_LUT_POLICY_BLOCKCULL;
+    configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    PHASED_CHECK(sixel_gpu_lookup_select(f.allocator,&configuration,
+        &probe.subject) == SIXEL_OK);
+    probe.iface.vtbl = &probe_provider_vtbl;
+    probe.batch_fault = fault;
+    f.prepare.gpu_lookup = &probe.iface;
+    status = phased_fixture_prepare(&f);
+    if (fault == 1) PHASED_CHECK(status == SIXEL_BAD_ARGUMENT);
+    else if (fault == 2) PHASED_CHECK(status == SIXEL_FEATURE_ERROR);
+    else {
+        PHASED_CHECK(status == SIXEL_OK);
+        PHASED_CHECK(phased_fixture_run(&f) == SIXEL_BAD_ARGUMENT);
+        PHASED_CHECK(sixel_indexed_frame_get_state(f.image) !=
+            SIXEL_INDEXED_COMPLETE);
+    }
     outcome = 0;
 end:
     phased_fixture_close(&f);

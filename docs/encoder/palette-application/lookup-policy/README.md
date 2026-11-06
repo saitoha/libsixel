@@ -10,9 +10,16 @@ lookup(color candidate, completed palette) -> palette index
 
 It is not a SIXEL wire-format term and does not mean reading a palette register whose index is already known.
 
-For GPU spatial [`phased` dithering](../dithering/phased.md), `none`, `ordered`, `delaunay`, `vptree`, `rbc`, `mahalanobis` and `certlut` provide fractional code-value queries over an emitted RGB8 palette; lookup `auto` resolves to `ordered`. `eytzinger`, `blockcull`, `gridlut`, `fhedt`, `5bit` and `6bit` accept byte queries only and are rejected for this dither. This is separate from native float32 image and colorspace support.
+All named GPU lookup policies support spatial [`phased` dithering](../dithering/phased.md) over an emitted RGB8 palette; lookup `auto` resolves to `ordered`. FHEDT still requires its supported GPU settings. Fractional code-value queries in `[0,255]^3` are separate from native float32 image and colorspace support.
 
-Fractional GPU lookup preserves the finite query in `[0,255]^3` instead of rounding it to RGB8. Squared RGB distances use float32 arithmetic and equal computed distances select the lowest original index. No claim of exact real arithmetic at numerically indistinguishable boundaries is made. A seed grid chooses a starting color or candidate cell, never a rounded query for the final distance. Query precision is part of the immutable plan's cache identity; byte and fractional plans cannot reuse incompatible cell certificates. Each policy owns its shader, construction, storage and cache; sharing the program interface does not share search implementations.
+| Fractional GPU policies | Search semantics |
+| --- | --- |
+| `none`, `ordered`, `delaunay`, `vptree`, `rbc`, `mahalanobis`, `certlut`, `gridlut`, `blockcull` | Unrounded squared-RGB comparisons; equal computed distances select the lowest original index |
+| `eytzinger` | Approximate projected-neighbor window, with unrounded query distances |
+| `5bit`, `6bit` | Approximate prebuilt cell-center representative; continuous query selects the address |
+| `fhedt` | Approximate grid lookup, optionally refined using unrounded query distances and quantized palette coordinates |
+
+No claim of exact real arithmetic at numerically indistinguishable boundaries is made. Grid addressing in the approximate policies is part of their declared semantics, not a hidden fallback to byte-only lookup. Query precision is part of immutable plan identity. Each policy owns its shader, construction, storage and cache; sharing the program interface does not share search implementations. [Execution ownership](../../execution-map/README.md) distinguishes fused point queries from `blockcull` tile batches.
 
 ## Pipeline position
 
@@ -273,7 +280,7 @@ Direct and end-to-end coverage is under [`tests/lookup`](../../../../tests/looku
 
 ### Fractional GPU lookup verification
 
-The fractional backend fixtures use quarter-code queries with an independent double exhaustive oracle. Squared distances multiplied by 16 are integers below `3 * 1020^2 < 2^24`, so the float32 arithmetic is exact for these witnesses. They include the fractional strip above a cell's last integer. Ties and cache identity are separate cases; these samples do not exhaust the RGB cube. GPU query cases require Metal; cache cases use an injected test device. The individual method pages own their test inventories.
+The exact fractional backend fixtures use quarter-code queries with an independent double exhaustive oracle. Approximate policies use separate references for their declared cell-center, projected-window or grid-refinement rules; those tests do not claim equivalence to exhaustive nearest-color lookup. Squared distances multiplied by 16 are integers below `3 * 1020^2 < 2^24`, so the float32 arithmetic is exact for these witnesses. They include the fractional strip above a cell's last integer. Ties and cache identity are separate cases; these samples do not exhaust the RGB cube. GPU query cases require Metal; cache cases use an injected test device. The individual method pages own their test inventories.
 
 <!-- test-coverage: enforced -->
 
