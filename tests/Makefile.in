@@ -2280,8 +2280,32 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	dither/phased/0067_playback_format_transition.c \
 	dither/phased/0062_latest_completed_own.c \
 	dither/phased/0063_latest_excludes_future.c \
-	_support/phased/fixture.c _support/phased/fixture.h \
-	_support/phased/expected.h \
+	_support/phased/fixture.c _support/phased/fractional.c \
+	lookup/none/0006_gpu_none_fractional_cache.c \
+	lookup/delaunay/0120_gpu_delaunay_fractional_cache.c \
+	lookup/vptree/0057_gpu_vptree_fractional_cache.c \
+	lookup/rbc/0084_gpu_rbc_fractional_cache.c \
+	lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c \
+	lookup/certlut/0086_gpu_certlut_fractional_cache.c \
+	dither/phased/0068_none_refresh.c \
+	dither/phased/0069_delaunay_refresh.c \
+	dither/phased/0070_vptree_refresh.c \
+	dither/phased/0071_rbc_refresh.c \
+	dither/phased/0072_mahalanobis_refresh.c \
+	dither/phased/0073_certlut_refresh.c \
+	lookup/none/0004_gpu_none_fractional_exact.c \
+	lookup/none/0005_gpu_none_fractional_ties.c \
+	lookup/delaunay/0118_gpu_delaunay_fractional_exact.c \
+	lookup/delaunay/0119_gpu_delaunay_fractional_ties.c \
+	lookup/vptree/0055_gpu_vptree_fractional_exact.c \
+	lookup/vptree/0056_gpu_vptree_fractional_ties.c \
+	lookup/rbc/0082_gpu_rbc_fractional_exact.c \
+	lookup/rbc/0083_gpu_rbc_fractional_ties.c \
+	lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c \
+	lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c \
+	lookup/certlut/0084_gpu_certlut_fractional_exact.c \
+	lookup/certlut/0085_gpu_certlut_fractional_ties.c \
+	_support/phased/fixture.h _support/phased/expected.h \
 	encoder/indexed/0129_gpu_rows_ordered_indexes.c \
 	encoder/indexed/0130_gpu_rows_rbc_indexes.c \
 	encoder/indexed/0131_gpu_rows_mahalanobis_indexes.c \
@@ -7163,6 +7187,31 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0062_latest_completed_own.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0063_latest_excludes_future.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/phased/test_runner-fixture.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/phased/test_runner-fractional.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/none/test_runner-0006_gpu_none_fractional_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0068_none_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0069_delaunay_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0070_vptree_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0071_rbc_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0072_mahalanobis_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0073_certlut_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/none/test_runner-0004_gpu_none_fractional_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/none/test_runner-0005_gpu_none_fractional_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0129_gpu_rows_ordered_indexes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0130_gpu_rows_rbc_indexes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0131_gpu_rows_mahalanobis_indexes.$(OBJEXT) \
@@ -10269,6 +10318,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po \
 	_support/loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po \
 	_support/phased/$(DEPDIR)/test_runner-fixture.Po \
+	_support/phased/$(DEPDIR)/test_runner-fractional.Po \
 	_support/phased/$(DEPDIR)/test_runner-latest.Po \
 	_support/phased/$(DEPDIR)/test_runner-playback.Po \
 	_support/phased/$(DEPDIR)/test_runner-rendezvous.Po \
@@ -11506,6 +11556,12 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Po \
 	dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Po \
 	dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Po \
+	dither/phased/$(DEPDIR)/test_runner-0068_none_refresh.Po \
+	dither/phased/$(DEPDIR)/test_runner-0069_delaunay_refresh.Po \
+	dither/phased/$(DEPDIR)/test_runner-0070_vptree_refresh.Po \
+	dither/phased/$(DEPDIR)/test_runner-0071_rbc_refresh.Po \
+	dither/phased/$(DEPDIR)/test_runner-0072_mahalanobis_refresh.Po \
+	dither/phased/$(DEPDIR)/test_runner-0073_certlut_refresh.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po \
@@ -13697,6 +13753,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/certlut/$(DEPDIR)/test_runner-0081_gpu_auto_failure_cpu_lookup.Po \
 	lookup/certlut/$(DEPDIR)/test_runner-0082_gpu_off_cpu_lookup.Po \
 	lookup/certlut/$(DEPDIR)/test_runner-0083_gpu_diffusion_cpu_lookup.Po \
+	lookup/certlut/$(DEPDIR)/test_runner-0084_gpu_certlut_fractional_exact.Po \
+	lookup/certlut/$(DEPDIR)/test_runner-0085_gpu_certlut_fractional_ties.Po \
+	lookup/certlut/$(DEPDIR)/test_runner-0086_gpu_certlut_fractional_cache.Po \
 	lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0010_delaunay_float_exact.Plo \
 	lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0011_delaunay_float_distance.Plo \
 	lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0012_delaunay_float_bulk.Plo \
@@ -13705,6 +13764,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Po \
 	lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Po \
 	lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Po \
+	lookup/delaunay/$(DEPDIR)/test_runner-0118_gpu_delaunay_fractional_exact.Po \
+	lookup/delaunay/$(DEPDIR)/test_runner-0119_gpu_delaunay_fractional_ties.Po \
+	lookup/delaunay/$(DEPDIR)/test_runner-0120_gpu_delaunay_fractional_cache.Po \
 	lookup/dispatch/$(DEPDIR)/libfloatlookuptests_la-0014_lookup_float_batch_exact.Plo \
 	lookup/dispatch/$(DEPDIR)/libfloatlookuptests_la-0015_lookup_float_simd_distance.Plo \
 	lookup/dispatch/$(DEPDIR)/test_runner-0001_filter_lookup.Po \
@@ -13985,6 +14047,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/mahalanobis/$(DEPDIR)/test_runner-0079_gpu_index255.Po \
 	lookup/mahalanobis/$(DEPDIR)/test_runner-0080_gpu_first_index_tie.Po \
 	lookup/mahalanobis/$(DEPDIR)/test_runner-0081_gpu_cell_boundaries.Po \
+	lookup/mahalanobis/$(DEPDIR)/test_runner-0082_gpu_mahalanobis_fractional_exact.Po \
+	lookup/mahalanobis/$(DEPDIR)/test_runner-0083_gpu_mahalanobis_fractional_ties.Po \
+	lookup/mahalanobis/$(DEPDIR)/test_runner-0084_gpu_mahalanobis_fractional_cache.Po \
 	lookup/monochrome/$(DEPDIR)/test_runner-0001_dark_values.Po \
 	lookup/monochrome/$(DEPDIR)/test_runner-0002_light_values.Po \
 	lookup/monochrome/$(DEPDIR)/test_runner-0003_padded_stride.Po \
@@ -13998,6 +14063,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/none/$(DEPDIR)/test_runner-0001_wire_rgb_none.Po \
 	lookup/none/$(DEPDIR)/test_runner-0002_wire_hls_none.Po \
 	lookup/none/$(DEPDIR)/test_runner-0003_lookup_none_batch_fences.Po \
+	lookup/none/$(DEPDIR)/test_runner-0004_gpu_none_fractional_exact.Po \
+	lookup/none/$(DEPDIR)/test_runner-0005_gpu_none_fractional_ties.Po \
+	lookup/none/$(DEPDIR)/test_runner-0006_gpu_none_fractional_cache.Po \
 	lookup/ordered/$(DEPDIR)/test_runner-0001_ordered_exact.Po \
 	lookup/ordered/$(DEPDIR)/test_runner-0002_ordered_cache_transitions.Po \
 	lookup/ordered/$(DEPDIR)/test_runner-0003_ordered_parallel_cache.Po \
@@ -14075,6 +14143,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/rbc/$(DEPDIR)/test_runner-0079_gpu_index255.Po \
 	lookup/rbc/$(DEPDIR)/test_runner-0080_gpu_first_index_tie.Po \
 	lookup/rbc/$(DEPDIR)/test_runner-0081_gpu_cell_boundaries.Po \
+	lookup/rbc/$(DEPDIR)/test_runner-0082_gpu_rbc_fractional_exact.Po \
+	lookup/rbc/$(DEPDIR)/test_runner-0083_gpu_rbc_fractional_ties.Po \
+	lookup/rbc/$(DEPDIR)/test_runner-0084_gpu_rbc_fractional_cache.Po \
 	lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Po \
 	lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Po \
 	lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Po \
@@ -14085,6 +14156,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Po \
 	lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Po \
 	lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0055_gpu_vptree_fractional_exact.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0056_gpu_vptree_fractional_ties.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0057_gpu_vptree_fractional_cache.Po \
 	palette/alpha/$(DEPDIR)/test_runner-0001_srgb_gamma.Po \
 	palette/alpha/$(DEPDIR)/test_runner-0002_srgb_linear.Po \
 	palette/alpha/$(DEPDIR)/test_runner-0003_srgb_oklab.Po \
@@ -15291,6 +15365,7 @@ pythondir = @pythondir@
 runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+sixel_have_compare = @sixel_have_compare@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
@@ -15471,6 +15546,31 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FRACTIONAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_NONE_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_DELAUNAY_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_VPTREE_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_RBC_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_MAHALANOBIS_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0073_CERTLUT_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_GPU_CERTLUT_FRACTIONAL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_GPU_CERTLUT_FRACTIONAL_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_GPU_CERTLUT_FRACTIONAL_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0118_GPU_DELAUNAY_FRACTIONAL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0119_GPU_DELAUNAY_FRACTIONAL_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0120_GPU_DELAUNAY_FRACTIONAL_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_GPU_MAHALANOBIS_FRACTIONAL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_GPU_MAHALANOBIS_FRACTIONAL_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_GPU_MAHALANOBIS_FRACTIONAL_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_GPU_NONE_FRACTIONAL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_GPU_NONE_FRACTIONAL_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_GPU_NONE_FRACTIONAL_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_GPU_RBC_FRACTIONAL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_GPU_RBC_FRACTIONAL_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_GPU_RBC_FRACTIONAL_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_GPU_VPTREE_FRACTIONAL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_GPU_VPTREE_FRACTIONAL_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_GPU_VPTREE_FRACTIONAL_CACHE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_LATEST_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0193_LATEST_BUILTIN_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0194_LATEST_HIGH_COLOR_FALLBACK \
@@ -22537,6 +22637,31 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0062_latest_completed_own.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0063_latest_excludes_future.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/fixture.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/fractional.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/none/0006_gpu_none_fractional_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0120_gpu_delaunay_fractional_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0057_gpu_vptree_fractional_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/rbc/0084_gpu_rbc_fractional_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/certlut/0086_gpu_certlut_fractional_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0068_none_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0069_delaunay_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0070_vptree_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0071_rbc_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0072_mahalanobis_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0073_certlut_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/none/0004_gpu_none_fractional_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/none/0005_gpu_none_fractional_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0118_gpu_delaunay_fractional_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0119_gpu_delaunay_fractional_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0055_gpu_vptree_fractional_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0056_gpu_vptree_fractional_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/rbc/0082_gpu_rbc_fractional_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/rbc/0083_gpu_rbc_fractional_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/certlut/0084_gpu_certlut_fractional_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/certlut/0085_gpu_certlut_fractional_ties.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/fixture.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/expected.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0129_gpu_rows_ordered_indexes.c \
@@ -32548,6 +32673,87 @@ dither/phased/test_runner-0063_latest_excludes_future.$(OBJEXT):  \
 _support/phased/test_runner-fixture.$(OBJEXT):  \
 	_support/phased/$(am__dirstamp) \
 	_support/phased/$(DEPDIR)/$(am__dirstamp)
+_support/phased/test_runner-fractional.$(OBJEXT):  \
+	_support/phased/$(am__dirstamp) \
+	_support/phased/$(DEPDIR)/$(am__dirstamp)
+lookup/none/test_runner-0006_gpu_none_fractional_cache.$(OBJEXT):  \
+	lookup/none/$(am__dirstamp) \
+	lookup/none/$(DEPDIR)/$(am__dirstamp)
+lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.$(OBJEXT):  \
+	lookup/delaunay/$(am__dirstamp) \
+	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/$(am__dirstamp):
+	@$(MKDIR_P) lookup/vptree
+	@: >>lookup/vptree/$(am__dirstamp)
+lookup/vptree/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) lookup/vptree/$(DEPDIR)
+	@: >>lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.$(OBJEXT):  \
+	lookup/rbc/$(am__dirstamp) \
+	lookup/rbc/$(DEPDIR)/$(am__dirstamp)
+lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.$(OBJEXT):  \
+	lookup/mahalanobis/$(am__dirstamp) \
+	lookup/mahalanobis/$(DEPDIR)/$(am__dirstamp)
+lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.$(OBJEXT):  \
+	lookup/certlut/$(am__dirstamp) \
+	lookup/certlut/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0068_none_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0069_delaunay_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0070_vptree_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0071_rbc_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0072_mahalanobis_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0073_certlut_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+lookup/none/test_runner-0004_gpu_none_fractional_exact.$(OBJEXT):  \
+	lookup/none/$(am__dirstamp) \
+	lookup/none/$(DEPDIR)/$(am__dirstamp)
+lookup/none/test_runner-0005_gpu_none_fractional_ties.$(OBJEXT):  \
+	lookup/none/$(am__dirstamp) \
+	lookup/none/$(DEPDIR)/$(am__dirstamp)
+lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.$(OBJEXT):  \
+	lookup/delaunay/$(am__dirstamp) \
+	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
+lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.$(OBJEXT):  \
+	lookup/delaunay/$(am__dirstamp) \
+	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.$(OBJEXT):  \
+	lookup/rbc/$(am__dirstamp) \
+	lookup/rbc/$(DEPDIR)/$(am__dirstamp)
+lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.$(OBJEXT):  \
+	lookup/rbc/$(am__dirstamp) \
+	lookup/rbc/$(DEPDIR)/$(am__dirstamp)
+lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.$(OBJEXT):  \
+	lookup/mahalanobis/$(am__dirstamp) \
+	lookup/mahalanobis/$(DEPDIR)/$(am__dirstamp)
+lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.$(OBJEXT):  \
+	lookup/mahalanobis/$(am__dirstamp) \
+	lookup/mahalanobis/$(DEPDIR)/$(am__dirstamp)
+lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.$(OBJEXT):  \
+	lookup/certlut/$(am__dirstamp) \
+	lookup/certlut/$(DEPDIR)/$(am__dirstamp)
+lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.$(OBJEXT):  \
+	lookup/certlut/$(am__dirstamp) \
+	lookup/certlut/$(DEPDIR)/$(am__dirstamp)
 encoder/indexed/test_runner-0129_gpu_rows_ordered_indexes.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
@@ -32734,12 +32940,6 @@ encoder/indexed/test_runner-0072_ordered_binding_lifetime.$(OBJEXT):  \
 encoder/indexed/test_runner-0073_ordered_float_decline.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
-lookup/vptree/$(am__dirstamp):
-	@$(MKDIR_P) lookup/vptree
-	@: >>lookup/vptree/$(am__dirstamp)
-lookup/vptree/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) lookup/vptree/$(DEPDIR)
-	@: >>lookup/vptree/$(DEPDIR)/$(am__dirstamp)
 lookup/vptree/test_runner-0045_gpu_exact_0_0_1.$(OBJEXT):  \
 	lookup/vptree/$(am__dirstamp) \
 	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
@@ -41881,6 +42081,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-fixture.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-fractional.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-latest.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-playback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-rendezvous.Po@am__quote@ # am--include-marker
@@ -43118,6 +43319,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0068_none_refresh.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0069_delaunay_refresh.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0070_vptree_refresh.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0071_rbc_refresh.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0072_mahalanobis_refresh.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0073_certlut_refresh.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po@am__quote@ # am--include-marker
@@ -45309,6 +45516,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0081_gpu_auto_failure_cpu_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0082_gpu_off_cpu_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0083_gpu_diffusion_cpu_lookup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0084_gpu_certlut_fractional_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0085_gpu_certlut_fractional_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0086_gpu_certlut_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0010_delaunay_float_exact.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0011_delaunay_float_distance.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0012_delaunay_float_bulk.Plo@am__quote@ # am--include-marker
@@ -45317,6 +45527,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0118_gpu_delaunay_fractional_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0119_gpu_delaunay_fractional_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0120_gpu_delaunay_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/dispatch/$(DEPDIR)/libfloatlookuptests_la-0014_lookup_float_batch_exact.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/dispatch/$(DEPDIR)/libfloatlookuptests_la-0015_lookup_float_simd_distance.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/dispatch/$(DEPDIR)/test_runner-0001_filter_lookup.Po@am__quote@ # am--include-marker
@@ -45597,6 +45810,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/mahalanobis/$(DEPDIR)/test_runner-0079_gpu_index255.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/mahalanobis/$(DEPDIR)/test_runner-0080_gpu_first_index_tie.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/mahalanobis/$(DEPDIR)/test_runner-0081_gpu_cell_boundaries.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/mahalanobis/$(DEPDIR)/test_runner-0082_gpu_mahalanobis_fractional_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/mahalanobis/$(DEPDIR)/test_runner-0083_gpu_mahalanobis_fractional_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/mahalanobis/$(DEPDIR)/test_runner-0084_gpu_mahalanobis_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/monochrome/$(DEPDIR)/test_runner-0001_dark_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/monochrome/$(DEPDIR)/test_runner-0002_light_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/monochrome/$(DEPDIR)/test_runner-0003_padded_stride.Po@am__quote@ # am--include-marker
@@ -45610,6 +45826,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/none/$(DEPDIR)/test_runner-0001_wire_rgb_none.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/none/$(DEPDIR)/test_runner-0002_wire_hls_none.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/none/$(DEPDIR)/test_runner-0003_lookup_none_batch_fences.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/none/$(DEPDIR)/test_runner-0004_gpu_none_fractional_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/none/$(DEPDIR)/test_runner-0005_gpu_none_fractional_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/none/$(DEPDIR)/test_runner-0006_gpu_none_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/ordered/$(DEPDIR)/test_runner-0001_ordered_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/ordered/$(DEPDIR)/test_runner-0002_ordered_cache_transitions.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/ordered/$(DEPDIR)/test_runner-0003_ordered_parallel_cache.Po@am__quote@ # am--include-marker
@@ -45687,6 +45906,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/rbc/$(DEPDIR)/test_runner-0079_gpu_index255.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/rbc/$(DEPDIR)/test_runner-0080_gpu_first_index_tie.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/rbc/$(DEPDIR)/test_runner-0081_gpu_cell_boundaries.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/rbc/$(DEPDIR)/test_runner-0082_gpu_rbc_fractional_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/rbc/$(DEPDIR)/test_runner-0083_gpu_rbc_fractional_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/rbc/$(DEPDIR)/test_runner-0084_gpu_rbc_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Po@am__quote@ # am--include-marker
@@ -45697,6 +45919,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0055_gpu_vptree_fractional_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0056_gpu_vptree_fractional_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0057_gpu_vptree_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/alpha/$(DEPDIR)/test_runner-0001_srgb_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/alpha/$(DEPDIR)/test_runner-0002_srgb_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/alpha/$(DEPDIR)/test_runner-0003_srgb_oklab.Po@am__quote@ # am--include-marker
@@ -76019,6 +76244,356 @@ _support/phased/test_runner-fixture.obj: _support/phased/fixture.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/fixture.c' object='_support/phased/test_runner-fixture.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-fixture.obj `if test -f '_support/phased/fixture.c'; then $(CYGPATH_W) '_support/phased/fixture.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/fixture.c'; fi`
+
+_support/phased/test_runner-fractional.o: _support/phased/fractional.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-fractional.o -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-fractional.Tpo -c -o _support/phased/test_runner-fractional.o `test -f '_support/phased/fractional.c' || echo '$(srcdir)/'`_support/phased/fractional.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/phased/$(DEPDIR)/test_runner-fractional.Tpo _support/phased/$(DEPDIR)/test_runner-fractional.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/fractional.c' object='_support/phased/test_runner-fractional.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-fractional.o `test -f '_support/phased/fractional.c' || echo '$(srcdir)/'`_support/phased/fractional.c
+
+_support/phased/test_runner-fractional.obj: _support/phased/fractional.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-fractional.obj -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-fractional.Tpo -c -o _support/phased/test_runner-fractional.obj `if test -f '_support/phased/fractional.c'; then $(CYGPATH_W) '_support/phased/fractional.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/fractional.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/phased/$(DEPDIR)/test_runner-fractional.Tpo _support/phased/$(DEPDIR)/test_runner-fractional.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/fractional.c' object='_support/phased/test_runner-fractional.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-fractional.obj `if test -f '_support/phased/fractional.c'; then $(CYGPATH_W) '_support/phased/fractional.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/fractional.c'; fi`
+
+lookup/none/test_runner-0006_gpu_none_fractional_cache.o: lookup/none/0006_gpu_none_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/none/test_runner-0006_gpu_none_fractional_cache.o -MD -MP -MF lookup/none/$(DEPDIR)/test_runner-0006_gpu_none_fractional_cache.Tpo -c -o lookup/none/test_runner-0006_gpu_none_fractional_cache.o `test -f 'lookup/none/0006_gpu_none_fractional_cache.c' || echo '$(srcdir)/'`lookup/none/0006_gpu_none_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/none/$(DEPDIR)/test_runner-0006_gpu_none_fractional_cache.Tpo lookup/none/$(DEPDIR)/test_runner-0006_gpu_none_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/none/0006_gpu_none_fractional_cache.c' object='lookup/none/test_runner-0006_gpu_none_fractional_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/none/test_runner-0006_gpu_none_fractional_cache.o `test -f 'lookup/none/0006_gpu_none_fractional_cache.c' || echo '$(srcdir)/'`lookup/none/0006_gpu_none_fractional_cache.c
+
+lookup/none/test_runner-0006_gpu_none_fractional_cache.obj: lookup/none/0006_gpu_none_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/none/test_runner-0006_gpu_none_fractional_cache.obj -MD -MP -MF lookup/none/$(DEPDIR)/test_runner-0006_gpu_none_fractional_cache.Tpo -c -o lookup/none/test_runner-0006_gpu_none_fractional_cache.obj `if test -f 'lookup/none/0006_gpu_none_fractional_cache.c'; then $(CYGPATH_W) 'lookup/none/0006_gpu_none_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/none/0006_gpu_none_fractional_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/none/$(DEPDIR)/test_runner-0006_gpu_none_fractional_cache.Tpo lookup/none/$(DEPDIR)/test_runner-0006_gpu_none_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/none/0006_gpu_none_fractional_cache.c' object='lookup/none/test_runner-0006_gpu_none_fractional_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/none/test_runner-0006_gpu_none_fractional_cache.obj `if test -f 'lookup/none/0006_gpu_none_fractional_cache.c'; then $(CYGPATH_W) 'lookup/none/0006_gpu_none_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/none/0006_gpu_none_fractional_cache.c'; fi`
+
+lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.o: lookup/delaunay/0120_gpu_delaunay_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.o -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0120_gpu_delaunay_fractional_cache.Tpo -c -o lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.o `test -f 'lookup/delaunay/0120_gpu_delaunay_fractional_cache.c' || echo '$(srcdir)/'`lookup/delaunay/0120_gpu_delaunay_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0120_gpu_delaunay_fractional_cache.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0120_gpu_delaunay_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0120_gpu_delaunay_fractional_cache.c' object='lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.o `test -f 'lookup/delaunay/0120_gpu_delaunay_fractional_cache.c' || echo '$(srcdir)/'`lookup/delaunay/0120_gpu_delaunay_fractional_cache.c
+
+lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.obj: lookup/delaunay/0120_gpu_delaunay_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.obj -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0120_gpu_delaunay_fractional_cache.Tpo -c -o lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.obj `if test -f 'lookup/delaunay/0120_gpu_delaunay_fractional_cache.c'; then $(CYGPATH_W) 'lookup/delaunay/0120_gpu_delaunay_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0120_gpu_delaunay_fractional_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0120_gpu_delaunay_fractional_cache.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0120_gpu_delaunay_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0120_gpu_delaunay_fractional_cache.c' object='lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0120_gpu_delaunay_fractional_cache.obj `if test -f 'lookup/delaunay/0120_gpu_delaunay_fractional_cache.c'; then $(CYGPATH_W) 'lookup/delaunay/0120_gpu_delaunay_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0120_gpu_delaunay_fractional_cache.c'; fi`
+
+lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.o: lookup/vptree/0057_gpu_vptree_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0057_gpu_vptree_fractional_cache.Tpo -c -o lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.o `test -f 'lookup/vptree/0057_gpu_vptree_fractional_cache.c' || echo '$(srcdir)/'`lookup/vptree/0057_gpu_vptree_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0057_gpu_vptree_fractional_cache.Tpo lookup/vptree/$(DEPDIR)/test_runner-0057_gpu_vptree_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0057_gpu_vptree_fractional_cache.c' object='lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.o `test -f 'lookup/vptree/0057_gpu_vptree_fractional_cache.c' || echo '$(srcdir)/'`lookup/vptree/0057_gpu_vptree_fractional_cache.c
+
+lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.obj: lookup/vptree/0057_gpu_vptree_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0057_gpu_vptree_fractional_cache.Tpo -c -o lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.obj `if test -f 'lookup/vptree/0057_gpu_vptree_fractional_cache.c'; then $(CYGPATH_W) 'lookup/vptree/0057_gpu_vptree_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0057_gpu_vptree_fractional_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0057_gpu_vptree_fractional_cache.Tpo lookup/vptree/$(DEPDIR)/test_runner-0057_gpu_vptree_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0057_gpu_vptree_fractional_cache.c' object='lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0057_gpu_vptree_fractional_cache.obj `if test -f 'lookup/vptree/0057_gpu_vptree_fractional_cache.c'; then $(CYGPATH_W) 'lookup/vptree/0057_gpu_vptree_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0057_gpu_vptree_fractional_cache.c'; fi`
+
+lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.o: lookup/rbc/0084_gpu_rbc_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.o -MD -MP -MF lookup/rbc/$(DEPDIR)/test_runner-0084_gpu_rbc_fractional_cache.Tpo -c -o lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.o `test -f 'lookup/rbc/0084_gpu_rbc_fractional_cache.c' || echo '$(srcdir)/'`lookup/rbc/0084_gpu_rbc_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/rbc/$(DEPDIR)/test_runner-0084_gpu_rbc_fractional_cache.Tpo lookup/rbc/$(DEPDIR)/test_runner-0084_gpu_rbc_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/rbc/0084_gpu_rbc_fractional_cache.c' object='lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.o `test -f 'lookup/rbc/0084_gpu_rbc_fractional_cache.c' || echo '$(srcdir)/'`lookup/rbc/0084_gpu_rbc_fractional_cache.c
+
+lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.obj: lookup/rbc/0084_gpu_rbc_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.obj -MD -MP -MF lookup/rbc/$(DEPDIR)/test_runner-0084_gpu_rbc_fractional_cache.Tpo -c -o lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.obj `if test -f 'lookup/rbc/0084_gpu_rbc_fractional_cache.c'; then $(CYGPATH_W) 'lookup/rbc/0084_gpu_rbc_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/rbc/0084_gpu_rbc_fractional_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/rbc/$(DEPDIR)/test_runner-0084_gpu_rbc_fractional_cache.Tpo lookup/rbc/$(DEPDIR)/test_runner-0084_gpu_rbc_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/rbc/0084_gpu_rbc_fractional_cache.c' object='lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/rbc/test_runner-0084_gpu_rbc_fractional_cache.obj `if test -f 'lookup/rbc/0084_gpu_rbc_fractional_cache.c'; then $(CYGPATH_W) 'lookup/rbc/0084_gpu_rbc_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/rbc/0084_gpu_rbc_fractional_cache.c'; fi`
+
+lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.o: lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.o -MD -MP -MF lookup/mahalanobis/$(DEPDIR)/test_runner-0084_gpu_mahalanobis_fractional_cache.Tpo -c -o lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.o `test -f 'lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c' || echo '$(srcdir)/'`lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/mahalanobis/$(DEPDIR)/test_runner-0084_gpu_mahalanobis_fractional_cache.Tpo lookup/mahalanobis/$(DEPDIR)/test_runner-0084_gpu_mahalanobis_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c' object='lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.o `test -f 'lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c' || echo '$(srcdir)/'`lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c
+
+lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.obj: lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.obj -MD -MP -MF lookup/mahalanobis/$(DEPDIR)/test_runner-0084_gpu_mahalanobis_fractional_cache.Tpo -c -o lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.obj `if test -f 'lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c'; then $(CYGPATH_W) 'lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/mahalanobis/$(DEPDIR)/test_runner-0084_gpu_mahalanobis_fractional_cache.Tpo lookup/mahalanobis/$(DEPDIR)/test_runner-0084_gpu_mahalanobis_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c' object='lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/mahalanobis/test_runner-0084_gpu_mahalanobis_fractional_cache.obj `if test -f 'lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c'; then $(CYGPATH_W) 'lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c'; fi`
+
+lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.o: lookup/certlut/0086_gpu_certlut_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.o -MD -MP -MF lookup/certlut/$(DEPDIR)/test_runner-0086_gpu_certlut_fractional_cache.Tpo -c -o lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.o `test -f 'lookup/certlut/0086_gpu_certlut_fractional_cache.c' || echo '$(srcdir)/'`lookup/certlut/0086_gpu_certlut_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/certlut/$(DEPDIR)/test_runner-0086_gpu_certlut_fractional_cache.Tpo lookup/certlut/$(DEPDIR)/test_runner-0086_gpu_certlut_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/certlut/0086_gpu_certlut_fractional_cache.c' object='lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.o `test -f 'lookup/certlut/0086_gpu_certlut_fractional_cache.c' || echo '$(srcdir)/'`lookup/certlut/0086_gpu_certlut_fractional_cache.c
+
+lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.obj: lookup/certlut/0086_gpu_certlut_fractional_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.obj -MD -MP -MF lookup/certlut/$(DEPDIR)/test_runner-0086_gpu_certlut_fractional_cache.Tpo -c -o lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.obj `if test -f 'lookup/certlut/0086_gpu_certlut_fractional_cache.c'; then $(CYGPATH_W) 'lookup/certlut/0086_gpu_certlut_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/certlut/0086_gpu_certlut_fractional_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/certlut/$(DEPDIR)/test_runner-0086_gpu_certlut_fractional_cache.Tpo lookup/certlut/$(DEPDIR)/test_runner-0086_gpu_certlut_fractional_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/certlut/0086_gpu_certlut_fractional_cache.c' object='lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/certlut/test_runner-0086_gpu_certlut_fractional_cache.obj `if test -f 'lookup/certlut/0086_gpu_certlut_fractional_cache.c'; then $(CYGPATH_W) 'lookup/certlut/0086_gpu_certlut_fractional_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/certlut/0086_gpu_certlut_fractional_cache.c'; fi`
+
+dither/phased/test_runner-0068_none_refresh.o: dither/phased/0068_none_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0068_none_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0068_none_refresh.Tpo -c -o dither/phased/test_runner-0068_none_refresh.o `test -f 'dither/phased/0068_none_refresh.c' || echo '$(srcdir)/'`dither/phased/0068_none_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0068_none_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0068_none_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0068_none_refresh.c' object='dither/phased/test_runner-0068_none_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0068_none_refresh.o `test -f 'dither/phased/0068_none_refresh.c' || echo '$(srcdir)/'`dither/phased/0068_none_refresh.c
+
+dither/phased/test_runner-0068_none_refresh.obj: dither/phased/0068_none_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0068_none_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0068_none_refresh.Tpo -c -o dither/phased/test_runner-0068_none_refresh.obj `if test -f 'dither/phased/0068_none_refresh.c'; then $(CYGPATH_W) 'dither/phased/0068_none_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0068_none_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0068_none_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0068_none_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0068_none_refresh.c' object='dither/phased/test_runner-0068_none_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0068_none_refresh.obj `if test -f 'dither/phased/0068_none_refresh.c'; then $(CYGPATH_W) 'dither/phased/0068_none_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0068_none_refresh.c'; fi`
+
+dither/phased/test_runner-0069_delaunay_refresh.o: dither/phased/0069_delaunay_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0069_delaunay_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0069_delaunay_refresh.Tpo -c -o dither/phased/test_runner-0069_delaunay_refresh.o `test -f 'dither/phased/0069_delaunay_refresh.c' || echo '$(srcdir)/'`dither/phased/0069_delaunay_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0069_delaunay_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0069_delaunay_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0069_delaunay_refresh.c' object='dither/phased/test_runner-0069_delaunay_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0069_delaunay_refresh.o `test -f 'dither/phased/0069_delaunay_refresh.c' || echo '$(srcdir)/'`dither/phased/0069_delaunay_refresh.c
+
+dither/phased/test_runner-0069_delaunay_refresh.obj: dither/phased/0069_delaunay_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0069_delaunay_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0069_delaunay_refresh.Tpo -c -o dither/phased/test_runner-0069_delaunay_refresh.obj `if test -f 'dither/phased/0069_delaunay_refresh.c'; then $(CYGPATH_W) 'dither/phased/0069_delaunay_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0069_delaunay_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0069_delaunay_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0069_delaunay_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0069_delaunay_refresh.c' object='dither/phased/test_runner-0069_delaunay_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0069_delaunay_refresh.obj `if test -f 'dither/phased/0069_delaunay_refresh.c'; then $(CYGPATH_W) 'dither/phased/0069_delaunay_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0069_delaunay_refresh.c'; fi`
+
+dither/phased/test_runner-0070_vptree_refresh.o: dither/phased/0070_vptree_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0070_vptree_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0070_vptree_refresh.Tpo -c -o dither/phased/test_runner-0070_vptree_refresh.o `test -f 'dither/phased/0070_vptree_refresh.c' || echo '$(srcdir)/'`dither/phased/0070_vptree_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0070_vptree_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0070_vptree_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0070_vptree_refresh.c' object='dither/phased/test_runner-0070_vptree_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0070_vptree_refresh.o `test -f 'dither/phased/0070_vptree_refresh.c' || echo '$(srcdir)/'`dither/phased/0070_vptree_refresh.c
+
+dither/phased/test_runner-0070_vptree_refresh.obj: dither/phased/0070_vptree_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0070_vptree_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0070_vptree_refresh.Tpo -c -o dither/phased/test_runner-0070_vptree_refresh.obj `if test -f 'dither/phased/0070_vptree_refresh.c'; then $(CYGPATH_W) 'dither/phased/0070_vptree_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0070_vptree_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0070_vptree_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0070_vptree_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0070_vptree_refresh.c' object='dither/phased/test_runner-0070_vptree_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0070_vptree_refresh.obj `if test -f 'dither/phased/0070_vptree_refresh.c'; then $(CYGPATH_W) 'dither/phased/0070_vptree_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0070_vptree_refresh.c'; fi`
+
+dither/phased/test_runner-0071_rbc_refresh.o: dither/phased/0071_rbc_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0071_rbc_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0071_rbc_refresh.Tpo -c -o dither/phased/test_runner-0071_rbc_refresh.o `test -f 'dither/phased/0071_rbc_refresh.c' || echo '$(srcdir)/'`dither/phased/0071_rbc_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0071_rbc_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0071_rbc_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0071_rbc_refresh.c' object='dither/phased/test_runner-0071_rbc_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0071_rbc_refresh.o `test -f 'dither/phased/0071_rbc_refresh.c' || echo '$(srcdir)/'`dither/phased/0071_rbc_refresh.c
+
+dither/phased/test_runner-0071_rbc_refresh.obj: dither/phased/0071_rbc_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0071_rbc_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0071_rbc_refresh.Tpo -c -o dither/phased/test_runner-0071_rbc_refresh.obj `if test -f 'dither/phased/0071_rbc_refresh.c'; then $(CYGPATH_W) 'dither/phased/0071_rbc_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0071_rbc_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0071_rbc_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0071_rbc_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0071_rbc_refresh.c' object='dither/phased/test_runner-0071_rbc_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0071_rbc_refresh.obj `if test -f 'dither/phased/0071_rbc_refresh.c'; then $(CYGPATH_W) 'dither/phased/0071_rbc_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0071_rbc_refresh.c'; fi`
+
+dither/phased/test_runner-0072_mahalanobis_refresh.o: dither/phased/0072_mahalanobis_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0072_mahalanobis_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0072_mahalanobis_refresh.Tpo -c -o dither/phased/test_runner-0072_mahalanobis_refresh.o `test -f 'dither/phased/0072_mahalanobis_refresh.c' || echo '$(srcdir)/'`dither/phased/0072_mahalanobis_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0072_mahalanobis_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0072_mahalanobis_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0072_mahalanobis_refresh.c' object='dither/phased/test_runner-0072_mahalanobis_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0072_mahalanobis_refresh.o `test -f 'dither/phased/0072_mahalanobis_refresh.c' || echo '$(srcdir)/'`dither/phased/0072_mahalanobis_refresh.c
+
+dither/phased/test_runner-0072_mahalanobis_refresh.obj: dither/phased/0072_mahalanobis_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0072_mahalanobis_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0072_mahalanobis_refresh.Tpo -c -o dither/phased/test_runner-0072_mahalanobis_refresh.obj `if test -f 'dither/phased/0072_mahalanobis_refresh.c'; then $(CYGPATH_W) 'dither/phased/0072_mahalanobis_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0072_mahalanobis_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0072_mahalanobis_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0072_mahalanobis_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0072_mahalanobis_refresh.c' object='dither/phased/test_runner-0072_mahalanobis_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0072_mahalanobis_refresh.obj `if test -f 'dither/phased/0072_mahalanobis_refresh.c'; then $(CYGPATH_W) 'dither/phased/0072_mahalanobis_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0072_mahalanobis_refresh.c'; fi`
+
+dither/phased/test_runner-0073_certlut_refresh.o: dither/phased/0073_certlut_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0073_certlut_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0073_certlut_refresh.Tpo -c -o dither/phased/test_runner-0073_certlut_refresh.o `test -f 'dither/phased/0073_certlut_refresh.c' || echo '$(srcdir)/'`dither/phased/0073_certlut_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0073_certlut_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0073_certlut_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0073_certlut_refresh.c' object='dither/phased/test_runner-0073_certlut_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0073_certlut_refresh.o `test -f 'dither/phased/0073_certlut_refresh.c' || echo '$(srcdir)/'`dither/phased/0073_certlut_refresh.c
+
+dither/phased/test_runner-0073_certlut_refresh.obj: dither/phased/0073_certlut_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0073_certlut_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0073_certlut_refresh.Tpo -c -o dither/phased/test_runner-0073_certlut_refresh.obj `if test -f 'dither/phased/0073_certlut_refresh.c'; then $(CYGPATH_W) 'dither/phased/0073_certlut_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0073_certlut_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0073_certlut_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0073_certlut_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0073_certlut_refresh.c' object='dither/phased/test_runner-0073_certlut_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0073_certlut_refresh.obj `if test -f 'dither/phased/0073_certlut_refresh.c'; then $(CYGPATH_W) 'dither/phased/0073_certlut_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0073_certlut_refresh.c'; fi`
+
+lookup/none/test_runner-0004_gpu_none_fractional_exact.o: lookup/none/0004_gpu_none_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/none/test_runner-0004_gpu_none_fractional_exact.o -MD -MP -MF lookup/none/$(DEPDIR)/test_runner-0004_gpu_none_fractional_exact.Tpo -c -o lookup/none/test_runner-0004_gpu_none_fractional_exact.o `test -f 'lookup/none/0004_gpu_none_fractional_exact.c' || echo '$(srcdir)/'`lookup/none/0004_gpu_none_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/none/$(DEPDIR)/test_runner-0004_gpu_none_fractional_exact.Tpo lookup/none/$(DEPDIR)/test_runner-0004_gpu_none_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/none/0004_gpu_none_fractional_exact.c' object='lookup/none/test_runner-0004_gpu_none_fractional_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/none/test_runner-0004_gpu_none_fractional_exact.o `test -f 'lookup/none/0004_gpu_none_fractional_exact.c' || echo '$(srcdir)/'`lookup/none/0004_gpu_none_fractional_exact.c
+
+lookup/none/test_runner-0004_gpu_none_fractional_exact.obj: lookup/none/0004_gpu_none_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/none/test_runner-0004_gpu_none_fractional_exact.obj -MD -MP -MF lookup/none/$(DEPDIR)/test_runner-0004_gpu_none_fractional_exact.Tpo -c -o lookup/none/test_runner-0004_gpu_none_fractional_exact.obj `if test -f 'lookup/none/0004_gpu_none_fractional_exact.c'; then $(CYGPATH_W) 'lookup/none/0004_gpu_none_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/none/0004_gpu_none_fractional_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/none/$(DEPDIR)/test_runner-0004_gpu_none_fractional_exact.Tpo lookup/none/$(DEPDIR)/test_runner-0004_gpu_none_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/none/0004_gpu_none_fractional_exact.c' object='lookup/none/test_runner-0004_gpu_none_fractional_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/none/test_runner-0004_gpu_none_fractional_exact.obj `if test -f 'lookup/none/0004_gpu_none_fractional_exact.c'; then $(CYGPATH_W) 'lookup/none/0004_gpu_none_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/none/0004_gpu_none_fractional_exact.c'; fi`
+
+lookup/none/test_runner-0005_gpu_none_fractional_ties.o: lookup/none/0005_gpu_none_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/none/test_runner-0005_gpu_none_fractional_ties.o -MD -MP -MF lookup/none/$(DEPDIR)/test_runner-0005_gpu_none_fractional_ties.Tpo -c -o lookup/none/test_runner-0005_gpu_none_fractional_ties.o `test -f 'lookup/none/0005_gpu_none_fractional_ties.c' || echo '$(srcdir)/'`lookup/none/0005_gpu_none_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/none/$(DEPDIR)/test_runner-0005_gpu_none_fractional_ties.Tpo lookup/none/$(DEPDIR)/test_runner-0005_gpu_none_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/none/0005_gpu_none_fractional_ties.c' object='lookup/none/test_runner-0005_gpu_none_fractional_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/none/test_runner-0005_gpu_none_fractional_ties.o `test -f 'lookup/none/0005_gpu_none_fractional_ties.c' || echo '$(srcdir)/'`lookup/none/0005_gpu_none_fractional_ties.c
+
+lookup/none/test_runner-0005_gpu_none_fractional_ties.obj: lookup/none/0005_gpu_none_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/none/test_runner-0005_gpu_none_fractional_ties.obj -MD -MP -MF lookup/none/$(DEPDIR)/test_runner-0005_gpu_none_fractional_ties.Tpo -c -o lookup/none/test_runner-0005_gpu_none_fractional_ties.obj `if test -f 'lookup/none/0005_gpu_none_fractional_ties.c'; then $(CYGPATH_W) 'lookup/none/0005_gpu_none_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/none/0005_gpu_none_fractional_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/none/$(DEPDIR)/test_runner-0005_gpu_none_fractional_ties.Tpo lookup/none/$(DEPDIR)/test_runner-0005_gpu_none_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/none/0005_gpu_none_fractional_ties.c' object='lookup/none/test_runner-0005_gpu_none_fractional_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/none/test_runner-0005_gpu_none_fractional_ties.obj `if test -f 'lookup/none/0005_gpu_none_fractional_ties.c'; then $(CYGPATH_W) 'lookup/none/0005_gpu_none_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/none/0005_gpu_none_fractional_ties.c'; fi`
+
+lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.o: lookup/delaunay/0118_gpu_delaunay_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.o -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0118_gpu_delaunay_fractional_exact.Tpo -c -o lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.o `test -f 'lookup/delaunay/0118_gpu_delaunay_fractional_exact.c' || echo '$(srcdir)/'`lookup/delaunay/0118_gpu_delaunay_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0118_gpu_delaunay_fractional_exact.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0118_gpu_delaunay_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0118_gpu_delaunay_fractional_exact.c' object='lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.o `test -f 'lookup/delaunay/0118_gpu_delaunay_fractional_exact.c' || echo '$(srcdir)/'`lookup/delaunay/0118_gpu_delaunay_fractional_exact.c
+
+lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.obj: lookup/delaunay/0118_gpu_delaunay_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.obj -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0118_gpu_delaunay_fractional_exact.Tpo -c -o lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.obj `if test -f 'lookup/delaunay/0118_gpu_delaunay_fractional_exact.c'; then $(CYGPATH_W) 'lookup/delaunay/0118_gpu_delaunay_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0118_gpu_delaunay_fractional_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0118_gpu_delaunay_fractional_exact.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0118_gpu_delaunay_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0118_gpu_delaunay_fractional_exact.c' object='lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0118_gpu_delaunay_fractional_exact.obj `if test -f 'lookup/delaunay/0118_gpu_delaunay_fractional_exact.c'; then $(CYGPATH_W) 'lookup/delaunay/0118_gpu_delaunay_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0118_gpu_delaunay_fractional_exact.c'; fi`
+
+lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.o: lookup/delaunay/0119_gpu_delaunay_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.o -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0119_gpu_delaunay_fractional_ties.Tpo -c -o lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.o `test -f 'lookup/delaunay/0119_gpu_delaunay_fractional_ties.c' || echo '$(srcdir)/'`lookup/delaunay/0119_gpu_delaunay_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0119_gpu_delaunay_fractional_ties.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0119_gpu_delaunay_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0119_gpu_delaunay_fractional_ties.c' object='lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.o `test -f 'lookup/delaunay/0119_gpu_delaunay_fractional_ties.c' || echo '$(srcdir)/'`lookup/delaunay/0119_gpu_delaunay_fractional_ties.c
+
+lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.obj: lookup/delaunay/0119_gpu_delaunay_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.obj -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0119_gpu_delaunay_fractional_ties.Tpo -c -o lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.obj `if test -f 'lookup/delaunay/0119_gpu_delaunay_fractional_ties.c'; then $(CYGPATH_W) 'lookup/delaunay/0119_gpu_delaunay_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0119_gpu_delaunay_fractional_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0119_gpu_delaunay_fractional_ties.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0119_gpu_delaunay_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0119_gpu_delaunay_fractional_ties.c' object='lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0119_gpu_delaunay_fractional_ties.obj `if test -f 'lookup/delaunay/0119_gpu_delaunay_fractional_ties.c'; then $(CYGPATH_W) 'lookup/delaunay/0119_gpu_delaunay_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0119_gpu_delaunay_fractional_ties.c'; fi`
+
+lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.o: lookup/vptree/0055_gpu_vptree_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0055_gpu_vptree_fractional_exact.Tpo -c -o lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.o `test -f 'lookup/vptree/0055_gpu_vptree_fractional_exact.c' || echo '$(srcdir)/'`lookup/vptree/0055_gpu_vptree_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0055_gpu_vptree_fractional_exact.Tpo lookup/vptree/$(DEPDIR)/test_runner-0055_gpu_vptree_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0055_gpu_vptree_fractional_exact.c' object='lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.o `test -f 'lookup/vptree/0055_gpu_vptree_fractional_exact.c' || echo '$(srcdir)/'`lookup/vptree/0055_gpu_vptree_fractional_exact.c
+
+lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.obj: lookup/vptree/0055_gpu_vptree_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0055_gpu_vptree_fractional_exact.Tpo -c -o lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.obj `if test -f 'lookup/vptree/0055_gpu_vptree_fractional_exact.c'; then $(CYGPATH_W) 'lookup/vptree/0055_gpu_vptree_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0055_gpu_vptree_fractional_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0055_gpu_vptree_fractional_exact.Tpo lookup/vptree/$(DEPDIR)/test_runner-0055_gpu_vptree_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0055_gpu_vptree_fractional_exact.c' object='lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0055_gpu_vptree_fractional_exact.obj `if test -f 'lookup/vptree/0055_gpu_vptree_fractional_exact.c'; then $(CYGPATH_W) 'lookup/vptree/0055_gpu_vptree_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0055_gpu_vptree_fractional_exact.c'; fi`
+
+lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.o: lookup/vptree/0056_gpu_vptree_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0056_gpu_vptree_fractional_ties.Tpo -c -o lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.o `test -f 'lookup/vptree/0056_gpu_vptree_fractional_ties.c' || echo '$(srcdir)/'`lookup/vptree/0056_gpu_vptree_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0056_gpu_vptree_fractional_ties.Tpo lookup/vptree/$(DEPDIR)/test_runner-0056_gpu_vptree_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0056_gpu_vptree_fractional_ties.c' object='lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.o `test -f 'lookup/vptree/0056_gpu_vptree_fractional_ties.c' || echo '$(srcdir)/'`lookup/vptree/0056_gpu_vptree_fractional_ties.c
+
+lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.obj: lookup/vptree/0056_gpu_vptree_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0056_gpu_vptree_fractional_ties.Tpo -c -o lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.obj `if test -f 'lookup/vptree/0056_gpu_vptree_fractional_ties.c'; then $(CYGPATH_W) 'lookup/vptree/0056_gpu_vptree_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0056_gpu_vptree_fractional_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0056_gpu_vptree_fractional_ties.Tpo lookup/vptree/$(DEPDIR)/test_runner-0056_gpu_vptree_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0056_gpu_vptree_fractional_ties.c' object='lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0056_gpu_vptree_fractional_ties.obj `if test -f 'lookup/vptree/0056_gpu_vptree_fractional_ties.c'; then $(CYGPATH_W) 'lookup/vptree/0056_gpu_vptree_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0056_gpu_vptree_fractional_ties.c'; fi`
+
+lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.o: lookup/rbc/0082_gpu_rbc_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.o -MD -MP -MF lookup/rbc/$(DEPDIR)/test_runner-0082_gpu_rbc_fractional_exact.Tpo -c -o lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.o `test -f 'lookup/rbc/0082_gpu_rbc_fractional_exact.c' || echo '$(srcdir)/'`lookup/rbc/0082_gpu_rbc_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/rbc/$(DEPDIR)/test_runner-0082_gpu_rbc_fractional_exact.Tpo lookup/rbc/$(DEPDIR)/test_runner-0082_gpu_rbc_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/rbc/0082_gpu_rbc_fractional_exact.c' object='lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.o `test -f 'lookup/rbc/0082_gpu_rbc_fractional_exact.c' || echo '$(srcdir)/'`lookup/rbc/0082_gpu_rbc_fractional_exact.c
+
+lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.obj: lookup/rbc/0082_gpu_rbc_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.obj -MD -MP -MF lookup/rbc/$(DEPDIR)/test_runner-0082_gpu_rbc_fractional_exact.Tpo -c -o lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.obj `if test -f 'lookup/rbc/0082_gpu_rbc_fractional_exact.c'; then $(CYGPATH_W) 'lookup/rbc/0082_gpu_rbc_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/rbc/0082_gpu_rbc_fractional_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/rbc/$(DEPDIR)/test_runner-0082_gpu_rbc_fractional_exact.Tpo lookup/rbc/$(DEPDIR)/test_runner-0082_gpu_rbc_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/rbc/0082_gpu_rbc_fractional_exact.c' object='lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/rbc/test_runner-0082_gpu_rbc_fractional_exact.obj `if test -f 'lookup/rbc/0082_gpu_rbc_fractional_exact.c'; then $(CYGPATH_W) 'lookup/rbc/0082_gpu_rbc_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/rbc/0082_gpu_rbc_fractional_exact.c'; fi`
+
+lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.o: lookup/rbc/0083_gpu_rbc_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.o -MD -MP -MF lookup/rbc/$(DEPDIR)/test_runner-0083_gpu_rbc_fractional_ties.Tpo -c -o lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.o `test -f 'lookup/rbc/0083_gpu_rbc_fractional_ties.c' || echo '$(srcdir)/'`lookup/rbc/0083_gpu_rbc_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/rbc/$(DEPDIR)/test_runner-0083_gpu_rbc_fractional_ties.Tpo lookup/rbc/$(DEPDIR)/test_runner-0083_gpu_rbc_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/rbc/0083_gpu_rbc_fractional_ties.c' object='lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.o `test -f 'lookup/rbc/0083_gpu_rbc_fractional_ties.c' || echo '$(srcdir)/'`lookup/rbc/0083_gpu_rbc_fractional_ties.c
+
+lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.obj: lookup/rbc/0083_gpu_rbc_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.obj -MD -MP -MF lookup/rbc/$(DEPDIR)/test_runner-0083_gpu_rbc_fractional_ties.Tpo -c -o lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.obj `if test -f 'lookup/rbc/0083_gpu_rbc_fractional_ties.c'; then $(CYGPATH_W) 'lookup/rbc/0083_gpu_rbc_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/rbc/0083_gpu_rbc_fractional_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/rbc/$(DEPDIR)/test_runner-0083_gpu_rbc_fractional_ties.Tpo lookup/rbc/$(DEPDIR)/test_runner-0083_gpu_rbc_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/rbc/0083_gpu_rbc_fractional_ties.c' object='lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/rbc/test_runner-0083_gpu_rbc_fractional_ties.obj `if test -f 'lookup/rbc/0083_gpu_rbc_fractional_ties.c'; then $(CYGPATH_W) 'lookup/rbc/0083_gpu_rbc_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/rbc/0083_gpu_rbc_fractional_ties.c'; fi`
+
+lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.o: lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.o -MD -MP -MF lookup/mahalanobis/$(DEPDIR)/test_runner-0082_gpu_mahalanobis_fractional_exact.Tpo -c -o lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.o `test -f 'lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c' || echo '$(srcdir)/'`lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/mahalanobis/$(DEPDIR)/test_runner-0082_gpu_mahalanobis_fractional_exact.Tpo lookup/mahalanobis/$(DEPDIR)/test_runner-0082_gpu_mahalanobis_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c' object='lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.o `test -f 'lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c' || echo '$(srcdir)/'`lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c
+
+lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.obj: lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.obj -MD -MP -MF lookup/mahalanobis/$(DEPDIR)/test_runner-0082_gpu_mahalanobis_fractional_exact.Tpo -c -o lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.obj `if test -f 'lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c'; then $(CYGPATH_W) 'lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/mahalanobis/$(DEPDIR)/test_runner-0082_gpu_mahalanobis_fractional_exact.Tpo lookup/mahalanobis/$(DEPDIR)/test_runner-0082_gpu_mahalanobis_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c' object='lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/mahalanobis/test_runner-0082_gpu_mahalanobis_fractional_exact.obj `if test -f 'lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c'; then $(CYGPATH_W) 'lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c'; fi`
+
+lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.o: lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.o -MD -MP -MF lookup/mahalanobis/$(DEPDIR)/test_runner-0083_gpu_mahalanobis_fractional_ties.Tpo -c -o lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.o `test -f 'lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c' || echo '$(srcdir)/'`lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/mahalanobis/$(DEPDIR)/test_runner-0083_gpu_mahalanobis_fractional_ties.Tpo lookup/mahalanobis/$(DEPDIR)/test_runner-0083_gpu_mahalanobis_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c' object='lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.o `test -f 'lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c' || echo '$(srcdir)/'`lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c
+
+lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.obj: lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.obj -MD -MP -MF lookup/mahalanobis/$(DEPDIR)/test_runner-0083_gpu_mahalanobis_fractional_ties.Tpo -c -o lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.obj `if test -f 'lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c'; then $(CYGPATH_W) 'lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/mahalanobis/$(DEPDIR)/test_runner-0083_gpu_mahalanobis_fractional_ties.Tpo lookup/mahalanobis/$(DEPDIR)/test_runner-0083_gpu_mahalanobis_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c' object='lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/mahalanobis/test_runner-0083_gpu_mahalanobis_fractional_ties.obj `if test -f 'lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c'; then $(CYGPATH_W) 'lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c'; fi`
+
+lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.o: lookup/certlut/0084_gpu_certlut_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.o -MD -MP -MF lookup/certlut/$(DEPDIR)/test_runner-0084_gpu_certlut_fractional_exact.Tpo -c -o lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.o `test -f 'lookup/certlut/0084_gpu_certlut_fractional_exact.c' || echo '$(srcdir)/'`lookup/certlut/0084_gpu_certlut_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/certlut/$(DEPDIR)/test_runner-0084_gpu_certlut_fractional_exact.Tpo lookup/certlut/$(DEPDIR)/test_runner-0084_gpu_certlut_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/certlut/0084_gpu_certlut_fractional_exact.c' object='lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.o `test -f 'lookup/certlut/0084_gpu_certlut_fractional_exact.c' || echo '$(srcdir)/'`lookup/certlut/0084_gpu_certlut_fractional_exact.c
+
+lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.obj: lookup/certlut/0084_gpu_certlut_fractional_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.obj -MD -MP -MF lookup/certlut/$(DEPDIR)/test_runner-0084_gpu_certlut_fractional_exact.Tpo -c -o lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.obj `if test -f 'lookup/certlut/0084_gpu_certlut_fractional_exact.c'; then $(CYGPATH_W) 'lookup/certlut/0084_gpu_certlut_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/certlut/0084_gpu_certlut_fractional_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/certlut/$(DEPDIR)/test_runner-0084_gpu_certlut_fractional_exact.Tpo lookup/certlut/$(DEPDIR)/test_runner-0084_gpu_certlut_fractional_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/certlut/0084_gpu_certlut_fractional_exact.c' object='lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/certlut/test_runner-0084_gpu_certlut_fractional_exact.obj `if test -f 'lookup/certlut/0084_gpu_certlut_fractional_exact.c'; then $(CYGPATH_W) 'lookup/certlut/0084_gpu_certlut_fractional_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/certlut/0084_gpu_certlut_fractional_exact.c'; fi`
+
+lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.o: lookup/certlut/0085_gpu_certlut_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.o -MD -MP -MF lookup/certlut/$(DEPDIR)/test_runner-0085_gpu_certlut_fractional_ties.Tpo -c -o lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.o `test -f 'lookup/certlut/0085_gpu_certlut_fractional_ties.c' || echo '$(srcdir)/'`lookup/certlut/0085_gpu_certlut_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/certlut/$(DEPDIR)/test_runner-0085_gpu_certlut_fractional_ties.Tpo lookup/certlut/$(DEPDIR)/test_runner-0085_gpu_certlut_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/certlut/0085_gpu_certlut_fractional_ties.c' object='lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.o `test -f 'lookup/certlut/0085_gpu_certlut_fractional_ties.c' || echo '$(srcdir)/'`lookup/certlut/0085_gpu_certlut_fractional_ties.c
+
+lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.obj: lookup/certlut/0085_gpu_certlut_fractional_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.obj -MD -MP -MF lookup/certlut/$(DEPDIR)/test_runner-0085_gpu_certlut_fractional_ties.Tpo -c -o lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.obj `if test -f 'lookup/certlut/0085_gpu_certlut_fractional_ties.c'; then $(CYGPATH_W) 'lookup/certlut/0085_gpu_certlut_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/certlut/0085_gpu_certlut_fractional_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/certlut/$(DEPDIR)/test_runner-0085_gpu_certlut_fractional_ties.Tpo lookup/certlut/$(DEPDIR)/test_runner-0085_gpu_certlut_fractional_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/certlut/0085_gpu_certlut_fractional_ties.c' object='lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/certlut/test_runner-0085_gpu_certlut_fractional_ties.obj `if test -f 'lookup/certlut/0085_gpu_certlut_fractional_ties.c'; then $(CYGPATH_W) 'lookup/certlut/0085_gpu_certlut_fractional_ties.c'; else $(CYGPATH_W) '$(srcdir)/lookup/certlut/0085_gpu_certlut_fractional_ties.c'; fi`
 
 encoder/indexed/test_runner-0129_gpu_rows_ordered_indexes.o: encoder/indexed/0129_gpu_rows_ordered_indexes.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0129_gpu_rows_ordered_indexes.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0129_gpu_rows_ordered_indexes.Tpo -c -o encoder/indexed/test_runner-0129_gpu_rows_ordered_indexes.o `test -f 'encoder/indexed/0129_gpu_rows_ordered_indexes.c' || echo '$(srcdir)/'`encoder/indexed/0129_gpu_rows_ordered_indexes.c

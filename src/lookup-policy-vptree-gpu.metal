@@ -128,3 +128,42 @@ static uint lookup_rgb8(uchar3 query, constant uchar *palette,
     }
     return best & 255u;
 }
+
+/* Fractional code-value queries retain the complete distance-sorted rows.
+ * Seeds only select a starting point; they do not certify a byte cell.
+ * A conservative unit of slack protects the triangle bound from float
+ * rounding. It can add candidates, never remove a nearest-color tie. */
+static uint lookup_rgb8_fractional(float3 query, constant uchar *palette,
+    uint ncolors, constant uchar *configuration,
+    device const uchar *workspace)
+{
+    device const uint *table;
+    uint center, best, at, cell, packed, index;
+    uint3 code;
+    float3 gap;
+    float minimum, distance, limit;
+
+    (void)configuration;
+    table = (device const uint *)workspace;
+    code = uint3(clamp(query, 0.f, 255.f)) >> 3;
+    cell = (code.x << 10) | (code.y << 5) | code.z;
+    center = table[131072u + cell];
+    gap = query - float3(palette[3*center], palette[3*center+1],
+        palette[3*center+2]);
+    minimum = dot(gap, gap);
+    limit = 4.f * minimum + 1.f;
+    best = center;
+    for (at = 0; at + 1 < ncolors; ++at) {
+        if (float(table[center*256+at] >> 8) > limit) break;
+        packed = table[65536+center*256+at];
+        index = packed >> 24;
+        gap = query - float3(packed & 255, (packed >> 8) & 255,
+            (packed >> 16) & 255);
+        distance = dot(gap, gap);
+        if (distance < minimum || (distance == minimum && index < best)) {
+            minimum = distance;
+            best = index;
+        }
+    }
+    return best;
+}

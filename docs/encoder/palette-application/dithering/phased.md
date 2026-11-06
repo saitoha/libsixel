@@ -15,7 +15,7 @@ img2sixel --gpu-policy=auto --precision-policy=8bit \
 
 Metal, gamma RGB8 source storage and the indexed output component path are required. Float32 images, extended working spaces and legacy-only output modes are unsupported. A GPU policy of `off`, unavailable device, or incompatible lookup returns an error before output rather than substituting another dither. The GPU `auto` small-image cutoff cannot select CPU because this method has no CPU capability.
 
-`ordered` accepts the fractional corrected queries used by this method. Lookup `auto` selects `ordered` specifically for `phased`; other methods retain their ordinary lookup resolution. Explicit byte-query-only policies are rejected. Fractional code-value queries in `[0,255]^3` do not imply support for float32 images. The method searches the actual emitted RGB8 palette and computes residuals against those same colors; the reserved transparency slot is excluded.
+`none`, `ordered`, `delaunay`, `vptree`, `rbc`, `mahalanobis` and `certlut` accept the fractional corrected queries used by this method. Lookup `auto` selects `ordered` specifically for `phased`; other methods retain their ordinary lookup resolution. Explicit byte-query-only policies are rejected. Fractional code-value queries in `[0,255]^3` do not imply support for float32 images. The method searches the actual emitted RGB8 palette and computes residuals against those same colors; the reserved transparency slot is excluded.
 
 ## Spatial update and coefficients
 
@@ -105,6 +105,13 @@ A completed solution owns its source-derived state, frozen wire palette and geom
 
 | PH-54 | Cancelled origin updates do not leak into later admissions. | [tests/dither/phased/0054_playback_cancel_origin.t](../../../../tests/dither/phased/0054_playback_cancel_origin.t) |
 | PH-55 | Later admissions inherit the last successfully applied origin. | [tests/dither/phased/0055_playback_inherited_origin.t](../../../../tests/dither/phased/0055_playback_inherited_origin.t) |
+
+| PHLUT-01 | `none` preserves the independent phased reference indexes with T48 and spatial T0 refresh selection. | [tests/dither/phased/0068_none_refresh.t](../../../../tests/dither/phased/0068_none_refresh.t) |
+| PHLUT-02 | `delaunay` preserves the independent phased reference indexes with T48 and spatial T0 refresh selection. | [tests/dither/phased/0069_delaunay_refresh.t](../../../../tests/dither/phased/0069_delaunay_refresh.t) |
+| PHLUT-03 | `vptree` preserves the independent phased reference indexes with T48 and spatial T0 refresh selection. | [tests/dither/phased/0070_vptree_refresh.t](../../../../tests/dither/phased/0070_vptree_refresh.t) |
+| PHLUT-04 | `rbc` preserves the independent phased reference indexes with T48 and spatial T0 refresh selection. | [tests/dither/phased/0071_rbc_refresh.t](../../../../tests/dither/phased/0071_rbc_refresh.t) |
+| PHLUT-05 | `mahalanobis` preserves the independent phased reference indexes with T48 and spatial T0 refresh selection. | [tests/dither/phased/0072_mahalanobis_refresh.t](../../../../tests/dither/phased/0072_mahalanobis_refresh.t) |
+| PHLUT-06 | `certlut` preserves the independent phased reference indexes with T48 and spatial T0 refresh selection. | [tests/dither/phased/0073_certlut_refresh.t](../../../../tests/dither/phased/0073_certlut_refresh.t) |
 
 ### Quality and verification limits
 

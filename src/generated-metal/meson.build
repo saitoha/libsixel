@@ -4,6 +4,8 @@ metal_sources = files(
   '../retained-plane-gpu.metal',
   '../dither-policy-phased-gpu.metal',
   '../lookup-policy-ordered-gpu.metal',
+  '../lookup-policy-none-fractional-gpu.metal',
+  '../lookup-policy-delaunay-fractional-gpu.metal',
   '../lookup-policy-vptree-gpu.metal',
   '../lookup-policy-rbc-gpu.metal',
   '../lookup-policy-mahalanobis-gpu.metal',

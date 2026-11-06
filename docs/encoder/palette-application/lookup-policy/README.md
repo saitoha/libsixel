@@ -10,7 +10,9 @@ lookup(color candidate, completed palette) -> palette index
 
 It is not a SIXEL wire-format term and does not mean reading a palette register whose index is already known.
 
-For GPU spatial [`phased` dithering](../dithering/phased.md), `ordered` provides fractional code-value queries over an emitted RGB8 palette; lookup `auto` resolves to that capability. Other GPU policies currently accept byte queries only and are rejected for this dither. This is separate from native float32 image and colorspace support.
+For GPU spatial [`phased` dithering](../dithering/phased.md), `none`, `ordered`, `delaunay`, `vptree`, `rbc`, `mahalanobis` and `certlut` provide fractional code-value queries over an emitted RGB8 palette; lookup `auto` resolves to `ordered`. `eytzinger`, `blockcull`, `gridlut`, `fhedt`, `5bit` and `6bit` accept byte queries only and are rejected for this dither. This is separate from native float32 image and colorspace support.
+
+Fractional GPU lookup preserves the finite query in `[0,255]^3` instead of rounding it to RGB8. Squared RGB distances use float32 arithmetic and equal computed distances select the lowest original index. No claim of exact real arithmetic at numerically indistinguishable boundaries is made. A seed grid chooses a starting color or candidate cell, never a rounded query for the final distance. Query precision is part of the immutable plan's cache identity; byte and fractional plans cannot reuse incompatible cell certificates. Each policy owns its shader, construction, storage and cache; sharing the program interface does not share search implementations.
 
 ## Pipeline position
 
@@ -268,6 +270,10 @@ Direct and end-to-end coverage is under [`tests/lookup`](../../../../tests/looku
 - Keep policy names and suboptions synchronized through the central option registry.
 
 ## Test coverage
+
+### Fractional GPU lookup verification
+
+The fractional backend fixtures use quarter-code queries with an independent double exhaustive oracle. Squared distances multiplied by 16 are integers below `3 * 1020^2 < 2^24`, so the float32 arithmetic is exact for these witnesses. They include the fractional strip above a cell's last integer. Ties and cache identity are separate cases; these samples do not exhaust the RGB cube. GPU query cases require Metal; cache cases use an injected test device. The individual method pages own their test inventories.
 
 <!-- test-coverage: enforced -->
 

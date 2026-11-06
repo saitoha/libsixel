@@ -113,6 +113,14 @@ gpu_component_open(gpu_component_fixture_t *fixture, int kind)
         status = sixel_gpu_lookup_mahalanobis_create(fixture->allocator,
             &fixture->provider);
         break;
+    case 5:
+        status = sixel_gpu_lookup_none_create(fixture->allocator,
+            &fixture->provider);
+        break;
+    case 6:
+        status = sixel_gpu_lookup_delaunay_create(fixture->allocator,
+            &fixture->provider);
+        break;
     default:
         status = sixel_gpu_lookup_certlut_create(fixture->allocator,
             &fixture->provider);

@@ -80,6 +80,8 @@ One GPU pass packs the palette into 256 four-byte entries containing RGB and ori
 
 Palette count, RGB bytes and device identity determine reuse. Plans snapshot their palette; preparing a replacement does not change an older live plan. A binding exclusively leases its plan's workspace, and only completed successful construction enables table reuse. A failed construction remains unbuilt. GPU preparation does not build a CPU lookup. This byte provider adds no CLI suboptions or interface changes.
 
+For [`phased`](../dithering/phased.md), a separate scalar entry scans the same packed palette using the unrounded fractional query and direct float32 squared differences. It keeps the unweighted RGB metric; no covariance transform or candidate approximation is introduced. Byte vector queries remain unchanged. The [parent reference](README.md) owns fractional precision and cache identity.
+
 ## Name and sources
 
 The name refers to P. C. Mahalanobis's generalized statistical distance, introduced in [“On the Generalised Distance in Statistics”](https://doi.org/10.1007/s13171-019-00164-5). That source explains the statistical distance; it does not describe libsixel's RBC clustering or current query loop.
@@ -131,3 +133,13 @@ The GPU cases fix one policy, input configuration and observation per file. Shad
 | MAHGPU-35 | Index255. | [tests/lookup/mahalanobis/0079_gpu_index255.t](../../../../tests/lookup/mahalanobis/0079_gpu_index255.t), [tests/lookup/mahalanobis/0079_gpu_index255.c](../../../../tests/lookup/mahalanobis/0079_gpu_index255.c) |
 | MAHGPU-36 | First index tie. | [tests/lookup/mahalanobis/0080_gpu_first_index_tie.t](../../../../tests/lookup/mahalanobis/0080_gpu_first_index_tie.t), [tests/lookup/mahalanobis/0080_gpu_first_index_tie.c](../../../../tests/lookup/mahalanobis/0080_gpu_first_index_tie.c) |
 | MAHGPU-37 | Cell boundaries. | [tests/lookup/mahalanobis/0081_gpu_cell_boundaries.t](../../../../tests/lookup/mahalanobis/0081_gpu_cell_boundaries.t), [tests/lookup/mahalanobis/0081_gpu_cell_boundaries.c](../../../../tests/lookup/mahalanobis/0081_gpu_cell_boundaries.c) |
+
+### Fractional GPU queries
+
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| MAHALANOBISF-01 | Fractional candidate selection agrees with the independent nearest-color oracle. | [tests/lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.t](../../../../tests/lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.t) |
+| MAHALANOBISF-02 | Equal-distance queries and duplicate colors retain the lowest index. | [tests/lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.t](../../../../tests/lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.t) |
+| MAHALANOBISF-03 | Changing query precision creates a separate plan without mutating the held byte plan. | [tests/lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.t](../../../../tests/lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.t) |

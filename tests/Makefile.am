@@ -237,6 +237,31 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_FRACTIONAL \
+    -DBUILD_TEST_0068_NONE_REFRESH \
+    -DBUILD_TEST_0069_DELAUNAY_REFRESH \
+    -DBUILD_TEST_0070_VPTREE_REFRESH \
+    -DBUILD_TEST_0071_RBC_REFRESH \
+    -DBUILD_TEST_0072_MAHALANOBIS_REFRESH \
+    -DBUILD_TEST_0073_CERTLUT_REFRESH \
+    -DBUILD_TEST_0084_GPU_CERTLUT_FRACTIONAL_EXACT \
+    -DBUILD_TEST_0085_GPU_CERTLUT_FRACTIONAL_TIES \
+    -DBUILD_TEST_0086_GPU_CERTLUT_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0118_GPU_DELAUNAY_FRACTIONAL_EXACT \
+    -DBUILD_TEST_0119_GPU_DELAUNAY_FRACTIONAL_TIES \
+    -DBUILD_TEST_0120_GPU_DELAUNAY_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0082_GPU_MAHALANOBIS_FRACTIONAL_EXACT \
+    -DBUILD_TEST_0083_GPU_MAHALANOBIS_FRACTIONAL_TIES \
+    -DBUILD_TEST_0084_GPU_MAHALANOBIS_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0004_GPU_NONE_FRACTIONAL_EXACT \
+    -DBUILD_TEST_0005_GPU_NONE_FRACTIONAL_TIES \
+    -DBUILD_TEST_0006_GPU_NONE_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0082_GPU_RBC_FRACTIONAL_EXACT \
+    -DBUILD_TEST_0083_GPU_RBC_FRACTIONAL_TIES \
+    -DBUILD_TEST_0084_GPU_RBC_FRACTIONAL_CACHE \
+    -DBUILD_TEST_0055_GPU_VPTREE_FRACTIONAL_EXACT \
+    -DBUILD_TEST_0056_GPU_VPTREE_FRACTIONAL_TIES \
+    -DBUILD_TEST_0057_GPU_VPTREE_FRACTIONAL_CACHE \
     -DBUILD_LATEST_FALLBACK \
     -DBUILD_TEST_0193_LATEST_BUILTIN_FALLBACK \
     -DBUILD_TEST_0194_LATEST_HIGH_COLOR_FALLBACK \
@@ -7271,6 +7296,31 @@ test_runner_SOURCES = test_runner.c \
     dither/phased/0062_latest_completed_own.c \
     dither/phased/0063_latest_excludes_future.c \
     _support/phased/fixture.c \
+    _support/phased/fractional.c \
+    lookup/none/0006_gpu_none_fractional_cache.c \
+    lookup/delaunay/0120_gpu_delaunay_fractional_cache.c \
+    lookup/vptree/0057_gpu_vptree_fractional_cache.c \
+    lookup/rbc/0084_gpu_rbc_fractional_cache.c \
+    lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c \
+    lookup/certlut/0086_gpu_certlut_fractional_cache.c \
+    dither/phased/0068_none_refresh.c \
+    dither/phased/0069_delaunay_refresh.c \
+    dither/phased/0070_vptree_refresh.c \
+    dither/phased/0071_rbc_refresh.c \
+    dither/phased/0072_mahalanobis_refresh.c \
+    dither/phased/0073_certlut_refresh.c \
+    lookup/none/0004_gpu_none_fractional_exact.c \
+    lookup/none/0005_gpu_none_fractional_ties.c \
+    lookup/delaunay/0118_gpu_delaunay_fractional_exact.c \
+    lookup/delaunay/0119_gpu_delaunay_fractional_ties.c \
+    lookup/vptree/0055_gpu_vptree_fractional_exact.c \
+    lookup/vptree/0056_gpu_vptree_fractional_ties.c \
+    lookup/rbc/0082_gpu_rbc_fractional_exact.c \
+    lookup/rbc/0083_gpu_rbc_fractional_ties.c \
+    lookup/mahalanobis/0082_gpu_mahalanobis_fractional_exact.c \
+    lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c \
+    lookup/certlut/0084_gpu_certlut_fractional_exact.c \
+    lookup/certlut/0085_gpu_certlut_fractional_ties.c \
     _support/phased/fixture.h \
     _support/phased/expected.h \
     encoder/indexed/0129_gpu_rows_ordered_indexes.c \

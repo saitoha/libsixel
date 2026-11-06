@@ -15,6 +15,8 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/dither-policy-phased-gpu.metal \
     $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
+    $(srcdir)/lookup-policy-none-fractional-gpu.metal \
+    $(srcdir)/lookup-policy-delaunay-fractional-gpu.metal \
     $(srcdir)/lookup-policy-vptree-gpu.metal \
     $(srcdir)/lookup-policy-rbc-gpu.metal \
     $(srcdir)/lookup-policy-mahalanobis-gpu.metal \
@@ -48,6 +50,8 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-dither-policy-phased-metal.lo \
     libsixel_la-retained-plane-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
+    libsixel_la-lookup-policy-none-gpu.lo \
+    libsixel_la-lookup-policy-delaunay-gpu.lo \
     libsixel_la-lookup-policy-vptree-gpu.lo \
     libsixel_la-lookup-policy-rbc-gpu.lo \
     libsixel_la-lookup-policy-mahalanobis-gpu.lo \
@@ -314,6 +318,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/delta-residual.h \
                 $(srcdir)/gpu-palette.c \
                 $(srcdir)/lookup-policy-ordered-gpu.c \
+                $(srcdir)/lookup-policy-none-gpu.c \
+                $(srcdir)/lookup-policy-delaunay-gpu.c \
                 $(srcdir)/lookup-policy-vptree-gpu.c \
                 $(srcdir)/lookup-policy-rbc-gpu.c \
                 $(srcdir)/lookup-policy-mahalanobis-gpu.c \
@@ -322,6 +328,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-gpu-registry.c \
                 $(srcdir)/lookup-policy-gpu.h \
                 $(srcdir)/lookup-policy-ordered-gpu.h \
+                $(srcdir)/lookup-policy-none-gpu.h \
+                $(srcdir)/lookup-policy-delaunay-gpu.h \
                 $(srcdir)/lookup-policy-vptree-gpu.h \
                 $(srcdir)/lookup-policy-rbc-gpu.h \
                 $(srcdir)/lookup-policy-mahalanobis-gpu.h \

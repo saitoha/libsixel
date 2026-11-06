@@ -43,6 +43,8 @@ typedef struct phased_fixture {
     unsigned char pixels[PHASED_PIXELS * 3];
 } phased_fixture_t;
 
+int phased_fractional_check(int kind, int ties);
+
 SIXELSTATUS phased_fixture_baseline(phased_fixture_t *f, int offset);
 int phased_fixture_open(phased_fixture_t *f, int require_gpu);
 SIXELSTATUS phased_fixture_deferred(phased_fixture_t *f);

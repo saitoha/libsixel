@@ -325,6 +325,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/gpu-dequant.h $(srcdir)/delta-residual.c \
 	$(srcdir)/delta-residual.h $(srcdir)/gpu-palette.c \
 	$(srcdir)/lookup-policy-ordered-gpu.c \
+	$(srcdir)/lookup-policy-none-gpu.c \
+	$(srcdir)/lookup-policy-delaunay-gpu.c \
 	$(srcdir)/lookup-policy-vptree-gpu.c \
 	$(srcdir)/lookup-policy-rbc-gpu.c \
 	$(srcdir)/lookup-policy-mahalanobis-gpu.c \
@@ -333,6 +335,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-policy-gpu-registry.c \
 	$(srcdir)/lookup-policy-gpu.h \
 	$(srcdir)/lookup-policy-ordered-gpu.h \
+	$(srcdir)/lookup-policy-none-gpu.h \
+	$(srcdir)/lookup-policy-delaunay-gpu.h \
 	$(srcdir)/lookup-policy-vptree-gpu.h \
 	$(srcdir)/lookup-policy-rbc-gpu.h \
 	$(srcdir)/lookup-policy-mahalanobis-gpu.h \
@@ -551,6 +555,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-delta-residual.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-ordered-gpu.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-none-gpu.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-delaunay-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-vptree-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-rbc-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-mahalanobis-gpu.lo \
@@ -797,6 +803,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-policy-blockcull.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-certlut-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-delaunay-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-delaunay.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo \
@@ -808,6 +815,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-none-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-ordered-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo \
@@ -1198,6 +1206,7 @@ pythondir = @pythondir@
 runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+sixel_have_compare = @sixel_have_compare@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
@@ -1211,6 +1220,8 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/dither-policy-phased-gpu.metal \
     $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
+    $(srcdir)/lookup-policy-none-fractional-gpu.metal \
+    $(srcdir)/lookup-policy-delaunay-fractional-gpu.metal \
     $(srcdir)/lookup-policy-vptree-gpu.metal \
     $(srcdir)/lookup-policy-rbc-gpu.metal \
     $(srcdir)/lookup-policy-mahalanobis-gpu.metal \
@@ -1241,6 +1252,8 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-dither-policy-phased-metal.lo \
     libsixel_la-retained-plane-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
+    libsixel_la-lookup-policy-none-gpu.lo \
+    libsixel_la-lookup-policy-delaunay-gpu.lo \
     libsixel_la-lookup-policy-vptree-gpu.lo \
     libsixel_la-lookup-policy-rbc-gpu.lo \
     libsixel_la-lookup-policy-mahalanobis-gpu.lo \
@@ -1462,6 +1475,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-ordered-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-none-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-delaunay-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-vptree-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-rbc-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mahalanobis-gpu.c \
@@ -1470,6 +1485,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-gpu-registry.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-ordered-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-none-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-delaunay-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-vptree-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-rbc-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mahalanobis-gpu.h \
@@ -2040,6 +2057,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-blockcull.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-certlut-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-delaunay-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-delaunay.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo@am__quote@ # am--include-marker
@@ -2051,6 +2069,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-none-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-ordered-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo@am__quote@ # am--include-marker
@@ -2808,6 +2827,20 @@ libsixel_la-lookup-policy-ordered-gpu.lo: lookup-policy-ordered-gpu.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-ordered-gpu.c' object='libsixel_la-lookup-policy-ordered-gpu.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-ordered-gpu.lo `test -f 'lookup-policy-ordered-gpu.c' || echo '$(srcdir)/'`lookup-policy-ordered-gpu.c
+
+libsixel_la-lookup-policy-none-gpu.lo: lookup-policy-none-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-none-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-none-gpu.Tpo -c -o libsixel_la-lookup-policy-none-gpu.lo `test -f 'lookup-policy-none-gpu.c' || echo '$(srcdir)/'`lookup-policy-none-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-none-gpu.Tpo $(DEPDIR)/libsixel_la-lookup-policy-none-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-none-gpu.c' object='libsixel_la-lookup-policy-none-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-none-gpu.lo `test -f 'lookup-policy-none-gpu.c' || echo '$(srcdir)/'`lookup-policy-none-gpu.c
+
+libsixel_la-lookup-policy-delaunay-gpu.lo: lookup-policy-delaunay-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-delaunay-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-delaunay-gpu.Tpo -c -o libsixel_la-lookup-policy-delaunay-gpu.lo `test -f 'lookup-policy-delaunay-gpu.c' || echo '$(srcdir)/'`lookup-policy-delaunay-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-delaunay-gpu.Tpo $(DEPDIR)/libsixel_la-lookup-policy-delaunay-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-delaunay-gpu.c' object='libsixel_la-lookup-policy-delaunay-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-delaunay-gpu.lo `test -f 'lookup-policy-delaunay-gpu.c' || echo '$(srcdir)/'`lookup-policy-delaunay-gpu.c
 
 libsixel_la-lookup-policy-vptree-gpu.lo: lookup-policy-vptree-gpu.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-vptree-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-vptree-gpu.Tpo -c -o libsixel_la-lookup-policy-vptree-gpu.lo `test -f 'lookup-policy-vptree-gpu.c' || echo '$(srcdir)/'`lookup-policy-vptree-gpu.c
@@ -3883,6 +3916,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-blockcull.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-certlut-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-delaunay-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-delaunay.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo
@@ -3894,6 +3928,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-none-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-ordered-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo
@@ -4128,6 +4163,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-blockcull.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-certlut-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-delaunay-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-delaunay.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo
@@ -4139,6 +4175,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-none-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-ordered-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo

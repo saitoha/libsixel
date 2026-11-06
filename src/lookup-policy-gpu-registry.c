@@ -3,6 +3,8 @@
 #include "config.h"
 #endif
 #include "lookup-policy-gpu.h"
+#include "lookup-policy-none-gpu.h"
+#include "lookup-policy-delaunay-gpu.h"
 #include "lookup-policy-ordered-gpu.h"
 #include "lookup-policy-vptree-gpu.h"
 #include "lookup-policy-rbc-gpu.h"
@@ -17,6 +19,8 @@ static struct {
     SIXELSTATUS (*create)(sixel_allocator_t *,
         sixel_gpu_lookup_preparer_interface_t **);
 } const gpu_lookup_registrations[] = {
+    { SIXEL_LUT_POLICY_NONE, sixel_gpu_lookup_none_create },
+    { SIXEL_LUT_POLICY_DELAUNAY, sixel_gpu_lookup_delaunay_create },
     { SIXEL_LUT_POLICY_ORDERED, sixel_gpu_lookup_ordered_create },
     { SIXEL_LUT_POLICY_VPTREE, sixel_gpu_lookup_vptree_create },
     { SIXEL_LUT_POLICY_RBC, sixel_gpu_lookup_rbc_create },
@@ -53,11 +57,9 @@ sixel_gpu_lookup_select(sixel_allocator_t *allocator,
     }
     /* Frozen legacy capabilities. Do not register new algorithms here. */
     switch (configuration->kind) {
-    case SIXEL_LUT_POLICY_NONE:
     case SIXEL_LUT_POLICY_EYTZINGER:
     case SIXEL_LUT_POLICY_BLOCKCULL:
     case SIXEL_LUT_POLICY_GRIDLUT:
-    case SIXEL_LUT_POLICY_DELAUNAY:
     case SIXEL_LUT_POLICY_FHEDT:
     case SIXEL_LUT_POLICY_5BIT:
     case SIXEL_LUT_POLICY_6BIT:
