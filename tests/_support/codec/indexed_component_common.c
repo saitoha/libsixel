@@ -79,7 +79,7 @@ indexed_fixture_init(indexed_fixture_t *f)
 }
 
 SIXELSTATUS
-indexed_fixture_begin(indexed_fixture_t *f)
+indexed_fixture_begin_kind(indexed_fixture_t *f, int resolved)
 {
     sixel_retained_update_request_t request;
     SIXELSTATUS status;
@@ -93,7 +93,15 @@ indexed_fixture_begin(indexed_fixture_t *f)
     request.image = f->image;
     request.sequence = f->view.sequence + 1;
     request.record_paint = 1;
-    return f->plane->vtbl->begin_update(f->plane, &request, &f->update);
+    return resolved
+        ? f->plane->vtbl->begin_resolved_update(f->plane, &request, &f->update)
+        : f->plane->vtbl->begin_update(f->plane, &request, &f->update);
+}
+
+SIXELSTATUS
+indexed_fixture_begin(indexed_fixture_t *f)
+{
+    return indexed_fixture_begin_kind(f, 0);
 }
 
 SIXELSTATUS

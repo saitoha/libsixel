@@ -19,11 +19,13 @@ test_phased_playback_cancel_ready(int argc, char **argv)
     device->vtbl->unref(device);
     ok = 0;
     AHEAD_CHECK(!phased_rendezvous_open(&s, "force", "ahead", "delta:T0"));
+    s.helper_open = 0;
     AHEAD_CHECK(phased_rendezvous_submit(&s, 0));
     AHEAD_CHECK(phased_rendezvous_wait(&s, &s.writer_entered));
     AHEAD_CHECK(phased_rendezvous_submit(&s, 1));
     AHEAD_CHECK(phased_rendezvous_wait(&s, &s.helper_complete));
     AHEAD_CHECK(sixel_playback_cancel(s.playback) == SIXEL_OK);
+    phased_rendezvous_release(&s, &s.helper_open);
     phased_rendezvous_release(&s, &s.writer_open);
     AHEAD_CHECK(sixel_playback_drain(s.playback, 5000) == SIXEL_OK);
     AHEAD_CHECK(s.count == 2 && s.completed[1] == SIXEL_INTERRUPTED);

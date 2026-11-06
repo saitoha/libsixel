@@ -24,6 +24,7 @@ typedef struct sixel_retained_plane_storage {
     uint64_t epoch;
     uint64_t sequence;
     unsigned int readers;
+    int publication;
     sixel_retained_update_t *update;
     sixel_retained_workers_t *workers;
     sixel_retained_gpu_t *gpu;
@@ -46,6 +47,7 @@ struct sixel_retained_update {
     int worker_threads;
     int staging;
     int staged;
+    int publication;
     sixel_retained_update_stats_t gpu_stats;
 };
 
@@ -176,6 +178,7 @@ sixel_retained_plane_configure(sixel_retained_plane_interface_t *self,
     plane->description = *description;
     ++plane->epoch;
     plane->sequence = 0;
+    plane->publication = 0;
     status = SIXEL_OK;
 end:
     sixel_mutex_unlock(&plane->gate);
@@ -358,9 +361,9 @@ sixel_retained_plane_prepare_workers(sixel_retained_plane_storage_t *plane,
 }
 
 static SIXELSTATUS
-sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
+sixel_retained_plane_begin(sixel_retained_plane_interface_t *self,
     sixel_retained_update_request_t const *request,
-    sixel_retained_update_t **result)
+    sixel_retained_update_t **result, int publication)
 {
     sixel_retained_plane_storage_t *plane;
     sixel_retained_update_t *update;
@@ -386,7 +389,8 @@ sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
     sixel_mutex_lock(&plane->gate);
     status = SIXEL_LOGIC_ERROR;
     state = sixel_indexed_frame_get_state(image);
-    if (plane->update != NULL || image->update != NULL ||
+    if ((plane->publication != 0 && plane->publication != publication) ||
+            plane->update != NULL || image->update != NULL ||
             request->baseline->plane != plane ||
             request->baseline->view.epoch != plane->epoch ||
             request->baseline->view.sequence != plane->sequence ||
@@ -454,6 +458,10 @@ sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
     update->plane = plane;
     update->image = image;
     update->identity = identity;
+    update->publication = publication;
+    /* Select the epoch contract only after all fallible preparation. An
+     * aborted update retains this choice; invalidation starts a new epoch. */
+    plane->publication = publication;
     image->identity = identity;
     sixel_indexed_frame_ref(image);
     sixel_retained_plane_ref(self);
@@ -464,6 +472,22 @@ sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
 end:
     sixel_mutex_unlock(&plane->gate);
     return status;
+}
+
+static SIXELSTATUS
+sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
+    sixel_retained_update_request_t const *request,
+    sixel_retained_update_t **result)
+{
+    return sixel_retained_plane_begin(self, request, result, 1);
+}
+
+static SIXELSTATUS
+sixel_retained_plane_begin_resolved(sixel_retained_plane_interface_t *self,
+    sixel_retained_update_request_t const *request,
+    sixel_retained_update_t **result)
+{
+    return sixel_retained_plane_begin(self, request, result, 2);
 }
 
 static SIXELSTATUS
@@ -575,16 +599,17 @@ sixel_retained_plane_stage(sixel_retained_plane_interface_t *self,
 }
 
 static SIXELSTATUS
-sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
+sixel_retained_plane_publish(sixel_retained_plane_interface_t *self,
     sixel_retained_update_t *update, sixel_stream_receipt_t const *receipt,
-    sixel_retained_update_stats_t *stats)
+    sixel_retained_update_stats_t *stats, int publication)
 {
     sixel_retained_plane_storage_t *plane;
     sixel_indexed_frame_t *image;
     sixel_retained_update_stats_t result;
     SIXELSTATUS status;
 
-    if (self == NULL || update == NULL || receipt == NULL || stats == NULL ||
+    if (self == NULL || update == NULL || stats == NULL ||
+            (publication == 1 && receipt == NULL) ||
             update->plane != (sixel_retained_plane_storage_t *)self) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -592,14 +617,17 @@ sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
     image = update->image;
     sixel_mutex_lock(&plane->gate);
     status = SIXEL_LOGIC_ERROR;
-    if (plane->update != update || plane->readers != 0 ||
+    if (plane->publication != publication ||
+            update->publication != publication ||
+            plane->update != update || plane->readers != 0 ||
             sixel_atomic_fetch_add_u32(&image->users, 0) != 0 ||
             sixel_indexed_frame_get_state(image) != SIXEL_INDEXED_COMPLETE ||
             plane->stream != update->identity.stream ||
             plane->epoch != update->identity.epoch ||
             plane->sequence != update->identity.base_sequence ||
-            !sixel_retained_identity_equal(&update->identity,
-                &receipt->identity) ||
+            (receipt != NULL &&
+                !sixel_retained_identity_equal(&update->identity,
+                    &receipt->identity)) ||
             !sixel_retained_identity_equal(&update->identity,
                 &image->identity)) {
         goto end;
@@ -609,7 +637,7 @@ sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
     if (plane->gpu != NULL) result = update->gpu_stats;
     result.paint = update->paint;
     result.paint_size = update->paint != NULL ? image->pixels : 0;
-    /* Receipt validation precedes publication. GPU candidate construction
+    /* Identity and contract validation precede publication. GPU construction
      * already completed; CPU expansion remains allocation-free. Neither path
      * can fail after changing the committed image or its stream identity. */
     if (plane->gpu != NULL) {
@@ -627,6 +655,21 @@ sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
 end:
     sixel_mutex_unlock(&plane->gate);
     return status;
+}
+
+static SIXELSTATUS
+sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
+    sixel_retained_update_t *update, sixel_stream_receipt_t const *receipt,
+    sixel_retained_update_stats_t *stats)
+{
+    return sixel_retained_plane_publish(self, update, receipt, stats, 1);
+}
+
+static SIXELSTATUS
+sixel_retained_plane_advance(sixel_retained_plane_interface_t *self,
+    sixel_retained_update_t *update, sixel_retained_update_stats_t *stats)
+{
+    return sixel_retained_plane_publish(self, update, NULL, stats, 2);
 }
 
 static SIXELSTATUS
@@ -651,6 +694,7 @@ sixel_retained_plane_invalidate(sixel_retained_plane_interface_t *self,
         sixel_retained_gpu_cpu_write(plane->gpu);
         ++plane->epoch;
         plane->sequence = 0;
+        plane->publication = 0;
         status = SIXEL_OK;
     }
     sixel_mutex_unlock(&plane->gate);
@@ -667,7 +711,9 @@ static sixel_retained_plane_vtbl_t const g_retained_plane_vtbl = {
     sixel_retained_plane_stage,
     sixel_retained_plane_commit,
     sixel_retained_plane_abort,
-    sixel_retained_plane_invalidate
+    sixel_retained_plane_invalidate,
+    sixel_retained_plane_begin_resolved,
+    sixel_retained_plane_advance
 };
 
 SIXEL_INTERNAL_API SIXELSTATUS

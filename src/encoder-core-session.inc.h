@@ -260,6 +260,7 @@ sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
         dither, &allocation);
 #else
     (void)pixels;
+    (void)threads;
     memset(&allocation, 0, sizeof(allocation));
     allocation.mode = SIXEL_DITHER_ENCODE_SERIAL;
     allocation.dither_threads = allocation.encode_threads = 1;
@@ -370,6 +371,60 @@ sixel_output_bind_deferred(sixel_output_t *output,
     output->deferred = prepared;
 }
 
+int
+sixel_output_is_resolve_only(sixel_output_t const *output)
+{
+    return output != NULL && output->deferred != NULL &&
+        output->deferred->capture != NULL;
+}
+
+/* E owns only this complete image and its private packet writer. Passing a
+ * null identity avoids allocating an acceptance receipt that R never uses. */
+SIXELSTATUS
+sixel_output_encode_resolved(sixel_output_t *output,
+    sixel_output_resolved_t const *resolved)
+{
+    sixel_encoder_core_prepare_request_t body;
+    SIXELSTATUS status;
+    int opened;
+
+    if (output == NULL || resolved == NULL || resolved->image == NULL ||
+            sixel_indexed_frame_get_state(resolved->image) !=
+                SIXEL_INDEXED_COMPLETE) return SIXEL_BAD_ARGUMENT;
+    opened = 0;
+    if (output->core == NULL) {
+        status = sixel_encoder_core_create_interface_from_factory(
+            output->allocator, &output->core);
+        if (status != SIXEL_OK) return status;
+    }
+    memset(&body, 0, sizeof(body));
+    body.image = resolved->image;
+    body.options = resolved->options;
+    body.threads = resolved->threads;
+    body.worker_capacity = body.threads;
+    body.queue_bands = body.threads * 3;
+    body.sink.write = sixel_session_write;
+    body.sink.context = output->writer;
+    status = output->core->vtbl->prepare(output->core, &body);
+    if (status != SIXEL_OK) return status;
+    status = output->writer->vtbl->begin_image(output->writer,
+        &resolved->header, NULL);
+    if (status != SIXEL_OK) goto end;
+    opened = 1;
+    status = output->core->vtbl->consume(output->core,
+        resolved->image->description.height);
+    if (status == SIXEL_OK)
+        status = output->core->vtbl->finish(output->core);
+    if (status == SIXEL_OK) {
+        status = output->writer->vtbl->end_image(output->writer, NULL);
+        opened = 0;
+    }
+end:
+    if (status != SIXEL_OK) (void)output->core->vtbl->abort(output->core);
+    if (opened) (void)output->writer->vtbl->abort_image(output->writer);
+    return status;
+}
+
 static SIXELSTATUS
 sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
 {
@@ -398,7 +453,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     int threads;
     sixel_output_deferred_t local, *prepared;
     sixel_palette_apply_resolve_request_t resolve;
-    double resolve_started, emit_started;
+    double resolve_started, emit_started, history_started;
     SIXELSTATUS status;
 
     dither = request->dither;
@@ -438,6 +493,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     if (prepared == NULL || prepared->solution == NULL) {
         status = sixel_indexed_prepare(request, &local);
         if (status != SIXEL_OK) goto end;
+        if (prepared != NULL) local.capture = prepared->capture;
         prepared = &local;
     }
     apply = prepared->apply;
@@ -465,6 +521,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         dither, &allocation);
 #else
     (void)pixels;
+    (void)threads;
     memset(&allocation, 0, sizeof(allocation));
     allocation.mode = SIXEL_DITHER_ENCODE_SERIAL;
     allocation.dither_threads = allocation.encode_threads = 1;
@@ -491,14 +548,18 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         update_request.image = image;
         update_request.sequence = baseline.sequence + 1;
         update_request.record_paint = session->record_paint;
-        /* Commit follows body drain, so its workers reuse the encode-stage
-         * budget. Resolve this every frame to follow adaptive host budgets. */
+        /* Direct commit reuses the drained encode budget. Independent R
+         * uses this per-frame cap without an E completion dependency. GPU
+         * history reports no CPU participants. */
         update_request.worker_threads = allocation.encode_threads;
-        status = session->plane->vtbl->begin_update(session->plane,
-            &update_request, &update);
+        status = prepared->capture != NULL
+            ? session->plane->vtbl->begin_resolved_update(session->plane,
+                &update_request, &update)
+            : session->plane->vtbl->begin_update(session->plane,
+                &update_request, &update);
         if (SIXEL_FAILED(status)) goto end;
     }
-    if (output->core == NULL) {
+    if (prepared->capture == NULL && output->core == NULL) {
         status = sixel_encoder_core_create_interface_from_factory(
             output->allocator, &output->core);
         if (SIXEL_FAILED(status)) goto end;
@@ -516,9 +577,11 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     body.logger = logger;
     body.sink.write = sixel_session_write;
     body.sink.context = output->writer;
-    status = output->core->vtbl->prepare(output->core, &body);
-    if (SIXEL_FAILED(status)) goto end;
-    graph.consumed = 1;
+    if (prepared->capture == NULL) {
+        status = output->core->vtbl->prepare(output->core, &body);
+        if (SIXEL_FAILED(status)) goto end;
+        graph.consumed = 1;
+    }
     header.parameter_count = description.transparent_background ? 2 : 0;
     header.parameter1 = description.transparent_background;
     header.width = description.encoded_width;
@@ -539,7 +602,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     run.delta.metric = dither->pipeline_6delta_metric;
     run.delta.compare = dither->pipeline_6delta_compare;
     run.delta.selection = execution.selection;
-    if (prepared->solution == NULL &&
+    if (prepared->capture == NULL && prepared->solution == NULL &&
             allocation.mode == SIXEL_DITHER_ENCODE_PIPELINE) {
         run.rows_ready = sixel_session_rows;
         run.rows_context = output->core;
@@ -569,11 +632,46 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         prepared->stages.valid |= SIXEL_PLAYBACK_STAGE_RESOLVE;
         graph.applied = 1;
         graph.apply_status = SIXEL_OK;
-        /* Only a completed resolve returns the next solve credit. The
-         * preceding history remains authoritative until commit below. */
+        /* Legacy two-worker callers can observe resolution here. Independent
+         * playback releases solution ownership after history publication. */
         if (prepared->resolved != NULL)
             prepared->resolved(prepared->resolved_context);
         emit_started = sixel_timer_monotonic();
+    }
+    if (prepared->capture != NULL) {
+        /* Resolve owns the only history edge. Reserve the destination before
+         * entering this call; publication cannot be followed by queue loss. */
+        if (!graph.applied) {
+            status = apply->vtbl->run(apply, &run);
+            if (status != SIXEL_OK) goto end;
+        }
+        history_started = sixel_timer_monotonic();
+        if (session != NULL) {
+            status = session->plane->vtbl->stage(session->plane, update);
+            if (status != SIXEL_OK) goto end;
+            sixel_retained_read_unref(read);
+            read = NULL;
+            status = session->plane->vtbl->advance_resolved(session->plane,
+                update, &session->stats);
+            if (status != SIXEL_OK) goto end;
+            session->committed = 1;
+            session->update = update;
+            update = NULL;
+        }
+        prepared->history_seconds = sixel_timer_monotonic() - history_started;
+        if (output->deferred != NULL)
+            output->deferred->history_seconds = prepared->history_seconds;
+        prepared->capture->image = image;
+        prepared->capture->options = body.options;
+        prepared->capture->header = header;
+        prepared->capture->threads = body.threads;
+        image = NULL;
+        emit_started = 0;
+        ++dither->apply_count;
+        ++dither->apply_success_count;
+        dither->last_apply_status = SIXEL_OK;
+        ++output->indexed_count;
+        goto end;
     }
     graph.prepared = prepared;
     graph.apply = apply;

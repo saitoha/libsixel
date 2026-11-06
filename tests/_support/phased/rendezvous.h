@@ -29,6 +29,10 @@ struct phased_rendezvous_fixture {
     int helper_entered, helper_open, helper_complete;
     int first_done, count, bad_sequence, gate_failed, fail_write;
     int started, bad_credit;
+    int resolve_entered, resolve_open;
+    int encode_entered, encode_open, second_resolved, second_encoded;
+    int hold_resolve, hold_encode;
+    sixel_playback_pipeline_sample_t pipeline_samples[4];
     uint64_t last_resolved;
     SIXELSTATUS prepared_status;
     SIXELSTATUS completed[4];

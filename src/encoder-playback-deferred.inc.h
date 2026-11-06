@@ -74,7 +74,7 @@ sixel_playback_prepare_application(sixel_playback_producer_t *producer,
     context = &slot->job->context;
     encoder = producer->pipeline->encoder;
     output = NULL;
-    if (context->latest || context->dither == NULL ||
+    if (context->dither == NULL ||
             context->current_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             context->current_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
@@ -278,7 +278,7 @@ sixel_playback_producer_main(void *context)
 /* Admission and cancellation remain in the existing pipeline. This bounded
  * handoff changes only where history-free GPU work runs. */
 static int
-sixel_encoder_frame_pipeline_run_deferred(
+sixel_encoder_frame_pipeline_run_deferred_legacy(
     sixel_encoder_frame_pipeline_t *pipeline)
 {
     sixel_playback_producer_t producer;
@@ -441,3 +441,5 @@ allocation_failed:
         sixel_allocator_free(encoder->allocator, producer.slots[i].job);
     return 0;
 }
+
+#include "encoder-playback-independent.inc.h"

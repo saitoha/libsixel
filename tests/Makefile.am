@@ -237,6 +237,36 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_LATEST_FALLBACK \
+    -DBUILD_TEST_0193_LATEST_BUILTIN_FALLBACK \
+    -DBUILD_TEST_0194_LATEST_HIGH_COLOR_FALLBACK \
+    -DBUILD_TEST_0067_PLAYBACK_FORMAT_TRANSITION \
+    -DBUILD_LATEST \
+    -DBUILD_TEST_0033_ADVANCE_WITHOUT_RECEIPT \
+    -DBUILD_TEST_0034_DIRECT_MISSING_RECEIPT \
+    -DBUILD_TEST_0035_DIRECT_REJECT_RESOLVED \
+    -DBUILD_TEST_0036_ADVANCE_REJECT_DIRECT \
+    -DBUILD_TEST_0037_ABORT_PRESERVES_CONTRACT \
+    -DBUILD_TEST_0038_INVALIDATE_CHANGES_CONTRACT \
+    -DBUILD_TEST_0039_ADVANCE_LIVE_READER \
+    -DBUILD_TEST_0040_ADVANCE_STALE_IDENTITY \
+    -DBUILD_TEST_0041_ADVANCE_REPEAT_REJECTED \
+    -DBUILD_TEST_0042_ADVANCE_EXACT_RGB \
+    -DBUILD_TEST_0043_ADVANCE_GPU_RGB \
+    -DBUILD_TEST_0044_ADVANCE_GPU_PARTIAL \
+    -DBUILD_TEST_0045_ADVANCE_GPU_KEEP \
+    -DBUILD_TEST_0053_PLAYBACK_SOLVE_WITHOUT_CREDIT \
+    -DBUILD_TEST_0056_PLAYBACK_RESOLVE_PAST_STALLED_ENCODE \
+    -DBUILD_TEST_0057_PLAYBACK_ENCODE_PAST_STALLED_DELIVERY \
+    -DBUILD_TEST_0058_PLAYBACK_CLAIMED_CANCEL_COMPLETES \
+    -DBUILD_TEST_0059_LATEST_REPLAY_T0 \
+    -DBUILD_TEST_0060_LATEST_REPLAY_REFRESH \
+    -DBUILD_TEST_0061_LATEST_REPLAY_SMALL \
+    -DBUILD_TEST_0062_LATEST_COMPLETED_OWN \
+    -DBUILD_TEST_0063_LATEST_EXCLUDES_FUTURE \
+    -DBUILD_TEST_0064_PIPELINE_SAMPLE_STALE \
+    -DBUILD_TEST_0065_PIPELINE_SAMPLE_SHORT \
+    -DBUILD_TEST_0066_PIPELINE_SAMPLE_TAIL \
     -DBUILD_TEST_0054_PLAYBACK_CANCEL_ORIGIN \
     -DBUILD_TEST_0055_PLAYBACK_INHERITED_ORIGIN \
     -DBUILD_TEST_0051_PLAYBACK_RESIZE_BYTES \
@@ -1074,7 +1104,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0046_PALETTE_SCHEDULER_CONCURRENT \
     -DBUILD_PALETTE_INTEGRATION_COMMON \
     -DBUILD_PALETTE_FEATURES_COMMON \
-    -DBUILD_TEST_0070_LATEST_FEATURE_FALLBACK \
+    -DBUILD_TEST_0070_LATEST_GPU_SERIAL_FALLBACK \
     -DBUILD_TEST_0074_LATEST_COMPLETED_BUILD_RECLAIMS_BUDGET \
     -DBUILD_TEST_0075_LATEST_EMIT_PRIORITY_LOANS \
     -DBUILD_PALETTE_AUTO_TEST_COMMON \
@@ -5119,6 +5149,19 @@ test_runner_SOURCES = test_runner.c \
     encoder/retained/0030_gpu_failure_then_move.c \
     encoder/retained/0031_gpu_legacy_then_move.c \
     encoder/retained/0032_gpu_invalidate_then_move.c \
+    encoder/retained/0033_advance_without_receipt.c \
+    encoder/retained/0034_direct_missing_receipt.c \
+    encoder/retained/0035_direct_reject_resolved.c \
+    encoder/retained/0036_advance_reject_direct.c \
+    encoder/retained/0037_abort_preserves_contract.c \
+    encoder/retained/0038_invalidate_changes_contract.c \
+    encoder/retained/0039_advance_live_reader.c \
+    encoder/retained/0040_advance_stale_identity.c \
+    encoder/retained/0041_advance_repeat_rejected.c \
+    encoder/retained/0043_advance_gpu_rgb.c \
+    encoder/retained/0044_advance_gpu_partial.c \
+    encoder/retained/0045_advance_gpu_keep.c \
+    encoder/retained/0042_advance_exact_rgb.c \
     _support/codec/retained_gpu.c \
     encoder/scheduling/0001_cold_single.c \
     encoder/scheduling/0002_light_once.c \
@@ -5383,6 +5426,9 @@ test_runner_SOURCES = test_runner.c \
     encoder/planning/0190_prepare_ahead_cancel_new_admission.c \
     encoder/planning/0191_prepare_ahead_write_failure_drain.c \
     encoder/planning/0192_gpu_ahead_explicit_serial.c \
+    encoder/planning/0193_latest_builtin_fallback.c \
+    encoder/planning/0194_latest_high_color_fallback.c \
+    _support/planner/pipeline/latest_fallback.c \
     encoder/planning/0109_playback_serial_reservation.c \
     encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
     encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -6498,7 +6544,7 @@ test_runner_SOURCES = test_runner.c \
     encoder/planning/0060_latest_emit_stage_limits.c \
     _support/planner/pipeline/palette_integration_common.c \
     _support/planner/pipeline/palette_features_common.c \
-    encoder/planning/0070_latest_feature_fallback.c \
+    encoder/planning/0070_latest_gpu_serial_fallback.c \
     encoder/planning/0074_latest_completed_build_reclaims_budget.c \
     encoder/planning/0075_latest_emit_priority_loans.c \
     encoder/planning/0077_palette_auto_zero_wait.c \
@@ -7208,9 +7254,22 @@ test_runner_SOURCES = test_runner.c \
     encoder/scheduling/0032_ready_slot_release.c \
     dither/phased/0051_playback_resize_bytes.c \
     dither/phased/0052_playback_resize_interval.c \
-    dither/phased/0053_playback_credit_order.c \
+    dither/phased/0053_playback_solve_without_credit.c \
     dither/phased/0054_playback_cancel_origin.c \
     dither/phased/0055_playback_inherited_origin.c \
+    dither/phased/0056_playback_resolve_past_stalled_encode.c \
+    dither/phased/0057_playback_encode_past_stalled_delivery.c \
+    dither/phased/0058_playback_claimed_cancel_completes.c \
+    dither/phased/0059_latest_replay_t0.c \
+    dither/phased/0060_latest_replay_refresh.c \
+    dither/phased/0061_latest_replay_small.c \
+    _support/phased/latest.c \
+    dither/phased/0064_pipeline_sample_stale.c \
+    dither/phased/0065_pipeline_sample_short.c \
+    dither/phased/0066_pipeline_sample_tail.c \
+    dither/phased/0067_playback_format_transition.c \
+    dither/phased/0062_latest_completed_own.c \
+    dither/phased/0063_latest_excludes_future.c \
     _support/phased/fixture.c \
     _support/phased/fixture.h \
     _support/phased/expected.h \

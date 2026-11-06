@@ -507,3 +507,10 @@ sixel_output_bind_session(sixel_output_t *output,
 {
     output->session = session;
 }
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_write_packet(sixel_output_t *output, char const *bytes, int size)
+{
+    if (output == NULL) return SIXEL_BAD_ARGUMENT;
+    return sixel_writer_write_packet(output->writer, bytes, size);
+}

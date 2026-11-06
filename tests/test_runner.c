@@ -799,7 +799,9 @@ int test_palette_features_0066(int argc, char **argv);
 int test_palette_features_0067(int argc, char **argv);
 int test_palette_features_0068(int argc, char **argv);
 int test_palette_features_0069(int argc, char **argv);
-int test_palette_features_0070(int argc, char **argv);
+int test_palette_latest_gpu_serial_fallback(int, char **);
+int test_palette_latest_builtin_fallback(int, char **);
+int test_palette_latest_high_color_fallback(int, char **);
 int test_snapshot_allocation_0072(int argc, char **argv);
 int test_latest_write_0071(int argc, char **argv);
 
@@ -1617,7 +1619,7 @@ int test_phased_playback_cancel_origin(int, char **);
 int test_phased_playback_inherited_origin(int, char **);
 int test_phased_playback_resize_bytes(int, char **);
 int test_phased_playback_resize_interval(int, char **);
-int test_phased_playback_credit_order(int, char **);
+int test_phased_playback_solve_without_credit(int, char **);
 int test_phased_deferred_rgb241(int, char **);
 int test_phased_deferred_missing_history(int, char **);
 int test_phased_deferred_cancel_seals(int, char **);
@@ -5045,7 +5047,82 @@ int test_retained_0030_gpu_failure_then_move(int, char **);
 int test_retained_0031_gpu_legacy_then_move(int, char **);
 int test_retained_0032_gpu_invalidate_then_move(int, char **);
 
+int test_retained_0033_advance_without_receipt(int, char **);
+int test_retained_0034_direct_missing_receipt(int, char **);
+int test_retained_0035_direct_reject_resolved(int, char **);
+int test_retained_0036_advance_reject_direct(int, char **);
+int test_retained_0037_abort_preserves_contract(int, char **);
+int test_retained_0038_invalidate_changes_contract(int, char **);
+int test_retained_0039_advance_live_reader(int, char **);
+int test_retained_0040_advance_stale_identity(int, char **);
+int test_retained_0041_advance_repeat_rejected(int, char **);
+int test_retained_0043_advance_gpu_rgb(int, char **);
+int test_retained_0044_advance_gpu_partial(int, char **);
+int test_retained_0045_advance_gpu_keep(int, char **);
+int test_retained_0042_advance_exact_rgb(int, char **);
+
+int test_phased_playback_resolve_past_stalled_encode(int, char **);
+int test_phased_playback_encode_past_stalled_delivery(int, char **);
+int test_phased_playback_claimed_cancel_completes(int, char **);
+int test_phased_latest_replay_t0(int, char **);
+int test_phased_latest_replay_refresh(int, char **);
+int test_phased_latest_replay_small(int, char **);
+int test_phased_pipeline_sample_stale(int, char **);
+int test_phased_pipeline_sample_short(int, char **);
+int test_phased_pipeline_sample_tail(int, char **);
+int test_phased_playback_format_transition(int, char **);
+
+int test_phased_latest_completed_own(int, char **);
+int test_phased_latest_excludes_future(int, char **);
+
+
+
 static test_entry_t const test_entries[] = {
+    { "phased/playback_resolve_past_stalled_encode",
+      test_phased_playback_resolve_past_stalled_encode },
+    { "phased/playback_encode_past_stalled_delivery",
+      test_phased_playback_encode_past_stalled_delivery },
+    { "phased/playback_claimed_cancel_completes",
+      test_phased_playback_claimed_cancel_completes },
+    { "phased/latest_replay_t0", test_phased_latest_replay_t0 },
+    { "phased/latest_replay_refresh", test_phased_latest_replay_refresh },
+    { "phased/latest_replay_small", test_phased_latest_replay_small },
+    { "phased/pipeline_sample_stale", test_phased_pipeline_sample_stale },
+    { "phased/pipeline_sample_short", test_phased_pipeline_sample_short },
+    { "phased/pipeline_sample_tail", test_phased_pipeline_sample_tail },
+    { "phased/playback_format_transition",
+      test_phased_playback_format_transition },
+
+    { "phased/latest_completed_own", test_phased_latest_completed_own },
+    { "phased/latest_excludes_future", test_phased_latest_excludes_future },
+
+
+    { "encoder/retained/0033_advance_without_receipt",
+      test_retained_0033_advance_without_receipt },
+    { "encoder/retained/0034_direct_missing_receipt",
+      test_retained_0034_direct_missing_receipt },
+    { "encoder/retained/0035_direct_reject_resolved",
+      test_retained_0035_direct_reject_resolved },
+    { "encoder/retained/0036_advance_reject_direct",
+      test_retained_0036_advance_reject_direct },
+    { "encoder/retained/0037_abort_preserves_contract",
+      test_retained_0037_abort_preserves_contract },
+    { "encoder/retained/0038_invalidate_changes_contract",
+      test_retained_0038_invalidate_changes_contract },
+    { "encoder/retained/0039_advance_live_reader",
+      test_retained_0039_advance_live_reader },
+    { "encoder/retained/0040_advance_stale_identity",
+      test_retained_0040_advance_stale_identity },
+    { "encoder/retained/0041_advance_repeat_rejected",
+      test_retained_0041_advance_repeat_rejected },
+    { "encoder/retained/0043_advance_gpu_rgb",
+      test_retained_0043_advance_gpu_rgb },
+    { "encoder/retained/0044_advance_gpu_partial",
+      test_retained_0044_advance_gpu_partial },
+    { "encoder/retained/0045_advance_gpu_keep",
+      test_retained_0045_advance_gpu_keep },
+    { "encoder/retained/0042_advance_exact_rgb",
+      test_retained_0042_advance_exact_rgb },
     { "encoder/retained/0001_gpu_bind_rgb",
       test_retained_0001_gpu_bind_rgb },
     { "encoder/retained/0002_gpu_same_device",
@@ -6783,10 +6860,12 @@ static test_entry_t const test_entries[] = {
     { "phased/deferred_source_owned", test_phased_deferred_source_owned },
     { "phased/deferred_facet_lifetime", test_phased_deferred_facet_lifetime },
     { "phased/deferred_repeat_rejected", test_phased_deferred_repeat_rejected },
-    { "phased/deferred_bad_description_retry", test_phased_deferred_bad_description_retry },
+    { "phased/deferred_bad_description_retry",
+      test_phased_deferred_bad_description_retry },
     { "phased/deferred_discard_reuse", test_phased_deferred_discard_reuse },
     { "phased/deferred_run_excluded", test_phased_deferred_run_excluded },
-    { "phased/deferred_prepare_independent", test_phased_deferred_prepare_independent },
+    { "phased/deferred_prepare_independent",
+      test_phased_deferred_prepare_independent },
     { "phased/deferred_publication", test_phased_deferred_publication },
     { "phased/playback_no_delta", test_phased_playback_no_delta },
     { "phased/playback_t0", test_phased_playback_t0 },
@@ -6796,13 +6875,16 @@ static test_entry_t const test_entries[] = {
     { "phased/playback_solve_overlap", test_phased_playback_solve_overlap },
     { "phased/playback_cancel_ready", test_phased_playback_cancel_ready },
     { "phased/playback_failure_drain", test_phased_playback_failure_drain },
-    { "phased/playback_cancel_new_admission", test_phased_playback_cancel_new_admission },
+    { "phased/playback_cancel_new_admission",
+      test_phased_playback_cancel_new_admission },
     { "phased/playback_callback_sample", test_phased_playback_callback_sample },
     { "phased/playback_cancel_origin", test_phased_playback_cancel_origin },
-    { "phased/playback_inherited_origin", test_phased_playback_inherited_origin },
+    { "phased/playback_inherited_origin",
+      test_phased_playback_inherited_origin },
     { "phased/playback_resize_bytes", test_phased_playback_resize_bytes },
     { "phased/playback_resize_interval", test_phased_playback_resize_interval },
-    { "phased/playback_credit_order", test_phased_playback_credit_order },
+    { "phased/playback_solve_without_credit",
+      test_phased_playback_solve_without_credit },
     { "phased/deferred_rgb241", test_phased_deferred_rgb241 },
     { "phased/deferred_missing_history", test_phased_deferred_missing_history },
     { "phased/deferred_cancel_seals", test_phased_deferred_cancel_seals },
@@ -8150,8 +8232,12 @@ static test_entry_t const test_entries[] = {
       test_palette_features_0068 },
     { "planner/pipeline/0069_latest_delta_byte_export",
       test_palette_features_0069 },
-    { "planner/pipeline/0070_latest_feature_fallback",
-      test_palette_features_0070 },
+    { "planner/pipeline/0070_latest_gpu_serial_fallback",
+      test_palette_latest_gpu_serial_fallback },
+    { "planner/pipeline/0193_latest_builtin_fallback",
+      test_palette_latest_builtin_fallback },
+    { "planner/pipeline/0194_latest_high_color_fallback",
+      test_palette_latest_high_color_fallback },
     { "planner/pipeline/0074_latest_completed_build_reclaims_budget",
       test_palette_integration_0074 },
     { "planner/pipeline/0077_palette_auto_zero_wait",

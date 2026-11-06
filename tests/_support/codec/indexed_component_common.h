@@ -25,6 +25,7 @@ typedef struct indexed_fixture {
 } indexed_fixture_t;
 int indexed_fixture_init(indexed_fixture_t *f);
 SIXELSTATUS indexed_fixture_begin(indexed_fixture_t *f);
+SIXELSTATUS indexed_fixture_begin_kind(indexed_fixture_t *f, int resolved);
 SIXELSTATUS indexed_fixture_seal(indexed_fixture_t *f);
 SIXELSTATUS indexed_fixture_accept(indexed_fixture_t *f);
 SIXELSTATUS indexed_fixture_commit(indexed_fixture_t *f);

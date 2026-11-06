@@ -26,7 +26,8 @@ test_phased_playback_callback_sample(int argc, char **argv)
     phased_rendezvous_release(&s, &s.writer_open);
     AHEAD_CHECK(sixel_playback_drain(s.playback, 5000) == SIXEL_OK);
     AHEAD_CHECK(!s.bad_sequence && s.samples[1].sequence == 2);
-    AHEAD_CHECK((s.samples[1].valid & 127) == 127);
+    AHEAD_CHECK((s.pipeline_samples[1].valid &
+        SIXEL_PLAYBACK_PIPELINE_INDEPENDENT) != 0);
     ok = 1;
 end:
     phased_rendezvous_close(&s);

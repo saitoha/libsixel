@@ -254,7 +254,7 @@ typedef sixel_wire_palette_t wire_palette;
 typedef sixel_indexed_frame_t indexed_frame;
 
 [native, opaque, refcounted]
-[responsibility("pin one committed retained-plane generation for readers")]
+[responsibility("pin one published retained-plane generation for readers")]
 typedef sixel_retained_read_t retained_read;
 
 [native, opaque, refcounted]
@@ -543,7 +543,38 @@ SIXELAPI void sixel_stream_receipt_unref(in stream_receipt *receipt);
  * returning; body consumers may still read the immutable indexed image.
  * CPU staging is a no-op. A stage failure never changes committed history;
  * commit rejects missing or failed GPU staging. Abort discards the candidate.
- * Only a matching successful receipt allows candidate publication. */
+ * commit publishes only with a matching successful receipt. The explicit
+ * resolved-prefix contract below permits advance_resolved instead. */
+
+/* begin_resolved_update is the explicit alternative to begin_update for
+ * a controller that delivers every resolved frame in order, or discards the
+ * dependent suffix and invalidates history. It has the same geometry,
+ * identity, resource-reservation and lifetime rules as begin_update, but
+ * its update is published by advance_resolved without a stream receipt.
+ * A successful begin selects one publication contract for the current epoch.
+ * Either begin rejects the other contract in that epoch before mutation.
+ * Failed begin leaves the selection unchanged. Abort preserves the selection;
+ * invalidate clears it. An update records which begin created it.
+ *
+ * commit accepts only begin_update transactions and still requires a matching
+ * receipt. advance_resolved accepts only begin_resolved_update transactions;
+ * it requires a COMPLETE image, matching stream/epoch/base identity, no read
+ * leases or image users, and successful GPU staging when GPU-backed.
+ * All validation precedes mutation. GPU publication swaps completed surfaces;
+ * CPU publication uses the prepared allocation-free traversal. Success clears
+ * the active update and advances sequence, including for an all-keep image.
+ * Repeated/stale calls fail without mutation. Neither publication waits for
+ * another frame, emits bytes, allocates storage or submits GPU work.
+ *
+ * Resolved publication describes the reconstructed canvas after the resolved
+ * prefix, not callback acceptance or physical presentation. The controller
+ * owns ordered delivery and invalidation after cancellation/output loss.
+ * A read is immutable until its last unref. Two GPU surfaces remain sufficient
+ * when the single ordered resolver releases its read before each advance;
+ * output consumers retain only the independent indexed image and wire palette.
+ * No queue, writer receipt or transport callback is stored by this contract.
+ * This alternative does not weaken direct encoding's receipt validation. */
+
 [component, refcounted]
 [responsibility("maintain the retained image of one ordered output stream")]
 [forbid_state("lookup_policy", "dither_policy", "sixel_runs")]
@@ -572,6 +603,15 @@ interface retained_plane {
     SIXELSTATUS abort(in retained_update *update);
     [mutates]
     SIXELSTATUS invalidate(in retained_invalidation reason);
+
+    /* Ordered resolved-prefix publication; see the contract above. */
+    [mutates]
+    SIXELSTATUS begin_resolved_update(
+        in retained_update_request const *request,
+        out retained_update **update);
+    [mutates]
+    SIXELSTATUS advance_resolved(
+        in retained_update *update, out retained_update_stats *stats);
 };
 
 [classid("image/retained-plane")]
@@ -1709,7 +1749,8 @@ interface palette_apply_deferred {
  * after completion. COMPLETE is set only after successful final publication.
  * Unsupported execution plans are resolved before output; a runtime failure
  * seals FAILED rather than rerunning a partially published image on CPU.
- * Frame statistics and retained state are published by retained_plane.commit,
+ * Frame statistics and retained state are published by the selected
+ * retained_plane commit or advance_resolved contract,
  * not by this component. No persistent per-pixel error buffer is introduced. */
 [component, refcounted]
 [responsibility("apply dither and lookup into indexed pixels and final skip")]
@@ -1789,6 +1830,89 @@ struct playback_stage_sample {
 SIXELAPI SIXELSTATUS sixel_playback_get_stage_sample(
     in playback *session, in uint64_t sequence,
     inout playback_stage_sample *sample);
+
+/* Independent-pipeline diagnostics have a separate layout and getter.
+ * The older stage sample keeps its existing interval meanings and layout;
+ * an unrepresentable interval has its old validity bit unset, not redefined. */
+cpp_quote <<
+#define SIXEL_HAVE_PLAYBACK_PIPELINE_SAMPLE 1
+>>
+
+enum playback_pipeline_valid {
+    SIXEL_PLAYBACK_PIPELINE_PALETTE = 1,
+    SIXEL_PLAYBACK_PIPELINE_SOLVE = 2,
+    SIXEL_PLAYBACK_PIPELINE_RESOLVE = 4,
+    SIXEL_PLAYBACK_PIPELINE_ENCODE = 8,
+    SIXEL_PLAYBACK_PIPELINE_PALETTE_WAIT = 16,
+    SIXEL_PLAYBACK_PIPELINE_READY_WAIT = 32,
+    SIXEL_PLAYBACK_PIPELINE_RESOLVED_WAIT = 64,
+    SIXEL_PLAYBACK_PIPELINE_COMPLETION_WAIT = 128,
+    SIXEL_PLAYBACK_PIPELINE_COMPLETION_INTERVAL = 256,
+    SIXEL_PLAYBACK_PIPELINE_INDEPENDENT = 512,
+    SIXEL_PLAYBACK_PIPELINE_ENCODE_INTERVAL = 1024,
+    SIXEL_PLAYBACK_PIPELINE_DELIVERY = 2048,
+    SIXEL_PLAYBACK_PIPELINE_ENCODED_WAIT = 4096
+};
+
+/* Durations use monotonic host seconds; they do not measure CPU busy time.
+ * palette is this admission's own P build, even if its S selected an older
+ * palette_sequence. Each actual build is measured once. A missing build is
+ * invalid, not a fabricated zero duration. generation identifies the controller
+ * generation; it is not a retained-plane epoch or a palette-store epoch.
+ *
+ * solve spans S preparation and history-free execution; gpu_prepare is a
+ * subinterval. It excludes queue-space and palette waits. resolve spans R
+ * work through history advance and publication; history is its stage/advance
+ * subinterval. R first reserves downstream space, excluded from service.
+ * encode spans E preparation through private-packet finish and cleanup, with
+ * no external callback, history operation or own-palette join. delivery spans
+ * the dispatcher's external byte callbacks, excluding joins and done. Each
+ * stage bit covers its total and defined subinterval; do not add them twice.
+ *
+ * palette_wait measures S's compatible-palette wait. ready_wait spans solution
+ * publication to R service entry, including resolved-slot capacity waits.
+ * resolved_wait spans resolved-record publication to E service entry, including
+ * packet-space waits. encoded_wait spans packet publication to delivery entry.
+ * completion_wait spans external delivery completion to ordered done-callback
+ * readiness, including own-P joins and source-borrower release.
+ * Completion interval compares consecutive successful callback-ready frames;
+ * encode interval compares consecutive successful E completions. Failure,
+ * cancellation or generation changes reset the respective interval. Neither
+ * is physical presentation timing. Invalid fields carry no measurement.
+ * Parallel intervals must not be summed as end-to-end latency. */
+struct playback_pipeline_sample {
+    size_t struct_size;
+    uint64_t sequence;
+    uint64_t palette_sequence;
+    uint64_t generation;
+    unsigned int valid;
+    double palette_seconds;
+    double solve_seconds;
+    double gpu_prepare_seconds;
+    double resolve_seconds;
+    double history_seconds;
+    double encode_seconds;
+    double delivery_seconds;
+    double palette_wait_seconds;
+    double ready_wait_seconds;
+    double resolved_wait_seconds;
+    double encoded_wait_seconds;
+    double completion_wait_seconds;
+    double completion_interval_seconds;
+    double encode_interval_seconds;
+};
+
+/* Set sample.struct_size before calling. Copy the sample for the most recently
+ * callback-ready frame, published before its ordered completion callback.
+ * That callback may call this getter without encoder reentry. Unknown/stale
+ * nonzero sequence returns FALSE unchanged. Invalid arguments/undersized
+ * storage return BAD_ARGUMENT without writes; a larger buffer's unknown tail
+ * remains intact. Unsupported scheduling returns FALSE, not invented values.
+ * The getter holds no frame references and never submits, waits for GPU work
+ * or invokes callbacks. The playback object must remain alive. */
+SIXELAPI SIXELSTATUS sixel_playback_get_pipeline_sample(
+    in playback *session, in uint64_t sequence,
+    inout playback_pipeline_sample *sample);
 
 [classid("processing/palette-apply")]
 coclass palette_apply_component {

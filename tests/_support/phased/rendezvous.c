@@ -71,6 +71,8 @@ phased_rendezvous_resolved(void *context, uint64_t sequence)
     s = context;
     sixel_mutex_lock(&s->mutex);
     s->last_resolved = sequence;
+    if (sequence == 2) s->second_resolved = 1;
+    sixel_cond_broadcast(&s->cond);
     sixel_mutex_unlock(&s->mutex);
 }
 
@@ -84,6 +86,50 @@ phased_rendezvous_complete(void *context, uint64_t sequence)
     sixel_mutex_lock(&s->mutex);
     s->prepared_status = SIXEL_OK;
     s->helper_complete = 1;
+    sixel_cond_broadcast(&s->cond);
+    (void)phased_rendezvous_wait_locked(s, &s->helper_open);
+    sixel_mutex_unlock(&s->mutex);
+}
+
+static void
+phased_rendezvous_resolving(void *context, uint64_t sequence)
+{
+    struct phased_rendezvous_fixture *s;
+
+    s = context;
+    if (sequence != 1) return;
+    sixel_mutex_lock(&s->mutex);
+    s->resolve_entered = 1;
+    sixel_cond_broadcast(&s->cond);
+    if (s->hold_resolve)
+        (void)phased_rendezvous_wait_locked(s, &s->resolve_open);
+    sixel_mutex_unlock(&s->mutex);
+}
+
+static void
+phased_rendezvous_encoding(void *context, uint64_t sequence)
+{
+    struct phased_rendezvous_fixture *s;
+
+    s = context;
+    if (sequence != 1) return;
+    sixel_mutex_lock(&s->mutex);
+    s->encode_entered = 1;
+    sixel_cond_broadcast(&s->cond);
+    if (s->hold_encode)
+        (void)phased_rendezvous_wait_locked(s, &s->encode_open);
+    sixel_mutex_unlock(&s->mutex);
+}
+
+static void
+phased_rendezvous_encoded(void *context, uint64_t sequence)
+{
+    struct phased_rendezvous_fixture *s;
+
+    s = context;
+    if (sequence != 2) return;
+    sixel_mutex_lock(&s->mutex);
+    s->second_encoded = 1;
     sixel_cond_broadcast(&s->cond);
     sixel_mutex_unlock(&s->mutex);
 }
@@ -101,6 +147,13 @@ phased_rendezvous_done(sixel_playback_result_t const *result, void *context)
         s->samples[s->count].struct_size = sizeof(s->samples[s->count]);
         if (sixel_playback_get_stage_sample(s->playback, result->sequence,
                 &s->samples[s->count]) != SIXEL_OK) s->bad_sequence = 1;
+    }
+    if (s->count < 4) {
+        s->pipeline_samples[s->count].struct_size =
+            sizeof(s->pipeline_samples[s->count]);
+        if (sixel_playback_get_pipeline_sample(s->playback, result->sequence,
+                &s->pipeline_samples[s->count]) != SIXEL_OK)
+            s->bad_sequence = 1;
     }
     ++s->count;
     s->first_done = 1;
@@ -138,6 +191,9 @@ phased_rendezvous_open_impl(struct phased_rendezvous_fixture *s,
     s->hooks.completed = phased_rendezvous_complete;
     s->hooks.started = phased_rendezvous_started;
     s->hooks.resolved = phased_rendezvous_resolved;
+    s->hooks.resolving = phased_rendezvous_resolving;
+    s->hooks.encoding = phased_rendezvous_encoding;
+    s->hooks.encoded = phased_rendezvous_encoded;
     s->hooks.context = s;
     s->encoder->solve_test_hooks = &s->hooks;
     AHEAD_CHECK(sixel_output_new(&s->output, phased_rendezvous_write, s, NULL)
@@ -186,6 +242,8 @@ phased_rendezvous_close(struct phased_rendezvous_fixture *s)
     if (s->initialized) {
         phased_rendezvous_release(s, &s->writer_open);
         phased_rendezvous_release(s, &s->helper_open);
+        phased_rendezvous_release(s, &s->resolve_open);
+        phased_rendezvous_release(s, &s->encode_open);
     }
     if (s->playback != NULL) sixel_playback_unref(s->playback);
     if (s->output != NULL) sixel_output_unref(s->output);

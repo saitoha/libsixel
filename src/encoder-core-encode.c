@@ -5418,6 +5418,8 @@ sixel_encoder_core_encode_dispatch(
     } else {
         status = sixel_encode_indexed_session(request);
         if (status != SIXEL_FALSE) return status;
+        if (sixel_output_is_resolve_only(request->output))
+            return SIXEL_FEATURE_ERROR;
         if (request->dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED) {
             sixel_helper_set_additional_message(
                 "phased requires the RGB8 GPU component path");

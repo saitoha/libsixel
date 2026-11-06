@@ -116,6 +116,9 @@ struct sixel_encoder_solve_test_hooks {
     void *context;
     void (*started)(void *context, uint64_t sequence);
     void (*resolved)(void *context, uint64_t sequence);
+    void (*resolving)(void *context, uint64_t sequence);
+    void (*encoding)(void *context, uint64_t sequence);
+    void (*encoded)(void *context, uint64_t sequence);
 };
 
 /* palette type */

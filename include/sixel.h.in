@@ -2263,9 +2263,11 @@ sixel_encoder_encode_frame(
  * current sequence. Selection occurs once, after delay, before LUT/gradient
  * setup. CPU generated palettes can overlap their own build and application,
  * including RGB submissions with multiframe=0. The first frame waits for its
- * own palette. Output depends on completion timing, including across repeated
- * runs. External/builtin, preserved indexed and high-color palettes, GPU-enabled
- * paths and generated macros keep frame behavior. One-worker/nonthreaded or
+ * own palette. A completed compatible own palette always wins.
+ * Output depends on completion timing, including across repeated
+ * runs. Explicit LATEST also supports native gamma RGB8 GPU playback.
+ * External/builtin, preserved indexed and high-color palettes, other GPU
+ * forms and generated macros keep frame behavior. One-worker/nonthreaded or
  * unavailable asynchronous execution produces the same bytes as PER_FRAME
  * with the same options. Loader DRCS and presentation/attached repair also
  * keep frame behavior (these features are not supported by playback).
@@ -2426,8 +2428,9 @@ sixel_playback_submit(sixel_playback_t *playback,
 SIXELAPI SIXELSTATUS
 sixel_playback_drain(sixel_playback_t *playback, int timeout_ms);
 
-/* Discard admitted frames that have not started; each completes with
- * SIXEL_INTERRUPTED. Frames already being encoded finish normally. */
+/* Discard admitted frames not yet claimed by ordered resolution; each
+ * completes with SIXEL_INTERRUPTED. Claimed frames finish normally through
+ * delivery, including a bounded prefix in independent playback queues. */
 SIXELAPI SIXELSTATUS
 sixel_playback_cancel(sixel_playback_t *playback);
 

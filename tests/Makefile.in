@@ -173,6 +173,19 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/retained/0030_gpu_failure_then_move.c \
 	encoder/retained/0031_gpu_legacy_then_move.c \
 	encoder/retained/0032_gpu_invalidate_then_move.c \
+	encoder/retained/0033_advance_without_receipt.c \
+	encoder/retained/0034_direct_missing_receipt.c \
+	encoder/retained/0035_direct_reject_resolved.c \
+	encoder/retained/0036_advance_reject_direct.c \
+	encoder/retained/0037_abort_preserves_contract.c \
+	encoder/retained/0038_invalidate_changes_contract.c \
+	encoder/retained/0039_advance_live_reader.c \
+	encoder/retained/0040_advance_stale_identity.c \
+	encoder/retained/0041_advance_repeat_rejected.c \
+	encoder/retained/0043_advance_gpu_rgb.c \
+	encoder/retained/0044_advance_gpu_partial.c \
+	encoder/retained/0045_advance_gpu_keep.c \
+	encoder/retained/0042_advance_exact_rgb.c \
 	_support/codec/retained_gpu.c \
 	encoder/scheduling/0001_cold_single.c \
 	encoder/scheduling/0002_light_once.c \
@@ -436,6 +449,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/planning/0190_prepare_ahead_cancel_new_admission.c \
 	encoder/planning/0191_prepare_ahead_write_failure_drain.c \
 	encoder/planning/0192_gpu_ahead_explicit_serial.c \
+	encoder/planning/0193_latest_builtin_fallback.c \
+	encoder/planning/0194_latest_high_color_fallback.c \
+	_support/planner/pipeline/latest_fallback.c \
 	encoder/planning/0109_playback_serial_reservation.c \
 	encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
 	encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -1549,7 +1565,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/planning/0060_latest_emit_stage_limits.c \
 	_support/planner/pipeline/palette_integration_common.c \
 	_support/planner/pipeline/palette_features_common.c \
-	encoder/planning/0070_latest_feature_fallback.c \
+	encoder/planning/0070_latest_gpu_serial_fallback.c \
 	encoder/planning/0074_latest_completed_build_reclaims_budget.c \
 	encoder/planning/0075_latest_emit_priority_loans.c \
 	encoder/planning/0077_palette_auto_zero_wait.c \
@@ -2248,9 +2264,22 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/scheduling/0032_ready_slot_release.c \
 	dither/phased/0051_playback_resize_bytes.c \
 	dither/phased/0052_playback_resize_interval.c \
-	dither/phased/0053_playback_credit_order.c \
+	dither/phased/0053_playback_solve_without_credit.c \
 	dither/phased/0054_playback_cancel_origin.c \
 	dither/phased/0055_playback_inherited_origin.c \
+	dither/phased/0056_playback_resolve_past_stalled_encode.c \
+	dither/phased/0057_playback_encode_past_stalled_delivery.c \
+	dither/phased/0058_playback_claimed_cancel_completes.c \
+	dither/phased/0059_latest_replay_t0.c \
+	dither/phased/0060_latest_replay_refresh.c \
+	dither/phased/0061_latest_replay_small.c \
+	_support/phased/latest.c \
+	dither/phased/0064_pipeline_sample_stale.c \
+	dither/phased/0065_pipeline_sample_short.c \
+	dither/phased/0066_pipeline_sample_tail.c \
+	dither/phased/0067_playback_format_transition.c \
+	dither/phased/0062_latest_completed_own.c \
+	dither/phased/0063_latest_excludes_future.c \
 	_support/phased/fixture.c _support/phased/fixture.h \
 	_support/phased/expected.h \
 	encoder/indexed/0129_gpu_rows_ordered_indexes.c \
@@ -5059,6 +5088,19 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0030_gpu_failure_then_move.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0031_gpu_legacy_then_move.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0032_gpu_invalidate_then_move.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0033_advance_without_receipt.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0034_direct_missing_receipt.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0035_direct_reject_resolved.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0036_advance_reject_direct.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0037_abort_preserves_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0038_invalidate_changes_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0039_advance_live_reader.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0040_advance_stale_identity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0041_advance_repeat_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0043_advance_gpu_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0044_advance_gpu_partial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0045_advance_gpu_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0042_advance_exact_rgb.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-retained_gpu.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0001_cold_single.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0002_light_once.$(OBJEXT) \
@@ -5323,6 +5365,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0193_latest_builtin_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0194_latest_high_color_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/planner/pipeline/test_runner-latest_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0109_playback_serial_reservation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0110_reserved_delta_cpu_per_frame_t0.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0111_reserved_delta_cpu_per_frame_t48.$(OBJEXT) \
@@ -6405,7 +6450,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0060_latest_emit_stage_limits.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/planner/pipeline/test_runner-palette_integration_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/planner/pipeline/test_runner-palette_features_common.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0070_latest_feature_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0070_latest_gpu_serial_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0074_latest_completed_build_reclaims_budget.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0075_latest_emit_priority_loans.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0077_palette_auto_zero_wait.$(OBJEXT) \
@@ -7101,9 +7146,22 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0032_ready_slot_release.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0051_playback_resize_bytes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0052_playback_resize_interval.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0053_playback_credit_order.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0053_playback_solve_without_credit.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0054_playback_cancel_origin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0055_playback_inherited_origin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0058_playback_claimed_cancel_completes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0059_latest_replay_t0.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0060_latest_replay_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0061_latest_replay_small.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/phased/test_runner-latest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0064_pipeline_sample_stale.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0065_pipeline_sample_short.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0066_pipeline_sample_tail.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0067_playback_format_transition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0062_latest_completed_own.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0063_latest_excludes_future.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/phased/test_runner-fixture.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0129_gpu_rows_ordered_indexes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0130_gpu_rows_rbc_indexes.$(OBJEXT) \
@@ -10211,10 +10269,12 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po \
 	_support/loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po \
 	_support/phased/$(DEPDIR)/test_runner-fixture.Po \
+	_support/phased/$(DEPDIR)/test_runner-latest.Po \
 	_support/phased/$(DEPDIR)/test_runner-playback.Po \
 	_support/phased/$(DEPDIR)/test_runner-rendezvous.Po \
 	_support/planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Po \
+	_support/planner/pipeline/$(DEPDIR)/test_runner-latest_fallback.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-palette_auto_test_common.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-palette_features_common.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-palette_integration_common.Po \
@@ -11431,9 +11491,21 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Po \
 	dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Po \
 	dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Po \
-	dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Po \
+	dither/phased/$(DEPDIR)/test_runner-0053_playback_solve_without_credit.Po \
 	dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Po \
 	dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Po \
+	dither/phased/$(DEPDIR)/test_runner-0056_playback_resolve_past_stalled_encode.Po \
+	dither/phased/$(DEPDIR)/test_runner-0057_playback_encode_past_stalled_delivery.Po \
+	dither/phased/$(DEPDIR)/test_runner-0058_playback_claimed_cancel_completes.Po \
+	dither/phased/$(DEPDIR)/test_runner-0059_latest_replay_t0.Po \
+	dither/phased/$(DEPDIR)/test_runner-0060_latest_replay_refresh.Po \
+	dither/phased/$(DEPDIR)/test_runner-0061_latest_replay_small.Po \
+	dither/phased/$(DEPDIR)/test_runner-0062_latest_completed_own.Po \
+	dither/phased/$(DEPDIR)/test_runner-0063_latest_excludes_future.Po \
+	dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Po \
+	dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Po \
+	dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Po \
+	dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po \
@@ -11980,7 +12052,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/planning/$(DEPDIR)/test_runner-0067_latest_profile_epoch.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0068_latest_stale_histogram.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0069_latest_delta_byte_export.Po \
-	encoder/planning/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0070_latest_gpu_serial_fallback.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0071_latest_write_failure.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0072_palette_snapshot_allocation.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Po \
@@ -12038,6 +12110,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0193_latest_builtin_fallback.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0194_latest_high_color_fallback.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0002_byte_request_linear_source.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po \
@@ -12316,6 +12390,19 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Po \
 	encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Po \
 	encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0033_advance_without_receipt.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0034_direct_missing_receipt.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0035_direct_reject_resolved.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0036_advance_reject_direct.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0037_abort_preserves_contract.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0038_invalidate_changes_contract.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0039_advance_live_reader.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0040_advance_stale_identity.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0041_advance_repeat_rejected.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0042_advance_exact_rgb.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0043_advance_gpu_rgb.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0044_advance_gpu_partial.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0045_advance_gpu_keep.Po \
 	encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Po \
 	encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Po \
 	encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Po \
@@ -15204,7 +15291,6 @@ pythondir = @pythondir@
 runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
-sixel_have_compare = @sixel_have_compare@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
@@ -15385,6 +15471,36 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_LATEST_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0193_LATEST_BUILTIN_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0194_LATEST_HIGH_COLOR_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_PLAYBACK_FORMAT_TRANSITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_LATEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_ADVANCE_WITHOUT_RECEIPT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_DIRECT_MISSING_RECEIPT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_DIRECT_REJECT_RESOLVED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_ADVANCE_REJECT_DIRECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_ABORT_PRESERVES_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_INVALIDATE_CHANGES_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_ADVANCE_LIVE_READER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_ADVANCE_STALE_IDENTITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_ADVANCE_REPEAT_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_ADVANCE_EXACT_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_ADVANCE_GPU_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_ADVANCE_GPU_PARTIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_ADVANCE_GPU_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_PLAYBACK_SOLVE_WITHOUT_CREDIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_PLAYBACK_RESOLVE_PAST_STALLED_ENCODE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_PLAYBACK_ENCODE_PAST_STALLED_DELIVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_PLAYBACK_CLAIMED_CANCEL_COMPLETES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_LATEST_REPLAY_T0 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_LATEST_REPLAY_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_LATEST_REPLAY_SMALL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_LATEST_COMPLETED_OWN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_LATEST_EXCLUDES_FUTURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_PIPELINE_SAMPLE_STALE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_PIPELINE_SAMPLE_SHORT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_PIPELINE_SAMPLE_TAIL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_PLAYBACK_CANCEL_ORIGIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_PLAYBACK_INHERITED_ORIGIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_PLAYBACK_RESIZE_BYTES \
@@ -16222,7 +16338,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_PALETTE_SCHEDULER_CONCURRENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_INTEGRATION_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_FEATURES_COMMON \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_LATEST_FEATURE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_LATEST_GPU_SERIAL_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_LATEST_COMPLETED_BUILD_RECLAIMS_BUDGET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_LATEST_EMIT_PRIORITY_LOANS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_AUTO_TEST_COMMON \
@@ -20299,6 +20415,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0030_gpu_failure_then_move.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0031_gpu_legacy_then_move.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0032_gpu_invalidate_then_move.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0033_advance_without_receipt.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0034_direct_missing_receipt.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0035_direct_reject_resolved.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0036_advance_reject_direct.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0037_abort_preserves_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0038_invalidate_changes_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0039_advance_live_reader.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0040_advance_stale_identity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0041_advance_repeat_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0043_advance_gpu_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0044_advance_gpu_partial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0045_advance_gpu_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0042_advance_exact_rgb.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/retained_gpu.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0001_cold_single.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0002_light_once.c \
@@ -20563,6 +20692,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0190_prepare_ahead_cancel_new_admission.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0191_prepare_ahead_write_failure_drain.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0192_gpu_ahead_explicit_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0193_latest_builtin_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0194_latest_high_color_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/planner/pipeline/latest_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0109_playback_serial_reservation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -21678,7 +21810,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0060_latest_emit_stage_limits.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/planner/pipeline/palette_integration_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/planner/pipeline/palette_features_common.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0070_latest_feature_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0070_latest_gpu_serial_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0074_latest_completed_build_reclaims_budget.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0075_latest_emit_priority_loans.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0077_palette_auto_zero_wait.c \
@@ -22388,9 +22520,22 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0032_ready_slot_release.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0051_playback_resize_bytes.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0052_playback_resize_interval.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0053_playback_credit_order.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0053_playback_solve_without_credit.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0054_playback_cancel_origin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0055_playback_inherited_origin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0056_playback_resolve_past_stalled_encode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0057_playback_encode_past_stalled_delivery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0058_playback_claimed_cancel_completes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0059_latest_replay_t0.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0060_latest_replay_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0061_latest_replay_small.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/latest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0064_pipeline_sample_stale.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0065_pipeline_sample_short.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0066_pipeline_sample_tail.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0067_playback_format_transition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0062_latest_completed_own.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0063_latest_excludes_future.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/fixture.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/fixture.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/expected.h \
@@ -25753,6 +25898,45 @@ encoder/retained/test_runner-0031_gpu_legacy_then_move.$(OBJEXT):  \
 encoder/retained/test_runner-0032_gpu_invalidate_then_move.$(OBJEXT):  \
 	encoder/retained/$(am__dirstamp) \
 	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0033_advance_without_receipt.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0034_direct_missing_receipt.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0035_direct_reject_resolved.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0036_advance_reject_direct.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0037_abort_preserves_contract.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0038_invalidate_changes_contract.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0039_advance_live_reader.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0040_advance_stale_identity.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0041_advance_repeat_rejected.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0043_advance_gpu_rgb.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0044_advance_gpu_partial.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0045_advance_gpu_keep.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0042_advance_exact_rgb.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
 _support/codec/$(am__dirstamp):
 	@$(MKDIR_P) _support/codec
 	@: >>_support/codec/$(am__dirstamp)
@@ -26611,6 +26795,21 @@ encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.$(OBJEXT):  
 encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.$(OBJEXT):  \
 	encoder/planning/$(am__dirstamp) \
 	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0193_latest_builtin_fallback.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0194_latest_high_color_fallback.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+_support/planner/pipeline/$(am__dirstamp):
+	@$(MKDIR_P) _support/planner/pipeline
+	@: >>_support/planner/pipeline/$(am__dirstamp)
+_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) _support/planner/pipeline/$(DEPDIR)
+	@: >>_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+_support/planner/pipeline/test_runner-latest_fallback.$(OBJEXT):  \
+	_support/planner/pipeline/$(am__dirstamp) \
+	_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 encoder/planning/test_runner-0109_playback_serial_reservation.$(OBJEXT):  \
 	encoder/planning/$(am__dirstamp) \
 	encoder/planning/$(DEPDIR)/$(am__dirstamp)
@@ -26917,12 +27116,6 @@ _support/processing/assessment/$(DEPDIR)/$(am__dirstamp):
 _support/processing/assessment/test_runner-vif_video_summary.$(OBJEXT):  \
 	_support/processing/assessment/$(am__dirstamp) \
 	_support/processing/assessment/$(DEPDIR)/$(am__dirstamp)
-_support/planner/pipeline/$(am__dirstamp):
-	@$(MKDIR_P) _support/planner/pipeline
-	@: >>_support/planner/pipeline/$(am__dirstamp)
-_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) _support/planner/pipeline/$(DEPDIR)
-	@: >>_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 _support/planner/pipeline/test_runner-playback_lifecycle_common.$(OBJEXT):  \
 	_support/planner/pipeline/$(am__dirstamp) \
 	_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp)
@@ -30022,7 +30215,7 @@ _support/planner/pipeline/test_runner-palette_integration_common.$(OBJEXT):  \
 _support/planner/pipeline/test_runner-palette_features_common.$(OBJEXT):  \
 	_support/planner/pipeline/$(am__dirstamp) \
 	_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp)
-encoder/planning/test_runner-0070_latest_feature_fallback.$(OBJEXT):  \
+encoder/planning/test_runner-0070_latest_gpu_serial_fallback.$(OBJEXT):  \
 	encoder/planning/$(am__dirstamp) \
 	encoder/planning/$(DEPDIR)/$(am__dirstamp)
 encoder/planning/test_runner-0074_latest_completed_build_reclaims_budget.$(OBJEXT):  \
@@ -32301,13 +32494,52 @@ dither/phased/test_runner-0051_playback_resize_bytes.$(OBJEXT):  \
 dither/phased/test_runner-0052_playback_resize_interval.$(OBJEXT):  \
 	dither/phased/$(am__dirstamp) \
 	dither/phased/$(DEPDIR)/$(am__dirstamp)
-dither/phased/test_runner-0053_playback_credit_order.$(OBJEXT):  \
+dither/phased/test_runner-0053_playback_solve_without_credit.$(OBJEXT):  \
 	dither/phased/$(am__dirstamp) \
 	dither/phased/$(DEPDIR)/$(am__dirstamp)
 dither/phased/test_runner-0054_playback_cancel_origin.$(OBJEXT):  \
 	dither/phased/$(am__dirstamp) \
 	dither/phased/$(DEPDIR)/$(am__dirstamp)
 dither/phased/test_runner-0055_playback_inherited_origin.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0058_playback_claimed_cancel_completes.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0059_latest_replay_t0.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0060_latest_replay_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0061_latest_replay_small.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+_support/phased/test_runner-latest.$(OBJEXT):  \
+	_support/phased/$(am__dirstamp) \
+	_support/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0064_pipeline_sample_stale.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0065_pipeline_sample_short.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0066_pipeline_sample_tail.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0067_playback_format_transition.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0062_latest_completed_own.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0063_latest_excludes_future.$(OBJEXT):  \
 	dither/phased/$(am__dirstamp) \
 	dither/phased/$(DEPDIR)/$(am__dirstamp)
 _support/phased/test_runner-fixture.$(OBJEXT):  \
@@ -41646,10 +41878,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-fixture.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-latest.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-playback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-rendezvous.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-latest_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-palette_auto_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-palette_features_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-palette_integration_common.Po@am__quote@ # am--include-marker
@@ -42866,9 +43100,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0053_playback_solve_without_credit.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0056_playback_resolve_past_stalled_encode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0057_playback_encode_past_stalled_delivery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0058_playback_claimed_cancel_completes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0059_latest_replay_t0.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0060_latest_replay_refresh.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0061_latest_replay_small.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0062_latest_completed_own.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0063_latest_excludes_future.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po@am__quote@ # am--include-marker
@@ -43415,7 +43661,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0067_latest_profile_epoch.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0068_latest_stale_histogram.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0069_latest_delta_byte_export.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0070_latest_gpu_serial_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0071_latest_write_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0072_palette_snapshot_allocation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Po@am__quote@ # am--include-marker
@@ -43473,6 +43719,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0193_latest_builtin_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0194_latest_high_color_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0002_byte_request_linear_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po@am__quote@ # am--include-marker
@@ -43751,6 +43999,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0033_advance_without_receipt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0034_direct_missing_receipt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0035_direct_reject_resolved.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0036_advance_reject_direct.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0037_abort_preserves_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0038_invalidate_changes_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0039_advance_live_reader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0040_advance_stale_identity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0041_advance_repeat_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0042_advance_exact_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0043_advance_gpu_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0044_advance_gpu_partial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0045_advance_gpu_keep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Po@am__quote@ # am--include-marker
@@ -46705,6 +46966,188 @@ encoder/retained/test_runner-0032_gpu_invalidate_then_move.obj: encoder/retained
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0032_gpu_invalidate_then_move.c' object='encoder/retained/test_runner-0032_gpu_invalidate_then_move.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0032_gpu_invalidate_then_move.obj `if test -f 'encoder/retained/0032_gpu_invalidate_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0032_gpu_invalidate_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0032_gpu_invalidate_then_move.c'; fi`
+
+encoder/retained/test_runner-0033_advance_without_receipt.o: encoder/retained/0033_advance_without_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0033_advance_without_receipt.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0033_advance_without_receipt.Tpo -c -o encoder/retained/test_runner-0033_advance_without_receipt.o `test -f 'encoder/retained/0033_advance_without_receipt.c' || echo '$(srcdir)/'`encoder/retained/0033_advance_without_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0033_advance_without_receipt.Tpo encoder/retained/$(DEPDIR)/test_runner-0033_advance_without_receipt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0033_advance_without_receipt.c' object='encoder/retained/test_runner-0033_advance_without_receipt.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0033_advance_without_receipt.o `test -f 'encoder/retained/0033_advance_without_receipt.c' || echo '$(srcdir)/'`encoder/retained/0033_advance_without_receipt.c
+
+encoder/retained/test_runner-0033_advance_without_receipt.obj: encoder/retained/0033_advance_without_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0033_advance_without_receipt.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0033_advance_without_receipt.Tpo -c -o encoder/retained/test_runner-0033_advance_without_receipt.obj `if test -f 'encoder/retained/0033_advance_without_receipt.c'; then $(CYGPATH_W) 'encoder/retained/0033_advance_without_receipt.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0033_advance_without_receipt.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0033_advance_without_receipt.Tpo encoder/retained/$(DEPDIR)/test_runner-0033_advance_without_receipt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0033_advance_without_receipt.c' object='encoder/retained/test_runner-0033_advance_without_receipt.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0033_advance_without_receipt.obj `if test -f 'encoder/retained/0033_advance_without_receipt.c'; then $(CYGPATH_W) 'encoder/retained/0033_advance_without_receipt.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0033_advance_without_receipt.c'; fi`
+
+encoder/retained/test_runner-0034_direct_missing_receipt.o: encoder/retained/0034_direct_missing_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0034_direct_missing_receipt.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0034_direct_missing_receipt.Tpo -c -o encoder/retained/test_runner-0034_direct_missing_receipt.o `test -f 'encoder/retained/0034_direct_missing_receipt.c' || echo '$(srcdir)/'`encoder/retained/0034_direct_missing_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0034_direct_missing_receipt.Tpo encoder/retained/$(DEPDIR)/test_runner-0034_direct_missing_receipt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0034_direct_missing_receipt.c' object='encoder/retained/test_runner-0034_direct_missing_receipt.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0034_direct_missing_receipt.o `test -f 'encoder/retained/0034_direct_missing_receipt.c' || echo '$(srcdir)/'`encoder/retained/0034_direct_missing_receipt.c
+
+encoder/retained/test_runner-0034_direct_missing_receipt.obj: encoder/retained/0034_direct_missing_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0034_direct_missing_receipt.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0034_direct_missing_receipt.Tpo -c -o encoder/retained/test_runner-0034_direct_missing_receipt.obj `if test -f 'encoder/retained/0034_direct_missing_receipt.c'; then $(CYGPATH_W) 'encoder/retained/0034_direct_missing_receipt.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0034_direct_missing_receipt.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0034_direct_missing_receipt.Tpo encoder/retained/$(DEPDIR)/test_runner-0034_direct_missing_receipt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0034_direct_missing_receipt.c' object='encoder/retained/test_runner-0034_direct_missing_receipt.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0034_direct_missing_receipt.obj `if test -f 'encoder/retained/0034_direct_missing_receipt.c'; then $(CYGPATH_W) 'encoder/retained/0034_direct_missing_receipt.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0034_direct_missing_receipt.c'; fi`
+
+encoder/retained/test_runner-0035_direct_reject_resolved.o: encoder/retained/0035_direct_reject_resolved.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0035_direct_reject_resolved.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0035_direct_reject_resolved.Tpo -c -o encoder/retained/test_runner-0035_direct_reject_resolved.o `test -f 'encoder/retained/0035_direct_reject_resolved.c' || echo '$(srcdir)/'`encoder/retained/0035_direct_reject_resolved.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0035_direct_reject_resolved.Tpo encoder/retained/$(DEPDIR)/test_runner-0035_direct_reject_resolved.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0035_direct_reject_resolved.c' object='encoder/retained/test_runner-0035_direct_reject_resolved.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0035_direct_reject_resolved.o `test -f 'encoder/retained/0035_direct_reject_resolved.c' || echo '$(srcdir)/'`encoder/retained/0035_direct_reject_resolved.c
+
+encoder/retained/test_runner-0035_direct_reject_resolved.obj: encoder/retained/0035_direct_reject_resolved.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0035_direct_reject_resolved.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0035_direct_reject_resolved.Tpo -c -o encoder/retained/test_runner-0035_direct_reject_resolved.obj `if test -f 'encoder/retained/0035_direct_reject_resolved.c'; then $(CYGPATH_W) 'encoder/retained/0035_direct_reject_resolved.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0035_direct_reject_resolved.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0035_direct_reject_resolved.Tpo encoder/retained/$(DEPDIR)/test_runner-0035_direct_reject_resolved.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0035_direct_reject_resolved.c' object='encoder/retained/test_runner-0035_direct_reject_resolved.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0035_direct_reject_resolved.obj `if test -f 'encoder/retained/0035_direct_reject_resolved.c'; then $(CYGPATH_W) 'encoder/retained/0035_direct_reject_resolved.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0035_direct_reject_resolved.c'; fi`
+
+encoder/retained/test_runner-0036_advance_reject_direct.o: encoder/retained/0036_advance_reject_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0036_advance_reject_direct.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0036_advance_reject_direct.Tpo -c -o encoder/retained/test_runner-0036_advance_reject_direct.o `test -f 'encoder/retained/0036_advance_reject_direct.c' || echo '$(srcdir)/'`encoder/retained/0036_advance_reject_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0036_advance_reject_direct.Tpo encoder/retained/$(DEPDIR)/test_runner-0036_advance_reject_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0036_advance_reject_direct.c' object='encoder/retained/test_runner-0036_advance_reject_direct.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0036_advance_reject_direct.o `test -f 'encoder/retained/0036_advance_reject_direct.c' || echo '$(srcdir)/'`encoder/retained/0036_advance_reject_direct.c
+
+encoder/retained/test_runner-0036_advance_reject_direct.obj: encoder/retained/0036_advance_reject_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0036_advance_reject_direct.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0036_advance_reject_direct.Tpo -c -o encoder/retained/test_runner-0036_advance_reject_direct.obj `if test -f 'encoder/retained/0036_advance_reject_direct.c'; then $(CYGPATH_W) 'encoder/retained/0036_advance_reject_direct.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0036_advance_reject_direct.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0036_advance_reject_direct.Tpo encoder/retained/$(DEPDIR)/test_runner-0036_advance_reject_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0036_advance_reject_direct.c' object='encoder/retained/test_runner-0036_advance_reject_direct.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0036_advance_reject_direct.obj `if test -f 'encoder/retained/0036_advance_reject_direct.c'; then $(CYGPATH_W) 'encoder/retained/0036_advance_reject_direct.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0036_advance_reject_direct.c'; fi`
+
+encoder/retained/test_runner-0037_abort_preserves_contract.o: encoder/retained/0037_abort_preserves_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0037_abort_preserves_contract.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0037_abort_preserves_contract.Tpo -c -o encoder/retained/test_runner-0037_abort_preserves_contract.o `test -f 'encoder/retained/0037_abort_preserves_contract.c' || echo '$(srcdir)/'`encoder/retained/0037_abort_preserves_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0037_abort_preserves_contract.Tpo encoder/retained/$(DEPDIR)/test_runner-0037_abort_preserves_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0037_abort_preserves_contract.c' object='encoder/retained/test_runner-0037_abort_preserves_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0037_abort_preserves_contract.o `test -f 'encoder/retained/0037_abort_preserves_contract.c' || echo '$(srcdir)/'`encoder/retained/0037_abort_preserves_contract.c
+
+encoder/retained/test_runner-0037_abort_preserves_contract.obj: encoder/retained/0037_abort_preserves_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0037_abort_preserves_contract.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0037_abort_preserves_contract.Tpo -c -o encoder/retained/test_runner-0037_abort_preserves_contract.obj `if test -f 'encoder/retained/0037_abort_preserves_contract.c'; then $(CYGPATH_W) 'encoder/retained/0037_abort_preserves_contract.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0037_abort_preserves_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0037_abort_preserves_contract.Tpo encoder/retained/$(DEPDIR)/test_runner-0037_abort_preserves_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0037_abort_preserves_contract.c' object='encoder/retained/test_runner-0037_abort_preserves_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0037_abort_preserves_contract.obj `if test -f 'encoder/retained/0037_abort_preserves_contract.c'; then $(CYGPATH_W) 'encoder/retained/0037_abort_preserves_contract.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0037_abort_preserves_contract.c'; fi`
+
+encoder/retained/test_runner-0038_invalidate_changes_contract.o: encoder/retained/0038_invalidate_changes_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0038_invalidate_changes_contract.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0038_invalidate_changes_contract.Tpo -c -o encoder/retained/test_runner-0038_invalidate_changes_contract.o `test -f 'encoder/retained/0038_invalidate_changes_contract.c' || echo '$(srcdir)/'`encoder/retained/0038_invalidate_changes_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0038_invalidate_changes_contract.Tpo encoder/retained/$(DEPDIR)/test_runner-0038_invalidate_changes_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0038_invalidate_changes_contract.c' object='encoder/retained/test_runner-0038_invalidate_changes_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0038_invalidate_changes_contract.o `test -f 'encoder/retained/0038_invalidate_changes_contract.c' || echo '$(srcdir)/'`encoder/retained/0038_invalidate_changes_contract.c
+
+encoder/retained/test_runner-0038_invalidate_changes_contract.obj: encoder/retained/0038_invalidate_changes_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0038_invalidate_changes_contract.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0038_invalidate_changes_contract.Tpo -c -o encoder/retained/test_runner-0038_invalidate_changes_contract.obj `if test -f 'encoder/retained/0038_invalidate_changes_contract.c'; then $(CYGPATH_W) 'encoder/retained/0038_invalidate_changes_contract.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0038_invalidate_changes_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0038_invalidate_changes_contract.Tpo encoder/retained/$(DEPDIR)/test_runner-0038_invalidate_changes_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0038_invalidate_changes_contract.c' object='encoder/retained/test_runner-0038_invalidate_changes_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0038_invalidate_changes_contract.obj `if test -f 'encoder/retained/0038_invalidate_changes_contract.c'; then $(CYGPATH_W) 'encoder/retained/0038_invalidate_changes_contract.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0038_invalidate_changes_contract.c'; fi`
+
+encoder/retained/test_runner-0039_advance_live_reader.o: encoder/retained/0039_advance_live_reader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0039_advance_live_reader.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0039_advance_live_reader.Tpo -c -o encoder/retained/test_runner-0039_advance_live_reader.o `test -f 'encoder/retained/0039_advance_live_reader.c' || echo '$(srcdir)/'`encoder/retained/0039_advance_live_reader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0039_advance_live_reader.Tpo encoder/retained/$(DEPDIR)/test_runner-0039_advance_live_reader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0039_advance_live_reader.c' object='encoder/retained/test_runner-0039_advance_live_reader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0039_advance_live_reader.o `test -f 'encoder/retained/0039_advance_live_reader.c' || echo '$(srcdir)/'`encoder/retained/0039_advance_live_reader.c
+
+encoder/retained/test_runner-0039_advance_live_reader.obj: encoder/retained/0039_advance_live_reader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0039_advance_live_reader.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0039_advance_live_reader.Tpo -c -o encoder/retained/test_runner-0039_advance_live_reader.obj `if test -f 'encoder/retained/0039_advance_live_reader.c'; then $(CYGPATH_W) 'encoder/retained/0039_advance_live_reader.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0039_advance_live_reader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0039_advance_live_reader.Tpo encoder/retained/$(DEPDIR)/test_runner-0039_advance_live_reader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0039_advance_live_reader.c' object='encoder/retained/test_runner-0039_advance_live_reader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0039_advance_live_reader.obj `if test -f 'encoder/retained/0039_advance_live_reader.c'; then $(CYGPATH_W) 'encoder/retained/0039_advance_live_reader.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0039_advance_live_reader.c'; fi`
+
+encoder/retained/test_runner-0040_advance_stale_identity.o: encoder/retained/0040_advance_stale_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0040_advance_stale_identity.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0040_advance_stale_identity.Tpo -c -o encoder/retained/test_runner-0040_advance_stale_identity.o `test -f 'encoder/retained/0040_advance_stale_identity.c' || echo '$(srcdir)/'`encoder/retained/0040_advance_stale_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0040_advance_stale_identity.Tpo encoder/retained/$(DEPDIR)/test_runner-0040_advance_stale_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0040_advance_stale_identity.c' object='encoder/retained/test_runner-0040_advance_stale_identity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0040_advance_stale_identity.o `test -f 'encoder/retained/0040_advance_stale_identity.c' || echo '$(srcdir)/'`encoder/retained/0040_advance_stale_identity.c
+
+encoder/retained/test_runner-0040_advance_stale_identity.obj: encoder/retained/0040_advance_stale_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0040_advance_stale_identity.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0040_advance_stale_identity.Tpo -c -o encoder/retained/test_runner-0040_advance_stale_identity.obj `if test -f 'encoder/retained/0040_advance_stale_identity.c'; then $(CYGPATH_W) 'encoder/retained/0040_advance_stale_identity.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0040_advance_stale_identity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0040_advance_stale_identity.Tpo encoder/retained/$(DEPDIR)/test_runner-0040_advance_stale_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0040_advance_stale_identity.c' object='encoder/retained/test_runner-0040_advance_stale_identity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0040_advance_stale_identity.obj `if test -f 'encoder/retained/0040_advance_stale_identity.c'; then $(CYGPATH_W) 'encoder/retained/0040_advance_stale_identity.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0040_advance_stale_identity.c'; fi`
+
+encoder/retained/test_runner-0041_advance_repeat_rejected.o: encoder/retained/0041_advance_repeat_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0041_advance_repeat_rejected.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0041_advance_repeat_rejected.Tpo -c -o encoder/retained/test_runner-0041_advance_repeat_rejected.o `test -f 'encoder/retained/0041_advance_repeat_rejected.c' || echo '$(srcdir)/'`encoder/retained/0041_advance_repeat_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0041_advance_repeat_rejected.Tpo encoder/retained/$(DEPDIR)/test_runner-0041_advance_repeat_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0041_advance_repeat_rejected.c' object='encoder/retained/test_runner-0041_advance_repeat_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0041_advance_repeat_rejected.o `test -f 'encoder/retained/0041_advance_repeat_rejected.c' || echo '$(srcdir)/'`encoder/retained/0041_advance_repeat_rejected.c
+
+encoder/retained/test_runner-0041_advance_repeat_rejected.obj: encoder/retained/0041_advance_repeat_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0041_advance_repeat_rejected.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0041_advance_repeat_rejected.Tpo -c -o encoder/retained/test_runner-0041_advance_repeat_rejected.obj `if test -f 'encoder/retained/0041_advance_repeat_rejected.c'; then $(CYGPATH_W) 'encoder/retained/0041_advance_repeat_rejected.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0041_advance_repeat_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0041_advance_repeat_rejected.Tpo encoder/retained/$(DEPDIR)/test_runner-0041_advance_repeat_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0041_advance_repeat_rejected.c' object='encoder/retained/test_runner-0041_advance_repeat_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0041_advance_repeat_rejected.obj `if test -f 'encoder/retained/0041_advance_repeat_rejected.c'; then $(CYGPATH_W) 'encoder/retained/0041_advance_repeat_rejected.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0041_advance_repeat_rejected.c'; fi`
+
+encoder/retained/test_runner-0043_advance_gpu_rgb.o: encoder/retained/0043_advance_gpu_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0043_advance_gpu_rgb.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0043_advance_gpu_rgb.Tpo -c -o encoder/retained/test_runner-0043_advance_gpu_rgb.o `test -f 'encoder/retained/0043_advance_gpu_rgb.c' || echo '$(srcdir)/'`encoder/retained/0043_advance_gpu_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0043_advance_gpu_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0043_advance_gpu_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0043_advance_gpu_rgb.c' object='encoder/retained/test_runner-0043_advance_gpu_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0043_advance_gpu_rgb.o `test -f 'encoder/retained/0043_advance_gpu_rgb.c' || echo '$(srcdir)/'`encoder/retained/0043_advance_gpu_rgb.c
+
+encoder/retained/test_runner-0043_advance_gpu_rgb.obj: encoder/retained/0043_advance_gpu_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0043_advance_gpu_rgb.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0043_advance_gpu_rgb.Tpo -c -o encoder/retained/test_runner-0043_advance_gpu_rgb.obj `if test -f 'encoder/retained/0043_advance_gpu_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0043_advance_gpu_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0043_advance_gpu_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0043_advance_gpu_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0043_advance_gpu_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0043_advance_gpu_rgb.c' object='encoder/retained/test_runner-0043_advance_gpu_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0043_advance_gpu_rgb.obj `if test -f 'encoder/retained/0043_advance_gpu_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0043_advance_gpu_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0043_advance_gpu_rgb.c'; fi`
+
+encoder/retained/test_runner-0044_advance_gpu_partial.o: encoder/retained/0044_advance_gpu_partial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0044_advance_gpu_partial.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0044_advance_gpu_partial.Tpo -c -o encoder/retained/test_runner-0044_advance_gpu_partial.o `test -f 'encoder/retained/0044_advance_gpu_partial.c' || echo '$(srcdir)/'`encoder/retained/0044_advance_gpu_partial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0044_advance_gpu_partial.Tpo encoder/retained/$(DEPDIR)/test_runner-0044_advance_gpu_partial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0044_advance_gpu_partial.c' object='encoder/retained/test_runner-0044_advance_gpu_partial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0044_advance_gpu_partial.o `test -f 'encoder/retained/0044_advance_gpu_partial.c' || echo '$(srcdir)/'`encoder/retained/0044_advance_gpu_partial.c
+
+encoder/retained/test_runner-0044_advance_gpu_partial.obj: encoder/retained/0044_advance_gpu_partial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0044_advance_gpu_partial.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0044_advance_gpu_partial.Tpo -c -o encoder/retained/test_runner-0044_advance_gpu_partial.obj `if test -f 'encoder/retained/0044_advance_gpu_partial.c'; then $(CYGPATH_W) 'encoder/retained/0044_advance_gpu_partial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0044_advance_gpu_partial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0044_advance_gpu_partial.Tpo encoder/retained/$(DEPDIR)/test_runner-0044_advance_gpu_partial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0044_advance_gpu_partial.c' object='encoder/retained/test_runner-0044_advance_gpu_partial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0044_advance_gpu_partial.obj `if test -f 'encoder/retained/0044_advance_gpu_partial.c'; then $(CYGPATH_W) 'encoder/retained/0044_advance_gpu_partial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0044_advance_gpu_partial.c'; fi`
+
+encoder/retained/test_runner-0045_advance_gpu_keep.o: encoder/retained/0045_advance_gpu_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0045_advance_gpu_keep.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0045_advance_gpu_keep.Tpo -c -o encoder/retained/test_runner-0045_advance_gpu_keep.o `test -f 'encoder/retained/0045_advance_gpu_keep.c' || echo '$(srcdir)/'`encoder/retained/0045_advance_gpu_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0045_advance_gpu_keep.Tpo encoder/retained/$(DEPDIR)/test_runner-0045_advance_gpu_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0045_advance_gpu_keep.c' object='encoder/retained/test_runner-0045_advance_gpu_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0045_advance_gpu_keep.o `test -f 'encoder/retained/0045_advance_gpu_keep.c' || echo '$(srcdir)/'`encoder/retained/0045_advance_gpu_keep.c
+
+encoder/retained/test_runner-0045_advance_gpu_keep.obj: encoder/retained/0045_advance_gpu_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0045_advance_gpu_keep.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0045_advance_gpu_keep.Tpo -c -o encoder/retained/test_runner-0045_advance_gpu_keep.obj `if test -f 'encoder/retained/0045_advance_gpu_keep.c'; then $(CYGPATH_W) 'encoder/retained/0045_advance_gpu_keep.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0045_advance_gpu_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0045_advance_gpu_keep.Tpo encoder/retained/$(DEPDIR)/test_runner-0045_advance_gpu_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0045_advance_gpu_keep.c' object='encoder/retained/test_runner-0045_advance_gpu_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0045_advance_gpu_keep.obj `if test -f 'encoder/retained/0045_advance_gpu_keep.c'; then $(CYGPATH_W) 'encoder/retained/0045_advance_gpu_keep.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0045_advance_gpu_keep.c'; fi`
+
+encoder/retained/test_runner-0042_advance_exact_rgb.o: encoder/retained/0042_advance_exact_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0042_advance_exact_rgb.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0042_advance_exact_rgb.Tpo -c -o encoder/retained/test_runner-0042_advance_exact_rgb.o `test -f 'encoder/retained/0042_advance_exact_rgb.c' || echo '$(srcdir)/'`encoder/retained/0042_advance_exact_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0042_advance_exact_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0042_advance_exact_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0042_advance_exact_rgb.c' object='encoder/retained/test_runner-0042_advance_exact_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0042_advance_exact_rgb.o `test -f 'encoder/retained/0042_advance_exact_rgb.c' || echo '$(srcdir)/'`encoder/retained/0042_advance_exact_rgb.c
+
+encoder/retained/test_runner-0042_advance_exact_rgb.obj: encoder/retained/0042_advance_exact_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0042_advance_exact_rgb.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0042_advance_exact_rgb.Tpo -c -o encoder/retained/test_runner-0042_advance_exact_rgb.obj `if test -f 'encoder/retained/0042_advance_exact_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0042_advance_exact_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0042_advance_exact_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0042_advance_exact_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0042_advance_exact_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0042_advance_exact_rgb.c' object='encoder/retained/test_runner-0042_advance_exact_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0042_advance_exact_rgb.obj `if test -f 'encoder/retained/0042_advance_exact_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0042_advance_exact_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0042_advance_exact_rgb.c'; fi`
 
 _support/codec/test_runner-retained_gpu.o: _support/codec/retained_gpu.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_gpu.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_gpu.Tpo -c -o _support/codec/test_runner-retained_gpu.o `test -f '_support/codec/retained_gpu.c' || echo '$(srcdir)/'`_support/codec/retained_gpu.c
@@ -50401,6 +50844,48 @@ encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.obj: encoder/plannin
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0192_gpu_ahead_explicit_serial.c' object='encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.obj `if test -f 'encoder/planning/0192_gpu_ahead_explicit_serial.c'; then $(CYGPATH_W) 'encoder/planning/0192_gpu_ahead_explicit_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0192_gpu_ahead_explicit_serial.c'; fi`
+
+encoder/planning/test_runner-0193_latest_builtin_fallback.o: encoder/planning/0193_latest_builtin_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0193_latest_builtin_fallback.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0193_latest_builtin_fallback.Tpo -c -o encoder/planning/test_runner-0193_latest_builtin_fallback.o `test -f 'encoder/planning/0193_latest_builtin_fallback.c' || echo '$(srcdir)/'`encoder/planning/0193_latest_builtin_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0193_latest_builtin_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0193_latest_builtin_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0193_latest_builtin_fallback.c' object='encoder/planning/test_runner-0193_latest_builtin_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0193_latest_builtin_fallback.o `test -f 'encoder/planning/0193_latest_builtin_fallback.c' || echo '$(srcdir)/'`encoder/planning/0193_latest_builtin_fallback.c
+
+encoder/planning/test_runner-0193_latest_builtin_fallback.obj: encoder/planning/0193_latest_builtin_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0193_latest_builtin_fallback.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0193_latest_builtin_fallback.Tpo -c -o encoder/planning/test_runner-0193_latest_builtin_fallback.obj `if test -f 'encoder/planning/0193_latest_builtin_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0193_latest_builtin_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0193_latest_builtin_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0193_latest_builtin_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0193_latest_builtin_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0193_latest_builtin_fallback.c' object='encoder/planning/test_runner-0193_latest_builtin_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0193_latest_builtin_fallback.obj `if test -f 'encoder/planning/0193_latest_builtin_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0193_latest_builtin_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0193_latest_builtin_fallback.c'; fi`
+
+encoder/planning/test_runner-0194_latest_high_color_fallback.o: encoder/planning/0194_latest_high_color_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0194_latest_high_color_fallback.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0194_latest_high_color_fallback.Tpo -c -o encoder/planning/test_runner-0194_latest_high_color_fallback.o `test -f 'encoder/planning/0194_latest_high_color_fallback.c' || echo '$(srcdir)/'`encoder/planning/0194_latest_high_color_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0194_latest_high_color_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0194_latest_high_color_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0194_latest_high_color_fallback.c' object='encoder/planning/test_runner-0194_latest_high_color_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0194_latest_high_color_fallback.o `test -f 'encoder/planning/0194_latest_high_color_fallback.c' || echo '$(srcdir)/'`encoder/planning/0194_latest_high_color_fallback.c
+
+encoder/planning/test_runner-0194_latest_high_color_fallback.obj: encoder/planning/0194_latest_high_color_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0194_latest_high_color_fallback.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0194_latest_high_color_fallback.Tpo -c -o encoder/planning/test_runner-0194_latest_high_color_fallback.obj `if test -f 'encoder/planning/0194_latest_high_color_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0194_latest_high_color_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0194_latest_high_color_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0194_latest_high_color_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0194_latest_high_color_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0194_latest_high_color_fallback.c' object='encoder/planning/test_runner-0194_latest_high_color_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0194_latest_high_color_fallback.obj `if test -f 'encoder/planning/0194_latest_high_color_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0194_latest_high_color_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0194_latest_high_color_fallback.c'; fi`
+
+_support/planner/pipeline/test_runner-latest_fallback.o: _support/planner/pipeline/latest_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/planner/pipeline/test_runner-latest_fallback.o -MD -MP -MF _support/planner/pipeline/$(DEPDIR)/test_runner-latest_fallback.Tpo -c -o _support/planner/pipeline/test_runner-latest_fallback.o `test -f '_support/planner/pipeline/latest_fallback.c' || echo '$(srcdir)/'`_support/planner/pipeline/latest_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/planner/pipeline/$(DEPDIR)/test_runner-latest_fallback.Tpo _support/planner/pipeline/$(DEPDIR)/test_runner-latest_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/planner/pipeline/latest_fallback.c' object='_support/planner/pipeline/test_runner-latest_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/planner/pipeline/test_runner-latest_fallback.o `test -f '_support/planner/pipeline/latest_fallback.c' || echo '$(srcdir)/'`_support/planner/pipeline/latest_fallback.c
+
+_support/planner/pipeline/test_runner-latest_fallback.obj: _support/planner/pipeline/latest_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/planner/pipeline/test_runner-latest_fallback.obj -MD -MP -MF _support/planner/pipeline/$(DEPDIR)/test_runner-latest_fallback.Tpo -c -o _support/planner/pipeline/test_runner-latest_fallback.obj `if test -f '_support/planner/pipeline/latest_fallback.c'; then $(CYGPATH_W) '_support/planner/pipeline/latest_fallback.c'; else $(CYGPATH_W) '$(srcdir)/_support/planner/pipeline/latest_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/planner/pipeline/$(DEPDIR)/test_runner-latest_fallback.Tpo _support/planner/pipeline/$(DEPDIR)/test_runner-latest_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/planner/pipeline/latest_fallback.c' object='_support/planner/pipeline/test_runner-latest_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/planner/pipeline/test_runner-latest_fallback.obj `if test -f '_support/planner/pipeline/latest_fallback.c'; then $(CYGPATH_W) '_support/planner/pipeline/latest_fallback.c'; else $(CYGPATH_W) '$(srcdir)/_support/planner/pipeline/latest_fallback.c'; fi`
 
 encoder/planning/test_runner-0109_playback_serial_reservation.o: encoder/planning/0109_playback_serial_reservation.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0109_playback_serial_reservation.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0109_playback_serial_reservation.Tpo -c -o encoder/planning/test_runner-0109_playback_serial_reservation.o `test -f 'encoder/planning/0109_playback_serial_reservation.c' || echo '$(srcdir)/'`encoder/planning/0109_playback_serial_reservation.c
@@ -65550,19 +66035,19 @@ _support/planner/pipeline/test_runner-palette_features_common.obj: _support/plan
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/planner/pipeline/test_runner-palette_features_common.obj `if test -f '_support/planner/pipeline/palette_features_common.c'; then $(CYGPATH_W) '_support/planner/pipeline/palette_features_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/planner/pipeline/palette_features_common.c'; fi`
 
-encoder/planning/test_runner-0070_latest_feature_fallback.o: encoder/planning/0070_latest_feature_fallback.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0070_latest_feature_fallback.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Tpo -c -o encoder/planning/test_runner-0070_latest_feature_fallback.o `test -f 'encoder/planning/0070_latest_feature_fallback.c' || echo '$(srcdir)/'`encoder/planning/0070_latest_feature_fallback.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0070_latest_feature_fallback.c' object='encoder/planning/test_runner-0070_latest_feature_fallback.o' libtool=no @AMDEPBACKSLASH@
+encoder/planning/test_runner-0070_latest_gpu_serial_fallback.o: encoder/planning/0070_latest_gpu_serial_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0070_latest_gpu_serial_fallback.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0070_latest_gpu_serial_fallback.Tpo -c -o encoder/planning/test_runner-0070_latest_gpu_serial_fallback.o `test -f 'encoder/planning/0070_latest_gpu_serial_fallback.c' || echo '$(srcdir)/'`encoder/planning/0070_latest_gpu_serial_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0070_latest_gpu_serial_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0070_latest_gpu_serial_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0070_latest_gpu_serial_fallback.c' object='encoder/planning/test_runner-0070_latest_gpu_serial_fallback.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0070_latest_feature_fallback.o `test -f 'encoder/planning/0070_latest_feature_fallback.c' || echo '$(srcdir)/'`encoder/planning/0070_latest_feature_fallback.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0070_latest_gpu_serial_fallback.o `test -f 'encoder/planning/0070_latest_gpu_serial_fallback.c' || echo '$(srcdir)/'`encoder/planning/0070_latest_gpu_serial_fallback.c
 
-encoder/planning/test_runner-0070_latest_feature_fallback.obj: encoder/planning/0070_latest_feature_fallback.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0070_latest_feature_fallback.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Tpo -c -o encoder/planning/test_runner-0070_latest_feature_fallback.obj `if test -f 'encoder/planning/0070_latest_feature_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0070_latest_feature_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0070_latest_feature_fallback.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0070_latest_feature_fallback.c' object='encoder/planning/test_runner-0070_latest_feature_fallback.obj' libtool=no @AMDEPBACKSLASH@
+encoder/planning/test_runner-0070_latest_gpu_serial_fallback.obj: encoder/planning/0070_latest_gpu_serial_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0070_latest_gpu_serial_fallback.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0070_latest_gpu_serial_fallback.Tpo -c -o encoder/planning/test_runner-0070_latest_gpu_serial_fallback.obj `if test -f 'encoder/planning/0070_latest_gpu_serial_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0070_latest_gpu_serial_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0070_latest_gpu_serial_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0070_latest_gpu_serial_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0070_latest_gpu_serial_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0070_latest_gpu_serial_fallback.c' object='encoder/planning/test_runner-0070_latest_gpu_serial_fallback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0070_latest_feature_fallback.obj `if test -f 'encoder/planning/0070_latest_feature_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0070_latest_feature_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0070_latest_feature_fallback.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0070_latest_gpu_serial_fallback.obj `if test -f 'encoder/planning/0070_latest_gpu_serial_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0070_latest_gpu_serial_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0070_latest_gpu_serial_fallback.c'; fi`
 
 encoder/planning/test_runner-0074_latest_completed_build_reclaims_budget.o: encoder/planning/0074_latest_completed_build_reclaims_budget.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0074_latest_completed_build_reclaims_budget.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Tpo -c -o encoder/planning/test_runner-0074_latest_completed_build_reclaims_budget.o `test -f 'encoder/planning/0074_latest_completed_build_reclaims_budget.c' || echo '$(srcdir)/'`encoder/planning/0074_latest_completed_build_reclaims_budget.c
@@ -75294,19 +75779,19 @@ dither/phased/test_runner-0052_playback_resize_interval.obj: dither/phased/0052_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0052_playback_resize_interval.obj `if test -f 'dither/phased/0052_playback_resize_interval.c'; then $(CYGPATH_W) 'dither/phased/0052_playback_resize_interval.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0052_playback_resize_interval.c'; fi`
 
-dither/phased/test_runner-0053_playback_credit_order.o: dither/phased/0053_playback_credit_order.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0053_playback_credit_order.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Tpo -c -o dither/phased/test_runner-0053_playback_credit_order.o `test -f 'dither/phased/0053_playback_credit_order.c' || echo '$(srcdir)/'`dither/phased/0053_playback_credit_order.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Tpo dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0053_playback_credit_order.c' object='dither/phased/test_runner-0053_playback_credit_order.o' libtool=no @AMDEPBACKSLASH@
+dither/phased/test_runner-0053_playback_solve_without_credit.o: dither/phased/0053_playback_solve_without_credit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0053_playback_solve_without_credit.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0053_playback_solve_without_credit.Tpo -c -o dither/phased/test_runner-0053_playback_solve_without_credit.o `test -f 'dither/phased/0053_playback_solve_without_credit.c' || echo '$(srcdir)/'`dither/phased/0053_playback_solve_without_credit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0053_playback_solve_without_credit.Tpo dither/phased/$(DEPDIR)/test_runner-0053_playback_solve_without_credit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0053_playback_solve_without_credit.c' object='dither/phased/test_runner-0053_playback_solve_without_credit.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0053_playback_credit_order.o `test -f 'dither/phased/0053_playback_credit_order.c' || echo '$(srcdir)/'`dither/phased/0053_playback_credit_order.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0053_playback_solve_without_credit.o `test -f 'dither/phased/0053_playback_solve_without_credit.c' || echo '$(srcdir)/'`dither/phased/0053_playback_solve_without_credit.c
 
-dither/phased/test_runner-0053_playback_credit_order.obj: dither/phased/0053_playback_credit_order.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0053_playback_credit_order.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Tpo -c -o dither/phased/test_runner-0053_playback_credit_order.obj `if test -f 'dither/phased/0053_playback_credit_order.c'; then $(CYGPATH_W) 'dither/phased/0053_playback_credit_order.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0053_playback_credit_order.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Tpo dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0053_playback_credit_order.c' object='dither/phased/test_runner-0053_playback_credit_order.obj' libtool=no @AMDEPBACKSLASH@
+dither/phased/test_runner-0053_playback_solve_without_credit.obj: dither/phased/0053_playback_solve_without_credit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0053_playback_solve_without_credit.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0053_playback_solve_without_credit.Tpo -c -o dither/phased/test_runner-0053_playback_solve_without_credit.obj `if test -f 'dither/phased/0053_playback_solve_without_credit.c'; then $(CYGPATH_W) 'dither/phased/0053_playback_solve_without_credit.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0053_playback_solve_without_credit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0053_playback_solve_without_credit.Tpo dither/phased/$(DEPDIR)/test_runner-0053_playback_solve_without_credit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0053_playback_solve_without_credit.c' object='dither/phased/test_runner-0053_playback_solve_without_credit.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0053_playback_credit_order.obj `if test -f 'dither/phased/0053_playback_credit_order.c'; then $(CYGPATH_W) 'dither/phased/0053_playback_credit_order.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0053_playback_credit_order.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0053_playback_solve_without_credit.obj `if test -f 'dither/phased/0053_playback_solve_without_credit.c'; then $(CYGPATH_W) 'dither/phased/0053_playback_solve_without_credit.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0053_playback_solve_without_credit.c'; fi`
 
 dither/phased/test_runner-0054_playback_cancel_origin.o: dither/phased/0054_playback_cancel_origin.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0054_playback_cancel_origin.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Tpo -c -o dither/phased/test_runner-0054_playback_cancel_origin.o `test -f 'dither/phased/0054_playback_cancel_origin.c' || echo '$(srcdir)/'`dither/phased/0054_playback_cancel_origin.c
@@ -75335,6 +75820,188 @@ dither/phased/test_runner-0055_playback_inherited_origin.obj: dither/phased/0055
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0055_playback_inherited_origin.c' object='dither/phased/test_runner-0055_playback_inherited_origin.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0055_playback_inherited_origin.obj `if test -f 'dither/phased/0055_playback_inherited_origin.c'; then $(CYGPATH_W) 'dither/phased/0055_playback_inherited_origin.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0055_playback_inherited_origin.c'; fi`
+
+dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.o: dither/phased/0056_playback_resolve_past_stalled_encode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0056_playback_resolve_past_stalled_encode.Tpo -c -o dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.o `test -f 'dither/phased/0056_playback_resolve_past_stalled_encode.c' || echo '$(srcdir)/'`dither/phased/0056_playback_resolve_past_stalled_encode.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0056_playback_resolve_past_stalled_encode.Tpo dither/phased/$(DEPDIR)/test_runner-0056_playback_resolve_past_stalled_encode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0056_playback_resolve_past_stalled_encode.c' object='dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.o `test -f 'dither/phased/0056_playback_resolve_past_stalled_encode.c' || echo '$(srcdir)/'`dither/phased/0056_playback_resolve_past_stalled_encode.c
+
+dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.obj: dither/phased/0056_playback_resolve_past_stalled_encode.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0056_playback_resolve_past_stalled_encode.Tpo -c -o dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.obj `if test -f 'dither/phased/0056_playback_resolve_past_stalled_encode.c'; then $(CYGPATH_W) 'dither/phased/0056_playback_resolve_past_stalled_encode.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0056_playback_resolve_past_stalled_encode.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0056_playback_resolve_past_stalled_encode.Tpo dither/phased/$(DEPDIR)/test_runner-0056_playback_resolve_past_stalled_encode.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0056_playback_resolve_past_stalled_encode.c' object='dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0056_playback_resolve_past_stalled_encode.obj `if test -f 'dither/phased/0056_playback_resolve_past_stalled_encode.c'; then $(CYGPATH_W) 'dither/phased/0056_playback_resolve_past_stalled_encode.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0056_playback_resolve_past_stalled_encode.c'; fi`
+
+dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.o: dither/phased/0057_playback_encode_past_stalled_delivery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0057_playback_encode_past_stalled_delivery.Tpo -c -o dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.o `test -f 'dither/phased/0057_playback_encode_past_stalled_delivery.c' || echo '$(srcdir)/'`dither/phased/0057_playback_encode_past_stalled_delivery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0057_playback_encode_past_stalled_delivery.Tpo dither/phased/$(DEPDIR)/test_runner-0057_playback_encode_past_stalled_delivery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0057_playback_encode_past_stalled_delivery.c' object='dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.o `test -f 'dither/phased/0057_playback_encode_past_stalled_delivery.c' || echo '$(srcdir)/'`dither/phased/0057_playback_encode_past_stalled_delivery.c
+
+dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.obj: dither/phased/0057_playback_encode_past_stalled_delivery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0057_playback_encode_past_stalled_delivery.Tpo -c -o dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.obj `if test -f 'dither/phased/0057_playback_encode_past_stalled_delivery.c'; then $(CYGPATH_W) 'dither/phased/0057_playback_encode_past_stalled_delivery.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0057_playback_encode_past_stalled_delivery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0057_playback_encode_past_stalled_delivery.Tpo dither/phased/$(DEPDIR)/test_runner-0057_playback_encode_past_stalled_delivery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0057_playback_encode_past_stalled_delivery.c' object='dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0057_playback_encode_past_stalled_delivery.obj `if test -f 'dither/phased/0057_playback_encode_past_stalled_delivery.c'; then $(CYGPATH_W) 'dither/phased/0057_playback_encode_past_stalled_delivery.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0057_playback_encode_past_stalled_delivery.c'; fi`
+
+dither/phased/test_runner-0058_playback_claimed_cancel_completes.o: dither/phased/0058_playback_claimed_cancel_completes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0058_playback_claimed_cancel_completes.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0058_playback_claimed_cancel_completes.Tpo -c -o dither/phased/test_runner-0058_playback_claimed_cancel_completes.o `test -f 'dither/phased/0058_playback_claimed_cancel_completes.c' || echo '$(srcdir)/'`dither/phased/0058_playback_claimed_cancel_completes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0058_playback_claimed_cancel_completes.Tpo dither/phased/$(DEPDIR)/test_runner-0058_playback_claimed_cancel_completes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0058_playback_claimed_cancel_completes.c' object='dither/phased/test_runner-0058_playback_claimed_cancel_completes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0058_playback_claimed_cancel_completes.o `test -f 'dither/phased/0058_playback_claimed_cancel_completes.c' || echo '$(srcdir)/'`dither/phased/0058_playback_claimed_cancel_completes.c
+
+dither/phased/test_runner-0058_playback_claimed_cancel_completes.obj: dither/phased/0058_playback_claimed_cancel_completes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0058_playback_claimed_cancel_completes.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0058_playback_claimed_cancel_completes.Tpo -c -o dither/phased/test_runner-0058_playback_claimed_cancel_completes.obj `if test -f 'dither/phased/0058_playback_claimed_cancel_completes.c'; then $(CYGPATH_W) 'dither/phased/0058_playback_claimed_cancel_completes.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0058_playback_claimed_cancel_completes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0058_playback_claimed_cancel_completes.Tpo dither/phased/$(DEPDIR)/test_runner-0058_playback_claimed_cancel_completes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0058_playback_claimed_cancel_completes.c' object='dither/phased/test_runner-0058_playback_claimed_cancel_completes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0058_playback_claimed_cancel_completes.obj `if test -f 'dither/phased/0058_playback_claimed_cancel_completes.c'; then $(CYGPATH_W) 'dither/phased/0058_playback_claimed_cancel_completes.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0058_playback_claimed_cancel_completes.c'; fi`
+
+dither/phased/test_runner-0059_latest_replay_t0.o: dither/phased/0059_latest_replay_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0059_latest_replay_t0.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0059_latest_replay_t0.Tpo -c -o dither/phased/test_runner-0059_latest_replay_t0.o `test -f 'dither/phased/0059_latest_replay_t0.c' || echo '$(srcdir)/'`dither/phased/0059_latest_replay_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0059_latest_replay_t0.Tpo dither/phased/$(DEPDIR)/test_runner-0059_latest_replay_t0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0059_latest_replay_t0.c' object='dither/phased/test_runner-0059_latest_replay_t0.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0059_latest_replay_t0.o `test -f 'dither/phased/0059_latest_replay_t0.c' || echo '$(srcdir)/'`dither/phased/0059_latest_replay_t0.c
+
+dither/phased/test_runner-0059_latest_replay_t0.obj: dither/phased/0059_latest_replay_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0059_latest_replay_t0.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0059_latest_replay_t0.Tpo -c -o dither/phased/test_runner-0059_latest_replay_t0.obj `if test -f 'dither/phased/0059_latest_replay_t0.c'; then $(CYGPATH_W) 'dither/phased/0059_latest_replay_t0.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0059_latest_replay_t0.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0059_latest_replay_t0.Tpo dither/phased/$(DEPDIR)/test_runner-0059_latest_replay_t0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0059_latest_replay_t0.c' object='dither/phased/test_runner-0059_latest_replay_t0.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0059_latest_replay_t0.obj `if test -f 'dither/phased/0059_latest_replay_t0.c'; then $(CYGPATH_W) 'dither/phased/0059_latest_replay_t0.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0059_latest_replay_t0.c'; fi`
+
+dither/phased/test_runner-0060_latest_replay_refresh.o: dither/phased/0060_latest_replay_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0060_latest_replay_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0060_latest_replay_refresh.Tpo -c -o dither/phased/test_runner-0060_latest_replay_refresh.o `test -f 'dither/phased/0060_latest_replay_refresh.c' || echo '$(srcdir)/'`dither/phased/0060_latest_replay_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0060_latest_replay_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0060_latest_replay_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0060_latest_replay_refresh.c' object='dither/phased/test_runner-0060_latest_replay_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0060_latest_replay_refresh.o `test -f 'dither/phased/0060_latest_replay_refresh.c' || echo '$(srcdir)/'`dither/phased/0060_latest_replay_refresh.c
+
+dither/phased/test_runner-0060_latest_replay_refresh.obj: dither/phased/0060_latest_replay_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0060_latest_replay_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0060_latest_replay_refresh.Tpo -c -o dither/phased/test_runner-0060_latest_replay_refresh.obj `if test -f 'dither/phased/0060_latest_replay_refresh.c'; then $(CYGPATH_W) 'dither/phased/0060_latest_replay_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0060_latest_replay_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0060_latest_replay_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0060_latest_replay_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0060_latest_replay_refresh.c' object='dither/phased/test_runner-0060_latest_replay_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0060_latest_replay_refresh.obj `if test -f 'dither/phased/0060_latest_replay_refresh.c'; then $(CYGPATH_W) 'dither/phased/0060_latest_replay_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0060_latest_replay_refresh.c'; fi`
+
+dither/phased/test_runner-0061_latest_replay_small.o: dither/phased/0061_latest_replay_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0061_latest_replay_small.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0061_latest_replay_small.Tpo -c -o dither/phased/test_runner-0061_latest_replay_small.o `test -f 'dither/phased/0061_latest_replay_small.c' || echo '$(srcdir)/'`dither/phased/0061_latest_replay_small.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0061_latest_replay_small.Tpo dither/phased/$(DEPDIR)/test_runner-0061_latest_replay_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0061_latest_replay_small.c' object='dither/phased/test_runner-0061_latest_replay_small.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0061_latest_replay_small.o `test -f 'dither/phased/0061_latest_replay_small.c' || echo '$(srcdir)/'`dither/phased/0061_latest_replay_small.c
+
+dither/phased/test_runner-0061_latest_replay_small.obj: dither/phased/0061_latest_replay_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0061_latest_replay_small.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0061_latest_replay_small.Tpo -c -o dither/phased/test_runner-0061_latest_replay_small.obj `if test -f 'dither/phased/0061_latest_replay_small.c'; then $(CYGPATH_W) 'dither/phased/0061_latest_replay_small.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0061_latest_replay_small.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0061_latest_replay_small.Tpo dither/phased/$(DEPDIR)/test_runner-0061_latest_replay_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0061_latest_replay_small.c' object='dither/phased/test_runner-0061_latest_replay_small.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0061_latest_replay_small.obj `if test -f 'dither/phased/0061_latest_replay_small.c'; then $(CYGPATH_W) 'dither/phased/0061_latest_replay_small.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0061_latest_replay_small.c'; fi`
+
+_support/phased/test_runner-latest.o: _support/phased/latest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-latest.o -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-latest.Tpo -c -o _support/phased/test_runner-latest.o `test -f '_support/phased/latest.c' || echo '$(srcdir)/'`_support/phased/latest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/phased/$(DEPDIR)/test_runner-latest.Tpo _support/phased/$(DEPDIR)/test_runner-latest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/latest.c' object='_support/phased/test_runner-latest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-latest.o `test -f '_support/phased/latest.c' || echo '$(srcdir)/'`_support/phased/latest.c
+
+_support/phased/test_runner-latest.obj: _support/phased/latest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-latest.obj -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-latest.Tpo -c -o _support/phased/test_runner-latest.obj `if test -f '_support/phased/latest.c'; then $(CYGPATH_W) '_support/phased/latest.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/latest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/phased/$(DEPDIR)/test_runner-latest.Tpo _support/phased/$(DEPDIR)/test_runner-latest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/latest.c' object='_support/phased/test_runner-latest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-latest.obj `if test -f '_support/phased/latest.c'; then $(CYGPATH_W) '_support/phased/latest.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/latest.c'; fi`
+
+dither/phased/test_runner-0064_pipeline_sample_stale.o: dither/phased/0064_pipeline_sample_stale.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0064_pipeline_sample_stale.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Tpo -c -o dither/phased/test_runner-0064_pipeline_sample_stale.o `test -f 'dither/phased/0064_pipeline_sample_stale.c' || echo '$(srcdir)/'`dither/phased/0064_pipeline_sample_stale.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Tpo dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0064_pipeline_sample_stale.c' object='dither/phased/test_runner-0064_pipeline_sample_stale.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0064_pipeline_sample_stale.o `test -f 'dither/phased/0064_pipeline_sample_stale.c' || echo '$(srcdir)/'`dither/phased/0064_pipeline_sample_stale.c
+
+dither/phased/test_runner-0064_pipeline_sample_stale.obj: dither/phased/0064_pipeline_sample_stale.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0064_pipeline_sample_stale.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Tpo -c -o dither/phased/test_runner-0064_pipeline_sample_stale.obj `if test -f 'dither/phased/0064_pipeline_sample_stale.c'; then $(CYGPATH_W) 'dither/phased/0064_pipeline_sample_stale.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0064_pipeline_sample_stale.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Tpo dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0064_pipeline_sample_stale.c' object='dither/phased/test_runner-0064_pipeline_sample_stale.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0064_pipeline_sample_stale.obj `if test -f 'dither/phased/0064_pipeline_sample_stale.c'; then $(CYGPATH_W) 'dither/phased/0064_pipeline_sample_stale.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0064_pipeline_sample_stale.c'; fi`
+
+dither/phased/test_runner-0065_pipeline_sample_short.o: dither/phased/0065_pipeline_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0065_pipeline_sample_short.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Tpo -c -o dither/phased/test_runner-0065_pipeline_sample_short.o `test -f 'dither/phased/0065_pipeline_sample_short.c' || echo '$(srcdir)/'`dither/phased/0065_pipeline_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Tpo dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0065_pipeline_sample_short.c' object='dither/phased/test_runner-0065_pipeline_sample_short.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0065_pipeline_sample_short.o `test -f 'dither/phased/0065_pipeline_sample_short.c' || echo '$(srcdir)/'`dither/phased/0065_pipeline_sample_short.c
+
+dither/phased/test_runner-0065_pipeline_sample_short.obj: dither/phased/0065_pipeline_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0065_pipeline_sample_short.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Tpo -c -o dither/phased/test_runner-0065_pipeline_sample_short.obj `if test -f 'dither/phased/0065_pipeline_sample_short.c'; then $(CYGPATH_W) 'dither/phased/0065_pipeline_sample_short.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0065_pipeline_sample_short.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Tpo dither/phased/$(DEPDIR)/test_runner-0065_pipeline_sample_short.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0065_pipeline_sample_short.c' object='dither/phased/test_runner-0065_pipeline_sample_short.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0065_pipeline_sample_short.obj `if test -f 'dither/phased/0065_pipeline_sample_short.c'; then $(CYGPATH_W) 'dither/phased/0065_pipeline_sample_short.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0065_pipeline_sample_short.c'; fi`
+
+dither/phased/test_runner-0066_pipeline_sample_tail.o: dither/phased/0066_pipeline_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0066_pipeline_sample_tail.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Tpo -c -o dither/phased/test_runner-0066_pipeline_sample_tail.o `test -f 'dither/phased/0066_pipeline_sample_tail.c' || echo '$(srcdir)/'`dither/phased/0066_pipeline_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Tpo dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0066_pipeline_sample_tail.c' object='dither/phased/test_runner-0066_pipeline_sample_tail.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0066_pipeline_sample_tail.o `test -f 'dither/phased/0066_pipeline_sample_tail.c' || echo '$(srcdir)/'`dither/phased/0066_pipeline_sample_tail.c
+
+dither/phased/test_runner-0066_pipeline_sample_tail.obj: dither/phased/0066_pipeline_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0066_pipeline_sample_tail.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Tpo -c -o dither/phased/test_runner-0066_pipeline_sample_tail.obj `if test -f 'dither/phased/0066_pipeline_sample_tail.c'; then $(CYGPATH_W) 'dither/phased/0066_pipeline_sample_tail.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0066_pipeline_sample_tail.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Tpo dither/phased/$(DEPDIR)/test_runner-0066_pipeline_sample_tail.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0066_pipeline_sample_tail.c' object='dither/phased/test_runner-0066_pipeline_sample_tail.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0066_pipeline_sample_tail.obj `if test -f 'dither/phased/0066_pipeline_sample_tail.c'; then $(CYGPATH_W) 'dither/phased/0066_pipeline_sample_tail.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0066_pipeline_sample_tail.c'; fi`
+
+dither/phased/test_runner-0067_playback_format_transition.o: dither/phased/0067_playback_format_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0067_playback_format_transition.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Tpo -c -o dither/phased/test_runner-0067_playback_format_transition.o `test -f 'dither/phased/0067_playback_format_transition.c' || echo '$(srcdir)/'`dither/phased/0067_playback_format_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Tpo dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0067_playback_format_transition.c' object='dither/phased/test_runner-0067_playback_format_transition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0067_playback_format_transition.o `test -f 'dither/phased/0067_playback_format_transition.c' || echo '$(srcdir)/'`dither/phased/0067_playback_format_transition.c
+
+dither/phased/test_runner-0067_playback_format_transition.obj: dither/phased/0067_playback_format_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0067_playback_format_transition.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Tpo -c -o dither/phased/test_runner-0067_playback_format_transition.obj `if test -f 'dither/phased/0067_playback_format_transition.c'; then $(CYGPATH_W) 'dither/phased/0067_playback_format_transition.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0067_playback_format_transition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Tpo dither/phased/$(DEPDIR)/test_runner-0067_playback_format_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0067_playback_format_transition.c' object='dither/phased/test_runner-0067_playback_format_transition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0067_playback_format_transition.obj `if test -f 'dither/phased/0067_playback_format_transition.c'; then $(CYGPATH_W) 'dither/phased/0067_playback_format_transition.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0067_playback_format_transition.c'; fi`
+
+dither/phased/test_runner-0062_latest_completed_own.o: dither/phased/0062_latest_completed_own.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0062_latest_completed_own.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0062_latest_completed_own.Tpo -c -o dither/phased/test_runner-0062_latest_completed_own.o `test -f 'dither/phased/0062_latest_completed_own.c' || echo '$(srcdir)/'`dither/phased/0062_latest_completed_own.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0062_latest_completed_own.Tpo dither/phased/$(DEPDIR)/test_runner-0062_latest_completed_own.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0062_latest_completed_own.c' object='dither/phased/test_runner-0062_latest_completed_own.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0062_latest_completed_own.o `test -f 'dither/phased/0062_latest_completed_own.c' || echo '$(srcdir)/'`dither/phased/0062_latest_completed_own.c
+
+dither/phased/test_runner-0062_latest_completed_own.obj: dither/phased/0062_latest_completed_own.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0062_latest_completed_own.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0062_latest_completed_own.Tpo -c -o dither/phased/test_runner-0062_latest_completed_own.obj `if test -f 'dither/phased/0062_latest_completed_own.c'; then $(CYGPATH_W) 'dither/phased/0062_latest_completed_own.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0062_latest_completed_own.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0062_latest_completed_own.Tpo dither/phased/$(DEPDIR)/test_runner-0062_latest_completed_own.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0062_latest_completed_own.c' object='dither/phased/test_runner-0062_latest_completed_own.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0062_latest_completed_own.obj `if test -f 'dither/phased/0062_latest_completed_own.c'; then $(CYGPATH_W) 'dither/phased/0062_latest_completed_own.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0062_latest_completed_own.c'; fi`
+
+dither/phased/test_runner-0063_latest_excludes_future.o: dither/phased/0063_latest_excludes_future.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0063_latest_excludes_future.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0063_latest_excludes_future.Tpo -c -o dither/phased/test_runner-0063_latest_excludes_future.o `test -f 'dither/phased/0063_latest_excludes_future.c' || echo '$(srcdir)/'`dither/phased/0063_latest_excludes_future.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0063_latest_excludes_future.Tpo dither/phased/$(DEPDIR)/test_runner-0063_latest_excludes_future.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0063_latest_excludes_future.c' object='dither/phased/test_runner-0063_latest_excludes_future.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0063_latest_excludes_future.o `test -f 'dither/phased/0063_latest_excludes_future.c' || echo '$(srcdir)/'`dither/phased/0063_latest_excludes_future.c
+
+dither/phased/test_runner-0063_latest_excludes_future.obj: dither/phased/0063_latest_excludes_future.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0063_latest_excludes_future.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0063_latest_excludes_future.Tpo -c -o dither/phased/test_runner-0063_latest_excludes_future.obj `if test -f 'dither/phased/0063_latest_excludes_future.c'; then $(CYGPATH_W) 'dither/phased/0063_latest_excludes_future.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0063_latest_excludes_future.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0063_latest_excludes_future.Tpo dither/phased/$(DEPDIR)/test_runner-0063_latest_excludes_future.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0063_latest_excludes_future.c' object='dither/phased/test_runner-0063_latest_excludes_future.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0063_latest_excludes_future.obj `if test -f 'dither/phased/0063_latest_excludes_future.c'; then $(CYGPATH_W) 'dither/phased/0063_latest_excludes_future.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0063_latest_excludes_future.c'; fi`
 
 _support/phased/test_runner-fixture.o: _support/phased/fixture.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-fixture.o -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-fixture.Tpo -c -o _support/phased/test_runner-fixture.o `test -f '_support/phased/fixture.c' || echo '$(srcdir)/'`_support/phased/fixture.c

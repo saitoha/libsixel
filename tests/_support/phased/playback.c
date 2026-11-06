@@ -55,9 +55,11 @@ phased_playback_compare_impl(char const *method, char const *delta,
     PHASED_CHECK(sixel_output_new(&out_b, playback_test_write, &candidate,
         NULL) == SIXEL_OK);
     for (i = 0; i < 4; ++i) {
-        frame = resize && i == 2 ? playback_test_frame(i)
+        frame = resize == 1 && i == 2 ? playback_test_frame(i)
             : playback_test_small_frame(i);
         PHASED_CHECK(frame != NULL);
+        if (resize == 2 && i == 2)
+            sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_G8);
         a->refresh_time_override = 1;
         a->refresh_time_us = (uint64_t)i * 16667;
         PHASED_CHECK(sixel_encoder_encode_frame(a, frame, out_a) == SIXEL_OK);
@@ -70,9 +72,11 @@ phased_playback_compare_impl(char const *method, char const *delta,
     PHASED_CHECK(sixel_playback_new(&playback, b, out_b, &config, NULL)
         == SIXEL_OK);
     for (i = 0; i < 4; ++i) {
-        frame = resize && i == 2 ? playback_test_frame(i)
+        frame = resize == 1 && i == 2 ? playback_test_frame(i)
             : playback_test_small_frame(i);
         PHASED_CHECK(frame != NULL);
+        if (resize == 2 && i == 2)
+            sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_G8);
         PHASED_CHECK(sixel_playback_options_init(&options,
             sizeof(options)) == SIXEL_OK);
         options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
@@ -89,7 +93,7 @@ phased_playback_compare_impl(char const *method, char const *delta,
         == SIXEL_OK);
     /* Prove admission to the intended path before comparing its bytes. */
     PHASED_CHECK(!!(sample.valid & SIXEL_PLAYBACK_STAGE_DEFERRED)
-        == (capacity > 1));
+        == (capacity > 1 && resize != 2));
     if (interval_only) {
         PHASED_CHECK(!(sample.valid &
             SIXEL_PLAYBACK_STAGE_COMPLETION_INTERVAL));
@@ -125,4 +129,12 @@ phased_playback_resize_compare(int interval_only)
 {
     return phased_playback_compare_impl("phased", "delta:T0", 4, 1,
         interval_only);
+}
+
+/* A non-native frame must drain the independent prefix and return to the
+ * existing controller without losing the prefix or replaying callbacks. */
+int
+phased_playback_format_transition(void)
+{
+    return phased_playback_compare_impl("phased", NULL, 4, 2, 0);
 }

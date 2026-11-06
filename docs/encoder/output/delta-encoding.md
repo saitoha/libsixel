@@ -296,7 +296,7 @@ A successful encode does not acknowledge terminal presentation. If an applicatio
 
 ## Execution paths and interactions
 
-Deferred GPU playback changes scheduling, not the retained commit boundary. A ready solution contains palette-dependent spatial work only. The ordered consumer acquires the current committed baseline and assigns the encode identity immediately before resolve, then completes output acceptance and releases readers before committing. The next frame cannot resolve against a pending candidate. A discarded ready solution has no retained effect; writer failure drains dependent work under the existing invalidation rules. Geometry cannot be relabeled onto a solved result. The [phased integration tests](../palette-application/dithering/phased.md#test-coverage) compare complete output bytes for T0 and T48 with an explicitly supplied refresh clock and exercise ready-frame cancellation and writer failure.
+Independent GPU playback resolves against the preceding resolved history, which may be ahead of encoded or delivered output. Only its R owner advances that history. S owns history-free palette-dependent work; E consumes immutable indexes and skip decisions. A failed or discarded dependent output suffix invalidates the chain after its users drain; there is no rollback buffer. Direct encoding retains receipt-checked publication. [Animation threading](../../threading/animation.md) owns the queue, cancellation and source-lifetime rules.
 
 | Path or feature | Current scope |
 | --- | --- |
@@ -449,7 +449,9 @@ No universal speedup or quality threshold is claimed here. Per-pixel RGB selecti
 
 The ordinary byte indexed path stores retained RGB and validity in the `image/retained-plane` component. A read lease pins one stream, epoch and committed sequence. `begin_update` binds an unpublished indexed image to that baseline and reserves optional paint-mark storage before output. Read leases and producer/body users must drain before commit. The result is immutable after publication; source pixels and a predicted palette are not evidence of the image that was sent.
 
-A successful writer receipt identifies the stream, epoch, base sequence and new sequence accepted by the callback. Commit requires a complete indexed result and a matching receipt; it rejects a foreign, stale, duplicate or busy transaction. The CPU path preserves skipped pixels, expands painted indexes through the exact wire palette, sets validity and reports paint statistics in one allocation-free pass. A prepared GPU candidate publishes the same state by swapping allocations after receipt validation. Skipped sentinel indexes are never palette addresses. Origin coordinates address the retained plane; SIXEL padding belongs only to serialization.
+RetainedPlane has two explicit publication contracts. Direct encoding uses `begin_update` and `commit(update, receipt, stats)`; a successful receipt identifies the stream, epoch, base sequence and new sequence accepted by the callback. Independent playback uses `begin_resolved_update` and `advance_resolved(update, stats)` after R promises ordered output. Its publication requires no receipt and does not imply physical display. The first successful begin in an epoch selects one contract. Crossing contracts is rejected before mutation; abort preserves the selection, and invalidation resets it. Controllers invalidate when attaching/detaching the independent path.
+
+Both contracts require a COMPLETE indexed result, current identity, drained image users and no live retained readers. GPU publication additionally requires successful staging. Publication is allocation-free and rejects stale or repeated updates. CPU expansion preserves skipped pixels and expands painted indexes through the exact wire palette; GPU publication swaps a completed candidate. Skipped sentinel indexes are never palette addresses. Origin coordinates address the retained plane; SIXEL padding belongs only to serialization.
 
 On ARM64 with NEON enabled, CPU commit processes 16 pixels at a time using the frozen emitted-byte palette. Kept lanes preserve RGB, validity and presentation marks; approximate keeps still request refinement even in an entirely kept block. Short tails and other CPU targets use scalar arithmetic with the same byte results. These kernels do not change palette selection, delta thresholds or emitted output. RetainedPlane owns the private row kernels and its prepared row workers; the [threading contract](../../threading/encoder.md#typed-row-publication-and-drain) defines admission and CPU-budget handling.
 
@@ -1195,3 +1197,19 @@ These numeric and decoded-output witnesses cover configured mask semantics, not 
 | RG-32 | A later GPU rectangle preserves invalidated holes. | [tests/encoder/retained/0032_gpu_invalidate_then_move.t](../../../tests/encoder/retained/0032_gpu_invalidate_then_move.t) |
 
 The resident-history tests check literal emitted colors, validity, receipt isolation, device migration and successive partial updates. The existing GPU comparison, partial-refresh and residual-observation cases also exercise the upper encoder aliases after publication. Transfer counters distinguish native buffers from an upload fallback. Injected failures before dispatch and after completion test candidate isolation; they do not simulate an actual device reset. Metal cases skip when no usable device is available.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| RP-0033 | advance without receipt. | [tests/encoder/retained/0033_advance_without_receipt.t](../../../tests/encoder/retained/0033_advance_without_receipt.t) |
+| RP-0034 | direct missing receipt. | [tests/encoder/retained/0034_direct_missing_receipt.t](../../../tests/encoder/retained/0034_direct_missing_receipt.t) |
+| RP-0035 | direct reject resolved. | [tests/encoder/retained/0035_direct_reject_resolved.t](../../../tests/encoder/retained/0035_direct_reject_resolved.t) |
+| RP-0036 | advance reject direct. | [tests/encoder/retained/0036_advance_reject_direct.t](../../../tests/encoder/retained/0036_advance_reject_direct.t) |
+| RP-0037 | abort preserves contract. | [tests/encoder/retained/0037_abort_preserves_contract.t](../../../tests/encoder/retained/0037_abort_preserves_contract.t) |
+| RP-0038 | invalidate changes contract. | [tests/encoder/retained/0038_invalidate_changes_contract.t](../../../tests/encoder/retained/0038_invalidate_changes_contract.t) |
+| RP-0039 | advance live reader. | [tests/encoder/retained/0039_advance_live_reader.t](../../../tests/encoder/retained/0039_advance_live_reader.t) |
+| RP-0040 | advance stale identity. | [tests/encoder/retained/0040_advance_stale_identity.t](../../../tests/encoder/retained/0040_advance_stale_identity.t) |
+| RP-0041 | advance repeat rejected. | [tests/encoder/retained/0041_advance_repeat_rejected.t](../../../tests/encoder/retained/0041_advance_repeat_rejected.t) |
+| RP-0042 | advance exact rgb. | [tests/encoder/retained/0042_advance_exact_rgb.t](../../../tests/encoder/retained/0042_advance_exact_rgb.t) |
+| RP-0043 | GPU resolved history: rgb | [tests/encoder/retained/0043_advance_gpu_rgb.t](../../../tests/encoder/retained/0043_advance_gpu_rgb.t) |
+| RP-0044 | GPU resolved history: partial | [tests/encoder/retained/0044_advance_gpu_partial.t](../../../tests/encoder/retained/0044_advance_gpu_partial.t) |
+| RP-0045 | GPU resolved history: keep | [tests/encoder/retained/0045_advance_gpu_keep.t](../../../tests/encoder/retained/0045_advance_gpu_keep.t) |

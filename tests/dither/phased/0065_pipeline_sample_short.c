@@ -1,14 +1,16 @@
 /* SPDX-License-Identifier: MIT */
 #include "tests/_support/phased/rendezvous.h"
+#include <string.h>
 
 int
-test_phased_playback_credit_order(int argc, char **argv)
+test_phased_pipeline_sample_short(int argc, char **argv)
 {
 #if SIXEL_ENABLE_THREADS && SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
     struct phased_rendezvous_fixture s;
     sixel_gpu_device_interface_t *device;
     SIXELSTATUS status;
     int ok;
+    sixel_playback_pipeline_sample_t sample, saved;
 
     (void)argc;
     (void)argv;
@@ -23,11 +25,14 @@ test_phased_playback_credit_order(int argc, char **argv)
     AHEAD_CHECK(phased_rendezvous_wait(&s, &s.writer_entered));
     AHEAD_CHECK(phased_rendezvous_submit(&s, 1));
     AHEAD_CHECK(phased_rendezvous_wait(&s, &s.helper_complete));
-    AHEAD_CHECK(phased_rendezvous_submit(&s, 2));
-    AHEAD_CHECK(phased_rendezvous_submit(&s, 3));
     phased_rendezvous_release(&s, &s.writer_open);
     AHEAD_CHECK(sixel_playback_drain(s.playback, 5000) == SIXEL_OK);
-    AHEAD_CHECK(!s.bad_credit && s.started == 4);
+    memcpy(&sample, &s.pipeline_samples[1], sizeof(sample));
+    sample.struct_size--;
+    memcpy(&saved, &sample, sizeof(saved));
+    AHEAD_CHECK(sixel_playback_get_pipeline_sample(s.playback, 2, &sample)
+        == SIXEL_BAD_ARGUMENT);
+    AHEAD_CHECK(memcmp(&sample, &saved, sizeof(sample)) == 0);
     ok = 1;
 end:
     phased_rendezvous_close(&s);
