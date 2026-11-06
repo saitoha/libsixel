@@ -176,6 +176,10 @@ With coherent GPU history, the stream invokes RetainedPlane `stage` after Palett
 
 ## Timeline interpretation
 
+Deferred playback exposes `sixel_playback_get_stage_sample` through `6cells.h`, without extending `sixel_playback_result_t` or `sixel.h.in`. The latest exact sequence is published before its completion callback. The sample has explicit validity flags for preparation, solve, resolve, emission through retained commit, ready residence and consecutive successful completion interval. Stale queries return FALSE unchanged; undersized buffers return BAD_ARGUMENT unchanged; larger buffers retain their declared size and unknown tail. The [phased coverage table](../encoder/palette-application/dithering/phased.md#test-coverage) owns these callback and buffer checks.
+
+Existing processing latency starts when solve starts and includes ready residence. Completion intervals break across failures, cancellation watermarks and geometry/configuration changes. Preparation and solve exclude credit/queue waits; emission excludes the wait for the next ready descriptor. These overlapping intervals must not be summed as frame wall time. A host GPU wait and retained-stage wall time are not measurements of CPU utilization. Clients must not donate CPU workers or raise a delta threshold merely because a history-free solve is slow. Each live deferred job has its own logger context. [Animation threading](animation.md) owns scheduling and CPU preparation limits.
+
 The encode controller records `context_begin` for cold preparation and `context_reuse` for a compatible retained context. These events establish the selected allocation path; their duration is not a speed guarantee.
 
 The `loader:builtin` spans in these figures decode the 900 by 675 source PNG;

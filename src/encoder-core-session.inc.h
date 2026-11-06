@@ -37,6 +37,7 @@ typedef struct sixel_indexed_subgraph {
     sixel_palette_apply_run_request_t *run;
     sixel_encode_session_t *session;
     sixel_retained_update_t *update;
+    sixel_output_deferred_t *prepared;
     int opened;
     int consumed;
     int applied;
@@ -78,6 +79,7 @@ sixel_indexed_stream_filter(sixel_filter_t *filter,
     image = *filter->input.indexed;
     body_started = 0;
     graph->opened = 1;
+    if (graph->prepared != NULL) graph->prepared->output_started = 1;
     if (graph->session != NULL) graph->session->partial_output = 1;
     status = graph->writer->vtbl->begin_image(graph->writer, &graph->header,
         &image->identity);
@@ -87,8 +89,10 @@ sixel_indexed_stream_filter(sixel_filter_t *filter,
             "body_start", -1);
         body_started = 1;
     }
-    status = sixel_filter_run(&graph->apply_filter, allocator, logger);
-    if (status != SIXEL_OK) goto end;
+    if (!graph->applied) {
+        status = sixel_filter_run(&graph->apply_filter, allocator, logger);
+        if (status != SIXEL_OK) goto end;
+    }
     if (graph->run->rows_ready == NULL) {
         sixel_timeline_logger_logf(logger, "controller", "encode",
             "body_start", -1);
@@ -148,22 +152,18 @@ sixel_indexed_commit_filter(sixel_filter_t *filter,
     return status;
 }
 
+/* Freeze palette, geometry, source wrapper and application capability
+ * before acquiring retained state. This helper also serves direct encoding. */
 static SIXELSTATUS
-sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
+sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
+    sixel_output_deferred_t *prepared)
 {
     sixel_dither_t *dither;
-    sixel_timeline_logger_t *logger;
-    sixel_timeline_logger_t *saved_logger;
     sixel_output_t *output;
     sixel_encode_session_t *session;
     sixel_palette_apply_interface_t *apply;
-    sixel_gpu_device_interface_t *retained_device;
     sixel_frame_t *source;
     sixel_wire_palette_t *wire;
-    sixel_indexed_frame_t *image;
-    sixel_retained_read_t *read;
-    sixel_retained_update_t *update;
-    sixel_stream_receipt_t *receipt;
     sixel_palette_entries_view_t entries;
     sixel_wire_color_definition_t definitions[SIXEL_PALETTE_MAX];
     unsigned char colors[SIXEL_PALETTE_MAX * 3];
@@ -171,64 +171,27 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     sixel_indexed_frame_description_t description;
     sixel_dither_policy_prepare_request_t configuration;
     sixel_palette_apply_prepare_request_t prepare;
-    sixel_palette_apply_run_request_t run;
-    sixel_encoder_core_prepare_request_t body;
-    sixel_writer_image_header_t header;
-    sixel_retained_read_view_t baseline;
-    sixel_retained_update_request_t update_request;
-    sixel_dither_execution_t execution;
     sixel_dither_encode_allocation_t allocation;
-    sixel_indexed_subgraph_t graph;
     double rgb[3];
     void *object;
-    size_t pixels;
-    size_t i;
-    int channel;
-    int threads;
+    size_t pixels, i;
+    int channel, threads;
     SIXELSTATUS status;
 
     dither = request->dither;
     output = request->output;
     session = output->session;
-    /* No change to the legacy mono shortcut, explicit precision or output
-     * interpretation is allowed merely to qualify for this physical plan. */
-    if (output->indexed_disabled ||
-            !sixel_encode_delta_is_legacy(dither, output) ||
-            output->source_colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (dither->keycolor >= 0 &&
-             output->transparent_policy != SIXEL_ALPHA_POLICY_KEEP &&
-             output->transparent_policy != SIXEL_ALPHA_POLICY_COMPOSITE) ||
-            ((dither->pipeline_accumulation_result_enabled ||
-              dither->pipeline_6delta_enabled) && session == NULL)) {
-        return SIXEL_FALSE;
-    }
     threads = sixel_threads_resolve();
-
     source = NULL;
     wire = NULL;
-    image = NULL;
-    read = NULL;
-    update = NULL;
-    receipt = NULL;
     apply = NULL;
     memset(&prepare, 0, sizeof(prepare));
-    memset(&graph, 0, sizeof(graph));
-    saved_logger = dither->pipeline_logger;
-    logger = saved_logger;
-    if (logger == NULL) {
-        (void)sixel_timeline_logger_prepare_env(dither->allocator, &logger);
-    }
-    dither->pipeline_logger = logger;
     status = sixel_dither_prepare_indexed_components(dither, threads > 1, 0);
     if (status != SIXEL_OK) goto end;
     pixels = (size_t)request->width * (size_t)request->height;
     memset(&wire_request, 0, sizeof(wire_request));
     memset(&description, 0, sizeof(description));
     memset(&prepare, 0, sizeof(prepare));
-    memset(&run, 0, sizeof(run));
-    memset(&body, 0, sizeof(body));
-    memset(&header, 0, sizeof(header));
-    memset(&update_request, 0, sizeof(update_request));
     status = dither->palette->vtbl->get_entries(dither->palette, &entries);
     if (SIXEL_FAILED(status)) goto end;
     if (entries.entry_count == 0 || entries.entry_count > SIXEL_PALETTE_MAX) {
@@ -281,8 +244,6 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     description.transparent_background = dither->keycolor >= 0 ||
         output->require_keep_header ||
         sixel_output_has_transparent_offset(output);
-    status = sixel_indexed_frame_new(&image, &description, dither->allocator);
-    if (SIXEL_FAILED(status)) goto end;
     status = sixel_frame_new(&source, dither->allocator);
     if (SIXEL_FAILED(status)) goto end;
     status = sixel_frame_init_borrowed(source, request->pixels,
@@ -328,6 +289,190 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         status = SIXEL_FALSE;
     }
     if (status != SIXEL_OK) goto end;
+    prepared->apply = apply;
+    prepared->source = source;
+    prepared->description = description;
+    apply = NULL;
+    source = NULL;
+    wire = NULL;
+end:
+    sixel_wire_palette_unref(wire);
+    sixel_frame_unref(source);
+    if (apply != NULL) apply->vtbl->unref(apply);
+    if (prepare.cpu_lookup != NULL)
+        prepare.cpu_lookup->vtbl->unref(prepare.cpu_lookup);
+    if (prepare.gpu_lookup != NULL)
+        prepare.gpu_lookup->vtbl->unref(prepare.gpu_lookup);
+    if (prepare.device != NULL) prepare.device->vtbl->unref(prepare.device);
+    return status;
+}
+
+void
+sixel_output_dispose_deferred(sixel_output_deferred_t *prepared)
+{
+    if (prepared->solution != NULL)
+        prepared->solution->vtbl->unref(prepared->solution);
+    if (prepared->capability != NULL)
+        prepared->capability->vtbl->unref(prepared->capability);
+    if (prepared->apply != NULL)
+        prepared->apply->vtbl->unref(prepared->apply);
+    sixel_frame_unref(prepared->source);
+    sixel_wire_palette_unref(prepared->description.palette);
+    memset(prepared, 0, sizeof(*prepared));
+}
+
+SIXELSTATUS
+sixel_output_prepare_deferred(sixel_legacy_encode_request_t const *request,
+    sixel_output_deferred_t *prepared)
+{
+    SIXELSTATUS status;
+
+    status = sixel_indexed_prepare(request, prepared);
+    if (status == SIXEL_OK)
+        status = prepared->apply->vtbl->get_deferred(prepared->apply,
+            &prepared->capability);
+    if (status != SIXEL_OK) sixel_output_dispose_deferred(prepared);
+    return status;
+}
+
+SIXELSTATUS
+sixel_output_solve_deferred(sixel_output_deferred_t *prepared,
+    sixel_timeline_logger_t *logger, sixel_cancel_function cancel,
+    void *cancel_context)
+{
+    sixel_palette_apply_solve_request_t solve;
+    SIXELSTATUS status;
+    double start;
+
+    memset(&solve, 0, sizeof(solve));
+    solve.source = sixel_frame_as_interface(prepared->source);
+    solve.logger = logger;
+    solve.cancel = cancel;
+    solve.cancel_context = cancel_context;
+    prepared->solve_started = sixel_timer_now();
+    start = sixel_timer_monotonic();
+    status = prepared->capability->vtbl->solve(prepared->capability, &solve,
+        &prepared->solution);
+    prepared->solve_completed = sixel_timer_monotonic();
+    if (status == SIXEL_OK) {
+        prepared->stages.valid |= SIXEL_PLAYBACK_STAGE_SOLVE |
+            SIXEL_PLAYBACK_STAGE_DEFERRED;
+        prepared->stages.solve_seconds = prepared->solve_completed -
+            start;
+    }
+    return status;
+}
+
+void
+sixel_output_bind_deferred(sixel_output_t *output,
+    sixel_output_deferred_t *prepared)
+{
+    output->deferred = prepared;
+}
+
+static SIXELSTATUS
+sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
+{
+    sixel_dither_t *dither;
+    sixel_timeline_logger_t *logger;
+    sixel_timeline_logger_t *saved_logger;
+    sixel_output_t *output;
+    sixel_encode_session_t *session;
+    sixel_palette_apply_interface_t *apply;
+    sixel_gpu_device_interface_t *retained_device;
+    sixel_frame_t *source;
+    sixel_indexed_frame_t *image;
+    sixel_retained_read_t *read;
+    sixel_retained_update_t *update;
+    sixel_stream_receipt_t *receipt;
+    sixel_indexed_frame_description_t description;
+    sixel_palette_apply_run_request_t run;
+    sixel_encoder_core_prepare_request_t body;
+    sixel_writer_image_header_t header;
+    sixel_retained_read_view_t baseline;
+    sixel_retained_update_request_t update_request;
+    sixel_dither_execution_t execution;
+    sixel_dither_encode_allocation_t allocation;
+    sixel_indexed_subgraph_t graph;
+    size_t pixels;
+    int threads;
+    sixel_output_deferred_t local, *prepared;
+    sixel_palette_apply_resolve_request_t resolve;
+    double resolve_started, emit_started;
+    SIXELSTATUS status;
+
+    dither = request->dither;
+    output = request->output;
+    session = output->session;
+    /* No change to the legacy mono shortcut, explicit precision or output
+     * interpretation is allowed merely to qualify for this physical plan. */
+    if (output->indexed_disabled ||
+            !sixel_encode_delta_is_legacy(dither, output) ||
+            output->source_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            (dither->keycolor >= 0 &&
+             output->transparent_policy != SIXEL_ALPHA_POLICY_KEEP &&
+             output->transparent_policy != SIXEL_ALPHA_POLICY_COMPOSITE) ||
+            ((dither->pipeline_accumulation_result_enabled ||
+              dither->pipeline_6delta_enabled) && session == NULL)) {
+        return SIXEL_FALSE;
+    }
+    threads = sixel_threads_resolve();
+
+    memset(&local, 0, sizeof(local));
+    emit_started = 0;
+    source = NULL;
+    image = NULL;
+    read = NULL;
+    update = NULL;
+    receipt = NULL;
+    apply = NULL;
+    memset(&graph, 0, sizeof(graph));
+    saved_logger = dither->pipeline_logger;
+    logger = saved_logger;
+    if (logger == NULL) {
+        (void)sixel_timeline_logger_prepare_env(dither->allocator, &logger);
+    }
+    dither->pipeline_logger = logger;
+    memset(&local, 0, sizeof(local));
+    prepared = output->deferred;
+    if (prepared == NULL || prepared->solution == NULL) {
+        status = sixel_indexed_prepare(request, &local);
+        if (status != SIXEL_OK) goto end;
+        prepared = &local;
+    }
+    apply = prepared->apply;
+    source = prepared->source;
+    description = prepared->description;
+    /* Recheck the consumer's geometry rather than silently relabeling a
+     * speculative result after a setting or origin change. */
+    if (description.width != request->width ||
+            description.height != request->height ||
+            description.keycolor != dither->keycolor ||
+            description.keycolor_reserved != dither->keycolor_reserved ||
+            (session != NULL &&
+             (description.origin_x != session->origin_x ||
+              description.origin_y != session->origin_y ||
+              description.plane_width != session->plane_width ||
+              description.plane_height != session->plane_height))) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    status = sixel_indexed_frame_new(&image, &description, dither->allocator);
+    if (status != SIXEL_OK) goto end;
+    pixels = (size_t)request->width * request->height;
+#if SIXEL_ENABLE_THREADS
+    sixel_parallel_dither_configure(request->height, threads, pixels,
+        dither, &allocation);
+#else
+    (void)pixels;
+    memset(&allocation, 0, sizeof(allocation));
+    allocation.mode = SIXEL_DITHER_ENCODE_SERIAL;
+    allocation.dither_threads = allocation.encode_threads = 1;
+#endif
+    memset(&run, 0, sizeof(run));
+    memset(&body, 0, sizeof(body));
+    memset(&header, 0, sizeof(header));
+    memset(&update_request, 0, sizeof(update_request));
     if (session != NULL) {
         status = apply->vtbl->get_device(apply, &retained_device);
         if (status != SIXEL_OK) goto end;
@@ -394,7 +539,8 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     run.delta.metric = dither->pipeline_6delta_metric;
     run.delta.compare = dither->pipeline_6delta_compare;
     run.delta.selection = execution.selection;
-    if (allocation.mode == SIXEL_DITHER_ENCODE_PIPELINE) {
+    if (prepared->solution == NULL &&
+            allocation.mode == SIXEL_DITHER_ENCODE_PIPELINE) {
         run.rows_ready = sixel_session_rows;
         run.rows_context = output->core;
     }
@@ -403,6 +549,33 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     dither->pipeline_last_band_overlap = allocation.overlap;
     dither->pipeline_last_dither_threads = allocation.dither_threads;
     dither->pipeline_last_encode_threads = allocation.encode_threads;
+    if (prepared->solution != NULL) {
+        memset(&resolve, 0, sizeof(resolve));
+        resolve.baseline = read;
+        resolve.result = image;
+        resolve.delta = run.delta;
+        resolve.logger = logger;
+        resolve.cancel = run.cancel;
+        resolve.cancel_context = run.cancel_context;
+        resolve_started = sixel_timer_monotonic();
+        prepared->stages.ready_wait_seconds = resolve_started -
+            prepared->solve_completed;
+        prepared->stages.valid |= SIXEL_PLAYBACK_STAGE_READY_WAIT;
+        status = prepared->solution->vtbl->resolve(prepared->solution,
+            &resolve);
+        if (status != SIXEL_OK) goto end;
+        prepared->stages.resolve_seconds =
+            sixel_timer_monotonic() - resolve_started;
+        prepared->stages.valid |= SIXEL_PLAYBACK_STAGE_RESOLVE;
+        graph.applied = 1;
+        graph.apply_status = SIXEL_OK;
+        /* Only a completed resolve returns the next solve credit. The
+         * preceding history remains authoritative until commit below. */
+        if (prepared->resolved != NULL)
+            prepared->resolved(prepared->resolved_context);
+        emit_started = sixel_timer_monotonic();
+    }
+    graph.prepared = prepared;
     graph.apply = apply;
     graph.core = output->core;
     graph.writer = output->writer;
@@ -451,16 +624,11 @@ end:
     sixel_retained_update_unref(update);
     sixel_stream_receipt_unref(receipt);
     sixel_indexed_frame_unref(image);
-    sixel_wire_palette_unref(wire);
-    sixel_frame_unref(source);
-    if (apply != NULL) apply->vtbl->unref(apply);
-    if (prepare.cpu_lookup != NULL) {
-        prepare.cpu_lookup->vtbl->unref(prepare.cpu_lookup);
+    if (emit_started > 0 && status == SIXEL_OK) {
+        prepared->stages.emit_seconds = sixel_timer_monotonic() - emit_started;
+        prepared->stages.valid |= SIXEL_PLAYBACK_STAGE_EMIT;
     }
-    if (prepare.gpu_lookup != NULL) {
-        prepare.gpu_lookup->vtbl->unref(prepare.gpu_lookup);
-    }
-    if (prepare.device != NULL) prepare.device->vtbl->unref(prepare.device);
+    sixel_output_dispose_deferred(&local);
     dither->pipeline_logger = saved_logger;
     if (saved_logger == NULL) sixel_timeline_logger_unref(logger);
     return status;

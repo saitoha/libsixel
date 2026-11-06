@@ -1590,6 +1590,45 @@ int test_phased_prepare_failure_atomic(int, char **);
 int test_phased_palette256(int, char **);
 int test_phased_reprepare_reset(int, char **);
 int test_phased_preparer_lifetime(int, char **);
+int test_phased_deferred_standard(int, char **);
+int test_phased_deferred_small_error(int, char **);
+int test_phased_deferred_t0(int, char **);
+int test_phased_deferred_refresh(int, char **);
+int test_phased_deferred_partial(int, char **);
+int test_phased_deferred_source_owned(int, char **);
+int test_phased_deferred_facet_lifetime(int, char **);
+int test_phased_deferred_repeat_rejected(int, char **);
+int test_phased_deferred_bad_description_retry(int, char **);
+int test_phased_deferred_discard_reuse(int, char **);
+int test_phased_deferred_run_excluded(int, char **);
+int test_phased_deferred_prepare_independent(int, char **);
+int test_phased_deferred_publication(int, char **);
+int test_phased_playback_no_delta(int, char **);
+int test_phased_playback_t0(int, char **);
+int test_phased_playback_refresh(int, char **);
+int test_phased_playback_small_error(int, char **);
+int test_phased_playback_single_slot(int, char **);
+int test_phased_playback_solve_overlap(int, char **);
+int test_phased_playback_cancel_ready(int, char **);
+int test_phased_playback_failure_drain(int, char **);
+int test_phased_playback_cancel_new_admission(int, char **);
+int test_phased_playback_callback_sample(int, char **);
+int test_phased_playback_cancel_origin(int, char **);
+int test_phased_playback_inherited_origin(int, char **);
+int test_phased_playback_resize_bytes(int, char **);
+int test_phased_playback_resize_interval(int, char **);
+int test_phased_playback_credit_order(int, char **);
+int test_phased_deferred_rgb241(int, char **);
+int test_phased_deferred_missing_history(int, char **);
+int test_phased_deferred_cancel_seals(int, char **);
+int test_phased_playback_sample_stale(int, char **);
+int test_phased_playback_sample_short(int, char **);
+int test_phased_playback_sample_tail(int, char **);
+int test_schedule_0028_ready_fifo(int, char **);
+int test_schedule_0029_ready_full(int, char **);
+int test_schedule_0030_ready_empty(int, char **);
+int test_schedule_0031_ready_wrap(int, char **);
+int test_schedule_0032_ready_slot_release(int, char **);
 int test_phased_standard_indexes(int, char **);
 int test_phased_small_error_indexes(int, char **);
 int test_phased_scratch_reset(int, char **);
@@ -6736,6 +6775,45 @@ static test_entry_t const test_entries[] = {
     { "phased/palette256", test_phased_palette256 },
     { "phased/reprepare_reset", test_phased_reprepare_reset },
     { "phased/preparer_lifetime", test_phased_preparer_lifetime },
+    { "phased/deferred_standard", test_phased_deferred_standard },
+    { "phased/deferred_small_error", test_phased_deferred_small_error },
+    { "phased/deferred_t0", test_phased_deferred_t0 },
+    { "phased/deferred_refresh", test_phased_deferred_refresh },
+    { "phased/deferred_partial", test_phased_deferred_partial },
+    { "phased/deferred_source_owned", test_phased_deferred_source_owned },
+    { "phased/deferred_facet_lifetime", test_phased_deferred_facet_lifetime },
+    { "phased/deferred_repeat_rejected", test_phased_deferred_repeat_rejected },
+    { "phased/deferred_bad_description_retry", test_phased_deferred_bad_description_retry },
+    { "phased/deferred_discard_reuse", test_phased_deferred_discard_reuse },
+    { "phased/deferred_run_excluded", test_phased_deferred_run_excluded },
+    { "phased/deferred_prepare_independent", test_phased_deferred_prepare_independent },
+    { "phased/deferred_publication", test_phased_deferred_publication },
+    { "phased/playback_no_delta", test_phased_playback_no_delta },
+    { "phased/playback_t0", test_phased_playback_t0 },
+    { "phased/playback_refresh", test_phased_playback_refresh },
+    { "phased/playback_small_error", test_phased_playback_small_error },
+    { "phased/playback_single_slot", test_phased_playback_single_slot },
+    { "phased/playback_solve_overlap", test_phased_playback_solve_overlap },
+    { "phased/playback_cancel_ready", test_phased_playback_cancel_ready },
+    { "phased/playback_failure_drain", test_phased_playback_failure_drain },
+    { "phased/playback_cancel_new_admission", test_phased_playback_cancel_new_admission },
+    { "phased/playback_callback_sample", test_phased_playback_callback_sample },
+    { "phased/playback_cancel_origin", test_phased_playback_cancel_origin },
+    { "phased/playback_inherited_origin", test_phased_playback_inherited_origin },
+    { "phased/playback_resize_bytes", test_phased_playback_resize_bytes },
+    { "phased/playback_resize_interval", test_phased_playback_resize_interval },
+    { "phased/playback_credit_order", test_phased_playback_credit_order },
+    { "phased/deferred_rgb241", test_phased_deferred_rgb241 },
+    { "phased/deferred_missing_history", test_phased_deferred_missing_history },
+    { "phased/deferred_cancel_seals", test_phased_deferred_cancel_seals },
+    { "phased/playback_sample_stale", test_phased_playback_sample_stale },
+    { "phased/playback_sample_short", test_phased_playback_sample_short },
+    { "phased/playback_sample_tail", test_phased_playback_sample_tail },
+    { "encoder/scheduling/0028_ready_fifo", test_schedule_0028_ready_fifo },
+    { "encoder/scheduling/0029_ready_full", test_schedule_0029_ready_full },
+    { "encoder/scheduling/0030_ready_empty", test_schedule_0030_ready_empty },
+    { "encoder/scheduling/0031_ready_wrap", test_schedule_0031_ready_wrap },
+    { "encoder/scheduling/0032_ready_slot_release", test_schedule_0032_ready_slot_release },
     { "phased/standard_indexes", test_phased_standard_indexes },
     { "phased/small_error_indexes", test_phased_small_error_indexes },
     { "phased/scratch_reset", test_phased_scratch_reset },

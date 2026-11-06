@@ -6,7 +6,7 @@ For input formats, loader support, playback controls, timing, and output-state i
 
 Supported multi-frame loaders hand frames to the encoder through a bounded read-ahead queue. Its depth is `load_depth`, default 4 and maximum 16. With `load=ahead`, loading overlaps downstream work; `load=serial` keeps the loader callback synchronous. The [threading-policy reference](../cli/threading-policy.md) owns these controls and their precedence.
 
-With `prepare=ahead`, frame n+1 can be prepared while frame n is emitted. The two lanes overlap independent preparation and output work; output and retained delta history are still committed one frame at a time in order. GPU palette application also permits this overlap: the helper performs CPU frame preparation and palette construction, while ordered emission acquires the GPU lookup plan and backend lease. The helper does not apply a palette or write output. Helper availability follows the shared [encoder capability](encoder.md#test-coverage); builds without threading, PCC and TinyCC keep serial preparation. Tests that gate on preparation callbacks skip on those builds instead of waiting for a worker that cannot start. `prepare=serial` disables this helper; a GPU auto-policy cutoff does not disable CPU preparation overlap.
+With `prepare=ahead`, frame n+1 can be prepared while frame n is emitted. The two lanes overlap independent preparation and output work; output and retained delta history are still committed one frame at a time in order. GPU palette application also permits this overlap: the helper performs CPU frame preparation and palette construction, while ordered emission acquires the GPU lookup plan and backend lease. Without an admitted deferred capability, the helper does not apply a palette or write output. Helper availability follows the shared [encoder capability](encoder.md#test-coverage); builds without threading, PCC and TinyCC keep serial preparation. Tests that gate on preparation callbacks skip on those builds instead of waiting for a worker that cannot start. `prepare=serial` disables this helper; a GPU auto-policy cutoff does not disable CPU preparation overlap.
 
 ```text
 loader / callback       preparation                 ordered emission
@@ -24,6 +24,12 @@ The retained two-frame timeline below records a specific measurement revision in
 ![Four-worker animation timeline](measurements/animation-thread4-timeline.png)
 
 The fixture intentionally has two frames and no loop extension. An infinitely looping animation is unsuitable for a reproducible timeline command because neither the JSONL record nor the SIXEL output has a natural completion point.
+
+Eligible `sixel_playback_t` sessions additionally use the private [deferred controller](../../src/encoder-playback-deferred.inc.h). It requires preparation overlap, at least two admission slots, frame palettes and a deferred PaletteApply capability. The initial provider is RGB8 `phased` with fractional `ordered`/resolved `auto` lookup. Unsupported frame forms keep the same selected method on the synchronous application path. Resource admission failure latches synchronous scheduling for that session; execution errors never trigger a backend retry. Direct `sixel_encoder_t` calls, loader-driven animation and existing `sixel.h.in` signatures are unchanged.
+
+The producer exclusively takes admitted frames, prepares a private job and completes its history-free GPU solve. A typed two-entry SPSC ring transfers the descriptor to the ordered consumer. Only two jobs may be live, and a separate slot-release flag prevents reuse merely because a descriptor was popped. Native atomics publish descriptors; the existing atomic fallback preserves ordering on other platforms. Empty/full/credit waits recheck predicates under a parking mutex. GPU work, callbacks and resource disposal run outside that gate; the whole playback pipeline is not lock-free.
+
+One initial solve credit starts the stream. After resolving frame N against committed history, the consumer grants the credit for solve N+1 before encoding N's body. It does not grant N+2 until N+1 resolves. The consumer finishes output, releases readers and commits N before resolving N+1. Ready solutions therefore hold neither a retained read nor a speculative history identity. Geometry and palette-reservation checks precede output; incompatible palette predictions discard the solution and reprepare pristine input. Cancellation includes producer-owned or ready descriptors through the existing admission watermark. All GPU/source users drain before the single ordered completion callback.
 
 ## What is and is not shared
 
@@ -73,6 +79,18 @@ The retained timelines establish host-specific measurement baselines. They do no
 | AT-05 | Explicit serial preparation does not enter the helper lane. | [tests/encoder/planning/0192_gpu_ahead_explicit_serial.t](../../tests/encoder/planning/0192_gpu_ahead_explicit_serial.t) |
 | AT-06 | Playback cancellation/failure reports a skip without threads; its private callbacks share that compile-time condition. | [tests/encoder/planning/0022_playback_cancel_failure.t](../../tests/encoder/planning/0022_playback_cancel_failure.t) |
 
+| AT-07 | The ready ring preserves FIFO order. | [tests/encoder/scheduling/0028_ready_fifo.t](../../tests/encoder/scheduling/0028_ready_fifo.t) |
+
+| AT-08 | A full ring rejects publication without replacing live entries. | [tests/encoder/scheduling/0029_ready_full.t](../../tests/encoder/scheduling/0029_ready_full.t) |
+
+| AT-09 | An empty ring leaves the destination untouched. | [tests/encoder/scheduling/0030_ready_empty.t](../../tests/encoder/scheduling/0030_ready_empty.t) |
+
+| AT-10 | The ring preserves order across index wraparound. | [tests/encoder/scheduling/0031_ready_wrap.t](../../tests/encoder/scheduling/0031_ready_wrap.t) |
+
+| AT-11 | Removing a descriptor does not release its resource slot. | [tests/encoder/scheduling/0032_ready_slot_release.t](../../tests/encoder/scheduling/0032_ready_slot_release.t) |
+
 Thread-only cancellation helpers are compiled under the same `SIXEL_ENABLE_THREADS` condition as their test body. A no-thread build retains the public test entry and reports a skip, without compiling unused private callbacks.
 
 The gated cancellation and failure cases select the CPU backend, so their ownership evidence does not depend on Metal initialization or availability. GPU dispatch and output equivalence are covered by the [encoder execution tests](encoder.md#test-coverage). These tests establish ownership and output behavior, not a scheduling deadline.
+
+The phased integration [coverage](../encoder/palette-application/dithering/phased.md#test-coverage) separately checks solve overlap during a blocked writer, cancellation of a ready solution, later admission after cancellation, writer-failure drain and byte equality with synchronous encoding. These are deterministic ownership checks, not frame-rate guarantees.

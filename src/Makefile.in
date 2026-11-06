@@ -204,9 +204,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/encoder-core-packet.h \
 	$(srcdir)/encoder-band-schedule.h \
 	$(srcdir)/encoder-core-indexed.inc.h \
-	$(srcdir)/encoder-core-session.inc.h $(srcdir)/timer.c \
-	$(srcdir)/timer.h $(srcdir)/sleep.c $(srcdir)/sleep.h \
-	$(srcdir)/fromsixel.c $(srcdir)/encoder-core-encode.c \
+	$(srcdir)/encoder-core-session.inc.h \
+	$(srcdir)/encoder-playback-deferred.inc.h \
+	$(srcdir)/playback-ready.h $(srcdir)/timer.c $(srcdir)/timer.h \
+	$(srcdir)/sleep.c $(srcdir)/sleep.h $(srcdir)/fromsixel.c \
+	$(srcdir)/encoder-core-encode.c \
 	$(srcdir)/encoder-core-highcolor.c \
 	$(srcdir)/encoder-core-highcolor.h $(srcdir)/lookup-policy.c \
 	$(srcdir)/lookup-policy-none.c \
@@ -1293,6 +1295,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-band-schedule.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-indexed.inc.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-session.inc.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-playback-deferred.inc.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/playback-ready.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.c \

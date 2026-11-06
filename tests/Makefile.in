@@ -2210,6 +2210,47 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	dither/phased/0012_delta_refresh.c \
 	dither/phased/0013_partial_rectangle.c \
 	dither/phased/0014_retained_immutable.c \
+	dither/phased/0022_deferred_standard.c \
+	dither/phased/0023_deferred_small_error.c \
+	dither/phased/0024_deferred_t0.c \
+	dither/phased/0025_deferred_refresh.c \
+	dither/phased/0026_deferred_partial.c \
+	dither/phased/0027_deferred_source_owned.c \
+	dither/phased/0028_deferred_facet_lifetime.c \
+	dither/phased/0029_deferred_repeat_rejected.c \
+	dither/phased/0030_deferred_bad_description_retry.c \
+	dither/phased/0031_deferred_discard_reuse.c \
+	dither/phased/0032_deferred_run_excluded.c \
+	dither/phased/0033_deferred_prepare_independent.c \
+	dither/phased/0034_deferred_publication.c \
+	dither/phased/0035_playback_no_delta.c \
+	dither/phased/0036_playback_t0.c \
+	dither/phased/0037_playback_refresh.c \
+	dither/phased/0038_playback_small_error.c \
+	dither/phased/0039_playback_single_slot.c \
+	_support/phased/playback.c \
+	dither/phased/0040_playback_solve_overlap.c \
+	dither/phased/0041_playback_cancel_ready.c \
+	dither/phased/0042_playback_failure_drain.c \
+	dither/phased/0043_playback_cancel_new_admission.c \
+	dither/phased/0044_playback_callback_sample.c \
+	_support/phased/rendezvous.c _support/phased/rendezvous.h \
+	dither/phased/0045_deferred_rgb241.c \
+	dither/phased/0046_deferred_missing_history.c \
+	dither/phased/0047_deferred_cancel_seals.c \
+	dither/phased/0048_playback_sample_stale.c \
+	dither/phased/0049_playback_sample_short.c \
+	dither/phased/0050_playback_sample_tail.c \
+	encoder/scheduling/0028_ready_fifo.c \
+	encoder/scheduling/0029_ready_full.c \
+	encoder/scheduling/0030_ready_empty.c \
+	encoder/scheduling/0031_ready_wrap.c \
+	encoder/scheduling/0032_ready_slot_release.c \
+	dither/phased/0051_playback_resize_bytes.c \
+	dither/phased/0052_playback_resize_interval.c \
+	dither/phased/0053_playback_credit_order.c \
+	dither/phased/0054_playback_cancel_origin.c \
+	dither/phased/0055_playback_inherited_origin.c \
 	_support/phased/fixture.c _support/phased/fixture.h \
 	_support/phased/expected.h \
 	encoder/indexed/0129_gpu_rows_ordered_indexes.c \
@@ -7022,6 +7063,47 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0012_delta_refresh.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0013_partial_rectangle.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0014_retained_immutable.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0022_deferred_standard.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0023_deferred_small_error.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0024_deferred_t0.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0025_deferred_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0026_deferred_partial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0027_deferred_source_owned.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0028_deferred_facet_lifetime.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0029_deferred_repeat_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0030_deferred_bad_description_retry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0031_deferred_discard_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0032_deferred_run_excluded.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0033_deferred_prepare_independent.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0034_deferred_publication.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0035_playback_no_delta.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0036_playback_t0.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0037_playback_refresh.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0038_playback_small_error.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0039_playback_single_slot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/phased/test_runner-playback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0040_playback_solve_overlap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0041_playback_cancel_ready.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0042_playback_failure_drain.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0043_playback_cancel_new_admission.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0044_playback_callback_sample.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/phased/test_runner-rendezvous.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0045_deferred_rgb241.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0046_deferred_missing_history.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0047_deferred_cancel_seals.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0048_playback_sample_stale.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0049_playback_sample_short.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0050_playback_sample_tail.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0028_ready_fifo.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0029_ready_full.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0030_ready_empty.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0031_ready_wrap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0032_ready_slot_release.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0051_playback_resize_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0052_playback_resize_interval.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0053_playback_credit_order.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0054_playback_cancel_origin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0055_playback_inherited_origin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/phased/test_runner-fixture.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0129_gpu_rows_ordered_indexes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0130_gpu_rows_rbc_indexes.$(OBJEXT) \
@@ -10129,6 +10211,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po \
 	_support/loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po \
 	_support/phased/$(DEPDIR)/test_runner-fixture.Po \
+	_support/phased/$(DEPDIR)/test_runner-playback.Po \
+	_support/phased/$(DEPDIR)/test_runner-rendezvous.Po \
 	_support/planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-palette_auto_test_common.Po \
@@ -11316,6 +11400,40 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/phased/$(DEPDIR)/test_runner-0019_palette256.Po \
 	dither/phased/$(DEPDIR)/test_runner-0020_reprepare_reset.Po \
 	dither/phased/$(DEPDIR)/test_runner-0021_preparer_lifetime.Po \
+	dither/phased/$(DEPDIR)/test_runner-0022_deferred_standard.Po \
+	dither/phased/$(DEPDIR)/test_runner-0023_deferred_small_error.Po \
+	dither/phased/$(DEPDIR)/test_runner-0024_deferred_t0.Po \
+	dither/phased/$(DEPDIR)/test_runner-0025_deferred_refresh.Po \
+	dither/phased/$(DEPDIR)/test_runner-0026_deferred_partial.Po \
+	dither/phased/$(DEPDIR)/test_runner-0027_deferred_source_owned.Po \
+	dither/phased/$(DEPDIR)/test_runner-0028_deferred_facet_lifetime.Po \
+	dither/phased/$(DEPDIR)/test_runner-0029_deferred_repeat_rejected.Po \
+	dither/phased/$(DEPDIR)/test_runner-0030_deferred_bad_description_retry.Po \
+	dither/phased/$(DEPDIR)/test_runner-0031_deferred_discard_reuse.Po \
+	dither/phased/$(DEPDIR)/test_runner-0032_deferred_run_excluded.Po \
+	dither/phased/$(DEPDIR)/test_runner-0033_deferred_prepare_independent.Po \
+	dither/phased/$(DEPDIR)/test_runner-0034_deferred_publication.Po \
+	dither/phased/$(DEPDIR)/test_runner-0035_playback_no_delta.Po \
+	dither/phased/$(DEPDIR)/test_runner-0036_playback_t0.Po \
+	dither/phased/$(DEPDIR)/test_runner-0037_playback_refresh.Po \
+	dither/phased/$(DEPDIR)/test_runner-0038_playback_small_error.Po \
+	dither/phased/$(DEPDIR)/test_runner-0039_playback_single_slot.Po \
+	dither/phased/$(DEPDIR)/test_runner-0040_playback_solve_overlap.Po \
+	dither/phased/$(DEPDIR)/test_runner-0041_playback_cancel_ready.Po \
+	dither/phased/$(DEPDIR)/test_runner-0042_playback_failure_drain.Po \
+	dither/phased/$(DEPDIR)/test_runner-0043_playback_cancel_new_admission.Po \
+	dither/phased/$(DEPDIR)/test_runner-0044_playback_callback_sample.Po \
+	dither/phased/$(DEPDIR)/test_runner-0045_deferred_rgb241.Po \
+	dither/phased/$(DEPDIR)/test_runner-0046_deferred_missing_history.Po \
+	dither/phased/$(DEPDIR)/test_runner-0047_deferred_cancel_seals.Po \
+	dither/phased/$(DEPDIR)/test_runner-0048_playback_sample_stale.Po \
+	dither/phased/$(DEPDIR)/test_runner-0049_playback_sample_short.Po \
+	dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Po \
+	dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Po \
+	dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Po \
+	dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Po \
+	dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Po \
+	dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po \
@@ -12225,6 +12343,11 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Po \
 	encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Po \
 	encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0028_ready_fifo.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0029_ready_full.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0030_ready_empty.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0031_ready_wrap.Po \
+	encoder/scheduling/$(DEPDIR)/test_runner-0032_ready_slot_release.Po \
 	encoder/sixel-output/$(DEPDIR)/test_runner-0007_sixel_writer_factory.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po \
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po \
@@ -15262,6 +15385,47 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_PLAYBACK_CANCEL_ORIGIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_PLAYBACK_INHERITED_ORIGIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_PLAYBACK_RESIZE_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_PLAYBACK_RESIZE_INTERVAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_PLAYBACK_CREDIT_ORDER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_DEFERRED_RGB241 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_DEFERRED_MISSING_HISTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_DEFERRED_CANCEL_SEALS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_PLAYBACK_SAMPLE_STALE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_PLAYBACK_SAMPLE_SHORT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_PLAYBACK_SAMPLE_TAIL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_READY_FIFO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_READY_FULL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_READY_EMPTY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_READY_WRAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_READY_SLOT_RELEASE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_PLAYBACK_SOLVE_OVERLAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_PLAYBACK_CANCEL_READY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_PLAYBACK_FAILURE_DRAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_PLAYBACK_CANCEL_NEW_ADMISSION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_PLAYBACK_CALLBACK_SAMPLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RENDEZVOUS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_DEFERRED_STANDARD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_DEFERRED_SMALL_ERROR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_DEFERRED_T0 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_DEFERRED_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_DEFERRED_PARTIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_DEFERRED_SOURCE_OWNED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_DEFERRED_FACET_LIFETIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_DEFERRED_REPEAT_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_DEFERRED_BAD_DESCRIPTION_RETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_DEFERRED_DISCARD_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_DEFERRED_RUN_EXCLUDED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_DEFERRED_PREPARE_INDEPENDENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_DEFERRED_PUBLICATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_PLAYBACK_NO_DELTA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_PLAYBACK_T0 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_PLAYBACK_REFRESH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_PLAYBACK_SMALL_ERROR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_PLAYBACK_SINGLE_SLOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PLAYBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_BIND_RGB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_GPU_SAME_DEVICE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_GPU_LIVE_READ_DEVICE \
@@ -22185,6 +22349,48 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0012_delta_refresh.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0013_partial_rectangle.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0014_retained_immutable.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0022_deferred_standard.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0023_deferred_small_error.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0024_deferred_t0.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0025_deferred_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0026_deferred_partial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0027_deferred_source_owned.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0028_deferred_facet_lifetime.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0029_deferred_repeat_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0030_deferred_bad_description_retry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0031_deferred_discard_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0032_deferred_run_excluded.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0033_deferred_prepare_independent.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0034_deferred_publication.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0035_playback_no_delta.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0036_playback_t0.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0037_playback_refresh.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0038_playback_small_error.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0039_playback_single_slot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/playback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0040_playback_solve_overlap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0041_playback_cancel_ready.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0042_playback_failure_drain.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0043_playback_cancel_new_admission.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0044_playback_callback_sample.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/rendezvous.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/rendezvous.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0045_deferred_rgb241.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0046_deferred_missing_history.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0047_deferred_cancel_seals.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0048_playback_sample_stale.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0049_playback_sample_short.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0050_playback_sample_tail.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0028_ready_fifo.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0029_ready_full.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0030_ready_empty.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0031_ready_wrap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0032_ready_slot_release.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0051_playback_resize_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0052_playback_resize_interval.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0053_playback_credit_order.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0054_playback_cancel_origin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0055_playback_inherited_origin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/fixture.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/fixture.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/expected.h \
@@ -31975,12 +32181,135 @@ dither/phased/test_runner-0013_partial_rectangle.$(OBJEXT):  \
 dither/phased/test_runner-0014_retained_immutable.$(OBJEXT):  \
 	dither/phased/$(am__dirstamp) \
 	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0022_deferred_standard.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0023_deferred_small_error.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0024_deferred_t0.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0025_deferred_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0026_deferred_partial.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0027_deferred_source_owned.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0028_deferred_facet_lifetime.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0029_deferred_repeat_rejected.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0030_deferred_bad_description_retry.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0031_deferred_discard_reuse.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0032_deferred_run_excluded.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0033_deferred_prepare_independent.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0034_deferred_publication.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0035_playback_no_delta.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0036_playback_t0.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0037_playback_refresh.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0038_playback_small_error.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0039_playback_single_slot.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
 _support/phased/$(am__dirstamp):
 	@$(MKDIR_P) _support/phased
 	@: >>_support/phased/$(am__dirstamp)
 _support/phased/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) _support/phased/$(DEPDIR)
 	@: >>_support/phased/$(DEPDIR)/$(am__dirstamp)
+_support/phased/test_runner-playback.$(OBJEXT):  \
+	_support/phased/$(am__dirstamp) \
+	_support/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0040_playback_solve_overlap.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0041_playback_cancel_ready.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0042_playback_failure_drain.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0043_playback_cancel_new_admission.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0044_playback_callback_sample.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+_support/phased/test_runner-rendezvous.$(OBJEXT):  \
+	_support/phased/$(am__dirstamp) \
+	_support/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0045_deferred_rgb241.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0046_deferred_missing_history.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0047_deferred_cancel_seals.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0048_playback_sample_stale.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0049_playback_sample_short.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0050_playback_sample_tail.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0028_ready_fifo.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0029_ready_full.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0030_ready_empty.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0031_ready_wrap.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+encoder/scheduling/test_runner-0032_ready_slot_release.$(OBJEXT):  \
+	encoder/scheduling/$(am__dirstamp) \
+	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0051_playback_resize_bytes.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0052_playback_resize_interval.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0053_playback_credit_order.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0054_playback_cancel_origin.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0055_playback_inherited_origin.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
 _support/phased/test_runner-fixture.$(OBJEXT):  \
 	_support/phased/$(am__dirstamp) \
 	_support/phased/$(DEPDIR)/$(am__dirstamp)
@@ -41317,6 +41646,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-fixture.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-playback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/phased/$(DEPDIR)/test_runner-rendezvous.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-palette_auto_test_common.Po@am__quote@ # am--include-marker
@@ -42504,6 +42835,40 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0019_palette256.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0020_reprepare_reset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0021_preparer_lifetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0022_deferred_standard.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0023_deferred_small_error.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0024_deferred_t0.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0025_deferred_refresh.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0026_deferred_partial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0027_deferred_source_owned.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0028_deferred_facet_lifetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0029_deferred_repeat_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0030_deferred_bad_description_retry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0031_deferred_discard_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0032_deferred_run_excluded.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0033_deferred_prepare_independent.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0034_deferred_publication.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0035_playback_no_delta.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0036_playback_t0.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0037_playback_refresh.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0038_playback_small_error.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0039_playback_single_slot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0040_playback_solve_overlap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0041_playback_cancel_ready.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0042_playback_failure_drain.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0043_playback_cancel_new_admission.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0044_playback_callback_sample.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0045_deferred_rgb241.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0046_deferred_missing_history.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0047_deferred_cancel_seals.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0048_playback_sample_stale.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0049_playback_sample_short.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po@am__quote@ # am--include-marker
@@ -43413,6 +43778,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0025_batch_sink_restart.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0026_batch_clock_reset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0027_batch_tail_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0028_ready_fifo.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0029_ready_full.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0030_ready_empty.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0031_ready_wrap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0032_ready_slot_release.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/sixel-output/$(DEPDIR)/test_runner-0007_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0002_incremental_load.Po@am__quote@ # am--include-marker
@@ -74391,6 +74761,580 @@ dither/phased/test_runner-0014_retained_immutable.obj: dither/phased/0014_retain
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0014_retained_immutable.c' object='dither/phased/test_runner-0014_retained_immutable.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0014_retained_immutable.obj `if test -f 'dither/phased/0014_retained_immutable.c'; then $(CYGPATH_W) 'dither/phased/0014_retained_immutable.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0014_retained_immutable.c'; fi`
+
+dither/phased/test_runner-0022_deferred_standard.o: dither/phased/0022_deferred_standard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0022_deferred_standard.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0022_deferred_standard.Tpo -c -o dither/phased/test_runner-0022_deferred_standard.o `test -f 'dither/phased/0022_deferred_standard.c' || echo '$(srcdir)/'`dither/phased/0022_deferred_standard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0022_deferred_standard.Tpo dither/phased/$(DEPDIR)/test_runner-0022_deferred_standard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0022_deferred_standard.c' object='dither/phased/test_runner-0022_deferred_standard.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0022_deferred_standard.o `test -f 'dither/phased/0022_deferred_standard.c' || echo '$(srcdir)/'`dither/phased/0022_deferred_standard.c
+
+dither/phased/test_runner-0022_deferred_standard.obj: dither/phased/0022_deferred_standard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0022_deferred_standard.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0022_deferred_standard.Tpo -c -o dither/phased/test_runner-0022_deferred_standard.obj `if test -f 'dither/phased/0022_deferred_standard.c'; then $(CYGPATH_W) 'dither/phased/0022_deferred_standard.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0022_deferred_standard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0022_deferred_standard.Tpo dither/phased/$(DEPDIR)/test_runner-0022_deferred_standard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0022_deferred_standard.c' object='dither/phased/test_runner-0022_deferred_standard.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0022_deferred_standard.obj `if test -f 'dither/phased/0022_deferred_standard.c'; then $(CYGPATH_W) 'dither/phased/0022_deferred_standard.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0022_deferred_standard.c'; fi`
+
+dither/phased/test_runner-0023_deferred_small_error.o: dither/phased/0023_deferred_small_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0023_deferred_small_error.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0023_deferred_small_error.Tpo -c -o dither/phased/test_runner-0023_deferred_small_error.o `test -f 'dither/phased/0023_deferred_small_error.c' || echo '$(srcdir)/'`dither/phased/0023_deferred_small_error.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0023_deferred_small_error.Tpo dither/phased/$(DEPDIR)/test_runner-0023_deferred_small_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0023_deferred_small_error.c' object='dither/phased/test_runner-0023_deferred_small_error.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0023_deferred_small_error.o `test -f 'dither/phased/0023_deferred_small_error.c' || echo '$(srcdir)/'`dither/phased/0023_deferred_small_error.c
+
+dither/phased/test_runner-0023_deferred_small_error.obj: dither/phased/0023_deferred_small_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0023_deferred_small_error.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0023_deferred_small_error.Tpo -c -o dither/phased/test_runner-0023_deferred_small_error.obj `if test -f 'dither/phased/0023_deferred_small_error.c'; then $(CYGPATH_W) 'dither/phased/0023_deferred_small_error.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0023_deferred_small_error.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0023_deferred_small_error.Tpo dither/phased/$(DEPDIR)/test_runner-0023_deferred_small_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0023_deferred_small_error.c' object='dither/phased/test_runner-0023_deferred_small_error.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0023_deferred_small_error.obj `if test -f 'dither/phased/0023_deferred_small_error.c'; then $(CYGPATH_W) 'dither/phased/0023_deferred_small_error.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0023_deferred_small_error.c'; fi`
+
+dither/phased/test_runner-0024_deferred_t0.o: dither/phased/0024_deferred_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0024_deferred_t0.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0024_deferred_t0.Tpo -c -o dither/phased/test_runner-0024_deferred_t0.o `test -f 'dither/phased/0024_deferred_t0.c' || echo '$(srcdir)/'`dither/phased/0024_deferred_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0024_deferred_t0.Tpo dither/phased/$(DEPDIR)/test_runner-0024_deferred_t0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0024_deferred_t0.c' object='dither/phased/test_runner-0024_deferred_t0.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0024_deferred_t0.o `test -f 'dither/phased/0024_deferred_t0.c' || echo '$(srcdir)/'`dither/phased/0024_deferred_t0.c
+
+dither/phased/test_runner-0024_deferred_t0.obj: dither/phased/0024_deferred_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0024_deferred_t0.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0024_deferred_t0.Tpo -c -o dither/phased/test_runner-0024_deferred_t0.obj `if test -f 'dither/phased/0024_deferred_t0.c'; then $(CYGPATH_W) 'dither/phased/0024_deferred_t0.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0024_deferred_t0.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0024_deferred_t0.Tpo dither/phased/$(DEPDIR)/test_runner-0024_deferred_t0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0024_deferred_t0.c' object='dither/phased/test_runner-0024_deferred_t0.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0024_deferred_t0.obj `if test -f 'dither/phased/0024_deferred_t0.c'; then $(CYGPATH_W) 'dither/phased/0024_deferred_t0.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0024_deferred_t0.c'; fi`
+
+dither/phased/test_runner-0025_deferred_refresh.o: dither/phased/0025_deferred_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0025_deferred_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0025_deferred_refresh.Tpo -c -o dither/phased/test_runner-0025_deferred_refresh.o `test -f 'dither/phased/0025_deferred_refresh.c' || echo '$(srcdir)/'`dither/phased/0025_deferred_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0025_deferred_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0025_deferred_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0025_deferred_refresh.c' object='dither/phased/test_runner-0025_deferred_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0025_deferred_refresh.o `test -f 'dither/phased/0025_deferred_refresh.c' || echo '$(srcdir)/'`dither/phased/0025_deferred_refresh.c
+
+dither/phased/test_runner-0025_deferred_refresh.obj: dither/phased/0025_deferred_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0025_deferred_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0025_deferred_refresh.Tpo -c -o dither/phased/test_runner-0025_deferred_refresh.obj `if test -f 'dither/phased/0025_deferred_refresh.c'; then $(CYGPATH_W) 'dither/phased/0025_deferred_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0025_deferred_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0025_deferred_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0025_deferred_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0025_deferred_refresh.c' object='dither/phased/test_runner-0025_deferred_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0025_deferred_refresh.obj `if test -f 'dither/phased/0025_deferred_refresh.c'; then $(CYGPATH_W) 'dither/phased/0025_deferred_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0025_deferred_refresh.c'; fi`
+
+dither/phased/test_runner-0026_deferred_partial.o: dither/phased/0026_deferred_partial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0026_deferred_partial.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0026_deferred_partial.Tpo -c -o dither/phased/test_runner-0026_deferred_partial.o `test -f 'dither/phased/0026_deferred_partial.c' || echo '$(srcdir)/'`dither/phased/0026_deferred_partial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0026_deferred_partial.Tpo dither/phased/$(DEPDIR)/test_runner-0026_deferred_partial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0026_deferred_partial.c' object='dither/phased/test_runner-0026_deferred_partial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0026_deferred_partial.o `test -f 'dither/phased/0026_deferred_partial.c' || echo '$(srcdir)/'`dither/phased/0026_deferred_partial.c
+
+dither/phased/test_runner-0026_deferred_partial.obj: dither/phased/0026_deferred_partial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0026_deferred_partial.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0026_deferred_partial.Tpo -c -o dither/phased/test_runner-0026_deferred_partial.obj `if test -f 'dither/phased/0026_deferred_partial.c'; then $(CYGPATH_W) 'dither/phased/0026_deferred_partial.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0026_deferred_partial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0026_deferred_partial.Tpo dither/phased/$(DEPDIR)/test_runner-0026_deferred_partial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0026_deferred_partial.c' object='dither/phased/test_runner-0026_deferred_partial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0026_deferred_partial.obj `if test -f 'dither/phased/0026_deferred_partial.c'; then $(CYGPATH_W) 'dither/phased/0026_deferred_partial.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0026_deferred_partial.c'; fi`
+
+dither/phased/test_runner-0027_deferred_source_owned.o: dither/phased/0027_deferred_source_owned.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0027_deferred_source_owned.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0027_deferred_source_owned.Tpo -c -o dither/phased/test_runner-0027_deferred_source_owned.o `test -f 'dither/phased/0027_deferred_source_owned.c' || echo '$(srcdir)/'`dither/phased/0027_deferred_source_owned.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0027_deferred_source_owned.Tpo dither/phased/$(DEPDIR)/test_runner-0027_deferred_source_owned.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0027_deferred_source_owned.c' object='dither/phased/test_runner-0027_deferred_source_owned.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0027_deferred_source_owned.o `test -f 'dither/phased/0027_deferred_source_owned.c' || echo '$(srcdir)/'`dither/phased/0027_deferred_source_owned.c
+
+dither/phased/test_runner-0027_deferred_source_owned.obj: dither/phased/0027_deferred_source_owned.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0027_deferred_source_owned.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0027_deferred_source_owned.Tpo -c -o dither/phased/test_runner-0027_deferred_source_owned.obj `if test -f 'dither/phased/0027_deferred_source_owned.c'; then $(CYGPATH_W) 'dither/phased/0027_deferred_source_owned.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0027_deferred_source_owned.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0027_deferred_source_owned.Tpo dither/phased/$(DEPDIR)/test_runner-0027_deferred_source_owned.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0027_deferred_source_owned.c' object='dither/phased/test_runner-0027_deferred_source_owned.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0027_deferred_source_owned.obj `if test -f 'dither/phased/0027_deferred_source_owned.c'; then $(CYGPATH_W) 'dither/phased/0027_deferred_source_owned.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0027_deferred_source_owned.c'; fi`
+
+dither/phased/test_runner-0028_deferred_facet_lifetime.o: dither/phased/0028_deferred_facet_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0028_deferred_facet_lifetime.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0028_deferred_facet_lifetime.Tpo -c -o dither/phased/test_runner-0028_deferred_facet_lifetime.o `test -f 'dither/phased/0028_deferred_facet_lifetime.c' || echo '$(srcdir)/'`dither/phased/0028_deferred_facet_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0028_deferred_facet_lifetime.Tpo dither/phased/$(DEPDIR)/test_runner-0028_deferred_facet_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0028_deferred_facet_lifetime.c' object='dither/phased/test_runner-0028_deferred_facet_lifetime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0028_deferred_facet_lifetime.o `test -f 'dither/phased/0028_deferred_facet_lifetime.c' || echo '$(srcdir)/'`dither/phased/0028_deferred_facet_lifetime.c
+
+dither/phased/test_runner-0028_deferred_facet_lifetime.obj: dither/phased/0028_deferred_facet_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0028_deferred_facet_lifetime.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0028_deferred_facet_lifetime.Tpo -c -o dither/phased/test_runner-0028_deferred_facet_lifetime.obj `if test -f 'dither/phased/0028_deferred_facet_lifetime.c'; then $(CYGPATH_W) 'dither/phased/0028_deferred_facet_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0028_deferred_facet_lifetime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0028_deferred_facet_lifetime.Tpo dither/phased/$(DEPDIR)/test_runner-0028_deferred_facet_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0028_deferred_facet_lifetime.c' object='dither/phased/test_runner-0028_deferred_facet_lifetime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0028_deferred_facet_lifetime.obj `if test -f 'dither/phased/0028_deferred_facet_lifetime.c'; then $(CYGPATH_W) 'dither/phased/0028_deferred_facet_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0028_deferred_facet_lifetime.c'; fi`
+
+dither/phased/test_runner-0029_deferred_repeat_rejected.o: dither/phased/0029_deferred_repeat_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0029_deferred_repeat_rejected.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0029_deferred_repeat_rejected.Tpo -c -o dither/phased/test_runner-0029_deferred_repeat_rejected.o `test -f 'dither/phased/0029_deferred_repeat_rejected.c' || echo '$(srcdir)/'`dither/phased/0029_deferred_repeat_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0029_deferred_repeat_rejected.Tpo dither/phased/$(DEPDIR)/test_runner-0029_deferred_repeat_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0029_deferred_repeat_rejected.c' object='dither/phased/test_runner-0029_deferred_repeat_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0029_deferred_repeat_rejected.o `test -f 'dither/phased/0029_deferred_repeat_rejected.c' || echo '$(srcdir)/'`dither/phased/0029_deferred_repeat_rejected.c
+
+dither/phased/test_runner-0029_deferred_repeat_rejected.obj: dither/phased/0029_deferred_repeat_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0029_deferred_repeat_rejected.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0029_deferred_repeat_rejected.Tpo -c -o dither/phased/test_runner-0029_deferred_repeat_rejected.obj `if test -f 'dither/phased/0029_deferred_repeat_rejected.c'; then $(CYGPATH_W) 'dither/phased/0029_deferred_repeat_rejected.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0029_deferred_repeat_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0029_deferred_repeat_rejected.Tpo dither/phased/$(DEPDIR)/test_runner-0029_deferred_repeat_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0029_deferred_repeat_rejected.c' object='dither/phased/test_runner-0029_deferred_repeat_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0029_deferred_repeat_rejected.obj `if test -f 'dither/phased/0029_deferred_repeat_rejected.c'; then $(CYGPATH_W) 'dither/phased/0029_deferred_repeat_rejected.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0029_deferred_repeat_rejected.c'; fi`
+
+dither/phased/test_runner-0030_deferred_bad_description_retry.o: dither/phased/0030_deferred_bad_description_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0030_deferred_bad_description_retry.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0030_deferred_bad_description_retry.Tpo -c -o dither/phased/test_runner-0030_deferred_bad_description_retry.o `test -f 'dither/phased/0030_deferred_bad_description_retry.c' || echo '$(srcdir)/'`dither/phased/0030_deferred_bad_description_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0030_deferred_bad_description_retry.Tpo dither/phased/$(DEPDIR)/test_runner-0030_deferred_bad_description_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0030_deferred_bad_description_retry.c' object='dither/phased/test_runner-0030_deferred_bad_description_retry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0030_deferred_bad_description_retry.o `test -f 'dither/phased/0030_deferred_bad_description_retry.c' || echo '$(srcdir)/'`dither/phased/0030_deferred_bad_description_retry.c
+
+dither/phased/test_runner-0030_deferred_bad_description_retry.obj: dither/phased/0030_deferred_bad_description_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0030_deferred_bad_description_retry.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0030_deferred_bad_description_retry.Tpo -c -o dither/phased/test_runner-0030_deferred_bad_description_retry.obj `if test -f 'dither/phased/0030_deferred_bad_description_retry.c'; then $(CYGPATH_W) 'dither/phased/0030_deferred_bad_description_retry.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0030_deferred_bad_description_retry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0030_deferred_bad_description_retry.Tpo dither/phased/$(DEPDIR)/test_runner-0030_deferred_bad_description_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0030_deferred_bad_description_retry.c' object='dither/phased/test_runner-0030_deferred_bad_description_retry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0030_deferred_bad_description_retry.obj `if test -f 'dither/phased/0030_deferred_bad_description_retry.c'; then $(CYGPATH_W) 'dither/phased/0030_deferred_bad_description_retry.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0030_deferred_bad_description_retry.c'; fi`
+
+dither/phased/test_runner-0031_deferred_discard_reuse.o: dither/phased/0031_deferred_discard_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0031_deferred_discard_reuse.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0031_deferred_discard_reuse.Tpo -c -o dither/phased/test_runner-0031_deferred_discard_reuse.o `test -f 'dither/phased/0031_deferred_discard_reuse.c' || echo '$(srcdir)/'`dither/phased/0031_deferred_discard_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0031_deferred_discard_reuse.Tpo dither/phased/$(DEPDIR)/test_runner-0031_deferred_discard_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0031_deferred_discard_reuse.c' object='dither/phased/test_runner-0031_deferred_discard_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0031_deferred_discard_reuse.o `test -f 'dither/phased/0031_deferred_discard_reuse.c' || echo '$(srcdir)/'`dither/phased/0031_deferred_discard_reuse.c
+
+dither/phased/test_runner-0031_deferred_discard_reuse.obj: dither/phased/0031_deferred_discard_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0031_deferred_discard_reuse.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0031_deferred_discard_reuse.Tpo -c -o dither/phased/test_runner-0031_deferred_discard_reuse.obj `if test -f 'dither/phased/0031_deferred_discard_reuse.c'; then $(CYGPATH_W) 'dither/phased/0031_deferred_discard_reuse.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0031_deferred_discard_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0031_deferred_discard_reuse.Tpo dither/phased/$(DEPDIR)/test_runner-0031_deferred_discard_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0031_deferred_discard_reuse.c' object='dither/phased/test_runner-0031_deferred_discard_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0031_deferred_discard_reuse.obj `if test -f 'dither/phased/0031_deferred_discard_reuse.c'; then $(CYGPATH_W) 'dither/phased/0031_deferred_discard_reuse.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0031_deferred_discard_reuse.c'; fi`
+
+dither/phased/test_runner-0032_deferred_run_excluded.o: dither/phased/0032_deferred_run_excluded.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0032_deferred_run_excluded.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0032_deferred_run_excluded.Tpo -c -o dither/phased/test_runner-0032_deferred_run_excluded.o `test -f 'dither/phased/0032_deferred_run_excluded.c' || echo '$(srcdir)/'`dither/phased/0032_deferred_run_excluded.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0032_deferred_run_excluded.Tpo dither/phased/$(DEPDIR)/test_runner-0032_deferred_run_excluded.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0032_deferred_run_excluded.c' object='dither/phased/test_runner-0032_deferred_run_excluded.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0032_deferred_run_excluded.o `test -f 'dither/phased/0032_deferred_run_excluded.c' || echo '$(srcdir)/'`dither/phased/0032_deferred_run_excluded.c
+
+dither/phased/test_runner-0032_deferred_run_excluded.obj: dither/phased/0032_deferred_run_excluded.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0032_deferred_run_excluded.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0032_deferred_run_excluded.Tpo -c -o dither/phased/test_runner-0032_deferred_run_excluded.obj `if test -f 'dither/phased/0032_deferred_run_excluded.c'; then $(CYGPATH_W) 'dither/phased/0032_deferred_run_excluded.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0032_deferred_run_excluded.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0032_deferred_run_excluded.Tpo dither/phased/$(DEPDIR)/test_runner-0032_deferred_run_excluded.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0032_deferred_run_excluded.c' object='dither/phased/test_runner-0032_deferred_run_excluded.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0032_deferred_run_excluded.obj `if test -f 'dither/phased/0032_deferred_run_excluded.c'; then $(CYGPATH_W) 'dither/phased/0032_deferred_run_excluded.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0032_deferred_run_excluded.c'; fi`
+
+dither/phased/test_runner-0033_deferred_prepare_independent.o: dither/phased/0033_deferred_prepare_independent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0033_deferred_prepare_independent.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0033_deferred_prepare_independent.Tpo -c -o dither/phased/test_runner-0033_deferred_prepare_independent.o `test -f 'dither/phased/0033_deferred_prepare_independent.c' || echo '$(srcdir)/'`dither/phased/0033_deferred_prepare_independent.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0033_deferred_prepare_independent.Tpo dither/phased/$(DEPDIR)/test_runner-0033_deferred_prepare_independent.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0033_deferred_prepare_independent.c' object='dither/phased/test_runner-0033_deferred_prepare_independent.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0033_deferred_prepare_independent.o `test -f 'dither/phased/0033_deferred_prepare_independent.c' || echo '$(srcdir)/'`dither/phased/0033_deferred_prepare_independent.c
+
+dither/phased/test_runner-0033_deferred_prepare_independent.obj: dither/phased/0033_deferred_prepare_independent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0033_deferred_prepare_independent.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0033_deferred_prepare_independent.Tpo -c -o dither/phased/test_runner-0033_deferred_prepare_independent.obj `if test -f 'dither/phased/0033_deferred_prepare_independent.c'; then $(CYGPATH_W) 'dither/phased/0033_deferred_prepare_independent.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0033_deferred_prepare_independent.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0033_deferred_prepare_independent.Tpo dither/phased/$(DEPDIR)/test_runner-0033_deferred_prepare_independent.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0033_deferred_prepare_independent.c' object='dither/phased/test_runner-0033_deferred_prepare_independent.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0033_deferred_prepare_independent.obj `if test -f 'dither/phased/0033_deferred_prepare_independent.c'; then $(CYGPATH_W) 'dither/phased/0033_deferred_prepare_independent.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0033_deferred_prepare_independent.c'; fi`
+
+dither/phased/test_runner-0034_deferred_publication.o: dither/phased/0034_deferred_publication.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0034_deferred_publication.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0034_deferred_publication.Tpo -c -o dither/phased/test_runner-0034_deferred_publication.o `test -f 'dither/phased/0034_deferred_publication.c' || echo '$(srcdir)/'`dither/phased/0034_deferred_publication.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0034_deferred_publication.Tpo dither/phased/$(DEPDIR)/test_runner-0034_deferred_publication.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0034_deferred_publication.c' object='dither/phased/test_runner-0034_deferred_publication.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0034_deferred_publication.o `test -f 'dither/phased/0034_deferred_publication.c' || echo '$(srcdir)/'`dither/phased/0034_deferred_publication.c
+
+dither/phased/test_runner-0034_deferred_publication.obj: dither/phased/0034_deferred_publication.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0034_deferred_publication.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0034_deferred_publication.Tpo -c -o dither/phased/test_runner-0034_deferred_publication.obj `if test -f 'dither/phased/0034_deferred_publication.c'; then $(CYGPATH_W) 'dither/phased/0034_deferred_publication.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0034_deferred_publication.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0034_deferred_publication.Tpo dither/phased/$(DEPDIR)/test_runner-0034_deferred_publication.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0034_deferred_publication.c' object='dither/phased/test_runner-0034_deferred_publication.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0034_deferred_publication.obj `if test -f 'dither/phased/0034_deferred_publication.c'; then $(CYGPATH_W) 'dither/phased/0034_deferred_publication.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0034_deferred_publication.c'; fi`
+
+dither/phased/test_runner-0035_playback_no_delta.o: dither/phased/0035_playback_no_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0035_playback_no_delta.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0035_playback_no_delta.Tpo -c -o dither/phased/test_runner-0035_playback_no_delta.o `test -f 'dither/phased/0035_playback_no_delta.c' || echo '$(srcdir)/'`dither/phased/0035_playback_no_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0035_playback_no_delta.Tpo dither/phased/$(DEPDIR)/test_runner-0035_playback_no_delta.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0035_playback_no_delta.c' object='dither/phased/test_runner-0035_playback_no_delta.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0035_playback_no_delta.o `test -f 'dither/phased/0035_playback_no_delta.c' || echo '$(srcdir)/'`dither/phased/0035_playback_no_delta.c
+
+dither/phased/test_runner-0035_playback_no_delta.obj: dither/phased/0035_playback_no_delta.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0035_playback_no_delta.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0035_playback_no_delta.Tpo -c -o dither/phased/test_runner-0035_playback_no_delta.obj `if test -f 'dither/phased/0035_playback_no_delta.c'; then $(CYGPATH_W) 'dither/phased/0035_playback_no_delta.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0035_playback_no_delta.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0035_playback_no_delta.Tpo dither/phased/$(DEPDIR)/test_runner-0035_playback_no_delta.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0035_playback_no_delta.c' object='dither/phased/test_runner-0035_playback_no_delta.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0035_playback_no_delta.obj `if test -f 'dither/phased/0035_playback_no_delta.c'; then $(CYGPATH_W) 'dither/phased/0035_playback_no_delta.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0035_playback_no_delta.c'; fi`
+
+dither/phased/test_runner-0036_playback_t0.o: dither/phased/0036_playback_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0036_playback_t0.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0036_playback_t0.Tpo -c -o dither/phased/test_runner-0036_playback_t0.o `test -f 'dither/phased/0036_playback_t0.c' || echo '$(srcdir)/'`dither/phased/0036_playback_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0036_playback_t0.Tpo dither/phased/$(DEPDIR)/test_runner-0036_playback_t0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0036_playback_t0.c' object='dither/phased/test_runner-0036_playback_t0.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0036_playback_t0.o `test -f 'dither/phased/0036_playback_t0.c' || echo '$(srcdir)/'`dither/phased/0036_playback_t0.c
+
+dither/phased/test_runner-0036_playback_t0.obj: dither/phased/0036_playback_t0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0036_playback_t0.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0036_playback_t0.Tpo -c -o dither/phased/test_runner-0036_playback_t0.obj `if test -f 'dither/phased/0036_playback_t0.c'; then $(CYGPATH_W) 'dither/phased/0036_playback_t0.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0036_playback_t0.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0036_playback_t0.Tpo dither/phased/$(DEPDIR)/test_runner-0036_playback_t0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0036_playback_t0.c' object='dither/phased/test_runner-0036_playback_t0.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0036_playback_t0.obj `if test -f 'dither/phased/0036_playback_t0.c'; then $(CYGPATH_W) 'dither/phased/0036_playback_t0.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0036_playback_t0.c'; fi`
+
+dither/phased/test_runner-0037_playback_refresh.o: dither/phased/0037_playback_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0037_playback_refresh.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0037_playback_refresh.Tpo -c -o dither/phased/test_runner-0037_playback_refresh.o `test -f 'dither/phased/0037_playback_refresh.c' || echo '$(srcdir)/'`dither/phased/0037_playback_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0037_playback_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0037_playback_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0037_playback_refresh.c' object='dither/phased/test_runner-0037_playback_refresh.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0037_playback_refresh.o `test -f 'dither/phased/0037_playback_refresh.c' || echo '$(srcdir)/'`dither/phased/0037_playback_refresh.c
+
+dither/phased/test_runner-0037_playback_refresh.obj: dither/phased/0037_playback_refresh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0037_playback_refresh.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0037_playback_refresh.Tpo -c -o dither/phased/test_runner-0037_playback_refresh.obj `if test -f 'dither/phased/0037_playback_refresh.c'; then $(CYGPATH_W) 'dither/phased/0037_playback_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0037_playback_refresh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0037_playback_refresh.Tpo dither/phased/$(DEPDIR)/test_runner-0037_playback_refresh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0037_playback_refresh.c' object='dither/phased/test_runner-0037_playback_refresh.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0037_playback_refresh.obj `if test -f 'dither/phased/0037_playback_refresh.c'; then $(CYGPATH_W) 'dither/phased/0037_playback_refresh.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0037_playback_refresh.c'; fi`
+
+dither/phased/test_runner-0038_playback_small_error.o: dither/phased/0038_playback_small_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0038_playback_small_error.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0038_playback_small_error.Tpo -c -o dither/phased/test_runner-0038_playback_small_error.o `test -f 'dither/phased/0038_playback_small_error.c' || echo '$(srcdir)/'`dither/phased/0038_playback_small_error.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0038_playback_small_error.Tpo dither/phased/$(DEPDIR)/test_runner-0038_playback_small_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0038_playback_small_error.c' object='dither/phased/test_runner-0038_playback_small_error.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0038_playback_small_error.o `test -f 'dither/phased/0038_playback_small_error.c' || echo '$(srcdir)/'`dither/phased/0038_playback_small_error.c
+
+dither/phased/test_runner-0038_playback_small_error.obj: dither/phased/0038_playback_small_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0038_playback_small_error.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0038_playback_small_error.Tpo -c -o dither/phased/test_runner-0038_playback_small_error.obj `if test -f 'dither/phased/0038_playback_small_error.c'; then $(CYGPATH_W) 'dither/phased/0038_playback_small_error.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0038_playback_small_error.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0038_playback_small_error.Tpo dither/phased/$(DEPDIR)/test_runner-0038_playback_small_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0038_playback_small_error.c' object='dither/phased/test_runner-0038_playback_small_error.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0038_playback_small_error.obj `if test -f 'dither/phased/0038_playback_small_error.c'; then $(CYGPATH_W) 'dither/phased/0038_playback_small_error.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0038_playback_small_error.c'; fi`
+
+dither/phased/test_runner-0039_playback_single_slot.o: dither/phased/0039_playback_single_slot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0039_playback_single_slot.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0039_playback_single_slot.Tpo -c -o dither/phased/test_runner-0039_playback_single_slot.o `test -f 'dither/phased/0039_playback_single_slot.c' || echo '$(srcdir)/'`dither/phased/0039_playback_single_slot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0039_playback_single_slot.Tpo dither/phased/$(DEPDIR)/test_runner-0039_playback_single_slot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0039_playback_single_slot.c' object='dither/phased/test_runner-0039_playback_single_slot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0039_playback_single_slot.o `test -f 'dither/phased/0039_playback_single_slot.c' || echo '$(srcdir)/'`dither/phased/0039_playback_single_slot.c
+
+dither/phased/test_runner-0039_playback_single_slot.obj: dither/phased/0039_playback_single_slot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0039_playback_single_slot.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0039_playback_single_slot.Tpo -c -o dither/phased/test_runner-0039_playback_single_slot.obj `if test -f 'dither/phased/0039_playback_single_slot.c'; then $(CYGPATH_W) 'dither/phased/0039_playback_single_slot.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0039_playback_single_slot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0039_playback_single_slot.Tpo dither/phased/$(DEPDIR)/test_runner-0039_playback_single_slot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0039_playback_single_slot.c' object='dither/phased/test_runner-0039_playback_single_slot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0039_playback_single_slot.obj `if test -f 'dither/phased/0039_playback_single_slot.c'; then $(CYGPATH_W) 'dither/phased/0039_playback_single_slot.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0039_playback_single_slot.c'; fi`
+
+_support/phased/test_runner-playback.o: _support/phased/playback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-playback.o -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-playback.Tpo -c -o _support/phased/test_runner-playback.o `test -f '_support/phased/playback.c' || echo '$(srcdir)/'`_support/phased/playback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/phased/$(DEPDIR)/test_runner-playback.Tpo _support/phased/$(DEPDIR)/test_runner-playback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/playback.c' object='_support/phased/test_runner-playback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-playback.o `test -f '_support/phased/playback.c' || echo '$(srcdir)/'`_support/phased/playback.c
+
+_support/phased/test_runner-playback.obj: _support/phased/playback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-playback.obj -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-playback.Tpo -c -o _support/phased/test_runner-playback.obj `if test -f '_support/phased/playback.c'; then $(CYGPATH_W) '_support/phased/playback.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/playback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/phased/$(DEPDIR)/test_runner-playback.Tpo _support/phased/$(DEPDIR)/test_runner-playback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/playback.c' object='_support/phased/test_runner-playback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-playback.obj `if test -f '_support/phased/playback.c'; then $(CYGPATH_W) '_support/phased/playback.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/playback.c'; fi`
+
+dither/phased/test_runner-0040_playback_solve_overlap.o: dither/phased/0040_playback_solve_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0040_playback_solve_overlap.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0040_playback_solve_overlap.Tpo -c -o dither/phased/test_runner-0040_playback_solve_overlap.o `test -f 'dither/phased/0040_playback_solve_overlap.c' || echo '$(srcdir)/'`dither/phased/0040_playback_solve_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0040_playback_solve_overlap.Tpo dither/phased/$(DEPDIR)/test_runner-0040_playback_solve_overlap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0040_playback_solve_overlap.c' object='dither/phased/test_runner-0040_playback_solve_overlap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0040_playback_solve_overlap.o `test -f 'dither/phased/0040_playback_solve_overlap.c' || echo '$(srcdir)/'`dither/phased/0040_playback_solve_overlap.c
+
+dither/phased/test_runner-0040_playback_solve_overlap.obj: dither/phased/0040_playback_solve_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0040_playback_solve_overlap.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0040_playback_solve_overlap.Tpo -c -o dither/phased/test_runner-0040_playback_solve_overlap.obj `if test -f 'dither/phased/0040_playback_solve_overlap.c'; then $(CYGPATH_W) 'dither/phased/0040_playback_solve_overlap.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0040_playback_solve_overlap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0040_playback_solve_overlap.Tpo dither/phased/$(DEPDIR)/test_runner-0040_playback_solve_overlap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0040_playback_solve_overlap.c' object='dither/phased/test_runner-0040_playback_solve_overlap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0040_playback_solve_overlap.obj `if test -f 'dither/phased/0040_playback_solve_overlap.c'; then $(CYGPATH_W) 'dither/phased/0040_playback_solve_overlap.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0040_playback_solve_overlap.c'; fi`
+
+dither/phased/test_runner-0041_playback_cancel_ready.o: dither/phased/0041_playback_cancel_ready.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0041_playback_cancel_ready.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0041_playback_cancel_ready.Tpo -c -o dither/phased/test_runner-0041_playback_cancel_ready.o `test -f 'dither/phased/0041_playback_cancel_ready.c' || echo '$(srcdir)/'`dither/phased/0041_playback_cancel_ready.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0041_playback_cancel_ready.Tpo dither/phased/$(DEPDIR)/test_runner-0041_playback_cancel_ready.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0041_playback_cancel_ready.c' object='dither/phased/test_runner-0041_playback_cancel_ready.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0041_playback_cancel_ready.o `test -f 'dither/phased/0041_playback_cancel_ready.c' || echo '$(srcdir)/'`dither/phased/0041_playback_cancel_ready.c
+
+dither/phased/test_runner-0041_playback_cancel_ready.obj: dither/phased/0041_playback_cancel_ready.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0041_playback_cancel_ready.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0041_playback_cancel_ready.Tpo -c -o dither/phased/test_runner-0041_playback_cancel_ready.obj `if test -f 'dither/phased/0041_playback_cancel_ready.c'; then $(CYGPATH_W) 'dither/phased/0041_playback_cancel_ready.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0041_playback_cancel_ready.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0041_playback_cancel_ready.Tpo dither/phased/$(DEPDIR)/test_runner-0041_playback_cancel_ready.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0041_playback_cancel_ready.c' object='dither/phased/test_runner-0041_playback_cancel_ready.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0041_playback_cancel_ready.obj `if test -f 'dither/phased/0041_playback_cancel_ready.c'; then $(CYGPATH_W) 'dither/phased/0041_playback_cancel_ready.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0041_playback_cancel_ready.c'; fi`
+
+dither/phased/test_runner-0042_playback_failure_drain.o: dither/phased/0042_playback_failure_drain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0042_playback_failure_drain.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0042_playback_failure_drain.Tpo -c -o dither/phased/test_runner-0042_playback_failure_drain.o `test -f 'dither/phased/0042_playback_failure_drain.c' || echo '$(srcdir)/'`dither/phased/0042_playback_failure_drain.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0042_playback_failure_drain.Tpo dither/phased/$(DEPDIR)/test_runner-0042_playback_failure_drain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0042_playback_failure_drain.c' object='dither/phased/test_runner-0042_playback_failure_drain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0042_playback_failure_drain.o `test -f 'dither/phased/0042_playback_failure_drain.c' || echo '$(srcdir)/'`dither/phased/0042_playback_failure_drain.c
+
+dither/phased/test_runner-0042_playback_failure_drain.obj: dither/phased/0042_playback_failure_drain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0042_playback_failure_drain.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0042_playback_failure_drain.Tpo -c -o dither/phased/test_runner-0042_playback_failure_drain.obj `if test -f 'dither/phased/0042_playback_failure_drain.c'; then $(CYGPATH_W) 'dither/phased/0042_playback_failure_drain.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0042_playback_failure_drain.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0042_playback_failure_drain.Tpo dither/phased/$(DEPDIR)/test_runner-0042_playback_failure_drain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0042_playback_failure_drain.c' object='dither/phased/test_runner-0042_playback_failure_drain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0042_playback_failure_drain.obj `if test -f 'dither/phased/0042_playback_failure_drain.c'; then $(CYGPATH_W) 'dither/phased/0042_playback_failure_drain.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0042_playback_failure_drain.c'; fi`
+
+dither/phased/test_runner-0043_playback_cancel_new_admission.o: dither/phased/0043_playback_cancel_new_admission.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0043_playback_cancel_new_admission.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0043_playback_cancel_new_admission.Tpo -c -o dither/phased/test_runner-0043_playback_cancel_new_admission.o `test -f 'dither/phased/0043_playback_cancel_new_admission.c' || echo '$(srcdir)/'`dither/phased/0043_playback_cancel_new_admission.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0043_playback_cancel_new_admission.Tpo dither/phased/$(DEPDIR)/test_runner-0043_playback_cancel_new_admission.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0043_playback_cancel_new_admission.c' object='dither/phased/test_runner-0043_playback_cancel_new_admission.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0043_playback_cancel_new_admission.o `test -f 'dither/phased/0043_playback_cancel_new_admission.c' || echo '$(srcdir)/'`dither/phased/0043_playback_cancel_new_admission.c
+
+dither/phased/test_runner-0043_playback_cancel_new_admission.obj: dither/phased/0043_playback_cancel_new_admission.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0043_playback_cancel_new_admission.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0043_playback_cancel_new_admission.Tpo -c -o dither/phased/test_runner-0043_playback_cancel_new_admission.obj `if test -f 'dither/phased/0043_playback_cancel_new_admission.c'; then $(CYGPATH_W) 'dither/phased/0043_playback_cancel_new_admission.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0043_playback_cancel_new_admission.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0043_playback_cancel_new_admission.Tpo dither/phased/$(DEPDIR)/test_runner-0043_playback_cancel_new_admission.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0043_playback_cancel_new_admission.c' object='dither/phased/test_runner-0043_playback_cancel_new_admission.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0043_playback_cancel_new_admission.obj `if test -f 'dither/phased/0043_playback_cancel_new_admission.c'; then $(CYGPATH_W) 'dither/phased/0043_playback_cancel_new_admission.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0043_playback_cancel_new_admission.c'; fi`
+
+dither/phased/test_runner-0044_playback_callback_sample.o: dither/phased/0044_playback_callback_sample.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0044_playback_callback_sample.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0044_playback_callback_sample.Tpo -c -o dither/phased/test_runner-0044_playback_callback_sample.o `test -f 'dither/phased/0044_playback_callback_sample.c' || echo '$(srcdir)/'`dither/phased/0044_playback_callback_sample.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0044_playback_callback_sample.Tpo dither/phased/$(DEPDIR)/test_runner-0044_playback_callback_sample.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0044_playback_callback_sample.c' object='dither/phased/test_runner-0044_playback_callback_sample.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0044_playback_callback_sample.o `test -f 'dither/phased/0044_playback_callback_sample.c' || echo '$(srcdir)/'`dither/phased/0044_playback_callback_sample.c
+
+dither/phased/test_runner-0044_playback_callback_sample.obj: dither/phased/0044_playback_callback_sample.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0044_playback_callback_sample.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0044_playback_callback_sample.Tpo -c -o dither/phased/test_runner-0044_playback_callback_sample.obj `if test -f 'dither/phased/0044_playback_callback_sample.c'; then $(CYGPATH_W) 'dither/phased/0044_playback_callback_sample.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0044_playback_callback_sample.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0044_playback_callback_sample.Tpo dither/phased/$(DEPDIR)/test_runner-0044_playback_callback_sample.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0044_playback_callback_sample.c' object='dither/phased/test_runner-0044_playback_callback_sample.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0044_playback_callback_sample.obj `if test -f 'dither/phased/0044_playback_callback_sample.c'; then $(CYGPATH_W) 'dither/phased/0044_playback_callback_sample.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0044_playback_callback_sample.c'; fi`
+
+_support/phased/test_runner-rendezvous.o: _support/phased/rendezvous.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-rendezvous.o -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-rendezvous.Tpo -c -o _support/phased/test_runner-rendezvous.o `test -f '_support/phased/rendezvous.c' || echo '$(srcdir)/'`_support/phased/rendezvous.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/phased/$(DEPDIR)/test_runner-rendezvous.Tpo _support/phased/$(DEPDIR)/test_runner-rendezvous.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/rendezvous.c' object='_support/phased/test_runner-rendezvous.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-rendezvous.o `test -f '_support/phased/rendezvous.c' || echo '$(srcdir)/'`_support/phased/rendezvous.c
+
+_support/phased/test_runner-rendezvous.obj: _support/phased/rendezvous.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-rendezvous.obj -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-rendezvous.Tpo -c -o _support/phased/test_runner-rendezvous.obj `if test -f '_support/phased/rendezvous.c'; then $(CYGPATH_W) '_support/phased/rendezvous.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/rendezvous.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/phased/$(DEPDIR)/test_runner-rendezvous.Tpo _support/phased/$(DEPDIR)/test_runner-rendezvous.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/rendezvous.c' object='_support/phased/test_runner-rendezvous.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-rendezvous.obj `if test -f '_support/phased/rendezvous.c'; then $(CYGPATH_W) '_support/phased/rendezvous.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/rendezvous.c'; fi`
+
+dither/phased/test_runner-0045_deferred_rgb241.o: dither/phased/0045_deferred_rgb241.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0045_deferred_rgb241.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0045_deferred_rgb241.Tpo -c -o dither/phased/test_runner-0045_deferred_rgb241.o `test -f 'dither/phased/0045_deferred_rgb241.c' || echo '$(srcdir)/'`dither/phased/0045_deferred_rgb241.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0045_deferred_rgb241.Tpo dither/phased/$(DEPDIR)/test_runner-0045_deferred_rgb241.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0045_deferred_rgb241.c' object='dither/phased/test_runner-0045_deferred_rgb241.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0045_deferred_rgb241.o `test -f 'dither/phased/0045_deferred_rgb241.c' || echo '$(srcdir)/'`dither/phased/0045_deferred_rgb241.c
+
+dither/phased/test_runner-0045_deferred_rgb241.obj: dither/phased/0045_deferred_rgb241.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0045_deferred_rgb241.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0045_deferred_rgb241.Tpo -c -o dither/phased/test_runner-0045_deferred_rgb241.obj `if test -f 'dither/phased/0045_deferred_rgb241.c'; then $(CYGPATH_W) 'dither/phased/0045_deferred_rgb241.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0045_deferred_rgb241.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0045_deferred_rgb241.Tpo dither/phased/$(DEPDIR)/test_runner-0045_deferred_rgb241.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0045_deferred_rgb241.c' object='dither/phased/test_runner-0045_deferred_rgb241.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0045_deferred_rgb241.obj `if test -f 'dither/phased/0045_deferred_rgb241.c'; then $(CYGPATH_W) 'dither/phased/0045_deferred_rgb241.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0045_deferred_rgb241.c'; fi`
+
+dither/phased/test_runner-0046_deferred_missing_history.o: dither/phased/0046_deferred_missing_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0046_deferred_missing_history.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0046_deferred_missing_history.Tpo -c -o dither/phased/test_runner-0046_deferred_missing_history.o `test -f 'dither/phased/0046_deferred_missing_history.c' || echo '$(srcdir)/'`dither/phased/0046_deferred_missing_history.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0046_deferred_missing_history.Tpo dither/phased/$(DEPDIR)/test_runner-0046_deferred_missing_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0046_deferred_missing_history.c' object='dither/phased/test_runner-0046_deferred_missing_history.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0046_deferred_missing_history.o `test -f 'dither/phased/0046_deferred_missing_history.c' || echo '$(srcdir)/'`dither/phased/0046_deferred_missing_history.c
+
+dither/phased/test_runner-0046_deferred_missing_history.obj: dither/phased/0046_deferred_missing_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0046_deferred_missing_history.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0046_deferred_missing_history.Tpo -c -o dither/phased/test_runner-0046_deferred_missing_history.obj `if test -f 'dither/phased/0046_deferred_missing_history.c'; then $(CYGPATH_W) 'dither/phased/0046_deferred_missing_history.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0046_deferred_missing_history.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0046_deferred_missing_history.Tpo dither/phased/$(DEPDIR)/test_runner-0046_deferred_missing_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0046_deferred_missing_history.c' object='dither/phased/test_runner-0046_deferred_missing_history.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0046_deferred_missing_history.obj `if test -f 'dither/phased/0046_deferred_missing_history.c'; then $(CYGPATH_W) 'dither/phased/0046_deferred_missing_history.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0046_deferred_missing_history.c'; fi`
+
+dither/phased/test_runner-0047_deferred_cancel_seals.o: dither/phased/0047_deferred_cancel_seals.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0047_deferred_cancel_seals.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0047_deferred_cancel_seals.Tpo -c -o dither/phased/test_runner-0047_deferred_cancel_seals.o `test -f 'dither/phased/0047_deferred_cancel_seals.c' || echo '$(srcdir)/'`dither/phased/0047_deferred_cancel_seals.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0047_deferred_cancel_seals.Tpo dither/phased/$(DEPDIR)/test_runner-0047_deferred_cancel_seals.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0047_deferred_cancel_seals.c' object='dither/phased/test_runner-0047_deferred_cancel_seals.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0047_deferred_cancel_seals.o `test -f 'dither/phased/0047_deferred_cancel_seals.c' || echo '$(srcdir)/'`dither/phased/0047_deferred_cancel_seals.c
+
+dither/phased/test_runner-0047_deferred_cancel_seals.obj: dither/phased/0047_deferred_cancel_seals.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0047_deferred_cancel_seals.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0047_deferred_cancel_seals.Tpo -c -o dither/phased/test_runner-0047_deferred_cancel_seals.obj `if test -f 'dither/phased/0047_deferred_cancel_seals.c'; then $(CYGPATH_W) 'dither/phased/0047_deferred_cancel_seals.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0047_deferred_cancel_seals.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0047_deferred_cancel_seals.Tpo dither/phased/$(DEPDIR)/test_runner-0047_deferred_cancel_seals.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0047_deferred_cancel_seals.c' object='dither/phased/test_runner-0047_deferred_cancel_seals.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0047_deferred_cancel_seals.obj `if test -f 'dither/phased/0047_deferred_cancel_seals.c'; then $(CYGPATH_W) 'dither/phased/0047_deferred_cancel_seals.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0047_deferred_cancel_seals.c'; fi`
+
+dither/phased/test_runner-0048_playback_sample_stale.o: dither/phased/0048_playback_sample_stale.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0048_playback_sample_stale.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0048_playback_sample_stale.Tpo -c -o dither/phased/test_runner-0048_playback_sample_stale.o `test -f 'dither/phased/0048_playback_sample_stale.c' || echo '$(srcdir)/'`dither/phased/0048_playback_sample_stale.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0048_playback_sample_stale.Tpo dither/phased/$(DEPDIR)/test_runner-0048_playback_sample_stale.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0048_playback_sample_stale.c' object='dither/phased/test_runner-0048_playback_sample_stale.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0048_playback_sample_stale.o `test -f 'dither/phased/0048_playback_sample_stale.c' || echo '$(srcdir)/'`dither/phased/0048_playback_sample_stale.c
+
+dither/phased/test_runner-0048_playback_sample_stale.obj: dither/phased/0048_playback_sample_stale.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0048_playback_sample_stale.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0048_playback_sample_stale.Tpo -c -o dither/phased/test_runner-0048_playback_sample_stale.obj `if test -f 'dither/phased/0048_playback_sample_stale.c'; then $(CYGPATH_W) 'dither/phased/0048_playback_sample_stale.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0048_playback_sample_stale.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0048_playback_sample_stale.Tpo dither/phased/$(DEPDIR)/test_runner-0048_playback_sample_stale.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0048_playback_sample_stale.c' object='dither/phased/test_runner-0048_playback_sample_stale.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0048_playback_sample_stale.obj `if test -f 'dither/phased/0048_playback_sample_stale.c'; then $(CYGPATH_W) 'dither/phased/0048_playback_sample_stale.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0048_playback_sample_stale.c'; fi`
+
+dither/phased/test_runner-0049_playback_sample_short.o: dither/phased/0049_playback_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0049_playback_sample_short.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0049_playback_sample_short.Tpo -c -o dither/phased/test_runner-0049_playback_sample_short.o `test -f 'dither/phased/0049_playback_sample_short.c' || echo '$(srcdir)/'`dither/phased/0049_playback_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0049_playback_sample_short.Tpo dither/phased/$(DEPDIR)/test_runner-0049_playback_sample_short.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0049_playback_sample_short.c' object='dither/phased/test_runner-0049_playback_sample_short.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0049_playback_sample_short.o `test -f 'dither/phased/0049_playback_sample_short.c' || echo '$(srcdir)/'`dither/phased/0049_playback_sample_short.c
+
+dither/phased/test_runner-0049_playback_sample_short.obj: dither/phased/0049_playback_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0049_playback_sample_short.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0049_playback_sample_short.Tpo -c -o dither/phased/test_runner-0049_playback_sample_short.obj `if test -f 'dither/phased/0049_playback_sample_short.c'; then $(CYGPATH_W) 'dither/phased/0049_playback_sample_short.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0049_playback_sample_short.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0049_playback_sample_short.Tpo dither/phased/$(DEPDIR)/test_runner-0049_playback_sample_short.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0049_playback_sample_short.c' object='dither/phased/test_runner-0049_playback_sample_short.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0049_playback_sample_short.obj `if test -f 'dither/phased/0049_playback_sample_short.c'; then $(CYGPATH_W) 'dither/phased/0049_playback_sample_short.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0049_playback_sample_short.c'; fi`
+
+dither/phased/test_runner-0050_playback_sample_tail.o: dither/phased/0050_playback_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0050_playback_sample_tail.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Tpo -c -o dither/phased/test_runner-0050_playback_sample_tail.o `test -f 'dither/phased/0050_playback_sample_tail.c' || echo '$(srcdir)/'`dither/phased/0050_playback_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Tpo dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0050_playback_sample_tail.c' object='dither/phased/test_runner-0050_playback_sample_tail.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0050_playback_sample_tail.o `test -f 'dither/phased/0050_playback_sample_tail.c' || echo '$(srcdir)/'`dither/phased/0050_playback_sample_tail.c
+
+dither/phased/test_runner-0050_playback_sample_tail.obj: dither/phased/0050_playback_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0050_playback_sample_tail.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Tpo -c -o dither/phased/test_runner-0050_playback_sample_tail.obj `if test -f 'dither/phased/0050_playback_sample_tail.c'; then $(CYGPATH_W) 'dither/phased/0050_playback_sample_tail.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0050_playback_sample_tail.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Tpo dither/phased/$(DEPDIR)/test_runner-0050_playback_sample_tail.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0050_playback_sample_tail.c' object='dither/phased/test_runner-0050_playback_sample_tail.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0050_playback_sample_tail.obj `if test -f 'dither/phased/0050_playback_sample_tail.c'; then $(CYGPATH_W) 'dither/phased/0050_playback_sample_tail.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0050_playback_sample_tail.c'; fi`
+
+encoder/scheduling/test_runner-0028_ready_fifo.o: encoder/scheduling/0028_ready_fifo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0028_ready_fifo.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0028_ready_fifo.Tpo -c -o encoder/scheduling/test_runner-0028_ready_fifo.o `test -f 'encoder/scheduling/0028_ready_fifo.c' || echo '$(srcdir)/'`encoder/scheduling/0028_ready_fifo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0028_ready_fifo.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0028_ready_fifo.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0028_ready_fifo.c' object='encoder/scheduling/test_runner-0028_ready_fifo.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0028_ready_fifo.o `test -f 'encoder/scheduling/0028_ready_fifo.c' || echo '$(srcdir)/'`encoder/scheduling/0028_ready_fifo.c
+
+encoder/scheduling/test_runner-0028_ready_fifo.obj: encoder/scheduling/0028_ready_fifo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0028_ready_fifo.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0028_ready_fifo.Tpo -c -o encoder/scheduling/test_runner-0028_ready_fifo.obj `if test -f 'encoder/scheduling/0028_ready_fifo.c'; then $(CYGPATH_W) 'encoder/scheduling/0028_ready_fifo.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0028_ready_fifo.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0028_ready_fifo.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0028_ready_fifo.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0028_ready_fifo.c' object='encoder/scheduling/test_runner-0028_ready_fifo.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0028_ready_fifo.obj `if test -f 'encoder/scheduling/0028_ready_fifo.c'; then $(CYGPATH_W) 'encoder/scheduling/0028_ready_fifo.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0028_ready_fifo.c'; fi`
+
+encoder/scheduling/test_runner-0029_ready_full.o: encoder/scheduling/0029_ready_full.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0029_ready_full.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0029_ready_full.Tpo -c -o encoder/scheduling/test_runner-0029_ready_full.o `test -f 'encoder/scheduling/0029_ready_full.c' || echo '$(srcdir)/'`encoder/scheduling/0029_ready_full.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0029_ready_full.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0029_ready_full.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0029_ready_full.c' object='encoder/scheduling/test_runner-0029_ready_full.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0029_ready_full.o `test -f 'encoder/scheduling/0029_ready_full.c' || echo '$(srcdir)/'`encoder/scheduling/0029_ready_full.c
+
+encoder/scheduling/test_runner-0029_ready_full.obj: encoder/scheduling/0029_ready_full.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0029_ready_full.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0029_ready_full.Tpo -c -o encoder/scheduling/test_runner-0029_ready_full.obj `if test -f 'encoder/scheduling/0029_ready_full.c'; then $(CYGPATH_W) 'encoder/scheduling/0029_ready_full.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0029_ready_full.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0029_ready_full.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0029_ready_full.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0029_ready_full.c' object='encoder/scheduling/test_runner-0029_ready_full.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0029_ready_full.obj `if test -f 'encoder/scheduling/0029_ready_full.c'; then $(CYGPATH_W) 'encoder/scheduling/0029_ready_full.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0029_ready_full.c'; fi`
+
+encoder/scheduling/test_runner-0030_ready_empty.o: encoder/scheduling/0030_ready_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0030_ready_empty.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0030_ready_empty.Tpo -c -o encoder/scheduling/test_runner-0030_ready_empty.o `test -f 'encoder/scheduling/0030_ready_empty.c' || echo '$(srcdir)/'`encoder/scheduling/0030_ready_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0030_ready_empty.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0030_ready_empty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0030_ready_empty.c' object='encoder/scheduling/test_runner-0030_ready_empty.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0030_ready_empty.o `test -f 'encoder/scheduling/0030_ready_empty.c' || echo '$(srcdir)/'`encoder/scheduling/0030_ready_empty.c
+
+encoder/scheduling/test_runner-0030_ready_empty.obj: encoder/scheduling/0030_ready_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0030_ready_empty.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0030_ready_empty.Tpo -c -o encoder/scheduling/test_runner-0030_ready_empty.obj `if test -f 'encoder/scheduling/0030_ready_empty.c'; then $(CYGPATH_W) 'encoder/scheduling/0030_ready_empty.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0030_ready_empty.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0030_ready_empty.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0030_ready_empty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0030_ready_empty.c' object='encoder/scheduling/test_runner-0030_ready_empty.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0030_ready_empty.obj `if test -f 'encoder/scheduling/0030_ready_empty.c'; then $(CYGPATH_W) 'encoder/scheduling/0030_ready_empty.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0030_ready_empty.c'; fi`
+
+encoder/scheduling/test_runner-0031_ready_wrap.o: encoder/scheduling/0031_ready_wrap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0031_ready_wrap.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0031_ready_wrap.Tpo -c -o encoder/scheduling/test_runner-0031_ready_wrap.o `test -f 'encoder/scheduling/0031_ready_wrap.c' || echo '$(srcdir)/'`encoder/scheduling/0031_ready_wrap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0031_ready_wrap.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0031_ready_wrap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0031_ready_wrap.c' object='encoder/scheduling/test_runner-0031_ready_wrap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0031_ready_wrap.o `test -f 'encoder/scheduling/0031_ready_wrap.c' || echo '$(srcdir)/'`encoder/scheduling/0031_ready_wrap.c
+
+encoder/scheduling/test_runner-0031_ready_wrap.obj: encoder/scheduling/0031_ready_wrap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0031_ready_wrap.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0031_ready_wrap.Tpo -c -o encoder/scheduling/test_runner-0031_ready_wrap.obj `if test -f 'encoder/scheduling/0031_ready_wrap.c'; then $(CYGPATH_W) 'encoder/scheduling/0031_ready_wrap.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0031_ready_wrap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0031_ready_wrap.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0031_ready_wrap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0031_ready_wrap.c' object='encoder/scheduling/test_runner-0031_ready_wrap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0031_ready_wrap.obj `if test -f 'encoder/scheduling/0031_ready_wrap.c'; then $(CYGPATH_W) 'encoder/scheduling/0031_ready_wrap.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0031_ready_wrap.c'; fi`
+
+encoder/scheduling/test_runner-0032_ready_slot_release.o: encoder/scheduling/0032_ready_slot_release.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0032_ready_slot_release.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0032_ready_slot_release.Tpo -c -o encoder/scheduling/test_runner-0032_ready_slot_release.o `test -f 'encoder/scheduling/0032_ready_slot_release.c' || echo '$(srcdir)/'`encoder/scheduling/0032_ready_slot_release.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0032_ready_slot_release.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0032_ready_slot_release.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0032_ready_slot_release.c' object='encoder/scheduling/test_runner-0032_ready_slot_release.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0032_ready_slot_release.o `test -f 'encoder/scheduling/0032_ready_slot_release.c' || echo '$(srcdir)/'`encoder/scheduling/0032_ready_slot_release.c
+
+encoder/scheduling/test_runner-0032_ready_slot_release.obj: encoder/scheduling/0032_ready_slot_release.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0032_ready_slot_release.obj -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0032_ready_slot_release.Tpo -c -o encoder/scheduling/test_runner-0032_ready_slot_release.obj `if test -f 'encoder/scheduling/0032_ready_slot_release.c'; then $(CYGPATH_W) 'encoder/scheduling/0032_ready_slot_release.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0032_ready_slot_release.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/scheduling/$(DEPDIR)/test_runner-0032_ready_slot_release.Tpo encoder/scheduling/$(DEPDIR)/test_runner-0032_ready_slot_release.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/scheduling/0032_ready_slot_release.c' object='encoder/scheduling/test_runner-0032_ready_slot_release.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/scheduling/test_runner-0032_ready_slot_release.obj `if test -f 'encoder/scheduling/0032_ready_slot_release.c'; then $(CYGPATH_W) 'encoder/scheduling/0032_ready_slot_release.c'; else $(CYGPATH_W) '$(srcdir)/encoder/scheduling/0032_ready_slot_release.c'; fi`
+
+dither/phased/test_runner-0051_playback_resize_bytes.o: dither/phased/0051_playback_resize_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0051_playback_resize_bytes.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Tpo -c -o dither/phased/test_runner-0051_playback_resize_bytes.o `test -f 'dither/phased/0051_playback_resize_bytes.c' || echo '$(srcdir)/'`dither/phased/0051_playback_resize_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Tpo dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0051_playback_resize_bytes.c' object='dither/phased/test_runner-0051_playback_resize_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0051_playback_resize_bytes.o `test -f 'dither/phased/0051_playback_resize_bytes.c' || echo '$(srcdir)/'`dither/phased/0051_playback_resize_bytes.c
+
+dither/phased/test_runner-0051_playback_resize_bytes.obj: dither/phased/0051_playback_resize_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0051_playback_resize_bytes.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Tpo -c -o dither/phased/test_runner-0051_playback_resize_bytes.obj `if test -f 'dither/phased/0051_playback_resize_bytes.c'; then $(CYGPATH_W) 'dither/phased/0051_playback_resize_bytes.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0051_playback_resize_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Tpo dither/phased/$(DEPDIR)/test_runner-0051_playback_resize_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0051_playback_resize_bytes.c' object='dither/phased/test_runner-0051_playback_resize_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0051_playback_resize_bytes.obj `if test -f 'dither/phased/0051_playback_resize_bytes.c'; then $(CYGPATH_W) 'dither/phased/0051_playback_resize_bytes.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0051_playback_resize_bytes.c'; fi`
+
+dither/phased/test_runner-0052_playback_resize_interval.o: dither/phased/0052_playback_resize_interval.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0052_playback_resize_interval.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Tpo -c -o dither/phased/test_runner-0052_playback_resize_interval.o `test -f 'dither/phased/0052_playback_resize_interval.c' || echo '$(srcdir)/'`dither/phased/0052_playback_resize_interval.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Tpo dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0052_playback_resize_interval.c' object='dither/phased/test_runner-0052_playback_resize_interval.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0052_playback_resize_interval.o `test -f 'dither/phased/0052_playback_resize_interval.c' || echo '$(srcdir)/'`dither/phased/0052_playback_resize_interval.c
+
+dither/phased/test_runner-0052_playback_resize_interval.obj: dither/phased/0052_playback_resize_interval.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0052_playback_resize_interval.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Tpo -c -o dither/phased/test_runner-0052_playback_resize_interval.obj `if test -f 'dither/phased/0052_playback_resize_interval.c'; then $(CYGPATH_W) 'dither/phased/0052_playback_resize_interval.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0052_playback_resize_interval.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Tpo dither/phased/$(DEPDIR)/test_runner-0052_playback_resize_interval.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0052_playback_resize_interval.c' object='dither/phased/test_runner-0052_playback_resize_interval.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0052_playback_resize_interval.obj `if test -f 'dither/phased/0052_playback_resize_interval.c'; then $(CYGPATH_W) 'dither/phased/0052_playback_resize_interval.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0052_playback_resize_interval.c'; fi`
+
+dither/phased/test_runner-0053_playback_credit_order.o: dither/phased/0053_playback_credit_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0053_playback_credit_order.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Tpo -c -o dither/phased/test_runner-0053_playback_credit_order.o `test -f 'dither/phased/0053_playback_credit_order.c' || echo '$(srcdir)/'`dither/phased/0053_playback_credit_order.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Tpo dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0053_playback_credit_order.c' object='dither/phased/test_runner-0053_playback_credit_order.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0053_playback_credit_order.o `test -f 'dither/phased/0053_playback_credit_order.c' || echo '$(srcdir)/'`dither/phased/0053_playback_credit_order.c
+
+dither/phased/test_runner-0053_playback_credit_order.obj: dither/phased/0053_playback_credit_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0053_playback_credit_order.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Tpo -c -o dither/phased/test_runner-0053_playback_credit_order.obj `if test -f 'dither/phased/0053_playback_credit_order.c'; then $(CYGPATH_W) 'dither/phased/0053_playback_credit_order.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0053_playback_credit_order.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Tpo dither/phased/$(DEPDIR)/test_runner-0053_playback_credit_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0053_playback_credit_order.c' object='dither/phased/test_runner-0053_playback_credit_order.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0053_playback_credit_order.obj `if test -f 'dither/phased/0053_playback_credit_order.c'; then $(CYGPATH_W) 'dither/phased/0053_playback_credit_order.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0053_playback_credit_order.c'; fi`
+
+dither/phased/test_runner-0054_playback_cancel_origin.o: dither/phased/0054_playback_cancel_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0054_playback_cancel_origin.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Tpo -c -o dither/phased/test_runner-0054_playback_cancel_origin.o `test -f 'dither/phased/0054_playback_cancel_origin.c' || echo '$(srcdir)/'`dither/phased/0054_playback_cancel_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Tpo dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0054_playback_cancel_origin.c' object='dither/phased/test_runner-0054_playback_cancel_origin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0054_playback_cancel_origin.o `test -f 'dither/phased/0054_playback_cancel_origin.c' || echo '$(srcdir)/'`dither/phased/0054_playback_cancel_origin.c
+
+dither/phased/test_runner-0054_playback_cancel_origin.obj: dither/phased/0054_playback_cancel_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0054_playback_cancel_origin.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Tpo -c -o dither/phased/test_runner-0054_playback_cancel_origin.obj `if test -f 'dither/phased/0054_playback_cancel_origin.c'; then $(CYGPATH_W) 'dither/phased/0054_playback_cancel_origin.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0054_playback_cancel_origin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Tpo dither/phased/$(DEPDIR)/test_runner-0054_playback_cancel_origin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0054_playback_cancel_origin.c' object='dither/phased/test_runner-0054_playback_cancel_origin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0054_playback_cancel_origin.obj `if test -f 'dither/phased/0054_playback_cancel_origin.c'; then $(CYGPATH_W) 'dither/phased/0054_playback_cancel_origin.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0054_playback_cancel_origin.c'; fi`
+
+dither/phased/test_runner-0055_playback_inherited_origin.o: dither/phased/0055_playback_inherited_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0055_playback_inherited_origin.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Tpo -c -o dither/phased/test_runner-0055_playback_inherited_origin.o `test -f 'dither/phased/0055_playback_inherited_origin.c' || echo '$(srcdir)/'`dither/phased/0055_playback_inherited_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Tpo dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0055_playback_inherited_origin.c' object='dither/phased/test_runner-0055_playback_inherited_origin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0055_playback_inherited_origin.o `test -f 'dither/phased/0055_playback_inherited_origin.c' || echo '$(srcdir)/'`dither/phased/0055_playback_inherited_origin.c
+
+dither/phased/test_runner-0055_playback_inherited_origin.obj: dither/phased/0055_playback_inherited_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0055_playback_inherited_origin.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Tpo -c -o dither/phased/test_runner-0055_playback_inherited_origin.obj `if test -f 'dither/phased/0055_playback_inherited_origin.c'; then $(CYGPATH_W) 'dither/phased/0055_playback_inherited_origin.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0055_playback_inherited_origin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Tpo dither/phased/$(DEPDIR)/test_runner-0055_playback_inherited_origin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0055_playback_inherited_origin.c' object='dither/phased/test_runner-0055_playback_inherited_origin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0055_playback_inherited_origin.obj `if test -f 'dither/phased/0055_playback_inherited_origin.c'; then $(CYGPATH_W) 'dither/phased/0055_playback_inherited_origin.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0055_playback_inherited_origin.c'; fi`
 
 _support/phased/test_runner-fixture.o: _support/phased/fixture.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/phased/test_runner-fixture.o -MD -MP -MF _support/phased/$(DEPDIR)/test_runner-fixture.Tpo -c -o _support/phased/test_runner-fixture.o `test -f '_support/phased/fixture.c' || echo '$(srcdir)/'`_support/phased/fixture.c

@@ -37,6 +37,10 @@ The GPU preparer freezes configuration, selects a fractional lookup capability a
 
 PaletteApply owns publication. The plan drains GPU work and finishes every acquired lookup binding before returning. Only a successful completed result is validated and published as a whole image; CPU SIXEL encoding cannot consume intermediate subpasses. RetainedPlane commits history only after output acceptance. Reconfiguration does not mutate an existing plan, and failed preparation leaves the prior PaletteApply plan usable.
 
+The optional deferred facet splits the same algorithm into a history-free solve and a history-dependent resolve. Solve retains the iteration index `k`, reconstructs the fractional query `q = error + emitted_palette[k]`, and computes its corrected lookup candidate `j`. Both candidates are necessary: without valid history the existing algorithm uses `k`; with history it compares `q` and `j`. The dead second iteration plane stores the corrected query and candidate. Resolve performs no lookup acquisition or search, and uses the current committed baseline only. This adds a solve-tail dispatch and a later command buffer; it does not change coefficients or carry residuals between frames.
+
+A completed solution owns its source-derived state, frozen wire palette and geometry. Solve drains and releases the lookup lease before returning, so a ready solution does not obstruct another job sharing that lookup plan. Its prepared facet survives release or reconfiguration of the outer PaletteApply object. The plan remains exclusive until the last solution reference is released. Argument rejection before execution leaves it ready; execution, including cancellation, consumes it once. PaletteApply seals a failed resolve without publishing rows. [Animation threading](../../../threading/animation.md) owns admission, credits and ordered disposal; direct encoder calls retain synchronous application.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -66,6 +70,41 @@ PaletteApply owns publication. The plan drains GPU work and finishes every acqui
 | PH-19 | Full RGB palette output matches the scatter reference. | [tests/dither/phased/0019_palette256.t](../../../../tests/dither/phased/0019_palette256.t) |
 | PH-20 | Reprepared pooled storage starts without previous residuals. | [tests/dither/phased/0020_reprepare_reset.t](../../../../tests/dither/phased/0020_reprepare_reset.t) |
 | PH-21 | PaletteApply retains the supplied dither preparer after caller release. | [tests/dither/phased/0021_preparer_lifetime.t](../../../../tests/dither/phased/0021_preparer_lifetime.t) |
+| PH-22 | Deferred standard retains the sequential pixels. | [tests/dither/phased/0022_deferred_standard.t](../../../../tests/dither/phased/0022_deferred_standard.t) |
+| PH-23 | Deferred small error retains the sequential pixels. | [tests/dither/phased/0023_deferred_small_error.t](../../../../tests/dither/phased/0023_deferred_small_error.t) |
+| PH-24 | Deferred t0 retains the sequential pixels. | [tests/dither/phased/0024_deferred_t0.t](../../../../tests/dither/phased/0024_deferred_t0.t) |
+| PH-25 | Deferred refresh retains the sequential pixels. | [tests/dither/phased/0025_deferred_refresh.t](../../../../tests/dither/phased/0025_deferred_refresh.t) |
+| PH-26 | Deferred partial retains the sequential pixels. | [tests/dither/phased/0026_deferred_partial.t](../../../../tests/dither/phased/0026_deferred_partial.t) |
+| PH-27 | Changing source pixels after solve cannot change the solution. | [tests/dither/phased/0027_deferred_source_owned.t](../../../../tests/dither/phased/0027_deferred_source_owned.t) |
+| PH-28 | A solution survives release of its preparer and deferred facet. | [tests/dither/phased/0028_deferred_facet_lifetime.t](../../../../tests/dither/phased/0028_deferred_facet_lifetime.t) |
+| PH-29 | A second resolve is rejected. | [tests/dither/phased/0029_deferred_repeat_rejected.t](../../../../tests/dither/phased/0029_deferred_repeat_rejected.t) |
+| PH-30 | Rejected geometry leaves the solution ready for a valid resolve. | [tests/dither/phased/0030_deferred_bad_description_retry.t](../../../../tests/dither/phased/0030_deferred_bad_description_retry.t) |
+| PH-31 | Discarding a ready solution permits reuse of the prepared plan. | [tests/dither/phased/0031_deferred_discard_reuse.t](../../../../tests/dither/phased/0031_deferred_discard_reuse.t) |
+| PH-32 | A ready solution excludes monolithic use of the same plan. | [tests/dither/phased/0032_deferred_run_excluded.t](../../../../tests/dither/phased/0032_deferred_run_excluded.t) |
+| PH-33 | Outer reprepare leaves an existing solution and its lookup lease independent. | [tests/dither/phased/0033_deferred_prepare_independent.t](../../../../tests/dither/phased/0033_deferred_prepare_independent.t) |
+| PH-34 | Successful deferred resolution publishes and seals the complete image. | [tests/dither/phased/0034_deferred_publication.t](../../../../tests/dither/phased/0034_deferred_publication.t) |
+| PH-35 | Playback no delta matches sequential output. | [tests/dither/phased/0035_playback_no_delta.t](../../../../tests/dither/phased/0035_playback_no_delta.t) |
+| PH-36 | Playback t0 matches sequential output. | [tests/dither/phased/0036_playback_t0.t](../../../../tests/dither/phased/0036_playback_t0.t) |
+| PH-37 | Playback refresh matches sequential output. | [tests/dither/phased/0037_playback_refresh.t](../../../../tests/dither/phased/0037_playback_refresh.t) |
+| PH-38 | Playback small error matches sequential output. | [tests/dither/phased/0038_playback_small_error.t](../../../../tests/dither/phased/0038_playback_small_error.t) |
+| PH-39 | Playback single slot matches sequential output. | [tests/dither/phased/0039_playback_single_slot.t](../../../../tests/dither/phased/0039_playback_single_slot.t) |
+| PH-40 | Solve N+1 completes while the writer of N is blocked. | [tests/dither/phased/0040_playback_solve_overlap.t](../../../../tests/dither/phased/0040_playback_solve_overlap.t) |
+| PH-41 | Cancellation discards an already ready later frame. | [tests/dither/phased/0041_playback_cancel_ready.t](../../../../tests/dither/phased/0041_playback_cancel_ready.t) |
+| PH-42 | Writer failure drains the ready job before ordered completion. | [tests/dither/phased/0042_playback_failure_drain.t](../../../../tests/dither/phased/0042_playback_failure_drain.t) |
+| PH-43 | A new admission after cancellation remains eligible. | [tests/dither/phased/0043_playback_cancel_new_admission.t](../../../../tests/dither/phased/0043_playback_cancel_new_admission.t) |
+| PH-44 | The completion callback can read its exact stage sample. | [tests/dither/phased/0044_playback_callback_sample.t](../../../../tests/dither/phased/0044_playback_callback_sample.t) |
+| PH-45 | RGB241 resolution matches monolithic output. | [tests/dither/phased/0045_deferred_rgb241.t](../../../../tests/dither/phased/0045_deferred_rgb241.t) |
+| PH-46 | Missing delta history retains monolithic first-frame selection. | [tests/dither/phased/0046_deferred_missing_history.t](../../../../tests/dither/phased/0046_deferred_missing_history.t) |
+| PH-47 | Cancelled resolution seals FAILED without publishing rows. | [tests/dither/phased/0047_deferred_cancel_seals.t](../../../../tests/dither/phased/0047_deferred_cancel_seals.t) |
+| PH-48 | A stale stage sequence returns FALSE without changing the caller buffer. | [tests/dither/phased/0048_playback_sample_stale.t](../../../../tests/dither/phased/0048_playback_sample_stale.t) |
+| PH-49 | An undersized stage sample is rejected without changing the buffer. | [tests/dither/phased/0049_playback_sample_short.t](../../../../tests/dither/phased/0049_playback_sample_short.t) |
+| PH-50 | A larger sample preserves its declared size and unknown tail. | [tests/dither/phased/0050_playback_sample_tail.t](../../../../tests/dither/phased/0050_playback_sample_tail.t) |
+| PH-51 | Changing frame dimensions preserves synchronous output bytes. | [tests/dither/phased/0051_playback_resize_bytes.t](../../../../tests/dither/phased/0051_playback_resize_bytes.t) |
+| PH-52 | A geometry transition breaks the completion interval. | [tests/dither/phased/0052_playback_resize_interval.t](../../../../tests/dither/phased/0052_playback_resize_interval.t) |
+| PH-53 | A solve cannot start before the preceding resolve grants credit. | [tests/dither/phased/0053_playback_credit_order.t](../../../../tests/dither/phased/0053_playback_credit_order.t) |
+
+| PH-54 | Cancelled origin updates do not leak into later admissions. | [tests/dither/phased/0054_playback_cancel_origin.t](../../../../tests/dither/phased/0054_playback_cancel_origin.t) |
+| PH-55 | Later admissions inherit the last successfully applied origin. | [tests/dither/phased/0055_playback_inherited_origin.t](../../../../tests/dither/phased/0055_playback_inherited_origin.t) |
 
 ### Quality and verification limits
 

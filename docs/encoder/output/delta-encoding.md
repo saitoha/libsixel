@@ -296,6 +296,8 @@ A successful encode does not acknowledge terminal presentation. If an applicatio
 
 ## Execution paths and interactions
 
+Deferred GPU playback changes scheduling, not the retained commit boundary. A ready solution contains palette-dependent spatial work only. The ordered consumer acquires the current committed baseline and assigns the encode identity immediately before resolve, then completes output acceptance and releases readers before committing. The next frame cannot resolve against a pending candidate. A discarded ready solution has no retained effect; writer failure drains dependent work under the existing invalidation rules. Geometry cannot be relabeled onto a solved result. The [phased integration tests](../palette-application/dithering/phased.md#test-coverage) compare complete output bytes for T0 and T48 with an explicitly supplied refresh clock and exercise ready-frame cancellation and writer failure.
+
 | Path or feature | Current scope |
 | --- | --- |
 | CPU RGB888 | Early and post-lookup keep helpers are used by `none`, `fs`, `atkinson`, `lso2`, `jajuni`, `stucki`, `burkes`, `sierra1`, `sierra2`, `sierra3`, `a_dither`, `x_dither`, and `bluenoise`. `auto` resolves to a concrete dither policy. |

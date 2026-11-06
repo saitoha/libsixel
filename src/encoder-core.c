@@ -99,6 +99,7 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
 {
     output->core = NULL;
     output->session = NULL;
+    output->deferred = NULL;
     output->indexed_disabled = 0;
     output->indexed_count = 0;
     output->body_status = SIXEL_OK;

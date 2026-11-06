@@ -42,6 +42,8 @@ srcs = [
   'encoder-band-schedule.h',
   'encoder-core-indexed.inc.h',
   'encoder-core-session.inc.h',
+  'encoder-playback-deferred.inc.h',
+  'playback-ready.h',
   'lookup-policy-fhedt-gpu.inc.h',
   'lookup-policy-bitlut-gpu.inc.h',
   'fromsixel.c',

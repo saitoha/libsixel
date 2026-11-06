@@ -1143,6 +1143,9 @@ typedef struct sixel_encoder_frame_handoff_meta {
     uint64_t refresh_time_us;
     double admitted_at;
     double started_at;
+    sixel_playback_stage_sample_t stages;
+    uint64_t stage_revision;
+    int stage_geometry[6]; /* width, height, plane width/height, origin x/y */
     int cancelled;              /* complete with SIXEL_INTERRUPTED unencoded */
 } sixel_encoder_frame_handoff_meta_t;
 
@@ -5159,6 +5162,8 @@ typedef struct sixel_encode_dag_context {
     int clip_active;
     sixel_filter_plan_t pre_plan;
     sixel_filter_plan_t post_plan;
+    sixel_output_deferred_t deferred;
+    sixel_timeline_logger_t *job_logger;
     sixel_filter_resize_config_t resize_config;
     sixel_filter_clip_config_t clip_config;
     sixel_filter_colors_config_t colors_config;
@@ -6251,6 +6256,8 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
                                                  context->delay,
                                                  context->planner);
     } else {
+        sixel_output_bind_deferred(context->output,
+            context->deferred.solution != NULL ? &context->deferred : NULL);
         status = sixel_encoder_output_without_macro(context->frame,
                                                     context->dither,
                                                     context->output,
@@ -6260,6 +6267,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
                                                     context->delay,
                                                     context->planner);
     }
+    sixel_output_bind_deferred(context->output, NULL);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -11951,6 +11959,12 @@ sixel_encoder_frame_job_release(sixel_encoder_frame_job_t *job,
         }
         job->context.own_palette = NULL;
     }
+    sixel_output_dispose_deferred(&job->context.deferred);
+    if (job->context.dither != NULL &&
+            job->context.dither->pipeline_logger == job->context.job_logger)
+        job->context.dither->pipeline_logger = NULL;
+    sixel_timeline_logger_unref(job->context.job_logger);
+    job->context.job_logger = NULL;
     sixel_palette_snapshot_unref(job->context.selected_palette.snapshot);
     job->context.selected_palette.snapshot = NULL;
     if (encoder != NULL && encoder->logger != NULL) {
@@ -12247,6 +12261,7 @@ sixel_encoder_new(
     (*ppencoder)->refresh_time_us = 0U;
     (*ppencoder)->palette_test_hooks = NULL;
     (*ppencoder)->prepare_test_hooks = NULL;
+    (*ppencoder)->solve_test_hooks = NULL;
     (*ppencoder)->playback_test_hooks = NULL;
     (*ppencoder)->active_callbacks = NULL;
     (*ppencoder)->operation_initialized = 0;
@@ -16140,6 +16155,12 @@ struct sixel_playback {
     uint64_t completed;
     uint64_t rejected;
     double last_processing_seconds;
+    sixel_playback_stage_sample_t last_stages;
+    double stage_completed;
+    uint64_t stage_sequence;
+    uint64_t stage_cancelled_through;
+    uint64_t stage_revision;
+    int stage_geometry[6];
     SIXELSTATUS failure;            /* first failure of synchronous playback */
     int threaded;
 };
@@ -16173,7 +16194,7 @@ sixel_encoder_playback_frame_begin(sixel_encoder_frame_pipeline_t *pipeline,
     if (pipeline->playback == NULL) {
         return SIXEL_OK;
     }
-    meta->started_at = sixel_timer_now();
+    if (meta->started_at == 0) meta->started_at = sixel_timer_now();
     pipeline->encoder->refresh_time_override =
         (meta->option_flags & SIXEL_PLAYBACK_OPTION_REFRESH_TIME) != 0;
     pipeline->encoder->refresh_time_us = meta->refresh_time_us;
@@ -16231,6 +16252,33 @@ sixel_encoder_playback_frame_done(
     } else {
         result.queued_seconds = now - meta->admitted_at;
     }
+    /* Publish before the callback and outside its encoder reentry guard.
+     * Unknown intervals remain invalid rather than masquerading as zeros. */
+    if (playback->threaded) sixel_mutex_lock(&pipeline->mutex);
+    /* A geometry/configuration transition starts a new timing generation.
+     * Cancellation also breaks it, even when no sequence was skipped. */
+    if (playback->stage_revision != meta->stage_revision ||
+            memcmp(playback->stage_geometry, meta->stage_geometry,
+                sizeof(meta->stage_geometry)) != 0)
+        playback->stage_completed = 0;
+    playback->stage_revision = meta->stage_revision;
+    memcpy(playback->stage_geometry, meta->stage_geometry,
+        sizeof(meta->stage_geometry));
+    playback->last_stages = meta->stages;
+    playback->last_stages.struct_size = sizeof(playback->last_stages);
+    playback->last_stages.sequence = meta->sequence;
+    if (status == SIXEL_OK && playback->stage_completed > 0 &&
+            playback->stage_sequence + 1 == meta->sequence &&
+            playback->stage_cancelled_through == playback->cancelled_through) {
+        playback->last_stages.completion_interval_seconds =
+            sixel_timer_monotonic() - playback->stage_completed;
+        playback->last_stages.valid |= SIXEL_PLAYBACK_STAGE_COMPLETION_INTERVAL;
+    }
+    playback->stage_completed = status == SIXEL_OK
+        ? sixel_timer_monotonic() : 0;
+    playback->stage_sequence = meta->sequence;
+    playback->stage_cancelled_through = playback->cancelled_through;
+    if (playback->threaded) sixel_mutex_unlock(&pipeline->mutex);
     /* Sample construction has joined, including cancellation/failure.
      * Release the wrapper before the caller recycles its borrowed pixels. */
     sixel_frame_unref(meta->palette_source);
@@ -17041,6 +17089,7 @@ sixel_encoder_frame_pipeline_run_ahead(
         SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     return 1;
 }
+#include "encoder-playback-deferred.inc.h"
 #endif  /* SIXEL_ENABLE_THREADS */
 
 static int
@@ -17073,7 +17122,8 @@ sixel_encoder_frame_pipeline_worker_body(void *priv)
         SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
 #if SIXEL_ENABLE_THREADS
     if (sixel_encoder_pipeline_prepare_ahead_eligible(pipeline)
-            && sixel_encoder_frame_pipeline_run_ahead(pipeline)) {
+            && (sixel_encoder_frame_pipeline_run_deferred(pipeline) ||
+                sixel_encoder_frame_pipeline_run_ahead(pipeline))) {
         return 0;
     }
 #endif
@@ -20781,6 +20831,27 @@ sixel_playback_cancel(sixel_playback_t *playback)
     }
 
     return SIXEL_OK;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_get_stage_sample(sixel_playback_t *playback, uint64_t sequence,
+    sixel_playback_stage_sample_t *sample)
+{
+    SIXELSTATUS status;
+    size_t size;
+
+    if (playback == NULL || sample == NULL || sequence == 0 ||
+            sample->struct_size < sizeof(*sample)) return SIXEL_BAD_ARGUMENT;
+    size = sample->struct_size;
+    status = SIXEL_FALSE;
+    if (playback->threaded) sixel_mutex_lock(&playback->pipeline.mutex);
+    if (sequence == playback->last_stages.sequence) {
+        *sample = playback->last_stages;
+        sample->struct_size = size;
+        status = SIXEL_OK;
+    }
+    if (playback->threaded) sixel_mutex_unlock(&playback->pipeline.mutex);
+    return status;
 }
 
 SIXELAPI SIXELSTATUS

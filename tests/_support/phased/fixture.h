@@ -45,6 +45,7 @@ typedef struct phased_fixture {
 
 SIXELSTATUS phased_fixture_baseline(phased_fixture_t *f, int offset);
 int phased_fixture_open(phased_fixture_t *f, int require_gpu);
+SIXELSTATUS phased_fixture_deferred(phased_fixture_t *f);
 void phased_fixture_close(phased_fixture_t *f);
 SIXELSTATUS phased_fixture_prepare(phased_fixture_t *f);
 SIXELSTATUS phased_fixture_run(phased_fixture_t *f);

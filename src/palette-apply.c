@@ -23,6 +23,7 @@ typedef struct sixel_palette_apply_storage {
     sixel_lookup_policy_interface_t *lookup;
     sixel_gpu_program_t *program;
     sixel_gpu_dither_plan_interface_t *gpu_dither;
+    sixel_palette_apply_deferred_interface_t *deferred;
     int gpu;
     int prepared;
     int running;
@@ -71,6 +72,9 @@ sixel_palette_apply_clear_plan(sixel_palette_apply_storage_t *apply)
         }
         sixel_wire_palette_unref(apply->plan.output.palette);
     }
+    if (apply->deferred != NULL)
+        apply->deferred->vtbl->unref(apply->deferred);
+    apply->deferred = NULL;
     sixel_gpu_program_destroy(apply->program);
     apply->program = NULL;
     apply->gpu_dither = NULL;
@@ -97,6 +101,259 @@ sixel_palette_apply_unref(sixel_palette_apply_interface_t *self)
     sixel_allocator_unref(allocator);
 }
 
+/* The deferred facet owns a frozen GPU plan independently of the mutable
+ * PaletteApply object. Both embedded interfaces are reserved at prepare;
+ * no image or solution allocation is needed on the producer thread. */
+typedef struct sixel_apply_deferred {
+    sixel_palette_apply_deferred_interface_t iface;
+    sixel_palette_apply_solution_interface_t solution;
+    sixel_atomic_u32_t ref, solution_ref, busy, consumed;
+    sixel_allocator_t *allocator;
+    sixel_gpu_dither_deferred_interface_t *gpu;
+    sixel_gpu_dither_solution_interface_t *solved;
+    sixel_indexed_frame_description_t description;
+} sixel_apply_deferred_t;
+
+static void
+sixel_apply_deferred_ref(sixel_palette_apply_deferred_interface_t *self)
+{
+    sixel_apply_deferred_t *owner;
+
+    owner = (sixel_apply_deferred_t *)self;
+    (void)sixel_atomic_fetch_add_u32(&owner->ref, 1);
+}
+
+static void
+sixel_apply_deferred_unref(sixel_palette_apply_deferred_interface_t *self)
+{
+    sixel_apply_deferred_t *owner;
+    sixel_allocator_t *allocator;
+
+    owner = (sixel_apply_deferred_t *)self;
+    if (sixel_atomic_fetch_sub_u32(&owner->ref, 1) != 1) return;
+    allocator = owner->allocator;
+    owner->gpu->vtbl->unref(owner->gpu);
+    sixel_wire_palette_unref(owner->description.palette);
+    sixel_allocator_free(allocator, owner);
+    sixel_allocator_unref(allocator);
+}
+
+static sixel_apply_deferred_t *
+sixel_apply_solution_owner(sixel_palette_apply_solution_interface_t const *s)
+{
+    return (sixel_apply_deferred_t *)((char *)s -
+        offsetof(sixel_apply_deferred_t, solution));
+}
+
+static void
+sixel_apply_solution_ref(sixel_palette_apply_solution_interface_t *self)
+{
+    (void)sixel_atomic_fetch_add_u32(
+        &sixel_apply_solution_owner(self)->solution_ref, 1);
+}
+
+static void
+sixel_apply_solution_unref(sixel_palette_apply_solution_interface_t *self)
+{
+    sixel_apply_deferred_t *owner;
+
+    owner = sixel_apply_solution_owner(self);
+    if (sixel_atomic_fetch_sub_u32(&owner->solution_ref, 1) != 1) return;
+    owner->solved->vtbl->unref(owner->solved);
+    owner->solved = NULL;
+    (void)sixel_atomic_fetch_sub_u32(&owner->busy, 1);
+    sixel_apply_deferred_unref(&owner->iface);
+}
+
+static SIXELSTATUS
+sixel_apply_solution_description(
+    sixel_palette_apply_solution_interface_t const *self,
+    sixel_indexed_frame_description_t *description)
+{
+    if (self == NULL || description == NULL) return SIXEL_BAD_ARGUMENT;
+    *description = sixel_apply_solution_owner(self)->description;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_apply_deferred_solve(sixel_palette_apply_deferred_interface_t *self,
+    sixel_palette_apply_solve_request_t const *request,
+    sixel_palette_apply_solution_interface_t **solution)
+{
+    sixel_apply_deferred_t *owner;
+    sixel_gpu_dither_solve_request_t solve;
+    SIXELSTATUS status;
+
+    if (self == NULL || request == NULL || solution == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    *solution = NULL;
+    owner = (sixel_apply_deferred_t *)self;
+    if (sixel_atomic_fetch_add_u32(&owner->busy, 1) != 0) {
+        (void)sixel_atomic_fetch_sub_u32(&owner->busy, 1);
+        return SIXEL_LOGIC_ERROR;
+    }
+    memset(&solve, 0, sizeof(solve));
+    solve.source = request->source;
+    solve.logger = request->logger;
+    solve.cancel = request->cancel;
+    solve.cancel_context = request->cancel_context;
+    status = owner->gpu->vtbl->solve(owner->gpu, &solve, &owner->solved);
+    if (status == SIXEL_OK && owner->solved == NULL)
+        status = SIXEL_LOGIC_ERROR;
+    if (status == SIXEL_OK) {
+        owner->solution_ref = 1;
+        owner->consumed = 0;
+        sixel_apply_deferred_ref(self);
+        *solution = &owner->solution;
+    } else {
+        (void)sixel_atomic_fetch_sub_u32(&owner->busy, 1);
+    }
+    return status;
+}
+
+static SIXELSTATUS
+sixel_apply_solution_resolve(sixel_palette_apply_solution_interface_t *self,
+    sixel_palette_apply_resolve_request_t const *request)
+{
+    sixel_apply_deferred_t *owner;
+    sixel_indexed_frame_description_t const *desc, *expected;
+    sixel_gpu_dither_resolve_request_t resolve;
+    sixel_retained_read_view_t baseline;
+    size_t cells;
+    SIXELSTATUS status;
+
+    if (self == NULL || request == NULL || request->result == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    owner = sixel_apply_solution_owner(self);
+    if (sixel_atomic_fetch_add_u32(&owner->consumed, 0) != 0)
+        return SIXEL_LOGIC_ERROR;
+    desc = &request->result->description;
+    expected = &owner->description;
+    /* Compare members, not padding; no descriptor may relabel solved pixels. */
+    if (sixel_indexed_frame_get_state(request->result) !=
+            SIXEL_INDEXED_BUILDING ||
+            desc->width != expected->width ||
+            desc->height != expected->height ||
+            desc->palette != expected->palette ||
+            desc->keycolor != expected->keycolor ||
+            desc->keycolor_reserved != expected->keycolor_reserved ||
+            desc->transparent_background != expected->transparent_background ||
+            desc->encoded_x != expected->encoded_x ||
+            desc->encoded_y != expected->encoded_y ||
+            desc->encoded_width != expected->encoded_width ||
+            desc->encoded_height != expected->encoded_height ||
+            desc->origin_x != expected->origin_x ||
+            desc->origin_y != expected->origin_y ||
+            desc->plane_width != expected->plane_width ||
+            desc->plane_height != expected->plane_height)
+        return SIXEL_BAD_ARGUMENT;
+    if (request->delta.compare != SIXEL_DELTA_COMPARE_TARGET &&
+            request->delta.compare != SIXEL_DELTA_COMPARE_QUERY)
+        return SIXEL_BAD_ARGUMENT;
+    cells = (size_t)request->delta.selection.columns *
+        request->delta.selection.rows;
+    if (request->delta.threshold > 255 ||
+            (request->delta.enabled && request->baseline != NULL &&
+             request->delta.metric != SIXEL_DELTA_METRIC_MAX &&
+             request->delta.metric != SIXEL_DELTA_METRIC_RGB241) ||
+            request->delta.selection.columns > 64 ||
+            request->delta.selection.rows > 64 ||
+            ((request->delta.selection.columns == 0) !=
+             (request->delta.selection.rows == 0)) ||
+            (request->delta.selection.tiled &&
+             (request->delta.selection.columns != 64 ||
+              request->delta.selection.rows != 64)) ||
+            (cells && (request->delta.selection.words == NULL ||
+             request->delta.selection.word_count < (cells + 31) / 32)))
+        return SIXEL_BAD_ARGUMENT;
+    if (request->delta.enabled && request->baseline != NULL) {
+        status = sixel_retained_read_get_view(request->baseline, &baseline);
+        if (status != SIXEL_OK) return status;
+        if (request->result->identity.stream != baseline.stream ||
+                request->result->identity.epoch != baseline.epoch ||
+                request->result->identity.base_sequence != baseline.sequence ||
+                desc->plane_width != baseline.description.width ||
+                desc->plane_height != baseline.description.height ||
+                desc->keycolor < 0 || baseline.rgb == NULL ||
+                baseline.valid == NULL ||
+                baseline.rgb_stride < (size_t)desc->plane_width * 3 ||
+                baseline.valid_stride < (size_t)desc->plane_width ||
+                desc->origin_x < 0 || desc->origin_y < 0 ||
+                desc->origin_x > desc->plane_width - desc->width ||
+                desc->origin_y > desc->plane_height - desc->height)
+            return SIXEL_BAD_ARGUMENT;
+    }
+    if (sixel_atomic_fetch_add_u32(&owner->consumed, 1) != 0) {
+        (void)sixel_atomic_fetch_sub_u32(&owner->consumed, 1);
+        return SIXEL_LOGIC_ERROR;
+    }
+    memset(&resolve, 0, sizeof(resolve));
+    resolve.baseline = request->baseline;
+    resolve.result = request->result;
+    resolve.delta = request->delta;
+    resolve.logger = request->logger;
+    resolve.cancel = request->cancel;
+    resolve.cancel_context = request->cancel_context;
+    sixel_indexed_frame_acquire_user(request->result);
+    status = owner->solved->vtbl->resolve(owner->solved, &resolve);
+    if (status == SIXEL_OK && request->cancel != NULL &&
+            request->cancel(request->cancel_context))
+        status = SIXEL_INTERRUPTED;
+    /* Validate producer indexes before publishing any rows. */
+    if (status == SIXEL_OK)
+        status = sixel_indexed_frame_publish_applied(request->result,
+            desc->height);
+    if (status == SIXEL_OK)
+        status = sixel_indexed_frame_complete(request->result);
+    if (status != SIXEL_OK) sixel_indexed_frame_fail(request->result);
+    sixel_indexed_frame_release_user(request->result);
+    return status;
+}
+
+static sixel_palette_apply_deferred_vtbl_t const sixel_apply_deferred_vtbl = {
+    sixel_apply_deferred_ref, sixel_apply_deferred_unref,
+    sixel_apply_deferred_solve
+};
+
+static sixel_palette_apply_solution_vtbl_t const sixel_apply_solution_vtbl = {
+    sixel_apply_solution_ref, sixel_apply_solution_unref,
+    sixel_apply_solution_description, sixel_apply_solution_resolve
+};
+
+static SIXELSTATUS
+sixel_apply_deferred_new(sixel_allocator_t *allocator,
+    sixel_gpu_dither_plan_interface_t *plan,
+    sixel_indexed_frame_description_t const *description,
+    sixel_palette_apply_deferred_interface_t **result)
+{
+    sixel_apply_deferred_t *owner;
+    sixel_gpu_dither_deferred_interface_t *gpu;
+    SIXELSTATUS status;
+
+    *result = NULL;
+    gpu = NULL;
+    if (plan == NULL || plan->vtbl->get_deferred == NULL) return SIXEL_OK;
+    status = plan->vtbl->get_deferred(plan, &gpu);
+    if (status == SIXEL_FEATURE_ERROR) return SIXEL_OK;
+    if (status != SIXEL_OK) return status;
+    if (gpu == NULL) return SIXEL_LOGIC_ERROR;
+    owner = sixel_allocator_calloc(allocator, 1, sizeof(*owner));
+    if (owner == NULL) {
+        gpu->vtbl->unref(gpu);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    owner->iface.vtbl = &sixel_apply_deferred_vtbl;
+    owner->solution.vtbl = &sixel_apply_solution_vtbl;
+    owner->ref = 1;
+    owner->allocator = allocator;
+    sixel_allocator_ref(allocator);
+    owner->gpu = gpu;
+    owner->description = *description;
+    sixel_wire_palette_ref(description->palette);
+    *result = &owner->iface;
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     sixel_palette_apply_prepare_request_t const *request)
@@ -112,6 +369,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     sixel_dither_policy_prepare_request_t gpu_configuration;
     sixel_gpu_program_t *program;
     sixel_gpu_dither_plan_interface_t *gpu_dither;
+    sixel_palette_apply_deferred_interface_t *deferred;
     unsigned char *ready;
     size_t pixels;
     size_t i;
@@ -243,6 +501,15 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         sixel_allocator_free(apply->allocator, ready);
         return status;
     }
+    status = sixel_apply_deferred_new(apply->allocator, gpu_dither,
+        &request->output, &deferred);
+    if (status != SIXEL_OK) {
+        if (gpu_dither != NULL) gpu_dither->vtbl->unref(gpu_dither);
+        if (lookup != NULL) lookup->vtbl->unref(lookup);
+        sixel_gpu_program_destroy(program);
+        sixel_allocator_free(apply->allocator, ready);
+        return status;
+    }
     /* Retain capabilities before releasing the previous plan, including
      * when the caller reuses one of that plan's preparation objects. */
     if (request->cpu_lookup != NULL)
@@ -256,6 +523,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     apply->lookup = lookup;
     apply->program = program;
     apply->gpu_dither = gpu_dither;
+    apply->deferred = deferred;
     apply->options = options;
     apply->gpu = program != NULL || gpu_dither != NULL;
     if (apply->gpu) request->device->vtbl->ref(request->device);
@@ -757,12 +1025,29 @@ sixel_palette_apply_get_device(sixel_palette_apply_interface_t const *self,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_palette_apply_get_deferred(sixel_palette_apply_interface_t const *self,
+    sixel_palette_apply_deferred_interface_t **deferred)
+{
+    sixel_palette_apply_storage_t const *apply;
+
+    if (self == NULL || deferred == NULL) return SIXEL_BAD_ARGUMENT;
+    *deferred = NULL;
+    apply = (sixel_palette_apply_storage_t const *)self;
+    if (!apply->prepared) return SIXEL_LOGIC_ERROR;
+    if (apply->deferred == NULL) return SIXEL_FEATURE_ERROR;
+    apply->deferred->vtbl->ref(apply->deferred);
+    *deferred = apply->deferred;
+    return SIXEL_OK;
+}
+
 static sixel_palette_apply_vtbl_t const g_palette_apply_vtbl = {
     sixel_palette_apply_ref,
     sixel_palette_apply_unref,
     sixel_palette_apply_prepare,
     sixel_palette_apply_run,
-    sixel_palette_apply_get_device
+    sixel_palette_apply_get_device,
+    sixel_palette_apply_get_deferred
 };
 
 SIXEL_INTERNAL_API SIXELSTATUS

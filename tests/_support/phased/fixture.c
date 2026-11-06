@@ -163,3 +163,44 @@ phased_fixture_baseline(phased_fixture_t *f, int offset)
     f->run.delta.metric = SIXEL_DELTA_METRIC_MAX;
     return SIXEL_OK;
 }
+
+SIXELSTATUS
+phased_fixture_deferred(phased_fixture_t *f)
+{
+    sixel_palette_apply_deferred_interface_t *deferred;
+    sixel_palette_apply_solution_interface_t *solution;
+    sixel_palette_apply_solve_request_t solve;
+    sixel_palette_apply_resolve_request_t resolve;
+    sixel_retained_read_view_t view;
+    SIXELSTATUS status;
+
+    deferred = NULL;
+    solution = NULL;
+    status = f->apply->vtbl->get_deferred(f->apply, &deferred);
+    if (status != SIXEL_OK) goto end;
+    memset(&solve, 0, sizeof(solve));
+    solve.source = f->run.source;
+    status = deferred->vtbl->solve(deferred, &solve, &solution);
+    if (status != SIXEL_OK) goto end;
+    sixel_indexed_frame_unref(f->image);
+    f->image = NULL;
+    status = sixel_indexed_frame_new(&f->image, &f->prepare.output,
+        f->allocator);
+    if (status != SIXEL_OK) goto end;
+    if (f->read != NULL) {
+        status = sixel_retained_read_get_view(f->read, &view);
+        if (status != SIXEL_OK) goto end;
+        f->image->identity.stream = view.stream;
+        f->image->identity.epoch = view.epoch;
+        f->image->identity.base_sequence = view.sequence;
+    }
+    memset(&resolve, 0, sizeof(resolve));
+    resolve.baseline = f->run.baseline;
+    resolve.result = f->image;
+    resolve.delta = f->run.delta;
+    status = solution->vtbl->resolve(solution, &resolve);
+end:
+    if (solution != NULL) solution->vtbl->unref(solution);
+    if (deferred != NULL) deferred->vtbl->unref(deferred);
+    return status;
+}
