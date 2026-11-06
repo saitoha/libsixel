@@ -554,7 +554,7 @@ The fixed-budget colorspace tests select `greedy` explicitly so their worker cou
 | TE-159 | A rejected batched sink drains before a fresh frame. | [tests/encoder/scheduling/0025_batch_sink_restart.t](../../tests/encoder/scheduling/0025_batch_sink_restart.t) |
 | TE-160 | A missing worker clock resets the next frame. | [tests/encoder/scheduling/0026_batch_clock_reset.t](../../tests/encoder/scheduling/0026_batch_clock_reset.t) |
 | TE-161 | A partial final band preserves exact bytes. | [tests/encoder/scheduling/0027_batch_tail_bytes.t](../../tests/encoder/scheduling/0027_batch_tail_bytes.t) |
-| TE-162 | GPU publication reports zero CPU commit participants with the expected paint count. | [tests/encoder/retained/0009_gpu_commit_count.t](../../tests/encoder/retained/0009_gpu_commit_count.t) |
+| TE-162 | GPU publication reports zero CPU commit participants and counts all 289 painted pixels across a full threadgroup and a short tail. | [tests/encoder/retained/0009_gpu_commit_count.t](../../tests/encoder/retained/0009_gpu_commit_count.t) |
 
 Helper-lane tests use `SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED`, the same internal capability as production: threading is required, and PCC and TinyCC retain serial preparation. They skip before installing gates when that capability is absent; the explicit-serial test still runs. The GPU overlap and byte-comparison cases require an observed palette-apply kernel dispatch. Their small fixed-time streams compare scheduling consistency, not independent color accuracy.
 

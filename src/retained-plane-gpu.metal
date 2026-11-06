@@ -42,9 +42,16 @@ kernel void retained_expand(
     result = uint2(simd_sum(result.x), simd_or(result.y));
     if (lane == 0) reductions[simd] = result;
     threadgroup_barrier(mem_flags::mem_threadgroup);
-    if (simd == 0) {
-        result = lane < simds ? reductions[lane] : uint2(0);
-        result = uint2(simd_sum(result.x), simd_or(result.y));
-        if (lane == 0) stats[group] = result;
+    /* The runtime's threadExecutionWidth need not match this shader's SIMD
+     * width. Intel can report 32 while executing eight lanes, leaving more
+     * partial sums than the first SIMD group has lanes. Consume every sum
+     * after the barrier instead of truncating both count and refinement. */
+    if (simd == 0 && lane == 0) {
+        result = uint2(0);
+        for (uint i = 0; i < simds; ++i) {
+            result.x += reductions[i].x;
+            result.y |= reductions[i].y;
+        }
+        stats[group] = result;
     }
 }

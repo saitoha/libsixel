@@ -25,7 +25,7 @@ retained_gpu_fixture_begin(indexed_fixture_t *f, int paint)
 }
 
 static int
-retained_gpu_fixture_resize(indexed_fixture_t *f, int partial)
+retained_gpu_fixture_resize(indexed_fixture_t *f, int partial, int statistics)
 {
     sixel_indexed_frame_description_t image;
     sixel_retained_plane_description_t plane;
@@ -34,12 +34,12 @@ retained_gpu_fixture_resize(indexed_fixture_t *f, int partial)
     size_t i;
 
     image = f->image->description;
-    image.width = image.encoded_width = 3;
-    image.height = image.encoded_height = 5;
+    image.width = image.encoded_width = statistics ? 17 : 3;
+    image.height = image.encoded_height = statistics ? 17 : 5;
     image.origin_x = partial ? 2 : 0;
     image.origin_y = partial ? 2 : 0;
-    image.plane_width = partial ? 7 : 3;
-    image.plane_height = partial ? 8 : 5;
+    image.plane_width = partial ? 7 : image.width;
+    image.plane_height = partial ? 8 : image.height;
     sixel_indexed_frame_unref(f->image);
     f->image = NULL;
     if (sixel_indexed_frame_new(&f->image, &image, f->allocator) != SIXEL_OK)
@@ -87,8 +87,17 @@ retained_gpu_observe(int observation)
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
     if (status != SIXEL_OK || !indexed_fixture_init(&f)) goto end;
-    if ((observation == 20 || observation == 21) &&
-            !retained_gpu_fixture_resize(&f, observation == 21)) goto end;
+    if ((observation == 8 || observation == 19 || observation == 20 ||
+            observation == 21) && !retained_gpu_fixture_resize(&f,
+                observation == 21, observation == 8 || observation == 19))
+        goto end;
+    /* A 17x17 image spans a complete 256-thread group and a short tail.
+     * Put the only approximate keep late in the first group: truncating its
+     * SIMD partial results must fail even if the last threadgroup is read. */
+    if (observation == 19) {
+        memset(f.image->skip, SIXEL_INDEXED_KEEP, f.image->pixels);
+        f.image->skip[255] = SIXEL_INDEXED_KEEP_APPROXIMATE;
+    }
     if (f.plane->vtbl->set_device(f.plane, device) != SIXEL_OK) goto end;
     if (f.plane->vtbl->acquire_read(f.plane, &f.read) != SIXEL_OK ||
             sixel_retained_read_get_view(f.read, &before) != SIXEL_OK ||
@@ -185,7 +194,7 @@ retained_gpu_observe(int observation)
     }
     if (indexed_fixture_commit(&f) != SIXEL_OK) goto end;
     if (observation == 8) {
-        ok = f.stats.worker_threads == 0 && f.stats.painted_pixels == 1;
+        ok = f.stats.worker_threads == 0 && f.stats.painted_pixels == 289;
         goto end;
     }
     if (observation == 9) {
