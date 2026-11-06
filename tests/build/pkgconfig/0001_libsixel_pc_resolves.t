@@ -23,9 +23,14 @@ test -f "${pc_file}" || {
 echo "1..1"
 set -v
 
-# A direct .pc pathname also works when a native Windows drive letter would
-# be mistaken for a separator by the MSYS pkg-config search-path parser.
-resolved=$(set +xv; "${SIXEL_TEST_PKG_CONFIG}" --static --cflags --libs "$pc_file" 2>&1) || {
+# Query a package name: Strawberry's Perl implementation appends .pc even
+# to a complete filename. A relative search directory also avoids Windows
+# drive letters being mistaken for path-list separators by an MSYS tool.
+resolved=$(set +xv
+    cd "${TOP_BUILDDIR}" || exit 1
+    PKG_CONFIG_PATH=".${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}" \
+        "${SIXEL_TEST_PKG_CONFIG}" --static --cflags --libs libsixel 2>&1
+) || {
     echo "not ok 1 - pkg-config cannot resolve libsixel.pc"
     printf '%s\n' "${resolved}" >&2
     exit 0

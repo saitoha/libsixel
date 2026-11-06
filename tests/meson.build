@@ -212,9 +212,9 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 endif
 
 env = environment()
-env.append('PATH', meson.project_build_root() / 'tools/compare',
-  meson.project_source_root() / 'build-aux/compare')
+env.prepend('PATH', meson.project_source_root() / 'build-aux/compare')
 if have_test_compare
+  env.prepend('PATH', meson.project_build_root() / 'tools/compare')
   env.set('SIXEL_TEST_COMPARE', test_compare.full_path())
 else
   env.set('SIXEL_TEST_COMPARE', meson.project_source_root() / 'build-aux/compare/cmp')

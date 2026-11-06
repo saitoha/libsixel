@@ -118,6 +118,7 @@ test_residual_case(int mode)
     unsigned char a[3], b[3];
     unsigned char saved_age[4096];
     int ok, i;
+    size_t painted;
 
     encoder = NULL;
     progressive = NULL;
@@ -280,8 +281,22 @@ test_residual_case(int mode)
         for (i = 1; i <= 3; ++i) {
             RESIDUAL_REQUIRE(residual_test_encode(encoder, &out) == SIXEL_OK);
             RESIDUAL_REQUIRE(encoder->residual_state.age[0] == i);
-            RESIDUAL_REQUIRE(sixel_encoder_get_6delta_painted_pixels(encoder)
-                == (i == 3 ? 256U : 0U));
+            painted = sixel_encoder_get_6delta_painted_pixels(encoder);
+            if (painted != (i == 3 ? 256U : 0U)) {
+                /* Preserve the backend decision boundary in remote failures:
+                 * age alone cannot distinguish selection from application. */
+                fprintf(stderr,
+                    "residual mode=%d frame=%d painted=%lu age=%u "
+                    "selected=%lu grid=%ux%u mask=%08lx threshold=%u\n",
+                    mode, i, (unsigned long)painted,
+                    (unsigned int)encoder->residual_state.age[0],
+                    (unsigned long)encoder->residual_state.selected_pixels,
+                    encoder->residual_state.mask.columns,
+                    encoder->residual_state.mask.rows,
+                    (unsigned long)encoder->residual_state.mask.cells[0],
+                    encoder->residual_state.mask.threshold);
+            }
+            RESIDUAL_REQUIRE(painted == (i == 3 ? 256U : 0U));
         }
         RESIDUAL_REQUIRE(residual_test_decoded(&out, encoder));
         break;

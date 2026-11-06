@@ -19,7 +19,7 @@ test -n "$src_root" || {
 }
 
 test -n "$build_root" || build_root="$src_root"
-PATH="$PATH:$build_root/tools/compare:$src_root/build-aux/compare"
+PATH="$build_root/tools/compare:$src_root/build-aux/compare:$PATH"
 export PATH
 
 # Workers share only immutable inventory and uniquely numbered result paths.
@@ -1107,6 +1107,10 @@ run_case_tap "staticcheck-test-tool-capabilities" \
     sh "$src_root/tests/_static/sh/staticcheck-test-tool-capabilities.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-comparator-search-order" \
+    sh "$src_root/tests/_static/sh/staticcheck-comparator-search-order.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-comparator-absolute-probe" \
     sh "$src_root/tests/_static/sh/staticcheck-comparator-absolute-probe.sh" \
     "$src_root" || fail_and_exit $?
@@ -1118,6 +1122,22 @@ run_case_tap "staticcheck-assessment-getenv" \
 run_case_tap "staticcheck-msvc-shared-crt" \
     sh "$src_root/tests/_static/sh/staticcheck-msvc-shared-crt.sh" \
     "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-tap-stderr-isolation" \
+    sh "$src_root/tests/_static/sh/staticcheck-tap-stderr-isolation.sh" \
+    "$src_root"
+
+run_case_tap "staticcheck-tap-failure-status" \
+    sh "$src_root/tests/_static/sh/staticcheck-tap-failure-status.sh" \
+    "$src_root"
+
+run_case_tap "staticcheck-pkg-config-package-name" \
+    sh "$src_root/tests/_static/sh/staticcheck-pkg-config-package-name.sh" \
+    "$src_root"
+
+run_case_tap "staticcheck-decoder-neon-portability" \
+    sh "$src_root/tests/_static/sh/staticcheck-decoder-neon-portability.sh" \
+    "$src_root"
 
 run_case_tap "staticcheck-configured-pkg-config" \
     sh "$src_root/tests/_static/sh/staticcheck-configured-pkg-config.sh" \

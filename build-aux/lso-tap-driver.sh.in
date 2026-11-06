@@ -166,13 +166,13 @@ case "$stream_output" in
 esac
 
 : "${TOP_SRCDIR:=@top_srcdir@}"
-# Keep installed cmp/diff first; use our native helper or source-only fallback
-# only when the shell environment does not provide the comparison utility.
+# Select the comparator owned by this build before ambient tools. A cmp
+# from another MSYS installation can interpret /tmp under a different root.
+PATH="${TOP_SRCDIR}/build-aux/compare:$PATH"
 if test '@sixel_have_compare@' = yes; then
-  PATH="$PATH:${TOP_BUILDDIR}/tools/compare"
+  PATH="${TOP_BUILDDIR}/tools/compare:$PATH"
   : "${SIXEL_TEST_COMPARE:=${TOP_BUILDDIR}/tools/compare/cmp@SIXEL_COMPARE_EXEEXT@}"
 fi
-PATH="$PATH:${TOP_SRCDIR}/build-aux/compare"
 export PATH
 : "${SIXEL_TEST_COMPARE:=${TOP_SRCDIR}/build-aux/compare/cmp}"
 if test ! -x "$SIXEL_TEST_COMPARE"; then
@@ -643,13 +643,13 @@ run_and_capture() {
     stream_fifo=$(mktemp "${TMPDIR:-/tmp}/libsixel-tap-stream-XXXXXX")
     rm -f "$stream_fifo"
     if ! mkfifo "$stream_fifo"; then
-      run_with_timeout "$@" >"$log_file" 2>&1
+      run_with_timeout "$@" >"$trs_file" 2>"$log_file"
       return $?
     fi
 
-    tee "$log_file" <"$stream_fifo" &
+    tee "$trs_file" <"$stream_fifo" &
     tee_pid=$!
-    run_with_timeout "$@" >"$stream_fifo" 2>&1 &
+    run_with_timeout "$@" >"$stream_fifo" 2>"$log_file" &
     run_pid=$!
 
     wait "$run_pid"
@@ -662,11 +662,13 @@ run_and_capture() {
     return "$capture_status"
   fi
 
-  run_with_timeout "$@" >"$log_file" 2>&1
+  run_with_timeout "$@" >"$trs_file" 2>"$log_file"
   return $?
 }
 
-# Run the test script, capture all output in .log (format free). :contentReference[oaicite:3]{index=3}
+# Keep TAP stdout separate from shell/native stderr. Reuse .trs as staging
+# storage until the child exits; no extra per-test file or process is needed.
+# The parser then appends stdout to .log and publishes the final .trs metadata.
 # Staticcheck targets stream output to console while preserving .log files.
 if [ "$stream_output" = "yes" ]; then
     # Streaming output cannot be wrapped in command substitution because that
@@ -692,8 +694,9 @@ if test "${reduce_fork-}" != yes; then
 # Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience
 # (Automake recognizes these fields). :contentReference[oaicite:5]{index=5}
 # shellcheck disable=SC2016
-LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
+LC_ALL=C "$AM_TAP_AWK" \
   -v test_name="$test_name" \
+  -v tap_file="$trs_file" -v diagnostic_file="$log_file" \
   -v rc="$rc" \
   -v ignore_exit="$ignore_exit" \
   -v comments="$comments" \
@@ -711,13 +714,24 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
      pass=0; fail=0; skip=0; xfail=0; xpass=0; error=0;
      tc=0;
      desc="";
+     # Read and close staged stdout before replacing it with result metadata.
+     while ((getline tap_line < tap_file) > 0) {
+       tap[++tap_count] = tap_line;
+       print tap_line >> diagnostic_file;
+     }
+     close(tap_file);
+     close(diagnostic_file);
+     # The diagnostic input is opened only after BEGIN has closed its append
+     # handle, so RMS implementations need not share a reader and writer.
    }
    function ltrim(s){ sub(/^[ \t\r\n]+/,"",s); return s }
    function rtrim(s){ sub(/[ \t\r\n]+$/,"",s); return s }
    function trim(s){ return rtrim(ltrim(s)) }
 
+   function parse_tap(line) {
+   $0 = line
    # TAP plan line: 1..N
-   $0 ~ /^1\.\.[0-9]+/ {
+   if ($0 ~ /^1\.\.[0-9]+/) {
      split($0,a,".."); plan=a[2]+0; saw_plan=1;
      saw_tap=1;
      if (match($0, /#[ \t]*SKIP /)) {
@@ -730,7 +744,7 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
    # Test point: ok / not ok
    # Require a boundary after "ok" so fragments like `ok"` / `not ok"`
    # from verbose shell traces are not parsed as TAP records.
-   $0 ~ /^(not[ \t]+)?ok([ \t]|$)/ {
+   if ($0 ~ /^(not[ \t]+)?ok([ \t]|$)/) {
      line=$0
      is_not = (line ~ /^not[ \t]+ok([ \t]|$)/)
      saw_tap=1;
@@ -779,11 +793,19 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
        pass++
        printf(":test-result: PASS %s\n", desc) > "'"$trs_file"'"
      }
-     next
+     return
+   }
    }
 
    # Comment lines: keep in .log already; optionally treat as metadata? no-op.
    END{
+     for (tap_index = 1; tap_index <= tap_count; ++tap_index)
+       parse_tap(tap[tap_index])
+     if (!saw_tap && rc == 0) {
+       error=1;
+       desc="no TAP output on stdout";
+       printf(":test-result: ERROR %s\n", desc) > "'"$trs_file"'"
+     }
      # Non-zero exit handling mirrors lso-tap-driver semantics.
      if (ignore_exit != "yes" && rc != 0) {
        if (saw_tap) {
@@ -841,9 +863,18 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
      if (hard_errors == "yes" && global ~ /^(FAIL|ERROR|XPASS)$/) {
        exit 1;
      }
-   }'
+   }' "$log_file"
 
 else
+
+# The reduced-fork parser uses shell storage for the small TAP stream. Read it
+# before opening .trs for metadata, and retain stderr only as diagnostics.
+tap_output=
+while IFS= read -r line || test -n "$line"; do
+    tap_output="${tap_output}${line}
+"
+    printf '%s\n' "$line" >> "$log_file"
+done < "$trs_file"
 
 # - Plan:        "1..N"
 # - Pass:        "ok <case> - <description>"
@@ -851,7 +882,6 @@ else
 # - Skip(all):   "1..0 # SKIP <reason>"
 # - Skip:        "ok <case> # SKIP <reason>"
 {
-    rc=0
     saw_tap=0
     pass=0
     skip=0
@@ -865,12 +895,6 @@ else
 ${line}
 __line__
         case "$col1" in
-            '#')
-                case "$line" in
-                    '# test-time: '*)
-                        echo ":subtest-time: ${line#\# test-time: }" >&2 ;;
-                esac
-                ;;
             1..*)
                 saw_tap=1
                 test "$col2" = '#' && test "$col3" = SKIP && {
@@ -923,6 +947,16 @@ __line__
                 esac
                 ;;
         esac
+    done <<__tap_stdout__
+${tap_output}
+__tap_stdout__
+    # Timing records from the measurement wrapper are the only stderr lines
+    # that carry metadata. Never interpret stderr plans or result points.
+    while IFS= read -r line; do
+        case "$line" in
+            '# test-time: '*)
+                echo ":subtest-time: ${line#\# test-time: }" >&2 ;;
+        esac
     done < "$log_file"
     
     test ! "$ignore_exit" = "yes" && test "$rc" -gt 0 && {
@@ -954,6 +988,11 @@ __line__
         esac 
     }
     
+    if test "$saw_tap" -eq 0 && test "$rc" -eq 0; then
+        error=1
+        desc="no TAP output on stdout"
+        echo ":test-result: ERROR $desc" >&2
+    fi
     e=$(printf "\033")
     global="PASS"
     recheck=no
@@ -1010,5 +1049,5 @@ __line__
       echo "             > $desc"
     }
 } 2> "$trs_file"
-test "$shutdown" -eq 0 || rc=1
+exit "$shutdown"
 fi

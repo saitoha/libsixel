@@ -12264,3 +12264,10 @@ EXTRA_DIST += _static/sh/staticcheck-test-source-isolation.sh \
 
 EXTRA_DIST += _static/sh/staticcheck-test-float-lookup-unity.sh \
     _static/sh/staticcheck-libjpeg-link-probe.sh
+
+EXTRA_DIST += _static/sh/staticcheck-tap-stderr-isolation.sh \
+    _static/sh/staticcheck-tap-failure-status.sh \
+    _static/sh/staticcheck-pkg-config-package-name.sh \
+    _static/sh/staticcheck-decoder-neon-portability.sh
+
+EXTRA_DIST += _static/sh/staticcheck-comparator-search-order.sh

@@ -99,6 +99,29 @@ check_planes(void)
     return 1;
 }
 
+/* Exercise empty runs and every last-painted lane without random coverage. */
+static int
+check_extents(void)
+{
+    unsigned char bytes[16];
+    int lane;
+    int rows;
+    int last;
+
+    for (lane = -1; lane < 16; ++lane) {
+        memset(bytes, 0, sizeof(bytes));
+        if (lane >= 0) bytes[lane] = 32;
+        rows = 1;
+        last = 16;
+        sixel_simd_run_extent(vld1q_u8(bytes), &rows, &last);
+        if (last != lane || rows != (lane < 0 ? 1 : 33)) {
+            fprintf(stderr, "extent: last lane or existing rows differ\n");
+            return 0;
+        }
+    }
+    return 1;
+}
+
 /* OR gather: one row index per word, matching sixel_ormode_gather(). */
 static int
 check_gather(void)
@@ -189,6 +212,7 @@ test_decoder_0104(int argc, char **argv)
 #if SIXEL_DECODER_NEON
     int i;
 
+    if (!check_extents()) return EXIT_FAILURE;
     for (i = 0; i < 20000; ++i) {
         if (!check_planes() || !check_gather() || !check_rows() ||
                 !check_blend()) {

@@ -36,6 +36,10 @@ static uint8_t const sixel_simd_pair_index[8][16] = {
     { 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15 }
 };
 
+/* One-based positions leave zero available for an entirely empty run. */
+static uint8_t const sixel_simd_run_positions[16] = {
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+};
 
 /*
  * Validate sixteen bytes as sixel data and return their six-bit patterns.
@@ -61,8 +65,8 @@ static inline void
 sixel_simd_run_extent(uint8x16_t bits, int *rows, int *last)
 {
     uint8x8_t folded;
+    uint8x16_t positions;
     uint64_t word;
-    uint64_t nonzero;
 
     folded = vorr_u8(vget_low_u8(bits), vget_high_u8(bits));
     word = vget_lane_u64(vreinterpret_u64_u8(folded), 0);
@@ -70,9 +74,11 @@ sixel_simd_run_extent(uint8x16_t bits, int *rows, int *last)
     word |= word >> 16;
     word |= word >> 8;
     *rows |= (int)(word & 63u);
-    nonzero = vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(
-        vreinterpretq_u16_u8(vtstq_u8(bits, bits)), 4)), 0);
-    *last = nonzero == 0 ? (-1) : 15 - (__builtin_clzll(nonzero) >> 2);
+    /* Use NEON intrinsics shared by GCC, Clang and MSVC. A compiler-specific
+     * scalar builtin can compile as an unresolved external under MSVC. */
+    positions = vandq_u8(vtstq_u8(bits, bits),
+                         vld1q_u8(sixel_simd_run_positions));
+    *last = (int)vmaxvq_u8(positions) - 1;
 }
 
 /*

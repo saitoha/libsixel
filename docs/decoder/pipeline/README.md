@@ -90,6 +90,8 @@ Band changes, raster attributes, ESC and every token cut by the end of the input
 
 [`decoder-simd.h`](../../../src/decoder-simd.h) holds vector forms of the band-word updates. Each helper reproduces the scalar update in [`decoder-columns.h`](../../../src/decoder-columns.h) or [`decoder-ormode.h`](../../../src/decoder-ormode.h) for sixteen consecutive columns, and the scalar loops remain both the reference and the fallback. Output is byte-identical at every SIMD level; the vector paths change speed only.
 
+The shared NEON path uses ARM intrinsics available to GCC, Clang and MSVC, including the last-nonzero-lane reduction. GNU-only scalar builtins are excluded from this header: accepting `_M_ARM64` while calling `__builtin_clzll` can leave an unresolved external on MSVC. The source-only portability check protects this compiler boundary; vector/scalar execution tests establish the lane results.
+
 The parser records at context initialization whether `sixel_cpu_simd_level()` reports NEON, so `SIXEL_SIMD_LEVEL=none` (or a CPU without the extension) selects the scalar loops in the same binary. The first phase covers AArch64 NEON on little-endian targets:
 
 | Stage | Vector form | Scalar condition retained |
@@ -314,6 +316,7 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-47 | An OR-mode stream decodes identically at both SIMD levels, covering vector plane updates and row gathering. | [tests/decoder/parser/0117_simd_level_ormode.t](../../../tests/decoder/parser/0117_simd_level_ormode.t) |
 | DP-48 | RGBA output of a transparent stream whose runs cover sixteen-column blocks partially, fully and not at all is identical at both SIMD levels. | [tests/decoder/parser/0118_simd_level_transparent.t](../../../tests/decoder/parser/0118_simd_level_transparent.t) |
 | DP-49 | Selections, repeats and carriage returns consumed inside band runs decode as the general parser decodes them, including abandoned selections, wide registers, width edges, trusted clipping, extents and tokens cut by the end of input, in ordinary and OR mode. | [tests/decoder/parser/0119_token_fast_lane.t](../../../tests/decoder/parser/0119_token_fast_lane.t) |
+| DP-50 | The shared NEON helper header excludes GNU-only scalar builtins. | [tests/_static/sh/staticcheck-decoder-neon-portability.sh](../../../tests/_static/sh/staticcheck-decoder-neon-portability.sh) |
 
 ### Coverage boundary
 
