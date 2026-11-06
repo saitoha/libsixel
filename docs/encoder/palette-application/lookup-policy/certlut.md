@@ -152,7 +152,9 @@ Palette count, RGB bytes and device identity determine reuse. Each plan snapshot
 
 The injected provider owns its shader, construction, search and cache without depending on another lookup implementation. Shared [PaletteApply execution](../../execution-map/README.md#4-lookup-per-pixel-application-and-output) owns dither admission, transparency, delta and output publication. GPU-only preparation builds no CPU lookup and remains eligible when CPU instance sharing is disabled. Parallel CPU fallback with worker-local lookup uses the legacy adapter. When the caller selects or falls back to CPU, the existing CPU certlut guarantee applies; exact GPU results are not a promise that both backends produce identical indexes. The legacy direct application fallback and indexed execution failure rules remain those of their callers.
 
-The implementation is [`lookup-policy-certlut-gpu.c`](../../../../src/lookup-policy-certlut-gpu.c), with private kernels in [`lookup-policy-certlut-gpu-shader.inc.h`](../../../../src/lookup-policy-certlut-gpu-shader.inc.h).
+The implementation is [`lookup-policy-certlut-gpu.c`](../../../../src/lookup-policy-certlut-gpu.c), with private kernels in [`lookup-policy-certlut-gpu.metal`](../../../../src/lookup-policy-certlut-gpu.metal).
+
+For [`phased`](../dithering/phased.md), the candidate certificate covers each continuous cell through `min(low + 16, 255)` rather than the byte endpoint `low + 15`. The affine squared-distance difference still attains its extremum at an integer corner of that expanded closed box, so construction uses the same exact integer certificate. Final candidate distances retain the fractional query; overflow still scans the entire palette and never truncates candidates. Byte plans retain the original bounds and vector query. The [parent reference](README.md) owns fractional precision and cache identity.
 
 ## Name and sources
 
@@ -218,3 +220,13 @@ The GPU cases fix one input configuration and observation per wrapper. The no-di
 | CERTGPU-46 | An unsupported diffusion mode retains CPU certlut preparation and output. | [tests/lookup/certlut/0083_gpu_diffusion_cpu_lookup.t](../../../../tests/lookup/certlut/0083_gpu_diffusion_cpu_lookup.t), [tests/lookup/certlut/0083_gpu_diffusion_cpu_lookup.c](../../../../tests/lookup/certlut/0083_gpu_diffusion_cpu_lookup.c) |
 
 Lifecycle and admission tests use a fake device and run without Metal. Actual GPU cases skip only when the Metal palette backend is unavailable. The state and certificate fixtures verify the injected kernel, so a legacy direct GPU scan cannot satisfy them. Tests cover bounded deterministic samples, duplicate colors, short vectors, overflow and failed construction; they do not enumerate the full RGB cube, establish perceptual quality, or simulate operating-system device resets. CPU float and legacy byte behavior retain the existing coverage in the [parent reference](README.md).
+
+### Fractional GPU queries
+
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| CERTLUTF-01 | Fractional candidate selection agrees with the independent nearest-color oracle. | [tests/lookup/certlut/0084_gpu_certlut_fractional_exact.t](../../../../tests/lookup/certlut/0084_gpu_certlut_fractional_exact.t) |
+| CERTLUTF-02 | Equal-distance queries and duplicate colors retain the lowest index. | [tests/lookup/certlut/0085_gpu_certlut_fractional_ties.t](../../../../tests/lookup/certlut/0085_gpu_certlut_fractional_ties.t) |
+| CERTLUTF-03 | Changing query precision creates a separate plan without mutating the held byte plan. | [tests/lookup/certlut/0086_gpu_certlut_fractional_cache.t](../../../../tests/lookup/certlut/0086_gpu_certlut_fractional_cache.t) |

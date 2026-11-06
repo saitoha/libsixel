@@ -111,6 +111,8 @@ sixel_gpu_palette_lut_policy_is_supported(
      * Keep AUTO conservative for other policies because
      * the GPU path does not reproduce their output semantics.
      */
+    if (request->lut_policy == SIXEL_LUT_POLICY_FHEDT)
+        return sixel_gpu_palette_fhedt_is_supported(request);
     if (sixel_gpu_lookup_registered(request->lut_policy) ||
             request->lut_policy == SIXEL_LUT_POLICY_5BIT ||
             request->lut_policy == SIXEL_LUT_POLICY_6BIT ||
@@ -121,9 +123,6 @@ sixel_gpu_palette_lut_policy_is_supported(
             request->lut_policy == SIXEL_LUT_POLICY_ORDERED ||
             request->lut_policy == SIXEL_LUT_POLICY_DELAUNAY) {
         return 1;
-    }
-    if (request->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
-        return sixel_gpu_palette_fhedt_is_supported(request);
     }
     return sixel_gpu_palette_policy_is_force(request->policy);
 }

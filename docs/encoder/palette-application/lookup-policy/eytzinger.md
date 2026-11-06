@@ -81,6 +81,8 @@ The 8-bit implementation projects with `h(r,g,b) = r + g + b`, finds the lower b
 
 This is `Theta(log K)` plus a fixed amount of work, but it is approximate. Two colors can have distant projection keys yet be close in RGB, and a fixed window can omit the true nearest palette entry. The unnormalized sum projection is not itself a general lower bound for squared RGB distance.
 
+GPU `phased` queries preserve the approximate six-neighbor window and projection stopping rule while evaluating the unrounded fractional query. An independent GPU rank sort orders `(r+g+b, palette_index)`, and fractional projection lower-bound search chooses the starting entry without rounding the query to RGB8. Equal computed distances among examined candidates choose the lowest palette index. This is not the CPU float32 exact metric search. [`lookup-policy-eytzinger-gpu.c`](../../../../src/lookup-policy-eytzinger-gpu.c) owns the fractional plan and [`lookup-policy-eytzinger-fractional-gpu.metal`](../../../../src/lookup-policy-eytzinger-fractional-gpu.metal) owns its construction and search; the optimized legacy byte path remains separate.
+
 ### Float32 query and guarantee
 
 The float32 implementation scans outward from the insertion point across the complete palette, using the dual-metric bound above to stop. It finds the nearest normalized weighted distance in gamma RGB, linear RGB, OKLab, CIELAB and DIN99d, subject to finite arithmetic and indistinguishable ties. The byte implementation retains its fixed-window approximation.
@@ -112,3 +114,15 @@ The Eytzinger layout name is established terminology for this breadth-first impl
 libsixel applies that array layout to projected palette keys; the surrounding three-dimensional candidate strategy is libsixel-specific and should not be attributed to the array-layout paper. The policy entered libsixel in the [`1d-eytzinger` implementation commit](https://github.com/saitoha/libsixel/commit/acbde38716ecedaf8a1092386c6779a802504902) and was later renamed `eytzinger`.
 
 The CPU implementation is [`lookup-policy-eytzinger.c`](../../../../src/lookup-policy-eytzinger.c). A Metal palette-application path also supports an Eytzinger mode in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m).
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FRAC-01 | Eytzinger fractional reference. | [tests/lookup/eytzinger/0060_eytzinger_fractional_reference.t](../../../../tests/lookup/eytzinger/0060_eytzinger_fractional_reference.t) |
+| FRAC-02 | Eytzinger fractional ties. | [tests/lookup/eytzinger/0061_eytzinger_fractional_ties.t](../../../../tests/lookup/eytzinger/0061_eytzinger_fractional_ties.t) |
+| FRAC-03 | Eytzinger fractional cache. | [tests/lookup/eytzinger/0062_eytzinger_fractional_cache.t](../../../../tests/lookup/eytzinger/0062_eytzinger_fractional_cache.t) |

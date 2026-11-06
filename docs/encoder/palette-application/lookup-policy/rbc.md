@@ -101,6 +101,8 @@ The provider allocates 279,744 bytes for member rows, assignments, counts, boxes
 
 The provider owns its shader, buffer layout and completion protocol. A binding exclusively leases the plan's workspace; a completed successful construction enables reuse, while a failed construction remains unbuilt. GPU preparation does not build a CPU lookup. No new CLI suboptions or interface changes are required. GPU memory and construction cost are policy costs, not a guarantee that RBC is faster than another GPU policy.
 
+For [`phased`](../dithering/phased.md), fractional plans cover each cell through `min(low + 8, 255)` instead of the integer upper endpoint `low + 7`. Closing that upper face conservatively includes every fractional point selected by the cell index. Both the seed-distance upper bound and cluster-box lower bound use this expanded box. Runtime cluster tests and member distances retain the fractional query; a one-unit squared-distance slack only makes runtime pruning more conservative. Byte plans retain their original cell bounds and vector search. The [parent reference](README.md) owns fractional precision and cache identity.
+
 ## Name and sources
 
 RBC means Random Ball Cover. Lawrence Cayton introduced the data structure for parallel nearest-neighbor search in [“A Nearest Neighbor Data Structure for Graphics Hardware”](https://www.lcayton.com/rbc-adms.pdf), with an accompanying [reference implementation](https://github.com/lcayton/RandomBallCover-GPU).
@@ -154,3 +156,13 @@ The GPU cases fix one policy, input configuration and observation per file. Shad
 | RBCGPU-35 | Index255. | [tests/lookup/rbc/0079_gpu_index255.t](../../../../tests/lookup/rbc/0079_gpu_index255.t), [tests/lookup/rbc/0079_gpu_index255.c](../../../../tests/lookup/rbc/0079_gpu_index255.c) |
 | RBCGPU-36 | First index tie. | [tests/lookup/rbc/0080_gpu_first_index_tie.t](../../../../tests/lookup/rbc/0080_gpu_first_index_tie.t), [tests/lookup/rbc/0080_gpu_first_index_tie.c](../../../../tests/lookup/rbc/0080_gpu_first_index_tie.c) |
 | RBCGPU-37 | Cell boundaries. | [tests/lookup/rbc/0081_gpu_cell_boundaries.t](../../../../tests/lookup/rbc/0081_gpu_cell_boundaries.t), [tests/lookup/rbc/0081_gpu_cell_boundaries.c](../../../../tests/lookup/rbc/0081_gpu_cell_boundaries.c) |
+
+### Fractional GPU queries
+
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| RBCF-01 | Fractional candidate selection agrees with the independent nearest-color oracle. | [tests/lookup/rbc/0082_gpu_rbc_fractional_exact.t](../../../../tests/lookup/rbc/0082_gpu_rbc_fractional_exact.t) |
+| RBCF-02 | Equal-distance queries and duplicate colors retain the lowest index. | [tests/lookup/rbc/0083_gpu_rbc_fractional_ties.t](../../../../tests/lookup/rbc/0083_gpu_rbc_fractional_ties.t) |
+| RBCF-03 | Changing query precision creates a separate plan without mutating the held byte plan. | [tests/lookup/rbc/0084_gpu_rbc_fractional_cache.t](../../../../tests/lookup/rbc/0084_gpu_rbc_fractional_cache.t) |

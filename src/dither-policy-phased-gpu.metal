@@ -6,6 +6,7 @@ struct PhasedParams {
     uint tiles_x, keycolor, delta, threshold;
     uint metric, columns, rows, tiled, selected_threshold;
     uint selection[128];
+    uint batch_stage;
 };
 
 static float3 phased_color(constant uchar *palette, uint index)
@@ -40,6 +41,17 @@ static float3 phased_send(device const float4 *a, device const float4 *b,
         weights[8*row.z+tap]);
 }
 
+#if PHASED_BATCH
+#define PHASED_QUERY_BUFFERS \
+    device float4 *queries [[buffer(16)]], \
+    device const uint *indexes [[buffer(17)]],
+#define PHASED_LOOKUP(q, i) indexes[i]
+#else
+#define PHASED_QUERY_BUFFERS
+#define PHASED_LOOKUP(q, i) lookup_rgb8_fractional(q, palette, p.ncolors, \
+    configuration, workspace)
+#endif
+
 kernel void phased_initialize(device const uchar *source [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
     device float4 *a [[buffer(2)]],
@@ -48,16 +60,23 @@ kernel void phased_initialize(device const uchar *source [[buffer(0)]],
     constant uchar *configuration [[buffer(12)]],
     device const uchar *workspace [[buffer(13)]],
     device atomic_uint *invalid [[buffer(14)]],
+    PHASED_QUERY_BUFFERS
     uint i [[thread_position_in_grid]])
 {
     float3 query;
     uint best;
 
     if (i >= p.width*p.height) return;
+#if PHASED_BATCH
+    if (p.batch_stage == 1) {
+        queries[i] = transparent[i] ? float4(0.f) :
+            float4(source[3*i], source[3*i+1], source[3*i+2], 1.f);
+        return;
+    }
+#endif
     if (transparent[i]) { a[i] = float4(0.f); return; }
     query = float3(source[3*i], source[3*i+1], source[3*i+2]);
-    best = lookup_rgb8_fractional(query, palette, p.ncolors,
-        configuration, workspace);
+    best = PHASED_LOOKUP(query, i);
     if (best >= p.ncolors) {
         atomic_store_explicit(invalid, 1u, memory_order_relaxed);
         a[i] = float4(0.f);
@@ -77,6 +96,7 @@ kernel void phased_iterate(device const uchar *source [[buffer(0)]],
     constant uchar *configuration [[buffer(12)]],
     device const uchar *workspace [[buffer(13)]],
     device atomic_uint *invalid [[buffer(14)]],
+    PHASED_QUERY_BUFFERS
     uint lane [[thread_position_in_grid]])
 {
     uint tile, position, i, best;
@@ -84,14 +104,26 @@ kernel void phased_iterate(device const uchar *source [[buffer(0)]],
     float3 incoming, query, previous;
     float4 updated, state;
 
+#if PHASED_BATCH
+    if (lane >= p.width*p.height) return;
+    x = int(lane % p.width); y = int(lane / p.width);
+    if (phase[(uint(y)&63)*64+(uint(x)&63)] != p.step%4) {
+        if (p.batch_stage == 1) queries[lane] = float4(0.f);
+        return;
+    }
+#else
     tile = lane / 1024;
     position = positions[(p.step % 4)*1024 + lane % 1024];
     x = int((tile % p.tiles_x)*64 + position % 64);
     y = int((tile / p.tiles_x)*64 + position / 64);
+#endif
     if (x >= int(p.width) || y >= int(p.height)) return;
     i = uint(y)*p.width + uint(x);
     updated = float4(0.f);
     if (!transparent[i]) {
+#if PHASED_BATCH
+        if (p.batch_stage == 1) {
+#endif
         direction = (y & 1) ? -1 : 1;
         above = ((y-1) & 1) ? -1 : 1;
         incoming = phased_send(a,b,phase,weights,x-direction,y,0,p);
@@ -105,14 +137,22 @@ kernel void phased_iterate(device const uchar *source [[buffer(0)]],
         state = phased_version(uint(x),uint(y),p.step,phase) ? b[i] : a[i];
         previous = state.xyz + phased_color(palette,uint(state.w));
         query = previous + (query - previous);
-        best = lookup_rgb8_fractional(query, palette, p.ncolors,
-            configuration, workspace);
+#if PHASED_BATCH
+            queries[i] = float4(query,1.f);
+            return;
+        }
+        query = queries[i].xyz;
+#endif
+        best = PHASED_LOOKUP(query, i);
         if (best >= p.ncolors) {
             atomic_store_explicit(invalid, 1u, memory_order_relaxed);
         } else {
             updated = float4(query - phased_color(palette,best),float(best));
         }
     }
+#if PHASED_BATCH
+    if (p.batch_stage == 1) { queries[i] = float4(0.f); return; }
+#endif
     /* Earlier phases read new generations; this phase reads the old one.
      * No thread can read another same-phase thread's incomplete write. */
     if (((p.step / 4) + 1) & 1) b[i] = updated;
@@ -130,6 +170,7 @@ kernel void phased_finish(constant uchar *palette [[buffer(1)]],
     device const uchar *workspace [[buffer(13)]],
     device atomic_uint *invalid [[buffer(14)]],
     device uchar *skip [[buffer(15)]],
+    PHASED_QUERY_BUFFERS
     uint i [[thread_position_in_grid]])
 {
     uint best, code, threshold, x, y, cell;
@@ -138,6 +179,13 @@ kernel void phased_finish(constant uchar *palette [[buffer(1)]],
     bool within;
 
     if (i >= p.width*p.height) return;
+#if PHASED_BATCH
+    if (p.batch_stage == 1) {
+        queries[i] = transparent[i] ? float4(0.f) :
+            float4(a[i].xyz+phased_color(palette,uint(a[i].w)),1.f);
+        return;
+    }
+#endif
     best = uint(a[i].w);
     code = 0;
     if (transparent[i]) {
@@ -147,8 +195,7 @@ kernel void phased_finish(constant uchar *palette [[buffer(1)]],
          * consulted only now and never seeds a later frame's diffusion. */
         fresh = phased_color(palette,best);
         query = a[i].xyz + fresh;
-        best = lookup_rgb8_fractional(query, palette, p.ncolors,
-            configuration, workspace);
+        best = PHASED_LOOKUP(query, i);
         if (best >= p.ncolors) {
             atomic_store_explicit(invalid, 1u, memory_order_relaxed);
             return;
@@ -189,15 +236,23 @@ kernel void phased_solve_tail(constant uchar *palette [[buffer(1)]],
     constant uchar *configuration [[buffer(12)]],
     device const uchar *workspace [[buffer(13)]],
     device atomic_uint *invalid [[buffer(14)]],
+    PHASED_QUERY_BUFFERS
     uint i [[thread_position_in_grid]])
 {
     float3 query;
     uint best;
 
-    if (i >= p.width*p.height || transparent[i]) return;
+    if (i >= p.width*p.height) return;
+#if PHASED_BATCH
+    if (p.batch_stage == 1) {
+        queries[i] = transparent[i] ? float4(0.f) :
+            float4(a[i].xyz+phased_color(palette,uint(a[i].w)),1.f);
+        return;
+    }
+#endif
+    if (transparent[i]) return;
     query = a[i].xyz + phased_color(palette,uint(a[i].w));
-    best = lookup_rgb8_fractional(query, palette, p.ncolors,
-        configuration, workspace);
+    best = PHASED_LOOKUP(query, i);
     if (best >= p.ncolors) {
         atomic_store_explicit(invalid, 1u, memory_order_relaxed);
         return;

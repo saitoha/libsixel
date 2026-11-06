@@ -68,6 +68,8 @@ The cache occupies 537 KiB: two fixed-stride 256x256 uint32 row arrays, 256 degr
 
 Transparency, positional dithering, blue-noise configuration and delta keep decisions use the shared GPU path. Kept pixels do no lookup. The retained result mask and history publication follow the same rules as other GPU policies. `SIXEL_TRACE_TOPIC=gpu_contract` reports `kernel=delaunay` and `lookup=delaunay|table=rebuild` or `lookup=delaunay|table=reuse`.
 
+For [`phased`](../dithering/phased.md), the policy builds the same conservative adjacency for a scalar fractional graph walk. The outward-rounded boxes already contain continuous Voronoi cells, including fractional points. A seed selects the initial vertex; all query distances retain fractional coordinates. Each move decreases the computed distance/index pair. The row radius test uses `4 * distance_squared + 1`: the extra squared code-value unit conservatively covers float rounding in the pruning bound without changing candidate distances. The plan and builders are owned by [`lookup-policy-delaunay-gpu.c`](../../../../src/lookup-policy-delaunay-gpu.c) and its [fractional shader](../../../../src/lookup-policy-delaunay-fractional-gpu.metal). The byte vector executor remains unchanged. The [parent reference](README.md) defines fractional precision and cache identity.
+
 ## Implementation map
 
 The common builder is [`lookup-delaunay-graph.c`](../../../../src/lookup-delaunay-graph.c). [`lookup-delaunay-8bit.c`](../../../../src/lookup-delaunay-8bit.c) and [`lookup-delaunay-float32.c`](../../../../src/lookup-delaunay-float32.c) own query arithmetic, SIMD and memoization. [`lookup-policy-delaunay.c`](../../../../src/lookup-policy-delaunay.c) owns preparation, representation conversion and reuse through `lookup/delaunay.8bit` and `lookup/delaunay.float32`.
@@ -218,3 +220,13 @@ Each dither, keep mode and palette size has its own invocation against CPU exhau
 The byte fixtures use deterministic samples for random palettes of 1, 2, 3, 7, 40, 64, 256 and 300 colors, a duplicate palette and a grid over `{0,64,128,192}`. Each checks a 17-by-17-by-17 RGB lattice including channel endpoints, 4096 fixed-seed pseudorandom keys, 27 neighboring keys per palette entry, and seven neighboring keys around three pair midpoints per entry. These 9009 + 48N probes include palette hits, the white/index-255 sentinel and exact ties on the grid. Separate TAP files compare one selected lookup path with a palette-order integer oracle: ordinary lookup, scalar walk, active SIMD walk or lookup with an out-of-range hint. SIMD-only tests skip when that consumer is not compiled. Each path creates its own graph and memo. This samples the RGB domain rather than establishing correctness for every key. An explicit numeric third helper argument retains prefix enumeration for investigations: `tests/test_runner lookup/0021_delaunay_byte_exact 256 0 16777216 map` checks the entire RGB8 domain for that one palette.
 
 Float tests sample native coordinates and arithmetic boundaries; they do not enumerate the float domain. SIMD evidence depends on the compiler target and arithmetic gate actually reported by the test; a scalar-only build does not validate another architecture's instructions. Performance measurements are separate from these functional contracts.
+
+### Fractional GPU queries
+
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DELAUNAYF-01 | Fractional candidate selection agrees with the independent nearest-color oracle. | [tests/lookup/delaunay/0118_gpu_delaunay_fractional_exact.t](../../../../tests/lookup/delaunay/0118_gpu_delaunay_fractional_exact.t) |
+| DELAUNAYF-02 | Equal-distance queries and duplicate colors retain the lowest index. | [tests/lookup/delaunay/0119_gpu_delaunay_fractional_ties.t](../../../../tests/lookup/delaunay/0119_gpu_delaunay_fractional_ties.t) |
+| DELAUNAYF-03 | Changing query precision creates a separate plan without mutating the held byte plan. | [tests/lookup/delaunay/0120_gpu_delaunay_fractional_cache.t](../../../../tests/lookup/delaunay/0120_gpu_delaunay_fractional_cache.t) |

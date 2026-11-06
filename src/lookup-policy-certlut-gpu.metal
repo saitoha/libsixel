@@ -53,6 +53,7 @@ static uint certlut_nearest(int3 query, uint count,
 // is attained at a corner chosen independently on each axis.
 kernel void certlut_build(constant uchar *palette [[buffer(0)]],
     constant uint& count [[buffer(1)]],
+    constant uint& fractional [[buffer(2)]],
     device uint *table [[buffer(3)]],
     uint cell [[thread_position_in_grid]])
 {
@@ -62,8 +63,9 @@ kernel void certlut_build(constant uchar *palette [[buffer(0)]],
     (void)palette;
     if (cell >= certlut_cells) return;
     low = int3(cell>>8, (cell>>4)&15u, cell&15u)*16;
-    // Closed integer bounds include 255 in the last cell.
-    high = low+15;
+    // Fractional cells include the interval above the last integer.
+    // Closing the upper face is conservative; the last cell stops at 255.
+    high = min(low+15+int(fractional), int3(255));
     best = certlut_nearest(low+8,count,table);
     a = certlut_rgb(table[best]);
     row = certlut_palette_words+cell*certlut_capacity;
@@ -106,4 +108,47 @@ static uint lookup_rgb8(uchar3 query, constant uchar *palette,
     row = certlut_palette_words+cell*certlut_capacity;
     if (kept == 1) return table[row]>>24;
     return certlut_nearest(int3(query),kept,table+row);
+}
+
+/* Palette packing is exact. Keep fractional coordinates in distance tests;
+ * a packed integer score would discard the information diffusion needs. */
+static uint certlut_fractional(float3 query, uint count,
+    device const uint *table)
+{
+    uint i, packed, best, index;
+    float minimum, distance;
+    float3 gap;
+
+    best = 0;
+    minimum = INFINITY;
+    for (i = 0; i < count; ++i) {
+        packed = table[i];
+        index = packed >> 24;
+        gap = query-float3(packed&255u, (packed>>8)&255u,
+            (packed>>16)&255u);
+        distance = dot(gap, gap);
+        if (distance < minimum || (distance == minimum && index < best)) {
+            minimum = distance;
+            best = index;
+        }
+    }
+    return best;
+}
+static uint lookup_rgb8_fractional(float3 query, constant uchar *palette,
+    uint count, constant uchar *configuration,
+    device const uchar *workspace)
+{
+    device const uint *table;
+    uint3 code;
+    uint cell, kept, row;
+
+    (void)palette; (void)configuration;
+    table = (device const uint *)workspace;
+    code = uint3(query) >> 4;
+    cell = (code.x<<8) | (code.y<<4) | code.z;
+    kept = table[certlut_counts+cell];
+    if (kept == 0) return certlut_fractional(query,count,table);
+    row = certlut_palette_words+cell*certlut_capacity;
+    if (kept == 1) return table[row]>>24;
+    return certlut_fractional(query,kept,table+row);
 }
