@@ -4171,6 +4171,9 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
         if (prepare_lookup) return SIXEL_FEATURE_ERROR;
         return SIXEL_OK;
     }
+    /* Preparation must leave either a GPU preparer or a CPU policy.
+     * Reject an incomplete component graph before accessing its vtable. */
+    if (dither->dither_policy == NULL) return SIXEL_LOGIC_ERROR;
     status = dither->dither_policy->vtbl->get_configuration(
         dither->dither_policy, &configuration);
     if (SIXEL_FAILED(status)) return status;

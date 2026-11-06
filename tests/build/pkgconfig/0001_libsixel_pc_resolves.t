@@ -26,9 +26,15 @@ set -v
 # Query a package name: Strawberry's Perl implementation appends .pc even
 # to a complete filename. A relative search directory also avoids Windows
 # drive letters being mistaken for path-list separators by an MSYS tool.
+# Preserve the incoming path-list syntax. Native Windows paths use a
+# semicolon, including a single drive-qualified directory with no separator.
+case ${PKG_CONFIG_PATH-} in
+    *';'*|?:[\\/]*) path_separator=';' ;;
+    *) path_separator=: ;;
+esac
 resolved=$(set +xv
     cd "${TOP_BUILDDIR}" || exit 1
-    PKG_CONFIG_PATH=".${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}" \
+    PKG_CONFIG_PATH=".${PKG_CONFIG_PATH:+${path_separator}${PKG_CONFIG_PATH}}" \
         "${SIXEL_TEST_PKG_CONFIG}" --static --cflags --libs libsixel 2>&1
 ) || {
     echo "not ok 1 - pkg-config cannot resolve libsixel.pc"

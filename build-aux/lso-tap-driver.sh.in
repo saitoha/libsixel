@@ -466,6 +466,8 @@ run_with_shell_timeout() {
   return "$status"
 }
 
+# Emit TAP on stdout even when no interpreter can be launched. The caller
+# owns log capture and converts this stream to final .trs metadata.
 run_with_timeout() {
   test_path=$1
   shift
@@ -484,13 +486,7 @@ run_with_timeout() {
       if [ -n "$test_python" ] && [ -x "$test_python" ]; then
         set -- "$test_python" "$test_path" "$@"
       else
-        printf '%s\n' '1..0 # SKIP python test interpreter is unavailable' >"$log_file"
-        cat >"$trs_file" <<'EOF'
-:test-result: SKIP
-:global-test-result: SKIP
-:recheck: yes
-:copy-in-global-log: no
-EOF
+        printf '%s\n' '1..0 # SKIP python test interpreter is unavailable'
         return 0
       fi
       ;;
@@ -524,13 +520,7 @@ EOF
         fi
         set -- "$SIXEL_TEST_RUBY" "$test_path" "$@"
       else
-        printf '%s\n' '1..0 # SKIP ruby test interpreter is unavailable' >"$log_file"
-        cat >"$trs_file" <<'EOF'
-:test-result: SKIP
-:global-test-result: SKIP
-:recheck: yes
-:copy-in-global-log: no
-EOF
+        printf '%s\n' '1..0 # SKIP ruby test interpreter is unavailable'
         return 0
       fi
       ;;
@@ -560,13 +550,7 @@ EOF
         fi
         set -- "$SIXEL_TEST_PERL" "$test_path" "$@"
       else
-        printf '%s\n' '1..0 # SKIP perl test interpreter is unavailable' >"$log_file"
-        cat >"$trs_file" <<'EOF'
-:test-result: SKIP
-:global-test-result: SKIP
-:recheck: yes
-:copy-in-global-log: no
-EOF
+        printf '%s\n' '1..0 # SKIP perl test interpreter is unavailable'
         return 0
       fi
       ;;
@@ -587,13 +571,7 @@ EOF
         fi
         set -- "$SIXEL_TEST_PHP" "$test_path" "$@"
       else
-        printf '%s\n' '1..0 # SKIP php test interpreter is unavailable' >"$log_file"
-        cat >"$trs_file" <<'EOF'
-:test-result: SKIP
-:global-test-result: SKIP
-:recheck: yes
-:copy-in-global-log: no
-EOF
+        printf '%s\n' '1..0 # SKIP php test interpreter is unavailable'
         return 0
       fi
       ;;
@@ -898,6 +876,7 @@ __line__
             1..*)
                 saw_tap=1
                 test "$col2" = '#' && test "$col3" = SKIP && {
+                    skip=$((skip+1))
                     desc="${col4}"
                     echo ":test-result: SKIP $desc" >&2
                     break

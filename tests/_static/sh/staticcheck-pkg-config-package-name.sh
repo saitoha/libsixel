@@ -20,6 +20,7 @@ package_probe() {
 }
 result=$(TOP_BUILDDIR="$tmpdir"
     SIXEL_TEST_PKG_CONFIG=package_probe
+    PKG_CONFIG_PATH=
     # shellcheck disable=SC1091
     . "$src_root/tests/build/pkgconfig/0001_libsixel_pc_resolves.t")
 test "$result" = '1..1

@@ -2,6 +2,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#if defined(HAVE_METAL)
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 #include <limits.h>
@@ -141,7 +142,7 @@ phased_compile(id<MTLDevice> device,
     for (i = 0; i < sizeof(phased_chunks)/sizeof(*phased_chunks); ++i) {
         [source appendString:@(phased_chunks[i])];
     }
-    [key appendFormat:@"%p:%@", device, source];
+    [key appendFormat:@"%p:%@", (void *)device, source];
     for (i = 0; i < view->build_pass_count; ++i) {
         if (view->build_passes[i].entry_point == NULL)
             return SIXEL_BAD_ARGUMENT;
@@ -667,3 +668,4 @@ sixel_phased_metal_prepare(sixel_allocator_t *allocator,
     }
     return status;
 }
+#endif /* defined(HAVE_METAL) */

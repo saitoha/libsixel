@@ -1131,6 +1131,18 @@ run_case_tap "staticcheck-tap-failure-status" \
     sh "$src_root/tests/_static/sh/staticcheck-tap-failure-status.sh" \
     "$src_root"
 
+run_case_tap "staticcheck-tap-interpreter-skip" \
+    sh "$src_root/tests/_static/sh/staticcheck-tap-interpreter-skip.sh" \
+    "$src_root"
+
+run_case_tap "staticcheck-pkg-config-search-path" \
+    sh "$src_root/tests/_static/sh/staticcheck-pkg-config-search-path.sh" \
+    "$src_root"
+
+run_case_tap "staticcheck-amalgamation-metal-guards" \
+    sh "$src_root/tests/_static/sh/staticcheck-amalgamation-metal-guards.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-pkg-config-package-name" \
     sh "$src_root/tests/_static/sh/staticcheck-pkg-config-package-name.sh" \
     "$src_root"

@@ -25352,7 +25352,10 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-tap-failure-status.sh \
 	_static/sh/staticcheck-pkg-config-package-name.sh \
 	_static/sh/staticcheck-decoder-neon-portability.sh \
-	_static/sh/staticcheck-comparator-search-order.sh
+	_static/sh/staticcheck-comparator-search-order.sh \
+	_static/sh/staticcheck-tap-interpreter-skip.sh \
+	_static/sh/staticcheck-pkg-config-search-path.sh \
+	_static/sh/staticcheck-amalgamation-metal-guards.sh
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
