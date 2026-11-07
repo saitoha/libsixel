@@ -2204,6 +2204,7 @@ loader_helper_sources = files(
   'src/fromgif.c',
   'src/frompnm.c',
   'src/fromsixel.c',
+  'src/fromsixel-aspect.c',
   'src/loader.c',
   'src/loader-gdk-pixbuf2.c',
   'src/loader-gnome-thumbnailer.c',

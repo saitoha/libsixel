@@ -169,6 +169,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/sleep.c \
                 $(srcdir)/sleep.h \
                 $(srcdir)/fromsixel.c \
+                $(srcdir)/fromsixel-aspect.c \
                 $(srcdir)/encoder-core-encode.c \
                 $(srcdir)/encoder-core-highcolor.c \
                 $(srcdir)/encoder-core-highcolor.h \
@@ -521,6 +522,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/decoder-parallel.c \
                 $(srcdir)/decoder-parallel.h \
                 $(srcdir)/decoder-image.h \
+                $(srcdir)/fromsixel-internal.h \
                 $(srcdir)/decoder-ormode.h \
                 $(srcdir)/decoder-columns.h \
                 $(srcdir)/decoder-simd.h \

@@ -120,6 +120,7 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__libwicsixel_la_SOURCES_DIST = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_srcdir)/src/fromsixel.c \
+	$(top_srcdir)/src/fromsixel-aspect.c \
 	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/cpu.c \
 	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/timer.c \
 	$(top_srcdir)/src/timeline-logger.c \
@@ -137,6 +138,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_libwicsixel_la_OBJECTS = libwicsixel_la-wic.lo \
 	libwicsixel_la-wic_stub.lo \
 	$(top_builddir)/src/libwicsixel_la-fromsixel.lo \
+	$(top_builddir)/src/libwicsixel_la-fromsixel-aspect.lo \
 	$(top_builddir)/src/libwicsixel_la-colorspace-hls.lo \
 	$(top_builddir)/src/libwicsixel_la-cpu.lo \
 	$(top_builddir)/src/libwicsixel_la-allocator.lo \
@@ -192,6 +194,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel-aspect.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options.Plo \
@@ -555,6 +558,7 @@ CLEANFILES = *.o *.obj $(wic_installer) wic-msi.log wic-msi.trs \
 noinst_LTLIBRARIES = libwicsixel.la
 libwicsixel_la_SOURCES = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_srcdir)/src/fromsixel.c \
+	$(top_srcdir)/src/fromsixel-aspect.c \
 	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/cpu.c \
 	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/timer.c \
 	$(top_srcdir)/src/timeline-logger.c \
@@ -726,6 +730,9 @@ $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp):
 $(top_builddir)/src/libwicsixel_la-fromsixel.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libwicsixel_la-fromsixel-aspect.lo:  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libwicsixel_la-colorspace-hls.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
@@ -809,6 +816,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel-aspect.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options.Plo@am__quote@ # am--include-marker
@@ -873,6 +881,13 @@ $(top_builddir)/src/libwicsixel_la-fromsixel.lo: $(top_builddir)/src/fromsixel.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/fromsixel.c' object='$(top_builddir)/src/libwicsixel_la-fromsixel.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-fromsixel.lo `test -f '$(top_builddir)/src/fromsixel.c' || echo '$(srcdir)/'`$(top_builddir)/src/fromsixel.c
+
+$(top_builddir)/src/libwicsixel_la-fromsixel-aspect.lo: $(top_builddir)/src/fromsixel-aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-fromsixel-aspect.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel-aspect.Tpo -c -o $(top_builddir)/src/libwicsixel_la-fromsixel-aspect.lo `test -f '$(top_builddir)/src/fromsixel-aspect.c' || echo '$(srcdir)/'`$(top_builddir)/src/fromsixel-aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel-aspect.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel-aspect.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/fromsixel-aspect.c' object='$(top_builddir)/src/libwicsixel_la-fromsixel-aspect.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-fromsixel-aspect.lo `test -f '$(top_builddir)/src/fromsixel-aspect.c' || echo '$(srcdir)/'`$(top_builddir)/src/fromsixel-aspect.c
 
 $(top_builddir)/src/libwicsixel_la-colorspace-hls.lo: $(top_builddir)/src/colorspace-hls.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-colorspace-hls.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-colorspace-hls.Tpo -c -o $(top_builddir)/src/libwicsixel_la-colorspace-hls.lo `test -f '$(top_builddir)/src/colorspace-hls.c' || echo '$(srcdir)/'`$(top_builddir)/src/colorspace-hls.c
@@ -1193,6 +1208,7 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel-aspect.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options.Plo
@@ -1260,6 +1276,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel-aspect.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options.Plo

@@ -2017,8 +2017,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0004_FRACTIONAL_RATIO \
     -DBUILD_TEST_0005_PARTIAL_ROW_GROUP \
     -DBUILD_TEST_0006_MACRO_GEOMETRY \
-    -DBUILD_TEST_0007_FIRST_RASTER_WINS \
-    -DBUILD_TEST_0008_LATE_RASTER \
+    -DBUILD_TEST_0007_SUCCESSIVE_HEAD_ASPECT \
+    -DBUILD_TEST_0008_FIRST_LATE_ASPECT \
     -DBUILD_TEST_0009_ZERO_PAN \
     -DBUILD_TEST_0010_ZERO_PAD \
     -DBUILD_TEST_0011_MISSING_PAD \
@@ -2026,7 +2026,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_UNTRUSTED_GROWTH \
     -DBUILD_TEST_0014_ORMODE_ROWS \
     -DBUILD_TEST_0015_GRID_GEOMETRY \
-    -DBUILD_TEST_0016_BLANK_LOCKS_ASPECT \
+    -DBUILD_TEST_0016_BLANK_THEN_ASPECT \
     -DBUILD_TEST_0017_BAND_ROWS \
     -DBUILD_TEST_0018_ABSURD_RATIO \
     -DBUILD_TEST_0019_SCALED_HEIGHT_LIMIT \
@@ -2034,6 +2034,25 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_ANIMATION_PACKET_ASPECT \
     -DBUILD_TEST_0022_HIGH_COLOR_RGBA \
     -DBUILD_TEST_0023_FUSED_UNDITHER_ROWS \
+    -DBUILD_TEST_0024_ROUND_FIVE_HALVES \
+    -DBUILD_TEST_0025_HORIZONTAL_RATIO \
+    -DBUILD_TEST_0026_ROUND_FIVE_QUARTERS \
+    -DBUILD_TEST_0027_ROUND_SEVEN_HALVES \
+    -DBUILD_TEST_0028_UNIT_THEN_DOUBLE_BANDS \
+    -DBUILD_TEST_0029_DOUBLE_THEN_UNIT_BANDS \
+    -DBUILD_TEST_0030_MID_BAND_CHANGE \
+    -DBUILD_TEST_0031_REPEATED_SAME_SCALE \
+    -DBUILD_TEST_0032_CHANGING_THREAD_BUDGETS \
+    -DBUILD_TEST_0033_CHANGING_UNDITHER \
+    -DBUILD_TEST_0034_CHANGING_SEQUENCE \
+    -DBUILD_TEST_0035_CHANGING_ANIMATION \
+    -DBUILD_TEST_0036_CHANGING_TRUSTED_CLIP \
+    -DBUILD_TEST_0037_CHANGING_UNTRUSTED_GROWTH \
+    -DBUILD_TEST_0038_CHANGING_ORMODE \
+    -DBUILD_TEST_0039_MID_BAND_OVERLAP \
+    -DBUILD_TEST_0040_CHANGING_PALETTE \
+    -DBUILD_TEST_0041_CHANGING_WIDE_ORMODE \
+    -DBUILD_TEST_0042_SCAN_BOUNDARIES \
     -DBUILD_ASPECT_TEST_COMMON \
     -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
     -DBUILD_TEST_0002_HISTORY_REVISIONS \
@@ -5993,8 +6012,8 @@ test_runner_SOURCES = test_runner.c \
     decoder/aspect/0004_fractional_ratio.c \
     decoder/aspect/0005_partial_row_group.c \
     decoder/aspect/0006_macro_geometry.c \
-    decoder/aspect/0007_first_raster_wins.c \
-    decoder/aspect/0008_late_raster.c \
+    decoder/aspect/0007_successive_head_aspect.c \
+    decoder/aspect/0008_first_late_aspect.c \
     decoder/aspect/0009_zero_pan.c \
     decoder/aspect/0010_zero_pad.c \
     decoder/aspect/0011_missing_pad.c \
@@ -6002,7 +6021,7 @@ test_runner_SOURCES = test_runner.c \
     decoder/aspect/0013_untrusted_growth.c \
     decoder/aspect/0014_ormode_rows.c \
     decoder/aspect/0015_grid_geometry.c \
-    decoder/aspect/0016_blank_locks_aspect.c \
+    decoder/aspect/0016_blank_then_aspect.c \
     decoder/aspect/0017_band_rows.c \
     decoder/aspect/0018_absurd_ratio.c \
     decoder/aspect/0019_scaled_height_limit.c \
@@ -6010,6 +6029,25 @@ test_runner_SOURCES = test_runner.c \
     decoder/aspect/0021_animation_packet_aspect.c \
     decoder/aspect/0022_high_color_rgba.c \
     decoder/aspect/0023_fused_undither_rows.c \
+    decoder/aspect/0024_round_five_halves.c \
+    decoder/aspect/0025_horizontal_ratio.c \
+    decoder/aspect/0026_round_five_quarters.c \
+    decoder/aspect/0027_round_seven_halves.c \
+    decoder/aspect/0028_unit_then_double_bands.c \
+    decoder/aspect/0029_double_then_unit_bands.c \
+    decoder/aspect/0030_mid_band_change.c \
+    decoder/aspect/0031_repeated_same_scale.c \
+    decoder/aspect/0032_changing_thread_budgets.c \
+    decoder/aspect/0033_changing_undither.c \
+    decoder/aspect/0034_changing_sequence.c \
+    decoder/aspect/0035_changing_animation.c \
+    decoder/aspect/0036_changing_trusted_clip.c \
+    decoder/aspect/0037_changing_untrusted_growth.c \
+    decoder/aspect/0038_changing_ormode.c \
+    decoder/aspect/0039_mid_band_overlap.c \
+    decoder/aspect/0040_changing_palette.c \
+    decoder/aspect/0041_changing_wide_ormode.c \
+    decoder/aspect/0042_scan_boundaries.c \
     _support/processing/decoder/aspect_test_common.c \
     _support/processing/decoder/aspect_test_common.h \
     color/cms/0017_separate_intents.c \

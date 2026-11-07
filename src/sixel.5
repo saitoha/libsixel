@@ -32,21 +32,38 @@ WRQ Reflection
 ZSTEM
 
 .SH "DECODER PIXEL ASPECT"
-libsixel uses the first raster attribute command
+The raster attribute command
 .B "\[dq] Pan ; Pad ; Ph ; Pv"
-before SIXEL data to determine pixel aspect (vertical:horizontal).
-A missing or zero Pan or Pad selects 1:1 aspect.
-When Pan/Pad is an integer greater than one, each decoded row is repeated
-that many times; other ratios retain one output row per SIXEL pixel.
-Horizontal dimensions are unchanged. DCS macro P1 and grid size P3 do not
-change decoded pixel aspect. Later raster commands can update Ph/Pv but
-cannot change the aspect after the first raster command or SIXEL data.
+sets the vertical pixel multiplier n to round(Pan/Pad), with halves rounded up
+(5/2 becomes 3, 3/2 becomes 2). Ratios below one and missing or zero Pan or Pad
+use one output row per SIXEL pixel. Horizontal dimensions are unchanged.
+The initial multiplier is one; DCS macro P1 and grid size P3 do not change it.
 .PP
-Ph and Pv specify output pixels. A partial final group of repeated rows
-ends exactly at Pv when the data fits the declared raster. Existing trusted
-raster clipping and image size limits still apply; excessive scaled heights
-are errors. In sequence and animation decoding, each image is expanded
-before its painted pixels are composed onto the retained output canvas.
+Each command changes the multiplier for subsequent SIXEL characters, even
+within a band. Earlier paint is never rescaled. A character's bit k paints
+n rows starting at band_top + k*n, and '-' advances band_top by 6*n using
+the multiplier current at that command. Changes can therefore produce
+vertical gaps or overlaps. This models VT340 vertical pixel multiplication;
+mid-image changes have not been verified on hardware.
+.PP
+With a constant multiplier of one, or a nonunit multiplier declared before
+drawing, the optimized decoder paints at 1:1 and expands the final rows. A late nonunit declaration or
+changing multipliers select a serial painter in output coordinates.
+Repeated declarations with the same rounded multiplier retain the optimized
+path. Drawing includes blank SIXEL characters, '!', '$' and '-'; color
+commands may precede the first raster declaration.
+.PP
+Ph and Pv specify output pixels. For constant aspect, a partial final group
+of repeated rows ends exactly at Pv when the data fits the declared raster.
+The changing-aspect painter applies the ordinary trusted clipping or
+untrusted growth rules directly to output rows. Existing size limits and
+paint-outside-raster flags apply. Each sequence or animation packet selects
+its own path before composition onto the retained output canvas.
+.PP
+Fast4 undither uses the source-resolution image before expansion on the
+constant-aspect path. The changing-aspect path first paints an indexed image
+in output coordinates, then applies ordinary non-fused fast4 reconstruction
+without any further expansion.
 
 .SH "SEE ALSO"
 .BR "img2sixel"(1), " sixel2png"(1), "

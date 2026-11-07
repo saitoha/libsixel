@@ -54,6 +54,7 @@ srcs = files(
   '../src/status.c',
   '../src/allocator.c',
   '../src/fromsixel.c',
+  '../src/fromsixel-aspect.c',
   '../src/colorspace-hls.c',
   '../src/cpu.c',
   '../src/timer.c',

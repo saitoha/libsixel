@@ -70,6 +70,7 @@ libsixelquicklookcore_a_SOURCES = \
     $(top_srcdir)/src/status.c \
     $(top_srcdir)/src/allocator.c \
     $(top_srcdir)/src/fromsixel.c \
+    $(top_srcdir)/src/fromsixel-aspect.c \
     $(top_srcdir)/src/colorspace-hls.c \
     $(top_srcdir)/src/cpu.c \
     $(top_srcdir)/src/timer.c \

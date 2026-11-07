@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify blank locks aspect with literal output samples. */
+/* Round 1/2 to 1 output rows per pixel. */
 #include <sixel.h>
 #include "../../_support/processing/decoder/aspect_test_common.h"
 
 int
-test_decoder_aspect_0016(int argc, char **argv)
+test_decoder_aspect_0025(int argc, char **argv)
 {
     static char const stream[] =
-        "\033Pq?$\"2;1;2;2" ASPECT_COLORS ASPECT_PAINT "\033\\";
+        "\033Pq\"1;2;2;2" ASPECT_COLORS ASPECT_PAINT "\033\\";
 
     (void)argc;
     (void)argv;

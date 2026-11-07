@@ -28,6 +28,7 @@ wic_sources = files(
   'wic.c',
   'wic_stub.h',
   '../src/fromsixel.c',
+  '../src/fromsixel-aspect.c',
   '../src/colorspace-hls.c',
   '../src/cpu.c',
   '../src/allocator.c',

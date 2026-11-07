@@ -22,6 +22,7 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(srcdir)/wic_stub.c \
                          $(srcdir)/wic_stub.h \
                          $(top_srcdir)/src/fromsixel.c \
+                         $(top_srcdir)/src/fromsixel-aspect.c \
                          $(top_srcdir)/src/colorspace-hls.c \
                          $(top_srcdir)/src/cpu.c \
                          $(top_srcdir)/src/allocator.c \

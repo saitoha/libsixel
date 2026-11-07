@@ -289,6 +289,25 @@ int test_decoder_aspect_0020(int argc, char **argv);
 int test_decoder_aspect_0021(int argc, char **argv);
 int test_decoder_aspect_0022(int argc, char **argv);
 int test_decoder_aspect_0023(int argc, char **argv);
+int test_decoder_aspect_0024(int argc, char **argv);
+int test_decoder_aspect_0025(int argc, char **argv);
+int test_decoder_aspect_0026(int argc, char **argv);
+int test_decoder_aspect_0027(int argc, char **argv);
+int test_decoder_aspect_0028(int argc, char **argv);
+int test_decoder_aspect_0029(int argc, char **argv);
+int test_decoder_aspect_0030(int argc, char **argv);
+int test_decoder_aspect_0031(int argc, char **argv);
+int test_decoder_aspect_0032(int argc, char **argv);
+int test_decoder_aspect_0033(int argc, char **argv);
+int test_decoder_aspect_0034(int argc, char **argv);
+int test_decoder_aspect_0035(int argc, char **argv);
+int test_decoder_aspect_0036(int argc, char **argv);
+int test_decoder_aspect_0037(int argc, char **argv);
+int test_decoder_aspect_0038(int argc, char **argv);
+int test_decoder_aspect_0039(int argc, char **argv);
+int test_decoder_aspect_0040(int argc, char **argv);
+int test_decoder_aspect_0041(int argc, char **argv);
+int test_decoder_aspect_0042(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -8625,9 +8644,9 @@ static test_entry_t const test_entries[] = {
       test_decoder_aspect_0005 },
     { "decoder/aspect/0006_macro_geometry",
       test_decoder_aspect_0006 },
-    { "decoder/aspect/0007_first_raster_wins",
+    { "decoder/aspect/0007_successive_head_aspect",
       test_decoder_aspect_0007 },
-    { "decoder/aspect/0008_late_raster",
+    { "decoder/aspect/0008_first_late_aspect",
       test_decoder_aspect_0008 },
     { "decoder/aspect/0009_zero_pan",
       test_decoder_aspect_0009 },
@@ -8643,7 +8662,7 @@ static test_entry_t const test_entries[] = {
       test_decoder_aspect_0014 },
     { "decoder/aspect/0015_grid_geometry",
       test_decoder_aspect_0015 },
-    { "decoder/aspect/0016_blank_locks_aspect",
+    { "decoder/aspect/0016_blank_then_aspect",
       test_decoder_aspect_0016 },
     { "decoder/aspect/0017_band_rows",
       test_decoder_aspect_0017 },
@@ -8659,6 +8678,44 @@ static test_entry_t const test_entries[] = {
       test_decoder_aspect_0022 },
     { "decoder/aspect/0023_fused_undither_rows",
       test_decoder_aspect_0023 },
+    { "decoder/aspect/0024_round_five_halves",
+      test_decoder_aspect_0024 },
+    { "decoder/aspect/0025_horizontal_ratio",
+      test_decoder_aspect_0025 },
+    { "decoder/aspect/0026_round_five_quarters",
+      test_decoder_aspect_0026 },
+    { "decoder/aspect/0027_round_seven_halves",
+      test_decoder_aspect_0027 },
+    { "decoder/aspect/0028_unit_then_double_bands",
+      test_decoder_aspect_0028 },
+    { "decoder/aspect/0029_double_then_unit_bands",
+      test_decoder_aspect_0029 },
+    { "decoder/aspect/0030_mid_band_change",
+      test_decoder_aspect_0030 },
+    { "decoder/aspect/0031_repeated_same_scale",
+      test_decoder_aspect_0031 },
+    { "decoder/aspect/0032_changing_thread_budgets",
+      test_decoder_aspect_0032 },
+    { "decoder/aspect/0033_changing_undither",
+      test_decoder_aspect_0033 },
+    { "decoder/aspect/0034_changing_sequence",
+      test_decoder_aspect_0034 },
+    { "decoder/aspect/0035_changing_animation",
+      test_decoder_aspect_0035 },
+    { "decoder/aspect/0036_changing_trusted_clip",
+      test_decoder_aspect_0036 },
+    { "decoder/aspect/0037_changing_untrusted_growth",
+      test_decoder_aspect_0037 },
+    { "decoder/aspect/0038_changing_ormode",
+      test_decoder_aspect_0038 },
+    { "decoder/aspect/0039_mid_band_overlap",
+      test_decoder_aspect_0039 },
+    { "decoder/aspect/0040_changing_palette",
+      test_decoder_aspect_0040 },
+    { "decoder/aspect/0041_changing_wide_ormode",
+      test_decoder_aspect_0041 },
+    { "decoder/aspect/0042_scan_boundaries",
+      test_decoder_aspect_0042 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },

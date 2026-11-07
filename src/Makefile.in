@@ -209,7 +209,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/encoder-playback-independent.inc.h \
 	$(srcdir)/playback-ready.h $(srcdir)/timer.c $(srcdir)/timer.h \
 	$(srcdir)/sleep.c $(srcdir)/sleep.h $(srcdir)/fromsixel.c \
-	$(srcdir)/encoder-core-encode.c \
+	$(srcdir)/fromsixel-aspect.c $(srcdir)/encoder-core-encode.c \
 	$(srcdir)/encoder-core-highcolor.c \
 	$(srcdir)/encoder-core-highcolor.h $(srcdir)/lookup-policy.c \
 	$(srcdir)/lookup-policy-none.c \
@@ -437,11 +437,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
 	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
 	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-image.h \
-	$(srcdir)/decoder-ormode.h $(srcdir)/decoder-columns.h \
-	$(srcdir)/decoder-simd.h $(srcdir)/options.c \
-	$(srcdir)/options.h $(srcdir)/options-registry.c \
-	$(srcdir)/options-registry.h $(srcdir)/path.c $(srcdir)/path.h \
-	$(srcdir)/stb_image.h $(srcdir)/writer.c $(srcdir)/writer.h \
+	$(srcdir)/fromsixel-internal.h $(srcdir)/decoder-ormode.h \
+	$(srcdir)/decoder-columns.h $(srcdir)/decoder-simd.h \
+	$(srcdir)/options.c $(srcdir)/options.h \
+	$(srcdir)/options-registry.c $(srcdir)/options-registry.h \
+	$(srcdir)/path.c $(srcdir)/path.h $(srcdir)/stb_image.h \
+	$(srcdir)/writer.c $(srcdir)/writer.h \
 	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
 	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
@@ -486,6 +487,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-timer.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sleep.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromsixel.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromsixel-aspect.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-core-encode.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-core-highcolor.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy.lo \
@@ -783,6 +785,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-frompsd-header.Plo \
 	./$(DEPDIR)/libsixel_la-frompsd-trace.Plo \
 	./$(DEPDIR)/libsixel_la-frompsd.Plo \
+	./$(DEPDIR)/libsixel_la-fromsixel-aspect.Plo \
 	./$(DEPDIR)/libsixel_la-fromsixel.Plo \
 	./$(DEPDIR)/libsixel_la-fromtga.Plo \
 	./$(DEPDIR)/libsixel_la-gamut.Plo \
@@ -1345,6 +1348,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromsixel.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromsixel-aspect.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-encode.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-highcolor.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-highcolor.h \
@@ -1695,6 +1699,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-image.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromsixel-internal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-ormode.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-columns.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-simd.h \
@@ -2061,6 +2066,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd-header.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd-trace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel-aspect.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromtga.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gamut.Plo@am__quote@ # am--include-marker
@@ -2318,6 +2324,13 @@ libsixel_la-fromsixel.lo: fromsixel.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromsixel.c' object='libsixel_la-fromsixel.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromsixel.lo `test -f 'fromsixel.c' || echo '$(srcdir)/'`fromsixel.c
+
+libsixel_la-fromsixel-aspect.lo: fromsixel-aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromsixel-aspect.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromsixel-aspect.Tpo -c -o libsixel_la-fromsixel-aspect.lo `test -f 'fromsixel-aspect.c' || echo '$(srcdir)/'`fromsixel-aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-fromsixel-aspect.Tpo $(DEPDIR)/libsixel_la-fromsixel-aspect.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromsixel-aspect.c' object='libsixel_la-fromsixel-aspect.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromsixel-aspect.lo `test -f 'fromsixel-aspect.c' || echo '$(srcdir)/'`fromsixel-aspect.c
 
 libsixel_la-encoder-core-encode.lo: encoder-core-encode.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-encoder-core-encode.lo -MD -MP -MF $(DEPDIR)/libsixel_la-encoder-core-encode.Tpo -c -o libsixel_la-encoder-core-encode.lo `test -f 'encoder-core-encode.c' || echo '$(srcdir)/'`encoder-core-encode.c
@@ -3960,6 +3973,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-header.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-trace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel-aspect.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromtga.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gamut.Plo
@@ -4212,6 +4226,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-header.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-trace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel-aspect.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromtga.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gamut.Plo

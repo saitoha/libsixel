@@ -247,7 +247,7 @@ if test_runner_tests_sources_text != ''
   test_runner_tests_sources = files(test_runner_tests_sources_text.split('\n'))
 endif
 
-# Integer raster-aspect cases share the opt-in test runner.
+# Raster-aspect cases share the opt-in test runner.
 decoder_aspect_sources = files(
   'decoder/aspect/0001_integer_rows.c',
   'decoder/aspect/0002_unit_rows.c',
@@ -255,8 +255,8 @@ decoder_aspect_sources = files(
   'decoder/aspect/0004_fractional_ratio.c',
   'decoder/aspect/0005_partial_row_group.c',
   'decoder/aspect/0006_macro_geometry.c',
-  'decoder/aspect/0007_first_raster_wins.c',
-  'decoder/aspect/0008_late_raster.c',
+  'decoder/aspect/0007_successive_head_aspect.c',
+  'decoder/aspect/0008_first_late_aspect.c',
   'decoder/aspect/0009_zero_pan.c',
   'decoder/aspect/0010_zero_pad.c',
   'decoder/aspect/0011_missing_pad.c',
@@ -264,7 +264,7 @@ decoder_aspect_sources = files(
   'decoder/aspect/0013_untrusted_growth.c',
   'decoder/aspect/0014_ormode_rows.c',
   'decoder/aspect/0015_grid_geometry.c',
-  'decoder/aspect/0016_blank_locks_aspect.c',
+  'decoder/aspect/0016_blank_then_aspect.c',
   'decoder/aspect/0017_band_rows.c',
   'decoder/aspect/0018_absurd_ratio.c',
   'decoder/aspect/0019_scaled_height_limit.c',
@@ -272,6 +272,25 @@ decoder_aspect_sources = files(
   'decoder/aspect/0021_animation_packet_aspect.c',
   'decoder/aspect/0022_high_color_rgba.c',
   'decoder/aspect/0023_fused_undither_rows.c',
+  'decoder/aspect/0024_round_five_halves.c',
+  'decoder/aspect/0025_horizontal_ratio.c',
+  'decoder/aspect/0026_round_five_quarters.c',
+  'decoder/aspect/0027_round_seven_halves.c',
+  'decoder/aspect/0028_unit_then_double_bands.c',
+  'decoder/aspect/0029_double_then_unit_bands.c',
+  'decoder/aspect/0030_mid_band_change.c',
+  'decoder/aspect/0031_repeated_same_scale.c',
+  'decoder/aspect/0032_changing_thread_budgets.c',
+  'decoder/aspect/0033_changing_undither.c',
+  'decoder/aspect/0034_changing_sequence.c',
+  'decoder/aspect/0035_changing_animation.c',
+  'decoder/aspect/0036_changing_trusted_clip.c',
+  'decoder/aspect/0037_changing_untrusted_growth.c',
+  'decoder/aspect/0038_changing_ormode.c',
+  'decoder/aspect/0039_mid_band_overlap.c',
+  'decoder/aspect/0040_changing_palette.c',
+  'decoder/aspect/0041_changing_wide_ormode.c',
+  'decoder/aspect/0042_scan_boundaries.c',
 )
 
 test_runner_sources = test_runner_tests_sources + decoder_aspect_sources + files(

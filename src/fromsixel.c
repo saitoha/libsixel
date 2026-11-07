@@ -66,6 +66,7 @@
 #include "output.h"
 #include "colorspace.h"
 #include "decoder-image.h"
+#include "fromsixel-internal.h"
 #include "decoder-ormode.h"
 #include "decoder-columns.h"
 #include "decoder-simd.h"
@@ -81,7 +82,6 @@
 
 #define SIXEL_XRGB(r,g,b) SIXEL_RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
-#define DECSIXEL_PARAMS_MAX 16
 #define SIXEL_PALETTE_MAX_DECODER 65536
 typedef unsigned char sixel_decoder_index_t;
 
@@ -131,7 +131,7 @@ static int sixel_palette_map_rgb(int color,
  * opaque alpha channel. Indexed mode keeps the original palette entry so the
  * caller can compose a palette later.
  */
-static void
+void
 image_buffer_store_pixel(image_buffer_t *image, size_t pos, int color_index)
 {
     unsigned char *bytes;
@@ -174,7 +174,7 @@ image_buffer_mark_painted_span(image_buffer_t *image,
  * Direct color output expands the span into RGBA bytes to keep the alpha
  * channel and the color components consistent with single pixel writes.
  */
-static void
+void
 image_buffer_fill_span(image_buffer_t *image,
                        int y,
                        int x,
@@ -582,49 +582,6 @@ image_buffer_finalize_ormode(image_buffer_t *image)
     }
 }
 
-typedef enum parse_state {
-    PS_GROUND     = 0,
-    PS_ESC        = 1,  /* ESC */
-    PS_DCS        = 2,  /* DCS Device Control String Introducer \033P P...P I...I F */
-    PS_DECSIXEL   = 3,  /* DECSIXEL body part ", $, -, ? ... ~ */
-    PS_DECGRA     = 4,  /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
-    PS_DECGRI     = 5,  /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-    PS_DECGCI     = 6   /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
-} parse_state_t;
-
-typedef struct parser_context {
-    parse_state_t state;
-    sixel_palette_transform_t const *palette_transform;
-    int pos_x;
-    int pos_y;
-    int max_x;
-    int max_y;
-    int attributed_pan;
-    int attributed_pad;
-    int attributed_ph;
-    /* Pv is in output rows; attributed_pv bounds the unscaled decoder. */
-    int output_pv;
-    int attributed_pv;
-    int vertical_scale;
-    int aspect_set;
-    int repeat_count;
-    int color_index;
-    int bgindex;
-    int ormode;
-    uint64_t ormode_spread;
-    uint64_t ormode_high_spread;
-    uint64_t normal_color;
-    int normal_disabled;
-    int simd_neon;
-    int painted_outside_raster;
-    int painted;
-    int palette_redefined_after_paint;
-    /* Sequence composition keeps one canvas; parallel workers own a packet. */
-    int sequence;
-    int param;
-    int nparams;
-    int params[DECSIXEL_PARAMS_MAX];
-} parser_context_t;
 
 
 /*
@@ -1356,8 +1313,9 @@ image_buffer_expand_rows(unsigned char **pixels, size_t stride,
     return SIXEL_OK;
 }
 
-/* All painters use unscaled rows. Expand only their materialized result,
- * including coverage and the separate fused-undither output, exactly once. */
+/* Constant-aspect painters use unscaled rows. Expand their materialized
+ * result, coverage and separate fused-undither output exactly once. The
+ * changing-aspect painter has already produced device rows. */
 static SIXELSTATUS
 image_buffer_expand_vertical(image_buffer_t *image,
     parser_context_t const *context, sixel_allocator_t *allocator,
@@ -1368,7 +1326,7 @@ image_buffer_expand_vertical(image_buffer_t *image,
     int scale;
 
     scale = context->vertical_scale;
-    if (scale == 1) {
+    if (context->changing_aspect || scale == 1) {
         return SIXEL_OK;
     }
     if (context->output_pv > 0 &&
@@ -1406,17 +1364,6 @@ image_buffer_expand_vertical(image_buffer_t *image,
     return SIXEL_OK;
 }
 
-/* Missing/zero components and fractional or horizontal ratios keep the
- * historical 1:1 decoder geometry. Division cannot overflow. */
-static int
-sixel_vertical_scale(int pan, int pad)
-{
-    if (pan <= 0 || pad <= 0) {
-        return 1;
-    }
-    return pan >= pad && pan % pad == 0 ? pan / pad : 1;
-}
-
 static SIXELSTATUS
 parser_context_init(parser_context_t *context)
 {
@@ -1439,7 +1386,8 @@ parser_context_init(parser_context_t *context)
     context->output_pv = 0;
     context->attributed_pv = 0;
     context->vertical_scale = 1;
-    context->aspect_set = 0;
+    context->changing_aspect = 0;
+    context->aspect_ormode = NULL;
     context->repeat_count = 1;
     context->color_index = 15;
     context->bgindex = (-1);
@@ -1565,7 +1513,9 @@ parser_context_enter_decsixel(parser_context_t *context,
 
     if (parser_context_is_ormode_request(context)) {
         context->ormode = 1;
-        status = image_buffer_enable_ormode(image, allocator);
+        status = context->changing_aspect
+            ? sixel_aspect_enable_ormode(image, context, allocator)
+            : image_buffer_enable_ormode(image, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1573,7 +1523,8 @@ parser_context_enter_decsixel(parser_context_t *context,
             (unsigned int)context->color_index);
         context->ormode_high_spread = sixel_ormode_spread(
             (unsigned int)context->color_index >> 8);
-        if (context->ormode_high_spread != 0) {
+        if (!context->changing_aspect &&
+                context->ormode_high_spread != 0) {
             image->ormode_high_planes = image_buffer_allocate_planes(
                 image->width, image->height, allocator);
             if (image->ormode_high_planes == NULL) {
@@ -1641,6 +1592,7 @@ sixel_decode_raw_impl(
     int target_bottom;
     int drawn_y_end;
     int store_bits;
+    int advance;
     size_t pos;
     unsigned char *p0 = p;
 #if SIXEL_ENABLE_THREADS
@@ -1817,11 +1769,13 @@ sixel_decode_raw_impl(
             case '-':
                 /* DECGNL Graphics Next Line */
                 context->pos_x = 0;
-                if (context->pos_y > INT_MAX - 6) {
+                advance = context->changing_aspect
+                    ? 6 * context->vertical_scale : 6;
+                if (context->pos_y > INT_MAX - advance) {
                     status = SIXEL_BAD_INPUT;
                     goto end;
                 }
-                context->pos_y += 6;
+                context->pos_y += advance;
 #if SIXEL_ENABLE_THREADS
                 if (!palette_ready) {
                     palette_ready = 1;
@@ -1859,6 +1813,15 @@ sixel_decode_raw_impl(
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
                     context->painted = 1;
+                    if (context->changing_aspect) {
+                        status = sixel_aspect_paint(image, context, *p - '?',
+                            trust_raster_size, allocator);
+                        if (SIXEL_FAILED(status)) {
+                            goto end;
+                        }
+                        ++p;
+                        break;
+                    }
 #if SIXEL_ENABLE_THREADS
                     if (!palette_ready) {
                         palette_ready = 1;
@@ -2220,27 +2183,18 @@ sequence_raster_parameters:
                 if (context->nparams < DECSIXEL_PARAMS_MAX) {
                     context->params[context->nparams++] = context->param;
                 }
-                /* Only the first raster preceding data sets the aspect.
-                 * Blank sixels also lock it; later Ph/Pv still take effect. */
-                if (!context->aspect_set && !context->painted) {
-                    context->aspect_set = 1;
-                    context->attributed_pan = context->params[0];
-                    context->attributed_pad = context->nparams > 1
-                        ? context->params[1] : 0;
-                    context->vertical_scale = sixel_vertical_scale(
-                        context->attributed_pan, context->attributed_pad);
-                    if (context->attributed_pan <= 0) {
-                        context->attributed_pan = 1;
-                    }
-                    if (context->attributed_pad <= 0) {
-                        context->attributed_pad = 1;
-                    }
-                    if (context->vertical_scale > SIXEL_HEIGHT_LIMIT) {
-                        status = SIXEL_BAD_INPUT;
-                        sixel_helper_set_additional_message(
-                            "sixel decode: vertical aspect is too huge.");
-                        goto end;
-                    }
+                /* The pre-scan has ruled out scale changes on the fast
+                 * path. The dedicated painter consumes each scale in place. */
+                context->attributed_pan = context->params[0];
+                context->attributed_pad = context->nparams > 1
+                    ? context->params[1] : 0;
+                context->vertical_scale = sixel_vertical_scale(
+                    context->attributed_pan, context->attributed_pad);
+                if (context->vertical_scale > SIXEL_HEIGHT_LIMIT) {
+                    status = SIXEL_BAD_INPUT;
+                    sixel_helper_set_additional_message(
+                        "sixel decode: vertical aspect is too huge.");
+                    goto end;
                 }
                 if (context->nparams > 2 && context->params[2] > 0) {
                     context->attributed_ph = context->params[2];
@@ -2253,8 +2207,10 @@ sequence_raster_parameters:
                             "sixel decode: raster height is too huge.");
                         goto end;
                     }
-                    context->attributed_pv = 1 +
-                        (context->output_pv - 1) / context->vertical_scale;
+                    context->attributed_pv = context->changing_aspect
+                        ? context->output_pv
+                        : 1 + (context->output_pv - 1) /
+                            context->vertical_scale;
                 }
 
                 if (image->width < context->attributed_ph ||
@@ -2280,7 +2236,8 @@ sequence_raster_parameters:
                     }
                 }
 #if SIXEL_ENABLE_THREADS
-                if (!context->sequence && !raster_ready &&
+                if (!context->sequence && !context->changing_aspect &&
+                        !raster_ready &&
                         context->attributed_ph > 0 &&
                         context->attributed_pv > 0) {
                     raster_ready = 1;
@@ -2394,7 +2351,7 @@ sequence_color_parameters:
                     }
                 }
 
-                if (context->ormode) {
+                if (context->ormode && !context->changing_aspect) {
                     context->ormode_spread = sixel_ormode_spread(
                         (unsigned int)context->color_index);
                     context->ormode_high_spread = sixel_ormode_spread(
@@ -2576,6 +2533,7 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
     }
 
     context->palette_transform = transform;
+    context->changing_aspect = sixel_aspect_scan(p, len, body_only);
 
     /*
      * The serial parser always runs first. When palette and raster
@@ -2660,14 +2618,18 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
                                    logger_prepared,
                                    decode_flags,
                                    undither);
+    if (context->aspect_ormode != NULL) {
+        status = sixel_aspect_finish(image, context, status, allocator);
+    }
     if (SIXEL_SUCCEEDED(status)) {
         if (context->ormode) {
             image_buffer_finalize_ormode(image);
         } else {
             image_buffer_materialize_columns(image, allocator);
         }
-        /* Fast4 expands after reconstruction on both its fused and serial
-         * routes, preserving the same unscaled reconstruction neighbors. */
+        /* Constant-aspect fast4 expands after reconstruction, preserving
+         * source-row neighbors. Changing aspect already uses device rows
+         * and cannot start fused workers; expansion is a no-op there. */
         if (undither == NULL) {
             status = image_buffer_expand_vertical(image, context, allocator,
                                                    NULL);
@@ -2685,6 +2647,10 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
     status = SIXEL_OK;
 
 end:
+    /* Header errors may occur after creating the serial OR accumulator. */
+    if (context->aspect_ormode != NULL) {
+        status = sixel_aspect_finish(image, context, status, allocator);
+    }
     if (logger_prepared) {
         sixel_timeline_logger_logf(logger,
                           "decoder",
@@ -3099,15 +3065,34 @@ sixel_decode_kundither_fast4_with_options(unsigned char *p,
         palette[n * 3 + 2] = image->palette[n] & 0xff;
     }
 
-    status = sixel_dequantize_k_undither_fast4(
-        image->pixels.in_bytes,
-        image->width,
-        image->height,
-        palette,
-        image->ncolors,
-        similarity_bias,
-        allocator,
-        &rgb_pixels);
+    if (context.changing_aspect) {
+        /* Use the ordinary row filter over the complete device image.
+         * It cannot start reconstruction workers, even for large rasters. */
+        if ((size_t)image->width > SIZE_MAX / (size_t)image->height / 3U) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        rgb_pixels = sixel_allocator_malloc(allocator,
+            (size_t)image->width * image->height * 3U);
+        if (rgb_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        status = sixel_dequantize_k_undither_fast4_rows(
+            image->pixels.in_bytes, image->width, image->height,
+            palette, image->ncolors, similarity_bias, 0, image->height,
+            allocator, rgb_pixels);
+    } else {
+        status = sixel_dequantize_k_undither_fast4(
+            image->pixels.in_bytes,
+            image->width,
+            image->height,
+            palette,
+            image->ncolors,
+            similarity_bias,
+            allocator,
+            &rgb_pixels);
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3266,6 +3251,7 @@ typedef struct sixel_sequence_state {
     int width;
     int height;
     int vertical_scale;
+    int changing_aspect;
     int painted;
     unsigned int flags;
     int animation;
@@ -3326,13 +3312,15 @@ sixel_sequence_packet(unsigned char const **cursor,
     int repeat;
     int bits;
     int row;
-    int raster_height;
+    int scale;
+    int drawing;
     unsigned char command;
 
     p = *cursor;
     raster = 0;
     state->vertical_scale = 1;
-    raster_height = 0;
+    state->changing_aspect = 0;
+    drawing = 0;
     x = 0;
     y = 0;
     color = state->animation ? 15 : 0;
@@ -3377,15 +3365,15 @@ sixel_sequence_packet(unsigned char const **cursor,
             }
             state->width = params[2];
             state->height = params[3];
-            if (!raster) {
-                state->vertical_scale =
-                    sixel_vertical_scale(params[0], params[1]);
-                if (state->vertical_scale > SIXEL_HEIGHT_LIMIT) {
-                    return SIXEL_BAD_INPUT;
-                }
-                raster_height = 1 + (state->height - 1) /
-                    state->vertical_scale;
+            scale = sixel_vertical_scale(params[0], params[1]);
+            if (scale > SIXEL_HEIGHT_LIMIT) {
+                return SIXEL_BAD_INPUT;
             }
+            if ((raster && scale != state->vertical_scale) ||
+                    (!raster && drawing && scale != 1)) {
+                state->changing_aspect = 1;
+            }
+            state->vertical_scale = scale;
             raster = 1;
             continue;
         }
@@ -3408,16 +3396,17 @@ sixel_sequence_packet(unsigned char const **cursor,
             }
             continue;
         }
+        drawing = 1;
         if (command == '$') {
             x = 0;
             continue;
         }
         if (command == '-') {
-            if (y > INT_MAX - 6) {
+            if (y > INT_MAX - 6 * state->vertical_scale) {
                 return SIXEL_BAD_INPUT;
             }
             x = 0;
-            y += 6;
+            y += 6 * state->vertical_scale;
             continue;
         }
         repeat = 1;
@@ -3441,7 +3430,8 @@ sixel_sequence_packet(unsigned char const **cursor,
             }
             for (row = 0; row < 6; ++row) {
                 if ((bits & (1 << row)) != 0 &&
-                        (y >= raster_height || row >= raster_height - y)) {
+                        (y >= state->height || row * state->vertical_scale >=
+                            state->height - y)) {
                     return SIXEL_BAD_INPUT;
                 }
             }
@@ -3465,7 +3455,8 @@ sixel_sequence_decode_packet(unsigned char const *packet, int len,
     size_t pos;
     size_t size;
 
-    if (state->vertical_scale == 1) {
+    context->changing_aspect = state->changing_aspect;
+    if (state->changing_aspect || state->vertical_scale == 1) {
         return sixel_decode_raw_impl((unsigned char *)(void *)packet,
             len, canvas, context, allocator, NULL, 0,
             SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE, NULL);
