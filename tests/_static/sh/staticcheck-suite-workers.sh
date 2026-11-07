@@ -22,13 +22,24 @@ cp "$src_root/tests/_static/awk/tap-status.awk" "$tmpdir/root/tests/_static/awk/
 awk '/^run_case_tap "staticcheck-/ { exit } { print }' \
     "$src_root/tests/_static/sh/staticcheck-suite.sh" > "$tmpdir/suite.sh"
 cat >> "$tmpdir/suite.sh" <<'CASES'
-run_case_tap "staticcheck-control-pass" sh -c 'printf "1..1\nok 1\n"'
+run_case_tap "staticcheck-control-pass" sh -xc 'printf "1..1\nok 1\n"; echo successful-tap-stderr >&2'
 run_case_tap "staticcheck-control-skip" sh -c 'printf "1..0 # SKIP absent\n"'
-run_case_plain "staticcheck-codespell" printf '%s\n' 'argument with spaces' "quote'quote" '$literal' '' 'two
+run_case_plain "staticcheck-codespell" sh -ec '
+    test "$#" -eq 5
+    test "$1" = "argument with spaces"
+    test "$2" = "quote'\''quote"
+    test "$3" = "\$literal"
+    test -z "$4"
+    test "$5" = "two
+lines"
+    set -x
+    echo successful-stdout
+    echo successful-stderr >&2
+' sh 'argument with spaces' "quote'quote" '$literal' '' 'two
 lines'
 run_case_skip "staticcheck-control-absent" 'tool unavailable'
 run_case_tap "staticcheck-control-bad-tap" sh -c 'printf "1..1\n"'
-run_case_plain "staticcheck-control-child-failure" sh -c 'echo sentinel >&2; exit 9'
+run_case_plain "staticcheck-control-child-failure" sh -xc 'echo sentinel >&2; exit 9'
 run_case_tap "staticcheck-control-last" sh -c '
     case "$TMPDIR" in "$CONTROL_ROOT/root/.staticcheck-tmp/"*) ;; *) exit 9 ;; esac
     # The start event must already be visible while this check is running.
@@ -67,11 +78,23 @@ for jobs in default 1 3; do
     cp "$tmpdir/result.log" "$tmpdir/$jobs.log"
     output=$(cat "$tmpdir/$jobs.log")
     case "$output" in
-        *'argument with spaces'*'sentinel'*'PASS staticcheck-control-last'*\
+        *'PASS staticcheck-codespell'*'+ echo sentinel'*'sentinel'*'PASS staticcheck-control-last'*\
 'staticcheck summary: total=7 pass=3 skip=2 fail=2') ;;
         *)
             echo 'not ok 1 - worker result or failure diagnostics were lost'
             printf '%s\n' "$output"
+            exit 0
+            ;;
+    esac
+    # Neither result output nor live progress may expose successful logs.
+    awk '/successful-|^\+/ { bad=1 } END { exit bad }' \
+        "$tmpdir/progress.log" || {
+        echo 'not ok 1 - successful output or trace leaked to stderr'
+        exit 0
+    }
+    case "$output" in
+        *successful-*)
+            echo 'not ok 1 - successful output or trace leaked to stdout'
             exit 0
             ;;
     esac
@@ -94,6 +117,11 @@ SIXEL_STATICCHECK_MAKE='' sh "$tmpdir/suite.sh" "$tmpdir/root" \
 # shellcheck disable=SC2015
 test "$status" -ne 0 && cmp -s "$tmpdir/1.log" "$tmpdir/direct.log" || {
     echo 'not ok 1 - direct serial execution must preserve all checks'
+    exit 0
+}
+awk '/successful-|^\+/ { bad=1 } END { exit bad }' \
+    "$tmpdir/progress.log" || {
+    echo 'not ok 1 - direct execution leaked successful output or trace'
     exit 0
 }
 

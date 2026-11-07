@@ -129,9 +129,8 @@ run_case_plain_impl() {
     printf '==> [%02d/%02d] %s\n' "$index" "$total" "$case_name"
 
     if "$@" >"$log_path" 2>&1; then
-        if test -s "$log_path"; then
-            cat "$log_path"
-        fi
+        # Successful checks report only their verdict. Keep captured stdout,
+        # stderr and shell traces available for the failure path below.
         pass_count=$((pass_count + 1))
         printf 'PASS %s\n' "$case_name"
         return 0
