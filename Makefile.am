@@ -133,6 +133,7 @@ EXTRA_DIST = tools/gen-phased.sh tools/gen_varcoefs.awk tools/embed-metal.sh too
 	docs/sixel-format/terminal-graphics-history/figures/terminal-graphics-timeline-wide.svg \
 	docs/sixel-format/terminal-graphics-history/figures/terminal-graphics-timeline.json \
 	docs/protocols/graphics-color-management.md \
+	docs/protocols/presentation-rate.md \
 	docs/encoder/colorspace-handling/README.md \
 	docs/encoder/colorspace-handling/figures/encoding-pipeline-mobile.svg \
 	docs/encoder/colorspace-handling/figures/encoding-pipeline-wide.svg \
