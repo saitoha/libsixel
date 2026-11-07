@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <ctype.h>
 #include "src/gpu-palette.h"
+#include "src/compat_stub.h"
 #if HAVE_TIME_H
 # include <time.h>
 #endif
@@ -13621,6 +13622,7 @@ static int
 test_runner_run_posix_sigint(int argc, char **argv)
 {
 #if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
+    char error_text[256];
     char const *delay_token;
     char const *timeout_token;
     unsigned long parsed_delay;
@@ -13687,32 +13689,36 @@ test_runner_run_posix_sigint(int argc, char **argv)
 
     child_pid = fork();
     if (child_pid < (pid_t)0) {
-        fprintf(stderr, "test_runner: fork failed: %s\n", strerror(errno));
+        fprintf(stderr, "test_runner: fork failed: %s\n",
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
         return EXIT_FAILURE;
     }
 
     if (child_pid == (pid_t)0) {
         (void)setpgid(0, 0);
         (void)execvp(program, program_argv);
-        fprintf(stderr, "test_runner: execvp failed: %s\n", strerror(errno));
+        fprintf(stderr, "test_runner: execvp failed: %s\n",
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
         _exit(127);
     }
 
     if (setpgid(child_pid, child_pid) != 0
         && errno != EACCES && errno != ESRCH) {
-        fprintf(stderr, "test_runner: setpgid failed: %s\n", strerror(errno));
+        fprintf(stderr, "test_runner: setpgid failed: %s\n",
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
     }
 
     if (parsed_delay > 0ul
         && test_runner_sleep_milliseconds(parsed_delay) != 0) {
-        fprintf(stderr, "test_runner: nanosleep failed: %s\n", strerror(errno));
+        fprintf(stderr, "test_runner: nanosleep failed: %s\n",
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
         goto timeout_cleanup;
     }
 
     send_result = test_runner_signal_group_and_child(child_pid, SIGINT);
     if (send_result != 0) {
         fprintf(stderr, "test_runner: SIGINT send failed: %s\n",
-                strerror(errno));
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
     }
 
     if (parsed_timeout > 0ul && poll_interval_ms > parsed_timeout) {
@@ -13730,7 +13736,8 @@ test_runner_run_posix_sigint(int argc, char **argv)
                 continue;
             }
             fprintf(stderr, "test_runner: waitpid failed: %s\n",
-                    strerror(errno));
+                    sixel_compat_strerror(errno, error_text,
+                        sizeof(error_text)));
             goto timeout_cleanup;
         }
         if (parsed_timeout > 0ul && elapsed_ms >= parsed_timeout) {
@@ -13740,7 +13747,8 @@ test_runner_run_posix_sigint(int argc, char **argv)
         }
         if (test_runner_sleep_milliseconds(poll_interval_ms) != 0) {
             fprintf(stderr, "test_runner: nanosleep failed: %s\n",
-                    strerror(errno));
+                    sixel_compat_strerror(errno, error_text,
+                        sizeof(error_text)));
             goto timeout_cleanup;
         }
         if (parsed_timeout > 0ul) {
@@ -13758,7 +13766,7 @@ timeout_cleanup:
     kill_result = test_runner_signal_group_and_child(child_pid, SIGKILL);
     if (kill_result != 0) {
         fprintf(stderr, "test_runner: SIGKILL send failed: %s\n",
-                strerror(errno));
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
     }
     for (;;) {
         wait_pid = waitpid(child_pid, &wait_status, 0);
@@ -13773,7 +13781,8 @@ timeout_cleanup:
         }
         if (wait_pid < (pid_t)0) {
             fprintf(stderr, "test_runner: waitpid cleanup failed: %s\n",
-                    strerror(errno));
+                    sixel_compat_strerror(errno, error_text,
+                        sizeof(error_text)));
             break;
         }
     }
@@ -13829,6 +13838,7 @@ static int
 test_runner_run_posix_sigint_until(int argc, char **argv)
 {
 #if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
+    char error_text[256];
     char const *needle_token;
     char const *timeout_token;
     unsigned long parsed_timeout;
@@ -14028,7 +14038,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
      */
     if (pipe(sync_pipe) != 0) {
         fprintf(stderr, "test_runner: sync pipe failed: %s\n",
-                strerror(errno));
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
         goto timeout_cleanup;
     }
     sync_read_open = 1;
@@ -14062,7 +14072,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     }
 
     if (pipe(stderr_pipe) != 0) {
-        fprintf(stderr, "test_runner: pipe failed: %s\n", strerror(errno));
+        fprintf(stderr, "test_runner: pipe failed: %s\n",
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
         goto timeout_cleanup;
     }
     stderr_read_open = 1;
@@ -14070,7 +14081,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
 
     child_pid = fork();
     if (child_pid < (pid_t)0) {
-        fprintf(stderr, "test_runner: fork failed: %s\n", strerror(errno));
+        fprintf(stderr, "test_runner: fork failed: %s\n",
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
         goto timeout_cleanup;
     }
 
@@ -14081,13 +14093,15 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
         (void)dup2(stderr_pipe[1], STDERR_FILENO);
         (void)close(stderr_pipe[1]);
         (void)execvp(program, program_argv);
-        fprintf(stderr, "test_runner: execvp failed: %s\n", strerror(errno));
+        fprintf(stderr, "test_runner: execvp failed: %s\n",
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
         _exit(127);
     }
 
     if (setpgid(child_pid, child_pid) != 0
         && errno != EACCES && errno != ESRCH) {
-        fprintf(stderr, "test_runner: setpgid failed: %s\n", strerror(errno));
+        fprintf(stderr, "test_runner: setpgid failed: %s\n",
+                sixel_compat_strerror(errno, error_text, sizeof(error_text)));
     }
 
     (void)close(stderr_pipe[1]);
@@ -14116,7 +14130,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                     if (send_result != 0) {
                         fprintf(stderr,
                                 "test_runner: SIGINT send failed: %s\n",
-                                strerror(errno));
+                                sixel_compat_strerror(errno, error_text,
+                                    sizeof(error_text)));
                     }
                     signal_sent = 1;
                     /*
@@ -14139,7 +14154,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                     break;
                 }
                 fprintf(stderr, "test_runner: sync read failed: %s\n",
-                        strerror(errno));
+                        sixel_compat_strerror(errno, error_text,
+                            sizeof(error_text)));
                 goto timeout_cleanup;
             }
         }
@@ -14151,7 +14167,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
             send_result = test_runner_signal_group_and_child(child_pid, SIGINT);
             if (send_result != 0) {
                 fprintf(stderr, "test_runner: SIGINT send failed: %s\n",
-                        strerror(errno));
+                        sixel_compat_strerror(errno, error_text,
+                            sizeof(error_text)));
             }
             signal_sent = 1;
             /*
@@ -14177,7 +14194,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                 child_running = 0;
             } else {
                 fprintf(stderr, "test_runner: waitpid failed: %s\n",
-                        strerror(errno));
+                        sixel_compat_strerror(errno, error_text,
+                            sizeof(error_text)));
                 goto timeout_cleanup;
             }
         }
@@ -14220,7 +14238,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                         if (send_result != 0) {
                             fprintf(stderr,
                                     "test_runner: SIGINT send failed: %s\n",
-                                    strerror(errno));
+                                    sixel_compat_strerror(errno, error_text,
+                                        sizeof(error_text)));
                         }
                         signal_sent = 1;
                         /*
@@ -14260,7 +14279,9 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 break;
             }
-            fprintf(stderr, "test_runner: read failed: %s\n", strerror(errno));
+            fprintf(stderr, "test_runner: read failed: %s\n",
+                    sixel_compat_strerror(errno, error_text,
+                        sizeof(error_text)));
             goto timeout_cleanup;
         }
 
@@ -14291,7 +14312,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
             send_result = test_runner_signal_group_and_child(child_pid, SIGINT);
             if (send_result != 0) {
                 fprintf(stderr, "test_runner: SIGINT send failed: %s\n",
-                        strerror(errno));
+                        sixel_compat_strerror(errno, error_text,
+                            sizeof(error_text)));
             }
             resend_elapsed_ms = 0ul;
         }
@@ -14309,7 +14331,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
         sleep_status = test_runner_sleep_milliseconds(poll_interval_ms);
         if (sleep_status != 0) {
             fprintf(stderr, "test_runner: nanosleep failed: %s\n",
-                    strerror(errno));
+                    sixel_compat_strerror(errno, error_text,
+                        sizeof(error_text)));
             goto timeout_cleanup;
         }
         if (parsed_timeout > 0ul) {
@@ -14347,7 +14370,8 @@ timeout_cleanup:
         kill_result = test_runner_signal_group_and_child(child_pid, SIGKILL);
         if (kill_result != 0) {
             fprintf(stderr, "test_runner: SIGKILL send failed: %s\n",
-                    strerror(errno));
+                    sixel_compat_strerror(errno, error_text,
+                        sizeof(error_text)));
         }
         for (;;) {
             wait_pid = waitpid(child_pid, &wait_status, 0);
@@ -14362,7 +14386,8 @@ timeout_cleanup:
             }
             if (wait_pid < (pid_t)0) {
                 fprintf(stderr, "test_runner: waitpid cleanup failed: %s\n",
-                        strerror(errno));
+                        sixel_compat_strerror(errno, error_text,
+                            sizeof(error_text)));
                 break;
             }
         }

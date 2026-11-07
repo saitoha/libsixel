@@ -95,6 +95,7 @@ probe_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     probe_preparer_t const *provider;
     probe_plan_t *p;
     size_t i;
+    size_t suffix_size;
     SIXELSTATUS status;
 
     provider = (probe_preparer_t const *)self;
@@ -142,13 +143,15 @@ probe_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         *result = &p->iface;
         return SIXEL_OK;
     }
-    p->suffix = malloc(strlen(provider->suffix)+1);
+    suffix_size = strlen(provider->suffix) + 1u;
+    p->suffix = malloc(suffix_size);
     p->chunks = calloc(p->view.chunk_count+2, sizeof(*p->chunks));
     if (p->suffix == NULL || p->chunks == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto fail;
     }
-    strcpy(p->suffix, provider->suffix);
+    /* Copy the terminator within the exact allocation made above. */
+    memcpy(p->suffix, provider->suffix, suffix_size);
     p->chunks[0] = "#define lookup_rgb8_fractional subject_fractional\n";
     for (i = 0; i < p->view.chunk_count; ++i)
         p->chunks[i+1] = p->view.chunks[i];

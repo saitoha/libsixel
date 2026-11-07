@@ -1083,8 +1083,8 @@ run_case_tap "staticcheck-openvms-libtool-object" \
     sh "$src_root/tests/_static/sh/staticcheck-openvms-libtool-object.sh" \
     "$src_root" || fail_and_exit $?
 
-run_case_tap "staticcheck-c-test-scanf" \
-    sh "$src_root/tests/_static/sh/staticcheck-c-test-scanf.sh" \
+run_case_tap "staticcheck-c-test-crt" \
+    sh "$src_root/tests/_static/sh/staticcheck-c-test-crt.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-c-test-stdio" \

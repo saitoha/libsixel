@@ -72,7 +72,7 @@ hd_check(hd_capture_t const *capture, int mode, int ordinary,
     ok = 0;
     tail = mode == 1 ? 1 : 2;
     if (ordinary) {
-        strcpy(prefix, "\033P");
+        memcpy(prefix, "\033P", sizeof("\033P"));
     } else {
         snprintf(prefix, sizeof(prefix), "%s%s%s1;0;0;%d;1;3;6;0{%s",
             mode == 1 ? "\233" : "\033[",

@@ -512,7 +512,8 @@ color_auto_start(color_auto_peer_t *peer, char const *name,
         (baseline || !color_auto_is(name, "stdout-pipe"));
 #endif
     if (to_file) {
-        strcpy(peer->file_path, "/tmp/libsixel-color-auto-XXXXXX");
+        memcpy(peer->file_path, "/tmp/libsixel-color-auto-XXXXXX",
+               sizeof("/tmp/libsixel-color-auto-XXXXXX"));
         peer->file_fd = mkstemp(peer->file_path);
         if (peer->file_fd < 0) {
             return color_auto_error("cannot create inspected output file");
@@ -753,7 +754,7 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
             if (peer->image_size >= sizeof(peer->first_image)) {
                 return 0;
             }
-            strcpy(peer->first_image, peer->image);
+            memcpy(peer->first_image, peer->image, peer->image_size + 1u);
             return color_auto_frame(peer) &&
                 strcmp(peer->first_image, peer->image) == 0;
         }
@@ -842,7 +843,7 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
                 if (peer->image_size >= sizeof(peer->first_image)) {
                     return 0;
                 }
-                strcpy(peer->first_image, peer->image);
+                memcpy(peer->first_image, peer->image, peer->image_size + 1u);
             } else if (strcmp(peer->first_image, peer->image) != 0) {
                 return color_auto_error("second image differs");
             }

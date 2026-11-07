@@ -12493,8 +12493,8 @@ EXTRA_DIST += _static/sh/staticcheck-cosmoar-selection.sh \
     _static/sh/staticcheck-cosmoar-failure.sh
 
 EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
-    _static/sh/staticcheck-c-test-scanf.sh \
-    _static/awk/c-test-scanf.awk \
+    _static/sh/staticcheck-c-test-crt.sh \
+    _static/awk/c-test-crt.awk \
     _static/sh/staticcheck-ci-configure-make.sh \
     _static/sh/staticcheck-ci-install-path.sh \
     _static/sh/staticcheck-ci-msvc-complete-build.sh \
