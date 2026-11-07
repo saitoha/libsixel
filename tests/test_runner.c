@@ -308,6 +308,9 @@ int test_decoder_aspect_0039(int argc, char **argv);
 int test_decoder_aspect_0040(int argc, char **argv);
 int test_decoder_aspect_0041(int argc, char **argv);
 int test_decoder_aspect_0042(int argc, char **argv);
+int test_decoder_aspect_0043(int argc, char **argv);
+int test_decoder_aspect_0044(int argc, char **argv);
+int test_decoder_aspect_0045(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -8714,8 +8717,14 @@ static test_entry_t const test_entries[] = {
       test_decoder_aspect_0040 },
     { "decoder/aspect/0041_changing_wide_ormode",
       test_decoder_aspect_0041 },
-    { "decoder/aspect/0042_scan_boundaries",
+    { "decoder/aspect/0042_lazy_boundaries",
       test_decoder_aspect_0042 },
+    { "decoder/aspect/0043_restart_parallel_rgba",
+      test_decoder_aspect_0043 },
+    { "decoder/aspect/0044_restart_fused_fast4",
+      test_decoder_aspect_0044 },
+    { "decoder/aspect/0045_restart_allocation_failure",
+      test_decoder_aspect_0045 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },

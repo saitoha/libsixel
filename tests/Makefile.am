@@ -2052,7 +2052,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0039_MID_BAND_OVERLAP \
     -DBUILD_TEST_0040_CHANGING_PALETTE \
     -DBUILD_TEST_0041_CHANGING_WIDE_ORMODE \
-    -DBUILD_TEST_0042_SCAN_BOUNDARIES \
+    -DBUILD_TEST_0042_LAZY_BOUNDARIES \
+    -DBUILD_TEST_0043_RESTART_PARALLEL_RGBA \
+    -DBUILD_TEST_0044_RESTART_FUSED_FAST4 \
+    -DBUILD_TEST_0045_RESTART_ALLOCATION_FAILURE \
     -DBUILD_ASPECT_TEST_COMMON \
     -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
     -DBUILD_TEST_0002_HISTORY_REVISIONS \
@@ -6047,7 +6050,10 @@ test_runner_SOURCES = test_runner.c \
     decoder/aspect/0039_mid_band_overlap.c \
     decoder/aspect/0040_changing_palette.c \
     decoder/aspect/0041_changing_wide_ormode.c \
-    decoder/aspect/0042_scan_boundaries.c \
+    decoder/aspect/0042_lazy_boundaries.c \
+    decoder/aspect/0043_restart_parallel_rgba.c \
+    decoder/aspect/0044_restart_fused_fast4.c \
+    decoder/aspect/0045_restart_allocation_failure.c \
     _support/processing/decoder/aspect_test_common.c \
     _support/processing/decoder/aspect_test_common.h \
     color/cms/0017_separate_intents.c \

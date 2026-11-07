@@ -2,6 +2,7 @@
 #ifndef SIXEL_FROMSIXEL_INTERNAL_H
 #define SIXEL_FROMSIXEL_INTERNAL_H
 
+#include <string.h>
 #include "decoder-image.h"
 #include "sixel_decode_pixels.h"
 
@@ -44,6 +45,8 @@ typedef struct parser_context {
     int simd_neon;
     int painted_outside_raster;
     int painted;
+    /* Non-pixel drawing bytes also lock the current scale. */
+    int drawing_control;
     int palette_redefined_after_paint;
     /* Sequence composition keeps one canvas; parallel workers own a packet. */
     int sequence;
@@ -56,8 +59,6 @@ typedef struct parser_context {
 /* Shared control parsing keeps palette, framing and error semantics equal.
  * The changing-aspect painter owns only device-row geometry and stores. */
 int sixel_vertical_scale(int pan, int pad);
-SIXEL_INTERNAL_API int
-sixel_aspect_scan(unsigned char const *p, int len, int body_only);
 SIXELSTATUS sixel_aspect_paint(image_buffer_t *image,
     parser_context_t *context, int bits, int trust_raster_size,
     sixel_allocator_t *allocator);
@@ -66,10 +67,79 @@ SIXELSTATUS sixel_aspect_enable_ormode(image_buffer_t *image,
 SIXELSTATUS sixel_aspect_finish(image_buffer_t *image,
     parser_context_t *context, SIXELSTATUS status,
     sixel_allocator_t *allocator);
-void image_buffer_store_pixel(image_buffer_t *image, size_t pos,
-    int color_index);
-void image_buffer_fill_span(image_buffer_t *image, int y, int x,
-    int repeat, int color_index);
+/* Both painters need these tiny stores visible to the optimizer. External
+ * linkage can prevent specialization of the ordinary decoder's hot paths. */
+/*
+ * Store a single pixel in the image buffer. When the decoder is in direct
+ * color mode the palette index is translated into an RGBA quadruplet with an
+ * opaque alpha channel. Indexed mode keeps the original palette entry so the
+ * caller can compose a palette later.
+ */
+static inline void
+image_buffer_store_pixel(image_buffer_t *image, size_t pos, int color_index)
+{
+    unsigned char *bytes;
+    int color;
+    int depth;
+
+    depth = image->depth;
+    if (color_index < 0 || color_index >= SIXEL_PALETTE_MAX_DECODER) {
+        return;
+    }
+
+    if (depth == 1U) {
+        image->pixels.in_bytes[pos] = (unsigned char)color_index;
+    } else if (depth == 2U) {
+        image->pixels.in_shorts[pos] = (unsigned short)color_index;
+    } else {  /* rgba */
+        color = image->palette[color_index];
+        bytes = image->pixels.in_bytes + pos * 4U;
+        bytes[0] = (unsigned char)((color >> 16) & 0xff);
+        bytes[1] = (unsigned char)((color >> 8) & 0xff);
+        bytes[2] = (unsigned char)(color & 0xff);
+        bytes[3] = 255u;
+    }
+}
+
+static inline void
+image_buffer_mark_painted_span(image_buffer_t *image,
+                               size_t pos,
+                               int repeat)
+{
+    if (image->paint_mask == NULL || repeat <= 0) {
+        return;
+    }
+
+    memset(image->paint_mask + pos, 0xff, (size_t)repeat);
+}
+
+/*
+ * Fill a horizontal run starting at (x, y) with the requested palette index.
+ * Direct color output expands the span into RGBA bytes to keep the alpha
+ * channel and the color components consistent with single pixel writes.
+ */
+static inline void
+image_buffer_fill_span(image_buffer_t *image,
+                       int y,
+                       int x,
+                       int repeat,
+                       int color_index)
+{
+    size_t pos;
+    int n;
+
+    pos = (size_t)image->width * (size_t)y + (size_t)x;
+
+    if (image->depth == 1U) {
+        memset(image->pixels.in_bytes + pos, color_index, (size_t)repeat);
+    } else {
+        for (n = 0; n < repeat; ++n) {
+            image_buffer_store_pixel(image, pos + (size_t)n, color_index);
+        }
+    }
+    image_buffer_mark_painted_span(image, pos, repeat);
+}
+
 
 #endif /* SIXEL_FROMSIXEL_INTERNAL_H */
 

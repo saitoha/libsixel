@@ -125,77 +125,6 @@ static int sixel_palette_map_rgb(int color,
     return SIXEL_RGB(rgb[0], rgb[1], rgb[2]);
 }
 
-/*
- * Store a single pixel in the image buffer. When the decoder is in direct
- * color mode the palette index is translated into an RGBA quadruplet with an
- * opaque alpha channel. Indexed mode keeps the original palette entry so the
- * caller can compose a palette later.
- */
-void
-image_buffer_store_pixel(image_buffer_t *image, size_t pos, int color_index)
-{
-    unsigned char *bytes;
-    int color;
-    int depth;
-
-    depth = image->depth;
-    if (color_index < 0 || color_index >= SIXEL_PALETTE_MAX_DECODER) {
-        return;
-    }
-
-    if (depth == 1U) {
-        image->pixels.in_bytes[pos] = (unsigned char)color_index;
-    } else if (depth == 2U) {
-        image->pixels.in_shorts[pos] = (unsigned short)color_index;
-    } else {  /* rgba */
-        color = image->palette[color_index];
-        bytes = image->pixels.in_bytes + pos * 4U;
-        bytes[0] = (unsigned char)((color >> 16) & 0xff);
-        bytes[1] = (unsigned char)((color >> 8) & 0xff);
-        bytes[2] = (unsigned char)(color & 0xff);
-        bytes[3] = 255u;
-    }
-}
-
-static void
-image_buffer_mark_painted_span(image_buffer_t *image,
-                               size_t pos,
-                               int repeat)
-{
-    if (image->paint_mask == NULL || repeat <= 0) {
-        return;
-    }
-
-    memset(image->paint_mask + pos, 0xff, (size_t)repeat);
-}
-
-/*
- * Fill a horizontal run starting at (x, y) with the requested palette index.
- * Direct color output expands the span into RGBA bytes to keep the alpha
- * channel and the color components consistent with single pixel writes.
- */
-void
-image_buffer_fill_span(image_buffer_t *image,
-                       int y,
-                       int x,
-                       int repeat,
-                       int color_index)
-{
-    size_t pos;
-    int n;
-
-    pos = (size_t)image->width * (size_t)y + (size_t)x;
-
-    if (image->depth == 1U) {
-        memset(image->pixels.in_bytes + pos, color_index, (size_t)repeat);
-    } else {
-        for (n = 0; n < repeat; ++n) {
-            image_buffer_store_pixel(image, pos + (size_t)n, color_index);
-        }
-    }
-    image_buffer_mark_painted_span(image, pos, repeat);
-}
-
 static void
 image_buffer_release_paint_mask(image_buffer_t *image,
                                 sixel_allocator_t *allocator)
@@ -1398,6 +1327,7 @@ parser_context_init(parser_context_t *context)
     context->normal_disabled = 0;
     context->painted_outside_raster = 0;
     context->painted = 0;
+    context->drawing_control = 0;
     context->palette_redefined_after_paint = 0;
     context->sequence = 0;
     context->nparams = 0;
@@ -1564,8 +1494,12 @@ end:
 }
 
 
-/* convert sixel data into indexed pixel bytes and palette data */
-SIXELAPI SIXELSTATUS
+/* This private result never crosses an API boundary. Sequence packets are
+ * already classified by packet validation and cannot request a restart. */
+enum { DECODE_RESTART_ASPECT = -1 };
+
+/* Convert sixel data into indexed pixel bytes and palette data. */
+static int
 sixel_decode_raw_impl(
     unsigned char     *p,         /* sixel bytes */
     int                len,       /* size of sixel bytes */
@@ -1593,6 +1527,8 @@ sixel_decode_raw_impl(
     int drawn_y_end;
     int store_bits;
     int advance;
+    int scale;
+    int rescale_head;
     size_t pos;
     unsigned char *p0 = p;
 #if SIXEL_ENABLE_THREADS
@@ -1713,6 +1649,7 @@ sixel_decode_raw_impl(
                 p++;
                 break;
             case '!':
+                context->drawing_control = 1;
                 context->param = 0;
                 context->nparams = 0;
                 context->state = PS_DECGRI;
@@ -1731,6 +1668,7 @@ sixel_decode_raw_impl(
                 break;
             case '$':
                 /* DECGCR Graphics Carriage Return */
+                context->drawing_control = 1;
                 context->pos_x = 0;
 #if SIXEL_ENABLE_THREADS
                 if (!palette_ready) {
@@ -1768,6 +1706,7 @@ sixel_decode_raw_impl(
                 break;
             case '-':
                 /* DECGNL Graphics Next Line */
+                context->drawing_control = 1;
                 context->pos_x = 0;
                 advance = context->changing_aspect
                     ? 6 * context->vertical_scale : 6;
@@ -2183,13 +2122,25 @@ sequence_raster_parameters:
                 if (context->nparams < DECSIXEL_PARAMS_MAX) {
                     context->params[context->nparams++] = context->param;
                 }
-                /* The pre-scan has ruled out scale changes on the fast
-                 * path. The dedicated painter consumes each scale in place. */
+                /* Detect only completed commands: ESC and EOF leave a
+                 * non-sequence DECGRA unapplied. Blank sixels and cursor or
+                 * repeat commands count even when they paint no pixels.
+                 * Parallel requests join and discard private worker state
+                 * before returning FALSE; the serial cursor then replays
+                 * every byte, so this test cannot miss earlier drawing. */
                 context->attributed_pan = context->params[0];
                 context->attributed_pad = context->nparams > 1
                     ? context->params[1] : 0;
-                context->vertical_scale = sixel_vertical_scale(
-                    context->attributed_pan, context->attributed_pad);
+                scale = sixel_vertical_scale(context->attributed_pan,
+                                               context->attributed_pad);
+                if (!context->changing_aspect && !context->sequence &&
+                        (context->painted || context->drawing_control) &&
+                        scale != context->vertical_scale) {
+                    return DECODE_RESTART_ASPECT;
+                }
+                rescale_head = !context->changing_aspect &&
+                    !context->sequence && scale != context->vertical_scale;
+                context->vertical_scale = scale;
                 if (context->vertical_scale > SIXEL_HEIGHT_LIMIT) {
                     status = SIXEL_BAD_INPUT;
                     sixel_helper_set_additional_message(
@@ -2207,24 +2158,27 @@ sequence_raster_parameters:
                             "sixel decode: raster height is too huge.");
                         goto end;
                     }
+                }
+                if (context->output_pv > 0) {
+                    /* A new head scale can retain an earlier declared Pv. */
                     context->attributed_pv = context->changing_aspect
                         ? context->output_pv
                         : 1 + (context->output_pv - 1) /
                             context->vertical_scale;
                 }
 
-                if (image->width < context->attributed_ph ||
-                        image->height < context->attributed_pv) {
-                    sx = context->attributed_ph;
-                    if (image->width > context->attributed_ph) {
-                        sx = image->width;
-                    }
-
-                    sy = context->attributed_pv;
-                    if (image->height > context->attributed_pv) {
-                        sy = image->height;
-                    }
-
+                /* Before drawing, a new scale can shrink the source
+                 * raster. Workers use allocated dimensions as their
+                 * bounds, so discard the obsolete head geometry too. */
+                sx = context->attributed_ph;
+                if (image->width > sx && (!rescale_head || sx == 0)) {
+                    sx = image->width;
+                }
+                sy = context->attributed_pv;
+                if (image->height > sy && (!rescale_head || sy == 0)) {
+                    sy = image->height;
+                }
+                if (image->width != sx || image->height != sy) {
                     status = image_buffer_resize(
                         image,
                         sx,
@@ -2495,6 +2449,7 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
     size_t i;
     size_t nparams;
     int white;
+    int changing_aspect;
 
     image->pixels.p = NULL;
     image->paint_mask = NULL;
@@ -2506,6 +2461,7 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
     logger_prepared = 0;
     i = 0U;
     nparams = body_nparams;
+    changing_aspect = 0;
     (void)sixel_timeline_logger_prepare_env(allocator, &logger);
     logger_prepared = logger != NULL;
     if (logger_prepared) {
@@ -2527,13 +2483,14 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
                           "reading sixel payload");
     }
 
+retry:
     status = parser_context_init(context);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     context->palette_transform = transform;
-    context->changing_aspect = sixel_aspect_scan(p, len, body_only);
+    context->changing_aspect = changing_aspect;
 
     /*
      * The serial parser always runs first. When palette and raster
@@ -2542,7 +2499,7 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
      * checks and logging are consistent before any background decode starts.
      */
 
-    if (logger_prepared) {
+    if (logger_prepared && !changing_aspect) {
         /* Mark when the serial parser begins scanning tokens. */
         sixel_timeline_logger_logf(logger,
                           "decoder",
@@ -2618,6 +2575,35 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
                                    logger_prepared,
                                    decode_flags,
                                    undither);
+    if (status == DECODE_RESTART_ASPECT) {
+        /* No workers survive request_start(). Discard all tentative stores
+         * without materializing columns or OR planes, then rebuild palette,
+         * parser flags, raster bounds and body parameters from their inputs.
+         * The dedicated painter cannot request another restart or fusion. */
+        sixel_allocator_free(allocator, image->pixels.p);
+        image->pixels.p = NULL;
+        image_buffer_release_paint_mask(image, allocator);
+        image_buffer_release_ormode_planes(image, allocator);
+        image_buffer_release_columns(image, allocator);
+        if (undither != NULL) {
+            sixel_allocator_free(undither->allocator, undither->pixels);
+            undither->pixels = NULL;
+            free(undither->palette);
+            undither->palette = NULL;
+            undither->ncolors = 0;
+            undither->palette_size = 0;
+            undither->pixel_size = 0;
+        }
+        if (logger_prepared) {
+            /* Keep one timeline session and one final result. Worker events
+             * describe real discarded work; do not log a false completion. */
+            sixel_timeline_logger_logf(logger, "decoder", "parser", "restart",
+                0, 0, 0, len, 0, len,
+                "discarding constant-aspect attempt; restarting device rows");
+        }
+        changing_aspect = 1;
+        goto retry;
+    }
     if (context->aspect_ormode != NULL) {
         status = sixel_aspect_finish(image, context, status, allocator);
     }

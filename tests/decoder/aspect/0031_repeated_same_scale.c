@@ -1,8 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /* Equal rounded scales keep the fast path and the single-raster samples. */
 #include <stdlib.h>
-#include <string.h>
-#include "src/fromsixel-internal.h"
 #include "../../_support/processing/decoder/aspect_test_common.h"
 
 int
@@ -15,10 +13,6 @@ test_decoder_aspect_0031(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-    if (sixel_aspect_scan((unsigned char const *)repeated,
-                          sizeof(repeated) - 1, 0) != 0) {
-        return EXIT_FAILURE;
-    }
     if (test_decoder_aspect_pixels(single, 2, 6, "R.R.R..G.G.G",
                                    0U, 0U) != EXIT_SUCCESS) {
         return EXIT_FAILURE;

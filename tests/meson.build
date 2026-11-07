@@ -290,7 +290,10 @@ decoder_aspect_sources = files(
   'decoder/aspect/0039_mid_band_overlap.c',
   'decoder/aspect/0040_changing_palette.c',
   'decoder/aspect/0041_changing_wide_ormode.c',
-  'decoder/aspect/0042_scan_boundaries.c',
+  'decoder/aspect/0042_lazy_boundaries.c',
+  'decoder/aspect/0043_restart_parallel_rgba.c',
+  'decoder/aspect/0044_restart_fused_fast4.c',
+  'decoder/aspect/0045_restart_allocation_failure.c',
 )
 
 test_runner_sources = test_runner_tests_sources + decoder_aspect_sources + files(
