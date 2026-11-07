@@ -28,7 +28,8 @@ def check(args):
     if os.environ.get('CROSS_COMPILING') == 'yes':
         return 'the staged consumer probe requires a native build'
     pkgconfig = os.environ.get('SIXEL_TEST_PKG_CONFIG')
-    if not pkgconfig:
+    # Configure uses false when no usable pkg-config was found.
+    if not pkgconfig or pkgconfig == 'false':
         return 'pkg-config is unavailable'
     pkgconfig_command = [pkgconfig]
     if os.name == 'nt':

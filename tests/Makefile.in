@@ -26298,6 +26298,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	tools/metal/data/chunk-boundary.metal \
 	_static/sh/staticcheck-msvc-shared-crt.sh \
 	_static/sh/staticcheck-configured-pkg-config.sh \
+	_static/sh/staticcheck-pkg-config-unavailable.sh \
 	_support/codec/retained_rows_common.h \
 	_support/codec/retained_workers_common.h \
 	_support/codec/retained_component_common.h \

@@ -544,7 +544,8 @@ sixel_playback_independent_write(char *bytes, int size, void *context)
 
     c = context;
     r = c->packet;
-    if (r == NULL || size < 0 || (size_t)size > SIZE_MAX - r->size) return -1;
+    if (r == NULL || r->packet_slot >= SIXEL_PLAYBACK_RING_CAPACITY ||
+            size < 0 || (size_t)size > SIZE_MAX - r->size) return -1;
     packet = &c->packets[r->packet_slot];
     required = r->size + (size_t)size;
     if (required > packet->allocated) {
@@ -597,14 +598,24 @@ sixel_playback_independent_encode(void *context)
         if (failure != SIXEL_OK && r->slot.status == SIXEL_OK)
             r->slot.status = failure;
         sixel_mutex_lock(&c->gate);
-        /* The acquired packet credit guarantees a free storage slot. */
+        /* A packet credit guarantees a free slot. Keep the bounds proof at
+         * the store too, so a broken credit invariant cannot overrun storage
+         * or release another record's packet while the pipeline drains. */
         for (r->packet_slot = 0;
                 r->packet_slot < SIXEL_PLAYBACK_RING_CAPACITY;
                 ++r->packet_slot) {
-            if (!c->packets[r->packet_slot].busy) break;
+            if (!c->packets[r->packet_slot].busy) {
+                c->packets[r->packet_slot].busy = 1;
+                break;
+            }
         }
-        c->packets[r->packet_slot].busy = 1;
         sixel_mutex_unlock(&c->gate);
+        if (r->packet_slot == SIXEL_PLAYBACK_RING_CAPACITY &&
+                r->slot.status == SIXEL_OK) {
+            sixel_helper_set_additional_message(
+                "playback: packet credit has no free storage slot.");
+            r->slot.status = SIXEL_LOGIC_ERROR;
+        }
         c->packet = r;
         if (r->slot.status == SIXEL_OK) {
             if (hooks != NULL && hooks->encoding != NULL)
@@ -771,7 +782,8 @@ sixel_encoder_frame_pipeline_run_deferred(
             r->slot.status, r->claimed);
         sixel_encoder_pipeline_slot_clear(&r->slot);
         sixel_mutex_lock(&c.gate);
-        c.packets[r->packet_slot].busy = 0;
+        if (r->packet_slot < SIXEL_PLAYBACK_RING_CAPACITY)
+            c.packets[r->packet_slot].busy = 0;
         sixel_mutex_unlock(&c.gate);
         sixel_playback_independent_credit(&c, 2, 0);
         sixel_mutex_lock(&c.gate);

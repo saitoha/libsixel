@@ -1186,6 +1186,10 @@ run_case_tap "staticcheck-configured-pkg-config" \
     sh "$src_root/tests/_static/sh/staticcheck-configured-pkg-config.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-pkg-config-unavailable" \
+    sh "$src_root/tests/_static/sh/staticcheck-pkg-config-unavailable.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-metal-stream" \
     sh "$src_root/tests/_static/sh/staticcheck-metal-stream.sh" \
     "$src_root" || fail_and_exit $?

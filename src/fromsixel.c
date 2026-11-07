@@ -4245,6 +4245,15 @@ sixel_sequence_prepare_patch(sixel_sequence_decoder_t *d,
             return status;
         }
     }
+    /* Reused storage must retain its pixel format and coverage allocation.
+     * Check those invariants before clearing either buffer, including after
+     * a resize; non-NULL pixels alone do not establish indexed coverage. */
+    if (patch->pixels.p == NULL || patch->depth != depth ||
+            (depth != 4 && patch->paint_mask == NULL)) {
+        sixel_helper_set_additional_message(
+            "sixel_sequence_prepare_patch: inconsistent packet storage.");
+        return SIXEL_LOGIC_ERROR;
+    }
     /* Indexed holes are ignored through the mask; do not clear their data. */
     if (depth == 4) {
         memset(patch->pixels.p, 0,

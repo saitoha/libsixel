@@ -12633,7 +12633,8 @@ EXTRA_DIST += _static/sh/staticcheck-assessment-getenv.sh \
     tools/metal/data/chunk-boundary.metal
 
 EXTRA_DIST += _static/sh/staticcheck-msvc-shared-crt.sh \
-    _static/sh/staticcheck-configured-pkg-config.sh
+    _static/sh/staticcheck-configured-pkg-config.sh \
+    _static/sh/staticcheck-pkg-config-unavailable.sh
 
 EXTRA_DIST += _support/codec/retained_rows_common.h
 

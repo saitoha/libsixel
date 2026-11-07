@@ -31,6 +31,8 @@ test_decoder_aspect_0033(int argc, char **argv)
     (void)argc;
     (void)argv;
     indexed = palette = reference = pixels = NULL;
+    /* Keep failed setup from exposing indeterminate decoder outputs. */
+    width = height = ncolors = 0;
     allocator = NULL;
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     ok = status == SIXEL_OK;

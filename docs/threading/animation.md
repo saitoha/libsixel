@@ -48,7 +48,7 @@ Only R uses RetainedPlane. It reserves an image slot before claiming an admissio
 
 Cancellation and the R claim share the admission mutex ordering point. Claimed frames finish through delivery; unclaimed frames through the cancellation watermark complete interrupted. Later admissions wait for the preceding prefix to complete before inheriting origin/reservation predictions. An encode or delivery error stops admission, drains dependent users and invalidates history. Detach to direct encoding also invalidates history. A callback never releases pixels while the own palette build still reads them. A known own-build error suppresses delivery; a later error remains visible after already accepted bytes.
 
-E builds complete framed packets before external delivery. The dispatcher sends no bytes for frame n+1 until done[n] returns, preserving callbacks without frame IDs. This adds bounded packet storage and can delay first-byte delivery. Shared GPU hardware may serialize S and R commands despite independent workers. The [stage measurements](encoder.md#timeline-interpretation) distinguish service, queue residence and completion intervals; independence is not a frame-rate guarantee.
+E builds complete framed packets before external delivery. A packet credit requires a free storage slot, but the slot search still bounds every array access. If that invariant is broken, the frame fails with a logic error and drains without encoding into or releasing another frame's storage. The dispatcher sends no bytes for frame n+1 until done[n] returns, preserving callbacks without frame IDs. This adds bounded packet storage and can delay first-byte delivery. Shared GPU hardware may serialize S and R commands despite independent workers. The [stage measurements](encoder.md#timeline-interpretation) distinguish service, queue residence and completion intervals; independence is not a frame-rate guarantee.
 
 ## What is and is not shared
 
@@ -119,7 +119,7 @@ The phased integration [coverage](../encoder/palette-application/dithering/phase
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | AT-0056 | playback resolve past stalled encode. | [tests/dither/phased/0056_playback_resolve_past_stalled_encode.t](../../tests/dither/phased/0056_playback_resolve_past_stalled_encode.t) |
-| AT-0057 | playback encode past stalled delivery. | [tests/dither/phased/0057_playback_encode_past_stalled_delivery.t](../../tests/dither/phased/0057_playback_encode_past_stalled_delivery.t) |
+| AT-0057 | Encoding uses a distinct packet slot while earlier delivery is stalled; MSVC analysis separately checks the slot-search write bounds. | [tests/dither/phased/0057_playback_encode_past_stalled_delivery.t](../../tests/dither/phased/0057_playback_encode_past_stalled_delivery.t) |
 | AT-0058 | playback claimed cancel completes. | [tests/dither/phased/0058_playback_claimed_cancel_completes.t](../../tests/dither/phased/0058_playback_claimed_cancel_completes.t) |
 | AT-0059 | latest replay t0. | [tests/dither/phased/0059_latest_replay_t0.t](../../tests/dither/phased/0059_latest_replay_t0.t) |
 | AT-0060 | latest replay refresh. | [tests/dither/phased/0060_latest_replay_refresh.t](../../tests/dither/phased/0060_latest_replay_refresh.t) |
