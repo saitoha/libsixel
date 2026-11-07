@@ -916,6 +916,30 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	decoder/parser/0113_parallel_early_st_compatibility.c \
 	decoder/parser/0114_simd_band_words.c \
 	decoder/parser/0119_token_fast_lane.c \
+	decoder/aspect/0001_integer_rows.c \
+	decoder/aspect/0002_unit_rows.c \
+	decoder/aspect/0003_absent_raster.c \
+	decoder/aspect/0004_fractional_ratio.c \
+	decoder/aspect/0005_partial_row_group.c \
+	decoder/aspect/0006_macro_geometry.c \
+	decoder/aspect/0007_first_raster_wins.c \
+	decoder/aspect/0008_late_raster.c \
+	decoder/aspect/0009_zero_pan.c decoder/aspect/0010_zero_pad.c \
+	decoder/aspect/0011_missing_pad.c \
+	decoder/aspect/0012_trusted_clipping.c \
+	decoder/aspect/0013_untrusted_growth.c \
+	decoder/aspect/0014_ormode_rows.c \
+	decoder/aspect/0015_grid_geometry.c \
+	decoder/aspect/0016_blank_locks_aspect.c \
+	decoder/aspect/0017_band_rows.c \
+	decoder/aspect/0018_absurd_ratio.c \
+	decoder/aspect/0019_scaled_height_limit.c \
+	decoder/aspect/0020_sequence_packet_aspect.c \
+	decoder/aspect/0021_animation_packet_aspect.c \
+	decoder/aspect/0022_high_color_rgba.c \
+	decoder/aspect/0023_fused_undither_rows.c \
+	_support/processing/decoder/aspect_test_common.c \
+	_support/processing/decoder/aspect_test_common.h \
 	color/cms/0017_separate_intents.c \
 	color/cms/0018_engine_independence.c \
 	color/cms/0019_queued_transform_lifetime.c \
@@ -5896,6 +5920,30 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0113_parallel_early_st_compatibility.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0114_simd_band_words.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0119_token_fast_lane.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0001_integer_rows.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0002_unit_rows.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0003_absent_raster.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0004_fractional_ratio.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0005_partial_row_group.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0006_macro_geometry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0007_first_raster_wins.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0008_late_raster.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0009_zero_pan.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0010_zero_pad.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0011_missing_pad.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0012_trusted_clipping.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0013_untrusted_growth.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0014_ormode_rows.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0015_grid_geometry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0016_blank_locks_aspect.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0017_band_rows.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0018_absurd_ratio.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0019_scaled_height_limit.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0020_sequence_packet_aspect.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0021_animation_packet_aspect.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0022_high_color_rgba.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0023_fused_undither_rows.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/decoder/test_runner-aspect_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0017_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0018_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0019_queued_transform_lifetime.$(OBJEXT) \
@@ -10445,6 +10493,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Po \
 	_support/processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Po \
 	_support/processing/colorspace/parallel/$(DEPDIR)/test_runner-parallel_float_common.Po \
+	_support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Po \
 	_support/processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	_support/processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	_support/processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
@@ -10896,6 +10945,29 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/space/$(DEPDIR)/test_runner-0048_reclaim_bits.Po \
 	color/space/$(DEPDIR)/test_runner-0049_reclaim_atomic.Po \
 	color/space/$(DEPDIR)/test_runner-0050_worker_memo_exact.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0002_unit_rows.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0003_absent_raster.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0004_fractional_ratio.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0005_partial_row_group.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0006_macro_geometry.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0007_first_raster_wins.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0008_late_raster.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0009_zero_pan.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0010_zero_pad.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0011_missing_pad.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0013_untrusted_growth.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0014_ormode_rows.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0015_grid_geometry.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0016_blank_locks_aspect.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0017_band_rows.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0018_absurd_ratio.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0019_scaled_height_limit.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0020_sequence_packet_aspect.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0021_animation_packet_aspect.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0022_high_color_rgba.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0023_fused_undither_rows.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0003_decoder_parallel_split_after_newline.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0004_decoder_ormode_raw_overlay.Po \
@@ -17449,6 +17521,30 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0113_PARALLEL_EARLY_ST_COMPATIBILITY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0114_SIMD_BAND_WORDS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0119_TOKEN_FAST_LANE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_INTEGER_ROWS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_UNIT_ROWS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ABSENT_RASTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_FRACTIONAL_RATIO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_PARTIAL_ROW_GROUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_MACRO_GEOMETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_FIRST_RASTER_WINS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_LATE_RASTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_ZERO_PAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_ZERO_PAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MISSING_PAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_TRUSTED_CLIPPING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_UNTRUSTED_GROWTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_ORMODE_ROWS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_GRID_GEOMETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_BLANK_LOCKS_ASPECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_BAND_ROWS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_ABSURD_RATIO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_SCALED_HEIGHT_LIMIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_SEQUENCE_PACKET_ASPECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_ANIMATION_PACKET_ASPECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_HIGH_COLOR_RGBA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_FUSED_UNDITHER_ROWS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ASPECT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HISTORY_REVISIONS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -21433,6 +21529,31 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0113_parallel_early_st_compatibility.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0114_simd_band_words.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0119_token_fast_lane.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0001_integer_rows.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0002_unit_rows.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0003_absent_raster.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0004_fractional_ratio.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0005_partial_row_group.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0006_macro_geometry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0007_first_raster_wins.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0008_late_raster.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0009_zero_pan.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0010_zero_pad.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0011_missing_pad.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0012_trusted_clipping.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0013_untrusted_growth.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0014_ormode_rows.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0015_grid_geometry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0016_blank_locks_aspect.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0017_band_rows.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0018_absurd_ratio.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0019_scaled_height_limit.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0020_sequence_packet_aspect.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0021_animation_packet_aspect.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0022_high_color_rgba.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0023_fused_undither_rows.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/decoder/aspect_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/decoder/aspect_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0017_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0018_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0019_queued_transform_lifetime.c \
@@ -28678,6 +28799,90 @@ decoder/parser/test_runner-0114_simd_band_words.$(OBJEXT):  \
 decoder/parser/test_runner-0119_token_fast_lane.$(OBJEXT):  \
 	decoder/parser/$(am__dirstamp) \
 	decoder/parser/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/$(am__dirstamp):
+	@$(MKDIR_P) decoder/aspect
+	@: >>decoder/aspect/$(am__dirstamp)
+decoder/aspect/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) decoder/aspect/$(DEPDIR)
+	@: >>decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0001_integer_rows.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0002_unit_rows.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0003_absent_raster.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0004_fractional_ratio.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0005_partial_row_group.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0006_macro_geometry.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0007_first_raster_wins.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0008_late_raster.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0009_zero_pan.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0010_zero_pad.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0011_missing_pad.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0012_trusted_clipping.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0013_untrusted_growth.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0014_ormode_rows.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0015_grid_geometry.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0016_blank_locks_aspect.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0017_band_rows.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0018_absurd_ratio.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0019_scaled_height_limit.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0020_sequence_packet_aspect.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0021_animation_packet_aspect.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0022_high_color_rgba.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0023_fused_undither_rows.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+_support/processing/decoder/$(am__dirstamp):
+	@$(MKDIR_P) _support/processing/decoder
+	@: >>_support/processing/decoder/$(am__dirstamp)
+_support/processing/decoder/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) _support/processing/decoder/$(DEPDIR)
+	@: >>_support/processing/decoder/$(DEPDIR)/$(am__dirstamp)
+_support/processing/decoder/test_runner-aspect_test_common.$(OBJEXT):  \
+	_support/processing/decoder/$(am__dirstamp) \
+	_support/processing/decoder/$(DEPDIR)/$(am__dirstamp)
 color/cms/$(am__dirstamp):
 	@$(MKDIR_P) color/cms
 	@: >>color/cms/$(am__dirstamp)
@@ -31716,12 +31921,6 @@ _support/processing/progressive/test_runner-progressive_callback_test_common.$(O
 _support/processing/progressive/test_runner-progressive_palette_test_common.$(OBJEXT):  \
 	_support/processing/progressive/$(am__dirstamp) \
 	_support/processing/progressive/$(DEPDIR)/$(am__dirstamp)
-_support/processing/decoder/$(am__dirstamp):
-	@$(MKDIR_P) _support/processing/decoder
-	@: >>_support/processing/decoder/$(am__dirstamp)
-_support/processing/decoder/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) _support/processing/decoder/$(DEPDIR)
-	@: >>_support/processing/decoder/$(DEPDIR)/$(am__dirstamp)
 _support/processing/decoder/test_runner-multi_pass_test_common.$(OBJEXT):  \
 	_support/processing/decoder/$(am__dirstamp) \
 	_support/processing/decoder/$(DEPDIR)/$(am__dirstamp)
@@ -42015,6 +42214,7 @@ mostlyclean-compile:
 	-rm -f color/icc/*.$(OBJEXT)
 	-rm -f color/lcms2/*.$(OBJEXT)
 	-rm -f color/space/*.$(OBJEXT)
+	-rm -f decoder/aspect/*.$(OBJEXT)
 	-rm -f decoder/parser/*.$(OBJEXT)
 	-rm -f decoder/raster/*.$(OBJEXT)
 	-rm -f delta/commit/*.$(OBJEXT)
@@ -42474,6 +42674,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/colorspace/$(DEPDIR)/test_runner-public_float_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/colorspace/$(DEPDIR)/test_runner-public_float_fault.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/colorspace/parallel/$(DEPDIR)/test_runner-parallel_float_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
@@ -42925,6 +43126,29 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/space/$(DEPDIR)/test_runner-0048_reclaim_bits.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/space/$(DEPDIR)/test_runner-0049_reclaim_atomic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/space/$(DEPDIR)/test_runner-0050_worker_memo_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0002_unit_rows.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0003_absent_raster.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0004_fractional_ratio.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0005_partial_row_group.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0006_macro_geometry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0007_first_raster_wins.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0008_late_raster.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0009_zero_pan.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0010_zero_pad.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0011_missing_pad.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0013_untrusted_growth.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0014_ormode_rows.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0015_grid_geometry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0016_blank_locks_aspect.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0017_band_rows.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0018_absurd_ratio.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0019_scaled_height_limit.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0020_sequence_packet_aspect.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0021_animation_packet_aspect.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0022_high_color_rgba.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0023_fused_undither_rows.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0003_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0004_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
@@ -57976,6 +58200,342 @@ decoder/parser/test_runner-0119_token_fast_lane.obj: decoder/parser/0119_token_f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/parser/0119_token_fast_lane.c' object='decoder/parser/test_runner-0119_token_fast_lane.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/parser/test_runner-0119_token_fast_lane.obj `if test -f 'decoder/parser/0119_token_fast_lane.c'; then $(CYGPATH_W) 'decoder/parser/0119_token_fast_lane.c'; else $(CYGPATH_W) '$(srcdir)/decoder/parser/0119_token_fast_lane.c'; fi`
+
+decoder/aspect/test_runner-0001_integer_rows.o: decoder/aspect/0001_integer_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0001_integer_rows.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Tpo -c -o decoder/aspect/test_runner-0001_integer_rows.o `test -f 'decoder/aspect/0001_integer_rows.c' || echo '$(srcdir)/'`decoder/aspect/0001_integer_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0001_integer_rows.c' object='decoder/aspect/test_runner-0001_integer_rows.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0001_integer_rows.o `test -f 'decoder/aspect/0001_integer_rows.c' || echo '$(srcdir)/'`decoder/aspect/0001_integer_rows.c
+
+decoder/aspect/test_runner-0001_integer_rows.obj: decoder/aspect/0001_integer_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0001_integer_rows.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Tpo -c -o decoder/aspect/test_runner-0001_integer_rows.obj `if test -f 'decoder/aspect/0001_integer_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0001_integer_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0001_integer_rows.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0001_integer_rows.c' object='decoder/aspect/test_runner-0001_integer_rows.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0001_integer_rows.obj `if test -f 'decoder/aspect/0001_integer_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0001_integer_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0001_integer_rows.c'; fi`
+
+decoder/aspect/test_runner-0002_unit_rows.o: decoder/aspect/0002_unit_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0002_unit_rows.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0002_unit_rows.Tpo -c -o decoder/aspect/test_runner-0002_unit_rows.o `test -f 'decoder/aspect/0002_unit_rows.c' || echo '$(srcdir)/'`decoder/aspect/0002_unit_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0002_unit_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0002_unit_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0002_unit_rows.c' object='decoder/aspect/test_runner-0002_unit_rows.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0002_unit_rows.o `test -f 'decoder/aspect/0002_unit_rows.c' || echo '$(srcdir)/'`decoder/aspect/0002_unit_rows.c
+
+decoder/aspect/test_runner-0002_unit_rows.obj: decoder/aspect/0002_unit_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0002_unit_rows.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0002_unit_rows.Tpo -c -o decoder/aspect/test_runner-0002_unit_rows.obj `if test -f 'decoder/aspect/0002_unit_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0002_unit_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0002_unit_rows.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0002_unit_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0002_unit_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0002_unit_rows.c' object='decoder/aspect/test_runner-0002_unit_rows.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0002_unit_rows.obj `if test -f 'decoder/aspect/0002_unit_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0002_unit_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0002_unit_rows.c'; fi`
+
+decoder/aspect/test_runner-0003_absent_raster.o: decoder/aspect/0003_absent_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0003_absent_raster.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0003_absent_raster.Tpo -c -o decoder/aspect/test_runner-0003_absent_raster.o `test -f 'decoder/aspect/0003_absent_raster.c' || echo '$(srcdir)/'`decoder/aspect/0003_absent_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0003_absent_raster.Tpo decoder/aspect/$(DEPDIR)/test_runner-0003_absent_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0003_absent_raster.c' object='decoder/aspect/test_runner-0003_absent_raster.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0003_absent_raster.o `test -f 'decoder/aspect/0003_absent_raster.c' || echo '$(srcdir)/'`decoder/aspect/0003_absent_raster.c
+
+decoder/aspect/test_runner-0003_absent_raster.obj: decoder/aspect/0003_absent_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0003_absent_raster.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0003_absent_raster.Tpo -c -o decoder/aspect/test_runner-0003_absent_raster.obj `if test -f 'decoder/aspect/0003_absent_raster.c'; then $(CYGPATH_W) 'decoder/aspect/0003_absent_raster.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0003_absent_raster.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0003_absent_raster.Tpo decoder/aspect/$(DEPDIR)/test_runner-0003_absent_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0003_absent_raster.c' object='decoder/aspect/test_runner-0003_absent_raster.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0003_absent_raster.obj `if test -f 'decoder/aspect/0003_absent_raster.c'; then $(CYGPATH_W) 'decoder/aspect/0003_absent_raster.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0003_absent_raster.c'; fi`
+
+decoder/aspect/test_runner-0004_fractional_ratio.o: decoder/aspect/0004_fractional_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0004_fractional_ratio.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0004_fractional_ratio.Tpo -c -o decoder/aspect/test_runner-0004_fractional_ratio.o `test -f 'decoder/aspect/0004_fractional_ratio.c' || echo '$(srcdir)/'`decoder/aspect/0004_fractional_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0004_fractional_ratio.Tpo decoder/aspect/$(DEPDIR)/test_runner-0004_fractional_ratio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0004_fractional_ratio.c' object='decoder/aspect/test_runner-0004_fractional_ratio.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0004_fractional_ratio.o `test -f 'decoder/aspect/0004_fractional_ratio.c' || echo '$(srcdir)/'`decoder/aspect/0004_fractional_ratio.c
+
+decoder/aspect/test_runner-0004_fractional_ratio.obj: decoder/aspect/0004_fractional_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0004_fractional_ratio.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0004_fractional_ratio.Tpo -c -o decoder/aspect/test_runner-0004_fractional_ratio.obj `if test -f 'decoder/aspect/0004_fractional_ratio.c'; then $(CYGPATH_W) 'decoder/aspect/0004_fractional_ratio.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0004_fractional_ratio.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0004_fractional_ratio.Tpo decoder/aspect/$(DEPDIR)/test_runner-0004_fractional_ratio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0004_fractional_ratio.c' object='decoder/aspect/test_runner-0004_fractional_ratio.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0004_fractional_ratio.obj `if test -f 'decoder/aspect/0004_fractional_ratio.c'; then $(CYGPATH_W) 'decoder/aspect/0004_fractional_ratio.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0004_fractional_ratio.c'; fi`
+
+decoder/aspect/test_runner-0005_partial_row_group.o: decoder/aspect/0005_partial_row_group.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0005_partial_row_group.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0005_partial_row_group.Tpo -c -o decoder/aspect/test_runner-0005_partial_row_group.o `test -f 'decoder/aspect/0005_partial_row_group.c' || echo '$(srcdir)/'`decoder/aspect/0005_partial_row_group.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0005_partial_row_group.Tpo decoder/aspect/$(DEPDIR)/test_runner-0005_partial_row_group.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0005_partial_row_group.c' object='decoder/aspect/test_runner-0005_partial_row_group.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0005_partial_row_group.o `test -f 'decoder/aspect/0005_partial_row_group.c' || echo '$(srcdir)/'`decoder/aspect/0005_partial_row_group.c
+
+decoder/aspect/test_runner-0005_partial_row_group.obj: decoder/aspect/0005_partial_row_group.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0005_partial_row_group.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0005_partial_row_group.Tpo -c -o decoder/aspect/test_runner-0005_partial_row_group.obj `if test -f 'decoder/aspect/0005_partial_row_group.c'; then $(CYGPATH_W) 'decoder/aspect/0005_partial_row_group.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0005_partial_row_group.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0005_partial_row_group.Tpo decoder/aspect/$(DEPDIR)/test_runner-0005_partial_row_group.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0005_partial_row_group.c' object='decoder/aspect/test_runner-0005_partial_row_group.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0005_partial_row_group.obj `if test -f 'decoder/aspect/0005_partial_row_group.c'; then $(CYGPATH_W) 'decoder/aspect/0005_partial_row_group.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0005_partial_row_group.c'; fi`
+
+decoder/aspect/test_runner-0006_macro_geometry.o: decoder/aspect/0006_macro_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0006_macro_geometry.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0006_macro_geometry.Tpo -c -o decoder/aspect/test_runner-0006_macro_geometry.o `test -f 'decoder/aspect/0006_macro_geometry.c' || echo '$(srcdir)/'`decoder/aspect/0006_macro_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0006_macro_geometry.Tpo decoder/aspect/$(DEPDIR)/test_runner-0006_macro_geometry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0006_macro_geometry.c' object='decoder/aspect/test_runner-0006_macro_geometry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0006_macro_geometry.o `test -f 'decoder/aspect/0006_macro_geometry.c' || echo '$(srcdir)/'`decoder/aspect/0006_macro_geometry.c
+
+decoder/aspect/test_runner-0006_macro_geometry.obj: decoder/aspect/0006_macro_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0006_macro_geometry.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0006_macro_geometry.Tpo -c -o decoder/aspect/test_runner-0006_macro_geometry.obj `if test -f 'decoder/aspect/0006_macro_geometry.c'; then $(CYGPATH_W) 'decoder/aspect/0006_macro_geometry.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0006_macro_geometry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0006_macro_geometry.Tpo decoder/aspect/$(DEPDIR)/test_runner-0006_macro_geometry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0006_macro_geometry.c' object='decoder/aspect/test_runner-0006_macro_geometry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0006_macro_geometry.obj `if test -f 'decoder/aspect/0006_macro_geometry.c'; then $(CYGPATH_W) 'decoder/aspect/0006_macro_geometry.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0006_macro_geometry.c'; fi`
+
+decoder/aspect/test_runner-0007_first_raster_wins.o: decoder/aspect/0007_first_raster_wins.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0007_first_raster_wins.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0007_first_raster_wins.Tpo -c -o decoder/aspect/test_runner-0007_first_raster_wins.o `test -f 'decoder/aspect/0007_first_raster_wins.c' || echo '$(srcdir)/'`decoder/aspect/0007_first_raster_wins.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0007_first_raster_wins.Tpo decoder/aspect/$(DEPDIR)/test_runner-0007_first_raster_wins.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0007_first_raster_wins.c' object='decoder/aspect/test_runner-0007_first_raster_wins.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0007_first_raster_wins.o `test -f 'decoder/aspect/0007_first_raster_wins.c' || echo '$(srcdir)/'`decoder/aspect/0007_first_raster_wins.c
+
+decoder/aspect/test_runner-0007_first_raster_wins.obj: decoder/aspect/0007_first_raster_wins.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0007_first_raster_wins.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0007_first_raster_wins.Tpo -c -o decoder/aspect/test_runner-0007_first_raster_wins.obj `if test -f 'decoder/aspect/0007_first_raster_wins.c'; then $(CYGPATH_W) 'decoder/aspect/0007_first_raster_wins.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0007_first_raster_wins.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0007_first_raster_wins.Tpo decoder/aspect/$(DEPDIR)/test_runner-0007_first_raster_wins.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0007_first_raster_wins.c' object='decoder/aspect/test_runner-0007_first_raster_wins.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0007_first_raster_wins.obj `if test -f 'decoder/aspect/0007_first_raster_wins.c'; then $(CYGPATH_W) 'decoder/aspect/0007_first_raster_wins.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0007_first_raster_wins.c'; fi`
+
+decoder/aspect/test_runner-0008_late_raster.o: decoder/aspect/0008_late_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0008_late_raster.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0008_late_raster.Tpo -c -o decoder/aspect/test_runner-0008_late_raster.o `test -f 'decoder/aspect/0008_late_raster.c' || echo '$(srcdir)/'`decoder/aspect/0008_late_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0008_late_raster.Tpo decoder/aspect/$(DEPDIR)/test_runner-0008_late_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0008_late_raster.c' object='decoder/aspect/test_runner-0008_late_raster.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0008_late_raster.o `test -f 'decoder/aspect/0008_late_raster.c' || echo '$(srcdir)/'`decoder/aspect/0008_late_raster.c
+
+decoder/aspect/test_runner-0008_late_raster.obj: decoder/aspect/0008_late_raster.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0008_late_raster.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0008_late_raster.Tpo -c -o decoder/aspect/test_runner-0008_late_raster.obj `if test -f 'decoder/aspect/0008_late_raster.c'; then $(CYGPATH_W) 'decoder/aspect/0008_late_raster.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0008_late_raster.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0008_late_raster.Tpo decoder/aspect/$(DEPDIR)/test_runner-0008_late_raster.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0008_late_raster.c' object='decoder/aspect/test_runner-0008_late_raster.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0008_late_raster.obj `if test -f 'decoder/aspect/0008_late_raster.c'; then $(CYGPATH_W) 'decoder/aspect/0008_late_raster.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0008_late_raster.c'; fi`
+
+decoder/aspect/test_runner-0009_zero_pan.o: decoder/aspect/0009_zero_pan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0009_zero_pan.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0009_zero_pan.Tpo -c -o decoder/aspect/test_runner-0009_zero_pan.o `test -f 'decoder/aspect/0009_zero_pan.c' || echo '$(srcdir)/'`decoder/aspect/0009_zero_pan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0009_zero_pan.Tpo decoder/aspect/$(DEPDIR)/test_runner-0009_zero_pan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0009_zero_pan.c' object='decoder/aspect/test_runner-0009_zero_pan.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0009_zero_pan.o `test -f 'decoder/aspect/0009_zero_pan.c' || echo '$(srcdir)/'`decoder/aspect/0009_zero_pan.c
+
+decoder/aspect/test_runner-0009_zero_pan.obj: decoder/aspect/0009_zero_pan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0009_zero_pan.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0009_zero_pan.Tpo -c -o decoder/aspect/test_runner-0009_zero_pan.obj `if test -f 'decoder/aspect/0009_zero_pan.c'; then $(CYGPATH_W) 'decoder/aspect/0009_zero_pan.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0009_zero_pan.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0009_zero_pan.Tpo decoder/aspect/$(DEPDIR)/test_runner-0009_zero_pan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0009_zero_pan.c' object='decoder/aspect/test_runner-0009_zero_pan.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0009_zero_pan.obj `if test -f 'decoder/aspect/0009_zero_pan.c'; then $(CYGPATH_W) 'decoder/aspect/0009_zero_pan.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0009_zero_pan.c'; fi`
+
+decoder/aspect/test_runner-0010_zero_pad.o: decoder/aspect/0010_zero_pad.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0010_zero_pad.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0010_zero_pad.Tpo -c -o decoder/aspect/test_runner-0010_zero_pad.o `test -f 'decoder/aspect/0010_zero_pad.c' || echo '$(srcdir)/'`decoder/aspect/0010_zero_pad.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0010_zero_pad.Tpo decoder/aspect/$(DEPDIR)/test_runner-0010_zero_pad.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0010_zero_pad.c' object='decoder/aspect/test_runner-0010_zero_pad.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0010_zero_pad.o `test -f 'decoder/aspect/0010_zero_pad.c' || echo '$(srcdir)/'`decoder/aspect/0010_zero_pad.c
+
+decoder/aspect/test_runner-0010_zero_pad.obj: decoder/aspect/0010_zero_pad.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0010_zero_pad.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0010_zero_pad.Tpo -c -o decoder/aspect/test_runner-0010_zero_pad.obj `if test -f 'decoder/aspect/0010_zero_pad.c'; then $(CYGPATH_W) 'decoder/aspect/0010_zero_pad.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0010_zero_pad.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0010_zero_pad.Tpo decoder/aspect/$(DEPDIR)/test_runner-0010_zero_pad.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0010_zero_pad.c' object='decoder/aspect/test_runner-0010_zero_pad.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0010_zero_pad.obj `if test -f 'decoder/aspect/0010_zero_pad.c'; then $(CYGPATH_W) 'decoder/aspect/0010_zero_pad.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0010_zero_pad.c'; fi`
+
+decoder/aspect/test_runner-0011_missing_pad.o: decoder/aspect/0011_missing_pad.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0011_missing_pad.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0011_missing_pad.Tpo -c -o decoder/aspect/test_runner-0011_missing_pad.o `test -f 'decoder/aspect/0011_missing_pad.c' || echo '$(srcdir)/'`decoder/aspect/0011_missing_pad.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0011_missing_pad.Tpo decoder/aspect/$(DEPDIR)/test_runner-0011_missing_pad.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0011_missing_pad.c' object='decoder/aspect/test_runner-0011_missing_pad.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0011_missing_pad.o `test -f 'decoder/aspect/0011_missing_pad.c' || echo '$(srcdir)/'`decoder/aspect/0011_missing_pad.c
+
+decoder/aspect/test_runner-0011_missing_pad.obj: decoder/aspect/0011_missing_pad.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0011_missing_pad.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0011_missing_pad.Tpo -c -o decoder/aspect/test_runner-0011_missing_pad.obj `if test -f 'decoder/aspect/0011_missing_pad.c'; then $(CYGPATH_W) 'decoder/aspect/0011_missing_pad.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0011_missing_pad.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0011_missing_pad.Tpo decoder/aspect/$(DEPDIR)/test_runner-0011_missing_pad.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0011_missing_pad.c' object='decoder/aspect/test_runner-0011_missing_pad.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0011_missing_pad.obj `if test -f 'decoder/aspect/0011_missing_pad.c'; then $(CYGPATH_W) 'decoder/aspect/0011_missing_pad.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0011_missing_pad.c'; fi`
+
+decoder/aspect/test_runner-0012_trusted_clipping.o: decoder/aspect/0012_trusted_clipping.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0012_trusted_clipping.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Tpo -c -o decoder/aspect/test_runner-0012_trusted_clipping.o `test -f 'decoder/aspect/0012_trusted_clipping.c' || echo '$(srcdir)/'`decoder/aspect/0012_trusted_clipping.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Tpo decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0012_trusted_clipping.c' object='decoder/aspect/test_runner-0012_trusted_clipping.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0012_trusted_clipping.o `test -f 'decoder/aspect/0012_trusted_clipping.c' || echo '$(srcdir)/'`decoder/aspect/0012_trusted_clipping.c
+
+decoder/aspect/test_runner-0012_trusted_clipping.obj: decoder/aspect/0012_trusted_clipping.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0012_trusted_clipping.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Tpo -c -o decoder/aspect/test_runner-0012_trusted_clipping.obj `if test -f 'decoder/aspect/0012_trusted_clipping.c'; then $(CYGPATH_W) 'decoder/aspect/0012_trusted_clipping.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0012_trusted_clipping.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Tpo decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0012_trusted_clipping.c' object='decoder/aspect/test_runner-0012_trusted_clipping.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0012_trusted_clipping.obj `if test -f 'decoder/aspect/0012_trusted_clipping.c'; then $(CYGPATH_W) 'decoder/aspect/0012_trusted_clipping.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0012_trusted_clipping.c'; fi`
+
+decoder/aspect/test_runner-0013_untrusted_growth.o: decoder/aspect/0013_untrusted_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0013_untrusted_growth.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0013_untrusted_growth.Tpo -c -o decoder/aspect/test_runner-0013_untrusted_growth.o `test -f 'decoder/aspect/0013_untrusted_growth.c' || echo '$(srcdir)/'`decoder/aspect/0013_untrusted_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0013_untrusted_growth.Tpo decoder/aspect/$(DEPDIR)/test_runner-0013_untrusted_growth.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0013_untrusted_growth.c' object='decoder/aspect/test_runner-0013_untrusted_growth.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0013_untrusted_growth.o `test -f 'decoder/aspect/0013_untrusted_growth.c' || echo '$(srcdir)/'`decoder/aspect/0013_untrusted_growth.c
+
+decoder/aspect/test_runner-0013_untrusted_growth.obj: decoder/aspect/0013_untrusted_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0013_untrusted_growth.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0013_untrusted_growth.Tpo -c -o decoder/aspect/test_runner-0013_untrusted_growth.obj `if test -f 'decoder/aspect/0013_untrusted_growth.c'; then $(CYGPATH_W) 'decoder/aspect/0013_untrusted_growth.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0013_untrusted_growth.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0013_untrusted_growth.Tpo decoder/aspect/$(DEPDIR)/test_runner-0013_untrusted_growth.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0013_untrusted_growth.c' object='decoder/aspect/test_runner-0013_untrusted_growth.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0013_untrusted_growth.obj `if test -f 'decoder/aspect/0013_untrusted_growth.c'; then $(CYGPATH_W) 'decoder/aspect/0013_untrusted_growth.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0013_untrusted_growth.c'; fi`
+
+decoder/aspect/test_runner-0014_ormode_rows.o: decoder/aspect/0014_ormode_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0014_ormode_rows.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0014_ormode_rows.Tpo -c -o decoder/aspect/test_runner-0014_ormode_rows.o `test -f 'decoder/aspect/0014_ormode_rows.c' || echo '$(srcdir)/'`decoder/aspect/0014_ormode_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0014_ormode_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0014_ormode_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0014_ormode_rows.c' object='decoder/aspect/test_runner-0014_ormode_rows.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0014_ormode_rows.o `test -f 'decoder/aspect/0014_ormode_rows.c' || echo '$(srcdir)/'`decoder/aspect/0014_ormode_rows.c
+
+decoder/aspect/test_runner-0014_ormode_rows.obj: decoder/aspect/0014_ormode_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0014_ormode_rows.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0014_ormode_rows.Tpo -c -o decoder/aspect/test_runner-0014_ormode_rows.obj `if test -f 'decoder/aspect/0014_ormode_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0014_ormode_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0014_ormode_rows.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0014_ormode_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0014_ormode_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0014_ormode_rows.c' object='decoder/aspect/test_runner-0014_ormode_rows.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0014_ormode_rows.obj `if test -f 'decoder/aspect/0014_ormode_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0014_ormode_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0014_ormode_rows.c'; fi`
+
+decoder/aspect/test_runner-0015_grid_geometry.o: decoder/aspect/0015_grid_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0015_grid_geometry.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0015_grid_geometry.Tpo -c -o decoder/aspect/test_runner-0015_grid_geometry.o `test -f 'decoder/aspect/0015_grid_geometry.c' || echo '$(srcdir)/'`decoder/aspect/0015_grid_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0015_grid_geometry.Tpo decoder/aspect/$(DEPDIR)/test_runner-0015_grid_geometry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0015_grid_geometry.c' object='decoder/aspect/test_runner-0015_grid_geometry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0015_grid_geometry.o `test -f 'decoder/aspect/0015_grid_geometry.c' || echo '$(srcdir)/'`decoder/aspect/0015_grid_geometry.c
+
+decoder/aspect/test_runner-0015_grid_geometry.obj: decoder/aspect/0015_grid_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0015_grid_geometry.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0015_grid_geometry.Tpo -c -o decoder/aspect/test_runner-0015_grid_geometry.obj `if test -f 'decoder/aspect/0015_grid_geometry.c'; then $(CYGPATH_W) 'decoder/aspect/0015_grid_geometry.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0015_grid_geometry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0015_grid_geometry.Tpo decoder/aspect/$(DEPDIR)/test_runner-0015_grid_geometry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0015_grid_geometry.c' object='decoder/aspect/test_runner-0015_grid_geometry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0015_grid_geometry.obj `if test -f 'decoder/aspect/0015_grid_geometry.c'; then $(CYGPATH_W) 'decoder/aspect/0015_grid_geometry.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0015_grid_geometry.c'; fi`
+
+decoder/aspect/test_runner-0016_blank_locks_aspect.o: decoder/aspect/0016_blank_locks_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0016_blank_locks_aspect.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0016_blank_locks_aspect.Tpo -c -o decoder/aspect/test_runner-0016_blank_locks_aspect.o `test -f 'decoder/aspect/0016_blank_locks_aspect.c' || echo '$(srcdir)/'`decoder/aspect/0016_blank_locks_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0016_blank_locks_aspect.Tpo decoder/aspect/$(DEPDIR)/test_runner-0016_blank_locks_aspect.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0016_blank_locks_aspect.c' object='decoder/aspect/test_runner-0016_blank_locks_aspect.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0016_blank_locks_aspect.o `test -f 'decoder/aspect/0016_blank_locks_aspect.c' || echo '$(srcdir)/'`decoder/aspect/0016_blank_locks_aspect.c
+
+decoder/aspect/test_runner-0016_blank_locks_aspect.obj: decoder/aspect/0016_blank_locks_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0016_blank_locks_aspect.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0016_blank_locks_aspect.Tpo -c -o decoder/aspect/test_runner-0016_blank_locks_aspect.obj `if test -f 'decoder/aspect/0016_blank_locks_aspect.c'; then $(CYGPATH_W) 'decoder/aspect/0016_blank_locks_aspect.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0016_blank_locks_aspect.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0016_blank_locks_aspect.Tpo decoder/aspect/$(DEPDIR)/test_runner-0016_blank_locks_aspect.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0016_blank_locks_aspect.c' object='decoder/aspect/test_runner-0016_blank_locks_aspect.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0016_blank_locks_aspect.obj `if test -f 'decoder/aspect/0016_blank_locks_aspect.c'; then $(CYGPATH_W) 'decoder/aspect/0016_blank_locks_aspect.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0016_blank_locks_aspect.c'; fi`
+
+decoder/aspect/test_runner-0017_band_rows.o: decoder/aspect/0017_band_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0017_band_rows.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0017_band_rows.Tpo -c -o decoder/aspect/test_runner-0017_band_rows.o `test -f 'decoder/aspect/0017_band_rows.c' || echo '$(srcdir)/'`decoder/aspect/0017_band_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0017_band_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0017_band_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0017_band_rows.c' object='decoder/aspect/test_runner-0017_band_rows.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0017_band_rows.o `test -f 'decoder/aspect/0017_band_rows.c' || echo '$(srcdir)/'`decoder/aspect/0017_band_rows.c
+
+decoder/aspect/test_runner-0017_band_rows.obj: decoder/aspect/0017_band_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0017_band_rows.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0017_band_rows.Tpo -c -o decoder/aspect/test_runner-0017_band_rows.obj `if test -f 'decoder/aspect/0017_band_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0017_band_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0017_band_rows.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0017_band_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0017_band_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0017_band_rows.c' object='decoder/aspect/test_runner-0017_band_rows.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0017_band_rows.obj `if test -f 'decoder/aspect/0017_band_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0017_band_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0017_band_rows.c'; fi`
+
+decoder/aspect/test_runner-0018_absurd_ratio.o: decoder/aspect/0018_absurd_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0018_absurd_ratio.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0018_absurd_ratio.Tpo -c -o decoder/aspect/test_runner-0018_absurd_ratio.o `test -f 'decoder/aspect/0018_absurd_ratio.c' || echo '$(srcdir)/'`decoder/aspect/0018_absurd_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0018_absurd_ratio.Tpo decoder/aspect/$(DEPDIR)/test_runner-0018_absurd_ratio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0018_absurd_ratio.c' object='decoder/aspect/test_runner-0018_absurd_ratio.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0018_absurd_ratio.o `test -f 'decoder/aspect/0018_absurd_ratio.c' || echo '$(srcdir)/'`decoder/aspect/0018_absurd_ratio.c
+
+decoder/aspect/test_runner-0018_absurd_ratio.obj: decoder/aspect/0018_absurd_ratio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0018_absurd_ratio.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0018_absurd_ratio.Tpo -c -o decoder/aspect/test_runner-0018_absurd_ratio.obj `if test -f 'decoder/aspect/0018_absurd_ratio.c'; then $(CYGPATH_W) 'decoder/aspect/0018_absurd_ratio.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0018_absurd_ratio.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0018_absurd_ratio.Tpo decoder/aspect/$(DEPDIR)/test_runner-0018_absurd_ratio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0018_absurd_ratio.c' object='decoder/aspect/test_runner-0018_absurd_ratio.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0018_absurd_ratio.obj `if test -f 'decoder/aspect/0018_absurd_ratio.c'; then $(CYGPATH_W) 'decoder/aspect/0018_absurd_ratio.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0018_absurd_ratio.c'; fi`
+
+decoder/aspect/test_runner-0019_scaled_height_limit.o: decoder/aspect/0019_scaled_height_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0019_scaled_height_limit.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0019_scaled_height_limit.Tpo -c -o decoder/aspect/test_runner-0019_scaled_height_limit.o `test -f 'decoder/aspect/0019_scaled_height_limit.c' || echo '$(srcdir)/'`decoder/aspect/0019_scaled_height_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0019_scaled_height_limit.Tpo decoder/aspect/$(DEPDIR)/test_runner-0019_scaled_height_limit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0019_scaled_height_limit.c' object='decoder/aspect/test_runner-0019_scaled_height_limit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0019_scaled_height_limit.o `test -f 'decoder/aspect/0019_scaled_height_limit.c' || echo '$(srcdir)/'`decoder/aspect/0019_scaled_height_limit.c
+
+decoder/aspect/test_runner-0019_scaled_height_limit.obj: decoder/aspect/0019_scaled_height_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0019_scaled_height_limit.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0019_scaled_height_limit.Tpo -c -o decoder/aspect/test_runner-0019_scaled_height_limit.obj `if test -f 'decoder/aspect/0019_scaled_height_limit.c'; then $(CYGPATH_W) 'decoder/aspect/0019_scaled_height_limit.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0019_scaled_height_limit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0019_scaled_height_limit.Tpo decoder/aspect/$(DEPDIR)/test_runner-0019_scaled_height_limit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0019_scaled_height_limit.c' object='decoder/aspect/test_runner-0019_scaled_height_limit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0019_scaled_height_limit.obj `if test -f 'decoder/aspect/0019_scaled_height_limit.c'; then $(CYGPATH_W) 'decoder/aspect/0019_scaled_height_limit.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0019_scaled_height_limit.c'; fi`
+
+decoder/aspect/test_runner-0020_sequence_packet_aspect.o: decoder/aspect/0020_sequence_packet_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0020_sequence_packet_aspect.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0020_sequence_packet_aspect.Tpo -c -o decoder/aspect/test_runner-0020_sequence_packet_aspect.o `test -f 'decoder/aspect/0020_sequence_packet_aspect.c' || echo '$(srcdir)/'`decoder/aspect/0020_sequence_packet_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0020_sequence_packet_aspect.Tpo decoder/aspect/$(DEPDIR)/test_runner-0020_sequence_packet_aspect.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0020_sequence_packet_aspect.c' object='decoder/aspect/test_runner-0020_sequence_packet_aspect.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0020_sequence_packet_aspect.o `test -f 'decoder/aspect/0020_sequence_packet_aspect.c' || echo '$(srcdir)/'`decoder/aspect/0020_sequence_packet_aspect.c
+
+decoder/aspect/test_runner-0020_sequence_packet_aspect.obj: decoder/aspect/0020_sequence_packet_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0020_sequence_packet_aspect.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0020_sequence_packet_aspect.Tpo -c -o decoder/aspect/test_runner-0020_sequence_packet_aspect.obj `if test -f 'decoder/aspect/0020_sequence_packet_aspect.c'; then $(CYGPATH_W) 'decoder/aspect/0020_sequence_packet_aspect.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0020_sequence_packet_aspect.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0020_sequence_packet_aspect.Tpo decoder/aspect/$(DEPDIR)/test_runner-0020_sequence_packet_aspect.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0020_sequence_packet_aspect.c' object='decoder/aspect/test_runner-0020_sequence_packet_aspect.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0020_sequence_packet_aspect.obj `if test -f 'decoder/aspect/0020_sequence_packet_aspect.c'; then $(CYGPATH_W) 'decoder/aspect/0020_sequence_packet_aspect.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0020_sequence_packet_aspect.c'; fi`
+
+decoder/aspect/test_runner-0021_animation_packet_aspect.o: decoder/aspect/0021_animation_packet_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0021_animation_packet_aspect.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0021_animation_packet_aspect.Tpo -c -o decoder/aspect/test_runner-0021_animation_packet_aspect.o `test -f 'decoder/aspect/0021_animation_packet_aspect.c' || echo '$(srcdir)/'`decoder/aspect/0021_animation_packet_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0021_animation_packet_aspect.Tpo decoder/aspect/$(DEPDIR)/test_runner-0021_animation_packet_aspect.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0021_animation_packet_aspect.c' object='decoder/aspect/test_runner-0021_animation_packet_aspect.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0021_animation_packet_aspect.o `test -f 'decoder/aspect/0021_animation_packet_aspect.c' || echo '$(srcdir)/'`decoder/aspect/0021_animation_packet_aspect.c
+
+decoder/aspect/test_runner-0021_animation_packet_aspect.obj: decoder/aspect/0021_animation_packet_aspect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0021_animation_packet_aspect.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0021_animation_packet_aspect.Tpo -c -o decoder/aspect/test_runner-0021_animation_packet_aspect.obj `if test -f 'decoder/aspect/0021_animation_packet_aspect.c'; then $(CYGPATH_W) 'decoder/aspect/0021_animation_packet_aspect.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0021_animation_packet_aspect.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0021_animation_packet_aspect.Tpo decoder/aspect/$(DEPDIR)/test_runner-0021_animation_packet_aspect.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0021_animation_packet_aspect.c' object='decoder/aspect/test_runner-0021_animation_packet_aspect.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0021_animation_packet_aspect.obj `if test -f 'decoder/aspect/0021_animation_packet_aspect.c'; then $(CYGPATH_W) 'decoder/aspect/0021_animation_packet_aspect.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0021_animation_packet_aspect.c'; fi`
+
+decoder/aspect/test_runner-0022_high_color_rgba.o: decoder/aspect/0022_high_color_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0022_high_color_rgba.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0022_high_color_rgba.Tpo -c -o decoder/aspect/test_runner-0022_high_color_rgba.o `test -f 'decoder/aspect/0022_high_color_rgba.c' || echo '$(srcdir)/'`decoder/aspect/0022_high_color_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0022_high_color_rgba.Tpo decoder/aspect/$(DEPDIR)/test_runner-0022_high_color_rgba.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0022_high_color_rgba.c' object='decoder/aspect/test_runner-0022_high_color_rgba.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0022_high_color_rgba.o `test -f 'decoder/aspect/0022_high_color_rgba.c' || echo '$(srcdir)/'`decoder/aspect/0022_high_color_rgba.c
+
+decoder/aspect/test_runner-0022_high_color_rgba.obj: decoder/aspect/0022_high_color_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0022_high_color_rgba.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0022_high_color_rgba.Tpo -c -o decoder/aspect/test_runner-0022_high_color_rgba.obj `if test -f 'decoder/aspect/0022_high_color_rgba.c'; then $(CYGPATH_W) 'decoder/aspect/0022_high_color_rgba.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0022_high_color_rgba.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0022_high_color_rgba.Tpo decoder/aspect/$(DEPDIR)/test_runner-0022_high_color_rgba.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0022_high_color_rgba.c' object='decoder/aspect/test_runner-0022_high_color_rgba.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0022_high_color_rgba.obj `if test -f 'decoder/aspect/0022_high_color_rgba.c'; then $(CYGPATH_W) 'decoder/aspect/0022_high_color_rgba.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0022_high_color_rgba.c'; fi`
+
+decoder/aspect/test_runner-0023_fused_undither_rows.o: decoder/aspect/0023_fused_undither_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0023_fused_undither_rows.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0023_fused_undither_rows.Tpo -c -o decoder/aspect/test_runner-0023_fused_undither_rows.o `test -f 'decoder/aspect/0023_fused_undither_rows.c' || echo '$(srcdir)/'`decoder/aspect/0023_fused_undither_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0023_fused_undither_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0023_fused_undither_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0023_fused_undither_rows.c' object='decoder/aspect/test_runner-0023_fused_undither_rows.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0023_fused_undither_rows.o `test -f 'decoder/aspect/0023_fused_undither_rows.c' || echo '$(srcdir)/'`decoder/aspect/0023_fused_undither_rows.c
+
+decoder/aspect/test_runner-0023_fused_undither_rows.obj: decoder/aspect/0023_fused_undither_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0023_fused_undither_rows.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0023_fused_undither_rows.Tpo -c -o decoder/aspect/test_runner-0023_fused_undither_rows.obj `if test -f 'decoder/aspect/0023_fused_undither_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0023_fused_undither_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0023_fused_undither_rows.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0023_fused_undither_rows.Tpo decoder/aspect/$(DEPDIR)/test_runner-0023_fused_undither_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0023_fused_undither_rows.c' object='decoder/aspect/test_runner-0023_fused_undither_rows.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0023_fused_undither_rows.obj `if test -f 'decoder/aspect/0023_fused_undither_rows.c'; then $(CYGPATH_W) 'decoder/aspect/0023_fused_undither_rows.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0023_fused_undither_rows.c'; fi`
+
+_support/processing/decoder/test_runner-aspect_test_common.o: _support/processing/decoder/aspect_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/decoder/test_runner-aspect_test_common.o -MD -MP -MF _support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Tpo -c -o _support/processing/decoder/test_runner-aspect_test_common.o `test -f '_support/processing/decoder/aspect_test_common.c' || echo '$(srcdir)/'`_support/processing/decoder/aspect_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Tpo _support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/decoder/aspect_test_common.c' object='_support/processing/decoder/test_runner-aspect_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/decoder/test_runner-aspect_test_common.o `test -f '_support/processing/decoder/aspect_test_common.c' || echo '$(srcdir)/'`_support/processing/decoder/aspect_test_common.c
+
+_support/processing/decoder/test_runner-aspect_test_common.obj: _support/processing/decoder/aspect_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/decoder/test_runner-aspect_test_common.obj -MD -MP -MF _support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Tpo -c -o _support/processing/decoder/test_runner-aspect_test_common.obj `if test -f '_support/processing/decoder/aspect_test_common.c'; then $(CYGPATH_W) '_support/processing/decoder/aspect_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/decoder/aspect_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Tpo _support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/decoder/aspect_test_common.c' object='_support/processing/decoder/test_runner-aspect_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/decoder/test_runner-aspect_test_common.obj `if test -f '_support/processing/decoder/aspect_test_common.c'; then $(CYGPATH_W) '_support/processing/decoder/aspect_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/decoder/aspect_test_common.c'; fi`
 
 color/cms/test_runner-0017_separate_intents.o: color/cms/0017_separate_intents.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0017_separate_intents.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0017_separate_intents.Tpo -c -o color/cms/test_runner-0017_separate_intents.o `test -f 'color/cms/0017_separate_intents.c' || echo '$(srcdir)/'`color/cms/0017_separate_intents.c
@@ -116421,6 +116981,8 @@ distclean-generic:
 	-$(am__rm_f) color/lcms2/$(am__dirstamp)
 	-$(am__rm_f) color/space/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) color/space/$(am__dirstamp)
+	-$(am__rm_f) decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) decoder/aspect/$(am__dirstamp)
 	-$(am__rm_f) decoder/parser/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) decoder/parser/$(am__dirstamp)
 	-$(am__rm_f) decoder/raster/$(DEPDIR)/$(am__dirstamp)

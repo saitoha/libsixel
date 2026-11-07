@@ -266,6 +266,29 @@ int test_decoder_0102(int argc, char **argv);
 int test_decoder_0103(int argc, char **argv);
 int test_decoder_0104(int argc, char **argv);
 int test_decoder_0109(int argc, char **argv);
+int test_decoder_aspect_0001(int argc, char **argv);
+int test_decoder_aspect_0002(int argc, char **argv);
+int test_decoder_aspect_0003(int argc, char **argv);
+int test_decoder_aspect_0004(int argc, char **argv);
+int test_decoder_aspect_0005(int argc, char **argv);
+int test_decoder_aspect_0006(int argc, char **argv);
+int test_decoder_aspect_0007(int argc, char **argv);
+int test_decoder_aspect_0008(int argc, char **argv);
+int test_decoder_aspect_0009(int argc, char **argv);
+int test_decoder_aspect_0010(int argc, char **argv);
+int test_decoder_aspect_0011(int argc, char **argv);
+int test_decoder_aspect_0012(int argc, char **argv);
+int test_decoder_aspect_0013(int argc, char **argv);
+int test_decoder_aspect_0014(int argc, char **argv);
+int test_decoder_aspect_0015(int argc, char **argv);
+int test_decoder_aspect_0016(int argc, char **argv);
+int test_decoder_aspect_0017(int argc, char **argv);
+int test_decoder_aspect_0018(int argc, char **argv);
+int test_decoder_aspect_0019(int argc, char **argv);
+int test_decoder_aspect_0020(int argc, char **argv);
+int test_decoder_aspect_0021(int argc, char **argv);
+int test_decoder_aspect_0022(int argc, char **argv);
+int test_decoder_aspect_0023(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -8590,6 +8613,52 @@ static test_entry_t const test_entries[] = {
     { "decoder/0103_parallel_early_st_compatibility", test_decoder_0103 },
     { "decoder/0104_simd_band_words", test_decoder_0104 },
     { "decoder/0109_token_fast_lane", test_decoder_0109 },
+    { "decoder/aspect/0001_integer_rows",
+      test_decoder_aspect_0001 },
+    { "decoder/aspect/0002_unit_rows",
+      test_decoder_aspect_0002 },
+    { "decoder/aspect/0003_absent_raster",
+      test_decoder_aspect_0003 },
+    { "decoder/aspect/0004_fractional_ratio",
+      test_decoder_aspect_0004 },
+    { "decoder/aspect/0005_partial_row_group",
+      test_decoder_aspect_0005 },
+    { "decoder/aspect/0006_macro_geometry",
+      test_decoder_aspect_0006 },
+    { "decoder/aspect/0007_first_raster_wins",
+      test_decoder_aspect_0007 },
+    { "decoder/aspect/0008_late_raster",
+      test_decoder_aspect_0008 },
+    { "decoder/aspect/0009_zero_pan",
+      test_decoder_aspect_0009 },
+    { "decoder/aspect/0010_zero_pad",
+      test_decoder_aspect_0010 },
+    { "decoder/aspect/0011_missing_pad",
+      test_decoder_aspect_0011 },
+    { "decoder/aspect/0012_trusted_clipping",
+      test_decoder_aspect_0012 },
+    { "decoder/aspect/0013_untrusted_growth",
+      test_decoder_aspect_0013 },
+    { "decoder/aspect/0014_ormode_rows",
+      test_decoder_aspect_0014 },
+    { "decoder/aspect/0015_grid_geometry",
+      test_decoder_aspect_0015 },
+    { "decoder/aspect/0016_blank_locks_aspect",
+      test_decoder_aspect_0016 },
+    { "decoder/aspect/0017_band_rows",
+      test_decoder_aspect_0017 },
+    { "decoder/aspect/0018_absurd_ratio",
+      test_decoder_aspect_0018 },
+    { "decoder/aspect/0019_scaled_height_limit",
+      test_decoder_aspect_0019 },
+    { "decoder/aspect/0020_sequence_packet_aspect",
+      test_decoder_aspect_0020 },
+    { "decoder/aspect/0021_animation_packet_aspect",
+      test_decoder_aspect_0021 },
+    { "decoder/aspect/0022_high_color_rgba",
+      test_decoder_aspect_0022 },
+    { "decoder/aspect/0023_fused_undither_rows",
+      test_decoder_aspect_0023 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },

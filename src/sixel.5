@@ -31,6 +31,23 @@ WRQ Reflection
 .br
 ZSTEM
 
+.SH "DECODER PIXEL ASPECT"
+libsixel uses the first raster attribute command
+.B "\[dq] Pan ; Pad ; Ph ; Pv"
+before SIXEL data to determine pixel aspect (vertical:horizontal).
+A missing or zero Pan or Pad selects 1:1 aspect.
+When Pan/Pad is an integer greater than one, each decoded row is repeated
+that many times; other ratios retain one output row per SIXEL pixel.
+Horizontal dimensions are unchanged. DCS macro P1 and grid size P3 do not
+change decoded pixel aspect. Later raster commands can update Ph/Pv but
+cannot change the aspect after the first raster command or SIXEL data.
+.PP
+Ph and Pv specify output pixels. A partial final group of repeated rows
+ends exactly at Pv when the data fits the declared raster. Existing trusted
+raster clipping and image size limits still apply; excessive scaled heights
+are errors. In sequence and animation decoding, each image is expanded
+before its painted pixels are composed onto the retained output canvas.
+
 .SH "SEE ALSO"
 .BR "img2sixel"(1), " sixel2png"(1), "
 .LP

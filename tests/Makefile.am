@@ -2011,6 +2011,30 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0113_PARALLEL_EARLY_ST_COMPATIBILITY \
     -DBUILD_TEST_0114_SIMD_BAND_WORDS \
     -DBUILD_TEST_0119_TOKEN_FAST_LANE \
+    -DBUILD_TEST_0001_INTEGER_ROWS \
+    -DBUILD_TEST_0002_UNIT_ROWS \
+    -DBUILD_TEST_0003_ABSENT_RASTER \
+    -DBUILD_TEST_0004_FRACTIONAL_RATIO \
+    -DBUILD_TEST_0005_PARTIAL_ROW_GROUP \
+    -DBUILD_TEST_0006_MACRO_GEOMETRY \
+    -DBUILD_TEST_0007_FIRST_RASTER_WINS \
+    -DBUILD_TEST_0008_LATE_RASTER \
+    -DBUILD_TEST_0009_ZERO_PAN \
+    -DBUILD_TEST_0010_ZERO_PAD \
+    -DBUILD_TEST_0011_MISSING_PAD \
+    -DBUILD_TEST_0012_TRUSTED_CLIPPING \
+    -DBUILD_TEST_0013_UNTRUSTED_GROWTH \
+    -DBUILD_TEST_0014_ORMODE_ROWS \
+    -DBUILD_TEST_0015_GRID_GEOMETRY \
+    -DBUILD_TEST_0016_BLANK_LOCKS_ASPECT \
+    -DBUILD_TEST_0017_BAND_ROWS \
+    -DBUILD_TEST_0018_ABSURD_RATIO \
+    -DBUILD_TEST_0019_SCALED_HEIGHT_LIMIT \
+    -DBUILD_TEST_0020_SEQUENCE_PACKET_ASPECT \
+    -DBUILD_TEST_0021_ANIMATION_PACKET_ASPECT \
+    -DBUILD_TEST_0022_HIGH_COLOR_RGBA \
+    -DBUILD_TEST_0023_FUSED_UNDITHER_ROWS \
+    -DBUILD_ASPECT_TEST_COMMON \
     -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
     -DBUILD_TEST_0002_HISTORY_REVISIONS \
     -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -5963,6 +5987,31 @@ test_runner_SOURCES = test_runner.c \
     decoder/parser/0113_parallel_early_st_compatibility.c \
     decoder/parser/0114_simd_band_words.c \
     decoder/parser/0119_token_fast_lane.c \
+    decoder/aspect/0001_integer_rows.c \
+    decoder/aspect/0002_unit_rows.c \
+    decoder/aspect/0003_absent_raster.c \
+    decoder/aspect/0004_fractional_ratio.c \
+    decoder/aspect/0005_partial_row_group.c \
+    decoder/aspect/0006_macro_geometry.c \
+    decoder/aspect/0007_first_raster_wins.c \
+    decoder/aspect/0008_late_raster.c \
+    decoder/aspect/0009_zero_pan.c \
+    decoder/aspect/0010_zero_pad.c \
+    decoder/aspect/0011_missing_pad.c \
+    decoder/aspect/0012_trusted_clipping.c \
+    decoder/aspect/0013_untrusted_growth.c \
+    decoder/aspect/0014_ormode_rows.c \
+    decoder/aspect/0015_grid_geometry.c \
+    decoder/aspect/0016_blank_locks_aspect.c \
+    decoder/aspect/0017_band_rows.c \
+    decoder/aspect/0018_absurd_ratio.c \
+    decoder/aspect/0019_scaled_height_limit.c \
+    decoder/aspect/0020_sequence_packet_aspect.c \
+    decoder/aspect/0021_animation_packet_aspect.c \
+    decoder/aspect/0022_high_color_rgba.c \
+    decoder/aspect/0023_fused_undither_rows.c \
+    _support/processing/decoder/aspect_test_common.c \
+    _support/processing/decoder/aspect_test_common.h \
     color/cms/0017_separate_intents.c \
     color/cms/0018_engine_independence.c \
     color/cms/0019_queued_transform_lifetime.c \

@@ -234,6 +234,7 @@ test_runner_tests_sources_text = run_command(
   '--exclude-name', 'filtered_5bit_common.c',
   '--exclude-name', 'filtered_6bit_common.c',
   '--exclude-path', '*/extension/wic-installed/*.c',
+  '--exclude-path', '*/decoder/aspect/*.c',
   '--exclude-name', '0014_lookup_float_batch_exact.c',
   '--exclude-name', '0015_lookup_float_simd_distance.c',
   '--exclude-name', '0010_delaunay_float_exact.c',
@@ -246,7 +247,34 @@ if test_runner_tests_sources_text != ''
   test_runner_tests_sources = files(test_runner_tests_sources_text.split('\n'))
 endif
 
-test_runner_sources = test_runner_tests_sources + files(
+# Integer raster-aspect cases share the opt-in test runner.
+decoder_aspect_sources = files(
+  'decoder/aspect/0001_integer_rows.c',
+  'decoder/aspect/0002_unit_rows.c',
+  'decoder/aspect/0003_absent_raster.c',
+  'decoder/aspect/0004_fractional_ratio.c',
+  'decoder/aspect/0005_partial_row_group.c',
+  'decoder/aspect/0006_macro_geometry.c',
+  'decoder/aspect/0007_first_raster_wins.c',
+  'decoder/aspect/0008_late_raster.c',
+  'decoder/aspect/0009_zero_pan.c',
+  'decoder/aspect/0010_zero_pad.c',
+  'decoder/aspect/0011_missing_pad.c',
+  'decoder/aspect/0012_trusted_clipping.c',
+  'decoder/aspect/0013_untrusted_growth.c',
+  'decoder/aspect/0014_ormode_rows.c',
+  'decoder/aspect/0015_grid_geometry.c',
+  'decoder/aspect/0016_blank_locks_aspect.c',
+  'decoder/aspect/0017_band_rows.c',
+  'decoder/aspect/0018_absurd_ratio.c',
+  'decoder/aspect/0019_scaled_height_limit.c',
+  'decoder/aspect/0020_sequence_packet_aspect.c',
+  'decoder/aspect/0021_animation_packet_aspect.c',
+  'decoder/aspect/0022_high_color_rgba.c',
+  'decoder/aspect/0023_fused_undither_rows.c',
+)
+
+test_runner_sources = test_runner_tests_sources + decoder_aspect_sources + files(
   '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
   '../converters/aborttrace.c',
   '../converters/cli.c',
