@@ -524,6 +524,8 @@ if python_for_tests.found() and not meson.is_cross_build() and cc.get_id() != 'm
            meson.project_build_root(), find_program('meson').full_path(),
            meson.project_source_root(), '--cc', ' '.join(cc.cmd_array())],
     depends: [libsixel, sixcells_h],
+    env: {'SIXEL_TEST_PKG_CONFIG': test_pkg_config_path,
+          'SIXEL_TEST_CONFIG_SHELL': sh.full_path()},
     protocol: 'tap', timeout: 60, suite: ['tap', 'install'],
     is_parallel: false)
 endif

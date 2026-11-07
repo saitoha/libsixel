@@ -1516,9 +1516,12 @@ runs:
           python3 -m venv "$coverage_env"
           "$coverage_env/bin/python" -m pip install \
             --disable-pip-version-check 'gcovr==8.8'
+          # The full suite can legitimately exceed gcovr's 2^32 hit heuristic.
+          # Retain those 64-bit counters; other parse errors still fail capture.
           "$coverage_env/bin/gcovr" -r . --lcov -o coverage.info \
             --exclude '.*\.gperf$' \
             --gcov-executable "$GCOV_TOOL" \
+            --gcov-suspicious-hits-threshold=0 \
             --gcov-ignore-errors=no_working_dir_found
           test -s coverage.info
           grep -q '^SF:' coverage.info

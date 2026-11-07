@@ -7,7 +7,6 @@ import argparse
 import os
 from pathlib import Path
 import shlex
-import shutil
 import subprocess
 import tempfile
 import sys
@@ -28,9 +27,18 @@ def run(command, **kwargs):
 def check(args):
     if os.environ.get('CROSS_COMPILING') == 'yes':
         return 'the staged consumer probe requires a native build'
-    pkgconfig = shutil.which('pkg-config')
+    pkgconfig = os.environ.get('SIXEL_TEST_PKG_CONFIG')
     if not pkgconfig:
         return 'pkg-config is unavailable'
+    pkgconfig_command = [pkgconfig]
+    if os.name == 'nt':
+        # Configure probes this command through its POSIX shell. A native
+        # Python PATH lookup can select a different .BAT launcher instead.
+        # Preserve that shell boundary for executable scripts and their args.
+        shell = os.environ.get('SIXEL_TEST_CONFIG_SHELL')
+        if not shell:
+            raise RuntimeError('the configured test shell is unavailable')
+        pkgconfig_command = [shell, '-c', 'exec "$@"', 'pkg-config', pkgconfig]
     compiler = shlex.split(args.cc)
     if any(Path(part).name.lower() in ('cl', 'cl.exe', 'clang-cl',
                                       'clang-cl.exe') for part in compiler):
@@ -56,12 +64,16 @@ def check(args):
         env = dict(os.environ, PKG_CONFIG_PATH=str(packages[0].parent),
                    PKG_CONFIG_SYSROOT_DIR=str(stage),
                    PKG_CONFIG_ALLOW_SYSTEM_CFLAGS='1')
-        flags = shlex.split(run([pkgconfig, '--cflags', 'libsixel'], env=env))
+        flags = shlex.split(run(pkgconfig_command + ['--cflags', 'libsixel'],
+                                env=env))
         headers = list(stage.rglob('sixel.h'))
         if len(headers) != 1:
             raise RuntimeError('expected exactly one staged sixel.h')
         directory = headers[0].parent
-        if '-I' + str(directory) not in flags:
+        # Native Windows and its POSIX tools can spell the same directory
+        # with different separators and drive-letter case.
+        if not any(flag.startswith('-I') and Path(flag[2:]) == directory
+                   for flag in flags):
             raise RuntimeError(f'Cflags {flags!r} do not select {directory}')
         for name in ('sixel.h', '6cells.h'):
             expected = build / 'include' / name
@@ -77,8 +89,14 @@ def check(args):
         # Line markers prove actual header selection, even if another install
         # is visible through compiler defaults or environment include paths.
         preprocessed = run(compiler + flags + ['-E', str(source)])
+        selected_headers = set()
+        for line in preprocessed.splitlines():
+            if line.startswith('# '):
+                fields = shlex.split(line)
+                if len(fields) >= 3 and fields[1].isdigit():
+                    selected_headers.add(Path(fields[2]))
         for name in ('sixel.h', '6cells.h'):
-            if '"' + str(directory / name) + '"' not in preprocessed:
+            if directory / name not in selected_headers:
                 raise RuntimeError(f'consumer did not select staged {name}')
     return None
 

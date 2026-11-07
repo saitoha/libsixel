@@ -109,7 +109,7 @@ color_tty_now(void)
 
 /* The script's independent watchdog also bounds a broken production wait. */
 static int
-color_tty_ready(int fd, int writing)
+color_tty_ready(int fd, int writing, int timeout_seconds)
 {
     struct timeval timeout;
     fd_set ready;
@@ -117,7 +117,7 @@ color_tty_ready(int fd, int writing)
     double left;
     int result;
 
-    deadline = color_tty_now() + 2.0;
+    deadline = color_tty_now() + (double)timeout_seconds;
     do {
         left = deadline - color_tty_now();
         if (left <= 0.0 || fd < 0 || fd >= FD_SETSIZE) {
@@ -141,7 +141,7 @@ color_tty_send(int fd, char const *bytes, size_t size)
 
     sent = 0u;
     while (sent < size) {
-        if (!color_tty_ready(fd, 1)) {
+        if (!color_tty_ready(fd, 1, 2)) {
             return 0;
         }
         count = write(fd, bytes + sent, size - sent);
@@ -156,7 +156,7 @@ color_tty_send(int fd, char const *bytes, size_t size)
 }
 
 static int
-color_tty_expect(int fd, char const *expected)
+color_tty_expect_timeout(int fd, char const *expected, int timeout_seconds)
 {
     char bytes[64];
     size_t received;
@@ -169,7 +169,7 @@ color_tty_expect(int fd, char const *expected)
         return 0;
     }
     while (received < size) {
-        if (!color_tty_ready(fd, 0)) {
+        if (!color_tty_ready(fd, 0, timeout_seconds)) {
             return 0;
         }
         count = read(fd, bytes + received, size - received);
@@ -181,6 +181,12 @@ color_tty_expect(int fd, char const *expected)
         }
     }
     return memcmp(bytes, expected, size) == 0;
+}
+
+static int
+color_tty_expect(int fd, char const *expected)
+{
+    return color_tty_expect_timeout(fd, expected, 2);
 }
 
 /* Compare actual fields, not uninitialized padding in libc structures. */
@@ -454,14 +460,18 @@ color_tty_child(char const *name, int command, int report)
         if (output_copy < 0 || output_copy >= FD_SETSIZE) {
             return color_tty_error("cannot open output filler");
         }
-        /* Batch where supported. Hurd can block a larger nonblocking
-         * write that only partly fits; readiness promises just one byte. */
+        /* Batch where supported. Hurd and MSYS/Cygwin can keep waiting
+         * after a partial nonblocking write exhausts the output queue.
+         * Readiness promises just one byte, not room for a whole batch.
+         * Queue preparation has its own watchdog; the transport deadlines
+         * and their elapsed-time assertions remain unchanged. */
         memset(filler, 'x', sizeof(filler));
-#if defined(__GNU__)
+#if defined(__GNU__) || defined(__CYGWIN__) || defined(__MSYS__)
         fill_size = 1u;
 #else
         fill_size = sizeof(filler);
 #endif
+        alarm(10);
         fill_ready = 1;
         for (written = 0u; written < 1024u * 1024u;) {
             immediate.tv_sec = 0;
@@ -493,6 +503,7 @@ color_tty_child(char const *name, int command, int report)
             }
         }
         close(output_copy);
+        alarm(2);
         if (fill_ready != 0) {
             return color_tty_error("could not fill output queue");
         }
@@ -688,7 +699,9 @@ color_tty_script(char const *name, int master, int command, int report,
     if (strcmp(name, "backpressure") == 0 ||
         strcmp(name, "sigint-race") == 0 ||
         strcmp(name, "sigterm-race") == 0) {
-        if (!color_tty_expect(report, "d")) {
+        /* The child allows ten seconds for byte-wise queue preparation;
+         * its actual transport operations still use the short deadlines. */
+        if (!color_tty_expect_timeout(report, "d", 12)) {
             color_tty_error("backpressure completion report");
             return 0;
         }

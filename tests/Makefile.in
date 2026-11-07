@@ -15650,6 +15650,7 @@ pythondir = @pythondir@
 runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+sixel_have_compare = @sixel_have_compare@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
@@ -15700,9 +15701,11 @@ SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null 
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; CKSUM='$(CKSUM)'; export CKSUM; \
 	SIXEL_TEST_PKG_CONFIG='$(PKG_CONFIG)'; export \
-	SIXEL_TEST_PKG_CONFIG; TOP_SRCDIR='$(SIXEL_TEST_TOP_SRCDIR)'; \
-	export TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
-	TOP_BUILDDIR; $(am__append_1) $(am__append_2) \
+	SIXEL_TEST_PKG_CONFIG; SIXEL_TEST_CONFIG_SHELL='$(SHELL)'; \
+	export SIXEL_TEST_CONFIG_SHELL; \
+	TOP_SRCDIR='$(SIXEL_TEST_TOP_SRCDIR)'; export TOP_SRCDIR; \
+	TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR; \
+	$(am__append_1) $(am__append_2) \
 	QUICKLOOK_HOST_SYSTEM='@host_os@'; export \
 	QUICKLOOK_HOST_SYSTEM; \
 	QUICKLOOK_PLIST_DIR='$(abs_top_builddir)/quicklook-extension/generated-resources'; \
@@ -15740,9 +15743,11 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	SIXEL_TEST_HOST_ARCH; \
 	RUNTIME_ENV_IS_OPENVMS='@RUNTIME_ENV_IS_OPENVMS@'; export \
 	RUNTIME_ENV_IS_OPENVMS;
-# MSYS automatic argv conversion cannot find filenames inside icc:... or
-# other compound options. Its pwd builtin can provide a drive-qualified root.
-SIXEL_TEST_TOP_SRCDIR := $(shell cd '$(abs_top_srcdir)' && { pwd -W 2>/dev/null || pwd; })
+# Native Windows programs need drive paths inside compound icc:... options.
+# MSYS/Cygwin targets instead consume POSIX colon-separated XDG/PATH lists;
+# a drive prefix would become a separate entry. Select by target, not shell.
+# Braced make expansion keeps shell case-pattern ')' outside its delimiter.
+SIXEL_TEST_TOP_SRCDIR := ${shell cd '$(abs_top_srcdir)' && case '@host_os@' in mingw*|windows*|msvc*) pwd -W 2>/dev/null || pwd ;; *) pwd ;; esac}
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
@@ -26254,6 +26259,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-ci-vm-result.sh \
 	_static/awk/ci-vm-result.awk \
 	_static/sh/staticcheck-sparc-vm-retry.sh \
+	_static/sh/staticcheck-test-source-root.sh \
 	_static/sh/staticcheck-amalgamation-define-header.sh \
 	_static/sh/staticcheck-emscripten-node-stdio.sh \
 	_static/sh/staticcheck-lookup-intrinsics-target.sh \

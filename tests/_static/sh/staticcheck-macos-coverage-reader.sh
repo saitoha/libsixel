@@ -47,12 +47,13 @@ function /sixel-staticcheck/libsixel-gcovr/bin/python {
 }
 function /sixel-staticcheck/libsixel-gcovr/bin/gcovr {
     builtin test "$installed" -eq 1
-    builtin test "$#" -eq 10
+    builtin test "$#" -eq 11
     builtin test "$1 $2 $3 $4 $5" = "-r . --lcov -o coverage.info"
     builtin test "$6 $7" = "--exclude .*\.gperf$"
     builtin test "$8" = "--gcov-executable"
     builtin test "$9" = "/sixel-tools/llvm-cov gcov"
-    builtin test "${10}" = "--gcov-ignore-errors=no_working_dir_found"
+    builtin test "${10}" = "--gcov-suspicious-hits-threshold=0"
+    builtin test "${11}" = "--gcov-ignore-errors=no_working_dir_found"
     captured=1
     return "$READER_STATUS"
 }

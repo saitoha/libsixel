@@ -1058,6 +1058,10 @@ run_case_tap "staticcheck-sparc-vm-retry" \
     sh "$src_root/tests/_static/sh/staticcheck-sparc-vm-retry.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-source-root" \
+    sh "$src_root/tests/_static/sh/staticcheck-test-source-root.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-amalgamation-generated-inputs" \
     sh "$src_root/tests/_static/sh/staticcheck-amalgamation-generated-inputs.sh" \
     "$src_root" || fail_and_exit $?

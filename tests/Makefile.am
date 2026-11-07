@@ -72,11 +72,14 @@ SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null 
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
 AM_TESTS_ENVIRONMENT += CKSUM='$(CKSUM)'; export CKSUM;
 AM_TESTS_ENVIRONMENT += SIXEL_TEST_PKG_CONFIG='$(PKG_CONFIG)'; export SIXEL_TEST_PKG_CONFIG;
+AM_TESTS_ENVIRONMENT += SIXEL_TEST_CONFIG_SHELL='$(SHELL)'; export SIXEL_TEST_CONFIG_SHELL;
 # The static suite and nested helpers need the same configured utility.
 export CKSUM
-# MSYS automatic argv conversion cannot find filenames inside icc:... or
-# other compound options. Its pwd builtin can provide a drive-qualified root.
-SIXEL_TEST_TOP_SRCDIR := $(shell cd '$(abs_top_srcdir)' && { pwd -W 2>/dev/null || pwd; })
+# Native Windows programs need drive paths inside compound icc:... options.
+# MSYS/Cygwin targets instead consume POSIX colon-separated XDG/PATH lists;
+# a drive prefix would become a separate entry. Select by target, not shell.
+# Braced make expansion keeps shell case-pattern ')' outside its delimiter.
+SIXEL_TEST_TOP_SRCDIR := ${shell cd '$(abs_top_srcdir)' && case '@host_os@' in mingw*|windows*|msvc*) pwd -W 2>/dev/null || pwd ;; *) pwd ;; esac}
 AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(SIXEL_TEST_TOP_SRCDIR)'; export TOP_SRCDIR;
 AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
 if HAVE_APPLE_QUICKLOOK_EXTENSION
@@ -12588,6 +12591,7 @@ EXTRA_DIST += _static/sh/staticcheck-emscripten-thread-runtime.sh \
 EXTRA_DIST += _static/sh/staticcheck-ci-vm-result.sh \
     _static/awk/ci-vm-result.awk
 EXTRA_DIST += _static/sh/staticcheck-sparc-vm-retry.sh
+EXTRA_DIST += _static/sh/staticcheck-test-source-root.sh
 
 EXTRA_DIST += _static/sh/staticcheck-amalgamation-define-header.sh
 EXTRA_DIST += _static/sh/staticcheck-emscripten-node-stdio.sh
