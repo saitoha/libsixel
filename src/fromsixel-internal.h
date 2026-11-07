@@ -59,6 +59,8 @@ typedef struct parser_context {
     int capture_definitions;
     uint64_t **capture_columns;
     int capture_columns_height;
+    /* Completed DECGRA boundary for reusing an unmaterialized prefix. */
+    unsigned char *aspect_resume;
 } parser_context_t;
 
 

@@ -2057,6 +2057,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0043_RESTART_PARALLEL_RGBA \
     -DBUILD_TEST_0044_RESTART_FUSED_FAST4 \
     -DBUILD_TEST_0045_RESTART_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0046_REWIND_CHANGE_REWIND \
     -DBUILD_ASPECT_TEST_COMMON \
     -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
     -DBUILD_TEST_0002_HISTORY_REVISIONS \
@@ -6056,6 +6057,7 @@ test_runner_SOURCES = test_runner.c \
     decoder/aspect/0043_restart_parallel_rgba.c \
     decoder/aspect/0044_restart_fused_fast4.c \
     decoder/aspect/0045_restart_allocation_failure.c \
+    decoder/aspect/0046_rewind_change_rewind.c \
     _support/processing/decoder/aspect_test_common.c \
     _support/processing/decoder/aspect_test_common.h \
     color/cms/0017_separate_intents.c \
@@ -12661,3 +12663,6 @@ EXTRA_DIST += _static/sh/staticcheck-macos-coverage-reader.sh
 
 # Optional ctypes differential runner; never part of the default test suite.
 EXTRA_DIST += decoder/sequence/0001_differential.py
+
+# Optional segmented/reference equivalence runner.
+EXTRA_DIST += decoder/aspect/0047_differential.py

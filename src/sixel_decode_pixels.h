@@ -62,7 +62,10 @@ sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
     int *width, int *height, unsigned int *flags, size_t *passes,
     sixel_allocator_t *allocator);
 
-/* Reference implementation for optional differential tests only. */
+/* Reference implementations for optional differential tests only. The
+ * aspect switch (0: automatic, 1: reference, 2: no density fallback) must
+ * only be changed between calls with no active decoders. */
+SIXEL_INTERNAL_API void sixel_decode_aspect_reference(int enabled);
 SIXEL_INTERNAL_API void
 sixel_sequence_set_exact(sixel_sequence_decoder_t *decoder);
 SIXEL_INTERNAL_API SIXELSTATUS

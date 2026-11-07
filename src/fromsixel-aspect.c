@@ -75,6 +75,9 @@ sixel_aspect_paint_body(image_buffer_t *image, parser_context_t *context,
     int bit;
     int y;
     int x;
+    int color;
+    int end_bit;
+    unsigned char rgba[4];
     size_t pos;
 
     scale = context->vertical_scale;
@@ -134,16 +137,28 @@ sixel_aspect_paint_body(image_buffer_t *image, parser_context_t *context,
     if (image->depth != 4 && context->color_index > image->ncolors) {
         image->ncolors = context->color_index;
     }
+    color = image->palette[context->color_index];
+    rgba[0] = (unsigned char)(color >> 16);
+    rgba[1] = (unsigned char)(color >> 8);
+    rgba[2] = (unsigned char)color;
+    rgba[3] = 255;
     for (bit = 0; bit < 6; ++bit) {
         if ((bits & (1 << bit)) == 0) {
             continue;
         }
         first = context->pos_y + bit * scale;
-        last = first + scale;
+        /* Consecutive set bits form one vertical run. Keep the final bit's
+         * start for capture's partial-row exception below. */
+        end_bit = bit + 1;
+        while (end_bit < 6 && (bits & (1 << end_bit)) != 0) {
+            ++end_bit;
+        }
+        last = context->pos_y + end_bit * scale;
+        bit = end_bit - 1;
         if (trust_raster_size && context->attributed_pv > 0 &&
                 last > context->attributed_pv) {
             /* Capture rasters allow a partial final multiplied row. */
-            if (!capture || first >= context->attributed_pv) {
+            if (!capture || last - scale >= context->attributed_pv) {
                 context->painted_outside_raster = 1;
             }
             last = context->attributed_pv;
@@ -152,15 +167,30 @@ sixel_aspect_paint_body(image_buffer_t *image, parser_context_t *context,
             continue;
         }
         for (y = first; y < last; ++y) {
+            pos = (size_t)y * width + context->pos_x;
             if (indices != NULL) {
-                pos = (size_t)y * width + context->pos_x;
                 for (x = 0; x < repeat; ++x) {
                     indices->pixels.in_shorts[pos + x] |=
                         (unsigned short)context->color_index;
                 }
             } else {
-                image_buffer_fill_span(image, y, context->pos_x,
-                                        repeat, context->color_index);
+                if (image->depth == 1) {
+                    memset(image->pixels.in_bytes + pos,
+                        context->color_index, (size_t)repeat);
+                } else if (image->depth == 2) {
+                    for (x = 0; x < repeat; ++x) {
+                        image->pixels.in_shorts[pos + x] =
+                            (unsigned short)context->color_index;
+                    }
+                } else {
+                    for (x = 0; x < repeat; ++x) {
+                        memcpy(image->pixels.in_bytes + (pos + x) * 4,
+                            rgba, sizeof(rgba));
+                    }
+                }
+                if (image->paint_mask != NULL) {
+                    memset(image->paint_mask + pos, 0xff, (size_t)repeat);
+                }
             }
         }
         if (context->max_x < context->pos_x + repeat - 1) {

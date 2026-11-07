@@ -294,6 +294,7 @@ decoder_aspect_sources = files(
   'decoder/aspect/0043_restart_parallel_rgba.c',
   'decoder/aspect/0044_restart_fused_fast4.c',
   'decoder/aspect/0045_restart_allocation_failure.c',
+  'decoder/aspect/0046_rewind_change_rewind.c',
 )
 
 test_runner_sources = test_runner_tests_sources + decoder_aspect_sources + files(

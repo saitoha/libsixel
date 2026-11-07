@@ -1318,6 +1318,7 @@ parser_context_init(parser_context_t *context)
     context->attributed_pv = 0;
     context->vertical_scale = 1;
     context->changing_aspect = 0;
+    context->aspect_resume = NULL;
     context->aspect_ormode = NULL;
     context->repeat_count = 1;
     context->color_index = 15;
@@ -1505,6 +1506,163 @@ end:
  * reference validator only for exceptional syntax or paint-time palettes. */
 enum { DECODE_RESTART_ASPECT = -1, DECODE_RESTART_EXACT = -2 };
 
+/* A segment owns source rows; only this compositor knows device rows.
+ * Raster-size edits are composition checkpoints within a constant-scale
+ * segment: publish under the old clip before changing that clip. */
+typedef struct aspect_segment {
+    image_buffer_t *canvas;
+    int out_y;
+    int max_x;
+    int max_y;
+    int changes;
+    int bands;
+} aspect_segment_t;
+
+/* Internal, process-local test switch. Tests change it only between calls;
+ * production callers never write it and ordinary decoding never reads it. */
+static int aspect_reference;
+
+SIXEL_INTERNAL_API void
+sixel_decode_aspect_reference(int enabled)
+{
+    aspect_reference = enabled;
+}
+
+static SIXELSTATUS
+sixel_segment_compose(image_buffer_t *patch, parser_context_t *context,
+    aspect_segment_t *segment, int trust, sixel_allocator_t *allocator)
+{
+    image_buffer_t *canvas;
+    SIXELSTATUS status;
+    unsigned char const *mask;
+    unsigned char const *first;
+    unsigned char const *source;
+    unsigned char *dest;
+    size_t row;
+    size_t output;
+    int bottom;
+    int width;
+    int height;
+    int y;
+    int dy;
+    int x;
+    int end;
+    int stop;
+    int scale;
+    int painted;
+
+    canvas = segment->canvas;
+    scale = context->vertical_scale;
+    bottom = context->max_y < 0 ? 0
+        : segment->out_y + (context->max_y + 1) * scale;
+    if (trust && context->output_pv > 0 && bottom > context->output_pv) {
+        bottom = context->output_pv;
+    }
+    width = canvas->width > patch->width ? canvas->width : patch->width;
+    height = canvas->height > bottom ? canvas->height : bottom;
+    if (width != canvas->width || height != canvas->height) {
+        status = image_buffer_resize(canvas, width, height,
+            context->bgindex, allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+    /* Unused tail bands can be large when a DECGRA splits a declared
+     * raster halfway through. Only publish bands that contain paint. */
+    image_buffer_finalize_normal_bands(patch, 0,
+        (context->max_y + 6) / 6);
+    image_buffer_release_columns(patch, allocator);
+    painted = 0;
+    for (y = 0; y <= context->max_y; ++y) {
+        row = (size_t)y * patch->width;
+        mask = patch->paint_mask + row;
+        first = memchr(mask, 0xff, (size_t)patch->width);
+        if (first == NULL) {
+            continue;
+        }
+        painted = 1;
+        end = segment->out_y + (y + 1) * scale;
+        if (end > bottom) {
+            end = bottom;
+        }
+        /* Copy covered horizontal spans, then multiply them vertically.
+         * Dense images take one memcpy per row; holes never erase pixels. */
+        while (first != NULL) {
+            x = (int)(first - mask);
+            first = memchr(mask + x, 0, (size_t)(patch->width - x));
+            stop = first == NULL ? patch->width : (int)(first - mask);
+            source = patch->pixels.in_bytes + (row + x) * patch->depth;
+            for (dy = segment->out_y + y * scale; dy < end; ++dy) {
+                output = (size_t)dy * canvas->width + x;
+                dest = canvas->pixels.in_bytes + output * canvas->depth;
+                memcpy(dest, source, (size_t)(stop - x) * canvas->depth);
+                if (canvas->paint_mask != NULL) {
+                    memset(canvas->paint_mask + output, 0xff,
+                        (size_t)(stop - x));
+                }
+            }
+            first = memchr(mask + stop, 0xff,
+                (size_t)(patch->width - stop));
+        }
+    }
+    if (context->max_x > segment->max_x) {
+        segment->max_x = context->max_x;
+    }
+    if (painted && bottom - 1 > segment->max_y) {
+        segment->max_y = bottom - 1;
+    }
+    memcpy(canvas->palette, patch->palette, sizeof(canvas->palette));
+    canvas->ncolors = patch->ncolors;
+    segment->out_y += context->pos_y * scale;
+    context->pos_y = 0;
+    context->max_x = -1;
+    context->max_y = -1;
+    memset(patch->paint_mask, 0, (size_t)patch->width * patch->height);
+    return SIXEL_OK;
+}
+
+/* Rebase only geometry. Parser state, x, repeat, register selection, palette
+ * history and capture validation state survive every composition checkpoint. */
+static SIXELSTATUS
+sixel_segment_raster(image_buffer_t *patch, parser_context_t *context,
+    aspect_segment_t *segment, sixel_allocator_t *allocator)
+{
+    image_buffer_t *canvas;
+    SIXELSTATUS status;
+    int width;
+    int height;
+    int rows;
+
+    canvas = segment->canvas;
+    width = canvas->width > context->attributed_ph
+        ? canvas->width : context->attributed_ph;
+    height = canvas->height > context->output_pv
+        ? canvas->height : context->output_pv;
+    if (width != canvas->width || height != canvas->height) {
+        status = image_buffer_resize(canvas, width, height,
+            context->bgindex, allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+    rows = context->output_pv - segment->out_y;
+    context->attributed_pv = rows > 0
+        ? 1 + (rows - 1) / context->vertical_scale : 0;
+    rows = height - segment->out_y;
+    rows = rows > 0 ? 1 + (rows - 1) / context->vertical_scale : 1;
+    if (context->max_y >= 0 && rows < patch->height) {
+        rows = patch->height;
+    }
+    if (width < patch->width) {
+        width = patch->width;
+    }
+    if (width == patch->width && rows == patch->height) {
+        return SIXEL_OK;
+    }
+    return image_buffer_resize(patch, width, rows, context->bgindex,
+        allocator);
+}
+
 static int sixel_sequence_parameters(unsigned char const **cursor,
     unsigned char const *end, int *params, int capacity);
 
@@ -1527,7 +1685,8 @@ sixel_decode_raw_body(
     sixel_timeline_logger_t    *logger,
     int logger_prepared,
     unsigned int decode_flags,
-    sixel_decoder_undither_context_t *undither, int capture)
+    sixel_decoder_undither_context_t *undither, int capture,
+    aspect_segment_t *segment)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
@@ -1641,6 +1800,21 @@ sixel_decode_raw_body(
             case 'q':
                 if (context->param >= 0 && context->nparams < DECSIXEL_PARAMS_MAX) {
                     context->params[context->nparams++] = context->param;
+                }
+                if (segment != NULL &&
+                        parser_context_is_ormode_request(context)) {
+                    status = sixel_segment_compose(image, context, segment,
+                        trust_raster_size, allocator);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                    context->pos_y = segment->out_y;
+                    context->max_x = segment->max_x;
+                    context->max_y = segment->max_y;
+                    context->attributed_pv = context->output_pv;
+                    image = segment->canvas;
+                    segment = NULL;
+                    context->changing_aspect = 1;
                 }
                 status = parser_context_enter_decsixel(context,
                                                        image,
@@ -1788,6 +1962,15 @@ sixel_decode_raw_body(
                 /* DECGNL Graphics Next Line */
                 context->drawing_control = 1;
                 context->pos_x = 0;
+                if (segment != NULL) {
+                    ++segment->bands;
+                    if ((int64_t)segment->out_y +
+                            ((int64_t)context->pos_y + 6) *
+                            context->vertical_scale > INT_MAX) {
+                        status = SIXEL_BAD_INPUT;
+                        goto end;
+                    }
+                }
                 advance = context->changing_aspect
                     ? 6 * context->vertical_scale : 6;
                 if (capture && !context->changing_aspect &&
@@ -1844,6 +2027,102 @@ sixel_decode_raw_body(
                         return DECODE_RESTART_EXACT;
                     }
                     context->painted = 1;
+                    if (segment != NULL) {
+                        /* Full runs need no per-pixel device arithmetic.
+                         * Check the band once before entering byte lanes. */
+                        if ((int64_t)segment->out_y +
+                                ((int64_t)context->pos_y + 6) *
+                                context->vertical_scale > INT_MAX) {
+                            status = SIXEL_BAD_INPUT;
+                            goto end;
+                        }
+                        sy = segment->out_y + context->pos_y *
+                            context->vertical_scale;
+                        target_bottom = sy + 6 * context->vertical_scale;
+                        if (trust_raster_size && context->output_pv > 0 &&
+                                target_bottom > context->output_pv) {
+                            target_bottom = context->output_pv;
+                            for (i = 0; i < 6; ++i) {
+                                if (((*p - '?') & (1 << i)) != 0 &&
+                                        sy + (i + 1) *
+                                        context->vertical_scale >
+                                        context->output_pv &&
+                                        (!capture || sy + i *
+                                         context->vertical_scale >=
+                                         context->output_pv)) {
+                                    context->painted_outside_raster = 1;
+                                }
+                            }
+                        }
+                        if (context->pos_x < 0 || context->pos_x >
+                                INT_MAX - context->repeat_count) {
+                            status = SIXEL_BAD_INPUT;
+                            goto end;
+                        }
+                        if (!(context->sequence || capture) || *p != '?') {
+                            draw_repeat = context->repeat_count;
+                            if (trust_raster_size &&
+                                    context->attributed_ph > 0 &&
+                                    draw_repeat > context->attributed_ph -
+                                        context->pos_x) {
+                                draw_repeat = context->pos_x <
+                                    context->attributed_ph
+                                    ? context->attributed_ph - context->pos_x
+                                    : 0;
+                            }
+                            if ((draw_repeat > 0 && context->pos_x >
+                                    SIXEL_WIDTH_LIMIT - draw_repeat) ||
+                                    target_bottom > SIXEL_HEIGHT_LIMIT) {
+                                status = SIXEL_BAD_INPUT;
+                                goto end;
+                            }
+                            sx = segment->canvas->width;
+                            sy = segment->canvas->height;
+                            while (draw_repeat > 0 &&
+                                    sx < context->pos_x + draw_repeat) {
+                                sx = sx > SIXEL_WIDTH_LIMIT / 2
+                                    ? SIXEL_WIDTH_LIMIT : sx * 2;
+                            }
+                            while (sy < target_bottom) {
+                                sy = sy > SIXEL_HEIGHT_LIMIT / 2
+                                    ? SIXEL_HEIGHT_LIMIT : sy * 2;
+                            }
+                            if (sx != segment->canvas->width ||
+                                    sy != segment->canvas->height) {
+                                status = image_buffer_resize(segment->canvas,
+                                    sx, sy, context->bgindex, allocator);
+                                if (SIXEL_FAILED(status)) {
+                                    goto end;
+                                }
+                            }
+                        }
+                        sy = segment->out_y + context->pos_y *
+                            context->vertical_scale;
+                        if (trust_raster_size && context->output_pv > 0 &&
+                                sy >= context->output_pv) {
+                            /* No row is visible. Retain the reference's x
+                             * overflow, width growth and skip semantics. */
+                            y = context->pos_y;
+                            n = context->attributed_pv;
+                            context->pos_y = sy;
+                            context->attributed_pv = context->output_pv;
+                            status = capture
+                                ? sixel_aspect_paint_capture(segment->canvas,
+                                    context, *p - '?', 1, allocator)
+                                : sixel_aspect_paint(segment->canvas,
+                                    context, *p - '?', 1, allocator);
+                            context->pos_y = y;
+                            context->attributed_pv = n;
+                            if (segment->canvas->ncolors > image->ncolors) {
+                                image->ncolors = segment->canvas->ncolors;
+                            }
+                            if (SIXEL_FAILED(status)) {
+                                goto end;
+                            }
+                            ++p;
+                            break;
+                        }
+                    }
                     if (context->changing_aspect) {
                         status = capture
                             ? sixel_aspect_paint_capture(image, context,
@@ -1919,7 +2198,7 @@ sixel_decode_raw_body(
                     } else {
                         /* Sequence packets keep an existing canvas; their
                          * untouched samples must never be reinitialized. */
-                        if (!context->sequence &&
+                        if ((!context->sequence || segment != NULL) &&
                                 !context->normal_disabled &&
                                 image->normal_columns == NULL) {
                             if (capture && context->capture_columns != NULL &&
@@ -1940,6 +2219,11 @@ sixel_decode_raw_body(
                             }
                         }
                         if (image->normal_columns != NULL &&
+                                (segment == NULL || !trust_raster_size ||
+                                 context->output_pv <= 0 ||
+                                 segment->out_y + (context->pos_y + 6) *
+                                     context->vertical_scale <=
+                                     context->output_pv) &&
                                 (!trust_raster_size ||
                                  context->attributed_pv <= 0 ||
                                  context->pos_y <=
@@ -2015,12 +2299,14 @@ sixel_decode_raw_body(
                     sx = image->width;
                     while (draw_repeat > 0 &&
                             sx < context->pos_x + draw_repeat) {
-                        sx *= 2;
+                        sx = segment != NULL && sx > SIXEL_WIDTH_LIMIT / 2
+                            ? SIXEL_WIDTH_LIMIT : sx * 2;
                     }
 
                     sy = image->height;
                     while (sy < target_bottom) {
-                        sy *= 2;
+                        sy = segment != NULL && sy > SIXEL_HEIGHT_LIMIT / 2
+                            ? SIXEL_HEIGHT_LIMIT : sy * 2;
                     }
 
                     if (sx > image->width || sy > image->height) {
@@ -2237,12 +2523,44 @@ sequence_raster_parameters:
                     ? context->params[1] : 0;
                 scale = sixel_vertical_scale(context->attributed_pan,
                                                context->attributed_pad);
-                if (!context->changing_aspect && !context->sequence &&
+                if (segment == NULL && !context->changing_aspect &&
+                        !context->sequence &&
                         (context->painted || context->drawing_control) &&
                         scale != context->vertical_scale) {
+                    /* Leave the completed command ready to be applied once
+                     * by a resumed segment parser, or replayed from scratch. */
+                    context->aspect_resume = p;
+                    --context->nparams;
                     return DECODE_RESTART_ASPECT;
                 }
-                rescale_head = !context->changing_aspect &&
+                if (segment != NULL &&
+                        (scale != context->vertical_scale ||
+                         (context->nparams > 2 && context->params[2] > 0 &&
+                          context->params[2] != context->attributed_ph) ||
+                         (context->nparams > 3 && context->params[3] > 0 &&
+                          context->params[3] != context->output_pv))) {
+                    status = sixel_segment_compose(image, context, segment,
+                        trust_raster_size, allocator);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                    if (scale != context->vertical_scale) {
+                        ++segment->changes;
+                    }
+                    /* Keep small exact fixtures on the segmented route.
+                     * Beyond four changes require one band per change. */
+                    if (segment->changes > 4 &&
+                            segment->changes > segment->bands + 1 &&
+                            aspect_reference != 2) {
+                        context->pos_y = segment->out_y;
+                        context->max_x = segment->max_x;
+                        context->max_y = segment->max_y;
+                        image = segment->canvas;
+                        segment = NULL;
+                        context->changing_aspect = 1;
+                    }
+                }
+                rescale_head = segment == NULL && !context->changing_aspect &&
                     !context->sequence && scale != context->vertical_scale;
                 context->vertical_scale = scale;
                 if (capture) {
@@ -2274,6 +2592,15 @@ sequence_raster_parameters:
                             context->vertical_scale;
                 }
 
+                if (segment != NULL) {
+                    status = sixel_segment_raster(image, context, segment,
+                        allocator);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                    goto raster_done;
+                }
+
                 /* Before drawing, a new scale can shrink the source
                  * raster. Workers use allocated dimensions as their
                  * bounds, so discard the obsolete head geometry too. */
@@ -2297,8 +2624,8 @@ sequence_raster_parameters:
                     }
                 }
 #if SIXEL_ENABLE_THREADS
-                if (!context->sequence && !context->changing_aspect &&
-                        !raster_ready &&
+                if (segment == NULL && !context->sequence &&
+                        !context->changing_aspect && !raster_ready &&
                         (!capture || !context->drawing_control) &&
                         context->attributed_ph > 0 &&
                         context->attributed_pv > 0) {
@@ -2306,6 +2633,7 @@ sequence_raster_parameters:
                 }
                 parallel_anchor = p;
 #endif  /* SIXEL_ENABLE_THREADS */
+raster_done:
                 context->state = PS_DECSIXEL;
                 context->param = 0;
                 context->nparams = 0;
@@ -2511,6 +2839,19 @@ sequence_color_parameters:
     }
 
 finalize:
+    if (segment != NULL) {
+        status = sixel_segment_compose(image, context, segment,
+            trust_raster_size, allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        context->pos_y = segment->out_y;
+        context->max_x = segment->max_x;
+        context->max_y = segment->max_y;
+        context->attributed_pv = context->output_pv;
+        context->changing_aspect = 1;
+        image = segment->canvas;
+    }
     if (++context->max_x < context->attributed_ph) {
         context->max_x = context->attributed_ph;
     }
@@ -2560,7 +2901,7 @@ sixel_decode_raw_ordinary(
     unsigned int decode_flags, sixel_decoder_undither_context_t *undither)
 {
     return sixel_decode_raw_body(p, len, image, context, allocator,
-        logger, logger_prepared, decode_flags, undither, 0);
+        logger, logger_prepared, decode_flags, undither, 0, NULL);
 }
 
 #if defined(_MSC_VER)
@@ -2576,7 +2917,114 @@ sixel_decode_raw_capture(
     unsigned int decode_flags, sixel_decoder_undither_context_t *undither)
 {
     return sixel_decode_raw_body(p, len, image, context, allocator,
-        logger, logger_prepared, decode_flags, undither, 1);
+        logger, logger_prepared, decode_flags, undither, 1, NULL);
+}
+
+/* This third parser instantiation leaves ordinary/capture machine code
+ * free of segment branches. Workers are deliberately disabled inside it. */
+#if defined(_MSC_VER)
+__declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline))
+#endif
+static int
+sixel_decode_segmented(unsigned char *p, int len, image_buffer_t *canvas,
+    parser_context_t *context, sixel_allocator_t *allocator,
+    unsigned int decode_flags)
+{
+    image_buffer_t *patch;
+    aspect_segment_t segment;
+    SIXELSTATUS status;
+
+    patch = sixel_allocator_calloc(allocator, 1, sizeof(*patch));
+    if (patch == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    /* Holes are masked out. Initialize wide indexes too, so blending a
+     * partial column never reads indeterminate background samples. */
+    status = image_buffer_init(patch, canvas->width, canvas->height,
+        0, canvas->depth, 1, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    memcpy(patch->palette, canvas->palette, sizeof(patch->palette));
+    patch->ncolors = canvas->ncolors;
+    patch->capture_defined = context->capture_defined;
+    memset(&segment, 0, sizeof(segment));
+    segment.canvas = canvas;
+    context->changing_aspect = 0;
+    context->max_x = -1;
+    context->max_y = -1;
+    /* Reusable packet columns belong to a different height and canvas. */
+    context->capture_columns = NULL;
+    status = sixel_decode_raw_body(p, len, patch, context, allocator,
+        NULL, 0, decode_flags, NULL, context->capture, &segment);
+    context->changing_aspect = 1;
+end:
+    sixel_allocator_free(allocator, patch->pixels.p);
+    image_buffer_release_paint_mask(patch, allocator);
+    image_buffer_release_columns(patch, allocator);
+    image_buffer_release_ormode_planes(patch, allocator);
+    sixel_allocator_free(allocator, patch);
+    return status;
+}
+
+/* Reuse the lazy decoder's first segment when all its paint is still in
+ * band words at 1:1. A multiplied prefix may contain partial device rows
+ * clipped under earlier raster sizes; that history cannot be reconstructed
+ * from its source-row mask. Such prefixes, scalar paint and unbounded
+ * rasters replay instead. No work is added to ordinary images. */
+#if defined(_MSC_VER)
+__declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline))
+#endif
+static int
+sixel_decode_resume_segments(unsigned char *end, image_buffer_t *patch,
+    parser_context_t *context, sixel_allocator_t *allocator,
+    unsigned int decode_flags)
+{
+    image_buffer_t *canvas;
+    aspect_segment_t segment;
+    SIXELSTATUS status;
+    int mask;
+
+    if (aspect_reference == 1 || context->ormode ||
+            context->vertical_scale != 1 || context->normal_disabled || patch->normal_columns == NULL ||
+            context->attributed_ph <= 0 || context->output_pv <= 0 ||
+            patch->width != context->attributed_ph ||
+            patch->height != context->attributed_pv) {
+        return DECODE_RESTART_ASPECT;
+    }
+    canvas = sixel_allocator_calloc(allocator, 1, sizeof(*canvas));
+    if (canvas == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    mask = patch->paint_mask != NULL;
+    status = image_buffer_init(canvas, patch->width, context->output_pv,
+        context->bgindex, patch->depth, mask, allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, canvas);
+        return status;
+    }
+    status = image_buffer_enable_paint_mask(patch, allocator);
+    if (SIXEL_SUCCEEDED(status)) {
+        memset(&segment, 0, sizeof(segment));
+        segment.canvas = canvas;
+        segment.bands = context->pos_y / 6;
+        /* Capture's columns are private to the prefix's source height. */
+        context->capture_columns = NULL;
+        status = sixel_decode_raw_body(context->aspect_resume,
+            (int)(end - context->aspect_resume), patch, context, allocator,
+            NULL, 0, decode_flags, NULL, context->capture, &segment);
+    }
+    context->changing_aspect = 1;
+    sixel_allocator_free(allocator, patch->pixels.p);
+    image_buffer_release_paint_mask(patch, allocator);
+    image_buffer_release_columns(patch, allocator);
+    *patch = *canvas;
+    sixel_allocator_free(allocator, canvas);
+    return status;
 }
 
 /* Dispatch once per packet, before either specialized parser loop. */
@@ -2587,6 +3035,11 @@ sixel_decode_raw_impl(
     sixel_timeline_logger_t *logger, int logger_prepared,
     unsigned int decode_flags, sixel_decoder_undither_context_t *undither)
 {
+    if (context->changing_aspect && aspect_reference != 1 &&
+            !context->ormode) {
+        return sixel_decode_segmented(p, len, image, context, allocator,
+            decode_flags);
+    }
     if (context->capture) {
         return sixel_decode_raw_capture(p, len, image, context, allocator,
             logger, logger_prepared, decode_flags, undither);
@@ -2736,11 +3189,15 @@ retry:
                                    logger_prepared,
                                    decode_flags,
                                    undither);
+    if (status == DECODE_RESTART_ASPECT && undither == NULL) {
+        status = sixel_decode_resume_segments(p + len, image, context,
+            allocator, decode_flags);
+    }
     if (status == DECODE_RESTART_ASPECT) {
         /* No workers survive request_start(). Discard all tentative stores
          * without materializing columns or OR planes, then rebuild palette,
          * parser flags, raster bounds and body parameters from their inputs.
-         * The dedicated painter cannot request another restart or fusion. */
+         * Device-row composition cannot request another restart or fusion. */
         sixel_allocator_free(allocator, image->pixels.p);
         image->pixels.p = NULL;
         image_buffer_release_paint_mask(image, allocator);

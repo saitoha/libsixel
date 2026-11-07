@@ -961,6 +961,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	decoder/aspect/0043_restart_parallel_rgba.c \
 	decoder/aspect/0044_restart_fused_fast4.c \
 	decoder/aspect/0045_restart_allocation_failure.c \
+	decoder/aspect/0046_rewind_change_rewind.c \
 	_support/processing/decoder/aspect_test_common.c \
 	_support/processing/decoder/aspect_test_common.h \
 	color/cms/0017_separate_intents.c \
@@ -5989,6 +5990,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0043_restart_parallel_rgba.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0044_restart_fused_fast4.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0045_restart_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0046_rewind_change_rewind.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/decoder/test_runner-aspect_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0017_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0018_engine_independence.$(OBJEXT) \
@@ -11036,6 +11038,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	decoder/aspect/$(DEPDIR)/test_runner-0043_restart_parallel_rgba.Po \
 	decoder/aspect/$(DEPDIR)/test_runner-0044_restart_fused_fast4.Po \
 	decoder/aspect/$(DEPDIR)/test_runner-0045_restart_allocation_failure.Po \
+	decoder/aspect/$(DEPDIR)/test_runner-0046_rewind_change_rewind.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0003_decoder_parallel_split_after_newline.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0004_decoder_ormode_raw_overlay.Po \
@@ -17635,6 +17638,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_RESTART_PARALLEL_RGBA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_RESTART_FUSED_FAST4 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_RESTART_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_REWIND_CHANGE_REWIND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ASPECT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HISTORY_REVISIONS \
@@ -21666,6 +21670,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0043_restart_parallel_rgba.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0044_restart_fused_fast4.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0045_restart_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0046_rewind_change_rewind.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/decoder/aspect_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/decoder/aspect_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0017_separate_intents.c \
@@ -25960,6 +25965,8 @@ TEST_DATA_DIRS = data
 # Their interpreter does not depend on optional Python bindings.
 
 # Optional ctypes differential runner; never part of the default test suite.
+
+# Optional segmented/reference equivalence runner.
 EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	tools/compare/data/empty \
 	tools/compare/data/octet-different.bin \
@@ -26291,7 +26298,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-phased-coefficient-guard.sh \
 	_static/sh/staticcheck-msys-runtime-arguments.sh \
 	_static/sh/staticcheck-macos-coverage-reader.sh \
-	decoder/sequence/0001_differential.py
+	decoder/sequence/0001_differential.py \
+	decoder/aspect/0047_differential.py
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -29064,6 +29072,9 @@ decoder/aspect/test_runner-0044_restart_fused_fast4.$(OBJEXT):  \
 	decoder/aspect/$(am__dirstamp) \
 	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
 decoder/aspect/test_runner-0045_restart_allocation_failure.$(OBJEXT):  \
+	decoder/aspect/$(am__dirstamp) \
+	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
+decoder/aspect/test_runner-0046_rewind_change_rewind.$(OBJEXT):  \
 	decoder/aspect/$(am__dirstamp) \
 	decoder/aspect/$(DEPDIR)/$(am__dirstamp)
 _support/processing/decoder/$(am__dirstamp):
@@ -43364,6 +43375,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0043_restart_parallel_rgba.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0044_restart_fused_fast4.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0045_restart_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0046_rewind_change_rewind.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0002_chunk_cancel_callback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0003_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0004_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
@@ -59060,6 +59072,20 @@ decoder/aspect/test_runner-0045_restart_allocation_failure.obj: decoder/aspect/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0045_restart_allocation_failure.c' object='decoder/aspect/test_runner-0045_restart_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0045_restart_allocation_failure.obj `if test -f 'decoder/aspect/0045_restart_allocation_failure.c'; then $(CYGPATH_W) 'decoder/aspect/0045_restart_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0045_restart_allocation_failure.c'; fi`
+
+decoder/aspect/test_runner-0046_rewind_change_rewind.o: decoder/aspect/0046_rewind_change_rewind.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0046_rewind_change_rewind.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0046_rewind_change_rewind.Tpo -c -o decoder/aspect/test_runner-0046_rewind_change_rewind.o `test -f 'decoder/aspect/0046_rewind_change_rewind.c' || echo '$(srcdir)/'`decoder/aspect/0046_rewind_change_rewind.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0046_rewind_change_rewind.Tpo decoder/aspect/$(DEPDIR)/test_runner-0046_rewind_change_rewind.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0046_rewind_change_rewind.c' object='decoder/aspect/test_runner-0046_rewind_change_rewind.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0046_rewind_change_rewind.o `test -f 'decoder/aspect/0046_rewind_change_rewind.c' || echo '$(srcdir)/'`decoder/aspect/0046_rewind_change_rewind.c
+
+decoder/aspect/test_runner-0046_rewind_change_rewind.obj: decoder/aspect/0046_rewind_change_rewind.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0046_rewind_change_rewind.obj -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0046_rewind_change_rewind.Tpo -c -o decoder/aspect/test_runner-0046_rewind_change_rewind.obj `if test -f 'decoder/aspect/0046_rewind_change_rewind.c'; then $(CYGPATH_W) 'decoder/aspect/0046_rewind_change_rewind.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0046_rewind_change_rewind.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/aspect/$(DEPDIR)/test_runner-0046_rewind_change_rewind.Tpo decoder/aspect/$(DEPDIR)/test_runner-0046_rewind_change_rewind.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/aspect/0046_rewind_change_rewind.c' object='decoder/aspect/test_runner-0046_rewind_change_rewind.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/aspect/test_runner-0046_rewind_change_rewind.obj `if test -f 'decoder/aspect/0046_rewind_change_rewind.c'; then $(CYGPATH_W) 'decoder/aspect/0046_rewind_change_rewind.c'; else $(CYGPATH_W) '$(srcdir)/decoder/aspect/0046_rewind_change_rewind.c'; fi`
 
 _support/processing/decoder/test_runner-aspect_test_common.o: _support/processing/decoder/aspect_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/decoder/test_runner-aspect_test_common.o -MD -MP -MF _support/processing/decoder/$(DEPDIR)/test_runner-aspect_test_common.Tpo -c -o _support/processing/decoder/test_runner-aspect_test_common.o `test -f '_support/processing/decoder/aspect_test_common.c' || echo '$(srcdir)/'`_support/processing/decoder/aspect_test_common.c

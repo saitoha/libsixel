@@ -312,6 +312,7 @@ int test_decoder_aspect_0042(int argc, char **argv);
 int test_decoder_aspect_0043(int argc, char **argv);
 int test_decoder_aspect_0044(int argc, char **argv);
 int test_decoder_aspect_0045(int argc, char **argv);
+int test_decoder_aspect_0046(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -8728,6 +8729,8 @@ static test_entry_t const test_entries[] = {
       test_decoder_aspect_0044 },
     { "decoder/aspect/0045_restart_allocation_failure",
       test_decoder_aspect_0045 },
+    { "decoder/aspect/0046_rewind_change_rewind",
+      test_decoder_aspect_0046 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },
