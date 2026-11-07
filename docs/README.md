@@ -219,6 +219,10 @@ Receiver-independent proposals for terminal behavior beyond SIXEL, building on t
 
 - [Terminal graphics color management proposal](protocols/graphics-color-management.md) proposes how applications and terminals can agree on graphics color interpretation.
 
+### Presentation timing
+
+- [Terminal presentation rate proposal](protocols/presentation-rate.md) proposes how an application learns how often a terminal shows frames, limits that rate, and hears when it changes.
+
 ## Development and maintenance
 
 Building, testing, and maintaining libsixel and its documentation.
