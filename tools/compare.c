@@ -129,7 +129,12 @@ compare_main(int argc, char **argv)
             status = 1;
             break;
         }
-        if (left_size == 0) {
+        /*
+         * A short final read can return bytes and set EOF together. GNV
+         * mailbox streams can block on another fread after that EOF, so
+         * finish once both equal inputs have reported their end.
+         */
+        if (left_size == 0 || (feof(left) && feof(right))) {
             break;
         }
     }
