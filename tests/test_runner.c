@@ -250,6 +250,7 @@ int test_qa_0044(int argc, char **argv);
 int test_video_decode_0087(int argc, char **argv);
 int test_video_decode_0088(int argc, char **argv);
 int test_video_decode_0089(int argc, char **argv);
+int test_decoder_sequence_0002(int argc, char **argv);
 int test_video_decode_0090(int argc, char **argv);
 int test_decoder_0091(int argc, char **argv);
 int test_decoder_0092(int argc, char **argv);
@@ -8612,6 +8613,8 @@ static test_entry_t const test_entries[] = {
     { "decoder/0087_animation_palette_carry", test_video_decode_0087 },
     { "decoder/0088_animation_clear_canvas", test_video_decode_0088 },
     { "decoder/0089_animation_malformed_tail", test_video_decode_0089 },
+    { "decoder/sequence/0002_failed_clear_preserves_canvas",
+      test_decoder_sequence_0002 },
     { "decoder/0090_animation_default_palette", test_video_decode_0090 },
     { "decoder/0091_parallel_inherited_register", test_decoder_0091 },
     { "decoder/0092_parallel_prefix_clipping", test_decoder_0092 },

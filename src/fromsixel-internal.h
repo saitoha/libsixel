@@ -53,6 +53,12 @@ typedef struct parser_context {
     int param;
     int nparams;
     int params[DECSIXEL_PARAMS_MAX];
+    /* Strict packet syntax without disabling ordinary pixel/worker lanes. */
+    int capture;
+    unsigned char *capture_defined;
+    int capture_definitions;
+    uint64_t **capture_columns;
+    int capture_columns_height;
 } parser_context_t;
 
 
@@ -60,6 +66,9 @@ typedef struct parser_context {
  * The changing-aspect painter owns only device-row geometry and stores. */
 int sixel_vertical_scale(int pan, int pad);
 SIXELSTATUS sixel_aspect_paint(image_buffer_t *image,
+    parser_context_t *context, int bits, int trust_raster_size,
+    sixel_allocator_t *allocator);
+SIXELSTATUS sixel_aspect_paint_capture(image_buffer_t *image,
     parser_context_t *context, int bits, int trust_raster_size,
     sixel_allocator_t *allocator);
 SIXELSTATUS sixel_aspect_enable_ormode(image_buffer_t *image,

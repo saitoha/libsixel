@@ -51,9 +51,17 @@ sixel_aspect_enable_ormode(image_buffer_t *image,
 /* Model the VT340's vertical pixel multiplication: a mid-image change only
  * affects subsequent pixels, and '-' advances by six times the new scale.
  * Mid-image changes have not been verified on VT340 hardware. */
-SIXELSTATUS
-sixel_aspect_paint(image_buffer_t *image, parser_context_t *context,
-    int bits, int trust_raster_size, sixel_allocator_t *allocator)
+/* Select the capture contract at the parser entry, not for each row. */
+#if defined(_MSC_VER)
+static __forceinline SIXELSTATUS
+#elif defined(__GNUC__) || defined(__clang__)
+static inline __attribute__((always_inline)) SIXELSTATUS
+#else
+static inline SIXELSTATUS
+#endif
+sixel_aspect_paint_body(image_buffer_t *image, parser_context_t *context,
+    int bits, int trust_raster_size, sixel_allocator_t *allocator,
+    int capture)
 {
     SIXELSTATUS status;
     image_buffer_t *indices;
@@ -75,7 +83,7 @@ sixel_aspect_paint(image_buffer_t *image, parser_context_t *context,
             context->pos_y > INT_MAX - 6 * scale) {
         return SIXEL_BAD_INPUT;
     }
-    if (context->sequence && bits == 0) {
+    if ((context->sequence || capture) && bits == 0) {
         context->pos_x += context->repeat_count;
         context->repeat_count = 1;
         return SIXEL_OK;
@@ -134,7 +142,10 @@ sixel_aspect_paint(image_buffer_t *image, parser_context_t *context,
         last = first + scale;
         if (trust_raster_size && context->attributed_pv > 0 &&
                 last > context->attributed_pv) {
-            context->painted_outside_raster = 1;
+            /* Capture rasters allow a partial final multiplied row. */
+            if (!capture || first >= context->attributed_pv) {
+                context->painted_outside_raster = 1;
+            }
             last = context->attributed_pv;
         }
         if (repeat <= 0 || first >= last) {
@@ -162,6 +173,22 @@ sixel_aspect_paint(image_buffer_t *image, parser_context_t *context,
     context->pos_x += context->repeat_count;
     context->repeat_count = 1;
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_aspect_paint(image_buffer_t *image, parser_context_t *context,
+    int bits, int trust_raster_size, sixel_allocator_t *allocator)
+{
+    return sixel_aspect_paint_body(image, context, bits, trust_raster_size,
+        allocator, 0);
+}
+
+SIXELSTATUS
+sixel_aspect_paint_capture(image_buffer_t *image, parser_context_t *context,
+    int bits, int trust_raster_size, sixel_allocator_t *allocator)
+{
+    return sixel_aspect_paint_body(image, context, bits, trust_raster_size,
+        allocator, 1);
 }
 
 /* Finalize after cropping, and release on both success and failure. */

@@ -1995,6 +1995,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0097_ANIMATION_PALETTE_CARRY \
     -DBUILD_TEST_0098_ANIMATION_CLEAR_CANVAS \
     -DBUILD_TEST_0099_ANIMATION_MALFORMED_TAIL \
+    -DBUILD_TEST_0002_FAILED_CLEAR_PRESERVES_CANVAS \
     -DBUILD_TEST_0100_ANIMATION_DEFAULT_PALETTE \
     -DBUILD_TEST_0101_PARALLEL_INHERITED_REGISTER \
     -DBUILD_TEST_0102_PARALLEL_PREFIX_CLIPPING \
@@ -5993,6 +5994,7 @@ test_runner_SOURCES = test_runner.c \
     decoder/parser/0097_animation_palette_carry.c \
     decoder/parser/0098_animation_clear_canvas.c \
     decoder/parser/0099_animation_malformed_tail.c \
+    decoder/sequence/0002_failed_clear_preserves_canvas.c \
     decoder/parser/0100_animation_default_palette.c \
     decoder/parser/0101_parallel_inherited_register.c \
     decoder/parser/0102_parallel_prefix_clipping.c \
@@ -12656,3 +12658,6 @@ EXTRA_DIST += _static/sh/staticcheck-assessment-stdio.sh \
     _static/sh/staticcheck-msys-runtime-arguments.sh
 
 EXTRA_DIST += _static/sh/staticcheck-macos-coverage-reader.sh
+
+# Optional ctypes differential runner; never part of the default test suite.
+EXTRA_DIST += decoder/sequence/0001_differential.py

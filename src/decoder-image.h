@@ -53,6 +53,10 @@ typedef struct image_buffer {
     /* Ordinary overwrite mode: six byte indexes plus paint coverage. */
     uint64_t *normal_columns;
     int palette[SIXEL_PALETTE_MAX_DECODER];
+    /* Zero for ordinary images; strict packets carry their vertical scale.
+     * These fields are read-only while parallel workers own the image. */
+    int capture;
+    unsigned char const *capture_defined;
 } image_buffer_t;
 
 /*

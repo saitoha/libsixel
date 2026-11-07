@@ -896,6 +896,8 @@ image_buffer_init(
         goto end;
     }
 
+    image->capture = 0;
+    image->capture_defined = NULL;
     image->depth = depth;
     stride = (size_t)width * depth;
     size = stride * (size_t)height;
@@ -1330,6 +1332,11 @@ parser_context_init(parser_context_t *context)
     context->drawing_control = 0;
     context->palette_redefined_after_paint = 0;
     context->sequence = 0;
+    context->capture = 0;
+    context->capture_defined = NULL;
+    context->capture_definitions = 0;
+    context->capture_columns = NULL;
+    context->capture_columns_height = 0;
     context->nparams = 0;
     context->param = 0;
 
@@ -1494,13 +1501,24 @@ end:
 }
 
 
-/* This private result never crosses an API boundary. Sequence packets are
- * already classified by packet validation and cannot request a restart. */
-enum { DECODE_RESTART_ASPECT = -1 };
+/* Private results never cross an API boundary. Strict packets replay the
+ * reference validator only for exceptional syntax or paint-time palettes. */
+enum { DECODE_RESTART_ASPECT = -1, DECODE_RESTART_EXACT = -2 };
+
+static int sixel_sequence_parameters(unsigned char const **cursor,
+    unsigned char const *end, int *params, int capacity);
 
 /* Convert sixel data into indexed pixel bytes and palette data. */
-static int
-sixel_decode_raw_impl(
+/* Constant instantiations keep strict capture validation and reusable
+ * packet storage out of the ordinary serial state machine. */
+#if defined(_MSC_VER)
+static __forceinline int
+#elif defined(__GNUC__) || defined(__clang__)
+static inline __attribute__((always_inline)) int
+#else
+static inline int
+#endif
+sixel_decode_raw_body(
     unsigned char     *p,         /* sixel bytes */
     int                len,       /* size of sixel bytes */
     image_buffer_t    *image,
@@ -1509,7 +1527,7 @@ sixel_decode_raw_impl(
     sixel_timeline_logger_t    *logger,
     int logger_prepared,
     unsigned int decode_flags,
-    sixel_decoder_undither_context_t *undither)
+    sixel_decoder_undither_context_t *undither, int capture)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
@@ -1531,6 +1549,8 @@ sixel_decode_raw_impl(
     int rescale_head;
     size_t pos;
     unsigned char *p0 = p;
+    unsigned char const *capture_end;
+    int capture_count;
 #if SIXEL_ENABLE_THREADS
     int parallel_started = 0;
     int raster_ready = 0;
@@ -1637,18 +1657,55 @@ sixel_decode_raw_impl(
             break;
 
         case PS_DECSIXEL:
+            if (capture && *p != '"' && *p != '!' && *p != '#' &&
+                    *p != '$' && *p != '-' && (*p < '?' || *p > '~')) {
+                if (*p == 0x9c || (p0 + len - p >= 2 &&
+                        p[0] == 0x1b && p[1] == '\\')) {
+                    goto finalize;
+                }
+                return DECODE_RESTART_EXACT;
+            }
             switch (*p) {
             case '\x1b':
                 context->state = PS_ESC;
                 p++;
                 break;
             case '"':
+                if (capture) {
+                    capture_end = p + 1;
+                    capture_count = sixel_sequence_parameters(&capture_end,
+                        p0 + len, context->params, 4);
+                    if (capture_count != 4 ||
+                            context->params[2] != image->width ||
+                            context->params[3] != context->output_pv) {
+                        return DECODE_RESTART_EXACT;
+                    }
+                    p = (unsigned char *)(void *)capture_end;
+                    context->nparams = 3;
+                    context->param = context->params[3];
+                    goto sequence_raster_parameters;
+                }
                 context->param = 0;
                 context->nparams = 0;
                 context->state = PS_DECGRA;
                 p++;
                 break;
             case '!':
+                if (capture) {
+                    capture_end = p + 1;
+                    capture_count = sixel_sequence_parameters(&capture_end,
+                        p0 + len, context->params, 1);
+                    if (capture_count != 1 || capture_end == p0 + len ||
+                            *capture_end < '?' || *capture_end > '~' ||
+                            context->params[0] > 0xffff) {
+                        return DECODE_RESTART_EXACT;
+                    }
+                    context->drawing_control = 1;
+                    context->repeat_count = context->params[0] == 0
+                        ? 1 : context->params[0];
+                    p = (unsigned char *)(void *)capture_end;
+                    break;
+                }
                 context->drawing_control = 1;
                 context->param = 0;
                 context->nparams = 0;
@@ -1656,6 +1713,29 @@ sixel_decode_raw_impl(
                 p++;
                 break;
             case '#':
+                if (capture) {
+                    capture_end = p + 1;
+                    capture_count = sixel_sequence_parameters(&capture_end,
+                        p0 + len, context->params, 5);
+                    if ((capture_count != 1 && capture_count != 5) ||
+                            context->params[0] >= SIXEL_PALETTE_MAX_DECODER) {
+                        return DECODE_RESTART_EXACT;
+                    }
+                    if (capture_count == 5) {
+                        if (context->params[1] != 1 &&
+                                context->params[1] != 2) {
+                            return DECODE_RESTART_EXACT;
+                        }
+                        context->capture_definitions = 1;
+                        if (context->capture_defined != NULL) {
+                            context->capture_defined[context->params[0]] = 1;
+                        }
+                    }
+                    p = (unsigned char *)(void *)capture_end;
+                    context->nparams = capture_count - 1;
+                    context->param = context->params[capture_count - 1];
+                    goto sequence_color_parameters;
+                }
                 context->param = 0;
                 context->nparams = 0;
 #if SIXEL_ENABLE_THREADS
@@ -1710,6 +1790,11 @@ sixel_decode_raw_impl(
                 context->pos_x = 0;
                 advance = context->changing_aspect
                     ? 6 * context->vertical_scale : 6;
+                if (capture && !context->changing_aspect &&
+                        context->pos_y >
+                            INT_MAX / context->vertical_scale - 6) {
+                    return DECODE_RESTART_EXACT;
+                }
                 if (context->pos_y > INT_MAX - advance) {
                     status = SIXEL_BAD_INPUT;
                     goto end;
@@ -1751,10 +1836,20 @@ sixel_decode_raw_impl(
                 break;
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
+                    if (capture &&
+                            (context->attributed_ph == 0 ||
+                             (context->capture_defined != NULL &&
+                              !context->capture_defined[
+                                  context->color_index]))) {
+                        return DECODE_RESTART_EXACT;
+                    }
                     context->painted = 1;
                     if (context->changing_aspect) {
-                        status = sixel_aspect_paint(image, context, *p - '?',
-                            trust_raster_size, allocator);
+                        status = capture
+                            ? sixel_aspect_paint_capture(image, context,
+                                *p - '?', trust_raster_size, allocator)
+                            : sixel_aspect_paint(image, context, *p - '?',
+                                trust_raster_size, allocator);
                         if (SIXEL_FAILED(status)) {
                             goto end;
                         }
@@ -1827,9 +1922,18 @@ sixel_decode_raw_impl(
                         if (!context->sequence &&
                                 !context->normal_disabled &&
                                 image->normal_columns == NULL) {
-                            image->normal_columns =
-                                image_buffer_allocate_planes(image->width,
-                                    image->height, allocator);
+                            if (capture && context->capture_columns != NULL &&
+                                    *context->capture_columns != NULL &&
+                                    context->capture_columns_height ==
+                                        image->height) {
+                                image->normal_columns =
+                                    *context->capture_columns;
+                                *context->capture_columns = NULL;
+                            } else {
+                                image->normal_columns =
+                                    image_buffer_allocate_planes(image->width,
+                                        image->height, allocator);
+                            }
                             if (image->normal_columns == NULL) {
                                 status = SIXEL_BAD_ALLOCATION;
                                 goto end;
@@ -1871,7 +1975,7 @@ sixel_decode_raw_impl(
                     }
                     bits = *p - '?';
                     /* A validated sequence skip never grows the canvas. */
-                    if (context->sequence && bits == 0) {
+                    if ((context->sequence || capture) && bits == 0) {
                         context->pos_x += context->repeat_count;
                         context->repeat_count = 1;
                         p++;
@@ -2141,6 +2245,9 @@ sequence_raster_parameters:
                 rescale_head = !context->changing_aspect &&
                     !context->sequence && scale != context->vertical_scale;
                 context->vertical_scale = scale;
+                if (capture) {
+                    image->capture = scale;
+                }
                 if (context->vertical_scale > SIXEL_HEIGHT_LIMIT) {
                     status = SIXEL_BAD_INPUT;
                     sixel_helper_set_additional_message(
@@ -2192,6 +2299,7 @@ sequence_raster_parameters:
 #if SIXEL_ENABLE_THREADS
                 if (!context->sequence && !context->changing_aspect &&
                         !raster_ready &&
+                        (!capture || !context->drawing_control) &&
                         context->attributed_ph > 0 &&
                         context->attributed_pv > 0) {
                     raster_ready = 1;
@@ -2353,6 +2461,9 @@ sequence_color_parameters:
                      */
                     if (context->painted) {
                         context->palette_redefined_after_paint = 1;
+                        if (capture) {
+                            return DECODE_RESTART_EXACT;
+                        }
                     }
                     if (context->params[1] == 1) {
                         /* HLS */
@@ -2432,6 +2543,56 @@ finalize:
 
 end:
     return status;
+}
+
+/* Keep these entry points separate: inlining them into the dispatch can
+ * merge common blocks and reintroduce capture branches in ordinary loops. */
+#if defined(_MSC_VER)
+__declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline))
+#endif
+static int
+sixel_decode_raw_ordinary(
+    unsigned char *p, int len, image_buffer_t *image,
+    parser_context_t *context, sixel_allocator_t *allocator,
+    sixel_timeline_logger_t *logger, int logger_prepared,
+    unsigned int decode_flags, sixel_decoder_undither_context_t *undither)
+{
+    return sixel_decode_raw_body(p, len, image, context, allocator,
+        logger, logger_prepared, decode_flags, undither, 0);
+}
+
+#if defined(_MSC_VER)
+__declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline))
+#endif
+static int
+sixel_decode_raw_capture(
+    unsigned char *p, int len, image_buffer_t *image,
+    parser_context_t *context, sixel_allocator_t *allocator,
+    sixel_timeline_logger_t *logger, int logger_prepared,
+    unsigned int decode_flags, sixel_decoder_undither_context_t *undither)
+{
+    return sixel_decode_raw_body(p, len, image, context, allocator,
+        logger, logger_prepared, decode_flags, undither, 1);
+}
+
+/* Dispatch once per packet, before either specialized parser loop. */
+static int
+sixel_decode_raw_impl(
+    unsigned char *p, int len, image_buffer_t *image,
+    parser_context_t *context, sixel_allocator_t *allocator,
+    sixel_timeline_logger_t *logger, int logger_prepared,
+    unsigned int decode_flags, sixel_decoder_undither_context_t *undither)
+{
+    if (context->capture) {
+        return sixel_decode_raw_capture(p, len, image, context, allocator,
+            logger, logger_prepared, decode_flags, undither);
+    }
+    return sixel_decode_raw_ordinary(p, len, image, context, allocator,
+        logger, logger_prepared, decode_flags, undither);
 }
 
 static SIXELSTATUS
@@ -3228,10 +3389,11 @@ end:
 }
 
 /*
- * The strict capture adapter validates framing and paint bounds before handing
- * each packet to the existing direct painter. Register definitions and the
- * RGBA canvas belong to the whole capture; cursor/parser state is per packet.
- * This is deliberately separate from the permissive single-image interface.
+ * The capture adapter checks framing/geometry ahead of ordinary packet
+ * decoding. The reference validator and exact painter below remain available
+ * for exceptional syntax, paint-time palette capture and differential tests.
+ * Registers and the RGBA canvas belong to the capture; cursors are per packet.
+ * Single-image interfaces retain their permissive parsing contract.
  */
 typedef struct sixel_sequence_state {
     int width;
@@ -3428,6 +3590,104 @@ sixel_sequence_packet(unsigned char const **cursor,
     return SIXEL_BAD_INPUT;
 }
 
+/* Only envelope and raster commands are inspected ahead of decoding. The
+ * two delimiter searches stop at the first ST or unsupported ESC; neither
+ * scans individual sixel bits or walks literal runs in C. Every DECGRA must
+ * agree, including declarations after paint. Syntax around it is checked by
+ * the ordinary parser (or the reference validator on an exceptional retry).
+ *
+ * Reference-validator check ownership:
+ * - DCS introducer/header arity, integer bounds, P2, required positive raster,
+ *   6000-axis limit, identical geometry and scale limit: this function.
+ * - ST/completeness/ESC nesting: delimiter search here; C1 nesting, CAN/SUB,
+ *   unsupported body controls: strict ordinary/worker parsers.
+ * - # arity/range/model, ! arity/character/0xffff limit, parameter overflow:
+ *   strict command parsing in raw_impl; workers accept only numeric selects
+ *   and repeats and otherwise replay serially. Empty parameters retain the
+ *   reference parser's zero semantics.
+ * - Paint before raster and undefined registers, even overwritten paint:
+ *   serial run entry / conservative worker color-selection checks, followed
+ *   by reference validation.
+ *   Compose also checks undefined final indexes before touching the canvas.
+ * - x/y overflow and painted extents: ordinary trusted-raster stores/workers;
+ *   unusual results replay the reference validator to preserve status order.
+ * - Blank skips, '$', '-', changing Pan/Pad: ordinary cursor/aspect painter;
+ *   scale changes restart privately, retaining the same capture contract.
+ * - Definition/paint ordering and cumulative PALETTE_REDEFINED: parser
+ *   definition observations plus compose coverage; late definitions replay
+ *   the reference validator and exact RGBA painter for paint-time capture.
+ * Inter-packet whitespace/save/restore rules remain in sequence_next.
+ */
+static SIXELSTATUS
+sixel_sequence_envelope(unsigned char const **cursor,
+    unsigned char const *end, sixel_sequence_state_t *state)
+{
+    unsigned char const *p;
+    unsigned char const *esc;
+    unsigned char const *st;
+    unsigned char const *limit;
+    int params[4];
+    int count;
+    int raster;
+    int scale;
+
+    p = *cursor;
+    if (p < end && *p == 0x90) {
+        ++p;
+    } else if (end - p >= 2 && p[0] == 0x1b && p[1] == 'P') {
+        p += 2;
+    } else {
+        return SIXEL_BAD_INPUT;
+    }
+    count = sixel_sequence_parameters(&p, end, params, 3);
+    if (count < 0 || p == end || *p++ != 'q' ||
+            (!state->animation && (count < 2 || params[1] != 1)) ||
+            (count >= 2 && params[1] != 0 && params[1] != 1)) {
+        return SIXEL_BAD_INPUT;
+    }
+    state->clear = count < 2 || params[1] == 0;
+    esc = memchr(p, 0x1b, (size_t)(end - p));
+    st = memchr(p, 0x9c, (size_t)((esc != NULL ? esc : end) - p));
+    limit = st;
+    if (esc != NULL && (limit == NULL || esc < limit)) {
+        if (end - esc < 2 || esc[1] != '\\') {
+            return SIXEL_BAD_INPUT;
+        }
+        limit = esc;
+    }
+    if (limit == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+    raster = 0;
+    state->changing_aspect = 0;
+    while ((p = memchr(p, '"', (size_t)(limit - p))) != NULL) {
+        ++p;
+        count = sixel_sequence_parameters(&p, limit, params, 4);
+        if (count != 4 || params[2] <= 0 || params[3] <= 0 ||
+                params[2] > SIXEL_DECODE_PIXELS_MAX_SIZE ||
+                params[3] > SIXEL_DECODE_PIXELS_MAX_SIZE ||
+                (state->width != 0 && (state->width != params[2] ||
+                                      state->height != params[3]))) {
+            return SIXEL_BAD_INPUT;
+        }
+        state->width = params[2];
+        state->height = params[3];
+        scale = sixel_vertical_scale(params[0], params[1]);
+        if (scale > SIXEL_HEIGHT_LIMIT) {
+            return SIXEL_BAD_INPUT;
+        }
+        if (!raster) {
+            state->vertical_scale = scale;
+        }
+        raster = 1;
+    }
+    if (!raster) {
+        return SIXEL_BAD_INPUT;
+    }
+    *cursor = limit + (*limit == 0x9c ? 1 : 2);
+    return SIXEL_OK;
+}
+
 /* A scaled packet paints a temporary image, then scatters opaque samples
  * onto the output-sized canvas. Each packet owns its aspect, so changing it
  * cannot rescale earlier paint or discard rows from a previous packet. */
@@ -3490,7 +3750,13 @@ end:
 struct sixel_sequence_decoder {
     sixel_allocator_t *allocator;
     image_buffer_t image;
+    image_buffer_t patch;
+    image_buffer_t exact_patch;
+    uint64_t *columns;
+    int columns_height;
     sixel_sequence_state_t state;
+    sixel_sequence_state_t checkpoint;
+    int exact;
     unsigned char const *data;
     unsigned char const *cursor;
     unsigned char const *end;
@@ -3499,6 +3765,207 @@ struct sixel_sequence_decoder {
     int anchored;
     int failed;
 };
+
+/* Reset only packet storage. Palette and definitions are restored from the
+ * last committed canvas/checkpoint on retries; borrowed canvas pixels never
+ * expose speculative decoding, clearing, or a partially composed packet. */
+static SIXELSTATUS
+sixel_sequence_prepare_patch(sixel_sequence_decoder_t *d,
+    image_buffer_t *patch, int depth, int height)
+{
+    SIXELSTATUS status;
+
+    if (patch->pixels.p == NULL) {
+        status = image_buffer_init(patch, d->state.width, height,
+            0, depth, depth != 4, d->allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    } else if (patch->height != height) {
+        status = image_buffer_resize(patch, d->state.width, height,
+            0, d->allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+    /* Indexed holes are ignored through the mask; do not clear their data. */
+    if (depth == 4) {
+        memset(patch->pixels.p, 0,
+            (size_t)patch->width * patch->height * 4U);
+    } else {
+        memset(patch->paint_mask, 0, (size_t)patch->width * patch->height);
+    }
+    image_buffer_release_columns(patch, d->allocator);
+    memcpy(patch->palette, d->image.palette, sizeof(patch->palette));
+    patch->ncolors = d->image.ncolors;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_sequence_fast_packet(sixel_sequence_decoder_t *d,
+    unsigned char const *packet, unsigned char const *end)
+{
+    parser_context_t context;
+    image_buffer_t *patch;
+    unsigned char const *p;
+    unsigned char const *mask;
+    unsigned char const *first;
+    unsigned char *dest;
+    unsigned short const *indices;
+    SIXELSTATUS status;
+    int changing;
+    int scale;
+    int y;
+    int x;
+    int color;
+    int painted;
+    size_t row;
+    size_t pos;
+    size_t size;
+
+    changing = 0;
+    patch = &d->patch;
+retry:
+    scale = changing ? 1 : d->state.vertical_scale;
+    status = sixel_sequence_prepare_patch(d, patch, 2,
+        1 + (d->state.height - 1) / scale);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    memcpy(d->state.defined, d->checkpoint.defined,
+        sizeof(d->state.defined));
+    parser_context_init(&context);
+    if (d->columns_height != patch->height) {
+        sixel_allocator_free(d->allocator, d->columns);
+        d->columns = NULL;
+        d->columns_height = patch->height;
+    }
+    if (d->columns != NULL) {
+        memset(d->columns, 0, (size_t)patch->width *
+            ((patch->height + 5) / 6) * sizeof(*d->columns));
+    }
+    context.capture = 1;
+    context.capture_columns = &d->columns;
+    context.capture_columns_height = patch->height;
+    context.capture_defined = d->state.animation ? NULL : d->state.defined;
+    context.color_index = d->state.animation ? 15 : 0;
+    context.normal_color = sixel_column_color(context.color_index);
+    context.palette_transform = d->transform;
+    context.changing_aspect = changing;
+    context.output_pv = d->state.height;
+    patch->capture = 1;
+    patch->capture_defined = context.capture_defined;
+    status = sixel_decode_raw_impl((unsigned char *)(void *)packet,
+        (int)(end - packet), patch, &context, d->allocator, NULL, 0,
+        SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE, NULL);
+    if (status == DECODE_RESTART_ASPECT) {
+        changing = 1;
+        goto retry;
+    }
+    if (status != SIXEL_OK || context.painted_outside_raster ||
+            context.palette_redefined_after_paint) {
+        goto exact;
+    }
+    image_buffer_finalize_normal_bands(patch, 0, (patch->height + 5) / 6);
+    if (patch->normal_columns != NULL) {
+        sixel_allocator_free(d->allocator, d->columns);
+        d->columns = patch->normal_columns;
+        patch->normal_columns = NULL;
+        d->columns_height = patch->height;
+    }
+    scale = changing ? 1 : context.vertical_scale;
+    /* Verify final register references before any canvas stores. Run/worker
+     * checks additionally catch undefined paint later overwritten by a valid
+     * index. Fully defined palettes avoid this exceptional extra traversal. */
+    if (!d->state.animation && patch->ncolors > 0 &&
+            memchr(d->state.defined, 0, (size_t)patch->ncolors) != NULL) {
+        size = (size_t)patch->width * patch->height;
+        for (pos = 0; pos < size; ++pos) {
+            if (patch->paint_mask[pos] &&
+                    !d->state.defined[patch->pixels.in_shorts[pos]]) {
+                goto exact;
+            }
+        }
+    }
+    if (d->state.painted && context.capture_definitions) {
+        d->state.flags |= SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED;
+    }
+    painted = 0;
+    /* Expand constant aspect as part of composition, without another image
+     * allocation/copy. memchr skips empty rows and leading unpainted spans. */
+    for (y = 0; y < d->state.height; ++y) {
+        row = (size_t)(y / scale) * patch->width;
+        mask = patch->paint_mask + row;
+        first = memchr(mask, 0xff, (size_t)patch->width);
+        dest = d->image.pixels.in_bytes +
+            (size_t)y * d->state.width * 4U;
+        if (d->state.clear) {
+            memset(dest, 0, (size_t)d->state.width * 4U);
+        }
+        if (first == NULL) {
+            continue;
+        }
+        painted = 1;
+        indices = patch->pixels.in_shorts + row;
+        for (x = (int)(first - mask); x < patch->width; ++x) {
+            if (mask[x]) {
+                color = patch->palette[indices[x]];
+                dest[4 * x] = (unsigned char)(color >> 16);
+                dest[4 * x + 1] = (unsigned char)(color >> 8);
+                dest[4 * x + 2] = (unsigned char)color;
+                dest[4 * x + 3] = 255;
+            }
+        }
+    }
+    d->state.painted |= painted;
+    goto commit_palette;
+
+exact:
+    /* The reference validator runs first even after a parser error: its
+     * BAD_INPUT has precedence over ordinary numeric/decode failures. */
+    d->state = d->checkpoint;
+    p = packet;
+    status = sixel_sequence_packet(&p, end, &d->state);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    patch = &d->exact_patch;
+    status = sixel_sequence_prepare_patch(d, patch, 4, d->state.height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    parser_context_init(&context);
+    context.sequence = 1;
+    context.color_index = d->state.animation ? 15 : 0;
+    context.palette_transform = d->transform;
+    status = sixel_sequence_decode_packet(packet, (int)(end - packet),
+        patch, &context, &d->state, d->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    size = (size_t)d->state.width * d->state.height * 4U;
+    if (d->state.clear) {
+        memset(d->image.pixels.p, 0, size);
+    }
+    for (pos = 0; pos < size; pos += 4U) {
+        if (patch->pixels.in_bytes[pos + 3U]) {
+            memcpy(d->image.pixels.in_bytes + pos,
+                patch->pixels.in_bytes + pos, 4U);
+        }
+    }
+commit_palette:
+    memcpy(d->image.palette, patch->palette, sizeof(patch->palette));
+    d->image.ncolors = patch->ncolors;
+    return SIXEL_OK;
+}
+
+/* Per-instance reference switch for the opt-in differential runner. It is
+ * internal, does not consult the environment, and changes no public API. */
+SIXEL_INTERNAL_API void
+sixel_sequence_set_exact(sixel_sequence_decoder_t *d)
+{
+    d->exact = 1;
+}
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_sequence_open(sixel_sequence_decoder_t **decoder,
@@ -3545,6 +4012,13 @@ sixel_sequence_close(sixel_sequence_decoder_t *d)
         image_buffer_release_paint_mask(&d->image, d->allocator);
         image_buffer_release_ormode_planes(&d->image, d->allocator);
         image_buffer_release_columns(&d->image, d->allocator);
+        sixel_allocator_free(allocator, d->columns);
+        sixel_allocator_free(allocator, d->patch.pixels.p);
+        image_buffer_release_paint_mask(&d->patch, allocator);
+        image_buffer_release_columns(&d->patch, allocator);
+        sixel_allocator_free(allocator, d->exact_patch.pixels.p);
+        image_buffer_release_paint_mask(&d->exact_patch, allocator);
+        image_buffer_release_columns(&d->exact_patch, allocator);
         sixel_allocator_free(d->allocator, d);
         sixel_allocator_unref(allocator);
     }
@@ -3600,7 +4074,10 @@ sixel_sequence_next(sixel_sequence_decoder_t *d,
         p += 2;
     }
     packet = p;
-    status = sixel_sequence_packet(&p, d->end, &d->state);
+    d->checkpoint = d->state;
+    status = d->exact
+        ? sixel_sequence_packet(&p, d->end, &d->state)
+        : sixel_sequence_envelope(&p, d->end, &d->state);
     if (SIXEL_FAILED(status)) {
         goto failure;
     }
@@ -3621,6 +4098,13 @@ sixel_sequence_next(sixel_sequence_decoder_t *d,
         status = SIXEL_BAD_ALLOCATION;
         goto failure;
     }
+    if (!d->exact) {
+        status = sixel_sequence_fast_packet(d, packet, p);
+        if (SIXEL_FAILED(status)) {
+            goto failure;
+        }
+        goto publish;
+    }
     /* Clear only display samples, not color registers. Transparent samples
      * are flattened against the assessment background after composition. */
     if (d->state.clear) {
@@ -3636,6 +4120,7 @@ sixel_sequence_next(sixel_sequence_decoder_t *d,
     if (SIXEL_FAILED(status)) {
         goto failure;
     }
+publish:
     d->cursor = p;
     ++d->passes;
     *rgba = d->image.pixels.in_bytes;
@@ -3652,7 +4137,7 @@ failure:
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
+sixel_decode_sequence_mapped_exact(unsigned char const *data, size_t size,
     sixel_palette_transform_t const *transform, unsigned char **pixels,
     int *width, int *height, unsigned int *flags, size_t *passes,
     sixel_allocator_t *allocator)
@@ -3755,6 +4240,49 @@ end:
             "multi-pass input requires complete fixed-raster P2=1 SIXEL "
             "packets with defined colors and valid anchor framing.");
     }
+    return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
+    sixel_palette_transform_t const *transform, unsigned char **pixels,
+    int *width, int *height, unsigned int *flags, size_t *passes,
+    sixel_allocator_t *allocator)
+{
+    sixel_sequence_decoder_t *d;
+    unsigned char const *rgba;
+    size_t byte_end;
+    int w;
+    int h;
+    SIXELSTATUS status;
+
+    *pixels = NULL;
+    *width = 0;
+    *height = 0;
+    *flags = 0;
+    *passes = 0;
+    status = sixel_sequence_open(&d, data, size, 0, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    d->transform = transform;
+    do {
+        status = sixel_sequence_next(d, &rgba, &w, &h, &byte_end);
+    } while (status == SIXEL_OK);
+    if (status == SIXEL_FALSE && d->passes != 0) {
+        *pixels = d->image.pixels.in_bytes;
+        d->image.pixels.p = NULL;
+        *width = d->state.width;
+        *height = d->state.height;
+        *flags = d->state.flags;
+        *passes = d->passes;
+        status = SIXEL_OK;
+    } else {
+        sixel_helper_set_additional_message(
+            "multi-pass input requires complete fixed-raster P2=1 SIXEL "
+            "packets with defined colors and valid anchor framing.");
+    }
+    sixel_sequence_close(d);
     return status;
 }
 

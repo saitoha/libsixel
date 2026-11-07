@@ -691,297 +691,330 @@ static signed char const sixel_parallel_low_row[64] = {
 /* Parse the body once. Ordinary workers retain band columns locally;
  * undither requests retain the validation-only pass because their later
  * chunk parser also needs the preceding band's reconstruction halo. */
-static int
-sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
-{
-    unsigned char *anchor;
-    unsigned char *cursor;
-    unsigned char *stop;
-    unsigned char *limit;
-    unsigned char *start;
-    unsigned char *p;
-    unsigned char ch;
-    uint64_t *columns;
-    uint64_t color;
-    uint64_t mask;
-    int bits;
-    int rows;
-    int repeat;
-    int color_index;
-    int pos_x;
-    int pos_y;
-    int value;
-    int effective_repeat;
-    int width;
-    int starts_after_newline;
-    int status;
-    int r;
-    int retain;
-    int columns_band;
-    int first_painted_row;
-    int last_painted_row;
-    int last_set_row;
-    int max_color_index;
-
-    anchor = context->anchor;
-    width = context->width;
-    repeat = 1;
-    color_index = context->initial_color_index;
-    pos_x = 0;
-    pos_y = 0;
-    status = (-1);
-    retain = context->undither == NULL && !context->validate_only;
-    context->painted_outside_raster = 0;
-    /* Paint extents stay in locals while parsing and are published at end
-     * on every exit, as the context fields previously were. */
-    first_painted_row = (-1);
-    last_painted_row = (-1);
-    last_set_row = (-1);
-    max_color_index = (-1);
-
-    if (context->logger != NULL) {
-        sixel_timeline_logger_logf(context->logger,
-            retain ? "parse" : "scan", "decoder", "start", context->index);
-    }
-    if (context->input == NULL || anchor == NULL ||
-            context->length <= 0 || context->payload_len <= 0 ||
-            width <= 0 || context->height <= 0) {
-        goto end;
-    }
-    start = context->input + context->start_offset;
-    stop = context->input + context->end_offset;
-    limit = context->input + context->length;
-    cursor = start;
-    if (context->index > 0) {
-        starts_after_newline = start > anchor && start[-1] == '-';
-        if (!starts_after_newline) {
-            cursor = (unsigned char *)memchr(start, '-',
-                                             (size_t)(limit - start));
-            if (cursor == NULL) {
-                goto end;
-            }
-            ++cursor;
-        }
-    }
-    if (!retain && cursor == limit) {
-        /* The legacy validation path rejects alignment past the last byte. */
-        goto end;
-    }
-    /* Count original spans while parsing their owned bands. Alignment skips
-     * at most one delimiter inside this span; a delimiter beyond its end is
-     * accounted for only by the boundary adjustment, not counted twice. */
-    context->span_newlines = cursor > start && cursor <= stop + 1 ? 1 : 0;
-    context->boundary_newlines = cursor > start ? 1 : 0;
-    if (!retain) {
-        /* The halo path keeps its established original-span prefix counts. */
-        context->span_newlines = sixel_decoder_parallel_count_newlines(
-            start, stop + 1);
-        context->boundary_newlines = cursor > start ? 1 : 0;
-    }
-    context->body_offset = (int)(cursor - context->input);
-    context->decode_offset = context->body_offset;
-    context->decode_color_index = color_index;
-    if (context->span_newlines < 0 ||
-            sixel_decoder_parallel_initial_color(anchor, cursor,
-                color_index, &color_index) != 0) {
-        goto end;
-    }
-    context->initial_color_index = color_index;
-    context->body_local_start = 0;
-    if (context->undither != NULL) {
-        p = sixel_decoder_parallel_find_fast4_halo(anchor, cursor);
-        context->body_local_start =
-            sixel_decoder_parallel_count_newlines(p, cursor);
-        if (context->body_local_start < 0 ||
-                sixel_decoder_parallel_initial_color(anchor, p,
-                    context->decode_color_index,
-                    &context->decode_color_index) != 0) {
-            goto end;
-        }
-        context->body_local_start *= 6;
-        context->decode_offset = (int)(p - context->input);
-    } else if (retain) {
-        /* A boundary beyond this original span belongs to a later worker.
-         * In particular, converging starts must not decode that band twice. */
-        if (cursor > stop) {
-            status = 0;
-            goto end;
-        }
-        if (color_index >= 256) {
-            goto end;
-        }
-    }
-    color = sixel_column_color((unsigned int)color_index);
-    /* The column storage of a band changes only when the band does: reserve
-     * and locate it once per band instead of once per run. */
-    columns = NULL;
-    columns_band = (-1);
-    while (cursor < limit) {
-        ch = *cursor;
-        if (ch >= '?' && ch <= '~') {
-            rows = 0;
-            effective_repeat = repeat;
-            if (pos_x > INT_MAX - repeat) {
-                goto end;
-            }
-            if (retain && pos_y / 6 != columns_band) {
-                if (sixel_decoder_parallel_reserve_columns(context,
-                                                           pos_y / 6) != 0) {
-                    goto end;
-                }
-                columns_band = pos_y / 6;
-                columns = columns_band < context->column_capacity ?
-                    context->columns +
-                        (size_t)columns_band * (size_t)width : NULL;
-            }
-            /* One word update per literal; aggregate the six row bits once
-             * per run, preserving unset-column cursor movement. */
-            if (retain && repeat == 1 && pos_x < width && columns != NULL) {
-                do {
-                    bits = *cursor++ - '?';
-                    mask = sixel_column_row_masks[bits];
-                    columns[pos_x] = (columns[pos_x] & ~mask) |
-                        (color & mask) | ((uint64_t)bits << 48);
-                    rows |= bits;
-                    ++pos_x;
-                } while (cursor < limit && *cursor >= '?' && *cursor <= '~' &&
-                         pos_x < width);
-            } else {
-                bits = ch - '?';
-                rows = bits;
-                if (pos_x + repeat > width && bits != 0) {
-                    if (!context->trust_raster_size) {
-                        goto end;
-                    }
-                    context->painted_outside_raster = 1;
-                }
-                if (effective_repeat > width - pos_x) {
-                    effective_repeat = pos_x < width ? width - pos_x : 0;
-                }
-                if (bits != 0 && effective_repeat > 0 && columns != NULL) {
-                    sixel_column_store(columns + pos_x, color, bits,
-                                       effective_repeat);
-                }
-                pos_x += repeat;
-                repeat = 1;
-                ++cursor;
-            }
-            if (rows != 0) {
-                r = sixel_parallel_top_row[rows];
-                if (pos_y > INT_MAX - r) {
-                    goto end;
-                }
-                if (pos_y + r > last_set_row) {
-                    last_set_row = pos_y + r;
-                }
-                if (effective_repeat > 0) {
-                    if (last_set_row > last_painted_row) {
-                        last_painted_row = last_set_row;
-                    }
-                    r = sixel_parallel_low_row[rows];
-                    if (first_painted_row < 0 ||
-                            pos_y + r < first_painted_row) {
-                        first_painted_row = pos_y + r;
-                    }
-                    if (color_index > max_color_index) {
-                        max_color_index = color_index;
-                    }
-                }
-            }
-            continue;
-        }
-        if (ch == '#' || ch == '!') {
-            value = 0;
-            p = cursor + 1;
-            while (p < limit && *p >= '0' && *p <= '9') {
-                if (value > 6553 || (value == 6553 &&
-                        (*p - '0') > (ch == '#' ? 6 : 5))) {
-                    goto end;
-                }
-                value = value * 10 + (*p++ - '0');
-            }
-            if (ch == '#') {
-                if ((p < limit && *p == ';') || (retain && value >= 256)) {
-                    goto end;
-                }
-                color_index = value >= SIXEL_PALETTE_MAX_DECODER ?
-                    SIXEL_PALETTE_MAX_DECODER - 1 : value;
-                color = sixel_column_color((unsigned int)color_index);
-            } else {
-                repeat = value > 0 ? value : 1;
-            }
-            cursor = p;
-            continue;
-        }
-        if (ch == '$') {
-            ++cursor;
-            pos_x = 0;
-            continue;
-        }
-        if (ch == '-') {
-            if (retain && cursor <= stop &&
-                    sixel_decoder_parallel_add_line_count(
-                        &context->span_newlines) != 0) {
-                goto end;
-            }
-            if (cursor >= stop) {
-                break;
-            }
-            ++cursor;
-            pos_x = 0;
-            if (pos_y > INT_MAX - 6) {
-                goto end;
-            }
-            pos_y += 6;
-            continue;
-        }
-        if (ch < 0x20) {
-            if (ch == 0x18 || ch == 0x1a) {
-                goto end;
-            }
-            ++cursor;
-            if (ch == 0x1b && cursor < limit && *cursor == '\\') {
-                context->trailing_data = cursor + 1 < limit;
-                /* Preserve legacy byte-span offsets even when malformed
-                 * trailing data follows ST inside a span. Only the ignored
-                 * tail needs a delimiter count; it is never interpreted. */
-                if (retain && cursor <= stop) {
-                    value = sixel_decoder_parallel_count_newlines(cursor,
-                                                                  stop + 1);
-                    if (value < 0 || context->span_newlines >
-                            INT_MAX / 6 - value) {
-                        goto end;
-                    }
-                    context->span_newlines += value;
-                }
-                break;
-            }
-            continue;
-        }
-        if (ch == '"') {
-            goto end;
-        }
-        ++cursor;
-    }
-    if (retain) {
-        context->column_bands = pos_y / 6 + 1;
-        if (context->column_bands > context->column_capacity) {
-            context->column_bands = context->column_capacity;
-        }
-    }
-    status = 0;
-end:
-    context->first_painted_row = first_painted_row;
-    context->last_painted_row = last_painted_row;
-    context->last_set_row = last_set_row;
-    context->max_color_index = max_color_index;
-    if (context->logger != NULL) {
-        sixel_timeline_logger_logf(context->logger,
-            retain ? "parse" : "scan", "decoder",
-            status == 0 ? "finish" : "abort", context->index);
-    }
-    return status;
+/* Expand capture as a C constant before optimizing either worker. With a
+ * function parameter, even forced inlining lets Clang reshape the ordinary
+ * token loop before the capture checks disappear. Literal instantiations
+ * preserve its original code generation without duplicating the parser. */
+#define SIXEL_DECODER_PARALLEL_PARSER(parser_name, capture) \
+static int \
+parser_name(sixel_decoder_worker_context_t *context) \
+{ \
+    unsigned char *anchor; \
+    unsigned char *cursor; \
+    unsigned char *stop; \
+    unsigned char *limit; \
+    unsigned char *start; \
+    unsigned char *p; \
+    unsigned char ch; \
+    unsigned char const *defined; \
+    uint64_t *columns; \
+    uint64_t color; \
+    uint64_t mask; \
+    int bits; \
+    int rows; \
+    int repeat; \
+    int color_index; \
+    int pos_x; \
+    int pos_y; \
+    int value; \
+    int effective_repeat; \
+    int width; \
+    int starts_after_newline; \
+    int status; \
+    int r; \
+    int retain; \
+    int columns_band; \
+    int first_painted_row; \
+    int last_painted_row; \
+    int last_set_row; \
+    int max_color_index; \
+    \
+    /* Packet contract fields cannot change while this worker is running. \
+     * Hoist them out of run/select loops, including the ordinary case. */ \
+    defined = capture ? context->image->capture_defined : NULL; \
+    anchor = context->anchor; \
+    width = context->width; \
+    repeat = 1; \
+    color_index = context->initial_color_index; \
+    pos_x = 0; \
+    pos_y = 0; \
+    status = (-1); \
+    retain = context->undither == NULL && !context->validate_only; \
+    context->painted_outside_raster = 0; \
+    /* Paint extents stay in locals while parsing and are published at end \
+     * on every exit, as the context fields previously were. */ \
+    first_painted_row = (-1); \
+    last_painted_row = (-1); \
+    last_set_row = (-1); \
+    max_color_index = (-1); \
+    \
+    if (context->logger != NULL) { \
+        sixel_timeline_logger_logf(context->logger, \
+            retain ? "parse" : "scan", "decoder", "start", context->index); \
+    } \
+    if (context->input == NULL || anchor == NULL || \
+            context->length <= 0 || context->payload_len <= 0 || \
+            width <= 0 || context->height <= 0) { \
+        goto end; \
+    } \
+    start = context->input + context->start_offset; \
+    stop = context->input + context->end_offset; \
+    limit = context->input + context->length; \
+    cursor = start; \
+    if (context->index > 0) { \
+        starts_after_newline = start > anchor && start[-1] == '-'; \
+        if (!starts_after_newline) { \
+            cursor = (unsigned char *)memchr(start, '-', \
+                                             (size_t)(limit - start)); \
+            if (cursor == NULL) { \
+                goto end; \
+            } \
+            ++cursor; \
+        } \
+    } \
+    if (!retain && cursor == limit) { \
+        /* The legacy validation path rejects alignment past the last byte. */ \
+        goto end; \
+    } \
+    /* Count original spans while parsing their owned bands. Alignment skips \
+     * at most one delimiter inside this span; a delimiter beyond its end is \
+     * accounted for only by the boundary adjustment, not counted twice. */ \
+    context->span_newlines = cursor > start && cursor <= stop + 1 ? 1 : 0; \
+    context->boundary_newlines = cursor > start ? 1 : 0; \
+    if (!retain) { \
+        /* The halo path keeps its established original-span prefix counts. */ \
+        context->span_newlines = sixel_decoder_parallel_count_newlines( \
+            start, stop + 1); \
+        context->boundary_newlines = cursor > start ? 1 : 0; \
+    } \
+    context->body_offset = (int)(cursor - context->input); \
+    context->decode_offset = context->body_offset; \
+    context->decode_color_index = color_index; \
+    if (context->span_newlines < 0 || \
+            sixel_decoder_parallel_initial_color(anchor, cursor, \
+                color_index, &color_index) != 0) { \
+        goto end; \
+    } \
+    context->initial_color_index = color_index; \
+    context->body_local_start = 0; \
+    if (context->undither != NULL) { \
+        p = sixel_decoder_parallel_find_fast4_halo(anchor, cursor); \
+        context->body_local_start = \
+            sixel_decoder_parallel_count_newlines(p, cursor); \
+        if (context->body_local_start < 0 || \
+                sixel_decoder_parallel_initial_color(anchor, p, \
+                    context->decode_color_index, \
+                    &context->decode_color_index) != 0) { \
+            goto end; \
+        } \
+        context->body_local_start *= 6; \
+        context->decode_offset = (int)(p - context->input); \
+    } else if (retain) { \
+        /* A boundary beyond this original span belongs to a later worker. \
+         * Converging starts must not decode that band twice. */ \
+        if (cursor > stop) { \
+            status = 0; \
+            goto end; \
+        } \
+        if (color_index >= 256) { \
+            goto end; \
+        } \
+    } \
+    /* An undefined selection may be harmless if it only skips. Let the \
+     * reference path decide that rare case; no check belongs in run lanes. */ \
+    if (defined != NULL && !defined[color_index]) { \
+        goto end; \
+    } \
+    color = sixel_column_color((unsigned int)color_index); \
+    /* The column storage of a band changes only when the band does: reserve \
+     * and locate it once per band instead of once per run. */ \
+    columns = NULL; \
+    columns_band = (-1); \
+    while (cursor < limit) { \
+        ch = *cursor; \
+        if (ch >= '?' && ch <= '~') { \
+            rows = 0; \
+            effective_repeat = repeat; \
+            if (pos_x > INT_MAX - repeat) { \
+                goto end; \
+            } \
+            if (retain && pos_y / 6 != columns_band) { \
+                if (sixel_decoder_parallel_reserve_columns(context, \
+                                                           pos_y / 6) != 0) { \
+                    goto end; \
+                } \
+                columns_band = pos_y / 6; \
+                columns = columns_band < context->column_capacity ? \
+                    context->columns + \
+                        (size_t)columns_band * (size_t)width : NULL; \
+            } \
+            /* One word update per literal; aggregate the six row bits once \
+             * per run, preserving unset-column cursor movement. */ \
+            if (retain && repeat == 1 && pos_x < width && columns != NULL) { \
+                do { \
+                    bits = *cursor++ - '?'; \
+                    mask = sixel_column_row_masks[bits]; \
+                    columns[pos_x] = (columns[pos_x] & ~mask) | \
+                        (color & mask) | ((uint64_t)bits << 48); \
+                    rows |= bits; \
+                    ++pos_x; \
+                } while (cursor < limit && *cursor >= '?' && *cursor <= '~' && \
+                         pos_x < width); \
+            } else { \
+                bits = ch - '?'; \
+                rows = bits; \
+                if (pos_x + repeat > width && bits != 0) { \
+                    if (!context->trust_raster_size) { \
+                        goto end; \
+                    } \
+                    context->painted_outside_raster = 1; \
+                } \
+                if (effective_repeat > width - pos_x) { \
+                    effective_repeat = pos_x < width ? width - pos_x : 0; \
+                } \
+                if (bits != 0 && effective_repeat > 0 && columns != NULL) { \
+                    sixel_column_store(columns + pos_x, color, bits, \
+                                       effective_repeat); \
+                } \
+                pos_x += repeat; \
+                repeat = 1; \
+                ++cursor; \
+            } \
+            if (rows != 0) { \
+                r = sixel_parallel_top_row[rows]; \
+                if (pos_y > INT_MAX - r) { \
+                    goto end; \
+                } \
+                if (pos_y + r > last_set_row) { \
+                    last_set_row = pos_y + r; \
+                } \
+                if (effective_repeat > 0) { \
+                    if (last_set_row > last_painted_row) { \
+                        last_painted_row = last_set_row; \
+                    } \
+                    r = sixel_parallel_low_row[rows]; \
+                    if (first_painted_row < 0 || \
+                            pos_y + r < first_painted_row) { \
+                        first_painted_row = pos_y + r; \
+                    } \
+                    if (color_index > max_color_index) { \
+                        max_color_index = color_index; \
+                    } \
+                } \
+            } \
+            continue; \
+        } \
+        if (ch == '#' || ch == '!') { \
+            value = 0; \
+            p = cursor + 1; \
+            while (p < limit && *p >= '0' && *p <= '9') { \
+                if (value > 6553 || (value == 6553 && \
+                        (*p - '0') > (ch == '#' ? 6 : 5))) { \
+                    goto end; \
+                } \
+                value = value * 10 + (*p++ - '0'); \
+            } \
+            if (capture && \
+                    (p == cursor + 1 || value >= SIXEL_PALETTE_MAX_DECODER || \
+                     (ch == '!' && (p == limit || *p < '?' || *p > '~')))) { \
+                goto end; \
+            } \
+            if (ch == '#') { \
+                if ((p < limit && *p == ';') || (retain && value >= 256)) { \
+                    goto end; \
+                } \
+                color_index = value >= SIXEL_PALETTE_MAX_DECODER ? \
+                    SIXEL_PALETTE_MAX_DECODER - 1 : value; \
+                if (defined != NULL && !defined[color_index]) { \
+                    goto end; \
+                } \
+                color = sixel_column_color((unsigned int)color_index); \
+            } else { \
+                repeat = value > 0 ? value : 1; \
+            } \
+            cursor = p; \
+            continue; \
+        } \
+        if (ch == '$') { \
+            ++cursor; \
+            pos_x = 0; \
+            continue; \
+        } \
+        if (ch == '-') { \
+            if (retain && cursor <= stop && \
+                    sixel_decoder_parallel_add_line_count( \
+                        &context->span_newlines) != 0) { \
+                goto end; \
+            } \
+            if (cursor >= stop) { \
+                break; \
+            } \
+            ++cursor; \
+            pos_x = 0; \
+            if (pos_y > INT_MAX - 6) { \
+                goto end; \
+            } \
+            pos_y += 6; \
+            continue; \
+        } \
+        if (capture) { \
+            if (ch == 0x9c || (ch == 0x1b && cursor + 1 < limit && \
+                    cursor[1] == '\\')) { \
+                break; \
+            } \
+            goto end; \
+        } \
+        if (ch < 0x20) { \
+            if (ch == 0x18 || ch == 0x1a) { \
+                goto end; \
+            } \
+            ++cursor; \
+            if (ch == 0x1b && cursor < limit && *cursor == '\\') { \
+                context->trailing_data = cursor + 1 < limit; \
+                /* Preserve legacy byte-span offsets even when malformed \
+                 * trailing data follows ST inside a span. Only the ignored \
+                 * tail needs a delimiter count; it is never interpreted. */ \
+                if (retain && cursor <= stop) { \
+                    value = sixel_decoder_parallel_count_newlines(cursor, \
+                                                                  stop + 1); \
+                    if (value < 0 || context->span_newlines > \
+                            INT_MAX / 6 - value) { \
+                        goto end; \
+                    } \
+                    context->span_newlines += value; \
+                } \
+                break; \
+            } \
+            continue; \
+        } \
+        if (ch == '"') { \
+            goto end; \
+        } \
+        ++cursor; \
+    } \
+    if (retain) { \
+        context->column_bands = pos_y / 6 + 1; \
+        if (context->column_bands > context->column_capacity) { \
+            context->column_bands = context->column_capacity; \
+        } \
+    } \
+    status = 0; \
+end: \
+    context->first_painted_row = first_painted_row; \
+    context->last_painted_row = last_painted_row; \
+    context->last_set_row = last_set_row; \
+    context->max_color_index = max_color_index; \
+    if (context->logger != NULL) { \
+        sixel_timeline_logger_logf(context->logger, \
+            retain ? "parse" : "scan", "decoder", \
+            status == 0 ? "finish" : "abort", context->index); \
+    } \
+    return status; \
 }
+
+SIXEL_DECODER_PARALLEL_PARSER(sixel_decoder_parallel_direct_parse, 0)
+SIXEL_DECODER_PARALLEL_PARSER(sixel_decoder_parallel_capture_parse, 1)
+#undef SIXEL_DECODER_PARALLEL_PARSER
 
 static int
 sixel_decoder_parallel_direct_worker(void *arg)
@@ -995,7 +1028,11 @@ sixel_decoder_parallel_direct_worker(void *arg)
     context = (sixel_decoder_worker_context_t *)arg;
     chain = context->chain;
     if (context->direct_mode_kind == SIXEL_DECODER_DIRECT_PARSE) {
-        status = sixel_decoder_parallel_direct_parse(context);
+        /* Keep the ordinary loop separate so common-block merging cannot
+         * reintroduce capture tests inside its token loop. */
+        status = context->image->capture
+            ? sixel_decoder_parallel_capture_parse(context)
+            : sixel_decoder_parallel_direct_parse(context);
     } else {
         if (context->logger != NULL) {
             sixel_timeline_logger_logf(context->logger,
@@ -2348,6 +2385,20 @@ sixel_decoder_parallel_request_start(int direct_mode,
               !sixel_decoder_parallel_tail_compatible(contexts, threads)) ||
              !sixel_decoder_parallel_resolve_rows(contexts, threads))) {
         parallel_failed = 1;
+    }
+
+    /* Capture cursors are bounded in device rows, even when blank bands
+     * never reach the raster. Count every newline, including a trailing one;
+     * clipping/last-painted-row flags alone cannot detect this overflow. */
+    if (image->capture > 0) {
+        offset = INT_MAX / (6 * image->capture);
+        for (i = 0; i < created; ++i) {
+            if (contexts[i].span_newlines > offset) {
+                parallel_failed = 1;
+                break;
+            }
+            offset -= contexts[i].span_newlines;
+        }
     }
 
     /* Vertical clipping is known only after row offsets have been resolved. */

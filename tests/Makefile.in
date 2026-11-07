@@ -900,6 +900,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	decoder/parser/0097_animation_palette_carry.c \
 	decoder/parser/0098_animation_clear_canvas.c \
 	decoder/parser/0099_animation_malformed_tail.c \
+	decoder/sequence/0002_failed_clear_preserves_canvas.c \
 	decoder/parser/0100_animation_default_palette.c \
 	decoder/parser/0101_parallel_inherited_register.c \
 	decoder/parser/0102_parallel_prefix_clipping.c \
@@ -5926,6 +5927,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0097_animation_palette_carry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0098_animation_clear_canvas.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0099_animation_malformed_tail.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0100_animation_default_palette.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0101_parallel_inherited_register.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0102_parallel_prefix_clipping.$(OBJEXT) \
@@ -11149,6 +11151,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	decoder/parser/$(DEPDIR)/test_runner-0114_simd_band_words.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0119_token_fast_lane.Po \
 	decoder/raster/$(DEPDIR)/test_runner-0003_gpu_dequant_threshold_strtoul.Po \
+	decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Po \
 	delta/commit/$(DEPDIR)/test_runner-0001_delta_fixed_mask_failure.Po \
 	delta/commit/$(DEPDIR)/test_runner-0002_delta_workspace_fixed.Po \
 	delta/commit/$(DEPDIR)/test_runner-0003_delta_workspace_workers.Po \
@@ -17570,6 +17573,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_ANIMATION_PALETTE_CARRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_ANIMATION_CLEAR_CANVAS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_ANIMATION_MALFORMED_TAIL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FAILED_CLEAR_PRESERVES_CANVAS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0100_ANIMATION_DEFAULT_PALETTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0101_PARALLEL_INHERITED_REGISTER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_PARALLEL_PREFIX_CLIPPING \
@@ -21600,6 +21604,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0097_animation_palette_carry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0098_animation_clear_canvas.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0099_animation_malformed_tail.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/sequence/0002_failed_clear_preserves_canvas.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0100_animation_default_palette.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0101_parallel_inherited_register.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0102_parallel_prefix_clipping.c \
@@ -25953,6 +25958,8 @@ TEST_DATA_DIRS = data
 
 # These native Python cases use the ordinary discovered TAP/log path.
 # Their interpreter does not depend on optional Python bindings.
+
+# Optional ctypes differential runner; never part of the default test suite.
 EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	tools/compare/data/empty \
 	tools/compare/data/octet-different.bin \
@@ -26283,7 +26290,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-assessment-stdio.sh \
 	_static/sh/staticcheck-phased-coefficient-guard.sh \
 	_static/sh/staticcheck-msys-runtime-arguments.sh \
-	_static/sh/staticcheck-macos-coverage-reader.sh
+	_static/sh/staticcheck-macos-coverage-reader.sh \
+	decoder/sequence/0001_differential.py
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -28860,6 +28868,15 @@ decoder/parser/test_runner-0098_animation_clear_canvas.$(OBJEXT):  \
 decoder/parser/test_runner-0099_animation_malformed_tail.$(OBJEXT):  \
 	decoder/parser/$(am__dirstamp) \
 	decoder/parser/$(DEPDIR)/$(am__dirstamp)
+decoder/sequence/$(am__dirstamp):
+	@$(MKDIR_P) decoder/sequence
+	@: >>decoder/sequence/$(am__dirstamp)
+decoder/sequence/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) decoder/sequence/$(DEPDIR)
+	@: >>decoder/sequence/$(DEPDIR)/$(am__dirstamp)
+decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.$(OBJEXT):  \
+	decoder/sequence/$(am__dirstamp) \
+	decoder/sequence/$(DEPDIR)/$(am__dirstamp)
 decoder/parser/test_runner-0100_animation_default_palette.$(OBJEXT):  \
 	decoder/parser/$(am__dirstamp) \
 	decoder/parser/$(DEPDIR)/$(am__dirstamp)
@@ -42392,6 +42409,7 @@ mostlyclean-compile:
 	-rm -f decoder/aspect/*.$(OBJEXT)
 	-rm -f decoder/parser/*.$(OBJEXT)
 	-rm -f decoder/raster/*.$(OBJEXT)
+	-rm -f decoder/sequence/*.$(OBJEXT)
 	-rm -f delta/commit/*.$(OBJEXT)
 	-rm -f delta/comparison/*.$(OBJEXT)
 	-rm -f delta/gpu-rectangle/*.$(OBJEXT)
@@ -43461,6 +43479,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0114_simd_band_words.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0119_token_fast_lane.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/raster/$(DEPDIR)/test_runner-0003_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/commit/$(DEPDIR)/test_runner-0001_delta_fixed_mask_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/commit/$(DEPDIR)/test_runner-0002_delta_workspace_fixed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/commit/$(DEPDIR)/test_runner-0003_delta_workspace_workers.Po@am__quote@ # am--include-marker
@@ -58173,6 +58192,20 @@ decoder/parser/test_runner-0099_animation_malformed_tail.obj: decoder/parser/009
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/parser/0099_animation_malformed_tail.c' object='decoder/parser/test_runner-0099_animation_malformed_tail.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/parser/test_runner-0099_animation_malformed_tail.obj `if test -f 'decoder/parser/0099_animation_malformed_tail.c'; then $(CYGPATH_W) 'decoder/parser/0099_animation_malformed_tail.c'; else $(CYGPATH_W) '$(srcdir)/decoder/parser/0099_animation_malformed_tail.c'; fi`
+
+decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.o: decoder/sequence/0002_failed_clear_preserves_canvas.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.o -MD -MP -MF decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Tpo -c -o decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.o `test -f 'decoder/sequence/0002_failed_clear_preserves_canvas.c' || echo '$(srcdir)/'`decoder/sequence/0002_failed_clear_preserves_canvas.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Tpo decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/sequence/0002_failed_clear_preserves_canvas.c' object='decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.o `test -f 'decoder/sequence/0002_failed_clear_preserves_canvas.c' || echo '$(srcdir)/'`decoder/sequence/0002_failed_clear_preserves_canvas.c
+
+decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.obj: decoder/sequence/0002_failed_clear_preserves_canvas.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.obj -MD -MP -MF decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Tpo -c -o decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.obj `if test -f 'decoder/sequence/0002_failed_clear_preserves_canvas.c'; then $(CYGPATH_W) 'decoder/sequence/0002_failed_clear_preserves_canvas.c'; else $(CYGPATH_W) '$(srcdir)/decoder/sequence/0002_failed_clear_preserves_canvas.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Tpo decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/sequence/0002_failed_clear_preserves_canvas.c' object='decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/sequence/test_runner-0002_failed_clear_preserves_canvas.obj `if test -f 'decoder/sequence/0002_failed_clear_preserves_canvas.c'; then $(CYGPATH_W) 'decoder/sequence/0002_failed_clear_preserves_canvas.c'; else $(CYGPATH_W) '$(srcdir)/decoder/sequence/0002_failed_clear_preserves_canvas.c'; fi`
 
 decoder/parser/test_runner-0100_animation_default_palette.o: decoder/parser/0100_animation_default_palette.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/parser/test_runner-0100_animation_default_palette.o -MD -MP -MF decoder/parser/$(DEPDIR)/test_runner-0100_animation_default_palette.Tpo -c -o decoder/parser/test_runner-0100_animation_default_palette.o `test -f 'decoder/parser/0100_animation_default_palette.c' || echo '$(srcdir)/'`decoder/parser/0100_animation_default_palette.c
@@ -117492,6 +117525,8 @@ distclean-generic:
 	-$(am__rm_f) decoder/parser/$(am__dirstamp)
 	-$(am__rm_f) decoder/raster/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) decoder/raster/$(am__dirstamp)
+	-$(am__rm_f) decoder/sequence/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) decoder/sequence/$(am__dirstamp)
 	-$(am__rm_f) delta/commit/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) delta/commit/$(am__dirstamp)
 	-$(am__rm_f) delta/comparison/$(DEPDIR)/$(am__dirstamp)

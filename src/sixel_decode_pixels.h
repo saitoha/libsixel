@@ -62,6 +62,15 @@ sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
     int *width, int *height, unsigned int *flags, size_t *passes,
     sixel_allocator_t *allocator);
 
+/* Reference implementation for optional differential tests only. */
+SIXEL_INTERNAL_API void
+sixel_sequence_set_exact(sixel_sequence_decoder_t *decoder);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_sequence_mapped_exact(unsigned char const *data, size_t size,
+    sixel_palette_transform_t const *transform, unsigned char **pixels,
+    int *width, int *height, unsigned int *flags, size_t *passes,
+    sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API SIXELSTATUS sixel_decode_direct_mapped(
     unsigned char *p, int len, unsigned int decode_flags,
     sixel_palette_transform_t const *transform, int body_only,
