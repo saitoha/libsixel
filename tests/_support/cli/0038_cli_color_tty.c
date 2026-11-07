@@ -6,9 +6,9 @@
  * Pipes synchronize exceptional paths without fixed sleeps. No library
  * TTY reader, terminal emulator, or installed converter is substituted.
  */
-/* DragonFly's default feature set includes both POSIX and BSD termios
+/* DragonFly/OpenBSD default features include both POSIX and BSD termios
  * state. Strict POSIX/XSI hides PENDIN, which this test must observe. */
-#if defined(__DragonFly__)
+#if defined(__DragonFly__) || defined(__OpenBSD__)
 /* Meson supplies _POSIX_C_SOURCE on the compiler command line as well. */
 # undef _POSIX_C_SOURCE
 # undef _XOPEN_SOURCE
@@ -192,9 +192,9 @@ color_tty_mode_equal(struct termios const *a, struct termios const *b,
 
     expected_lflag = a->c_lflag;
 #if defined(PENDIN) && (defined(__COSMOPOLITAN__) || \
-    defined(__DragonFly__) || defined(__NetBSD__) || \
+    defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
     (defined(__APPLE__) && defined(__MACH__)))
-    /* Darwin, DragonFly and NetBSD set kernel-maintained PENDIN when ICANON
+    /* These BSD kernels set kernel-maintained PENDIN when ICANON
      * returns, even with an empty input queue. Their tty.c TIOCSETA paths
      * OR that state with the requested flags. Do not flush/read input just
      * to clear it: pending bytes belong to the caller. Only the canonical
@@ -205,7 +205,7 @@ color_tty_mode_equal(struct termios const *a, struct termios const *b,
         if (IsXnu()) {
             expected_lflag |= PENDIN;
         }
-# elif defined(__DragonFly__) || defined(__NetBSD__)
+# elif defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__)
         /* ttyinput() can reprocess pending input before tcgetattr(), even
          * without a user read. Accept either state of this kernel bit. */
         expected_lflag = (expected_lflag & ~(tcflag_t)PENDIN) |
