@@ -332,6 +332,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0061_LATEST_REPLAY_SMALL \
     -DBUILD_TEST_0062_LATEST_COMPLETED_OWN \
     -DBUILD_TEST_0063_LATEST_EXCLUDES_FUTURE \
+    -DBUILD_TEST_0078_QUEUE_SAMPLE_SHORT \
+    -DBUILD_TEST_0079_QUEUE_SAMPLE_UNAVAILABLE \
+    -DBUILD_TEST_0080_QUEUE_SAMPLE_LIVE \
+    -DBUILD_TEST_0081_QUEUE_SAMPLE_TAIL \
     -DBUILD_TEST_0064_PIPELINE_SAMPLE_STALE \
     -DBUILD_TEST_0065_PIPELINE_SAMPLE_SHORT \
     -DBUILD_TEST_0066_PIPELINE_SAMPLE_TAIL \
@@ -7429,6 +7433,10 @@ test_runner_SOURCES = test_runner.c \
     dither/phased/0060_latest_replay_refresh.c \
     dither/phased/0061_latest_replay_small.c \
     _support/phased/latest.c \
+    dither/phased/0078_queue_sample_short.c \
+    dither/phased/0079_queue_sample_unavailable.c \
+    dither/phased/0080_queue_sample_live.c \
+    dither/phased/0081_queue_sample_tail.c \
     dither/phased/0064_pipeline_sample_stale.c \
     dither/phased/0065_pipeline_sample_short.c \
     dither/phased/0066_pipeline_sample_tail.c \

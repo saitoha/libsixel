@@ -96,6 +96,8 @@ SIXEL_INTERNAL_API int sixel_thread_identity_equal(
 SIXEL_INTERNAL_API int sixel_mutex_init(sixel_mutex_t *mutex);
 SIXEL_INTERNAL_API void sixel_mutex_destroy(sixel_mutex_t *mutex);
 SIXEL_INTERNAL_API void sixel_mutex_lock(sixel_mutex_t *mutex);
+/* Return nonzero only when the mutex was acquired without waiting. */
+SIXEL_INTERNAL_API int sixel_mutex_trylock(sixel_mutex_t *mutex);
 SIXEL_INTERNAL_API void sixel_mutex_unlock(sixel_mutex_t *mutex);
 
 SIXEL_INTERNAL_API int sixel_cond_init(sixel_cond_t *cond);

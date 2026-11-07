@@ -5180,6 +5180,10 @@ int test_phased_playback_claimed_cancel_completes(int, char **);
 int test_phased_latest_replay_t0(int, char **);
 int test_phased_latest_replay_refresh(int, char **);
 int test_phased_latest_replay_small(int, char **);
+int test_phased_queue_sample_short(int, char **);
+int test_phased_queue_sample_unavailable(int, char **);
+int test_phased_queue_sample_live(int, char **);
+int test_phased_queue_sample_tail(int, char **);
 int test_phased_pipeline_sample_stale(int, char **);
 int test_phased_pipeline_sample_short(int, char **);
 int test_phased_pipeline_sample_tail(int, char **);
@@ -5200,6 +5204,10 @@ static test_entry_t const test_entries[] = {
     { "phased/latest_replay_t0", test_phased_latest_replay_t0 },
     { "phased/latest_replay_refresh", test_phased_latest_replay_refresh },
     { "phased/latest_replay_small", test_phased_latest_replay_small },
+    { "phased/queue_sample_short", test_phased_queue_sample_short },
+    { "phased/queue_sample_unavailable", test_phased_queue_sample_unavailable },
+    { "phased/queue_sample_live", test_phased_queue_sample_live },
+    { "phased/queue_sample_tail", test_phased_queue_sample_tail },
     { "phased/pipeline_sample_stale", test_phased_pipeline_sample_stale },
     { "phased/pipeline_sample_short", test_phased_pipeline_sample_short },
     { "phased/pipeline_sample_tail", test_phased_pipeline_sample_tail },

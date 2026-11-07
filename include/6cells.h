@@ -2970,6 +2970,38 @@ sixel_playback_get_pipeline_sample(sixel_playback_t *session,
     uint64_t sequence,
     sixel_playback_pipeline_sample_t *sample);
 
+/* Live queue occupancy is separate from completed-frame timing. */
+#define SIXEL_HAVE_PLAYBACK_QUEUE_SAMPLE 1
+
+/* Depths count waiting frames, excluding the active owner of each stage.
+ * Entries 0..3 are P->S, S->R, R->E and E->delivery; their capacities are
+ * reported in capacity[].
+ * pending_palette counts admissions not yet taken by P, excluding reserved
+ * tickets; pending_capacity is the playback admission bound for that queue.
+ * Ring samples are individually consistent, not one atomic snapshot
+ * across stages; do not derive in-flight work by subtracting their sum. */
+typedef struct sixel_playback_queue_sample {
+    size_t struct_size;
+    unsigned int valid;
+    unsigned int stage_count;
+    unsigned int pending_palette;
+    unsigned int pending_capacity;
+    unsigned int depth[4];
+    unsigned int capacity[4];
+} sixel_playback_queue_sample_t;
+
+/* Set sample.struct_size before calling. Success returns valid=1 and four
+ * entries. Non-lock-free atomics, startup, shutdown, legacy scheduling or
+ * transient contention return FALSE with sample unchanged. Invalid arguments
+ * or undersized
+ * storage return BAD_ARGUMENT without writes; larger buffers preserve their
+ * size and unknown tail. The getter uses a try-lock and bounded atomic reads:
+ * it never waits for a lane, GPU, callback or mutex. No frame is retained.
+ * Playback must remain alive throughout the call. */
+SIXELAPI SIXELSTATUS
+sixel_playback_get_queue_sample(sixel_playback_t *session,
+    sixel_playback_queue_sample_t *sample);
+
 /*
  * IDL coclass:
  * [classid("processing/palette-apply")]

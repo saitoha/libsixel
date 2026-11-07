@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 /* Playback owns execution and bounded storage. The algorithms receive only
  * their existing typed inputs: no component knows a queue or another lane. */
+#define SIXEL_PLAYBACK_RING_CAPACITY 2
+
 typedef struct sixel_playback_record {
     sixel_encoder_pipeline_slot_t slot;
     sixel_encoder_frame_job_t job;
@@ -16,7 +18,7 @@ typedef struct sixel_playback_record {
 } sixel_playback_record_t;
 
 typedef struct sixel_playback_ring {
-    sixel_playback_record_t *entries[2];
+    sixel_playback_record_t *entries[SIXEL_PLAYBACK_RING_CAPACITY];
     sixel_atomic_u32_t head, tail;
 } sixel_playback_ring_t;
 
@@ -35,7 +37,7 @@ typedef struct sixel_playback_independent {
     sixel_cond_t changed;
     sixel_output_t *resolve_output, *packet_output;
     sixel_playback_record_t *packet;
-    sixel_playback_packet_storage_t packets[2];
+    sixel_playback_packet_storage_t packets[SIXEL_PLAYBACK_RING_CAPACITY];
     /* S solutions, R images, E packets, including active users. */
     unsigned int used[3], high[3];
     size_t max_packet;
@@ -58,8 +60,9 @@ sixel_playback_ring_push(sixel_playback_ring_t *q,
 
     tail = sixel_playback_ready_load(&q->tail);
     head = sixel_playback_ready_load(&q->head);
-    if ((unsigned int)((uint64_t)tail + UINT_MAX + 1u - head) == 2) return 0;
-    q->entries[tail % 2] = record;
+    if ((unsigned int)((uint64_t)tail + UINT_MAX + 1u - head)
+            == SIXEL_PLAYBACK_RING_CAPACITY) return 0;
+    q->entries[tail % SIXEL_PLAYBACK_RING_CAPACITY] = record;
     (void)sixel_atomic_fetch_add_u32(&q->tail, 1);
     return 1;
 }
@@ -73,7 +76,7 @@ sixel_playback_ring_pop(sixel_playback_ring_t *q,
     head = sixel_playback_ready_load(&q->head);
     tail = sixel_playback_ready_load(&q->tail);
     if (head == tail) return 0;
-    *record = q->entries[head % 2];
+    *record = q->entries[head % SIXEL_PLAYBACK_RING_CAPACITY];
     (void)sixel_atomic_fetch_add_u32(&q->head, 1);
     return 1;
 }
@@ -117,7 +120,8 @@ sixel_playback_independent_credit(sixel_playback_independent_t *c, int pool,
 {
     sixel_mutex_lock(&c->gate);
     if (acquire) {
-        while (c->used[pool] == 2) sixel_cond_wait(&c->changed, &c->gate);
+        while (c->used[pool] == SIXEL_PLAYBACK_RING_CAPACITY)
+            sixel_cond_wait(&c->changed, &c->gate);
         ++c->used[pool];
         if (c->used[pool] > c->high[pool]) c->high[pool] = c->used[pool];
     } else {
@@ -326,6 +330,11 @@ sixel_playback_independent_prepare(void *context)
         sixel_playback_independent_put(c, 0, r);
         index = (index + 1) % playback->capacity;
     }
+    /* Stop publishing before the end marker enters any ring: it is not a
+     * waiting frame. The same mutex pins this stack controller for readers. */
+    sixel_mutex_lock(&c->pipeline->mutex);
+    c->pipeline->queue_controller = NULL;
+    sixel_mutex_unlock(&c->pipeline->mutex);
     sixel_playback_independent_put(c, 0, NULL);
     sixel_thread_budget_leave(&policy);
     return 0;
@@ -588,7 +597,12 @@ sixel_playback_independent_encode(void *context)
         if (failure != SIXEL_OK && r->slot.status == SIXEL_OK)
             r->slot.status = failure;
         sixel_mutex_lock(&c->gate);
-        r->packet_slot = c->packets[0].busy ? 1 : 0;
+        /* The acquired packet credit guarantees a free storage slot. */
+        for (r->packet_slot = 0;
+                r->packet_slot < SIXEL_PLAYBACK_RING_CAPACITY;
+                ++r->packet_slot) {
+            if (!c->packets[r->packet_slot].busy) break;
+        }
         c->packets[r->packet_slot].busy = 1;
         sixel_mutex_unlock(&c->gate);
         c->packet = r;
@@ -700,6 +714,9 @@ sixel_encoder_frame_pipeline_run_deferred(
      * All workers still wait at the startup barrier, so reset is exclusive. */
     (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
     pipeline->independent = 1;
+    sixel_mutex_lock(&pipeline->mutex);
+    pipeline->queue_controller = &c;
+    sixel_mutex_unlock(&pipeline->mutex);
     sixel_mutex_lock(&c.gate);
     c.started = 1;
     sixel_cond_broadcast(&c.changed);
@@ -763,6 +780,10 @@ sixel_encoder_frame_pipeline_run_deferred(
         sixel_mutex_unlock(&c.gate);
     }
 cleanup:
+    /* Unpublish before joins and destruction, including startup failures. */
+    sixel_mutex_lock(&pipeline->mutex);
+    pipeline->queue_controller = NULL;
+    sixel_mutex_unlock(&pipeline->mutex);
     sixel_mutex_lock(&c.gate);
     if (!c.started) c.abort_start = 1;
     sixel_cond_broadcast(&c.changed);
@@ -783,7 +804,7 @@ cleanup:
     }
     sixel_output_unref(c.packet_output);
     sixel_output_unref(c.resolve_output);
-    for (i = 0; i < 2; ++i)
+    for (i = 0; i < SIXEL_PLAYBACK_RING_CAPACITY; ++i)
         sixel_allocator_free(encoder->allocator, c.packets[i].bytes);
     sixel_cond_destroy(&c.changed);
 no_cond:

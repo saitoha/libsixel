@@ -243,6 +243,18 @@ sixel_mutex_lock(sixel_mutex_t *mutex)
     }
 }
 
+SIXELAPI int
+sixel_mutex_trylock(sixel_mutex_t *mutex)
+{
+    int rc;
+
+    if (mutex == NULL) return 0;
+    rc = pthread_mutex_trylock(&mutex->native);
+    if (rc != 0 && rc != EBUSY)
+        sixel_pthread_abort("pthread_mutex_trylock", rc);
+    return rc == 0;
+}
+
 SIXELAPI void
 sixel_mutex_unlock(sixel_mutex_t *mutex)
 {
@@ -570,6 +582,12 @@ sixel_mutex_lock(sixel_mutex_t *mutex)
     EnterCriticalSection(&mutex->native);
 }
 
+SIXELAPI int
+sixel_mutex_trylock(sixel_mutex_t *mutex)
+{
+    return mutex != NULL && TryEnterCriticalSection(&mutex->native) != 0;
+}
+
 SIXELAPI void
 sixel_mutex_unlock(sixel_mutex_t *mutex)
 {
@@ -757,6 +775,13 @@ SIXELAPI void
 sixel_mutex_lock(sixel_mutex_t *mutex)
 {
     (void)mutex;
+}
+
+SIXELAPI int
+sixel_mutex_trylock(sixel_mutex_t *mutex)
+{
+    (void)mutex;
+    return 0;
 }
 
 SIXELAPI void

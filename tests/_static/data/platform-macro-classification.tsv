@@ -65,6 +65,7 @@ __FAST_MATH__	compiler	-
 __FMA__	architecture	-
 __FreeBSD__	platform	docs/misc/platforms/posix-runtimes.md
 __GLIBC__	platform	docs/misc/platforms/posix-runtimes.md
+__GCC_ATOMIC_INT_LOCK_FREE	compiler	-
 __GNUC__	compiler	-
 __GNU__	platform	docs/misc/platforms/gnu-hurd.md
 __MACH__	platform	docs/misc/platforms/macos.md

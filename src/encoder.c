@@ -1157,6 +1157,8 @@ typedef struct sixel_encoder_frame_pipeline {
     sixel_threading_snapshot_t policy;
     sixel_palette_store_t *palette_store;
     int independent; /* Private controller owns history and stage records. */
+    /* Stack controller lifetime is protected by mutex. */
+    struct sixel_playback_independent *queue_controller;
     sixel_palette_scheduler_t palette_scheduler;
     sixel_palette_auto_t palette_auto;
     double auto_completed_at;
@@ -17405,6 +17407,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->next_sequence = 0;
     pipeline->palette_store = NULL;
     pipeline->independent = 0;
+    pipeline->queue_controller = NULL;
     sixel_palette_auto_init(&pipeline->palette_auto);
     pipeline->auto_completed_at = 0.0;
     pipeline->auto_emit_end = 0.0;
@@ -20951,6 +20954,65 @@ sixel_playback_get_pipeline_sample(sixel_playback_t *playback,
     }
     if (playback->threaded) sixel_mutex_unlock(&playback->pipeline.mutex);
     return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_get_queue_sample(sixel_playback_t *playback,
+    sixel_playback_queue_sample_t *sample)
+{
+#if SIXEL_ENABLE_THREADS && SIXEL_ATOMIC_U32_LOCK_FREE
+    sixel_playback_queue_sample_t result;
+    sixel_playback_independent_t *controller;
+    unsigned int i, attempt, head, tail, depth;
+    int stable;
+
+    if (playback == NULL || sample == NULL ||
+            sample->struct_size < sizeof(*sample)) return SIXEL_BAD_ARGUMENT;
+    if (!playback->threaded ||
+            !sixel_mutex_trylock(&playback->pipeline.mutex)) return SIXEL_FALSE;
+    controller = playback->pipeline.queue_controller;
+    if (controller == NULL) {
+        sixel_mutex_unlock(&playback->pipeline.mutex);
+        return SIXEL_FALSE;
+    }
+    memset(&result, 0, sizeof(result));
+    result.struct_size = sample->struct_size;
+    result.pending_palette = (unsigned int)playback->pipeline.queue_count;
+    /* Reservations and all active stages share the admission bound; the
+     * pending queue is a subset of those admitted frames. */
+    result.pending_capacity = playback->capacity;
+    stable = 1;
+    for (i = 0; i < 4 && stable; ++i) {
+        stable = 0;
+        /* A moving consumer can invalidate tail-head. Retry a bounded
+         * number of times, never report underflow or exceed ring capacity.
+         * Unsigned subtraction also handles the ring counter's wrap. */
+        for (attempt = 0; attempt < 3; ++attempt) {
+            head = sixel_playback_ready_load(&controller->queues[i].head);
+            tail = sixel_playback_ready_load(&controller->queues[i].tail);
+            depth = (unsigned int)((uint64_t)tail + UINT_MAX + 1u - head);
+            if (head == sixel_playback_ready_load(
+                    &controller->queues[i].head)
+                    && depth <= SIXEL_PLAYBACK_RING_CAPACITY) {
+                result.depth[i] = depth;
+                result.capacity[i] = SIXEL_PLAYBACK_RING_CAPACITY;
+                stable = 1;
+                break;
+            }
+        }
+    }
+    sixel_mutex_unlock(&playback->pipeline.mutex);
+    if (!stable) return SIXEL_FALSE;
+    result.valid = 1;
+    result.stage_count = 4;
+    *sample = result;
+    return SIXEL_OK;
+#else
+    /* The mutex-backed atomic fallback cannot promise a nonblocking read. */
+    if (playback == NULL || sample == NULL ||
+            sample->struct_size < sizeof(*sample)) return SIXEL_BAD_ARGUMENT;
+    return SIXEL_FALSE;
+#endif
 }
 
 SIXELAPI SIXELSTATUS

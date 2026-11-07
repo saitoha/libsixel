@@ -41,6 +41,8 @@ int phased_rendezvous_open(struct phased_rendezvous_fixture *s, char const *gpu,
                    char const *prepare, char const *delta);
 void phased_rendezvous_close(struct phased_rendezvous_fixture *s);
 int phased_rendezvous_submit(struct phased_rendezvous_fixture *s, int index);
+int phased_rendezvous_open_portable(struct phased_rendezvous_fixture *s,
+    char const *gpu);
 int phased_rendezvous_open_rect(struct phased_rendezvous_fixture *s);
 int phased_rendezvous_submit_origin(struct phased_rendezvous_fixture *s,
     int index, int origin);

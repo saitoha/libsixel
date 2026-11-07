@@ -2322,6 +2322,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	dither/phased/0060_latest_replay_refresh.c \
 	dither/phased/0061_latest_replay_small.c \
 	_support/phased/latest.c \
+	dither/phased/0078_queue_sample_short.c \
+	dither/phased/0079_queue_sample_unavailable.c \
+	dither/phased/0080_queue_sample_live.c \
+	dither/phased/0081_queue_sample_tail.c \
 	dither/phased/0064_pipeline_sample_stale.c \
 	dither/phased/0065_pipeline_sample_short.c \
 	dither/phased/0066_pipeline_sample_tail.c \
@@ -7318,6 +7322,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0060_latest_replay_refresh.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0061_latest_replay_small.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/phased/test_runner-latest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0078_queue_sample_short.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0079_queue_sample_unavailable.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0080_queue_sample_live.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0081_queue_sample_tail.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0064_pipeline_sample_stale.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0065_pipeline_sample_short.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0066_pipeline_sample_tail.$(OBJEXT) \
@@ -11797,6 +11805,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/phased/$(DEPDIR)/test_runner-0075_batch_zero_tile.Po \
 	dither/phased/$(DEPDIR)/test_runner-0076_batch_thread_overflow.Po \
 	dither/phased/$(DEPDIR)/test_runner-0077_batch_invalid_index.Po \
+	dither/phased/$(DEPDIR)/test_runner-0078_queue_sample_short.Po \
+	dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po \
+	dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Po \
+	dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po \
@@ -15913,6 +15925,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_LATEST_REPLAY_SMALL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_LATEST_COMPLETED_OWN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_LATEST_EXCLUDES_FUTURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0078_QUEUE_SAMPLE_SHORT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0079_QUEUE_SAMPLE_UNAVAILABLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_QUEUE_SAMPLE_LIVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0081_QUEUE_SAMPLE_TAIL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_PIPELINE_SAMPLE_STALE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_PIPELINE_SAMPLE_SHORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_PIPELINE_SAMPLE_TAIL \
@@ -23042,6 +23058,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0060_latest_replay_refresh.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0061_latest_replay_small.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/phased/latest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0078_queue_sample_short.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0079_queue_sample_unavailable.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0080_queue_sample_live.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0081_queue_sample_tail.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0064_pipeline_sample_stale.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0065_pipeline_sample_short.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0066_pipeline_sample_tail.c \
@@ -33276,6 +33296,18 @@ dither/phased/test_runner-0061_latest_replay_small.$(OBJEXT):  \
 _support/phased/test_runner-latest.$(OBJEXT):  \
 	_support/phased/$(am__dirstamp) \
 	_support/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0078_queue_sample_short.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0079_queue_sample_unavailable.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0080_queue_sample_live.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0081_queue_sample_tail.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
 dither/phased/test_runner-0064_pipeline_sample_stale.$(OBJEXT):  \
 	dither/phased/$(am__dirstamp) \
 	dither/phased/$(DEPDIR)/$(am__dirstamp)
@@ -44134,6 +44166,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0075_batch_zero_tile.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0076_batch_thread_overflow.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0077_batch_invalid_index.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0078_queue_sample_short.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po@am__quote@ # am--include-marker
@@ -77664,6 +77700,62 @@ _support/phased/test_runner-latest.obj: _support/phased/latest.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/phased/latest.c' object='_support/phased/test_runner-latest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/phased/test_runner-latest.obj `if test -f '_support/phased/latest.c'; then $(CYGPATH_W) '_support/phased/latest.c'; else $(CYGPATH_W) '$(srcdir)/_support/phased/latest.c'; fi`
+
+dither/phased/test_runner-0078_queue_sample_short.o: dither/phased/0078_queue_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0078_queue_sample_short.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0078_queue_sample_short.Tpo -c -o dither/phased/test_runner-0078_queue_sample_short.o `test -f 'dither/phased/0078_queue_sample_short.c' || echo '$(srcdir)/'`dither/phased/0078_queue_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0078_queue_sample_short.Tpo dither/phased/$(DEPDIR)/test_runner-0078_queue_sample_short.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0078_queue_sample_short.c' object='dither/phased/test_runner-0078_queue_sample_short.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0078_queue_sample_short.o `test -f 'dither/phased/0078_queue_sample_short.c' || echo '$(srcdir)/'`dither/phased/0078_queue_sample_short.c
+
+dither/phased/test_runner-0078_queue_sample_short.obj: dither/phased/0078_queue_sample_short.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0078_queue_sample_short.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0078_queue_sample_short.Tpo -c -o dither/phased/test_runner-0078_queue_sample_short.obj `if test -f 'dither/phased/0078_queue_sample_short.c'; then $(CYGPATH_W) 'dither/phased/0078_queue_sample_short.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0078_queue_sample_short.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0078_queue_sample_short.Tpo dither/phased/$(DEPDIR)/test_runner-0078_queue_sample_short.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0078_queue_sample_short.c' object='dither/phased/test_runner-0078_queue_sample_short.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0078_queue_sample_short.obj `if test -f 'dither/phased/0078_queue_sample_short.c'; then $(CYGPATH_W) 'dither/phased/0078_queue_sample_short.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0078_queue_sample_short.c'; fi`
+
+dither/phased/test_runner-0079_queue_sample_unavailable.o: dither/phased/0079_queue_sample_unavailable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0079_queue_sample_unavailable.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Tpo -c -o dither/phased/test_runner-0079_queue_sample_unavailable.o `test -f 'dither/phased/0079_queue_sample_unavailable.c' || echo '$(srcdir)/'`dither/phased/0079_queue_sample_unavailable.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Tpo dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0079_queue_sample_unavailable.c' object='dither/phased/test_runner-0079_queue_sample_unavailable.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0079_queue_sample_unavailable.o `test -f 'dither/phased/0079_queue_sample_unavailable.c' || echo '$(srcdir)/'`dither/phased/0079_queue_sample_unavailable.c
+
+dither/phased/test_runner-0079_queue_sample_unavailable.obj: dither/phased/0079_queue_sample_unavailable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0079_queue_sample_unavailable.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Tpo -c -o dither/phased/test_runner-0079_queue_sample_unavailable.obj `if test -f 'dither/phased/0079_queue_sample_unavailable.c'; then $(CYGPATH_W) 'dither/phased/0079_queue_sample_unavailable.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0079_queue_sample_unavailable.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Tpo dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0079_queue_sample_unavailable.c' object='dither/phased/test_runner-0079_queue_sample_unavailable.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0079_queue_sample_unavailable.obj `if test -f 'dither/phased/0079_queue_sample_unavailable.c'; then $(CYGPATH_W) 'dither/phased/0079_queue_sample_unavailable.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0079_queue_sample_unavailable.c'; fi`
+
+dither/phased/test_runner-0080_queue_sample_live.o: dither/phased/0080_queue_sample_live.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0080_queue_sample_live.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Tpo -c -o dither/phased/test_runner-0080_queue_sample_live.o `test -f 'dither/phased/0080_queue_sample_live.c' || echo '$(srcdir)/'`dither/phased/0080_queue_sample_live.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Tpo dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0080_queue_sample_live.c' object='dither/phased/test_runner-0080_queue_sample_live.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0080_queue_sample_live.o `test -f 'dither/phased/0080_queue_sample_live.c' || echo '$(srcdir)/'`dither/phased/0080_queue_sample_live.c
+
+dither/phased/test_runner-0080_queue_sample_live.obj: dither/phased/0080_queue_sample_live.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0080_queue_sample_live.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Tpo -c -o dither/phased/test_runner-0080_queue_sample_live.obj `if test -f 'dither/phased/0080_queue_sample_live.c'; then $(CYGPATH_W) 'dither/phased/0080_queue_sample_live.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0080_queue_sample_live.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Tpo dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0080_queue_sample_live.c' object='dither/phased/test_runner-0080_queue_sample_live.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0080_queue_sample_live.obj `if test -f 'dither/phased/0080_queue_sample_live.c'; then $(CYGPATH_W) 'dither/phased/0080_queue_sample_live.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0080_queue_sample_live.c'; fi`
+
+dither/phased/test_runner-0081_queue_sample_tail.o: dither/phased/0081_queue_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0081_queue_sample_tail.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Tpo -c -o dither/phased/test_runner-0081_queue_sample_tail.o `test -f 'dither/phased/0081_queue_sample_tail.c' || echo '$(srcdir)/'`dither/phased/0081_queue_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Tpo dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0081_queue_sample_tail.c' object='dither/phased/test_runner-0081_queue_sample_tail.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0081_queue_sample_tail.o `test -f 'dither/phased/0081_queue_sample_tail.c' || echo '$(srcdir)/'`dither/phased/0081_queue_sample_tail.c
+
+dither/phased/test_runner-0081_queue_sample_tail.obj: dither/phased/0081_queue_sample_tail.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0081_queue_sample_tail.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Tpo -c -o dither/phased/test_runner-0081_queue_sample_tail.obj `if test -f 'dither/phased/0081_queue_sample_tail.c'; then $(CYGPATH_W) 'dither/phased/0081_queue_sample_tail.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0081_queue_sample_tail.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Tpo dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0081_queue_sample_tail.c' object='dither/phased/test_runner-0081_queue_sample_tail.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0081_queue_sample_tail.obj `if test -f 'dither/phased/0081_queue_sample_tail.c'; then $(CYGPATH_W) 'dither/phased/0081_queue_sample_tail.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0081_queue_sample_tail.c'; fi`
 
 dither/phased/test_runner-0064_pipeline_sample_stale.o: dither/phased/0064_pipeline_sample_stale.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0064_pipeline_sample_stale.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Tpo -c -o dither/phased/test_runner-0064_pipeline_sample_stale.o `test -f 'dither/phased/0064_pipeline_sample_stale.c' || echo '$(srcdir)/'`dither/phased/0064_pipeline_sample_stale.c

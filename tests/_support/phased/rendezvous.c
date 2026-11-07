@@ -163,7 +163,8 @@ phased_rendezvous_done(sixel_playback_result_t const *result, void *context)
 
 static int
 phased_rendezvous_open_impl(struct phased_rendezvous_fixture *s,
-    char const *gpu, char const *prepare, char const *delta, int plane)
+    char const *gpu, char const *prepare, char const *delta, int plane,
+    char const *diffusion)
 {
     sixel_playback_config_t config;
     char policy[80];
@@ -183,7 +184,7 @@ phased_rendezvous_open_impl(struct phased_rendezvous_fixture *s,
         SIXEL_OPTFLAG_THREADING_POLICY, policy) == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_setopt(s->encoder, 'G', gpu) == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_setopt(s->encoder, '~', "ordered") == SIXEL_OK);
-    AHEAD_CHECK(sixel_encoder_setopt(s->encoder, 'd', "phased") == SIXEL_OK);
+    AHEAD_CHECK(sixel_encoder_setopt(s->encoder, 'd', diffusion) == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_setopt(s->encoder, 'p', "16") == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_setopt(s->encoder, 'Z', delta) == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_set_6delta_plane_size(s->encoder, plane, plane)
@@ -259,13 +260,24 @@ int
 phased_rendezvous_open(struct phased_rendezvous_fixture *s, char const *gpu,
     char const *prepare, char const *delta)
 {
-    return phased_rendezvous_open_impl(s, gpu, prepare, delta, 0);
+    return phased_rendezvous_open_impl(s, gpu, prepare, delta, 0, "phased");
+}
+
+/* Auto exercises the independent controller even without a GPU; off selects
+ * legacy scheduling. Ordinary indexed output needs no deferred GPU solve. */
+int
+phased_rendezvous_open_portable(struct phased_rendezvous_fixture *s,
+    char const *gpu)
+{
+    return phased_rendezvous_open_impl(s, gpu, "ahead", "delta:T0", 0,
+        "none");
 }
 
 int
 phased_rendezvous_open_rect(struct phased_rendezvous_fixture *s)
 {
-    return phased_rendezvous_open_impl(s, "force", "ahead", "delta:T0", 64);
+    return phased_rendezvous_open_impl(s, "force", "ahead", "delta:T0", 64,
+        "phased");
 }
 
 int

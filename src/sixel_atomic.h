@@ -32,6 +32,7 @@ typedef unsigned int sixel_atomic_u32_t;
 typedef int sixel_atomic_i32_t;
 
 # if defined(__GNUC__) && defined(__ATOMIC_ACQ_REL)
+#  define SIXEL_ATOMIC_U32_LOCK_FREE (__GCC_ATOMIC_INT_LOCK_FREE == 2)
 #  define sixel_fence_release() __atomic_thread_fence(__ATOMIC_RELEASE)
 #  define sixel_fence_acquire() __atomic_thread_fence(__ATOMIC_ACQUIRE)
 static inline unsigned int
@@ -70,6 +71,7 @@ sixel_atomic_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
 #   define WIN32_LEAN_AND_MEAN
 #  endif
 #  include <windows.h>
+#  define SIXEL_ATOMIC_U32_LOCK_FREE 1
 #  define sixel_fence_release() MemoryBarrier()
 #  define sixel_fence_acquire() MemoryBarrier()
 static inline unsigned int
@@ -196,6 +198,7 @@ sixel_atomic_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
 # endif
 #else
 # include <stdatomic.h>
+# define SIXEL_ATOMIC_U32_LOCK_FREE (ATOMIC_INT_LOCK_FREE == 2)
 typedef _Atomic unsigned int sixel_atomic_u32_t;
 typedef _Atomic int sixel_atomic_i32_t;
 # define sixel_fence_release() atomic_thread_fence(memory_order_release)
