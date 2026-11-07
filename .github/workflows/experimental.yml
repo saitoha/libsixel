@@ -391,7 +391,9 @@ jobs:
   vcpkg-msvc-autotools:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
+    # MSYS process startup and the full codec test matrix exceed 90 minutes
+    # while still making progress. Keep a finite budget for build and tests.
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       max-parallel: 1

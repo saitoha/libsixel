@@ -22,9 +22,11 @@ kernel void delaunay_bounds(constant uchar *palette [[buffer(0)]],
             constant uint& ncolors [[buffer(1)]],
             device uint *table [[buffer(3)]],
             uint row [[threadgroup_position_in_grid]],
-            uint lane [[thread_index_in_threadgroup]])
+            uint lane [[thread_index_in_threadgroup]],
+            uint simd_width [[threads_per_simdgroup]])
 {
     device int4 *bounds = (device int4 *)(table + 135424u);
+    threadgroup int3 lows[32], highs[32];
     int3 lo, hi, nextlo, nexthi, point, other, normal;
     int limit, rest, numerator, denominator, quotient, remainder;
     uint pass, k, axis, u, v;
@@ -60,10 +62,27 @@ kernel void delaunay_bounds(constant uchar *palette [[buffer(0)]],
                 }
             }
         }
-        lo = int3(simd_max(nextlo.x), simd_max(nextlo.y),
-                  simd_max(nextlo.z));
-        hi = int3(simd_min(nexthi.x), simd_min(nexthi.y),
-                  simd_min(nexthi.z));
+        /* These bounds belong to the whole 32-thread group, even on
+         * hardware whose SIMD groups are narrower than that dispatch. */
+        if (simd_width == 32u) {
+            lo = int3(simd_max(nextlo.x), simd_max(nextlo.y),
+                      simd_max(nextlo.z));
+            hi = int3(simd_min(nexthi.x), simd_min(nexthi.y),
+                      simd_min(nexthi.z));
+        } else {
+            lows[lane] = nextlo;
+            highs[lane] = nexthi;
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            if (lane == 0) {
+                for (k = 1; k < 32; ++k) {
+                    lows[0] = max(lows[0], lows[k]);
+                    highs[0] = min(highs[0], highs[k]);
+                }
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            lo = lows[0];
+            hi = highs[0];
+        }
     }
     if (lane == 0) {
         bounds[row * 2] = int4(lo, 0);
@@ -79,12 +98,16 @@ kernel void delaunay_sort(constant uchar *palette [[buffer(0)]],
            device uint *table [[buffer(3)]],
            uint row [[threadgroup_position_in_grid]],
            uint lane [[thread_index_in_threadgroup]],
-           uint threads [[threads_per_threadgroup]])
+           uint threads [[threads_per_threadgroup]],
+           uint simd_lane [[thread_index_in_simdgroup]],
+           uint simd_group [[simdgroup_index_in_threadgroup]],
+           uint simd_groups [[simdgroups_per_threadgroup]])
 {
     device const int4 *bounds =
         (device const int4 *)(table + 135424u);
     threadgroup uint keys[256];
-    threadgroup uint totals[8];
+    /* At most one SIMD group per dispatched thread; do not assume 32. */
+    threadgroup uint totals[256];
     threadgroup uint count;
     int3 point, other_point, lo, hi, normal, lower, upper;
     int limit;
@@ -111,12 +134,12 @@ kernel void delaunay_sort(constant uchar *palette [[buffer(0)]],
     }
     keys[lane] = key;
     sum = simd_sum(keep);
-    if ((lane & 31) == 0)
-        totals[lane >> 5] = sum;
+    if (simd_lane == 0)
+        totals[simd_group] = sum;
     threadgroup_barrier(mem_flags::mem_threadgroup);
     if (lane == 0) {
         sum = 0;
-        for (k = 0; k < threads / 32; ++k)
+        for (k = 0; k < simd_groups; ++k)
             sum += totals[k];
         count = sum;
         table[131072u + row] = sum;

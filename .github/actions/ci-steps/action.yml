@@ -1500,6 +1500,14 @@ runs:
           if [ -z "$GCOV_TOOL" ]; then
             GCOV_TOOL="$(command -v llvm-cov) gcov"
           fi
+        elif test "$RUNNER_OS" = macOS; then
+          # Read Apple clang's counters with its own LLVM tool. The legacy
+          # gcov format can report hit lines with zero branch counts, which
+          # lcov rejects before publishing the rest of the coverage.
+          GCOV_TOOL="$(xcrun --find llvm-cov) gcov"
+        fi
+        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]] ||
+            test "$RUNNER_OS" = macOS; then
           # Coverage is part of this matrix contract, including actual
           # counters. Do not replace a failed read with an initial-only map.
           # Distribution gcovr can predate LLVM's $$$$$ block-count records.

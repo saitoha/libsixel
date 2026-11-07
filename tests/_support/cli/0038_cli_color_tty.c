@@ -523,17 +523,34 @@ color_tty_child(char const *name, int command, int report)
             }
             goto finish;
         }
+        started = color_tty_now();
         result = img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_CAPABILITY,
                                           15, &exchange);
-        if (result != IMG2SIXEL_COLOR_IO_TIMEOUT ||
-            exchange.request_written >= sizeof(COLOR_TTY_QUERY) - 1u ||
-            exchange.received) {
-            return color_tty_error("blocked request reported silent reply");
+        /* Queue movement may admit the complete short query. Only that
+         * case can report a silent peer rather than a blocked send. */
+        if (result != (exchange.request_written ==
+                sizeof(COLOR_TTY_QUERY) - 1u ? IMG2SIXEL_COLOR_IO_SILENT
+                                           : IMG2SIXEL_COLOR_IO_TIMEOUT) ||
+            exchange.request_written > sizeof(COLOR_TTY_QUERY) - 1u ||
+            exchange.received || color_tty_now() - started > 0.25) {
+            return color_tty_error("backpressured query classification");
         }
-        result = img2sixel_color_tty_write(tty, COLOR_TTY_RECOVER,
-            sizeof(COLOR_TTY_RECOVER) - 1u, 15, 1, &written);
+        /* The kernel can move queued bytes to the master-side buffer even
+         * while the parent does not read. A short recovery may then fit.
+         * Use the same oversized payload to observe the recovery path's
+         * deadline, rather than assuming that readiness stays unchanged. */
+        large = (char *)malloc(1024u * 1024u);
+        if (large == NULL) {
+            return 1;
+        }
+        memset(large, 'x', 1024u * 1024u);
+        started = color_tty_now();
+        result = img2sixel_color_tty_write(tty, large, 1024u * 1024u,
+                                          15, 1, &written);
+        free(large);
         if (result != IMG2SIXEL_COLOR_IO_TIMEOUT ||
-            written >= sizeof(COLOR_TTY_RECOVER) - 1u) {
+            written >= 1024u * 1024u ||
+            color_tty_now() - started > 0.25) {
             return color_tty_error("blocked restore reported success");
         }
         goto finish;
@@ -680,14 +697,17 @@ color_tty_script(char const *name, int master, int command, int report,
         done = 0;
         while ((count = read(master, bytes, sizeof(bytes))) > 0) {
             for (result = 0; result < count; ++result) {
-                if (done == 0 && bytes[result] == 'x') {
+                if (bytes[result] == 'x') {
+                    /* Recovery filler may follow a partial query, but a
+                     * query must never resume after that recovery starts. */
+                    if (done > 0) done = -1;
                     continue;
                 }
-                /* PTY queue movement can admit a request prefix after the
-                 * filler reached EAGAIN. The child checks that the request
-                 * remains incomplete; account for those bytes here too. */
+                /* Queue movement can admit part or all of the short query
+                 * after EAGAIN. The child checks the matching status. */
                 if (strcmp(name, "backpressure") != 0 ||
-                    done >= (int)sizeof(COLOR_TTY_QUERY) - 2 ||
+                    done < 0 ||
+                    done >= (int)sizeof(COLOR_TTY_QUERY) - 1 ||
                     bytes[result] != COLOR_TTY_QUERY[done++]) {
                     return 0;
                 }

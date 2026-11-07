@@ -1067,6 +1067,10 @@ run_case_tap "staticcheck-emscripten-coverage" \
     sh "$src_root/tests/_static/sh/staticcheck-emscripten-coverage.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-macos-coverage-reader" \
+    sh "$src_root/tests/_static/sh/staticcheck-macos-coverage-reader.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-cosmoar-selection" \
     sh "$src_root/tests/_static/sh/staticcheck-cosmoar-selection.sh" \
     "$src_root" || fail_and_exit $?

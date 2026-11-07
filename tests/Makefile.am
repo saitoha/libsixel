@@ -12560,3 +12560,5 @@ EXTRA_DIST += _static/sh/staticcheck-tap-interpreter-skip.sh \
 EXTRA_DIST += _static/sh/staticcheck-assessment-stdio.sh \
     _static/sh/staticcheck-phased-coefficient-guard.sh \
     _static/sh/staticcheck-msys-runtime-arguments.sh
+
+EXTRA_DIST += _static/sh/staticcheck-macos-coverage-reader.sh

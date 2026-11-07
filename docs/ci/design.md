@@ -66,6 +66,8 @@ An experimental failure can identify a real defect. Classify it from the
 compiler or runtime evidence rather than dismissing it because the primary
 matrix is green.
 
+The experimental MSVC/vcpkg matrix has a 240-minute job budget for dependency setup, compilation and the complete codec test inventory. MSYS process startup and serial Autotools test dispatch can exceed 90 minutes while tests continue to complete. Individual test deadlines still detect hangs; the job budget does not relax their assertions or time limits.
+
 ### Fuzzing
 
 `.github/workflows/fuzzing.yml` builds and runs structured and component fuzz
@@ -201,6 +203,8 @@ Preserve artifacts needed to reproduce or understand a failure:
 - coverage reports;
 - intended release packages.
 
+macOS coverage capture uses the selected Xcode toolchain's `llvm-cov gcov` with gcovr 8.8 in an isolated Python environment. The legacy LLVM gcov format can associate executed lines with zero branch counts; lcov consistency checks can reject that input before publishing coverage. The selected reader must successfully produce a nonempty report with source records; capture failure is propagated rather than replaced by an initial-only map or suppressed. The [macOS reader check](../../tests/_static/sh/staticcheck-macos-coverage-reader.sh) executes the production recipe with stub tools to check selection and failure propagation.
+
 DragonFly BSD result files use the `.log` suffix so the shared artifact upload preserves them alongside test diagnostics. Copyback must finish before the host reports a recorded build failure. A transport failure can still prevent artifact recovery; the retry limit does not establish that those missing tests passed.
 
 Do not upload arbitrary complete build trees. Artifact names must identify the
@@ -283,3 +287,4 @@ change and directly required source, test, or generated-file updates.
 | CI-08 | Normal and PGO-use Command Prompt test builds include the C runner and default targets, continue independent compilations after errors, and immediately propagate failure; dist leaves the runner to its extracted-tree build. | [tests/_static/sh/staticcheck-ci-msvc-complete-build.sh](../../tests/_static/sh/staticcheck-ci-msvc-complete-build.sh) |
 | CI-09 | Haiku builds the non-default runner before disabling automatic dependency rebuild for test slices. | [tests/_static/sh/staticcheck-ci-haiku-test-deps.sh](../../tests/_static/sh/staticcheck-ci-haiku-test-deps.sh) |
 | CI-10 | MSVC PGO trains the default study executable and propagates training failure. | [tests/_static/sh/staticcheck-ci-pgo-study-training.sh](../../tests/_static/sh/staticcheck-ci-pgo-study-training.sh) |
+| CI-11 | macOS coverage selects the pinned LLVM-compatible reader and propagates reader failure. | [tests/_static/sh/staticcheck-macos-coverage-reader.sh](../../tests/_static/sh/staticcheck-macos-coverage-reader.sh) |
