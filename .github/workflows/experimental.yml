@@ -185,7 +185,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Build and test inside NetBSD/sparc64
+      # Retry provisioning only; the build below is outside both attempts.
+      - name: Prepare NetBSD/sparc64 (attempt 1)
+        id: sparc_prepare_1
+        continue-on-error: true
+        timeout-minutes: 25
         uses: vmactions/netbsd-vm@20ee93a005c9fc78743e6e05269f4cb023b87413 # v1.5.0
         with:
           arch: sparc64
@@ -194,6 +198,7 @@ jobs:
           mem: 4096
           release: '11.0'
           sync: scp
+          data-dir: ${{ runner.temp }}/sparc-vm-1
           prepare: |
             set -eux
             if test '${{ matrix.buildtool }}' = autotools; then
@@ -201,7 +206,63 @@ jobs:
             else
               /usr/sbin/pkg_add -u meson ninja-build
             fi
-          run: |
+
+      - name: Reset failed SPARC VM before retry
+        if: steps.sparc_prepare_1.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This dedicated runner hosts only the SPARC provisioning attempt.
+          # Kill the failed guest before starting another snapshot; remove
+          # its aliases because SSH otherwise selects the first stale port.
+          if pgrep -f '(^|/)qemu-system-sparc64( |$)' >/dev/null; then
+            pkill -TERM -f '(^|/)qemu-system-sparc64( |$)' || test "$?" -eq 1
+            for attempt in 1 2 3 4 5; do
+              pgrep -f '(^|/)qemu-system-sparc64( |$)' >/dev/null || break
+              sleep "$attempt"
+            done
+            if pgrep -f '(^|/)qemu-system-sparc64( |$)' >/dev/null; then
+              pkill -KILL -f '(^|/)qemu-system-sparc64( |$)' || test "$?" -eq 1
+            fi
+          fi
+          for config in "$HOME"/.ssh/config.d/*.conf; do
+            test -f "$config" || continue
+            if awk '$1 == "Host" { for (i = 2; i <= NF; ++i) if ($i == "netbsd") found = 1 } END { exit !found }' "$config"; then
+              rm -f "$config"
+            fi
+          done
+
+      - name: Prepare NetBSD/sparc64 (attempt 2)
+        id: sparc_prepare_2
+        if: steps.sparc_prepare_1.outcome == 'failure'
+        timeout-minutes: 25
+        uses: vmactions/netbsd-vm@20ee93a005c9fc78743e6e05269f4cb023b87413 # v1.5.0
+        with:
+          disable-cache: true
+          arch: sparc64
+          copyback: false
+          cpu: 2
+          mem: 4096
+          release: '11.0'
+          sync: scp
+          data-dir: ${{ runner.temp }}/sparc-vm-2
+          prepare: |
+            set -eux
+            if test '${{ matrix.buildtool }}' = autotools; then
+              /usr/sbin/pkg_add -u gmake
+            else
+              /usr/sbin/pkg_add -u meson ninja-build
+            fi
+
+      - name: Build and test inside NetBSD/sparc64
+        if: steps.sparc_prepare_1.outcome == 'success' || steps.sparc_prepare_2.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o ConnectTimeout=60 \
+            -o ServerAliveInterval=30 -o ServerAliveCountMax=6 \
+            netbsd sh -e <<'SIXEL_SPARC_BUILD'
+            cd "$GITHUB_WORKSPACE"
             set -eux
             uname -a
             cc -dumpmachine
@@ -251,6 +312,7 @@ jobs:
               sh "$GITHUB_WORKSPACE/tests/meson-tap-exitcode-wrapper.sh" \
                 "$GITHUB_WORKSPACE/tests/$smoke_test"
             done
+          SIXEL_SPARC_BUILD
 
   icx-x86_64:
     name: ${{ matrix.label }}
