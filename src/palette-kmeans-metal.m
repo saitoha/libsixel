@@ -30,7 +30,7 @@ static SIXELSTATUS sixel_km_metal_status = SIXEL_FALSE;
 enum {
     SIXEL_KM_POINTS, SIXEL_KM_WEIGHTS, SIXEL_KM_CENTERS,
     SIXEL_KM_MEMBERSHIP, SIXEL_KM_DISTANCES, SIXEL_KM_PARTIALS,
-    SIXEL_KM_SUMS, SIXEL_KM_STATE, SIXEL_KM_BUFFERS
+    SIXEL_KM_SUMS, SIXEL_KM_STATE, SIXEL_KM_MAXIMA, SIXEL_KM_BUFFERS
 };
 
 typedef struct sixel_km_metal_params {
@@ -54,8 +54,15 @@ typedef struct sixel_km_metal_state {
  * residuals without racing assignment threads. Rejection is request-wide;
  * no partial result is published and AUTO retries the unchanged CPU seeds.
  * Separate literals stay below C99's 4095-byte translation limit. The first
- * pass uses a full center scan. The next two passes perform deterministic
- * segmented sums without floating-point atomics or an M-by-K distance table.
+ * pass uses a full center scan. A cooperative 512-point tile then builds
+ * ordered membership lists in 14 KiB of threadgroup storage: every weighted
+ * point is added once, in exactly the original ascending index order. This
+ * avoids the per-center full tile scan without introducing FP32 atomics or
+ * reordering sums. The second sum pass retains tile order.
+ * Tile maxima accelerate empty repair: the serial update scans only one
+ * candidate per tile and refreshes only the consumed donor's tile. Strict
+ * comparisons and increasing tile order preserve lowest-index ties, even
+ * when every residual is zero and a previously used donor is selected again.
  * All iterations are submitted together: no CPU readback occurs between
  * assignment, reduction, empty-cluster repair and convergence decisions. */
 static char const * const sixel_km_metal_source[] = {
@@ -72,7 +79,7 @@ static char const * const sixel_km_metal_source[] = {
 " device uint *membership [[buffer(3)]],\n"
 " device float *distances [[buffer(4)]],\n"
 " device State &s [[buffer(7)]],\n"
-" constant Params &p [[buffer(8)]],\n"
+" constant Params &p [[buffer(9)]],\n"
 " uint gid [[thread_position_in_grid]]) {\n"
 " if (s.done || gid >= p.points) return;\n"
 " float weight = weights[gid];\n"
@@ -99,24 +106,54 @@ static char const * const sixel_km_metal_source[] = {
 " device const packed_float3 *points [[buffer(0)]],\n"
 " device const float *weights [[buffer(1)]],\n"
 " device const uint *membership [[buffer(3)]],\n"
+" device const float *distances [[buffer(4)]],\n"
 " device float4 *partials [[buffer(5)]],\n"
 " device const State &s [[buffer(7)]],\n"
-" constant Params &p [[buffer(8)]],\n"
-" uint gid [[thread_position_in_grid]]) {\n"
-" if (s.done || gid >= p.groups * p.centers) return;\n"
-" uint group = gid / p.centers, center = gid % p.centers;\n"
-" uint end = min((group + 1) * 512u, p.points); float4 sum = 0;\n"
-" for (uint i = group * 512u; i < end; ++i) {\n"
-"  if (membership[i] == center && weights[i] > 0)\n"
-"   sum += float4(float3(points[i]) * weights[i], weights[i]);\n"
+" device uint *maxima [[buffer(8)]],\n"
+" constant Params &p [[buffer(9)]],\n"
+" uint group [[threadgroup_position_in_grid]],\n"
+" uint lane [[thread_index_in_threadgroup]],\n"
+" uint lanes [[threads_per_threadgroup]]) {\n"
+" threadgroup float4 moments[512];\n"
+" threadgroup uint heads[1024], links[512];\n"
+" uint begin, count, i, c, owner, selected;\n"
+" float weight, farthest;\n"
+" float4 sum;\n"
+" if (s.done) return;\n"
+" begin = group * 512u; count = min(512u, p.points - begin);\n"
+" for (c = lane; c < p.centers; c += lanes) heads[c] = 512u;\n"
+" for (i = lane; i < count; i += lanes) {\n"
+"  weight = weights[begin+i];\n"
+"  moments[i] = float4(float3(points[begin+i]) * weight, weight);\n"
+"  links[i] = membership[begin+i];\n"
 " }\n"
-" partials[gid] = sum;\n"
+" threadgroup_barrier(mem_flags::mem_threadgroup);\n"
+" if (lane == 0) {\n"
+"  farthest = -1; selected = begin;\n"
+"  // Prepend in reverse order to preserve ascending sample summation.\n"
+"  for (i = count; i > 0;) {\n"
+"   --i; owner = links[i]; links[i] = heads[owner]; heads[owner] = i;\n"
+"   // Reverse traversal uses >= so equal residuals keep the lowest index.\n"
+"   if (distances[begin+i] >= farthest) {\n"
+"    farthest = distances[begin+i]; selected = begin+i;\n"
+"   }\n"
+"  }\n"
+"  maxima[group] = selected;\n"
+" }\n"
+" threadgroup_barrier(mem_flags::mem_threadgroup);\n"
+" for (c = lane; c < p.centers; c += lanes) {\n"
+"  sum = 0;\n"
+"  for (i = heads[c]; i != 512u; i = links[i]) {\n"
+"   if (moments[i].w > 0) sum += moments[i];\n"
+"  }\n"
+"  partials[group*p.centers+c] = sum;\n"
+" }\n"
 "}\n"
 "kernel void km_reduce(\n"
 " device const float4 *partials [[buffer(5)]],\n"
 " device float4 *sums [[buffer(6)]],\n"
 " device const State &s [[buffer(7)]],\n"
-" constant Params &p [[buffer(8)]],\n"
+" constant Params &p [[buffer(9)]],\n"
 " uint gid [[thread_position_in_grid]]) {\n"
 " if (s.done || gid >= p.centers) return;\n"
 " float4 sum = 0;\n"
@@ -131,7 +168,8 @@ static char const * const sixel_km_metal_source[] = {
 " device float *distances [[buffer(4)]],\n"
 " device float4 *sums [[buffer(6)]],\n"
 " device State &s [[buffer(7)]],\n"
-" constant Params &p [[buffer(8)]],\n"
+" device uint *maxima [[buffer(8)]],\n"
+" constant Params &p [[buffer(9)]],\n"
 " uint gid [[thread_position_in_grid]]) {\n"
 " if (gid != 0 || s.done) return;\n"
 " if (atomic_load_explicit(&s.failed, memory_order_relaxed)) {\n"
@@ -141,7 +179,8 @@ static char const * const sixel_km_metal_source[] = {
 "  if (sums[c].w > 0) continue;\n"
 "  ++s.repairs;\n"
 "  float farthest = -1; uint selected = 0;\n"
-"  for (uint i = 0; i < p.points; ++i) {\n"
+"  for (uint g = 0; g < p.groups; ++g) {\n"
+"   uint i = maxima[g];\n"
 "   if (distances[i] > farthest) { farthest = distances[i]; selected = i; }\n"
 "  }\n"
 "  uint old = membership[selected]; float weight = weights[selected];\n"
@@ -152,6 +191,14 @@ static char const * const sixel_km_metal_source[] = {
 "   remaining.w = max(remaining.w, 0.0f); sums[old] = remaining;\n"
 "  }\n"
 "  sums[c] = moved; membership[selected] = c; distances[selected] = 0;\n"
+"  // Only the consumed donor changes residual. Refresh just its tile.\n"
+"  uint group = selected / 512u, begin = group * 512u;\n"
+"  uint end = min(begin + 512u, p.points);\n"
+"  farthest = -1; selected = begin;\n"
+"  for (uint i = begin; i < end; ++i) {\n"
+"   if (distances[i] > farthest) { farthest = distances[i]; selected = i; }\n"
+"  }\n"
+"  maxima[group] = selected;\n"
 " }\n"
 " float delta = 0;\n"
 " for (uint c = 0; c < p.centers; ++c) {\n"
@@ -344,8 +391,9 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         4u * sizeof(float);
     lengths[SIXEL_KM_SUMS] = (NSUInteger)params.centers * 4u * sizeof(float);
     lengths[SIXEL_KM_STATE] = sizeof(*state);
+    lengths[SIXEL_KM_MAXIMA] = (NSUInteger)params.groups * sizeof(uint32_t);
     counts[0] = params.points;
-    counts[1] = (NSUInteger)params.groups * params.centers;
+    counts[1] = params.groups;
     counts[2] = params.centers;
     counts[3] = 1u;
 
@@ -432,7 +480,10 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
                     threads = [sixel_km_metal_pipelines[stage]
                         maxTotalThreadsPerThreadgroup];
                 }
-                count = (counts[stage] + threads - 1u) / threads;
+                /* Partial sums use one cooperative group per 512 points;
+                 * the other kernels retain one thread per output item. */
+                count = stage == 1u ? counts[stage] :
+                    (counts[stage] + threads - 1u) / threads;
                 [encoder dispatchThreadgroups:MTLSizeMake(count, 1, 1)
                     threadsPerThreadgroup:MTLSizeMake(threads, 1, 1)];
                 [encoder endEncoding];

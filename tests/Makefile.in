@@ -3916,6 +3916,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	palette/kmeans/0083_numeric_force_rejection.c \
 	palette/kmeans/0084_gpu_latest_frontier.c \
 	palette/kmeans/0085_gpu_cancel_publication.c \
+	palette/kmeans/0086_repair_tile_ties.c \
+	palette/kmeans/0087_wide_tile_reduction.c \
 	_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c \
 	_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.h \
 	_support/quant/palette/0001_kmeans_init.c \
@@ -8911,6 +8913,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0083_numeric_force_rejection.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0084_gpu_latest_frontier.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0085_gpu_cancel_publication.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0086_repair_tile_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0087_wide_tile_reduction.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
@@ -14939,6 +14943,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Po \
 	palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Po \
 	palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Po \
 	palette/kmedoids/$(DEPDIR)/test_runner-0001_medoids_sources.Po \
 	palette/kmedoids/$(DEPDIR)/test_runner-0002_medoids_ward.Po \
 	palette/kmedoids/$(DEPDIR)/test_runner-0003_medoids_snap.Po \
@@ -15969,6 +15975,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_RARE_SSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_NUMERIC_AUTO_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_NUMERIC_FORCE_REJECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_REPAIR_TILE_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0087_WIDE_TILE_REDUCTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_GPU_LATEST_FRONTIER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_GPU_CANCEL_PUBLICATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0172_FHEDT_FRACTIONAL_REUSE \
@@ -24802,6 +24810,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0083_numeric_force_rejection.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0084_gpu_latest_frontier.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0085_gpu_cancel_publication.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0086_repair_tile_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0087_wide_tile_reduction.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/0001_kmeans_init.c \
@@ -38505,6 +38515,12 @@ palette/kmeans/test_runner-0084_gpu_latest_frontier.$(OBJEXT):  \
 palette/kmeans/test_runner-0085_gpu_cancel_publication.$(OBJEXT):  \
 	palette/kmeans/$(am__dirstamp) \
 	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0086_repair_tile_ties.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0087_wide_tile_reduction.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
 _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.$(OBJEXT):  \
 	_support/quant/palette/gpu_kmeans/$(am__dirstamp) \
 	_support/quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
@@ -47577,6 +47593,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmedoids/$(DEPDIR)/test_runner-0001_medoids_sources.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmedoids/$(DEPDIR)/test_runner-0002_medoids_ward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmedoids/$(DEPDIR)/test_runner-0003_medoids_snap.Po@am__quote@ # am--include-marker
@@ -99812,6 +99830,34 @@ palette/kmeans/test_runner-0085_gpu_cancel_publication.obj: palette/kmeans/0085_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0085_gpu_cancel_publication.c' object='palette/kmeans/test_runner-0085_gpu_cancel_publication.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0085_gpu_cancel_publication.obj `if test -f 'palette/kmeans/0085_gpu_cancel_publication.c'; then $(CYGPATH_W) 'palette/kmeans/0085_gpu_cancel_publication.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0085_gpu_cancel_publication.c'; fi`
+
+palette/kmeans/test_runner-0086_repair_tile_ties.o: palette/kmeans/0086_repair_tile_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0086_repair_tile_ties.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Tpo -c -o palette/kmeans/test_runner-0086_repair_tile_ties.o `test -f 'palette/kmeans/0086_repair_tile_ties.c' || echo '$(srcdir)/'`palette/kmeans/0086_repair_tile_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0086_repair_tile_ties.c' object='palette/kmeans/test_runner-0086_repair_tile_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0086_repair_tile_ties.o `test -f 'palette/kmeans/0086_repair_tile_ties.c' || echo '$(srcdir)/'`palette/kmeans/0086_repair_tile_ties.c
+
+palette/kmeans/test_runner-0086_repair_tile_ties.obj: palette/kmeans/0086_repair_tile_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0086_repair_tile_ties.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Tpo -c -o palette/kmeans/test_runner-0086_repair_tile_ties.obj `if test -f 'palette/kmeans/0086_repair_tile_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0086_repair_tile_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0086_repair_tile_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0086_repair_tile_ties.c' object='palette/kmeans/test_runner-0086_repair_tile_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0086_repair_tile_ties.obj `if test -f 'palette/kmeans/0086_repair_tile_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0086_repair_tile_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0086_repair_tile_ties.c'; fi`
+
+palette/kmeans/test_runner-0087_wide_tile_reduction.o: palette/kmeans/0087_wide_tile_reduction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0087_wide_tile_reduction.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Tpo -c -o palette/kmeans/test_runner-0087_wide_tile_reduction.o `test -f 'palette/kmeans/0087_wide_tile_reduction.c' || echo '$(srcdir)/'`palette/kmeans/0087_wide_tile_reduction.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Tpo palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0087_wide_tile_reduction.c' object='palette/kmeans/test_runner-0087_wide_tile_reduction.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0087_wide_tile_reduction.o `test -f 'palette/kmeans/0087_wide_tile_reduction.c' || echo '$(srcdir)/'`palette/kmeans/0087_wide_tile_reduction.c
+
+palette/kmeans/test_runner-0087_wide_tile_reduction.obj: palette/kmeans/0087_wide_tile_reduction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0087_wide_tile_reduction.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Tpo -c -o palette/kmeans/test_runner-0087_wide_tile_reduction.obj `if test -f 'palette/kmeans/0087_wide_tile_reduction.c'; then $(CYGPATH_W) 'palette/kmeans/0087_wide_tile_reduction.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0087_wide_tile_reduction.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Tpo palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0087_wide_tile_reduction.c' object='palette/kmeans/test_runner-0087_wide_tile_reduction.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0087_wide_tile_reduction.obj `if test -f 'palette/kmeans/0087_wide_tile_reduction.c'; then $(CYGPATH_W) 'palette/kmeans/0087_wide_tile_reduction.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0087_wide_tile_reduction.c'; fi`
 
 _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.o: _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.o -MD -MP -MF _support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Tpo -c -o _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.o `test -f '_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c' || echo '$(srcdir)/'`_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c

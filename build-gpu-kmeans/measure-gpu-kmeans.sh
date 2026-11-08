@@ -139,6 +139,11 @@ done
 run_logged "$results/kmeans.log" "$make_command" -C "$build" \
     -j"$jobs" check "TESTS=$suite"
 awk '/^# (TOTAL|PASS|SKIP|XFAIL|FAIL|XPASS|ERROR):/ { print }' "$results/kmeans.log"
+# Some TAP runners count a file with one skipped assertion as PASS. Report
+# the device skips from actual TAP lines independently of that summary.
+awk '/^ok [0-9]+.*# SKIP.*Metal/ { ++n }
+    END { printf "KMDEVICE|skipped_assertions=%d|\n", n }' \
+    "$build"/tests/palette/kmeans/*.log
 
 if test "$full" -eq 1; then
     echo "=== Full staticcheck ==="

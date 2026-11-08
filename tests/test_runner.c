@@ -2349,6 +2349,8 @@ int test_kmgpu_0082_numeric_auto_fallback(int argc, char **argv);
 int test_kmgpu_0083_numeric_force_rejection(int argc, char **argv);
 int test_kmgpu_0084_gpu_latest_frontier(int argc, char **argv);
 int test_kmgpu_0085_gpu_cancel_publication(int argc, char **argv);
+int test_kmgpu_0086_repair_tile_ties(int argc, char **argv);
+int test_kmgpu_0087_wide_tile_reduction(int argc, char **argv);
 
 int test_kmgpu_0047_plain_ties(int argc, char **argv);
 int test_kmgpu_0048_hamerly_ties(int argc, char **argv);
@@ -9343,6 +9345,10 @@ static test_entry_t const test_entries[] = {
       test_kmgpu_0084_gpu_latest_frontier },
     { "gpu-kmeans/0085_gpu_cancel_publication",
       test_kmgpu_0085_gpu_cancel_publication },
+    { "gpu-kmeans/0086_repair_tile_ties",
+      test_kmgpu_0086_repair_tile_ties },
+    { "gpu-kmeans/0087_wide_tile_reduction",
+      test_kmgpu_0087_wide_tile_reduction },
     { "gpu-kmeans/available",
       test_kmgpu_available },
     { "palette/0001_kmeans_init", test_palette_0001_kmeans_init },
