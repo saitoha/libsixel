@@ -1,8 +1,8 @@
 #include <metal_stdlib>
 using namespace metal;
 
-/* A scalar entry must not assume converged simdgroup participation. Phased
- * invokes lookup on selected pixels; the byte GEMM executor remains separate.
+/* A scalar entry must not assume converged simdgroup participation. GPU
+ * diffusion invokes lookup on selected pixels; the byte GEMM executor remains separate.
  * Direct squared differences avoid cancellation in |c|^2 - 2 q.c. */
 static uint lookup_rgb8_fractional(float3 query, constant uchar *palette,
     uint ncolors, constant uchar *configuration,

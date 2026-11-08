@@ -339,7 +339,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0079_QUEUE_SAMPLE_UNAVAILABLE \
     -DBUILD_TEST_0080_QUEUE_SAMPLE_LIVE \
     -DBUILD_TEST_0081_QUEUE_SAMPLE_TAIL \
-    -DBUILD_TEST_0082_FIXED_KERNELS \
+    -DBUILD_TEST_0001_FS_GPU_CARRY \
+    -DBUILD_TEST_0001_ATKINSON_GPU_CARRY \
+    -DBUILD_TEST_0001_JAJUNI_GPU_CARRY \
+    -DBUILD_TEST_0001_STUCKI_GPU_CARRY \
+    -DBUILD_TEST_0001_BURKES_GPU_CARRY \
+    -DBUILD_TEST_0001_SIERRA1_GPU_CARRY \
+    -DBUILD_TEST_0001_SIERRA2_GPU_CARRY \
+    -DBUILD_TEST_0001_SIERRA3_GPU_CARRY \
     -DBUILD_TEST_0064_PIPELINE_SAMPLE_STALE \
     -DBUILD_TEST_0065_PIPELINE_SAMPLE_SHORT \
     -DBUILD_TEST_0066_PIPELINE_SAMPLE_TAIL \
@@ -7363,97 +7370,104 @@ test_runner_SOURCES = test_runner.c \
     encoder/indexed/0161_gpu_rows_apply_visible.c \
     encoder/indexed/0162_gpu_rows_apply_failed.c \
     encoder/indexed/0128_gpu_rows_vptree_indexes.c \
-    dither/phased/0015_cancel_before.c \
-    dither/phased/0016_cancel_after.c \
-    dither/phased/0017_cancel_reuse.c \
-    dither/phased/0018_prepare_failure_atomic.c \
-    dither/phased/0019_palette256.c \
-    dither/phased/0020_reprepare_reset.c \
-    dither/phased/0021_preparer_lifetime.c \
-    dither/phased/0001_standard_indexes.c \
-    dither/phased/0002_small_error_indexes.c \
-    dither/phased/0003_scratch_reset.c \
-    dither/phased/0004_configuration_snapshot.c \
-    dither/phased/0005_gpu_off_rejected.c \
-    dither/phased/0006_byte_lookup_rejected.c \
-    dither/phased/0007_auto_small_image.c \
-    dither/phased/0008_float_image_rejected.c \
-    dither/phased/0009_raster_rejected.c \
-    dither/phased/0010_invalid_gain_atomic.c \
-    dither/phased/0011_delta_t0.c \
-    dither/phased/0012_delta_refresh.c \
-    dither/phased/0013_partial_rectangle.c \
-    dither/phased/0014_retained_immutable.c \
-    dither/phased/0022_deferred_standard.c \
-    dither/phased/0023_deferred_small_error.c \
-    dither/phased/0024_deferred_t0.c \
-    dither/phased/0025_deferred_refresh.c \
-    dither/phased/0026_deferred_partial.c \
-    dither/phased/0027_deferred_source_owned.c \
-    dither/phased/0028_deferred_facet_lifetime.c \
-    dither/phased/0029_deferred_repeat_rejected.c \
-    dither/phased/0030_deferred_bad_description_retry.c \
-    dither/phased/0031_deferred_discard_reuse.c \
-    dither/phased/0032_deferred_run_excluded.c \
-    dither/phased/0033_deferred_prepare_independent.c \
-    dither/phased/0034_deferred_publication.c \
-    dither/phased/0035_playback_no_delta.c \
-    dither/phased/0036_playback_t0.c \
-    dither/phased/0037_playback_refresh.c \
-    dither/phased/0038_playback_small_error.c \
-    dither/phased/0039_playback_single_slot.c \
-    _support/phased/playback.c \
-    dither/phased/0040_playback_solve_overlap.c \
-    dither/phased/0041_playback_cancel_ready.c \
-    dither/phased/0042_playback_failure_drain.c \
-    dither/phased/0043_playback_cancel_new_admission.c \
-    dither/phased/0044_playback_callback_sample.c \
-    _support/phased/rendezvous.c \
-    _support/phased/rendezvous.h \
-    dither/phased/0045_deferred_rgb241.c \
-    dither/phased/0046_deferred_missing_history.c \
-    dither/phased/0047_deferred_cancel_seals.c \
-    dither/phased/0048_playback_sample_stale.c \
-    dither/phased/0049_playback_sample_short.c \
-    dither/phased/0050_playback_sample_tail.c \
+    dither/lso2-gpu/0015_cancel_before.c \
+    dither/lso2-gpu/0016_cancel_after.c \
+    dither/lso2-gpu/0017_cancel_reuse.c \
+    dither/lso2-gpu/0018_prepare_failure_atomic.c \
+    dither/lso2-gpu/0019_palette256.c \
+    dither/lso2-gpu/0020_reprepare_reset.c \
+    dither/lso2-gpu/0021_preparer_lifetime.c \
+    dither/lso2-gpu/0001_standard_indexes.c \
+    dither/lso2-gpu/0002_small_error_indexes.c \
+    dither/lso2-gpu/0003_scratch_reset.c \
+    dither/lso2-gpu/0004_configuration_snapshot.c \
+    dither/lso2-gpu/0005_gpu_off_rejected.c \
+    dither/lso2-gpu/0006_byte_lookup_rejected.c \
+    dither/lso2-gpu/0007_auto_small_image.c \
+    dither/lso2-gpu/0008_float_image_rejected.c \
+    dither/lso2-gpu/0009_raster_rejected.c \
+    dither/lso2-gpu/0010_invalid_gain_atomic.c \
+    dither/lso2-gpu/0011_delta_t0.c \
+    dither/lso2-gpu/0012_delta_refresh.c \
+    dither/lso2-gpu/0013_partial_rectangle.c \
+    dither/lso2-gpu/0014_retained_immutable.c \
+    dither/lso2-gpu/0022_deferred_standard.c \
+    dither/lso2-gpu/0023_deferred_small_error.c \
+    dither/lso2-gpu/0024_deferred_t0.c \
+    dither/lso2-gpu/0025_deferred_refresh.c \
+    dither/lso2-gpu/0026_deferred_partial.c \
+    dither/lso2-gpu/0027_deferred_source_owned.c \
+    dither/lso2-gpu/0028_deferred_facet_lifetime.c \
+    dither/lso2-gpu/0029_deferred_repeat_rejected.c \
+    dither/lso2-gpu/0030_deferred_bad_description_retry.c \
+    dither/lso2-gpu/0031_deferred_discard_reuse.c \
+    dither/lso2-gpu/0032_deferred_run_excluded.c \
+    dither/lso2-gpu/0033_deferred_prepare_independent.c \
+    dither/lso2-gpu/0034_deferred_publication.c \
+    dither/lso2-gpu/0035_playback_no_delta.c \
+    dither/lso2-gpu/0036_playback_t0.c \
+    dither/lso2-gpu/0037_playback_refresh.c \
+    dither/lso2-gpu/0038_playback_small_error.c \
+    dither/lso2-gpu/0039_playback_single_slot.c \
+    _support/lso2-gpu/playback.c \
+    dither/lso2-gpu/0040_playback_solve_overlap.c \
+    dither/lso2-gpu/0041_playback_cancel_ready.c \
+    dither/lso2-gpu/0042_playback_failure_drain.c \
+    dither/lso2-gpu/0043_playback_cancel_new_admission.c \
+    dither/lso2-gpu/0044_playback_callback_sample.c \
+    _support/lso2-gpu/rendezvous.c \
+    _support/lso2-gpu/rendezvous.h \
+    dither/lso2-gpu/0045_deferred_rgb241.c \
+    dither/lso2-gpu/0046_deferred_missing_history.c \
+    dither/lso2-gpu/0047_deferred_cancel_seals.c \
+    dither/lso2-gpu/0048_playback_sample_stale.c \
+    dither/lso2-gpu/0049_playback_sample_short.c \
+    dither/lso2-gpu/0050_playback_sample_tail.c \
     encoder/scheduling/0028_ready_fifo.c \
     encoder/scheduling/0029_ready_full.c \
     encoder/scheduling/0030_ready_empty.c \
     encoder/scheduling/0031_ready_wrap.c \
     encoder/scheduling/0032_ready_slot_release.c \
-    dither/phased/0051_playback_resize_bytes.c \
-    dither/phased/0052_playback_resize_interval.c \
-    dither/phased/0053_playback_solve_without_credit.c \
-    dither/phased/0054_playback_cancel_origin.c \
-    dither/phased/0055_playback_inherited_origin.c \
-    dither/phased/0056_playback_resolve_past_stalled_encode.c \
-    dither/phased/0057_playback_encode_past_stalled_delivery.c \
-    dither/phased/0058_playback_claimed_cancel_completes.c \
-    dither/phased/0059_latest_replay_t0.c \
-    dither/phased/0060_latest_replay_refresh.c \
-    dither/phased/0061_latest_replay_small.c \
-    _support/phased/latest.c \
-    dither/phased/0078_queue_sample_short.c \
-    dither/phased/0079_queue_sample_unavailable.c \
-    dither/phased/0080_queue_sample_live.c \
-    dither/phased/0081_queue_sample_tail.c \
-    dither/phased/0082_fixed_kernels.c \
-    dither/phased/0064_pipeline_sample_stale.c \
-    dither/phased/0065_pipeline_sample_short.c \
-    dither/phased/0066_pipeline_sample_tail.c \
-    dither/phased/0067_playback_format_transition.c \
-    dither/phased/0062_latest_completed_own.c \
-    dither/phased/0063_latest_excludes_future.c \
-    _support/phased/fixture.c \
-    _support/phased/fractional.c \
+    dither/lso2-gpu/0051_playback_resize_bytes.c \
+    dither/lso2-gpu/0052_playback_resize_interval.c \
+    dither/lso2-gpu/0053_playback_solve_without_credit.c \
+    dither/lso2-gpu/0054_playback_cancel_origin.c \
+    dither/lso2-gpu/0055_playback_inherited_origin.c \
+    dither/lso2-gpu/0056_playback_resolve_past_stalled_encode.c \
+    dither/lso2-gpu/0057_playback_encode_past_stalled_delivery.c \
+    dither/lso2-gpu/0058_playback_claimed_cancel_completes.c \
+    dither/lso2-gpu/0059_latest_replay_t0.c \
+    dither/lso2-gpu/0060_latest_replay_refresh.c \
+    dither/lso2-gpu/0061_latest_replay_small.c \
+    _support/lso2-gpu/latest.c \
+    dither/lso2-gpu/0078_queue_sample_short.c \
+    dither/lso2-gpu/0079_queue_sample_unavailable.c \
+    dither/lso2-gpu/0080_queue_sample_live.c \
+    dither/lso2-gpu/0081_queue_sample_tail.c \
+    dither/fs-gpu/0001_fs_gpu_carry.c \
+    dither/atkinson-gpu/0001_atkinson_gpu_carry.c \
+    dither/jajuni-gpu/0001_jajuni_gpu_carry.c \
+    dither/stucki-gpu/0001_stucki_gpu_carry.c \
+    dither/burkes-gpu/0001_burkes_gpu_carry.c \
+    dither/sierra1-gpu/0001_sierra1_gpu_carry.c \
+    dither/sierra2-gpu/0001_sierra2_gpu_carry.c \
+    dither/sierra3-gpu/0001_sierra3_gpu_carry.c \
+    dither/lso2-gpu/0064_pipeline_sample_stale.c \
+    dither/lso2-gpu/0065_pipeline_sample_short.c \
+    dither/lso2-gpu/0066_pipeline_sample_tail.c \
+    dither/lso2-gpu/0067_playback_format_transition.c \
+    dither/lso2-gpu/0062_latest_completed_own.c \
+    dither/lso2-gpu/0063_latest_excludes_future.c \
+    _support/lso2-gpu/fixture.c \
+    _support/lso2-gpu/fractional.c \
     lookup/fhedt/0172_fhedt_fractional_reuse.c \
     lookup/6bit/0064_6bit_fractional_reuse.c \
     lookup/5bit/0064_5bit_fractional_reuse.c \
-    _support/phased/fractional_reference.c \
-    _support/phased/batch.c \
-    dither/phased/0075_batch_zero_tile.c \
-    dither/phased/0076_batch_thread_overflow.c \
-    dither/phased/0077_batch_invalid_index.c \
+    _support/lso2-gpu/fractional_reference.c \
+    _support/lso2-gpu/batch.c \
+    dither/lso2-gpu/0075_batch_zero_tile.c \
+    dither/lso2-gpu/0076_batch_thread_overflow.c \
+    dither/lso2-gpu/0077_batch_invalid_index.c \
     lookup/eytzinger/0062_eytzinger_fractional_cache.c \
     lookup/gridlut/0042_gridlut_fractional_cache.c \
     lookup/blockcull/0044_blockcull_fractional_cache.c \
@@ -7488,19 +7502,19 @@ test_runner_SOURCES = test_runner.c \
     lookup/blockcull/0041_blockcull_batch_deferred.c \
     lookup/blockcull/0042_blockcull_batch_refresh.c \
     lookup/blockcull/0043_blockcull_batch_deferred_refresh.c \
-    dither/phased/0074_gridlut_refresh.c \
+    dither/lso2-gpu/0074_gridlut_refresh.c \
     lookup/none/0006_gpu_none_fractional_cache.c \
     lookup/delaunay/0120_gpu_delaunay_fractional_cache.c \
     lookup/vptree/0057_gpu_vptree_fractional_cache.c \
     lookup/rbc/0084_gpu_rbc_fractional_cache.c \
     lookup/mahalanobis/0084_gpu_mahalanobis_fractional_cache.c \
     lookup/certlut/0086_gpu_certlut_fractional_cache.c \
-    dither/phased/0068_none_refresh.c \
-    dither/phased/0069_delaunay_refresh.c \
-    dither/phased/0070_vptree_refresh.c \
-    dither/phased/0071_rbc_refresh.c \
-    dither/phased/0072_mahalanobis_refresh.c \
-    dither/phased/0073_certlut_refresh.c \
+    dither/lso2-gpu/0068_none_refresh.c \
+    dither/lso2-gpu/0069_delaunay_refresh.c \
+    dither/lso2-gpu/0070_vptree_refresh.c \
+    dither/lso2-gpu/0071_rbc_refresh.c \
+    dither/lso2-gpu/0072_mahalanobis_refresh.c \
+    dither/lso2-gpu/0073_certlut_refresh.c \
     lookup/none/0004_gpu_none_fractional_exact.c \
     lookup/none/0005_gpu_none_fractional_ties.c \
     lookup/delaunay/0118_gpu_delaunay_fractional_exact.c \
@@ -7513,8 +7527,8 @@ test_runner_SOURCES = test_runner.c \
     lookup/mahalanobis/0083_gpu_mahalanobis_fractional_ties.c \
     lookup/certlut/0084_gpu_certlut_fractional_exact.c \
     lookup/certlut/0085_gpu_certlut_fractional_ties.c \
-    _support/phased/fixture.h \
-    _support/phased/expected.h \
+    _support/lso2-gpu/fixture.h \
+    _support/lso2-gpu/expected.h \
     encoder/indexed/0129_gpu_rows_ordered_indexes.c \
     encoder/indexed/0130_gpu_rows_rbc_indexes.c \
     encoder/indexed/0131_gpu_rows_mahalanobis_indexes.c \
@@ -12670,7 +12684,7 @@ EXTRA_DIST += _static/sh/staticcheck-tap-interpreter-skip.sh \
 EXTRA_DIST += _static/sh/staticcheck-platform-header-guards.sh
 
 EXTRA_DIST += _static/sh/staticcheck-assessment-stdio.sh \
-    _static/sh/staticcheck-phased-coefficient-guard.sh \
+    _static/sh/staticcheck-lso2-gpu-coefficient-guard.sh \
     _static/sh/staticcheck-msys-runtime-arguments.sh
 
 EXTRA_DIST += _static/sh/staticcheck-macos-coverage-reader.sh

@@ -24,11 +24,11 @@ The option retains the historical name `diffusion`, although some available
 methods are ordered or positionally stable dithers rather than error-diffusion
 kernels. The current base methods are:
 
-- [`phased`](phased.md) performs GPU-only spatial diffusion in four phases for `lso2` (with `gain=standard` or `gain=small-error`) and the fixed kernels;
 - `auto` selects the normal automatic method;
 - `none` maps the original pixel without diffusing error;
 - `fs`, `atkinson`, `jajuni`, `stucki`, `burkes`, `sierra`, and `lso2` diffuse
   error to later pixels;
+- each of those error-diffusion methods also has its own GPU component that solves it in four spatial phases when the GPU policy admits an RGB8 gamma image: [`lso2`](lso2-gpu.md), [`fs`](fs-gpu.md), [`atkinson`](atkinson-gpu.md), [`jajuni`](jajuni-gpu.md), [`stucki`](stucki-gpu.md), [`burkes`](burkes-gpu.md) and the `sierra` variants [1](sierra1-gpu.md), [2](sierra2-gpu.md) and [3](sierra3-gpu.md);
 - `a_dither`, `x_dither`, and `bluenoise` use positionally stable
   perturbations.
 

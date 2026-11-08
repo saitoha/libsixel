@@ -118,7 +118,7 @@ There is a way to get exactly the picture of one thread: start a row only as far
 
 > **Challenge.** Write it. Keep the error for the next pixel in a local variable and give each row its own array for the row below, so that each array has one writer and one reader, then publish each row's progress through an atomic counter with `<stdatomic.h>`. In a test of this design on the photograph with 255 colors, the output was byte for byte that of step 3, and it reached about 3 times the speed on 4 threads. It then got slower again from 8 threads on, on a loaded machine, because threads spend their time spinning and waiting for each other. With a kernel of three rows, or a [whole-number error](step8-integer-error.md) whose additions may come in any order, what changes in your design?
 
-libsixel's CPU diffusion does not schedule this way. It uses bands as this lesson does, and [its source](../../../src/dither-carry.c) mentions a wavefront only as something the integer sums would make possible. On a GPU it has another approach: [`phased`](../../encoder/palette-application/dithering/phased.md) updates pixels in four spatial phases instead of a scan.
+libsixel's CPU diffusion does not schedule this way. It uses bands as this lesson does, and [its source](../../../src/dither-carry.c) mentions a wavefront only as something the integer sums would make possible. On a GPU it has another approach: its [GPU diffusion components](../../encoder/palette-application/dithering/README.md) update pixels in four spatial phases instead of a scan.
 
 ## Where to go from here
 

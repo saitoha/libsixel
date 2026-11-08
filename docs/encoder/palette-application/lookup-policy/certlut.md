@@ -154,7 +154,7 @@ The injected provider owns its shader, construction, search and cache without de
 
 The implementation is [`lookup-policy-certlut-gpu.c`](../../../../src/lookup-policy-certlut-gpu.c), with private kernels in [`lookup-policy-certlut-gpu.metal`](../../../../src/lookup-policy-certlut-gpu.metal).
 
-For [`phased`](../dithering/phased.md), the candidate certificate covers each continuous cell through `min(low + 16, 255)` rather than the byte endpoint `low + 15`. The affine squared-distance difference still attains its extremum at an integer corner of that expanded closed box, so construction uses the same exact integer certificate. Final candidate distances retain the fractional query; overflow still scans the entire palette and never truncates candidates. Byte plans retain the original bounds and vector query. The [parent reference](README.md) owns fractional precision and cache identity.
+For [GPU diffusion](../dithering/README.md), the candidate certificate covers each continuous cell through `min(low + 16, 255)` rather than the byte endpoint `low + 15`. The affine squared-distance difference still attains its extremum at an integer corner of that expanded closed box, so construction uses the same exact integer certificate. Final candidate distances retain the fractional query; overflow still scans the entire palette and never truncates candidates. Byte plans retain the original bounds and vector query. The [parent reference](README.md) owns fractional precision and cache identity.
 
 ## Name and sources
 

@@ -10,7 +10,7 @@ lookup(color candidate, completed palette) -> palette index
 
 It is not a SIXEL wire-format term and does not mean reading a palette register whose index is already known.
 
-All named GPU lookup policies support spatial [`phased` dithering](../dithering/phased.md) over an emitted RGB8 palette; lookup `auto` resolves to `ordered`. FHEDT still requires its supported GPU settings. Fractional code-value queries in `[0,255]^3` are separate from native float32 image and colorspace support.
+All named GPU lookup policies support spatial [GPU diffusion](../dithering/README.md) over an emitted RGB8 palette; lookup `auto` resolves to `ordered`. FHEDT still requires its supported GPU settings. Fractional code-value queries in `[0,255]^3` are separate from native float32 image and colorspace support.
 
 | Fractional GPU policies | Search semantics |
 | --- | --- |

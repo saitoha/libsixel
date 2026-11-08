@@ -12,7 +12,15 @@ SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 
 # Metal text is translated into build-tree C literals, not runtime files.
 SIXEL_METAL_INPUTS = \
-    $(srcdir)/dither-policy-phased-gpu.metal \
+    $(srcdir)/dither-policy-lso2-gpu.metal \
+    $(srcdir)/dither-policy-fs-gpu.metal \
+    $(srcdir)/dither-policy-atkinson-gpu.metal \
+    $(srcdir)/dither-policy-jajuni-gpu.metal \
+    $(srcdir)/dither-policy-stucki-gpu.metal \
+    $(srcdir)/dither-policy-burkes-gpu.metal \
+    $(srcdir)/dither-policy-sierra1-gpu.metal \
+    $(srcdir)/dither-policy-sierra2-gpu.metal \
+    $(srcdir)/dither-policy-sierra3-gpu.metal \
     $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
     $(srcdir)/lookup-policy-none-fractional-gpu.metal \
@@ -52,7 +60,15 @@ generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
 # The phased top-level build requests objects directly, bypassing all and
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
-    libsixel_la-dither-policy-phased-metal.lo \
+    libsixel_la-dither-policy-lso2-gpu-metal.lo \
+    libsixel_la-dither-policy-fs-gpu-metal.lo \
+    libsixel_la-dither-policy-atkinson-gpu-metal.lo \
+    libsixel_la-dither-policy-jajuni-gpu-metal.lo \
+    libsixel_la-dither-policy-stucki-gpu-metal.lo \
+    libsixel_la-dither-policy-burkes-gpu-metal.lo \
+    libsixel_la-dither-policy-sierra1-gpu-metal.lo \
+    libsixel_la-dither-policy-sierra2-gpu-metal.lo \
+    libsixel_la-dither-policy-sierra3-gpu-metal.lo \
     libsixel_la-retained-plane-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-none-gpu.lo \
@@ -300,8 +316,16 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-policy-a-dither.c \
                 $(srcdir)/dither-policy-x-dither.c \
                 $(srcdir)/dither-policy-bluenoise.c \
-                $(srcdir)/dither-policy-phased.c \
-                $(srcdir)/phased-coefficients.h \
+                $(srcdir)/dither-policy-lso2-gpu.c \
+                $(srcdir)/dither-policy-fs-gpu.c \
+                $(srcdir)/dither-policy-atkinson-gpu.c \
+                $(srcdir)/dither-policy-jajuni-gpu.c \
+                $(srcdir)/dither-policy-stucki-gpu.c \
+                $(srcdir)/dither-policy-burkes-gpu.c \
+                $(srcdir)/dither-policy-sierra1-gpu.c \
+                $(srcdir)/dither-policy-sierra2-gpu.c \
+                $(srcdir)/dither-policy-sierra3-gpu.c \
+                $(srcdir)/lso2-gpu-coefficients.h \
                 $(srcdir)/dither-policy-lso2.c \
                 $(srcdir)/dither-policy-none.h \
                 $(srcdir)/dither-policy-fs.h \
@@ -312,7 +336,15 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-policy-sierra1.h \
                 $(srcdir)/dither-policy-sierra2.h \
                 $(srcdir)/dither-policy-sierra3.h \
-                $(srcdir)/dither-policy-phased.h \
+                $(srcdir)/dither-policy-lso2-gpu.h \
+                $(srcdir)/dither-policy-fs-gpu.h \
+                $(srcdir)/dither-policy-atkinson-gpu.h \
+                $(srcdir)/dither-policy-jajuni-gpu.h \
+                $(srcdir)/dither-policy-stucki-gpu.h \
+                $(srcdir)/dither-policy-burkes-gpu.h \
+                $(srcdir)/dither-policy-sierra1-gpu.h \
+                $(srcdir)/dither-policy-sierra2-gpu.h \
+                $(srcdir)/dither-policy-sierra3-gpu.h \
     $(srcdir)/dither-policy-lso2.h \
                 $(srcdir)/dither-policy-a-dither.h \
                 $(srcdir)/dither-policy-x-dither.h \
@@ -569,7 +601,15 @@ $(srcdir)/quicklook_thumbnailing.m
 endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
-$(srcdir)/dither-policy-phased-metal.m \
+$(srcdir)/dither-policy-lso2-gpu-metal.m \
+$(srcdir)/dither-policy-fs-gpu-metal.m \
+$(srcdir)/dither-policy-atkinson-gpu-metal.m \
+$(srcdir)/dither-policy-jajuni-gpu-metal.m \
+$(srcdir)/dither-policy-stucki-gpu-metal.m \
+$(srcdir)/dither-policy-burkes-gpu-metal.m \
+$(srcdir)/dither-policy-sierra1-gpu-metal.m \
+$(srcdir)/dither-policy-sierra2-gpu-metal.m \
+$(srcdir)/dither-policy-sierra3-gpu-metal.m \
 $(srcdir)/gpu-palette-metal.m \
 $(srcdir)/retained-plane-metal.m \
 $(srcdir)/lookup-policy-gpu-compat.m \
@@ -719,7 +759,15 @@ DITHER_POLICY_CLASSID_INPUTS = \
     $(srcdir)/dither-policy-sierra1.h \
     $(srcdir)/dither-policy-sierra2.h \
     $(srcdir)/dither-policy-sierra3.h \
-    $(srcdir)/dither-policy-phased.h \
+    $(srcdir)/dither-policy-lso2-gpu.h \
+    $(srcdir)/dither-policy-fs-gpu.h \
+    $(srcdir)/dither-policy-atkinson-gpu.h \
+    $(srcdir)/dither-policy-jajuni-gpu.h \
+    $(srcdir)/dither-policy-stucki-gpu.h \
+    $(srcdir)/dither-policy-burkes-gpu.h \
+    $(srcdir)/dither-policy-sierra1-gpu.h \
+    $(srcdir)/dither-policy-sierra2-gpu.h \
+    $(srcdir)/dither-policy-sierra3-gpu.h \
     $(srcdir)/dither-policy-lso2.h \
     $(srcdir)/dither-policy-a-dither.h \
     $(srcdir)/dither-policy-x-dither.h \
@@ -819,4 +867,4 @@ endif
 
 include $(top_srcdir)/build-aux/dependency-bootstrap.am
 
-EXTRA_DIST += phased.key $(SIXEL_METAL_INPUTS) generated-metal/meson.build
+EXTRA_DIST += lso2-gpu.key $(SIXEL_METAL_INPUTS) generated-metal/meson.build

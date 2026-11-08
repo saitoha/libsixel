@@ -125,7 +125,6 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_SIERRA1     0xb  /* diffuse with Sierra Lite method */
 #define SIXEL_DIFFUSE_SIERRA2     0xc  /* diffuse with Sierra Two-row method */
 #define SIXEL_DIFFUSE_SIERRA3     0xd  /* diffuse with Sierra-3 method */
-#define SIXEL_DIFFUSE_PHASED      0xe  /* deprecated: GPU form of LSO2 */
 #define SIXEL_SCAN_AUTO           0x0  /* choose scan order automatically */
 #define SIXEL_SCAN_RASTER         0x1  /* scan from left to right on each line */
 #define SIXEL_SCAN_SERPENTINE     0x2  /* alternate scan direction per line */

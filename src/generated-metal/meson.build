@@ -2,7 +2,15 @@
 metal_headers = []
 metal_sources = files(
   '../retained-plane-gpu.metal',
-  '../dither-policy-phased-gpu.metal',
+  '../dither-policy-lso2-gpu.metal',
+  '../dither-policy-fs-gpu.metal',
+  '../dither-policy-atkinson-gpu.metal',
+  '../dither-policy-jajuni-gpu.metal',
+  '../dither-policy-stucki-gpu.metal',
+  '../dither-policy-burkes-gpu.metal',
+  '../dither-policy-sierra1-gpu.metal',
+  '../dither-policy-sierra2-gpu.metal',
+  '../dither-policy-sierra3-gpu.metal',
   '../lookup-policy-ordered-gpu.metal',
   '../lookup-policy-none-fractional-gpu.metal',
   '../lookup-policy-eytzinger-fractional-gpu.metal',

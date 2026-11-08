@@ -1631,64 +1631,64 @@ int test_delaunay_gpu_exact(int argc, char **argv);
 int test_delaunay_gpu_failure(int argc, char **argv);
 int test_gpupal_0023_ordered_exact(int argc, char **argv);
 int test_gpu_rows_vptree_indexes(int, char **);
-int test_phased_cancel_before(int, char **);
-int test_phased_cancel_after(int, char **);
-int test_phased_cancel_reuse(int, char **);
-int test_phased_prepare_failure_atomic(int, char **);
-int test_phased_palette256(int, char **);
-int test_phased_reprepare_reset(int, char **);
-int test_phased_preparer_lifetime(int, char **);
-int test_phased_deferred_standard(int, char **);
-int test_phased_deferred_small_error(int, char **);
-int test_phased_deferred_t0(int, char **);
-int test_phased_deferred_refresh(int, char **);
-int test_phased_deferred_partial(int, char **);
-int test_phased_deferred_source_owned(int, char **);
-int test_phased_deferred_facet_lifetime(int, char **);
-int test_phased_deferred_repeat_rejected(int, char **);
-int test_phased_deferred_bad_description_retry(int, char **);
-int test_phased_deferred_discard_reuse(int, char **);
-int test_phased_deferred_run_excluded(int, char **);
-int test_phased_deferred_prepare_independent(int, char **);
-int test_phased_deferred_publication(int, char **);
-int test_phased_playback_no_delta(int, char **);
-int test_phased_playback_t0(int, char **);
-int test_phased_playback_refresh(int, char **);
-int test_phased_playback_small_error(int, char **);
-int test_phased_playback_single_slot(int, char **);
-int test_phased_playback_solve_overlap(int, char **);
-int test_phased_playback_cancel_ready(int, char **);
-int test_phased_playback_failure_drain(int, char **);
-int test_phased_playback_cancel_new_admission(int, char **);
-int test_phased_playback_callback_sample(int, char **);
-int test_phased_playback_cancel_origin(int, char **);
-int test_phased_playback_inherited_origin(int, char **);
-int test_phased_playback_resize_bytes(int, char **);
-int test_phased_playback_resize_interval(int, char **);
-int test_phased_playback_solve_without_credit(int, char **);
-int test_phased_deferred_rgb241(int, char **);
-int test_phased_deferred_missing_history(int, char **);
-int test_phased_deferred_cancel_seals(int, char **);
-int test_phased_playback_sample_stale(int, char **);
-int test_phased_playback_sample_short(int, char **);
-int test_phased_playback_sample_tail(int, char **);
+int test_lso2_gpu_cancel_before(int, char **);
+int test_lso2_gpu_cancel_after(int, char **);
+int test_lso2_gpu_cancel_reuse(int, char **);
+int test_lso2_gpu_prepare_failure_atomic(int, char **);
+int test_lso2_gpu_palette256(int, char **);
+int test_lso2_gpu_reprepare_reset(int, char **);
+int test_lso2_gpu_preparer_lifetime(int, char **);
+int test_lso2_gpu_deferred_standard(int, char **);
+int test_lso2_gpu_deferred_small_error(int, char **);
+int test_lso2_gpu_deferred_t0(int, char **);
+int test_lso2_gpu_deferred_refresh(int, char **);
+int test_lso2_gpu_deferred_partial(int, char **);
+int test_lso2_gpu_deferred_source_owned(int, char **);
+int test_lso2_gpu_deferred_facet_lifetime(int, char **);
+int test_lso2_gpu_deferred_repeat_rejected(int, char **);
+int test_lso2_gpu_deferred_bad_description_retry(int, char **);
+int test_lso2_gpu_deferred_discard_reuse(int, char **);
+int test_lso2_gpu_deferred_run_excluded(int, char **);
+int test_lso2_gpu_deferred_prepare_independent(int, char **);
+int test_lso2_gpu_deferred_publication(int, char **);
+int test_lso2_gpu_playback_no_delta(int, char **);
+int test_lso2_gpu_playback_t0(int, char **);
+int test_lso2_gpu_playback_refresh(int, char **);
+int test_lso2_gpu_playback_small_error(int, char **);
+int test_lso2_gpu_playback_single_slot(int, char **);
+int test_lso2_gpu_playback_solve_overlap(int, char **);
+int test_lso2_gpu_playback_cancel_ready(int, char **);
+int test_lso2_gpu_playback_failure_drain(int, char **);
+int test_lso2_gpu_playback_cancel_new_admission(int, char **);
+int test_lso2_gpu_playback_callback_sample(int, char **);
+int test_lso2_gpu_playback_cancel_origin(int, char **);
+int test_lso2_gpu_playback_inherited_origin(int, char **);
+int test_lso2_gpu_playback_resize_bytes(int, char **);
+int test_lso2_gpu_playback_resize_interval(int, char **);
+int test_lso2_gpu_playback_solve_without_credit(int, char **);
+int test_lso2_gpu_deferred_rgb241(int, char **);
+int test_lso2_gpu_deferred_missing_history(int, char **);
+int test_lso2_gpu_deferred_cancel_seals(int, char **);
+int test_lso2_gpu_playback_sample_stale(int, char **);
+int test_lso2_gpu_playback_sample_short(int, char **);
+int test_lso2_gpu_playback_sample_tail(int, char **);
 int test_schedule_0028_ready_fifo(int, char **);
 int test_schedule_0029_ready_full(int, char **);
 int test_schedule_0030_ready_empty(int, char **);
 int test_schedule_0031_ready_wrap(int, char **);
 int test_schedule_0032_ready_slot_release(int, char **);
-int test_phased_standard_indexes(int, char **);
-int test_phased_small_error_indexes(int, char **);
-int test_phased_scratch_reset(int, char **);
-int test_phased_configuration_snapshot(int, char **);
-int test_phased_gpu_off_rejected(int, char **);
-int test_phased_byte_lookup_rejected(int, char **);
-int test_phased_auto_small_image(int, char **);
-int test_phased_float_image_rejected(int, char **);
-int test_phased_raster_rejected(int, char **);
-int test_phased_invalid_gain_atomic(int, char **);
-int test_phased_delta_t0(int, char **);
-int test_phased_delta_refresh(int, char **);
+int test_lso2_gpu_standard_indexes(int, char **);
+int test_lso2_gpu_small_error_indexes(int, char **);
+int test_lso2_gpu_scratch_reset(int, char **);
+int test_lso2_gpu_configuration_snapshot(int, char **);
+int test_lso2_gpu_gpu_off_rejected(int, char **);
+int test_lso2_gpu_byte_lookup_rejected(int, char **);
+int test_lso2_gpu_auto_small_image(int, char **);
+int test_lso2_gpu_float_image_rejected(int, char **);
+int test_lso2_gpu_raster_rejected(int, char **);
+int test_lso2_gpu_invalid_gain_atomic(int, char **);
+int test_lso2_gpu_delta_t0(int, char **);
+int test_lso2_gpu_delta_refresh(int, char **);
 int test_gpu_gridlut_fractional_reference(int, char **);
 int test_gpu_gridlut_fractional_ties(int, char **);
 int test_gpu_eytzinger_fractional_reference(int, char **);
@@ -1719,7 +1719,7 @@ int test_gpu_blockcull_batch_all_inactive(int, char **);
 int test_gpu_blockcull_batch_deferred(int, char **);
 int test_gpu_blockcull_batch_refresh(int, char **);
 int test_gpu_blockcull_batch_deferred_refresh(int, char **);
-int test_phased_gridlut_refresh(int, char **);
+int test_lso2_gpu_gridlut_refresh(int, char **);
 int test_gpu_batch_zero_tile(int, char **);
 int test_gpu_batch_thread_overflow(int, char **);
 int test_gpu_batch_invalid_index(int, char **);
@@ -1730,12 +1730,12 @@ int test_gpu_5bit_fractional_cache(int, char **);
 int test_gpu_6bit_fractional_cache(int, char **);
 int test_gpu_fhedt_fractional_cache(int, char **);
 int test_gpu_blockcull_batch_opt_in(int, char **);
-int test_phased_none_refresh(int, char **);
-int test_phased_delaunay_refresh(int, char **);
-int test_phased_vptree_refresh(int, char **);
-int test_phased_rbc_refresh(int, char **);
-int test_phased_mahalanobis_refresh(int, char **);
-int test_phased_certlut_refresh(int, char **);
+int test_lso2_gpu_none_refresh(int, char **);
+int test_lso2_gpu_delaunay_refresh(int, char **);
+int test_lso2_gpu_vptree_refresh(int, char **);
+int test_lso2_gpu_rbc_refresh(int, char **);
+int test_lso2_gpu_mahalanobis_refresh(int, char **);
+int test_lso2_gpu_certlut_refresh(int, char **);
 int test_gpu_none_fractional_cache(int, char **);
 int test_gpu_delaunay_fractional_cache(int, char **);
 int test_gpu_vptree_fractional_cache(int, char **);
@@ -1754,8 +1754,8 @@ int test_gpu_mahalanobis_fractional_exact(int, char **);
 int test_gpu_mahalanobis_fractional_ties(int, char **);
 int test_gpu_certlut_fractional_exact(int, char **);
 int test_gpu_certlut_fractional_ties(int, char **);
-int test_phased_partial_rectangle(int, char **);
-int test_phased_retained_immutable(int, char **);
+int test_lso2_gpu_partial_rectangle(int, char **);
+int test_lso2_gpu_retained_immutable(int, char **);
 int test_gpu_rows_ordered_indexes(int, char **);
 int test_gpu_rows_rbc_indexes(int, char **);
 int test_gpu_rows_mahalanobis_indexes(int, char **);
@@ -5172,50 +5172,64 @@ int test_retained_0044_advance_gpu_partial(int, char **);
 int test_retained_0045_advance_gpu_keep(int, char **);
 int test_retained_0042_advance_exact_rgb(int, char **);
 
-int test_phased_playback_resolve_past_stalled_encode(int, char **);
-int test_phased_playback_encode_past_stalled_delivery(int, char **);
-int test_phased_playback_claimed_cancel_completes(int, char **);
-int test_phased_latest_replay_t0(int, char **);
-int test_phased_latest_replay_refresh(int, char **);
-int test_phased_latest_replay_small(int, char **);
-int test_phased_queue_sample_short(int, char **);
-int test_phased_queue_sample_unavailable(int, char **);
-int test_phased_queue_sample_live(int, char **);
-int test_phased_queue_sample_tail(int, char **);
-int test_phased_fixed_kernels(int, char **);
-int test_phased_pipeline_sample_stale(int, char **);
-int test_phased_pipeline_sample_short(int, char **);
-int test_phased_pipeline_sample_tail(int, char **);
-int test_phased_playback_format_transition(int, char **);
+int test_lso2_gpu_playback_resolve_past_stalled_encode(int, char **);
+int test_lso2_gpu_playback_encode_past_stalled_delivery(int, char **);
+int test_lso2_gpu_playback_claimed_cancel_completes(int, char **);
+int test_lso2_gpu_latest_replay_t0(int, char **);
+int test_lso2_gpu_latest_replay_refresh(int, char **);
+int test_lso2_gpu_latest_replay_small(int, char **);
+int test_lso2_gpu_queue_sample_short(int, char **);
+int test_lso2_gpu_queue_sample_unavailable(int, char **);
+int test_lso2_gpu_queue_sample_live(int, char **);
+int test_lso2_gpu_queue_sample_tail(int, char **);
+int test_fs_gpu_carry(int, char **);
+int test_atkinson_gpu_carry(int, char **);
+int test_jajuni_gpu_carry(int, char **);
+int test_stucki_gpu_carry(int, char **);
+int test_burkes_gpu_carry(int, char **);
+int test_sierra1_gpu_carry(int, char **);
+int test_sierra2_gpu_carry(int, char **);
+int test_sierra3_gpu_carry(int, char **);
+int test_lso2_gpu_pipeline_sample_stale(int, char **);
+int test_lso2_gpu_pipeline_sample_short(int, char **);
+int test_lso2_gpu_pipeline_sample_tail(int, char **);
+int test_lso2_gpu_playback_format_transition(int, char **);
 
-int test_phased_latest_completed_own(int, char **);
-int test_phased_latest_excludes_future(int, char **);
+int test_lso2_gpu_latest_completed_own(int, char **);
+int test_lso2_gpu_latest_excludes_future(int, char **);
 
 
 
 static test_entry_t const test_entries[] = {
-    { "phased/playback_resolve_past_stalled_encode",
-      test_phased_playback_resolve_past_stalled_encode },
-    { "phased/playback_encode_past_stalled_delivery",
-      test_phased_playback_encode_past_stalled_delivery },
-    { "phased/playback_claimed_cancel_completes",
-      test_phased_playback_claimed_cancel_completes },
-    { "phased/latest_replay_t0", test_phased_latest_replay_t0 },
-    { "phased/latest_replay_refresh", test_phased_latest_replay_refresh },
-    { "phased/latest_replay_small", test_phased_latest_replay_small },
-    { "phased/queue_sample_short", test_phased_queue_sample_short },
-    { "phased/queue_sample_unavailable", test_phased_queue_sample_unavailable },
-    { "phased/queue_sample_live", test_phased_queue_sample_live },
-    { "phased/queue_sample_tail", test_phased_queue_sample_tail },
-    { "phased/fixed_kernels", test_phased_fixed_kernels },
-    { "phased/pipeline_sample_stale", test_phased_pipeline_sample_stale },
-    { "phased/pipeline_sample_short", test_phased_pipeline_sample_short },
-    { "phased/pipeline_sample_tail", test_phased_pipeline_sample_tail },
-    { "phased/playback_format_transition",
-      test_phased_playback_format_transition },
+    { "lso2_gpu/playback_resolve_past_stalled_encode",
+      test_lso2_gpu_playback_resolve_past_stalled_encode },
+    { "lso2_gpu/playback_encode_past_stalled_delivery",
+      test_lso2_gpu_playback_encode_past_stalled_delivery },
+    { "lso2_gpu/playback_claimed_cancel_completes",
+      test_lso2_gpu_playback_claimed_cancel_completes },
+    { "lso2_gpu/latest_replay_t0", test_lso2_gpu_latest_replay_t0 },
+    { "lso2_gpu/latest_replay_refresh", test_lso2_gpu_latest_replay_refresh },
+    { "lso2_gpu/latest_replay_small", test_lso2_gpu_latest_replay_small },
+    { "lso2_gpu/queue_sample_short", test_lso2_gpu_queue_sample_short },
+    { "lso2_gpu/queue_sample_unavailable", test_lso2_gpu_queue_sample_unavailable },
+    { "lso2_gpu/queue_sample_live", test_lso2_gpu_queue_sample_live },
+    { "lso2_gpu/queue_sample_tail", test_lso2_gpu_queue_sample_tail },
+    { "fs_gpu/carry", test_fs_gpu_carry },
+    { "atkinson_gpu/carry", test_atkinson_gpu_carry },
+    { "jajuni_gpu/carry", test_jajuni_gpu_carry },
+    { "stucki_gpu/carry", test_stucki_gpu_carry },
+    { "burkes_gpu/carry", test_burkes_gpu_carry },
+    { "sierra1_gpu/carry", test_sierra1_gpu_carry },
+    { "sierra2_gpu/carry", test_sierra2_gpu_carry },
+    { "sierra3_gpu/carry", test_sierra3_gpu_carry },
+    { "lso2_gpu/pipeline_sample_stale", test_lso2_gpu_pipeline_sample_stale },
+    { "lso2_gpu/pipeline_sample_short", test_lso2_gpu_pipeline_sample_short },
+    { "lso2_gpu/pipeline_sample_tail", test_lso2_gpu_pipeline_sample_tail },
+    { "lso2_gpu/playback_format_transition",
+      test_lso2_gpu_playback_format_transition },
 
-    { "phased/latest_completed_own", test_phased_latest_completed_own },
-    { "phased/latest_excludes_future", test_phased_latest_excludes_future },
+    { "lso2_gpu/latest_completed_own", test_lso2_gpu_latest_completed_own },
+    { "lso2_gpu/latest_excludes_future", test_lso2_gpu_latest_excludes_future },
 
 
     { "encoder/retained/0033_advance_without_receipt",
@@ -6966,69 +6980,69 @@ static test_entry_t const test_entries[] = {
     { "component/cutoff_cpu_only", test_lookup_cutoff_cpu_only },
     { "component/gpu_rows_vptree_indexes",
       test_gpu_rows_vptree_indexes },
-    { "phased/cancel_before", test_phased_cancel_before },
-    { "phased/cancel_after", test_phased_cancel_after },
-    { "phased/cancel_reuse", test_phased_cancel_reuse },
-    { "phased/prepare_failure_atomic", test_phased_prepare_failure_atomic },
-    { "phased/palette256", test_phased_palette256 },
-    { "phased/reprepare_reset", test_phased_reprepare_reset },
-    { "phased/preparer_lifetime", test_phased_preparer_lifetime },
-    { "phased/deferred_standard", test_phased_deferred_standard },
-    { "phased/deferred_small_error", test_phased_deferred_small_error },
-    { "phased/deferred_t0", test_phased_deferred_t0 },
-    { "phased/deferred_refresh", test_phased_deferred_refresh },
-    { "phased/deferred_partial", test_phased_deferred_partial },
-    { "phased/deferred_source_owned", test_phased_deferred_source_owned },
-    { "phased/deferred_facet_lifetime", test_phased_deferred_facet_lifetime },
-    { "phased/deferred_repeat_rejected", test_phased_deferred_repeat_rejected },
-    { "phased/deferred_bad_description_retry",
-      test_phased_deferred_bad_description_retry },
-    { "phased/deferred_discard_reuse", test_phased_deferred_discard_reuse },
-    { "phased/deferred_run_excluded", test_phased_deferred_run_excluded },
-    { "phased/deferred_prepare_independent",
-      test_phased_deferred_prepare_independent },
-    { "phased/deferred_publication", test_phased_deferred_publication },
-    { "phased/playback_no_delta", test_phased_playback_no_delta },
-    { "phased/playback_t0", test_phased_playback_t0 },
-    { "phased/playback_refresh", test_phased_playback_refresh },
-    { "phased/playback_small_error", test_phased_playback_small_error },
-    { "phased/playback_single_slot", test_phased_playback_single_slot },
-    { "phased/playback_solve_overlap", test_phased_playback_solve_overlap },
-    { "phased/playback_cancel_ready", test_phased_playback_cancel_ready },
-    { "phased/playback_failure_drain", test_phased_playback_failure_drain },
-    { "phased/playback_cancel_new_admission",
-      test_phased_playback_cancel_new_admission },
-    { "phased/playback_callback_sample", test_phased_playback_callback_sample },
-    { "phased/playback_cancel_origin", test_phased_playback_cancel_origin },
-    { "phased/playback_inherited_origin",
-      test_phased_playback_inherited_origin },
-    { "phased/playback_resize_bytes", test_phased_playback_resize_bytes },
-    { "phased/playback_resize_interval", test_phased_playback_resize_interval },
-    { "phased/playback_solve_without_credit",
-      test_phased_playback_solve_without_credit },
-    { "phased/deferred_rgb241", test_phased_deferred_rgb241 },
-    { "phased/deferred_missing_history", test_phased_deferred_missing_history },
-    { "phased/deferred_cancel_seals", test_phased_deferred_cancel_seals },
-    { "phased/playback_sample_stale", test_phased_playback_sample_stale },
-    { "phased/playback_sample_short", test_phased_playback_sample_short },
-    { "phased/playback_sample_tail", test_phased_playback_sample_tail },
+    { "lso2_gpu/cancel_before", test_lso2_gpu_cancel_before },
+    { "lso2_gpu/cancel_after", test_lso2_gpu_cancel_after },
+    { "lso2_gpu/cancel_reuse", test_lso2_gpu_cancel_reuse },
+    { "lso2_gpu/prepare_failure_atomic", test_lso2_gpu_prepare_failure_atomic },
+    { "lso2_gpu/palette256", test_lso2_gpu_palette256 },
+    { "lso2_gpu/reprepare_reset", test_lso2_gpu_reprepare_reset },
+    { "lso2_gpu/preparer_lifetime", test_lso2_gpu_preparer_lifetime },
+    { "lso2_gpu/deferred_standard", test_lso2_gpu_deferred_standard },
+    { "lso2_gpu/deferred_small_error", test_lso2_gpu_deferred_small_error },
+    { "lso2_gpu/deferred_t0", test_lso2_gpu_deferred_t0 },
+    { "lso2_gpu/deferred_refresh", test_lso2_gpu_deferred_refresh },
+    { "lso2_gpu/deferred_partial", test_lso2_gpu_deferred_partial },
+    { "lso2_gpu/deferred_source_owned", test_lso2_gpu_deferred_source_owned },
+    { "lso2_gpu/deferred_facet_lifetime", test_lso2_gpu_deferred_facet_lifetime },
+    { "lso2_gpu/deferred_repeat_rejected", test_lso2_gpu_deferred_repeat_rejected },
+    { "lso2_gpu/deferred_bad_description_retry",
+      test_lso2_gpu_deferred_bad_description_retry },
+    { "lso2_gpu/deferred_discard_reuse", test_lso2_gpu_deferred_discard_reuse },
+    { "lso2_gpu/deferred_run_excluded", test_lso2_gpu_deferred_run_excluded },
+    { "lso2_gpu/deferred_prepare_independent",
+      test_lso2_gpu_deferred_prepare_independent },
+    { "lso2_gpu/deferred_publication", test_lso2_gpu_deferred_publication },
+    { "lso2_gpu/playback_no_delta", test_lso2_gpu_playback_no_delta },
+    { "lso2_gpu/playback_t0", test_lso2_gpu_playback_t0 },
+    { "lso2_gpu/playback_refresh", test_lso2_gpu_playback_refresh },
+    { "lso2_gpu/playback_small_error", test_lso2_gpu_playback_small_error },
+    { "lso2_gpu/playback_single_slot", test_lso2_gpu_playback_single_slot },
+    { "lso2_gpu/playback_solve_overlap", test_lso2_gpu_playback_solve_overlap },
+    { "lso2_gpu/playback_cancel_ready", test_lso2_gpu_playback_cancel_ready },
+    { "lso2_gpu/playback_failure_drain", test_lso2_gpu_playback_failure_drain },
+    { "lso2_gpu/playback_cancel_new_admission",
+      test_lso2_gpu_playback_cancel_new_admission },
+    { "lso2_gpu/playback_callback_sample", test_lso2_gpu_playback_callback_sample },
+    { "lso2_gpu/playback_cancel_origin", test_lso2_gpu_playback_cancel_origin },
+    { "lso2_gpu/playback_inherited_origin",
+      test_lso2_gpu_playback_inherited_origin },
+    { "lso2_gpu/playback_resize_bytes", test_lso2_gpu_playback_resize_bytes },
+    { "lso2_gpu/playback_resize_interval", test_lso2_gpu_playback_resize_interval },
+    { "lso2_gpu/playback_solve_without_credit",
+      test_lso2_gpu_playback_solve_without_credit },
+    { "lso2_gpu/deferred_rgb241", test_lso2_gpu_deferred_rgb241 },
+    { "lso2_gpu/deferred_missing_history", test_lso2_gpu_deferred_missing_history },
+    { "lso2_gpu/deferred_cancel_seals", test_lso2_gpu_deferred_cancel_seals },
+    { "lso2_gpu/playback_sample_stale", test_lso2_gpu_playback_sample_stale },
+    { "lso2_gpu/playback_sample_short", test_lso2_gpu_playback_sample_short },
+    { "lso2_gpu/playback_sample_tail", test_lso2_gpu_playback_sample_tail },
     { "encoder/scheduling/0028_ready_fifo", test_schedule_0028_ready_fifo },
     { "encoder/scheduling/0029_ready_full", test_schedule_0029_ready_full },
     { "encoder/scheduling/0030_ready_empty", test_schedule_0030_ready_empty },
     { "encoder/scheduling/0031_ready_wrap", test_schedule_0031_ready_wrap },
     { "encoder/scheduling/0032_ready_slot_release", test_schedule_0032_ready_slot_release },
-    { "phased/standard_indexes", test_phased_standard_indexes },
-    { "phased/small_error_indexes", test_phased_small_error_indexes },
-    { "phased/scratch_reset", test_phased_scratch_reset },
-    { "phased/configuration_snapshot", test_phased_configuration_snapshot },
-    { "phased/gpu_off_rejected", test_phased_gpu_off_rejected },
-    { "phased/byte_lookup_rejected", test_phased_byte_lookup_rejected },
-    { "phased/auto_small_image", test_phased_auto_small_image },
-    { "phased/float_image_rejected", test_phased_float_image_rejected },
-    { "phased/raster_rejected", test_phased_raster_rejected },
-    { "phased/invalid_gain_atomic", test_phased_invalid_gain_atomic },
-    { "phased/delta_t0", test_phased_delta_t0 },
-    { "phased/delta_refresh", test_phased_delta_refresh },
+    { "lso2_gpu/standard_indexes", test_lso2_gpu_standard_indexes },
+    { "lso2_gpu/small_error_indexes", test_lso2_gpu_small_error_indexes },
+    { "lso2_gpu/scratch_reset", test_lso2_gpu_scratch_reset },
+    { "lso2_gpu/configuration_snapshot", test_lso2_gpu_configuration_snapshot },
+    { "lso2_gpu/gpu_off_rejected", test_lso2_gpu_gpu_off_rejected },
+    { "lso2_gpu/byte_lookup_rejected", test_lso2_gpu_byte_lookup_rejected },
+    { "lso2_gpu/auto_small_image", test_lso2_gpu_auto_small_image },
+    { "lso2_gpu/float_image_rejected", test_lso2_gpu_float_image_rejected },
+    { "lso2_gpu/raster_rejected", test_lso2_gpu_raster_rejected },
+    { "lso2_gpu/invalid_gain_atomic", test_lso2_gpu_invalid_gain_atomic },
+    { "lso2_gpu/delta_t0", test_lso2_gpu_delta_t0 },
+    { "lso2_gpu/delta_refresh", test_lso2_gpu_delta_refresh },
     { "gpu/gridlut_fractional_reference",
         test_gpu_gridlut_fractional_reference },
     { "gpu/gridlut_fractional_ties", test_gpu_gridlut_fractional_ties },
@@ -7064,7 +7078,7 @@ static test_entry_t const test_entries[] = {
     { "gpu/blockcull_batch_refresh", test_gpu_blockcull_batch_refresh },
     { "gpu/blockcull_batch_deferred_refresh",
         test_gpu_blockcull_batch_deferred_refresh },
-    { "gpu/gridlut_refresh", test_phased_gridlut_refresh },
+    { "gpu/gridlut_refresh", test_lso2_gpu_gridlut_refresh },
     { "gpu/batch_zero_tile", test_gpu_batch_zero_tile },
     { "gpu/batch_thread_overflow", test_gpu_batch_thread_overflow },
     { "gpu/batch_invalid_index", test_gpu_batch_invalid_index },
@@ -7075,12 +7089,12 @@ static test_entry_t const test_entries[] = {
     { "gpu/6bit_fractional_cache", test_gpu_6bit_fractional_cache },
     { "gpu/fhedt_fractional_cache", test_gpu_fhedt_fractional_cache },
     { "gpu/blockcull_batch_opt_in", test_gpu_blockcull_batch_opt_in },
-    { "phased/none_refresh", test_phased_none_refresh },
-    { "phased/delaunay_refresh", test_phased_delaunay_refresh },
-    { "phased/vptree_refresh", test_phased_vptree_refresh },
-    { "phased/rbc_refresh", test_phased_rbc_refresh },
-    { "phased/mahalanobis_refresh", test_phased_mahalanobis_refresh },
-    { "phased/certlut_refresh", test_phased_certlut_refresh },
+    { "lso2_gpu/none_refresh", test_lso2_gpu_none_refresh },
+    { "lso2_gpu/delaunay_refresh", test_lso2_gpu_delaunay_refresh },
+    { "lso2_gpu/vptree_refresh", test_lso2_gpu_vptree_refresh },
+    { "lso2_gpu/rbc_refresh", test_lso2_gpu_rbc_refresh },
+    { "lso2_gpu/mahalanobis_refresh", test_lso2_gpu_mahalanobis_refresh },
+    { "lso2_gpu/certlut_refresh", test_lso2_gpu_certlut_refresh },
     { "gpu/none_fractional_cache", test_gpu_none_fractional_cache },
     { "gpu/delaunay_fractional_cache", test_gpu_delaunay_fractional_cache },
     { "gpu/vptree_fractional_cache", test_gpu_vptree_fractional_cache },
@@ -7099,8 +7113,8 @@ static test_entry_t const test_entries[] = {
     { "gpu/mahalanobis_fractional_ties", test_gpu_mahalanobis_fractional_ties },
     { "gpu/certlut_fractional_exact", test_gpu_certlut_fractional_exact },
     { "gpu/certlut_fractional_ties", test_gpu_certlut_fractional_ties },
-    { "phased/partial_rectangle", test_phased_partial_rectangle },
-    { "phased/retained_immutable", test_phased_retained_immutable },
+    { "lso2_gpu/partial_rectangle", test_lso2_gpu_partial_rectangle },
+    { "lso2_gpu/retained_immutable", test_lso2_gpu_retained_immutable },
     { "component/gpu_rows_ordered_indexes",
       test_gpu_rows_ordered_indexes },
     { "component/gpu_rows_rbc_indexes",

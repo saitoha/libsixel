@@ -1044,9 +1044,10 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
     staged = !request->lazy && request->prefer_staged
         && !request->threads_max_set
         && !request->encode_threads_max_set;
-    /* Only the spatial policies support independent work bands. A staged
-     * unknown policy would lose overlap without gaining parallel
-     * application. Keep its existing reservation instead. */
+    /* Only the CPU spatial policies support independent work bands. A
+     * staged GPU or unknown policy would lose overlap without gaining
+     * parallel application. Keep its existing reservation instead. */
+    if (request->diffuse_on_gpu) staged = 0;
     switch (request->method_for_diffuse) {
     case SIXEL_DIFFUSE_AUTO:
     case SIXEL_DIFFUSE_NONE:
@@ -1246,10 +1247,12 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     /* This pre-palette estimate uses the request. Runtime invokes the same
      * allocator with the completed palette and effective diffusion method. */
     request.method_for_diffuse = sixel_encoder_effective_diffuse(encoder);
+    request.diffuse_on_gpu = sixel_encoder_diffuse_on_gpu(encoder);
     request.lazy = sixel_threading_policy_mode() ==
         SIXEL_THREADING_POLICY_LAZY;
-    request.prefer_staged = sixel_dither_encode_default_staged(
-        threads, request.method_for_diffuse);
+    request.prefer_staged = !request.diffuse_on_gpu &&
+        sixel_dither_encode_default_staged(threads,
+            request.method_for_diffuse);
     request.gpu_encode_only = sixel_gpu_palette_policy_claims_apply_stage(
         encoder->gpu_policy, encoder->gpu_palette_threshold,
         encoder->lut_policy, request.method_for_diffuse,

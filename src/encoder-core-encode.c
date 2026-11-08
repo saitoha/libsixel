@@ -374,12 +374,14 @@ sixel_parallel_dither_configure(int height,
     request.total_threads = total_threads;
     request.ncolors = dither->ncolors;
     request.method_for_diffuse = dither->method_for_diffuse;
+    request.diffuse_on_gpu = dither->diffuse_on_gpu;
     /* Object encoding enters a policy scope; low-level encoding uses the
      * encoder-side defaults. Allocation consumes that same snapshot. */
     request.lazy = sixel_threading_policy_mode() ==
         SIXEL_THREADING_POLICY_LAZY;
-    request.prefer_staged = sixel_dither_encode_default_staged(
-        total_threads, request.method_for_diffuse);
+    request.prefer_staged = !request.diffuse_on_gpu &&
+        sixel_dither_encode_default_staged(total_threads,
+            request.method_for_diffuse);
     request.gpu_encode_only = sixel_gpu_palette_policy_claims_apply_stage(
         dither->gpu_policy, dither->gpu_palette_threshold,
         dither->lut_policy, dither->method_for_diffuse,
@@ -5404,9 +5406,9 @@ sixel_encoder_core_encode_dispatch(
 
     (void)request->depth;
     if (request->dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR &&
-            request->dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED) {
+            request->dither->diffuse_on_gpu) {
         sixel_helper_set_additional_message(
-            "phased requires indexed RGB8 GPU palette application");
+            "GPU diffusion requires indexed RGB8 GPU palette application");
         return SIXEL_FEATURE_ERROR;
     }
     if (request->dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
@@ -5420,9 +5422,9 @@ sixel_encoder_core_encode_dispatch(
         if (status != SIXEL_FALSE) return status;
         if (sixel_output_is_resolve_only(request->output))
             return SIXEL_FEATURE_ERROR;
-        if (request->dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED) {
+        if (request->dither->diffuse_on_gpu) {
             sixel_helper_set_additional_message(
-                "phased requires the RGB8 GPU component path");
+                "GPU diffusion requires the RGB8 GPU component path");
             return SIXEL_FEATURE_ERROR;
         }
         status = sixel_encode_dither(request->pixels,

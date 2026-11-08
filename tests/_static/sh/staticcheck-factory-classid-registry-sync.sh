@@ -57,7 +57,15 @@ if ! awk -f "$generator" \
     "$src_root"/src/dither-policy-sierra1.h \
     "$src_root"/src/dither-policy-sierra2.h \
     "$src_root"/src/dither-policy-sierra3.h \
-    "$src_root"/src/dither-policy-phased.h \
+    "$src_root"/src/dither-policy-lso2-gpu.h \
+    "$src_root"/src/dither-policy-fs-gpu.h \
+    "$src_root"/src/dither-policy-atkinson-gpu.h \
+    "$src_root"/src/dither-policy-jajuni-gpu.h \
+    "$src_root"/src/dither-policy-stucki-gpu.h \
+    "$src_root"/src/dither-policy-burkes-gpu.h \
+    "$src_root"/src/dither-policy-sierra1-gpu.h \
+    "$src_root"/src/dither-policy-sierra2-gpu.h \
+    "$src_root"/src/dither-policy-sierra3-gpu.h \
     "$src_root"/src/dither-policy-lso2.h \
     "$src_root"/src/dither-policy-a-dither.h \
     "$src_root"/src/dither-policy-x-dither.h \

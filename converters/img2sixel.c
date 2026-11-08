@@ -698,11 +698,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "      fs, atkinson, jajuni, stucki, burkes and sierra also run\n"
         "        four spatial phases on a GPU with RGB8 input, unless\n"
         "        perturb is set or the carry clamp is none\n"
-        "      phased     -> deprecated alias of lso2\n"
         "      compact suboption names (uppercase letter + value):\n"
         "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
         "                     deadzone=D, perturb=U, perturb_seed=R\n"
-        "        lso2, phased: gain=G\n"
+        "        lso2: gain=G\n"
         "        sierra: variant=V\n"
         "        a_dither, x_dither: strength=T\n"
         "        bluenoise: strength=T, gradient_factor=G, phase=P,\n"
@@ -1627,8 +1626,8 @@ static cli_env_help_t const g_env_help_table[] = {
         "Overridden by the scan suboption."
     },
     {
-        "SIXEL_DITHER_PHASED_GAIN",
-        "default phased gain: standard or small-error.\n"
+        "SIXEL_DITHER_LSO2_GAIN",
+        "default lso2 GPU gain: standard or small-error.\n"
         "Overridden by -d lso2:gain=VALUE."
     },
     {

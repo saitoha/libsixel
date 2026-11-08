@@ -80,7 +80,7 @@ One GPU pass packs the palette into 256 four-byte entries containing RGB and ori
 
 Palette count, RGB bytes and device identity determine reuse. Plans snapshot their palette; preparing a replacement does not change an older live plan. A binding exclusively leases its plan's workspace, and only completed successful construction enables table reuse. A failed construction remains unbuilt. GPU preparation does not build a CPU lookup. This byte provider adds no CLI suboptions or interface changes.
 
-For [`phased`](../dithering/phased.md), a separate scalar entry scans the same packed palette using the unrounded fractional query and direct float32 squared differences. It keeps the unweighted RGB metric; no covariance transform or candidate approximation is introduced. Byte vector queries remain unchanged. The [parent reference](README.md) owns fractional precision and cache identity.
+For [GPU diffusion](../dithering/README.md), a separate scalar entry scans the same packed palette using the unrounded fractional query and direct float32 squared differences. It keeps the unweighted RGB metric; no covariance transform or candidate approximation is introduced. Byte vector queries remain unchanged. The [parent reference](README.md) owns fractional precision and cache identity.
 
 ## Name and sources
 

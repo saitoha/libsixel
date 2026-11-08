@@ -1623,14 +1623,11 @@ typedef enum sixel_delta_compare {
 /* Resolved values, with no environment precedence flags or frame pointers.
  * prepare copies these settings; callers may release or change their source
  * configuration afterwards. apply never reads a mutable legacy handle. */
-typedef enum sixel_phased_gain {
-    SIXEL_PHASED_GAIN_STANDARD = 0,
-    SIXEL_PHASED_GAIN_SMALL_ERROR = 1
-} sixel_phased_gain_t;
+typedef enum sixel_lso2_gain {
+    SIXEL_LSO2_GAIN_STANDARD = 0,
+    SIXEL_LSO2_GAIN_SMALL_ERROR = 1
+} sixel_lso2_gain_t;
 
-/* phased_kernel names the kernel solved by the phased GPU method:
- * SIXEL_DIFFUSE_LSO2 or a fixed-coefficient method such as SIXEL_DIFFUSE_FS.
- * Zero means SIXEL_DIFFUSE_LSO2. */
 typedef struct sixel_dither_policy_options {
     int method_for_diffuse;
     int ncolors;
@@ -1649,8 +1646,7 @@ typedef struct sixel_dither_policy_options {
     int bluenoise_channel_rgb;
     int bluenoise_size;
     float bluenoise_gradient_factor;
-    sixel_phased_gain_t phased_gain;
-    int phased_kernel;
+    sixel_lso2_gain_t lso2_gain;
 } sixel_dither_policy_options_t;
 
 typedef struct sixel_dither_policy_prepare_request {
@@ -2228,8 +2224,9 @@ struct sixel_gpu_lookup_preparer_interface {
  * lookup plan, and compiles before prepare succeeds. It never branches on a
  * lookup policy name, inspects its workspace, or creates a CPU lookup.
  * The working and emitted palettes have equal counts; a dither declares
- * which representation its lookup and residual use. PHASED uses the emitted
- * RGB8 entries, excluding the reserved transparency entry. */
+ * which representation its lookup and residual use. Each diffusion method's
+ * GPU dither uses the emitted RGB8 entries, excluding the reserved
+ * transparency entry. */
 typedef struct sixel_gpu_dither_prepare_request {
     sixel_palette_t *working_palette;
     sixel_gpu_lookup_preparer_interface_t *lookup;
@@ -2524,8 +2521,72 @@ struct sixel_gpu_dither_preparer_interface {
 
 /*
  * IDL coclass:
- * [classid("dither/phased.gpu")]
- * coclass dither_policy_phased_gpu {
+ * [classid("dither/lso2.gpu")]
+ * coclass dither_policy_lso2_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/fs.gpu")]
+ * coclass dither_policy_fs_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/atkinson.gpu")]
+ * coclass dither_policy_atkinson_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/jajuni.gpu")]
+ * coclass dither_policy_jajuni_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/stucki.gpu")]
+ * coclass dither_policy_stucki_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/burkes.gpu")]
+ * coclass dither_policy_burkes_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/sierra1.gpu")]
+ * coclass dither_policy_sierra1_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/sierra2.gpu")]
+ * coclass dither_policy_sierra2_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/sierra3.gpu")]
+ * coclass dither_policy_sierra3_gpu {
  *     [default] interface gpu_dither_preparer;
  * };
  */

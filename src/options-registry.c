@@ -1090,14 +1090,11 @@ enum {
     SIXEL_DIFFUSION_BASE_A_DITHER,
     SIXEL_DIFFUSION_BASE_X_DITHER,
     SIXEL_DIFFUSION_BASE_BLUENOISE,
-    SIXEL_DIFFUSION_BASE_LSO2,
-    SIXEL_DIFFUSION_BASE_PHASED
+    SIXEL_DIFFUSION_BASE_LSO2
 };
 
-/* phased remains a deprecated spelling of lso2. */
-#define SIXEL_DIFFUSION_BASE_SET_GPU_LSO2 \
-    (SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_LSO2) | \
-     SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_PHASED))
+#define SIXEL_DIFFUSION_BASE_SET_LSO2 \
+    SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_LSO2)
 
 #define SIXEL_DIFFUSION_BASE_SET_CARRY \
     (SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_AUTO) | \
@@ -1122,8 +1119,7 @@ static sixel_option_value_schema_t const g_diffusion_values[] = {
     {
         "bluenoise", SIXEL_DIFFUSE_BLUENOISE_DITHER, 6u
     },
-    { "lso2", SIXEL_DIFFUSE_LSO2, 0u },
-    { "phased", SIXEL_DIFFUSE_LSO2, 0u }
+    { "lso2", SIXEL_DIFFUSE_LSO2, 0u }
 };
 
 enum {
@@ -1543,9 +1539,9 @@ static sixel_suboption_choice_t const g_diffusion_scan_choices[] = {
     { "raster", SIXEL_SCAN_RASTER }
 };
 
-static sixel_suboption_choice_t const g_phased_gain_choices[] = {
-    { "standard", SIXEL_PHASED_GAIN_STANDARD },
-    { "small-error", SIXEL_PHASED_GAIN_SMALL_ERROR }
+static sixel_suboption_choice_t const g_lso2_gain_choices[] = {
+    { "standard", SIXEL_LSO2_GAIN_STANDARD },
+    { "small-error", SIXEL_LSO2_GAIN_SMALL_ERROR }
 };
 
 static sixel_suboption_choice_t const g_bluenoise_channel_choices[] = {
@@ -2239,11 +2235,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         merge_policy_lloyd_override),
     SIXEL_REGISTRY_ENCODER_MULTI_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
-        SIXEL_DIFFUSION_BASE_SET_GPU_LSO2,
-        "gain", 'G', "SIXEL_DITHER_PHASED_GAIN", NULL, NULL,
-        g_phased_gain_choices,
-        phased_gain,
-        phased_gain_override),
+        SIXEL_DIFFUSION_BASE_SET_LSO2,
+        "gain", 'G', "SIXEL_DITHER_LSO2_GAIN", NULL, NULL,
+        g_lso2_gain_choices,
+        lso2_gain,
+        lso2_gain_override),
 
     SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
         SIXEL_OPTION_SCHEMA_MERGE_POLICY, NULL,

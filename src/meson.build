@@ -157,9 +157,25 @@ srcs = [
   'dither-policy-a-dither.c',
   'dither-policy-x-dither.c',
   'dither-policy-bluenoise.c',
-  'dither-policy-phased.c',
-  'dither-policy-phased.h',
-  'phased-coefficients.h',
+  'dither-policy-lso2-gpu.c',
+  'dither-policy-fs-gpu.c',
+  'dither-policy-atkinson-gpu.c',
+  'dither-policy-jajuni-gpu.c',
+  'dither-policy-stucki-gpu.c',
+  'dither-policy-burkes-gpu.c',
+  'dither-policy-sierra1-gpu.c',
+  'dither-policy-sierra2-gpu.c',
+  'dither-policy-sierra3-gpu.c',
+  'dither-policy-lso2-gpu.h',
+  'dither-policy-fs-gpu.h',
+  'dither-policy-atkinson-gpu.h',
+  'dither-policy-jajuni-gpu.h',
+  'dither-policy-stucki-gpu.h',
+  'dither-policy-burkes-gpu.h',
+  'dither-policy-sierra1-gpu.h',
+  'dither-policy-sierra2-gpu.h',
+  'dither-policy-sierra3-gpu.h',
+  'lso2-gpu-coefficients.h',
   'dither-policy-lso2.c',
   'dither-clamp.c',
   'dither-carry.c',
@@ -410,7 +426,7 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['dither-policy-phased-metal.m', 'retained-plane-metal.m', 'lookup-policy-gpu-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
+  srcs += ['dither-policy-lso2-gpu-metal.m', 'dither-policy-fs-gpu-metal.m', 'dither-policy-atkinson-gpu-metal.m', 'dither-policy-jajuni-gpu-metal.m', 'dither-policy-stucki-gpu-metal.m', 'dither-policy-burkes-gpu-metal.m', 'dither-policy-sierra1-gpu-metal.m', 'dither-policy-sierra2-gpu-metal.m', 'dither-policy-sierra3-gpu-metal.m', 'retained-plane-metal.m', 'lookup-policy-gpu-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
            'progressive-gpu-metal.m']
 endif
 

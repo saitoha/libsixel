@@ -1,6 +1,6 @@
 # Lookup policy: `ordered`
 
-This page describes `--lookup-policy=ordered`, abbreviated `--lookup-policy=o`, for CLI users and contributors. The [lookup policy reference](README.md) owns the interface, metric and guarantee terminology. `auto` ordinarily selects `vptree`; the GPU-only [`phased` dither](../dithering/phased.md) selects `ordered` for its fractional queries.
+This page describes `--lookup-policy=ordered`, abbreviated `--lookup-policy=o`, for CLI users and contributors. The [lookup policy reference](README.md) owns the interface, metric and guarantee terminology. `auto` ordinarily selects `vptree`; the [GPU diffusion components](../dithering/README.md) select `ordered` for its fractional queries.
 
 ## Purpose and intuition
 
@@ -24,7 +24,7 @@ Rows are sorted by `(squared distance, original palette index)`. Final candidate
 
 The byte instance owns its palette and tables. Re-preparation reuses them only when palette size and every byte match. A changed palette replaces the tables even at unchanged size. Queries are read-only. A caller's previous-index hint may replace the seed when closer, but cannot remove a possible winner. Byte palettes above 256 colors are rejected.
 
-The GPU provider also admits fractional code-value queries in `[0,255]^3` for `phased`. It reuses the same complete sorted rows and seed hints, compares float distances with lowest-index ties, and conservatively widens the radius bound by one squared-distance unit to cover rounding. Query kind is part of cache identity. This capability does not accept float32 image storage and does not round a query to a byte. The [phased arithmetic tests](../dithering/phased.md#test-coverage) exercise this consumer; they are not an exhaustive continuous-color proof.
+The GPU provider also admits fractional code-value queries in `[0,255]^3` for GPU diffusion. It reuses the same complete sorted rows and seed hints, compares float distances with lowest-index ties, and conservatively widens the radius bound by one squared-distance unit to cover rounding. Query kind is part of cache identity. This capability does not accept float32 image storage and does not round a query to a byte. The [GPU LSO2 arithmetic tests](../dithering/lso2-gpu.md#test-coverage) exercise this consumer; they are not an exhaustive continuous-color proof.
 
 ## CPU and Metal construction
 

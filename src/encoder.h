@@ -66,11 +66,17 @@ sixel_encoder_commit_repair(sixel_encoder_t *encoder,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_invalidate_6delta_plane_owned(sixel_encoder_t *encoder);
 
-/* Requested LSO2 runs as the GPU phased solver when this encoder admits a
- * GPU and the RGB8 gamma serpentine path is available; otherwise it stays
- * on the CPU kernel. Every admission reads this, never the raw request. */
+/* The requested diffusion method. Every admission reads this, never the
+ * raw request. */
 SIXEL_INTERNAL_API int
 sixel_encoder_effective_diffuse(sixel_encoder_t const *encoder);
+
+/* Non-zero when the requested method runs as that method's own GPU
+ * component: the encoder admits a GPU, the RGB8 gamma path is available
+ * and the method's GPU form covers the requested options. Otherwise the
+ * method stays on its CPU component. */
+SIXEL_INTERNAL_API int
+sixel_encoder_diffuse_on_gpu(sixel_encoder_t const *encoder);
 
 SIXEL_INTERNAL_API int
 sixel_encoder_should_hide_animation_cursor(int is_multiframe,
@@ -219,8 +225,8 @@ struct sixel_encoder {
     int bluenoise_channel_rgb;
     int bluenoise_size_override;
     int bluenoise_size;
-    int phased_gain; /* Frozen phased coefficient curve. */
-    int phased_gain_override;
+    int lso2_gain; /* Frozen LSO2 coefficient curve. */
+    int lso2_gain_override;
     int bluenoise_gradient_factor_override;
     float bluenoise_gradient_factor;
     int method_for_scan;

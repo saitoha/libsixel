@@ -43,6 +43,7 @@ typedef struct sixel_dither_encode_request {
     int height;
     int ncolors;
     int method_for_diffuse;
+    int diffuse_on_gpu;                 /* diffusion runs on its GPU form */
     int gpu_encode_only;
     int prefer_staged;
     int lazy;                          /* no default dither fan-out */

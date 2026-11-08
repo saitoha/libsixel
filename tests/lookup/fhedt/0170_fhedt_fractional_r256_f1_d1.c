@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-#include "tests/_support/phased/fixture.h"
+#include "tests/_support/lso2-gpu/fixture.h"
 
 int
 test_gpu_fhedt_fractional_r256_f1_d1(int argc, char **argv)
@@ -16,5 +16,5 @@ test_gpu_fhedt_fractional_r256_f1_d1(int argc, char **argv)
     config.fhedt_use_dist2 = 1;
     config.fhedt_weights[0] = config.fhedt_weights[1] =
         config.fhedt_weights[2] = 1.0;
-    return phased_fractional_config_check(&config, 0);
+    return lso2_gpu_fractional_config_check(&config, 0);
 }

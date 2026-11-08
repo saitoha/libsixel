@@ -47,7 +47,7 @@ DIST_SUBDIRS = \
 export CKSUM
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = tools/gen-phased.sh tools/gen_varcoefs.awk tools/embed-metal.sh tools/embed-metal.awk \
+EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh tools/embed-metal.awk \
     tools/ci-vm-result.sh tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
     assessment/meson.build \
     converters/meson.build \
@@ -724,7 +724,15 @@ EXTRA_DIST = tools/gen-phased.sh tools/gen_varcoefs.awk tools/embed-metal.sh too
 	docs/encoder/palette-construction/snap-policy/measurements/snap-policy-size.png \
 	docs/encoder/palette-construction/snap-policy/measurements/snap-policy-speed.csv \
 	docs/encoder/palette-construction/snap-policy/measurements/snap-policy-speed.png \
-	docs/encoder/palette-application/dithering/phased.md \
+	docs/encoder/palette-application/dithering/lso2-gpu.md \
+	docs/encoder/palette-application/dithering/fs-gpu.md \
+	docs/encoder/palette-application/dithering/atkinson-gpu.md \
+	docs/encoder/palette-application/dithering/jajuni-gpu.md \
+	docs/encoder/palette-application/dithering/stucki-gpu.md \
+	docs/encoder/palette-application/dithering/burkes-gpu.md \
+	docs/encoder/palette-application/dithering/sierra1-gpu.md \
+	docs/encoder/palette-application/dithering/sierra2-gpu.md \
+	docs/encoder/palette-application/dithering/sierra3-gpu.md \
 	docs/encoder/palette-application/dithering/README.md \
 	docs/encoder/palette-application/dithering/perturb/README.md \
 	docs/encoder/palette-application/dithering/perturb/01-flat-native.png \
