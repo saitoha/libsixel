@@ -5,7 +5,7 @@ set -eux
 echo "1..1"
 set -v
 status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette delta/refresh/0028_gpu_move || status=$?
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette delta/refresh/0025_gpu_move || status=$?
 test "$status" -ne 77 || {
     echo "ok 1 # SKIP GPU palette backend is unavailable"
     exit 0

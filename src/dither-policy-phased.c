@@ -2,8 +2,10 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include <math.h>
 #include <string.h>
 #include "dither-policy-phased.h"
+#include "dither-carry.h"
 #include "sixel_atomic.h"
 
 typedef struct phased_preparer {
@@ -41,20 +43,48 @@ phased_configure(sixel_gpu_dither_preparer_interface_t *self,
     sixel_dither_policy_prepare_request_t const *request)
 {
     phased_preparer_t *preparer;
+    int kernel;
 
+    /* Zero is the unset value of a cleared request and names LSO2, the
+     * kernel phased solved before fixed kernels were selectable. */
+    kernel = request == NULL || request->options.phased_kernel == 0
+        ? SIXEL_DIFFUSE_LSO2 : request->options.phased_kernel;
     if (request == NULL ||
             request->options.method_for_diffuse != SIXEL_DIFFUSE_PHASED ||
             request->options.ncolors < 1 || request->options.ncolors > 256 ||
             (request->options.phased_gain != SIXEL_PHASED_GAIN_STANDARD &&
-             request->options.phased_gain != SIXEL_PHASED_GAIN_SMALL_ERROR)) {
+             request->options.phased_gain != SIXEL_PHASED_GAIN_SMALL_ERROR) ||
+            (kernel != SIXEL_DIFFUSE_LSO2 &&
+             sixel_dither_carry_kernel(kernel) == NULL)) {
         return SIXEL_BAD_ARGUMENT;
     }
+    /* Fixed kernels carry the CPU limiter contract. The unbounded and
+     * perturbed carries have no GPU form; their CPU forms remain. */
+    if (kernel != SIXEL_DIFFUSE_LSO2 &&
+            (!isfinite(request->options.clamp_threshold) ||
+             request->options.clamp_threshold < 1.0 ||
+             request->options.clamp_threshold > 16.0 ||
+             !(request->options.diffusion_deadzone >= 0.0) ||
+             request->options.clamp_policy < SIXEL_DITHER_CLAMP_AUTO ||
+             request->options.clamp_policy > SIXEL_DITHER_CLAMP_NONE)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (kernel != SIXEL_DIFFUSE_LSO2 &&
+            (request->options.clamp_policy == SIXEL_DITHER_CLAMP_NONE ||
+             request->options.diffusion_perturb != 0.0f)) {
+        return SIXEL_FEATURE_ERROR;
+    }
+    /* LSO2 coefficients assume serpentine order; fixed kernels follow the
+     * requested scan exactly as their CPU forms do. */
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            request->method_for_scan != SIXEL_SCAN_SERPENTINE) {
+            (request->method_for_scan != SIXEL_SCAN_SERPENTINE &&
+             (kernel == SIXEL_DIFFUSE_LSO2 ||
+              request->method_for_scan != SIXEL_SCAN_RASTER))) {
         return SIXEL_FEATURE_ERROR;
     }
     preparer = (phased_preparer_t *)self;
     preparer->configuration = *request;
+    preparer->configuration.options.phased_kernel = kernel;
     preparer->configured = 1;
     return SIXEL_OK;
 }

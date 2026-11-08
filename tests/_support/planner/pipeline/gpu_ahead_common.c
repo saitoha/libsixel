@@ -146,9 +146,6 @@ gpu_ahead_submit(struct gpu_ahead_fixture *s, int index)
 
     if (sixel_playback_options_init(&options, sizeof(options)) != SIXEL_OK)
         return 0;
-    /* Time-dependent refresh must have the same input in both schedules. */
-    options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
-    options.refresh_time_us = (uint64_t)index * 16667;
     frame = playback_test_small_frame(index);
     if (frame == NULL) return 0;
     status = sixel_playback_submit(s->playback, frame,

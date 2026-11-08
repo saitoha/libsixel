@@ -1,8 +1,8 @@
 #!/bin/sh
-# Verify delta:refresh_ms stores the same setting via short and environment paths.
+# Verify delta:refresh stores the same setting via short and environment paths.
 # Policy: docs/encoder/output/delta-encoding.md
-# Registry row: SIXEL_OPTION_SCHEMA_UPDATE_POLICY|g_update_policy_values + 1|refresh_ms
-# Registry binding: refresh_ms|refresh_ms_override
+# Registry row: SIXEL_OPTION_SCHEMA_UPDATE_POLICY|g_update_policy_values + 1|refresh
+# Registry binding: refresh_frames|refresh_frames_override
 
 # Periodic refresh observes an unmanaged RGB8 target. Applied CMS retains
 # float samples even with --precision-policy=8bit.
@@ -22,32 +22,32 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
-short_output="${artifact_dir}/0188_update_delta_refresh_ms_image_regression-short-$$.six"
-env_output="${artifact_dir}/0188_update_delta_refresh_ms_image_regression-env-$$.six"
+short_output="${artifact_dir}/0024_update_delta_refresh_image_regression-short-$$.six"
+env_output="${artifact_dir}/0024_update_delta_refresh_image_regression-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! \
-    -dnone "-Zdelta:T8:J80" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok 1 - delta:refresh_ms short conversion failed"
+    -dnone "-Zdelta:T8:J5" "${input_image}" 2>&1 >"${short_output}") || {
+    echo "not ok 1 - delta:refresh short conversion failed"
     exit 0
 }
-case "${short_trace}" in *LSXSUB1\|*key=refresh_ms\|stored=1\|binding=refresh_ms,refresh_ms_override\|value=80**) true ;; *) false ;; esac || {
-    echo "not ok 1 - delta:refresh_ms short value was not stored"
+case "${short_trace}" in *LSXSUB1\|*key=refresh\|stored=1\|binding=refresh_frames,refresh_frames_override\|value=5**) true ;; *) false ;; esac || {
+    echo "not ok 1 - delta:refresh short value was not stored"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! \
-    --env "SIXEL_UPDATE_DELTA_REFRESH_MS=80" -dnone -Z delta:T8 \
+    --env "SIXEL_UPDATE_DELTA_REFRESH=5" -dnone -Z delta:T8 \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok 1 - delta:refresh_ms environment conversion failed"
+    echo "not ok 1 - delta:refresh environment conversion failed"
     exit 0
 }
-case "${env_trace}" in *LSXSUB1\|*key=refresh_ms\|stored=1\|binding=refresh_ms,refresh_ms_override\|value=80**) true ;; *) false ;; esac || {
-    echo "not ok 1 - delta:refresh_ms environment value was not stored"
+case "${env_trace}" in *LSXSUB1\|*key=refresh\|stored=1\|binding=refresh_frames,refresh_frames_override\|value=5**) true ;; *) false ;; esac || {
+    echo "not ok 1 - delta:refresh environment value was not stored"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - delta:refresh_ms output differs"
+    echo "not ok 1 - delta:refresh output differs"
     exit 0
 }
 # This test owns exact option-route equivalence and consumer selection.
@@ -55,5 +55,5 @@ test -s "${short_output}" || {
     echo "not ok 1 - option-route output is empty"
     exit 0
 }
-echo "ok 1 - delta:refresh_ms preserves image output"
+echo "ok 1 - delta:refresh preserves image output"
 exit 0

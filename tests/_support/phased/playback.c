@@ -60,8 +60,6 @@ phased_playback_compare_impl(char const *method, char const *delta,
         PHASED_CHECK(frame != NULL);
         if (resize == 2 && i == 2)
             sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_G8);
-        a->refresh_time_override = 1;
-        a->refresh_time_us = (uint64_t)i * 16667;
         PHASED_CHECK(sixel_encoder_encode_frame(a, frame, out_a) == SIXEL_OK);
         sixel_frame_unref(frame);
         frame = NULL;
@@ -79,8 +77,6 @@ phased_playback_compare_impl(char const *method, char const *delta,
             sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_G8);
         PHASED_CHECK(sixel_playback_options_init(&options,
             sizeof(options)) == SIXEL_OK);
-        options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
-        options.refresh_time_us = (uint64_t)i * 16667;
         PHASED_CHECK(sixel_playback_submit(playback, frame,
             SIXEL_PLAYBACK_WAIT, -1, &options) == SIXEL_OK);
         sixel_frame_unref(frame);

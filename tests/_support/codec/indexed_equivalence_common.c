@@ -68,15 +68,13 @@ indexed_equivalence_test(char const *dither, int gpu, int hls, int history)
                     SIXEL_OK ||
                 sixel_encoder_setopt(encoder[mode], 'Z',
                     (hls || strcmp(dither, "fs") == 0) ? "delta:T8"
-                        : "delta:T8:refresh_ms=80") != SIXEL_OK) goto end;
+                        : "delta:T8:refresh=5") != SIXEL_OK) goto end;
     }
     for (sequence = 0; sequence < 2; ++sequence) {
         for (mode = 0; mode < 2; ++mode) {
             for (i = 0; i < (int)sizeof(pixels); ++i) {
                 pixels[i] = (unsigned char)((i * 53 + sequence * 3) % 251);
             }
-            encoder[mode]->refresh_time_override = 1;
-            encoder[mode]->refresh_time_us = (uint64_t)sequence * 16667;
             if (sixel_frame_new(&frame, NULL) != SIXEL_OK) goto end;
             status = sixel_frame_init_borrowed(frame, pixels, 16, 16,
                 SIXEL_PIXELFORMAT_RGB888, NULL, -1);

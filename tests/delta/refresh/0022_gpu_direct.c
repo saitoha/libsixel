@@ -2,9 +2,9 @@
 int test_partial_refresh(int mode, int gpu);
 
 int
-test_refresh_0030(int argc, char **argv)
+test_refresh_0022(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_partial_refresh(13, 1);
+    return test_partial_refresh(1, 1);
 }

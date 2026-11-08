@@ -66,7 +66,7 @@ reserved_delta_render(int gpu, int latest, int threshold, int record,
         == SIXEL_OK);
     if (!record) {
         UI_CHECK(sixel_encoder_setopt(encoder, 'Z', threshold
-            ? "delta:T48:refresh_ms=80" : "delta:T0:refresh_ms=80")
+            ? "delta:T48:refresh=5" : "delta:T0:refresh=5")
             == SIXEL_OK);
     }
     UI_CHECK(sixel_output_new(&output, playback_test_write, &stream, NULL)
@@ -83,7 +83,6 @@ reserved_delta_render(int gpu, int latest, int threshold, int record,
     UI_CHECK(sixel_playback_options_init(&options, sizeof(options))
         == SIXEL_OK);
     options.palette_source = source;
-    options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
     for (step = 0; step <= 10; ++step) {
         memset(pixels, 102, sizeof(pixels));
         if (step >= 1 && step <= 5) {
@@ -99,7 +98,6 @@ reserved_delta_render(int gpu, int latest, int threshold, int record,
         stream.size = 0;
         /* A missing full frame must not reuse the previous palette count. */
         colors = 0;
-        options.refresh_time_us = (uint64_t)step * 16000U;
         UI_CHECK(sixel_playback_submit(playback, frame, SIXEL_PLAYBACK_WAIT,
             2000, &options) == SIXEL_OK);
         UI_CHECK(sixel_playback_drain(playback, 5000) == SIXEL_OK);

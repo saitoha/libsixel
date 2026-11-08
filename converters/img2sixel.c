@@ -689,17 +689,20 @@ static cli_option_help_t const g_option_help_table[] = {
         "          size=SIZE           -> 64 (embedded tile size)\n"
         "          scan=SCANTYPE       -> auto, raster, or serpentine\n"
         "                                 (default raster)\n"
-        "      phased     -> GPU spatial diffusion (RGB8, ordered lookup)\n"
-        "        gain=standard|small-error (default standard)\n"
-        "        scan=auto|serpentine; no CPU fallback\n"
         "      lso2       -> libsixel variable error diffusion tables\n"
+        "        with a GPU, RGB8 serpentine runs four spatial phases\n"
         "        sub-option:\n"
         "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
         "                                 (default serpentine)\n"
+        "          gain=standard|small-error -> GPU sender gain\n"
+        "      fs, atkinson, jajuni, stucki, burkes and sierra also run\n"
+        "        four spatial phases on a GPU with RGB8 input, unless\n"
+        "        perturb is set or the carry clamp is none\n"
+        "      phased     -> deprecated alias of lso2\n"
         "      compact suboption names (uppercase letter + value):\n"
         "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
         "                     deadzone=D, perturb=U, perturb_seed=R\n"
-        "        phased: gain=G\n"
+        "        lso2, phased: gain=G\n"
         "        sierra: variant=V\n"
         "        a_dither, x_dither: strength=T\n"
         "        bluenoise: strength=T, gradient_factor=G, phase=P,\n"
@@ -1033,8 +1036,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "      residual_threshold=0..255 (:Hvalue, default 1.5)\n"
         "      residual_keep_threshold=0..255 (:Kvalue, default 0)\n"
         "      residual_frames=1..255 (:Fvalue, default 3)\n"
-        "      refresh_ms=0..10000 (:Jvalue, default 0/off)\n"
-        "    Experimental J staggers pixel T0 re-evaluation with blue noise.\n"
+        "      refresh=0..10000 (:Jvalue, frames, default 0/off)\n"
+        "    Experimental J re-evaluates every pixel at T0 once per J\n"
+        "    encoded frames, staggered with blue noise.\n"
         "    It cannot combine with R1/P1 and does not force repainting.\n"
         "    delta:R1:T8 lowers T in persistent residual cells. Auto metric\n"
         "    selects rgb241 for R1, max otherwise. Requires opaque full-plane\n"
@@ -1586,8 +1590,8 @@ static cli_env_help_t const g_env_help_table[] = {
         "Does not enable delta. Explicit suboptions take precedence."
     },
     {
-        "SIXEL_UPDATE_DELTA_REFRESH_MS",
-        "set delta:refresh_ms (0..10000 ms, default 0/off).\n"
+        "SIXEL_UPDATE_DELTA_REFRESH",
+        "set delta:refresh (0..10000 frames, default 0/off).\n"
         "Does not enable delta. Experimental staggered T0 re-evaluation."
     },
     {
@@ -1625,7 +1629,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_PHASED_GAIN",
         "default phased gain: standard or small-error.\n"
-        "Overridden by -d phased:gain=VALUE."
+        "Overridden by -d lso2:gain=VALUE."
     },
     {
         "SIXEL_DITHER_SIERRA_VARIANT",

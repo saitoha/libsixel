@@ -24,7 +24,7 @@ The option retains the historical name `diffusion`, although some available
 methods are ordered or positionally stable dithers rather than error-diffusion
 kernels. The current base methods are:
 
-- [`phased`](phased.md) performs GPU-only spatial diffusion in four phases, with `gain=standard` or `gain=small-error`;
+- [`phased`](phased.md) performs GPU-only spatial diffusion in four phases for `lso2` (with `gain=standard` or `gain=small-error`) and the fixed kernels;
 - `auto` selects the normal automatic method;
 - `none` maps the original pixel without diffusing error;
 - `fs`, `atkinson`, `jajuni`, `stucki`, `burkes`, `sierra`, and `lso2` diffuse

@@ -57,11 +57,10 @@ typedef struct sixel_delta_residual {
     int height;
     int pending;
     size_t selected_pixels;
-    /* Periodic refresh publishes its clock only with successful output. */
-    uint64_t refresh_epoch_us;
-    uint64_t refresh_last_us;
-    uint64_t refresh_next_epoch_us;
-    uint64_t refresh_next_us;
+    /* Periodic refresh counts encoded frames since its last restart and
+     * publishes that count only with successful output. */
+    uint64_t refresh_frame;
+    uint64_t refresh_next_frame;
     int refresh_origin_x;
     int refresh_origin_y;
     int refresh_next_origin_x;
@@ -79,14 +78,16 @@ sixel_delta_residual_prepare(sixel_delta_residual_t *state,
     double threshold, unsigned int frames, unsigned int keep_threshold);
 
 /* Select pixels whose staggered deadline was crossed since the last output.
+ * Every pixel is re-evaluated at T0 once per PERIOD encoded frames. Counting
+ * frames rather than time keeps the schedule independent of any clock, so
+ * the same input always produces the same output.
  * Coordinates anchor phases to the retained plane. A different rectangle
  * restarts with T0 so an absent region cannot consume another region's debt.
  * No source scan, random starvation or frame-rate-dependent age is needed. */
 SIXEL_INTERNAL_API void
 sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
     int width, int height, int origin_x, int origin_y,
-    unsigned int period_ms, uint64_t time_us,
-    int history_valid);
+    unsigned int period, int history_valid);
 
 SIXEL_INTERNAL_API unsigned int
 sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,

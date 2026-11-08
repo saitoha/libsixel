@@ -125,7 +125,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_SIERRA1     0xb  /* diffuse with Sierra Lite method */
 #define SIXEL_DIFFUSE_SIERRA2     0xc  /* diffuse with Sierra Two-row method */
 #define SIXEL_DIFFUSE_SIERRA3     0xd  /* diffuse with Sierra-3 method */
-#define SIXEL_DIFFUSE_PHASED      0xe  /* GPU spatial phased diffusion */
+#define SIXEL_DIFFUSE_PHASED      0xe  /* deprecated: GPU form of LSO2 */
 #define SIXEL_SCAN_AUTO           0x0  /* choose scan order automatically */
 #define SIXEL_SCAN_RASTER         0x1  /* scan from left to right on each line */
 #define SIXEL_SCAN_SERPENTINE     0x2  /* alternate scan direction per line */
@@ -163,6 +163,13 @@ typedef int SIXELSTATUS;
 
 /* GPU 5bit/6bit use deterministic, shared, prebuilt cell-center tables. */
 #define SIXEL_HAVE_GPU_PREBUILT_BIT_LOOKUP 1
+
+/* With an admitted GPU, RGB8 lso2 runs the four-phase GPU solver. */
+#define SIXEL_HAVE_GPU_LSO2 1
+
+/* With an admitted GPU, RGB8 fs, atkinson, jajuni, stucki, burkes and sierra
+ * also run the four-phase GPU solver with their own coefficients. */
+#define SIXEL_HAVE_GPU_FIXED_DIFFUSION 1
 
 /* Upper-level GPU policy for selected accelerator stages */
 #define SIXEL_GPU_POLICY_OFF     0x0  /* keep all stages on CPU */
@@ -2302,8 +2309,6 @@ typedef struct sixel_playback sixel_playback_t;
 /* sixel_playback_options_t.flags */
 #define SIXEL_PLAYBACK_OPTION_ORIGIN          0x1  /* apply origin_x/y */
 #define SIXEL_PLAYBACK_OPTION_THRESHOLD_LIMIT 0x2  /* apply threshold_limit */
-#define SIXEL_PLAYBACK_OPTION_REFRESH_TIME    0x4  /* apply refresh_time_us */
-#define SIXEL_HAVE_PLAYBACK_REFRESH_TIME 1
 
 typedef struct sixel_playback_result {
     size_t struct_size;
@@ -2348,10 +2353,6 @@ typedef struct sixel_playback_options {
     unsigned int threshold_limit;   /* as set_6delta_threshold_limit() */
     uint64_t user_tag;
     sixel_frame_t *palette_source;
-    /* Optional monotonic presentation clock for delta:refresh_ms. Without
-     * the flag, use the encoder's monotonic clock. Backward time restarts
-     * the schedule; equal time does not age it. This does not pace output. */
-    uint64_t refresh_time_us;
 } sixel_playback_options_t;
 
 /* A reservation; valid until submitted or released. */

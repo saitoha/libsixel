@@ -7,5 +7,5 @@ test_phased_playback_refresh(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return phased_playback_compare("phased", "delta:T48:refresh_ms=80", 2);
+    return phased_playback_compare("phased", "delta:T48:refresh=5", 2);
 }

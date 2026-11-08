@@ -109,7 +109,7 @@ tests/cli/output-options/0020_update_delta_threshold_metric_image_regression.t
 tests/cli/output-options/0021_update_delta_residual_threshold_image_regression.t
 tests/cli/output-options/0022_update_delta_residual_keep_threshold_image_regression.t
 tests/cli/output-options/0023_update_delta_residual_frames_image_regression.t
-tests/cli/output-options/0024_update_delta_refresh_ms_image_regression.t
+tests/cli/output-options/0024_update_delta_refresh_image_regression.t
 tests/cli/palette-stage-options/0053_merge_policy_channel_l_image_regression.t
 tests/cli/palette-stage-options/0054_merge_policy_oversplit_image_regression.t
 tests/cli/palette-stage-options/0055_merge_policy_lloyd_image_regression.t

@@ -143,6 +143,7 @@
 #include "filter-final-merge.h"
 #include "filter-factory.h"
 #include "gpu-palette.h"
+#include "gpu-program.h"
 #include "lookup-policy-gpu.h"
 #include "filter-palette.h"
 #include "filter-fhedt.h"
@@ -1141,7 +1142,6 @@ typedef struct sixel_encoder_frame_handoff_meta {
     int origin_x;
     int origin_y;
     unsigned int threshold_limit;
-    uint64_t refresh_time_us;
     double admitted_at;
     double started_at;
     sixel_playback_stage_sample_t stages;
@@ -1283,6 +1283,59 @@ sixel_encoder_update_diagnostic_dither(sixel_encoder_t *encoder,
         encoder->diagnostic_dither = dither;
         sixel_dither_ref(dither);
     }
+}
+
+/* The diffusion kernel a phased GPU solve would use: the requested method,
+ * with the deprecated phased spelling meaning LSO2. */
+static int
+sixel_encoder_phased_kernel(sixel_encoder_t const *encoder)
+{
+    return encoder->method_for_diffuse == SIXEL_DIFFUSE_PHASED
+        ? SIXEL_DIFFUSE_LSO2 : encoder->method_for_diffuse;
+}
+
+SIXEL_INTERNAL_API int
+sixel_encoder_effective_diffuse(sixel_encoder_t const *encoder)
+{
+    sixel_gpu_device_interface_t *device;
+    int kernel;
+
+    kernel = sixel_encoder_phased_kernel(encoder);
+    switch (kernel) {
+    case SIXEL_DIFFUSE_LSO2:
+        /* The LSO2 GPU coefficients assume serpentine order. */
+        if (encoder->method_for_scan == SIXEL_SCAN_RASTER) return kernel;
+        break;
+    case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_SIERRA1:
+    case SIXEL_DIFFUSE_SIERRA2:
+    case SIXEL_DIFFUSE_SIERRA3:
+        /* The GPU form reproduces the default deadzone and soft limiter.
+         * Perturbed weights and other limiters stay on the CPU. */
+        if (encoder->diffusion_perturb != 0.0f ||
+                encoder->clamp_policy == SIXEL_DITHER_CLAMP_NONE) {
+            return kernel;
+        }
+        break;
+    default:
+        return kernel;
+    }
+    if (encoder->gpu_policy == SIXEL_GPU_POLICY_OFF ||
+            encoder->precision_requested == SIXEL_OPTION_PRECISION_FLOAT32 ||
+            encoder->prefer_float32 ||
+            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
+        return kernel;
+    }
+    device = NULL;
+    if (sixel_gpu_device_acquire(&device) != SIXEL_OK) {
+        return kernel;
+    }
+    return SIXEL_DIFFUSE_PHASED;
 }
 
 /* Keep the trace independent of numeric diffusion ABI values. */
@@ -2885,40 +2938,58 @@ sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
     encoder->residual_keep_override = 0;
     encoder->residual_frames = 3U;
     encoder->residual_frames_override = 0;
-    encoder->refresh_ms = 0U;
-    encoder->refresh_ms_override = 0;
+    encoder->refresh_frames = 0U;
+    encoder->refresh_frames_override = 0;
+}
+
+static int
+sixel_encoder_refresh_enabled(sixel_encoder_t const *encoder)
+{
+    return encoder->refresh_frames != 0U;
 }
 
 static SIXELSTATUS
 sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
     int attached_repair)
 {
-    if (!encoder->residual_enabled && encoder->refresh_ms == 0U &&
+    int diffuse;
+    int dither_limited;
+
+    if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder) &&
             sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
         return SIXEL_OK;
     }
+    /* Refresh only lowers the per-pixel early-keep threshold, which every
+     * dither consults. R1 and rgb241 keep their narrower application set.
+     * The GPU policy can be admitted after this option. Accept requested
+     * LSO2 here; the frame check rejects it if it resolves to the CPU. */
+    dither_limited = encoder->residual_enabled ||
+        sixel_encoder_delta_metric(encoder) == SIXEL_DELTA_METRIC_RGB241;
+    diffuse = encoder->method_for_diffuse == SIXEL_DIFFUSE_LSO2
+        ? SIXEL_DIFFUSE_PHASED : encoder->method_for_diffuse;
     if (encoder->update_policy != SIXEL_UPDATE_POLICY_DELTA ||
             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->palette_type == SIXEL_PALETTETYPE_HLS ||
             encoder->precision_requested == SIXEL_OPTION_PRECISION_FLOAT32 ||
-            (encoder->method_for_diffuse != SIXEL_DIFFUSE_AUTO &&
-             encoder->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
-             encoder->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
-             encoder->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
-             encoder->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER &&
-             encoder->method_for_diffuse != SIXEL_DIFFUSE_PHASED)) {
+            (dither_limited &&
+             diffuse != SIXEL_DIFFUSE_AUTO &&
+             diffuse != SIXEL_DIFFUSE_NONE &&
+             diffuse != SIXEL_DIFFUSE_A_DITHER &&
+             diffuse != SIXEL_DIFFUSE_X_DITHER &&
+             diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER &&
+             diffuse != SIXEL_DIFFUSE_PHASED)) {
         sixel_helper_set_additional_message(
             "delta residual/rgb241 requires gamma RGB8, RGB output "
-            "and none, a_dither, x_dither, bluenoise or phased dither.");
+            "and none, a_dither, x_dither, bluenoise or GPU lso2 dither.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (encoder->refresh_ms != 0U &&
+    if (sixel_encoder_refresh_enabled(encoder) &&
             (encoder->residual_enabled || encoder->progressive_enabled ||
              attached_repair)) {
         sixel_helper_set_additional_message(
-            "delta refresh_ms cannot combine with residual/progressive.");
+            "delta refresh cannot combine with residual/progressive.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (encoder->residual_enabled &&
@@ -2948,12 +3019,11 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
     unsigned char const *valid;
     unsigned int threshold;
     size_t i, count;
-    uint64_t time_us;
     int width, height, plane_width, plane_height, origin_x, origin_y;
     int history_valid;
     SIXELSTATUS status;
 
-    if (!encoder->residual_enabled && encoder->refresh_ms == 0U &&
+    if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder) &&
             sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
         return SIXEL_OK;
     }
@@ -2965,7 +3035,10 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
     if (width <= 0 || height <= 0 ||
             sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 ||
             sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_GAMMA ||
-            (dither->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
+            ((encoder->residual_enabled ||
+              sixel_encoder_delta_metric(encoder) ==
+                  SIXEL_DELTA_METRIC_RGB241) &&
+             dither->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
              dither->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
              dither->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
              dither->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER &&
@@ -2975,7 +3048,8 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             "none, a_dither, x_dither, bluenoise or phased application.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (!encoder->residual_enabled && !encoder->refresh_ms) return SIXEL_OK;
+    if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder))
+        return SIXEL_OK;
     status = sixel_encoder_frame_get_transparency(frame, &transparency);
     if (status != SIXEL_OK) return status;
     count = (size_t)width * height;
@@ -2989,7 +3063,7 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             }
         }
     }
-    if (encoder->refresh_ms != 0U) {
+    if (sixel_encoder_refresh_enabled(encoder)) {
         /* Refresh needs no color analysis. Keep its clock local to the last
          * successfully presented rectangle; switching regions reevaluates
          * the new region at T0 without erasing the rest of the retained plane.
@@ -3004,14 +3078,14 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
         history_valid = sixel_encoder_6delta_accumulation_active(encoder) &&
             encoder->accumulation_width == plane_width &&
             encoder->accumulation_height == plane_height;
-        time_us = encoder->refresh_time_override ? encoder->refresh_time_us
-            : (uint64_t)(sixel_timer_now() * 1000000.0);
         sixel_delta_refresh_prepare(&encoder->residual_state,
-            width, height, origin_x, origin_y, encoder->refresh_ms,
-            time_us, history_valid);
+            width, height, origin_x, origin_y, encoder->refresh_frames,
+            history_valid);
         sixel_trace_topic_message("delta_refresh",
-            "LSXREF1|time_us=%llu|period_ms=%u|selected=%lu|pixels=%lu",
-            (unsigned long long)time_us, encoder->refresh_ms,
+            "LSXREF1|frame=%llu|period=%u|selected=%lu|pixels=%lu",
+            (unsigned long long)
+                encoder->residual_state.refresh_next_frame,
+            encoder->refresh_frames,
             (unsigned long)encoder->residual_state.selected_pixels,
             (unsigned long)count);
         return SIXEL_OK;
@@ -5922,7 +5996,7 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
 
     histogram_colors =
         sixel_dither_get_num_of_histogram_colors(context->dither);
-    method_for_diffuse = context->encoder->method_for_diffuse;
+    method_for_diffuse = sixel_encoder_effective_diffuse(context->encoder);
     if (context->encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
         /*
          * High-color output does not quantize pixels through a palette.
@@ -5985,6 +6059,8 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
         context->encoder->bluenoise_strength_override;
     context->dither->bluenoise_strength = context->encoder->bluenoise_strength;
     context->dither->phased_gain = context->encoder->phased_gain;
+    context->dither->phased_kernel =
+        sixel_encoder_phased_kernel(context->encoder);
     context->dither->bluenoise_gradient_factor_override =
         context->encoder->bluenoise_gradient_factor_override;
     context->dither->bluenoise_gradient_factor =
@@ -7915,7 +7991,7 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
             encoder->macro_number >= 0 || encoder->output_is_png) {
         return 0;
     }
-    switch (encoder->method_for_diffuse) {
+    switch (sixel_encoder_effective_diffuse(encoder)) {
     case SIXEL_DIFFUSE_AUTO:
     case SIXEL_DIFFUSE_NONE:
     case SIXEL_DIFFUSE_FS:
@@ -7989,7 +8065,7 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
      * propagate residuals without byte projection. Positional methods keep
      * their coordinate bias in the same extended lookup space. AUTO resolves
      * to Atkinson or FS. */
-    switch (encoder->method_for_diffuse) {
+    switch (sixel_encoder_effective_diffuse(encoder)) {
     case SIXEL_DIFFUSE_AUTO:
     case SIXEL_DIFFUSE_NONE:
     case SIXEL_DIFFUSE_FS:
@@ -8605,7 +8681,7 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     request->merge_policy_oversplit = encoder->merge_policy_oversplit;
     request->merge_policy_oversplit_override =
         encoder->merge_policy_oversplit_override;
-    request->method_for_diffuse = encoder->method_for_diffuse;
+    request->method_for_diffuse = sixel_encoder_effective_diffuse(encoder);
     request->method_for_largest = encoder->method_for_largest;
     request->method_for_largest_override = encoder->method_for_largest_override;
     request->method_for_rep = encoder->method_for_rep;
@@ -10846,7 +10922,7 @@ sixel_encoder_output_without_macro(
     }
     dither->pipeline_6delta_metric = sixel_encoder_delta_metric(encoder);
     dither->pipeline_6delta_compare = encoder->sixdelta_compare;
-    if (encoder->residual_enabled || encoder->refresh_ms != 0U) {
+    if (encoder->residual_enabled || sixel_encoder_refresh_enabled(encoder)) {
         dither->pipeline_residual_mask = encoder->residual_state.mask;
     }
     status = sixel_encode(p, width, height, depth, dither, output);
@@ -11982,10 +12058,8 @@ sixel_encoder_frame_job_publish(sixel_encoder_t *encoder)
             sizeof(encoder->residual_state.age));
         encoder->residual_state.width = encoder->residual_state.mask.width;
         encoder->residual_state.height = encoder->residual_state.mask.height;
-        encoder->residual_state.refresh_epoch_us =
-            encoder->residual_state.refresh_next_epoch_us;
-        encoder->residual_state.refresh_last_us =
-            encoder->residual_state.refresh_next_us;
+        encoder->residual_state.refresh_frame =
+            encoder->residual_state.refresh_next_frame;
         encoder->residual_state.refresh_origin_x =
             encoder->residual_state.refresh_next_origin_x;
         encoder->residual_state.refresh_origin_y =
@@ -12310,9 +12384,6 @@ sixel_encoder_new(
     (*ppencoder)->option_invalidate_history = 0;
     (*ppencoder)->operation_playback = 0;
     (*ppencoder)->playback_attached = 0;
-    /* Ordinary encodes use the local clock until playback supplies a time. */
-    (*ppencoder)->refresh_time_override = 0;
-    (*ppencoder)->refresh_time_us = 0U;
     (*ppencoder)->palette_test_hooks = NULL;
     (*ppencoder)->prepare_test_hooks = NULL;
     (*ppencoder)->solve_test_hooks = NULL;
@@ -12381,6 +12452,7 @@ sixel_encoder_new(
     (*ppencoder)->bluenoise_gradient_factor_override = 0;
     (*ppencoder)->bluenoise_gradient_factor = 0.0f;
     (*ppencoder)->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
+    (*ppencoder)->phased_gain_override = 0;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_largest_override = 0;
@@ -13125,7 +13197,8 @@ sixel_encoder_set_6delta_plane_origin_owned(
             "origin must not be negative.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (encoder->refresh_ms == 0U && (encoder->sixdelta_origin_x != x ||
+    if (!sixel_encoder_refresh_enabled(encoder) &&
+            (encoder->sixdelta_origin_x != x ||
             encoder->sixdelta_origin_y != y)) {
         memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
     }
@@ -13604,6 +13677,7 @@ sixel_encoder_apply_diffusion_resolution(
     encoder->bluenoise_strength = 0.055f;
     encoder->bluenoise_gradient_factor = 0.0f;
     encoder->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
+    encoder->phased_gain_override = 0;
     encoder->bluenoise_phase_x = 0;
     encoder->bluenoise_phase_y = 0;
     encoder->bluenoise_seed = 0;
@@ -16036,7 +16110,7 @@ end:
     if (status == SIXEL_OK) {
         /* Reapplying the same effective policy preserves persistence. */
         if (encoder->sixdelta_compare != destination->sixdelta_compare ||
-                encoder->refresh_ms != destination->refresh_ms ||
+                encoder->refresh_frames != destination->refresh_frames ||
                 encoder->residual_enabled != destination->residual_enabled ||
                 sixel_encoder_delta_metric(encoder) !=
                     sixel_encoder_delta_metric(destination) ||
@@ -16250,9 +16324,6 @@ sixel_encoder_playback_frame_begin(sixel_encoder_frame_pipeline_t *pipeline,
         return SIXEL_OK;
     }
     if (meta->started_at == 0) meta->started_at = sixel_timer_now();
-    pipeline->encoder->refresh_time_override =
-        (meta->option_flags & SIXEL_PLAYBACK_OPTION_REFRESH_TIME) != 0;
-    pipeline->encoder->refresh_time_us = meta->refresh_time_us;
     if ((meta->option_flags & SIXEL_PLAYBACK_OPTION_ORIGIN) != 0) {
         status = sixel_encoder_set_6delta_plane_origin_owned(
             pipeline->encoder, meta->origin_x, meta->origin_y);
@@ -20372,9 +20443,6 @@ sixel_playback_options_init(sixel_playback_options_t *options,
     supported = offsetof(sixel_playback_options_t, palette_source);
     if (struct_size >= sizeof(*options)) {
         supported = sizeof(*options);
-    } else if (struct_size ==
-            offsetof(sixel_playback_options_t, refresh_time_us)) {
-        supported = struct_size;
     } else if (struct_size != supported) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -20402,7 +20470,6 @@ sixel_playback_destroy(sixel_playback_t *playback)
     }
     sixel_encoder_operation_lock(encoder);
     encoder->playback_attached = 0;
-    encoder->refresh_time_override = 0;
     if (encoder->operation_initialized) {
         sixel_cond_broadcast(&encoder->operation_cond);
     }
@@ -20683,20 +20750,13 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
     if (frame == NULL ||
             (options != NULL && options->struct_size < sizeof(*options) &&
              options->struct_size !=
-                 offsetof(sixel_playback_options_t, palette_source) &&
-             options->struct_size !=
-                 offsetof(sixel_playback_options_t, refresh_time_us))) {
+                 offsetof(sixel_playback_options_t, palette_source))) {
         sixel_playback_release_reservation(playback, ticket);
         return SIXEL_BAD_ARGUMENT;
     }
     if (options != NULL) {
         memcpy(&defaults, options, options->struct_size < sizeof(defaults)
             ? options->struct_size : sizeof(defaults));
-    }
-    if ((defaults.flags & SIXEL_PLAYBACK_OPTION_REFRESH_TIME) != 0 &&
-            options != NULL && options->struct_size < sizeof(*options)) {
-        sixel_playback_release_reservation(playback, ticket);
-        return SIXEL_BAD_ARGUMENT;
     }
     if (defaults.palette_source != NULL &&
             (defaults.palette_source == frame ||
@@ -20727,7 +20787,6 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
     metadata.origin_x = defaults.origin_x;
     metadata.origin_y = defaults.origin_y;
     metadata.threshold_limit = defaults.threshold_limit;
-    metadata.refresh_time_us = defaults.refresh_time_us;
     metadata.admitted_at = sixel_timer_now();
     ticket->owner = NULL;
     ticket->id = 0u;

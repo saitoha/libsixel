@@ -16,6 +16,7 @@
 #include "delta-residual.h"
 #include "bluenoise_64x64.h"
 #include "phased-coefficients.h"
+#include "dither-carry.h"
 
 static char const * const phased_chunks[] = {
 #include <generated-metal/dither-policy-phased-gpu-shader.inc.h>
@@ -27,6 +28,10 @@ typedef struct phased_params {
     uint32_t metric, columns, rows, tiled, selected_threshold;
     uint32_t selection[128];
     uint32_t batch_stage;
+    uint32_t taps, serpentine, carry, clamp_hard;
+    float deadzone, clamp_lower, clamp_upper, reserved;
+    int32_t tap_dx[16];
+    int32_t tap_dy[16];
 } phased_params_t;
 
 typedef struct phased_plan {
@@ -739,8 +744,13 @@ phased_prepare_impl(sixel_allocator_t *allocator,
     id<MTLDevice> device;
     unsigned char colors[768], phase[4096];
     uint32_t positions[4096], counts[4];
-    float weights[256*8], ratio;
-    double gain;
+    float weights[256*16], ratio;
+    double gain, margin;
+    sixel_dither_carry_kernel_t const *kernel;
+    /* LSO2 senders: two behind in the row, three in the row above, and
+     * one four rows above, in the column order of phased_ratios. */
+    static int const lso2_dx[6] = { 1, 4, -1, 0, 1, 0 };
+    static int const lso2_dy[6] = { 0, 0, 1, 1, 1, 4 };
     size_t lengths[18], pixels, i, j, k, x, y, bucket;
     SIXELSTATUS status;
 
@@ -748,9 +758,17 @@ phased_prepare_impl(sixel_allocator_t *allocator,
             request->output.palette == NULL || request->output.width < 1 ||
             request->output.height < 1 || request->working_palette == NULL)
         return SIXEL_BAD_ARGUMENT;
+    kernel = NULL;
+    if (configuration->options.phased_kernel != SIXEL_DIFFUSE_LSO2) {
+        kernel = sixel_dither_carry_kernel(
+            configuration->options.phased_kernel);
+        if (kernel == NULL || kernel->count > 16) return SIXEL_BAD_ARGUMENT;
+    }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            request->scan != SIXEL_SCAN_SERPENTINE) return SIXEL_FEATURE_ERROR;
+            (request->scan != SIXEL_SCAN_SERPENTINE &&
+             (kernel == NULL || request->scan != SIXEL_SCAN_RASTER)))
+        return SIXEL_FEATURE_ERROR;
     device = sixel_gpu_metal_device(request->device);
     if (device == nil) return SIXEL_FEATURE_ERROR;
     pixels = (size_t)request->output.width*request->output.height;
@@ -872,7 +890,13 @@ phased_prepare_impl(sixel_allocator_t *allocator,
     }
     memset(weights, 0, sizeof(weights));
     k = 0;
-    for (i = 0; i < 256; ++i) {
+    for (i = 0; kernel != NULL && i < 256; ++i) {
+        /* Fixed kernels use one coefficient row for every error size. */
+        for (j = 0; j < (size_t)kernel->count; ++j)
+            weights[16*i+j] = (float)kernel->taps[j].weight /
+                (float)kernel->denominator;
+    }
+    for (i = 0; kernel == NULL && i < 256; ++i) {
         gain = 1.0;
         if (configuration->options.phased_gain ==
                 SIXEL_PHASED_GAIN_SMALL_ERROR) {
@@ -887,7 +911,7 @@ phased_prepare_impl(sixel_allocator_t *allocator,
             /* Preserve the measured float ratio, then one double gain and
              * one float rounding. No coefficient row is edited by hand. */
             ratio = (float)phased_ratios[i][j]/(float)phased_ratios[i][6];
-            weights[8*i+j] = (float)((double)ratio*gain);
+            weights[16*i+j] = (float)((double)ratio*gain);
         }
     }
     memcpy([plan->buffers[1] contents], plan->view.palette,
@@ -903,6 +927,31 @@ phased_prepare_impl(sixel_allocator_t *allocator,
     plan->params.ncolors = lookup_request.ncolors;
     plan->params.tiles_x = (plan->params.width+63)/64;
     plan->params.keycolor = (uint32_t)request->output.keycolor;
+    plan->params.serpentine = request->scan == SIXEL_SCAN_SERPENTINE;
+    if (kernel == NULL) {
+        plan->params.taps = 6;
+        for (j = 0; j < 6; ++j) {
+            plan->params.tap_dx[j] = lso2_dx[j];
+            plan->params.tap_dy[j] = lso2_dy[j];
+        }
+    } else {
+        plan->params.taps = (uint32_t)kernel->count;
+        for (j = 0; j < (size_t)kernel->count; ++j) {
+            plan->params.tap_dx[j] = kernel->taps[j].dx;
+            plan->params.tap_dy[j] = kernel->taps[j].dy;
+        }
+        /* The CPU limiter keeps (threshold - 1) * 255 of headroom on both
+         * sides of the byte range. The deadzone discards small corrections
+         * before limiting. */
+        margin = (configuration->options.clamp_threshold - 1.0) * 255.0;
+        plan->params.carry = 1;
+        plan->params.clamp_hard = configuration->options.clamp_policy ==
+            SIXEL_DITHER_CLAMP_HARD;
+        plan->params.deadzone =
+            (float)configuration->options.diffusion_deadzone;
+        plan->params.clamp_lower = (float)-margin;
+        plan->params.clamp_upper = (float)(255.0 + margin);
+    }
     *result = &plan->iface;
     status = SIXEL_OK;
 end:

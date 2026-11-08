@@ -776,21 +776,28 @@ sub-option:
 .br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
-\fBphased\fP -> GPU spatial diffusion (RGB8, ordered lookup).
-.br
-\fBgain=standard|small-error\fP (default standard); scan=auto|serpentine.
-No CPU fallback is available.
-.br
-\fBlso2\fP -> libsixel variable error diffusion tables
+\fBlso2\fP -> libsixel variable error diffusion tables.
+When the GPU policy admits an available GPU, RGB8 gamma serpentine
+input runs the four-phase GPU solver; otherwise the CPU kernel runs.
 .br
 sub-option:
 .br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default serpentine)
 .br
+\fBgain=standard|small-error\fP -> GPU sender gain (default standard)
+.br
+\fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP, \fBburkes\fP and
+\fBsierra\fP also run the four-phase GPU solver with their own coefficients
+when the GPU policy admits an available GPU and the input is RGB8 gamma,
+unless \fBperturb\fP is set or the carry clamp is \fBnone\fP.
+Their deadzone and soft or hard carry clamp apply as in the CPU kernels.
+.br
+\fBphased\fP -> deprecated alias of \fBlso2\fP.
+.br
 Compact diffusion suboption names use one uppercase letter plus the value:
 all methods scan=N, band_overwrap=O, band_width=B, deadzone=D,
 perturb=U, perturb_seed=R;
-phased gain=G; sierra variant=V; a_dither/x_dither strength=T;
+lso2/phased gain=G; sierra variant=V; a_dither/x_dither strength=T;
 bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
 channel=C, size=Z.
 
@@ -1234,7 +1241,7 @@ The delta suboption \fB:residual=0|1\fP (:Rvalue, default 0) lowers the early-ke
 .br
 \fB:threshold_metric=auto|max|rgb241\fP (:Dvalue, default auto) selects the early-keep metric. Auto resolves to max for R0 and rgb241 for R1. Max uses the greatest component difference; rgb241 compares (2*dR*dR+4*dG*dG+dB*dB)/7 with T*T in gamma RGB8 units.
 \fB:residual_threshold=0..255\fP (:Hvalue, finite, default 1.5) is the strict threshold on signed Gaussian-filtered residual magnitude, not Delta E. \fB:residual_keep_threshold=0..255\fP (:Kvalue, integer, default 0) caps T in selected cells. \fB:residual_frames=1..255\fP (:Fvalue, integer, default 3) counts consecutive successful input observations.
-Experimental \fB:refresh_ms=0..10000\fP (:Jvalue, default 0/off) periodically lowers T to zero at blue-noise-distributed pixel positions. For example, :T8:J80 re-evaluates pixels every 80 ms of the encoder clock; skipped deadlines are caught up on the next frame. Post-lookup keeps still apply. This is not a guarantee of repainting or invisible residuals. Requires opaque full-plane gamma RGB8 and none/a_dither/x_dither/bluenoise; incompatible with R1 and progressive. See docs/encoder/output/delta-encoding.md.
+Experimental \fB:refresh=0..10000\fP (:Jvalue, default 0/off) periodically lowers T to zero at blue-noise-distributed pixel positions. For example, :T8:J5 re-evaluates every pixel once per 5 encoded frames. The schedule counts encoded frames, not time, so the same input always produces the same output. Post-lookup keeps still apply. This is not a guarantee of repainting or invisible residuals. Requires an opaque gamma RGB8 target and works with every dither method; incompatible with R1 and progressive. See docs/encoder/output/delta-encoding.md.
 The R1 mask uses sigma 4 pixels, radius 12, and up to 64 by 64 screen cells. History commits only after successful output. Source drops do not count; frame numbers need not be consecutive. No extra work runs after the last input.
 R1 requires full-plane opaque gamma RGB8 targets, RGB output and none, a_dither, x_dither or bluenoise application; CPU and Metal use the same mask. R1 conflicts with P1 and explicit max metric. Other workspaces, float targets, alpha holes and partial updates are unsupported. With periodic refresh disabled, R0 preserves ordinary delta behavior.
 Each -Z selection resets its suboptions to defaults, environment, then explicit suffixes. R1 alone preserves the default T0, which already bypasses approximate early keeps.
@@ -1987,8 +1994,8 @@ set the default diffusion scan order to auto, serpentine, or raster.
 The scan suboption takes precedence.
 .TP 5
 .B SIXEL_DITHER_PHASED_GAIN
-Default phased gain: standard or small-error.
-Overridden by \fB-d phased:gain=VALUE\fP.
+Default lso2 GPU gain: standard or small-error.
+Overridden by \fB-d lso2:gain=VALUE\fP.
 .TP
 .B SIXEL_DITHER_SIERRA_VARIANT
 .br

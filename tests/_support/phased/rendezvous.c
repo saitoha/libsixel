@@ -221,9 +221,6 @@ phased_rendezvous_submit_origin(struct phased_rendezvous_fixture *s,
 
     if (sixel_playback_options_init(&options, sizeof(options)) != SIXEL_OK)
         return 0;
-    /* Time-dependent refresh must have the same input in both schedules. */
-    options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
-    options.refresh_time_us = (uint64_t)index * 16667;
     if (origin >= 0) {
         options.flags |= SIXEL_PLAYBACK_OPTION_ORIGIN;
         options.origin_x = origin;

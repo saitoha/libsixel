@@ -2170,14 +2170,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	delta/refresh/0014_partial_move_x.c \
 	delta/refresh/0015_partial_resize.c \
 	delta/refresh/0016_partial_move_y.c \
-	delta/refresh/0017_partial_repeat_time.c \
-	delta/refresh/0018_partial_gap.c \
-	delta/refresh/0019_partial_output_failure.c \
-	delta/refresh/0020_partial_out_of_bounds.c \
-	delta/refresh/0021_partial_alpha_rejected.c \
-	delta/refresh/0022_partial_move_same_time.c \
-	delta/refresh/0023_partial_return.c \
-	delta/refresh/0024_partial_height.c \
+	delta/refresh/0017_partial_output_failure.c \
+	delta/refresh/0018_partial_out_of_bounds.c \
+	delta/refresh/0019_partial_alpha_rejected.c \
+	delta/refresh/0020_partial_return.c \
+	delta/refresh/0021_partial_height.c \
 	delta/gpu-rectangle/0001_direct.c \
 	delta/gpu-rectangle/0002_eytzinger.c \
 	delta/gpu-rectangle/0003_blockcull.c \
@@ -2196,24 +2193,25 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	delta/gpu-rectangle/0016_incomplete_shape.c \
 	delta/gpu-rectangle/0017_pixel_count.c \
 	delta/gpu-rectangle/0018_no_valid_mask.c \
-	delta/refresh/0025_gpu_direct.c delta/refresh/0026_gpu_ahead.c \
-	delta/refresh/0027_gpu_latest.c delta/refresh/0028_gpu_move.c \
-	delta/refresh/0029_gpu_failure.c \
-	delta/refresh/0030_gpu_return.c \
+	delta/refresh/0022_gpu_direct.c delta/refresh/0023_gpu_ahead.c \
+	delta/refresh/0024_gpu_latest.c delta/refresh/0025_gpu_move.c \
+	delta/refresh/0026_gpu_failure.c \
+	delta/refresh/0027_gpu_return.c \
 	delta/gpu-rectangle/0019_auto_rectangle_cutoff.c \
 	delta/gpu-rectangle/0020_full_width_offset.c \
 	_support/processing/gpu-palette/rectangle_common.c \
 	_support/processing/delta-refresh/partial_test_common.c \
 	delta/refresh/0001_option_atomicity.c \
 	delta/refresh/0002_staggered_coverage.c \
-	delta/refresh/0003_skipped_deadlines.c \
-	delta/refresh/0004_repeated_clock.c \
-	delta/refresh/0005_backward_clock.c \
+	delta/refresh/0003_period_cycle.c \
+	delta/refresh/0004_uncommitted_frame.c \
+	delta/refresh/0005_rectangle_restart.c \
 	delta/refresh/0006_cpu_playback.c \
 	delta/refresh/0007_gpu_playback.c \
 	delta/refresh/0008_legacy_options.c \
 	delta/refresh/0009_failed_output.c \
 	delta/refresh/0010_latest_playback.c \
+	delta/refresh/0028_all_dithers.c \
 	_support/processing/delta-refresh/refresh_test_common.c \
 	_support/processing/delta-residual/gate_test_common.c \
 	_support/processing/delta-residual/residual_test_common.c \
@@ -2326,6 +2324,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	dither/phased/0079_queue_sample_unavailable.c \
 	dither/phased/0080_queue_sample_live.c \
 	dither/phased/0081_queue_sample_tail.c \
+	dither/phased/0082_fixed_kernels.c \
 	dither/phased/0064_pipeline_sample_stale.c \
 	dither/phased/0065_pipeline_sample_short.c \
 	dither/phased/0066_pipeline_sample_tail.c \
@@ -7167,14 +7166,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0014_partial_move_x.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0015_partial_resize.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0016_partial_move_y.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0017_partial_repeat_time.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0018_partial_gap.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0019_partial_output_failure.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0020_partial_out_of_bounds.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0021_partial_alpha_rejected.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0022_partial_move_same_time.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0023_partial_return.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0024_partial_height.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0017_partial_output_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0018_partial_out_of_bounds.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0019_partial_alpha_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0020_partial_return.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0021_partial_height.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0001_direct.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0002_eytzinger.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0003_blockcull.$(OBJEXT) \
@@ -7193,26 +7189,27 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0016_incomplete_shape.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0017_pixel_count.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0018_no_valid_mask.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0025_gpu_direct.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0026_gpu_ahead.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0027_gpu_latest.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0028_gpu_move.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0029_gpu_failure.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0030_gpu_return.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0022_gpu_direct.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0023_gpu_ahead.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0024_gpu_latest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0025_gpu_move.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0026_gpu_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0027_gpu_return.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0020_full_width_offset.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-rectangle_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-partial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0001_option_atomicity.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0002_staggered_coverage.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0003_skipped_deadlines.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0004_repeated_clock.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0005_backward_clock.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0003_period_cycle.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0004_uncommitted_frame.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0005_rectangle_restart.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0006_cpu_playback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0007_gpu_playback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0008_legacy_options.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0009_failed_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0010_latest_playback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0028_all_dithers.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-refresh_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-residual/test_runner-gate_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-residual/test_runner-residual_test_common.$(OBJEXT) \
@@ -7326,6 +7323,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0079_queue_sample_unavailable.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0080_queue_sample_live.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0081_queue_sample_tail.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0082_fixed_kernels.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0064_pipeline_sample_stale.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0065_pipeline_sample_short.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/phased/test_runner-0066_pipeline_sample_tail.$(OBJEXT) \
@@ -11492,9 +11490,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/palette/$(DEPDIR)/test_runner-0125_delta_refine_partial.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0005_backward_clock.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0003_period_cycle.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0004_uncommitted_frame.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0005_rectangle_restart.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0008_legacy_options.Po \
@@ -11506,20 +11504,18 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0017_partial_output_failure.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0018_partial_out_of_bounds.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0019_partial_alpha_rejected.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0020_partial_return.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0021_partial_height.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0022_gpu_direct.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0023_gpu_ahead.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0024_gpu_latest.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0025_gpu_move.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0026_gpu_failure.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0028_all_dithers.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -11809,6 +11805,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po \
 	dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Po \
 	dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po \
+	dither/phased/$(DEPDIR)/test_runner-0082_fixed_kernels.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po \
@@ -15934,6 +15931,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0079_QUEUE_SAMPLE_UNAVAILABLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_QUEUE_SAMPLE_LIVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0081_QUEUE_SAMPLE_TAIL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_FIXED_KERNELS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_PIPELINE_SAMPLE_STALE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_PIPELINE_SAMPLE_SHORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_PIPELINE_SAMPLE_TAIL \
@@ -16488,28 +16486,26 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_GRIDLUT_INSTANCE_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_OPTION_ATOMICITY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_STAGGERED_COVERAGE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_SKIPPED_DEADLINES \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_REPEATED_CLOCK \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_BACKWARD_CLOCK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PERIOD_CYCLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_UNCOMMITTED_FRAME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_RECTANGLE_RESTART \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_CPU_PLAYBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_GPU_PLAYBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_LEGACY_OPTIONS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_FAILED_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LATEST_PLAYBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_ALL_DITHERS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_PARTIAL_DIRECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_PARTIAL_AHEAD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_PARTIAL_LATEST \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_PARTIAL_MOVE_X \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_PARTIAL_RESIZE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_PARTIAL_MOVE_Y \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PARTIAL_REPEAT_TIME \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PARTIAL_GAP \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_PARTIAL_OUTPUT_FAILURE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_PARTIAL_OUT_OF_BOUNDS \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_PARTIAL_ALPHA_REJECTED \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_PARTIAL_MOVE_SAME_TIME \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_PARTIAL_RETURN \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_PARTIAL_HEIGHT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PARTIAL_OUTPUT_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PARTIAL_OUT_OF_BOUNDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_PARTIAL_ALPHA_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_PARTIAL_RETURN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_PARTIAL_HEIGHT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DIRECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_EYTZINGER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_BLOCKCULL \
@@ -16528,12 +16524,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_INCOMPLETE_SHAPE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PIXEL_COUNT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_NO_VALID_MASK \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_GPU_DIRECT \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_GPU_AHEAD \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_GPU_LATEST \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_GPU_MOVE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_GPU_FAILURE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_GPU_RETURN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_GPU_DIRECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_GPU_AHEAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_GPU_LATEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_GPU_MOVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_GPU_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_GPU_RETURN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_AUTO_RECTANGLE_CUTOFF \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_FULL_WIDTH_OFFSET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RECTANGLE_COMMON \
@@ -22907,14 +22903,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0014_partial_move_x.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0015_partial_resize.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0016_partial_move_y.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0017_partial_repeat_time.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0018_partial_gap.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0019_partial_output_failure.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0020_partial_out_of_bounds.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0021_partial_alpha_rejected.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0022_partial_move_same_time.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0023_partial_return.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0024_partial_height.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0017_partial_output_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0018_partial_out_of_bounds.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0019_partial_alpha_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0020_partial_return.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0021_partial_height.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0001_direct.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0002_eytzinger.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0003_blockcull.c \
@@ -22933,26 +22926,27 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0016_incomplete_shape.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0017_pixel_count.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0018_no_valid_mask.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0025_gpu_direct.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0026_gpu_ahead.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0027_gpu_latest.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0028_gpu_move.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0029_gpu_failure.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0030_gpu_return.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0022_gpu_direct.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0023_gpu_ahead.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0024_gpu_latest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0025_gpu_move.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0026_gpu_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0027_gpu_return.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0019_auto_rectangle_cutoff.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0020_full_width_offset.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/rectangle_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/partial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0001_option_atomicity.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0002_staggered_coverage.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0003_skipped_deadlines.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0004_repeated_clock.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0005_backward_clock.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0003_period_cycle.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0004_uncommitted_frame.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0005_rectangle_restart.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0006_cpu_playback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0007_gpu_playback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0008_legacy_options.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0009_failed_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0010_latest_playback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0028_all_dithers.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/refresh_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-residual/gate_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-residual/residual_test_common.c \
@@ -23067,6 +23061,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0079_queue_sample_unavailable.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0080_queue_sample_live.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0081_queue_sample_tail.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0082_fixed_kernels.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0064_pipeline_sample_stale.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0065_pipeline_sample_short.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/phased/0066_pipeline_sample_tail.c \
@@ -32785,28 +32780,19 @@ delta/refresh/test_runner-0015_partial_resize.$(OBJEXT):  \
 delta/refresh/test_runner-0016_partial_move_y.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0017_partial_repeat_time.$(OBJEXT):  \
+delta/refresh/test_runner-0017_partial_output_failure.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0018_partial_gap.$(OBJEXT):  \
+delta/refresh/test_runner-0018_partial_out_of_bounds.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0019_partial_output_failure.$(OBJEXT):  \
+delta/refresh/test_runner-0019_partial_alpha_rejected.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0020_partial_out_of_bounds.$(OBJEXT):  \
+delta/refresh/test_runner-0020_partial_return.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0021_partial_alpha_rejected.$(OBJEXT):  \
-	delta/refresh/$(am__dirstamp) \
-	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0022_partial_move_same_time.$(OBJEXT):  \
-	delta/refresh/$(am__dirstamp) \
-	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0023_partial_return.$(OBJEXT):  \
-	delta/refresh/$(am__dirstamp) \
-	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0024_partial_height.$(OBJEXT):  \
+delta/refresh/test_runner-0021_partial_height.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/gpu-rectangle/$(am__dirstamp):
@@ -32869,22 +32855,22 @@ delta/gpu-rectangle/test_runner-0017_pixel_count.$(OBJEXT):  \
 delta/gpu-rectangle/test_runner-0018_no_valid_mask.$(OBJEXT):  \
 	delta/gpu-rectangle/$(am__dirstamp) \
 	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0025_gpu_direct.$(OBJEXT):  \
+delta/refresh/test_runner-0022_gpu_direct.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0026_gpu_ahead.$(OBJEXT):  \
+delta/refresh/test_runner-0023_gpu_ahead.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0027_gpu_latest.$(OBJEXT):  \
+delta/refresh/test_runner-0024_gpu_latest.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0028_gpu_move.$(OBJEXT):  \
+delta/refresh/test_runner-0025_gpu_move.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0029_gpu_failure.$(OBJEXT):  \
+delta/refresh/test_runner-0026_gpu_failure.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0030_gpu_return.$(OBJEXT):  \
+delta/refresh/test_runner-0027_gpu_return.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.$(OBJEXT):  \
@@ -32911,13 +32897,13 @@ delta/refresh/test_runner-0001_option_atomicity.$(OBJEXT):  \
 delta/refresh/test_runner-0002_staggered_coverage.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0003_skipped_deadlines.$(OBJEXT):  \
+delta/refresh/test_runner-0003_period_cycle.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0004_repeated_clock.$(OBJEXT):  \
+delta/refresh/test_runner-0004_uncommitted_frame.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0005_backward_clock.$(OBJEXT):  \
+delta/refresh/test_runner-0005_rectangle_restart.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0006_cpu_playback.$(OBJEXT):  \
@@ -32933,6 +32919,9 @@ delta/refresh/test_runner-0009_failed_output.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0010_latest_playback.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0028_all_dithers.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 _support/processing/delta-refresh/test_runner-refresh_test_common.$(OBJEXT):  \
@@ -33314,6 +33303,9 @@ dither/phased/test_runner-0080_queue_sample_live.$(OBJEXT):  \
 	dither/phased/$(am__dirstamp) \
 	dither/phased/$(DEPDIR)/$(am__dirstamp)
 dither/phased/test_runner-0081_queue_sample_tail.$(OBJEXT):  \
+	dither/phased/$(am__dirstamp) \
+	dither/phased/$(DEPDIR)/$(am__dirstamp)
+dither/phased/test_runner-0082_fixed_kernels.$(OBJEXT):  \
 	dither/phased/$(am__dirstamp) \
 	dither/phased/$(DEPDIR)/$(am__dirstamp)
 dither/phased/test_runner-0064_pipeline_sample_stale.$(OBJEXT):  \
@@ -43861,9 +43853,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/palette/$(DEPDIR)/test_runner-0125_delta_refine_partial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0005_backward_clock.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0003_period_cycle.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0004_uncommitted_frame.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0005_rectangle_restart.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0008_legacy_options.Po@am__quote@ # am--include-marker
@@ -43875,20 +43867,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0017_partial_output_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0018_partial_out_of_bounds.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0019_partial_alpha_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0020_partial_return.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0021_partial_height.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0022_gpu_direct.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0023_gpu_ahead.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0024_gpu_latest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0025_gpu_move.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0026_gpu_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0028_all_dithers.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -44178,6 +44168,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0080_queue_sample_live.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/phased/$(DEPDIR)/test_runner-0082_fixed_kernels.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po@am__quote@ # am--include-marker
@@ -75539,117 +75530,75 @@ delta/refresh/test_runner-0016_partial_move_y.obj: delta/refresh/0016_partial_mo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0016_partial_move_y.obj `if test -f 'delta/refresh/0016_partial_move_y.c'; then $(CYGPATH_W) 'delta/refresh/0016_partial_move_y.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0016_partial_move_y.c'; fi`
 
-delta/refresh/test_runner-0017_partial_repeat_time.o: delta/refresh/0017_partial_repeat_time.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0017_partial_repeat_time.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Tpo -c -o delta/refresh/test_runner-0017_partial_repeat_time.o `test -f 'delta/refresh/0017_partial_repeat_time.c' || echo '$(srcdir)/'`delta/refresh/0017_partial_repeat_time.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Tpo delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0017_partial_repeat_time.c' object='delta/refresh/test_runner-0017_partial_repeat_time.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0017_partial_output_failure.o: delta/refresh/0017_partial_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0017_partial_output_failure.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0017_partial_output_failure.Tpo -c -o delta/refresh/test_runner-0017_partial_output_failure.o `test -f 'delta/refresh/0017_partial_output_failure.c' || echo '$(srcdir)/'`delta/refresh/0017_partial_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0017_partial_output_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0017_partial_output_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0017_partial_output_failure.c' object='delta/refresh/test_runner-0017_partial_output_failure.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0017_partial_repeat_time.o `test -f 'delta/refresh/0017_partial_repeat_time.c' || echo '$(srcdir)/'`delta/refresh/0017_partial_repeat_time.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0017_partial_output_failure.o `test -f 'delta/refresh/0017_partial_output_failure.c' || echo '$(srcdir)/'`delta/refresh/0017_partial_output_failure.c
 
-delta/refresh/test_runner-0017_partial_repeat_time.obj: delta/refresh/0017_partial_repeat_time.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0017_partial_repeat_time.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Tpo -c -o delta/refresh/test_runner-0017_partial_repeat_time.obj `if test -f 'delta/refresh/0017_partial_repeat_time.c'; then $(CYGPATH_W) 'delta/refresh/0017_partial_repeat_time.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0017_partial_repeat_time.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Tpo delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0017_partial_repeat_time.c' object='delta/refresh/test_runner-0017_partial_repeat_time.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0017_partial_output_failure.obj: delta/refresh/0017_partial_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0017_partial_output_failure.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0017_partial_output_failure.Tpo -c -o delta/refresh/test_runner-0017_partial_output_failure.obj `if test -f 'delta/refresh/0017_partial_output_failure.c'; then $(CYGPATH_W) 'delta/refresh/0017_partial_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0017_partial_output_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0017_partial_output_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0017_partial_output_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0017_partial_output_failure.c' object='delta/refresh/test_runner-0017_partial_output_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0017_partial_repeat_time.obj `if test -f 'delta/refresh/0017_partial_repeat_time.c'; then $(CYGPATH_W) 'delta/refresh/0017_partial_repeat_time.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0017_partial_repeat_time.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0017_partial_output_failure.obj `if test -f 'delta/refresh/0017_partial_output_failure.c'; then $(CYGPATH_W) 'delta/refresh/0017_partial_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0017_partial_output_failure.c'; fi`
 
-delta/refresh/test_runner-0018_partial_gap.o: delta/refresh/0018_partial_gap.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0018_partial_gap.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Tpo -c -o delta/refresh/test_runner-0018_partial_gap.o `test -f 'delta/refresh/0018_partial_gap.c' || echo '$(srcdir)/'`delta/refresh/0018_partial_gap.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Tpo delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0018_partial_gap.c' object='delta/refresh/test_runner-0018_partial_gap.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0018_partial_out_of_bounds.o: delta/refresh/0018_partial_out_of_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0018_partial_out_of_bounds.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0018_partial_out_of_bounds.Tpo -c -o delta/refresh/test_runner-0018_partial_out_of_bounds.o `test -f 'delta/refresh/0018_partial_out_of_bounds.c' || echo '$(srcdir)/'`delta/refresh/0018_partial_out_of_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0018_partial_out_of_bounds.Tpo delta/refresh/$(DEPDIR)/test_runner-0018_partial_out_of_bounds.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0018_partial_out_of_bounds.c' object='delta/refresh/test_runner-0018_partial_out_of_bounds.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0018_partial_gap.o `test -f 'delta/refresh/0018_partial_gap.c' || echo '$(srcdir)/'`delta/refresh/0018_partial_gap.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0018_partial_out_of_bounds.o `test -f 'delta/refresh/0018_partial_out_of_bounds.c' || echo '$(srcdir)/'`delta/refresh/0018_partial_out_of_bounds.c
 
-delta/refresh/test_runner-0018_partial_gap.obj: delta/refresh/0018_partial_gap.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0018_partial_gap.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Tpo -c -o delta/refresh/test_runner-0018_partial_gap.obj `if test -f 'delta/refresh/0018_partial_gap.c'; then $(CYGPATH_W) 'delta/refresh/0018_partial_gap.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0018_partial_gap.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Tpo delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0018_partial_gap.c' object='delta/refresh/test_runner-0018_partial_gap.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0018_partial_out_of_bounds.obj: delta/refresh/0018_partial_out_of_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0018_partial_out_of_bounds.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0018_partial_out_of_bounds.Tpo -c -o delta/refresh/test_runner-0018_partial_out_of_bounds.obj `if test -f 'delta/refresh/0018_partial_out_of_bounds.c'; then $(CYGPATH_W) 'delta/refresh/0018_partial_out_of_bounds.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0018_partial_out_of_bounds.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0018_partial_out_of_bounds.Tpo delta/refresh/$(DEPDIR)/test_runner-0018_partial_out_of_bounds.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0018_partial_out_of_bounds.c' object='delta/refresh/test_runner-0018_partial_out_of_bounds.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0018_partial_gap.obj `if test -f 'delta/refresh/0018_partial_gap.c'; then $(CYGPATH_W) 'delta/refresh/0018_partial_gap.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0018_partial_gap.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0018_partial_out_of_bounds.obj `if test -f 'delta/refresh/0018_partial_out_of_bounds.c'; then $(CYGPATH_W) 'delta/refresh/0018_partial_out_of_bounds.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0018_partial_out_of_bounds.c'; fi`
 
-delta/refresh/test_runner-0019_partial_output_failure.o: delta/refresh/0019_partial_output_failure.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0019_partial_output_failure.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Tpo -c -o delta/refresh/test_runner-0019_partial_output_failure.o `test -f 'delta/refresh/0019_partial_output_failure.c' || echo '$(srcdir)/'`delta/refresh/0019_partial_output_failure.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0019_partial_output_failure.c' object='delta/refresh/test_runner-0019_partial_output_failure.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0019_partial_alpha_rejected.o: delta/refresh/0019_partial_alpha_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0019_partial_alpha_rejected.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0019_partial_alpha_rejected.Tpo -c -o delta/refresh/test_runner-0019_partial_alpha_rejected.o `test -f 'delta/refresh/0019_partial_alpha_rejected.c' || echo '$(srcdir)/'`delta/refresh/0019_partial_alpha_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0019_partial_alpha_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0019_partial_alpha_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0019_partial_alpha_rejected.c' object='delta/refresh/test_runner-0019_partial_alpha_rejected.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0019_partial_output_failure.o `test -f 'delta/refresh/0019_partial_output_failure.c' || echo '$(srcdir)/'`delta/refresh/0019_partial_output_failure.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0019_partial_alpha_rejected.o `test -f 'delta/refresh/0019_partial_alpha_rejected.c' || echo '$(srcdir)/'`delta/refresh/0019_partial_alpha_rejected.c
 
-delta/refresh/test_runner-0019_partial_output_failure.obj: delta/refresh/0019_partial_output_failure.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0019_partial_output_failure.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Tpo -c -o delta/refresh/test_runner-0019_partial_output_failure.obj `if test -f 'delta/refresh/0019_partial_output_failure.c'; then $(CYGPATH_W) 'delta/refresh/0019_partial_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0019_partial_output_failure.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0019_partial_output_failure.c' object='delta/refresh/test_runner-0019_partial_output_failure.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0019_partial_alpha_rejected.obj: delta/refresh/0019_partial_alpha_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0019_partial_alpha_rejected.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0019_partial_alpha_rejected.Tpo -c -o delta/refresh/test_runner-0019_partial_alpha_rejected.obj `if test -f 'delta/refresh/0019_partial_alpha_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0019_partial_alpha_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0019_partial_alpha_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0019_partial_alpha_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0019_partial_alpha_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0019_partial_alpha_rejected.c' object='delta/refresh/test_runner-0019_partial_alpha_rejected.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0019_partial_output_failure.obj `if test -f 'delta/refresh/0019_partial_output_failure.c'; then $(CYGPATH_W) 'delta/refresh/0019_partial_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0019_partial_output_failure.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0019_partial_alpha_rejected.obj `if test -f 'delta/refresh/0019_partial_alpha_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0019_partial_alpha_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0019_partial_alpha_rejected.c'; fi`
 
-delta/refresh/test_runner-0020_partial_out_of_bounds.o: delta/refresh/0020_partial_out_of_bounds.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0020_partial_out_of_bounds.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Tpo -c -o delta/refresh/test_runner-0020_partial_out_of_bounds.o `test -f 'delta/refresh/0020_partial_out_of_bounds.c' || echo '$(srcdir)/'`delta/refresh/0020_partial_out_of_bounds.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Tpo delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0020_partial_out_of_bounds.c' object='delta/refresh/test_runner-0020_partial_out_of_bounds.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0020_partial_return.o: delta/refresh/0020_partial_return.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0020_partial_return.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0020_partial_return.Tpo -c -o delta/refresh/test_runner-0020_partial_return.o `test -f 'delta/refresh/0020_partial_return.c' || echo '$(srcdir)/'`delta/refresh/0020_partial_return.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0020_partial_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0020_partial_return.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0020_partial_return.c' object='delta/refresh/test_runner-0020_partial_return.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0020_partial_out_of_bounds.o `test -f 'delta/refresh/0020_partial_out_of_bounds.c' || echo '$(srcdir)/'`delta/refresh/0020_partial_out_of_bounds.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0020_partial_return.o `test -f 'delta/refresh/0020_partial_return.c' || echo '$(srcdir)/'`delta/refresh/0020_partial_return.c
 
-delta/refresh/test_runner-0020_partial_out_of_bounds.obj: delta/refresh/0020_partial_out_of_bounds.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0020_partial_out_of_bounds.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Tpo -c -o delta/refresh/test_runner-0020_partial_out_of_bounds.obj `if test -f 'delta/refresh/0020_partial_out_of_bounds.c'; then $(CYGPATH_W) 'delta/refresh/0020_partial_out_of_bounds.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0020_partial_out_of_bounds.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Tpo delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0020_partial_out_of_bounds.c' object='delta/refresh/test_runner-0020_partial_out_of_bounds.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0020_partial_return.obj: delta/refresh/0020_partial_return.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0020_partial_return.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0020_partial_return.Tpo -c -o delta/refresh/test_runner-0020_partial_return.obj `if test -f 'delta/refresh/0020_partial_return.c'; then $(CYGPATH_W) 'delta/refresh/0020_partial_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0020_partial_return.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0020_partial_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0020_partial_return.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0020_partial_return.c' object='delta/refresh/test_runner-0020_partial_return.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0020_partial_out_of_bounds.obj `if test -f 'delta/refresh/0020_partial_out_of_bounds.c'; then $(CYGPATH_W) 'delta/refresh/0020_partial_out_of_bounds.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0020_partial_out_of_bounds.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0020_partial_return.obj `if test -f 'delta/refresh/0020_partial_return.c'; then $(CYGPATH_W) 'delta/refresh/0020_partial_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0020_partial_return.c'; fi`
 
-delta/refresh/test_runner-0021_partial_alpha_rejected.o: delta/refresh/0021_partial_alpha_rejected.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0021_partial_alpha_rejected.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Tpo -c -o delta/refresh/test_runner-0021_partial_alpha_rejected.o `test -f 'delta/refresh/0021_partial_alpha_rejected.c' || echo '$(srcdir)/'`delta/refresh/0021_partial_alpha_rejected.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0021_partial_alpha_rejected.c' object='delta/refresh/test_runner-0021_partial_alpha_rejected.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0021_partial_height.o: delta/refresh/0021_partial_height.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0021_partial_height.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0021_partial_height.Tpo -c -o delta/refresh/test_runner-0021_partial_height.o `test -f 'delta/refresh/0021_partial_height.c' || echo '$(srcdir)/'`delta/refresh/0021_partial_height.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0021_partial_height.Tpo delta/refresh/$(DEPDIR)/test_runner-0021_partial_height.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0021_partial_height.c' object='delta/refresh/test_runner-0021_partial_height.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0021_partial_alpha_rejected.o `test -f 'delta/refresh/0021_partial_alpha_rejected.c' || echo '$(srcdir)/'`delta/refresh/0021_partial_alpha_rejected.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0021_partial_height.o `test -f 'delta/refresh/0021_partial_height.c' || echo '$(srcdir)/'`delta/refresh/0021_partial_height.c
 
-delta/refresh/test_runner-0021_partial_alpha_rejected.obj: delta/refresh/0021_partial_alpha_rejected.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0021_partial_alpha_rejected.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Tpo -c -o delta/refresh/test_runner-0021_partial_alpha_rejected.obj `if test -f 'delta/refresh/0021_partial_alpha_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0021_partial_alpha_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0021_partial_alpha_rejected.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0021_partial_alpha_rejected.c' object='delta/refresh/test_runner-0021_partial_alpha_rejected.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0021_partial_height.obj: delta/refresh/0021_partial_height.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0021_partial_height.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0021_partial_height.Tpo -c -o delta/refresh/test_runner-0021_partial_height.obj `if test -f 'delta/refresh/0021_partial_height.c'; then $(CYGPATH_W) 'delta/refresh/0021_partial_height.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0021_partial_height.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0021_partial_height.Tpo delta/refresh/$(DEPDIR)/test_runner-0021_partial_height.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0021_partial_height.c' object='delta/refresh/test_runner-0021_partial_height.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0021_partial_alpha_rejected.obj `if test -f 'delta/refresh/0021_partial_alpha_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0021_partial_alpha_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0021_partial_alpha_rejected.c'; fi`
-
-delta/refresh/test_runner-0022_partial_move_same_time.o: delta/refresh/0022_partial_move_same_time.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0022_partial_move_same_time.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Tpo -c -o delta/refresh/test_runner-0022_partial_move_same_time.o `test -f 'delta/refresh/0022_partial_move_same_time.c' || echo '$(srcdir)/'`delta/refresh/0022_partial_move_same_time.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Tpo delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0022_partial_move_same_time.c' object='delta/refresh/test_runner-0022_partial_move_same_time.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0022_partial_move_same_time.o `test -f 'delta/refresh/0022_partial_move_same_time.c' || echo '$(srcdir)/'`delta/refresh/0022_partial_move_same_time.c
-
-delta/refresh/test_runner-0022_partial_move_same_time.obj: delta/refresh/0022_partial_move_same_time.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0022_partial_move_same_time.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Tpo -c -o delta/refresh/test_runner-0022_partial_move_same_time.obj `if test -f 'delta/refresh/0022_partial_move_same_time.c'; then $(CYGPATH_W) 'delta/refresh/0022_partial_move_same_time.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0022_partial_move_same_time.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Tpo delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0022_partial_move_same_time.c' object='delta/refresh/test_runner-0022_partial_move_same_time.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0022_partial_move_same_time.obj `if test -f 'delta/refresh/0022_partial_move_same_time.c'; then $(CYGPATH_W) 'delta/refresh/0022_partial_move_same_time.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0022_partial_move_same_time.c'; fi`
-
-delta/refresh/test_runner-0023_partial_return.o: delta/refresh/0023_partial_return.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0023_partial_return.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Tpo -c -o delta/refresh/test_runner-0023_partial_return.o `test -f 'delta/refresh/0023_partial_return.c' || echo '$(srcdir)/'`delta/refresh/0023_partial_return.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0023_partial_return.c' object='delta/refresh/test_runner-0023_partial_return.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0023_partial_return.o `test -f 'delta/refresh/0023_partial_return.c' || echo '$(srcdir)/'`delta/refresh/0023_partial_return.c
-
-delta/refresh/test_runner-0023_partial_return.obj: delta/refresh/0023_partial_return.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0023_partial_return.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Tpo -c -o delta/refresh/test_runner-0023_partial_return.obj `if test -f 'delta/refresh/0023_partial_return.c'; then $(CYGPATH_W) 'delta/refresh/0023_partial_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0023_partial_return.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0023_partial_return.c' object='delta/refresh/test_runner-0023_partial_return.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0023_partial_return.obj `if test -f 'delta/refresh/0023_partial_return.c'; then $(CYGPATH_W) 'delta/refresh/0023_partial_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0023_partial_return.c'; fi`
-
-delta/refresh/test_runner-0024_partial_height.o: delta/refresh/0024_partial_height.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0024_partial_height.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Tpo -c -o delta/refresh/test_runner-0024_partial_height.o `test -f 'delta/refresh/0024_partial_height.c' || echo '$(srcdir)/'`delta/refresh/0024_partial_height.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Tpo delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0024_partial_height.c' object='delta/refresh/test_runner-0024_partial_height.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0024_partial_height.o `test -f 'delta/refresh/0024_partial_height.c' || echo '$(srcdir)/'`delta/refresh/0024_partial_height.c
-
-delta/refresh/test_runner-0024_partial_height.obj: delta/refresh/0024_partial_height.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0024_partial_height.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Tpo -c -o delta/refresh/test_runner-0024_partial_height.obj `if test -f 'delta/refresh/0024_partial_height.c'; then $(CYGPATH_W) 'delta/refresh/0024_partial_height.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0024_partial_height.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Tpo delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0024_partial_height.c' object='delta/refresh/test_runner-0024_partial_height.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0024_partial_height.obj `if test -f 'delta/refresh/0024_partial_height.c'; then $(CYGPATH_W) 'delta/refresh/0024_partial_height.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0024_partial_height.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0021_partial_height.obj `if test -f 'delta/refresh/0021_partial_height.c'; then $(CYGPATH_W) 'delta/refresh/0021_partial_height.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0021_partial_height.c'; fi`
 
 delta/gpu-rectangle/test_runner-0001_direct.o: delta/gpu-rectangle/0001_direct.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0001_direct.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Tpo -c -o delta/gpu-rectangle/test_runner-0001_direct.o `test -f 'delta/gpu-rectangle/0001_direct.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0001_direct.c
@@ -75903,89 +75852,89 @@ delta/gpu-rectangle/test_runner-0018_no_valid_mask.obj: delta/gpu-rectangle/0018
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0018_no_valid_mask.obj `if test -f 'delta/gpu-rectangle/0018_no_valid_mask.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0018_no_valid_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0018_no_valid_mask.c'; fi`
 
-delta/refresh/test_runner-0025_gpu_direct.o: delta/refresh/0025_gpu_direct.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0025_gpu_direct.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Tpo -c -o delta/refresh/test_runner-0025_gpu_direct.o `test -f 'delta/refresh/0025_gpu_direct.c' || echo '$(srcdir)/'`delta/refresh/0025_gpu_direct.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Tpo delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0025_gpu_direct.c' object='delta/refresh/test_runner-0025_gpu_direct.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0022_gpu_direct.o: delta/refresh/0022_gpu_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0022_gpu_direct.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0022_gpu_direct.Tpo -c -o delta/refresh/test_runner-0022_gpu_direct.o `test -f 'delta/refresh/0022_gpu_direct.c' || echo '$(srcdir)/'`delta/refresh/0022_gpu_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0022_gpu_direct.Tpo delta/refresh/$(DEPDIR)/test_runner-0022_gpu_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0022_gpu_direct.c' object='delta/refresh/test_runner-0022_gpu_direct.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0025_gpu_direct.o `test -f 'delta/refresh/0025_gpu_direct.c' || echo '$(srcdir)/'`delta/refresh/0025_gpu_direct.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0022_gpu_direct.o `test -f 'delta/refresh/0022_gpu_direct.c' || echo '$(srcdir)/'`delta/refresh/0022_gpu_direct.c
 
-delta/refresh/test_runner-0025_gpu_direct.obj: delta/refresh/0025_gpu_direct.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0025_gpu_direct.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Tpo -c -o delta/refresh/test_runner-0025_gpu_direct.obj `if test -f 'delta/refresh/0025_gpu_direct.c'; then $(CYGPATH_W) 'delta/refresh/0025_gpu_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0025_gpu_direct.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Tpo delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0025_gpu_direct.c' object='delta/refresh/test_runner-0025_gpu_direct.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0022_gpu_direct.obj: delta/refresh/0022_gpu_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0022_gpu_direct.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0022_gpu_direct.Tpo -c -o delta/refresh/test_runner-0022_gpu_direct.obj `if test -f 'delta/refresh/0022_gpu_direct.c'; then $(CYGPATH_W) 'delta/refresh/0022_gpu_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0022_gpu_direct.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0022_gpu_direct.Tpo delta/refresh/$(DEPDIR)/test_runner-0022_gpu_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0022_gpu_direct.c' object='delta/refresh/test_runner-0022_gpu_direct.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0025_gpu_direct.obj `if test -f 'delta/refresh/0025_gpu_direct.c'; then $(CYGPATH_W) 'delta/refresh/0025_gpu_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0025_gpu_direct.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0022_gpu_direct.obj `if test -f 'delta/refresh/0022_gpu_direct.c'; then $(CYGPATH_W) 'delta/refresh/0022_gpu_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0022_gpu_direct.c'; fi`
 
-delta/refresh/test_runner-0026_gpu_ahead.o: delta/refresh/0026_gpu_ahead.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0026_gpu_ahead.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Tpo -c -o delta/refresh/test_runner-0026_gpu_ahead.o `test -f 'delta/refresh/0026_gpu_ahead.c' || echo '$(srcdir)/'`delta/refresh/0026_gpu_ahead.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Tpo delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0026_gpu_ahead.c' object='delta/refresh/test_runner-0026_gpu_ahead.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0023_gpu_ahead.o: delta/refresh/0023_gpu_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0023_gpu_ahead.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0023_gpu_ahead.Tpo -c -o delta/refresh/test_runner-0023_gpu_ahead.o `test -f 'delta/refresh/0023_gpu_ahead.c' || echo '$(srcdir)/'`delta/refresh/0023_gpu_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0023_gpu_ahead.Tpo delta/refresh/$(DEPDIR)/test_runner-0023_gpu_ahead.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0023_gpu_ahead.c' object='delta/refresh/test_runner-0023_gpu_ahead.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0026_gpu_ahead.o `test -f 'delta/refresh/0026_gpu_ahead.c' || echo '$(srcdir)/'`delta/refresh/0026_gpu_ahead.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0023_gpu_ahead.o `test -f 'delta/refresh/0023_gpu_ahead.c' || echo '$(srcdir)/'`delta/refresh/0023_gpu_ahead.c
 
-delta/refresh/test_runner-0026_gpu_ahead.obj: delta/refresh/0026_gpu_ahead.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0026_gpu_ahead.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Tpo -c -o delta/refresh/test_runner-0026_gpu_ahead.obj `if test -f 'delta/refresh/0026_gpu_ahead.c'; then $(CYGPATH_W) 'delta/refresh/0026_gpu_ahead.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0026_gpu_ahead.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Tpo delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0026_gpu_ahead.c' object='delta/refresh/test_runner-0026_gpu_ahead.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0023_gpu_ahead.obj: delta/refresh/0023_gpu_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0023_gpu_ahead.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0023_gpu_ahead.Tpo -c -o delta/refresh/test_runner-0023_gpu_ahead.obj `if test -f 'delta/refresh/0023_gpu_ahead.c'; then $(CYGPATH_W) 'delta/refresh/0023_gpu_ahead.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0023_gpu_ahead.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0023_gpu_ahead.Tpo delta/refresh/$(DEPDIR)/test_runner-0023_gpu_ahead.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0023_gpu_ahead.c' object='delta/refresh/test_runner-0023_gpu_ahead.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0026_gpu_ahead.obj `if test -f 'delta/refresh/0026_gpu_ahead.c'; then $(CYGPATH_W) 'delta/refresh/0026_gpu_ahead.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0026_gpu_ahead.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0023_gpu_ahead.obj `if test -f 'delta/refresh/0023_gpu_ahead.c'; then $(CYGPATH_W) 'delta/refresh/0023_gpu_ahead.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0023_gpu_ahead.c'; fi`
 
-delta/refresh/test_runner-0027_gpu_latest.o: delta/refresh/0027_gpu_latest.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0027_gpu_latest.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Tpo -c -o delta/refresh/test_runner-0027_gpu_latest.o `test -f 'delta/refresh/0027_gpu_latest.c' || echo '$(srcdir)/'`delta/refresh/0027_gpu_latest.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Tpo delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0027_gpu_latest.c' object='delta/refresh/test_runner-0027_gpu_latest.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0024_gpu_latest.o: delta/refresh/0024_gpu_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0024_gpu_latest.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0024_gpu_latest.Tpo -c -o delta/refresh/test_runner-0024_gpu_latest.o `test -f 'delta/refresh/0024_gpu_latest.c' || echo '$(srcdir)/'`delta/refresh/0024_gpu_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0024_gpu_latest.Tpo delta/refresh/$(DEPDIR)/test_runner-0024_gpu_latest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0024_gpu_latest.c' object='delta/refresh/test_runner-0024_gpu_latest.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0027_gpu_latest.o `test -f 'delta/refresh/0027_gpu_latest.c' || echo '$(srcdir)/'`delta/refresh/0027_gpu_latest.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0024_gpu_latest.o `test -f 'delta/refresh/0024_gpu_latest.c' || echo '$(srcdir)/'`delta/refresh/0024_gpu_latest.c
 
-delta/refresh/test_runner-0027_gpu_latest.obj: delta/refresh/0027_gpu_latest.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0027_gpu_latest.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Tpo -c -o delta/refresh/test_runner-0027_gpu_latest.obj `if test -f 'delta/refresh/0027_gpu_latest.c'; then $(CYGPATH_W) 'delta/refresh/0027_gpu_latest.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0027_gpu_latest.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Tpo delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0027_gpu_latest.c' object='delta/refresh/test_runner-0027_gpu_latest.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0024_gpu_latest.obj: delta/refresh/0024_gpu_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0024_gpu_latest.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0024_gpu_latest.Tpo -c -o delta/refresh/test_runner-0024_gpu_latest.obj `if test -f 'delta/refresh/0024_gpu_latest.c'; then $(CYGPATH_W) 'delta/refresh/0024_gpu_latest.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0024_gpu_latest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0024_gpu_latest.Tpo delta/refresh/$(DEPDIR)/test_runner-0024_gpu_latest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0024_gpu_latest.c' object='delta/refresh/test_runner-0024_gpu_latest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0027_gpu_latest.obj `if test -f 'delta/refresh/0027_gpu_latest.c'; then $(CYGPATH_W) 'delta/refresh/0027_gpu_latest.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0027_gpu_latest.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0024_gpu_latest.obj `if test -f 'delta/refresh/0024_gpu_latest.c'; then $(CYGPATH_W) 'delta/refresh/0024_gpu_latest.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0024_gpu_latest.c'; fi`
 
-delta/refresh/test_runner-0028_gpu_move.o: delta/refresh/0028_gpu_move.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0028_gpu_move.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Tpo -c -o delta/refresh/test_runner-0028_gpu_move.o `test -f 'delta/refresh/0028_gpu_move.c' || echo '$(srcdir)/'`delta/refresh/0028_gpu_move.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Tpo delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0028_gpu_move.c' object='delta/refresh/test_runner-0028_gpu_move.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0025_gpu_move.o: delta/refresh/0025_gpu_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0025_gpu_move.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0025_gpu_move.Tpo -c -o delta/refresh/test_runner-0025_gpu_move.o `test -f 'delta/refresh/0025_gpu_move.c' || echo '$(srcdir)/'`delta/refresh/0025_gpu_move.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0025_gpu_move.Tpo delta/refresh/$(DEPDIR)/test_runner-0025_gpu_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0025_gpu_move.c' object='delta/refresh/test_runner-0025_gpu_move.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0028_gpu_move.o `test -f 'delta/refresh/0028_gpu_move.c' || echo '$(srcdir)/'`delta/refresh/0028_gpu_move.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0025_gpu_move.o `test -f 'delta/refresh/0025_gpu_move.c' || echo '$(srcdir)/'`delta/refresh/0025_gpu_move.c
 
-delta/refresh/test_runner-0028_gpu_move.obj: delta/refresh/0028_gpu_move.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0028_gpu_move.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Tpo -c -o delta/refresh/test_runner-0028_gpu_move.obj `if test -f 'delta/refresh/0028_gpu_move.c'; then $(CYGPATH_W) 'delta/refresh/0028_gpu_move.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0028_gpu_move.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Tpo delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0028_gpu_move.c' object='delta/refresh/test_runner-0028_gpu_move.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0025_gpu_move.obj: delta/refresh/0025_gpu_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0025_gpu_move.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0025_gpu_move.Tpo -c -o delta/refresh/test_runner-0025_gpu_move.obj `if test -f 'delta/refresh/0025_gpu_move.c'; then $(CYGPATH_W) 'delta/refresh/0025_gpu_move.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0025_gpu_move.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0025_gpu_move.Tpo delta/refresh/$(DEPDIR)/test_runner-0025_gpu_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0025_gpu_move.c' object='delta/refresh/test_runner-0025_gpu_move.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0028_gpu_move.obj `if test -f 'delta/refresh/0028_gpu_move.c'; then $(CYGPATH_W) 'delta/refresh/0028_gpu_move.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0028_gpu_move.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0025_gpu_move.obj `if test -f 'delta/refresh/0025_gpu_move.c'; then $(CYGPATH_W) 'delta/refresh/0025_gpu_move.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0025_gpu_move.c'; fi`
 
-delta/refresh/test_runner-0029_gpu_failure.o: delta/refresh/0029_gpu_failure.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0029_gpu_failure.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Tpo -c -o delta/refresh/test_runner-0029_gpu_failure.o `test -f 'delta/refresh/0029_gpu_failure.c' || echo '$(srcdir)/'`delta/refresh/0029_gpu_failure.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0029_gpu_failure.c' object='delta/refresh/test_runner-0029_gpu_failure.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0026_gpu_failure.o: delta/refresh/0026_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0026_gpu_failure.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0026_gpu_failure.Tpo -c -o delta/refresh/test_runner-0026_gpu_failure.o `test -f 'delta/refresh/0026_gpu_failure.c' || echo '$(srcdir)/'`delta/refresh/0026_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0026_gpu_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0026_gpu_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0026_gpu_failure.c' object='delta/refresh/test_runner-0026_gpu_failure.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0029_gpu_failure.o `test -f 'delta/refresh/0029_gpu_failure.c' || echo '$(srcdir)/'`delta/refresh/0029_gpu_failure.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0026_gpu_failure.o `test -f 'delta/refresh/0026_gpu_failure.c' || echo '$(srcdir)/'`delta/refresh/0026_gpu_failure.c
 
-delta/refresh/test_runner-0029_gpu_failure.obj: delta/refresh/0029_gpu_failure.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0029_gpu_failure.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Tpo -c -o delta/refresh/test_runner-0029_gpu_failure.obj `if test -f 'delta/refresh/0029_gpu_failure.c'; then $(CYGPATH_W) 'delta/refresh/0029_gpu_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0029_gpu_failure.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0029_gpu_failure.c' object='delta/refresh/test_runner-0029_gpu_failure.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0026_gpu_failure.obj: delta/refresh/0026_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0026_gpu_failure.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0026_gpu_failure.Tpo -c -o delta/refresh/test_runner-0026_gpu_failure.obj `if test -f 'delta/refresh/0026_gpu_failure.c'; then $(CYGPATH_W) 'delta/refresh/0026_gpu_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0026_gpu_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0026_gpu_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0026_gpu_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0026_gpu_failure.c' object='delta/refresh/test_runner-0026_gpu_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0029_gpu_failure.obj `if test -f 'delta/refresh/0029_gpu_failure.c'; then $(CYGPATH_W) 'delta/refresh/0029_gpu_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0029_gpu_failure.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0026_gpu_failure.obj `if test -f 'delta/refresh/0026_gpu_failure.c'; then $(CYGPATH_W) 'delta/refresh/0026_gpu_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0026_gpu_failure.c'; fi`
 
-delta/refresh/test_runner-0030_gpu_return.o: delta/refresh/0030_gpu_return.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0030_gpu_return.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Tpo -c -o delta/refresh/test_runner-0030_gpu_return.o `test -f 'delta/refresh/0030_gpu_return.c' || echo '$(srcdir)/'`delta/refresh/0030_gpu_return.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0030_gpu_return.c' object='delta/refresh/test_runner-0030_gpu_return.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0027_gpu_return.o: delta/refresh/0027_gpu_return.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0027_gpu_return.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Tpo -c -o delta/refresh/test_runner-0027_gpu_return.o `test -f 'delta/refresh/0027_gpu_return.c' || echo '$(srcdir)/'`delta/refresh/0027_gpu_return.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0027_gpu_return.c' object='delta/refresh/test_runner-0027_gpu_return.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0030_gpu_return.o `test -f 'delta/refresh/0030_gpu_return.c' || echo '$(srcdir)/'`delta/refresh/0030_gpu_return.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0027_gpu_return.o `test -f 'delta/refresh/0027_gpu_return.c' || echo '$(srcdir)/'`delta/refresh/0027_gpu_return.c
 
-delta/refresh/test_runner-0030_gpu_return.obj: delta/refresh/0030_gpu_return.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0030_gpu_return.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Tpo -c -o delta/refresh/test_runner-0030_gpu_return.obj `if test -f 'delta/refresh/0030_gpu_return.c'; then $(CYGPATH_W) 'delta/refresh/0030_gpu_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0030_gpu_return.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0030_gpu_return.c' object='delta/refresh/test_runner-0030_gpu_return.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0027_gpu_return.obj: delta/refresh/0027_gpu_return.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0027_gpu_return.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Tpo -c -o delta/refresh/test_runner-0027_gpu_return.obj `if test -f 'delta/refresh/0027_gpu_return.c'; then $(CYGPATH_W) 'delta/refresh/0027_gpu_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0027_gpu_return.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0027_gpu_return.c' object='delta/refresh/test_runner-0027_gpu_return.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0030_gpu_return.obj `if test -f 'delta/refresh/0030_gpu_return.c'; then $(CYGPATH_W) 'delta/refresh/0030_gpu_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0030_gpu_return.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0027_gpu_return.obj `if test -f 'delta/refresh/0027_gpu_return.c'; then $(CYGPATH_W) 'delta/refresh/0027_gpu_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0027_gpu_return.c'; fi`
 
 delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.o: delta/gpu-rectangle/0019_auto_rectangle_cutoff.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Tpo -c -o delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.o `test -f 'delta/gpu-rectangle/0019_auto_rectangle_cutoff.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0019_auto_rectangle_cutoff.c
@@ -76071,47 +76020,47 @@ delta/refresh/test_runner-0002_staggered_coverage.obj: delta/refresh/0002_stagge
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0002_staggered_coverage.obj `if test -f 'delta/refresh/0002_staggered_coverage.c'; then $(CYGPATH_W) 'delta/refresh/0002_staggered_coverage.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0002_staggered_coverage.c'; fi`
 
-delta/refresh/test_runner-0003_skipped_deadlines.o: delta/refresh/0003_skipped_deadlines.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0003_skipped_deadlines.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Tpo -c -o delta/refresh/test_runner-0003_skipped_deadlines.o `test -f 'delta/refresh/0003_skipped_deadlines.c' || echo '$(srcdir)/'`delta/refresh/0003_skipped_deadlines.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Tpo delta/refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0003_skipped_deadlines.c' object='delta/refresh/test_runner-0003_skipped_deadlines.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0003_period_cycle.o: delta/refresh/0003_period_cycle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0003_period_cycle.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0003_period_cycle.Tpo -c -o delta/refresh/test_runner-0003_period_cycle.o `test -f 'delta/refresh/0003_period_cycle.c' || echo '$(srcdir)/'`delta/refresh/0003_period_cycle.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0003_period_cycle.Tpo delta/refresh/$(DEPDIR)/test_runner-0003_period_cycle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0003_period_cycle.c' object='delta/refresh/test_runner-0003_period_cycle.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0003_skipped_deadlines.o `test -f 'delta/refresh/0003_skipped_deadlines.c' || echo '$(srcdir)/'`delta/refresh/0003_skipped_deadlines.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0003_period_cycle.o `test -f 'delta/refresh/0003_period_cycle.c' || echo '$(srcdir)/'`delta/refresh/0003_period_cycle.c
 
-delta/refresh/test_runner-0003_skipped_deadlines.obj: delta/refresh/0003_skipped_deadlines.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0003_skipped_deadlines.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Tpo -c -o delta/refresh/test_runner-0003_skipped_deadlines.obj `if test -f 'delta/refresh/0003_skipped_deadlines.c'; then $(CYGPATH_W) 'delta/refresh/0003_skipped_deadlines.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0003_skipped_deadlines.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Tpo delta/refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0003_skipped_deadlines.c' object='delta/refresh/test_runner-0003_skipped_deadlines.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0003_period_cycle.obj: delta/refresh/0003_period_cycle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0003_period_cycle.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0003_period_cycle.Tpo -c -o delta/refresh/test_runner-0003_period_cycle.obj `if test -f 'delta/refresh/0003_period_cycle.c'; then $(CYGPATH_W) 'delta/refresh/0003_period_cycle.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0003_period_cycle.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0003_period_cycle.Tpo delta/refresh/$(DEPDIR)/test_runner-0003_period_cycle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0003_period_cycle.c' object='delta/refresh/test_runner-0003_period_cycle.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0003_skipped_deadlines.obj `if test -f 'delta/refresh/0003_skipped_deadlines.c'; then $(CYGPATH_W) 'delta/refresh/0003_skipped_deadlines.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0003_skipped_deadlines.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0003_period_cycle.obj `if test -f 'delta/refresh/0003_period_cycle.c'; then $(CYGPATH_W) 'delta/refresh/0003_period_cycle.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0003_period_cycle.c'; fi`
 
-delta/refresh/test_runner-0004_repeated_clock.o: delta/refresh/0004_repeated_clock.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0004_repeated_clock.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Tpo -c -o delta/refresh/test_runner-0004_repeated_clock.o `test -f 'delta/refresh/0004_repeated_clock.c' || echo '$(srcdir)/'`delta/refresh/0004_repeated_clock.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Tpo delta/refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0004_repeated_clock.c' object='delta/refresh/test_runner-0004_repeated_clock.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0004_uncommitted_frame.o: delta/refresh/0004_uncommitted_frame.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0004_uncommitted_frame.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0004_uncommitted_frame.Tpo -c -o delta/refresh/test_runner-0004_uncommitted_frame.o `test -f 'delta/refresh/0004_uncommitted_frame.c' || echo '$(srcdir)/'`delta/refresh/0004_uncommitted_frame.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0004_uncommitted_frame.Tpo delta/refresh/$(DEPDIR)/test_runner-0004_uncommitted_frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0004_uncommitted_frame.c' object='delta/refresh/test_runner-0004_uncommitted_frame.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0004_repeated_clock.o `test -f 'delta/refresh/0004_repeated_clock.c' || echo '$(srcdir)/'`delta/refresh/0004_repeated_clock.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0004_uncommitted_frame.o `test -f 'delta/refresh/0004_uncommitted_frame.c' || echo '$(srcdir)/'`delta/refresh/0004_uncommitted_frame.c
 
-delta/refresh/test_runner-0004_repeated_clock.obj: delta/refresh/0004_repeated_clock.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0004_repeated_clock.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Tpo -c -o delta/refresh/test_runner-0004_repeated_clock.obj `if test -f 'delta/refresh/0004_repeated_clock.c'; then $(CYGPATH_W) 'delta/refresh/0004_repeated_clock.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0004_repeated_clock.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Tpo delta/refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0004_repeated_clock.c' object='delta/refresh/test_runner-0004_repeated_clock.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0004_uncommitted_frame.obj: delta/refresh/0004_uncommitted_frame.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0004_uncommitted_frame.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0004_uncommitted_frame.Tpo -c -o delta/refresh/test_runner-0004_uncommitted_frame.obj `if test -f 'delta/refresh/0004_uncommitted_frame.c'; then $(CYGPATH_W) 'delta/refresh/0004_uncommitted_frame.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0004_uncommitted_frame.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0004_uncommitted_frame.Tpo delta/refresh/$(DEPDIR)/test_runner-0004_uncommitted_frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0004_uncommitted_frame.c' object='delta/refresh/test_runner-0004_uncommitted_frame.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0004_repeated_clock.obj `if test -f 'delta/refresh/0004_repeated_clock.c'; then $(CYGPATH_W) 'delta/refresh/0004_repeated_clock.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0004_repeated_clock.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0004_uncommitted_frame.obj `if test -f 'delta/refresh/0004_uncommitted_frame.c'; then $(CYGPATH_W) 'delta/refresh/0004_uncommitted_frame.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0004_uncommitted_frame.c'; fi`
 
-delta/refresh/test_runner-0005_backward_clock.o: delta/refresh/0005_backward_clock.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0005_backward_clock.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0005_backward_clock.Tpo -c -o delta/refresh/test_runner-0005_backward_clock.o `test -f 'delta/refresh/0005_backward_clock.c' || echo '$(srcdir)/'`delta/refresh/0005_backward_clock.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0005_backward_clock.Tpo delta/refresh/$(DEPDIR)/test_runner-0005_backward_clock.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0005_backward_clock.c' object='delta/refresh/test_runner-0005_backward_clock.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0005_rectangle_restart.o: delta/refresh/0005_rectangle_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0005_rectangle_restart.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0005_rectangle_restart.Tpo -c -o delta/refresh/test_runner-0005_rectangle_restart.o `test -f 'delta/refresh/0005_rectangle_restart.c' || echo '$(srcdir)/'`delta/refresh/0005_rectangle_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0005_rectangle_restart.Tpo delta/refresh/$(DEPDIR)/test_runner-0005_rectangle_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0005_rectangle_restart.c' object='delta/refresh/test_runner-0005_rectangle_restart.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0005_backward_clock.o `test -f 'delta/refresh/0005_backward_clock.c' || echo '$(srcdir)/'`delta/refresh/0005_backward_clock.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0005_rectangle_restart.o `test -f 'delta/refresh/0005_rectangle_restart.c' || echo '$(srcdir)/'`delta/refresh/0005_rectangle_restart.c
 
-delta/refresh/test_runner-0005_backward_clock.obj: delta/refresh/0005_backward_clock.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0005_backward_clock.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0005_backward_clock.Tpo -c -o delta/refresh/test_runner-0005_backward_clock.obj `if test -f 'delta/refresh/0005_backward_clock.c'; then $(CYGPATH_W) 'delta/refresh/0005_backward_clock.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0005_backward_clock.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0005_backward_clock.Tpo delta/refresh/$(DEPDIR)/test_runner-0005_backward_clock.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0005_backward_clock.c' object='delta/refresh/test_runner-0005_backward_clock.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0005_rectangle_restart.obj: delta/refresh/0005_rectangle_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0005_rectangle_restart.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0005_rectangle_restart.Tpo -c -o delta/refresh/test_runner-0005_rectangle_restart.obj `if test -f 'delta/refresh/0005_rectangle_restart.c'; then $(CYGPATH_W) 'delta/refresh/0005_rectangle_restart.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0005_rectangle_restart.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0005_rectangle_restart.Tpo delta/refresh/$(DEPDIR)/test_runner-0005_rectangle_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0005_rectangle_restart.c' object='delta/refresh/test_runner-0005_rectangle_restart.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0005_backward_clock.obj `if test -f 'delta/refresh/0005_backward_clock.c'; then $(CYGPATH_W) 'delta/refresh/0005_backward_clock.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0005_backward_clock.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0005_rectangle_restart.obj `if test -f 'delta/refresh/0005_rectangle_restart.c'; then $(CYGPATH_W) 'delta/refresh/0005_rectangle_restart.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0005_rectangle_restart.c'; fi`
 
 delta/refresh/test_runner-0006_cpu_playback.o: delta/refresh/0006_cpu_playback.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0006_cpu_playback.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Tpo -c -o delta/refresh/test_runner-0006_cpu_playback.o `test -f 'delta/refresh/0006_cpu_playback.c' || echo '$(srcdir)/'`delta/refresh/0006_cpu_playback.c
@@ -76182,6 +76131,20 @@ delta/refresh/test_runner-0010_latest_playback.obj: delta/refresh/0010_latest_pl
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0010_latest_playback.c' object='delta/refresh/test_runner-0010_latest_playback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0010_latest_playback.obj `if test -f 'delta/refresh/0010_latest_playback.c'; then $(CYGPATH_W) 'delta/refresh/0010_latest_playback.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0010_latest_playback.c'; fi`
+
+delta/refresh/test_runner-0028_all_dithers.o: delta/refresh/0028_all_dithers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0028_all_dithers.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0028_all_dithers.Tpo -c -o delta/refresh/test_runner-0028_all_dithers.o `test -f 'delta/refresh/0028_all_dithers.c' || echo '$(srcdir)/'`delta/refresh/0028_all_dithers.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0028_all_dithers.Tpo delta/refresh/$(DEPDIR)/test_runner-0028_all_dithers.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0028_all_dithers.c' object='delta/refresh/test_runner-0028_all_dithers.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0028_all_dithers.o `test -f 'delta/refresh/0028_all_dithers.c' || echo '$(srcdir)/'`delta/refresh/0028_all_dithers.c
+
+delta/refresh/test_runner-0028_all_dithers.obj: delta/refresh/0028_all_dithers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0028_all_dithers.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0028_all_dithers.Tpo -c -o delta/refresh/test_runner-0028_all_dithers.obj `if test -f 'delta/refresh/0028_all_dithers.c'; then $(CYGPATH_W) 'delta/refresh/0028_all_dithers.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0028_all_dithers.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0028_all_dithers.Tpo delta/refresh/$(DEPDIR)/test_runner-0028_all_dithers.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0028_all_dithers.c' object='delta/refresh/test_runner-0028_all_dithers.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0028_all_dithers.obj `if test -f 'delta/refresh/0028_all_dithers.c'; then $(CYGPATH_W) 'delta/refresh/0028_all_dithers.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0028_all_dithers.c'; fi`
 
 _support/processing/delta-refresh/test_runner-refresh_test_common.o: _support/processing/delta-refresh/refresh_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-refresh_test_common.o -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-refresh_test_common.o `test -f '_support/processing/delta-refresh/refresh_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/refresh_test_common.c
@@ -77764,6 +77727,20 @@ dither/phased/test_runner-0081_queue_sample_tail.obj: dither/phased/0081_queue_s
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0081_queue_sample_tail.c' object='dither/phased/test_runner-0081_queue_sample_tail.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0081_queue_sample_tail.obj `if test -f 'dither/phased/0081_queue_sample_tail.c'; then $(CYGPATH_W) 'dither/phased/0081_queue_sample_tail.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0081_queue_sample_tail.c'; fi`
+
+dither/phased/test_runner-0082_fixed_kernels.o: dither/phased/0082_fixed_kernels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0082_fixed_kernels.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0082_fixed_kernels.Tpo -c -o dither/phased/test_runner-0082_fixed_kernels.o `test -f 'dither/phased/0082_fixed_kernels.c' || echo '$(srcdir)/'`dither/phased/0082_fixed_kernels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0082_fixed_kernels.Tpo dither/phased/$(DEPDIR)/test_runner-0082_fixed_kernels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0082_fixed_kernels.c' object='dither/phased/test_runner-0082_fixed_kernels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0082_fixed_kernels.o `test -f 'dither/phased/0082_fixed_kernels.c' || echo '$(srcdir)/'`dither/phased/0082_fixed_kernels.c
+
+dither/phased/test_runner-0082_fixed_kernels.obj: dither/phased/0082_fixed_kernels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0082_fixed_kernels.obj -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0082_fixed_kernels.Tpo -c -o dither/phased/test_runner-0082_fixed_kernels.obj `if test -f 'dither/phased/0082_fixed_kernels.c'; then $(CYGPATH_W) 'dither/phased/0082_fixed_kernels.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0082_fixed_kernels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/phased/$(DEPDIR)/test_runner-0082_fixed_kernels.Tpo dither/phased/$(DEPDIR)/test_runner-0082_fixed_kernels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/phased/0082_fixed_kernels.c' object='dither/phased/test_runner-0082_fixed_kernels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/phased/test_runner-0082_fixed_kernels.obj `if test -f 'dither/phased/0082_fixed_kernels.c'; then $(CYGPATH_W) 'dither/phased/0082_fixed_kernels.c'; else $(CYGPATH_W) '$(srcdir)/dither/phased/0082_fixed_kernels.c'; fi`
 
 dither/phased/test_runner-0064_pipeline_sample_stale.o: dither/phased/0064_pipeline_sample_stale.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/phased/test_runner-0064_pipeline_sample_stale.o -MD -MP -MF dither/phased/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Tpo -c -o dither/phased/test_runner-0064_pipeline_sample_stale.o `test -f 'dither/phased/0064_pipeline_sample_stale.c' || echo '$(srcdir)/'`dither/phased/0064_pipeline_sample_stale.c

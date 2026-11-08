@@ -4,7 +4,7 @@
 set -eux
 echo "1..1"
 set -v
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-refresh/0019_partial_output_failure || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-refresh/0017_partial_output_failure || {
     echo "not ok 1 - partial output failure"
     exit 0
 }
