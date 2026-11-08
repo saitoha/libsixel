@@ -45,7 +45,10 @@ typedef struct sixel_km_metal_state {
     float delta;
 } sixel_km_metal_state_t;
 
-/* Separate literals stay below C99's 4095-byte translation limit. The first
+/* An integer atomic failure flag detects collapsed nonzero distances and
+ * residuals without racing assignment threads. Rejection is request-wide;
+ * no partial result is published and AUTO retries the unchanged CPU seeds.
+ * Separate literals stay below C99's 4095-byte translation limit. The first
  * pass uses a full center scan. The next two passes perform deterministic
  * segmented sums without floating-point atomics or an M-by-K distance table.
  * All iterations are submitted together: no CPU readback occurs between
@@ -55,28 +58,36 @@ static char const * const sixel_km_metal_source[] = {
 "using namespace metal;\n"
 "struct Params { uint points, centers, groups, min_iterations;\n"
 " uint round_centers; float threshold; };\n"
-"struct State { uint done, iterations, failed; float delta; };\n"
+"struct State { uint done, iterations; atomic_uint failed; float delta; };\n"
 "kernel void km_assign(\n"
 " device const packed_float3 *points [[buffer(0)]],\n"
 " device const float *weights [[buffer(1)]],\n"
 " device const packed_float3 *centers [[buffer(2)]],\n"
 " device uint *membership [[buffer(3)]],\n"
 " device float *distances [[buffer(4)]],\n"
-" device const State &s [[buffer(7)]],\n"
+" device State &s [[buffer(7)]],\n"
 " constant Params &p [[buffer(8)]],\n"
 " uint gid [[thread_position_in_grid]]) {\n"
 " if (s.done || gid >= p.points) return;\n"
 " float weight = weights[gid];\n"
 " if (weight <= 0) { membership[gid] = 0; distances[gid] = 0; return; }\n"
 " float3 point = float3(points[gid]);\n"
-" float3 d = point - float3(centers[0]);\n"
-" float best = d.x*d.x + d.y*d.y + d.z*d.z; uint owner = 0;\n"
-" for (uint c = 1; c < p.centers; ++c) {\n"
+" uint owner = s.iterations == 0 ? 0 : membership[gid];\n"
+" float3 d = point - float3(centers[owner]);\n"
+" float best = d.x*d.x + d.y*d.y + d.z*d.z;\n"
+" if (best == 0 && any(d != 0))\n"
+"  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
+" for (uint c = 0; c < p.centers; ++c) {\n"
 "  d = point - float3(centers[c]);\n"
 "  float distance = d.x*d.x + d.y*d.y + d.z*d.z;\n"
+"  if (distance == 0 && any(d != 0))\n"
+"   atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
 "  if (distance < best) { best = distance; owner = c; }\n"
 " }\n"
-" membership[gid] = owner; distances[gid] = best * weight;\n"
+" float residual = best * weight;\n"
+" if (!isfinite(residual) || (residual == 0 && best > 0))\n"
+"  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
+" membership[gid] = owner; distances[gid] = residual;\n"
 "}\n",
 "kernel void km_partial(\n"
 " device const packed_float3 *points [[buffer(0)]],\n"
@@ -117,6 +128,9 @@ static char const * const sixel_km_metal_source[] = {
 " constant Params &p [[buffer(8)]],\n"
 " uint gid [[thread_position_in_grid]]) {\n"
 " if (gid != 0 || s.done) return;\n"
+" if (atomic_load_explicit(&s.failed, memory_order_relaxed)) {\n"
+"  s.done = 1; return;\n"
+" }\n"
 " for (uint c = 0; c < p.centers; ++c) {\n"
 "  if (sums[c].w > 0) continue;\n"
 "  float farthest = -1; uint selected = 0;\n"
@@ -134,7 +148,10 @@ static char const * const sixel_km_metal_source[] = {
 " }\n"
 " float delta = 0;\n"
 " for (uint c = 0; c < p.centers; ++c) {\n"
-"  if (!all(isfinite(sums[c]))) { s.failed = 1; s.done = 1; return; }\n"
+"  if (!all(isfinite(sums[c]))) {\n"
+"   atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
+"   s.done = 1; return;\n"
+"  }\n"
 "  if (sums[c].w <= 0) continue;\n"
 "  float3 next = sums[c].xyz / sums[c].w;\n"
 "  if (p.round_centers) next = floor(clamp(next, 0.0f, 255.0f) + 0.5f);\n"
@@ -142,7 +159,9 @@ static char const * const sixel_km_metal_source[] = {
 "  delta += d.x*d.x + d.y*d.y + d.z*d.z; centers[c] = packed_float3(next);\n"
 " }\n"
 " ++s.iterations; s.delta = delta;\n"
-" if (!isfinite(delta)) { s.failed = 1; s.done = 1; }\n"
+" if (!isfinite(delta)) {\n"
+"  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed); s.done = 1;\n"
+" }\n"
 " else if (delta <= p.threshold && s.iterations >= p.min_iterations)\n"
 "  s.done = 1;\n"
 "}\n"
@@ -163,7 +182,16 @@ sixel_km_metal_prepare(void)
     if (sixel_km_metal_initialized) {
         return sixel_km_metal_status;
     }
-    sixel_km_metal_initialized = 1;
+    /* A transient initialization failure must not poison future requests.
+     * The caller holds the lock; discard only unpublished partial state. */
+    for (index = 0u; index < 4u; ++index) {
+        [sixel_km_metal_pipelines[index] release];
+        sixel_km_metal_pipelines[index] = nil;
+    }
+    [sixel_km_metal_queue release];
+    sixel_km_metal_queue = nil;
+    [sixel_km_metal_device release];
+    sixel_km_metal_status = SIXEL_FALSE;
     sixel_km_metal_device = MTLCreateSystemDefaultDevice();
     if (sixel_km_metal_device == nil) {
         return SIXEL_FALSE;
@@ -222,6 +250,7 @@ sixel_km_metal_prepare(void)
         }
     }
     [library release];
+    sixel_km_metal_initialized = 1;
     sixel_km_metal_status = SIXEL_OK;
     return SIXEL_OK;
 }
@@ -259,6 +288,11 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
     unsigned int iteration;
     unsigned int stage;
     float *values;
+    double minimum[3];
+    double maximum[3];
+    double value;
+    double margin;
+    unsigned int channel;
 
     memset(buffers, 0, sizeof(buffers));
     memset(&params, 0, sizeof(params));
@@ -283,6 +317,10 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
     counts[3] = 1u;
 
     @autoreleasepool {
+        if (request->test_failure == 1) {
+            status = SIXEL_FEATURE_ERROR;
+            goto cleanup;
+        }
         pthread_mutex_lock(&sixel_km_metal_lock);
         status = sixel_km_metal_prepare();
         pthread_mutex_unlock(&sixel_km_metal_lock);
@@ -294,7 +332,8 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
             buffers[index] = [sixel_km_metal_device
                 newBufferWithLength:lengths[index]
                 options:MTLResourceStorageModeShared];
-            if (buffers[index] == nil) {
+            if (buffers[index] == nil ||
+                    (request->test_failure == 2 && index == 3u)) {
                 goto cleanup;
             }
         }
@@ -346,14 +385,40 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         [command commit];
         [command waitUntilCompleted];
         status = SIXEL_RUNTIME_ERROR;
-        if ([command status] != MTLCommandBufferStatusCompleted ||
+        if (request->test_failure == 3 ||
+                [command status] != MTLCommandBufferStatusCompleted ||
                 state->failed || state->iterations == 0u ||
                 state->iterations > request->max_iterations) {
             goto cleanup;
         }
+        /* Means must remain in the convex coordinate envelope. Empty
+         * centers may retain their seeds; byte rounding expands by 0.5.
+         * This also catches unstable cancellation during donor repair. */
+        for (channel = 0u; channel < 3u; ++channel) {
+            minimum[channel] = maximum[channel] = request->points[channel];
+        }
+        for (index = 0u; index < (size_t)params.points * 3u; ++index) {
+            channel = (unsigned int)(index % 3u);
+            value = request->points[index];
+            minimum[channel] = fmin(minimum[channel], value);
+            maximum[channel] = fmax(maximum[channel], value);
+        }
+        for (index = 0u; index < (size_t)params.centers * 3u; ++index) {
+            channel = (unsigned int)(index % 3u);
+            value = request->centers[index];
+            minimum[channel] = fmin(minimum[channel], value);
+            maximum[channel] = fmax(maximum[channel], value);
+        }
         values = [buffers[SIXEL_KM_CENTERS] contents];
         for (index = 0u; index < (size_t)params.centers * 3u; ++index) {
-            if (!isfinite(values[index])) {
+            channel = (unsigned int)(index % 3u);
+            margin = fmax(maximum[channel] - minimum[channel],
+                fmax(fabs(minimum[channel]), fabs(maximum[channel]))) *
+                0.0001;
+            if (request->round_centers) margin += 0.5;
+            if (!isfinite(values[index]) ||
+                    values[index] < minimum[channel] - margin ||
+                    values[index] > maximum[channel] + margin) {
                 goto cleanup;
             }
         }
@@ -361,6 +426,11 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
          * state changes until every output component has been checked. */
         for (index = 0u; index < (size_t)params.centers * 3u; ++index) {
             request->centers[index] = (double)values[index];
+        }
+        if (request->membership != NULL) {
+            memcpy(request->membership,
+                [buffers[SIXEL_KM_MEMBERSHIP] contents],
+                (size_t)params.points * sizeof(unsigned int));
         }
         *iterations = state->iterations;
         status = SIXEL_OK;

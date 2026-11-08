@@ -6,6 +6,7 @@
 #include <float.h>
 #include <math.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "palette-kmeans-gpu.h"
 #include "compat_stub.h"
@@ -27,15 +28,21 @@ sixel_kmeans_gpu_is_available(void)
 }
 
 SIXELSTATUS
-sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
-                        unsigned int *iterations)
+sixel_kmeans_gpu_check(sixel_kmeans_gpu_request_t const *request)
 {
     size_t index;
     double weight;
     double value;
     int positive;
+    unsigned int channel;
+    double minimum[3];
+    double maximum[3];
+    double minimum_weight;
+    double total_weight;
+    double extent;
+    double magnitude;
 
-    if (request == NULL || iterations == NULL || request->points == NULL ||
+    if (request == NULL || request->points == NULL ||
             request->centers == NULL || request->point_count == 0u ||
             request->center_count == 0u ||
             request->center_count > request->point_count ||
@@ -52,38 +59,120 @@ sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
      * coordinates are allowed; unsupported ranges retain the CPU path. */
     if (request->point_count > 1048576u ||
             request->center_count > 1024u ||
-            request->threshold > 4294967295.0) {
+            request->threshold > 4294967295.0 ||
+            (request->threshold > 0.0 && request->threshold < FLT_MIN)) {
         return SIXEL_FALSE;
     }
     positive = 0;
+    minimum_weight = DBL_MAX;
+    total_weight = 0.0;
+    for (channel = 0u; channel < 3u; ++channel) {
+        minimum[channel] = DBL_MAX;
+        maximum[channel] = -DBL_MAX;
+    }
     for (index = 0u; index < request->point_count; ++index) {
         weight = request->weights == NULL ? 1.0 : request->weights[index];
         if (!isfinite(weight) || weight < 0.0 || weight > 4294967295.0 ||
-                (weight > 0.0 && weight < FLT_MIN)) {
+                (weight > 0.0 && weight < 0x1p-16)) {
             return SIXEL_FALSE;
         }
         positive |= weight > 0.0;
+        total_weight += weight;
+        if (weight > 0.0 && weight < minimum_weight) {
+            minimum_weight = weight;
+        }
     }
-    if (!positive) {
+    /* Do not silently lose a small positive population during reduction. */
+    if (!positive || total_weight / minimum_weight > 0x1p24) {
         return SIXEL_FALSE;
     }
     for (index = 0u; index < (size_t)request->point_count * 3u; ++index) {
         value = request->points[index];
         if (!isfinite(value) || fabs(value) > 65536.0 ||
-                (value != 0.0 && fabs(value) < FLT_MIN)) {
+                (value != 0.0 && fabs(value) < 0x1p-24)) {
+            return SIXEL_FALSE;
+        }
+        channel = (unsigned int)(index % 3u);
+        if (value < minimum[channel]) minimum[channel] = value;
+        if (value > maximum[channel]) maximum[channel] = value;
+    }
+    /* A narrow cloud at a large offset can collapse on conversion to FP32.
+     * Keep at least six guard bits beyond the cloud's relative extent. The
+     * lower magnitude/weight bounds also keep squared FP32 differences and
+     * weighted residuals normal, even for adjacent representable inputs. */
+    for (channel = 0u; channel < 3u; ++channel) {
+        extent = maximum[channel] - minimum[channel];
+        magnitude = fmax(fabs(maximum[channel]), fabs(minimum[channel]));
+        if (extent > 0.0 && extent < 64.0 * FLT_EPSILON * magnitude) {
             return SIXEL_FALSE;
         }
     }
     for (index = 0u; index < (size_t)request->center_count * 3u; ++index) {
         value = request->centers[index];
         if (!isfinite(value) || fabs(value) > 65536.0 ||
-                (value != 0.0 && fabs(value) < FLT_MIN)) {
+                (value != 0.0 && fabs(value) < 0x1p-24)) {
             return SIXEL_FALSE;
         }
     }
-#if defined(HAVE_METAL)
-    return sixel_kmeans_metal_refine(request, iterations);
+    return SIXEL_OK;
+}
+
+int
+sixel_kmeans_gpu_worthwhile(unsigned int points, unsigned int centers,
+                             unsigned int iterations)
+{
+    /* Conservative opt-in admission floor. Calibration must compare the
+     * default Hamerly solver with cold and warm Metal on the same M/K/I;
+     * satisfying this floor is not a claim of a measured speedup. */
+    return points >= 4096u && centers >= 64u && iterations >= 4u &&
+        (double)points * centers * iterations >= 16777216.0;
+}
+
+#if defined(HAVE_TESTS)
+#if defined(_MSC_VER)
+#define SIXEL_KM_TEST_TLS __declspec(thread)
+#elif defined(__GNUC__) || defined(__clang__)
+#define SIXEL_KM_TEST_TLS __thread
 #else
+#define SIXEL_KM_TEST_TLS
+#endif
+static SIXEL_KM_TEST_TLS int sixel_km_test_failure;
+static SIXEL_KM_TEST_TLS unsigned int sixel_km_test_attempt;
+
+void
+sixel_kmeans_gpu_test_fail(int stage, unsigned int attempt)
+{
+    sixel_km_test_failure = stage;
+    sixel_km_test_attempt = attempt;
+}
+#endif
+
+SIXELSTATUS
+sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
+                        unsigned int *iterations)
+{
+    SIXELSTATUS status;
+    sixel_kmeans_gpu_request_t attempt;
+
+    if (iterations == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_kmeans_gpu_check(request);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    attempt = *request;
+    attempt.test_failure = 0;
+#if defined(HAVE_TESTS)
+    if (sixel_km_test_attempt > 0u && --sixel_km_test_attempt == 0u) {
+        attempt.test_failure = sixel_km_test_failure;
+        sixel_km_test_failure = 0;
+    }
+#endif
+#if defined(HAVE_METAL)
+    return sixel_kmeans_metal_refine(&attempt, iterations);
+#else
+    (void)attempt;
     return SIXEL_FALSE;
 #endif
 }

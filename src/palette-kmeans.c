@@ -951,6 +951,9 @@ sixel_get_kmeans_backend(void)
             SIXEL_SUBOPTION_BINDING_ID_2(quantize_model_kmeans_backend,
                 quantize_model_kmeans_backend_override), &value);
     }
+    if (value == SIXEL_PALETTE_KMEANS_BACKEND_AUTO) {
+        return SIXEL_PALETTE_KMEANS_BACKEND_AUTO;
+    }
     return value == SIXEL_PALETTE_KMEANS_BACKEND_GPU ?
         SIXEL_PALETTE_KMEANS_BACKEND_GPU : SIXEL_PALETTE_KMEANS_BACKEND_CPU;
 }

@@ -2345,6 +2345,36 @@ int test_kmgpu_0005_range_fallback_atomicity(int argc, char **argv);
 int test_kmgpu_0006_option_atomicity(int argc, char **argv);
 int test_kmgpu_0014_request_isolation(int argc, char **argv);
 int test_kmgpu_available(int argc, char **argv);
+int test_kmgpu_0082_numeric_auto_fallback(int argc, char **argv);
+int test_kmgpu_0083_numeric_force_rejection(int argc, char **argv);
+int test_kmgpu_0084_gpu_latest_frontier(int argc, char **argv);
+int test_kmgpu_0085_gpu_cancel_publication(int argc, char **argv);
+
+int test_kmgpu_0047_plain_ties(int argc, char **argv);
+int test_kmgpu_0048_hamerly_ties(int argc, char **argv);
+int test_kmgpu_0049_elkan_ties(int argc, char **argv);
+int test_kmgpu_0050_yinyang_ties(int argc, char **argv);
+int test_kmgpu_0051_gpu_ties(int argc, char **argv);
+int test_kmgpu_0052_tiny_coordinate(int argc, char **argv);
+int test_kmgpu_0053_tiny_weight(int argc, char **argv);
+int test_kmgpu_0054_narrow_range(int argc, char **argv);
+int test_kmgpu_0055_zero_weights(int argc, char **argv);
+int test_kmgpu_0056_weight_condition(int argc, char **argv);
+int test_kmgpu_0057_zero_residual(int argc, char **argv);
+int test_kmgpu_0058_zero_weight_members(int argc, char **argv);
+int test_kmgpu_0059_many_empty(int argc, char **argv);
+int test_kmgpu_0060_init_auto_recovery(int argc, char **argv);
+int test_kmgpu_0061_init_force_recovery(int argc, char **argv);
+int test_kmgpu_0062_buffer_auto_recovery(int argc, char **argv);
+int test_kmgpu_0063_buffer_force_recovery(int argc, char **argv);
+int test_kmgpu_0064_command_auto_recovery(int argc, char **argv);
+int test_kmgpu_0065_command_force_recovery(int argc, char **argv);
+int test_kmgpu_0066_mixed_restarts(int argc, char **argv);
+int test_kmgpu_0067_workload_boundary(int argc, char **argv);
+int test_kmgpu_0068_snake_sse(int argc, char **argv);
+int test_kmgpu_0069_gradient_sse(int argc, char **argv);
+int test_kmgpu_0070_rare_sse(int argc, char **argv);
+
 int test_palette_0001_kmeans_init(int argc, char **argv);
 int test_palette_0002_kmedoids_constraints(int argc, char **argv);
 int test_palette_0003_kcenter_constraints(int argc, char **argv);
@@ -9257,6 +9287,62 @@ static test_entry_t const test_entries[] = {
       test_kmgpu_0006_option_atomicity },
     { "gpu-kmeans/0014_request_isolation",
       test_kmgpu_0014_request_isolation },
+    { "gpu-kmeans/0047_plain_ties",
+      test_kmgpu_0047_plain_ties },
+    { "gpu-kmeans/0048_hamerly_ties",
+      test_kmgpu_0048_hamerly_ties },
+    { "gpu-kmeans/0049_elkan_ties",
+      test_kmgpu_0049_elkan_ties },
+    { "gpu-kmeans/0050_yinyang_ties",
+      test_kmgpu_0050_yinyang_ties },
+    { "gpu-kmeans/0051_gpu_ties",
+      test_kmgpu_0051_gpu_ties },
+    { "gpu-kmeans/0052_tiny_coordinate",
+      test_kmgpu_0052_tiny_coordinate },
+    { "gpu-kmeans/0053_tiny_weight",
+      test_kmgpu_0053_tiny_weight },
+    { "gpu-kmeans/0054_narrow_range",
+      test_kmgpu_0054_narrow_range },
+    { "gpu-kmeans/0055_zero_weights",
+      test_kmgpu_0055_zero_weights },
+    { "gpu-kmeans/0056_weight_condition",
+      test_kmgpu_0056_weight_condition },
+    { "gpu-kmeans/0057_zero_residual",
+      test_kmgpu_0057_zero_residual },
+    { "gpu-kmeans/0058_zero_weight_members",
+      test_kmgpu_0058_zero_weight_members },
+    { "gpu-kmeans/0059_many_empty",
+      test_kmgpu_0059_many_empty },
+    { "gpu-kmeans/0060_init_auto_recovery",
+      test_kmgpu_0060_init_auto_recovery },
+    { "gpu-kmeans/0061_init_force_recovery",
+      test_kmgpu_0061_init_force_recovery },
+    { "gpu-kmeans/0062_buffer_auto_recovery",
+      test_kmgpu_0062_buffer_auto_recovery },
+    { "gpu-kmeans/0063_buffer_force_recovery",
+      test_kmgpu_0063_buffer_force_recovery },
+    { "gpu-kmeans/0064_command_auto_recovery",
+      test_kmgpu_0064_command_auto_recovery },
+    { "gpu-kmeans/0065_command_force_recovery",
+      test_kmgpu_0065_command_force_recovery },
+    { "gpu-kmeans/0066_mixed_restarts",
+      test_kmgpu_0066_mixed_restarts },
+    { "gpu-kmeans/0067_workload_boundary",
+      test_kmgpu_0067_workload_boundary },
+    { "gpu-kmeans/0068_snake_sse",
+      test_kmgpu_0068_snake_sse },
+    { "gpu-kmeans/0069_gradient_sse",
+      test_kmgpu_0069_gradient_sse },
+    { "gpu-kmeans/0070_rare_sse",
+      test_kmgpu_0070_rare_sse },
+    { "gpu-kmeans/0082_numeric_auto_fallback",
+      test_kmgpu_0082_numeric_auto_fallback },
+    { "gpu-kmeans/0083_numeric_force_rejection",
+      test_kmgpu_0083_numeric_force_rejection },
+    { "gpu-kmeans/0084_gpu_latest_frontier",
+      test_kmgpu_0084_gpu_latest_frontier },
+    { "gpu-kmeans/0085_gpu_cancel_publication",
+      test_kmgpu_0085_gpu_cancel_publication },
     { "gpu-kmeans/available",
       test_kmgpu_available },
     { "palette/0001_kmeans_init", test_palette_0001_kmeans_init },

@@ -648,6 +648,7 @@ struct sixel_palette_build_request {
     int force_palette;
     size_t gpu_palette_threshold;
     int gpu_policy;
+    int gpu_apply_policy;
     int heckbert_cut;
     int heckbert_cut_override;
     int heckbert_order;
@@ -1283,6 +1284,37 @@ sixel_encoder_update_diagnostic_dither(sixel_encoder_t *encoder,
         encoder->diagnostic_dither = dither;
         sixel_dither_ref(dither);
     }
+}
+
+/* Construction policy must not remove a native CPU application route.
+ * Resolve the encoder's persistent option, not another worker's TLS scope. */
+static int
+sixel_encoder_gpu_kmeans(sixel_encoder_t const *encoder)
+{
+    int backend;
+
+    if (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS) {
+        return 0;
+    }
+    backend = SIXEL_PALETTE_KMEANS_BACKEND_CPU;
+    if (encoder->quantize_model_kmeans_backend_override) {
+        backend = encoder->quantize_model_kmeans_backend;
+    } else {
+        (void)sixel_option_resolve_registered_int_binding(
+            SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL, "kmeans",
+            SIXEL_SUBOPTION_BINDING_ID_2(quantize_model_kmeans_backend,
+                quantize_model_kmeans_backend_override), &backend);
+    }
+    return backend != SIXEL_PALETTE_KMEANS_BACKEND_CPU;
+}
+
+static int
+sixel_encoder_gpu_apply_policy(sixel_encoder_t const *encoder, int native)
+{
+    /* Native output owns CPU float lookup. FORCE still applies to the
+     * requested construction, while byte application keeps its own rules. */
+    return native && sixel_encoder_gpu_kmeans(encoder)
+        ? SIXEL_GPU_POLICY_OFF : encoder->gpu_policy;
 }
 
 SIXEL_INTERNAL_API int
@@ -5132,7 +5164,9 @@ load_image_callback_for_palette(
 
     sixel_encoder_copy_lookup_options(callback_context->encoder,
                                       callback_context->dither);
-    callback_context->dither->gpu_policy = callback_context->gpu_policy;
+    callback_context->dither->gpu_policy = sixel_encoder_gpu_apply_policy(
+        callback_context->encoder,
+        callback_context->dither->use_rgb101_palette);
     callback_context->dither->gpu_palette_threshold =
         callback_context->gpu_palette_threshold;
 
@@ -6075,7 +6109,8 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
         context->encoder->bluenoise_size_override;
     context->dither->bluenoise_size = context->encoder->bluenoise_size;
     sixel_encoder_copy_lookup_options(context->encoder, context->dither);
-    context->dither->gpu_policy = context->encoder->gpu_policy;
+    context->dither->gpu_policy = sixel_encoder_gpu_apply_policy(
+        context->encoder, context->dither->use_rgb101_palette);
     context->dither->gpu_palette_threshold =
         context->encoder->gpu_palette_threshold;
     sixel_dither_set_diffusion_scan(context->dither,
@@ -8162,7 +8197,8 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
             return "native palette does not support this snap combination.";
         }
     }
-    if (encoder->gpu_policy != SIXEL_GPU_POLICY_OFF) {
+    if (encoder->gpu_policy != SIXEL_GPU_POLICY_OFF &&
+            !sixel_encoder_gpu_kmeans(encoder)) {
         return "display-p3 does not support GPU encoding.";
     }
     if (palette_type != SIXEL_PALETTETYPE_RGB &&
@@ -8631,6 +8667,8 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     request->force_palette = encoder->force_palette;
     request->gpu_palette_threshold = encoder->gpu_palette_threshold;
     request->gpu_policy = encoder->gpu_policy;
+    request->gpu_apply_policy = sixel_encoder_gpu_apply_policy(encoder,
+        request->native_palette);
     request->heckbert_cut = encoder->heckbert_cut;
     request->heckbert_cut_override = encoder->heckbert_cut_override;
     request->heckbert_order = encoder->heckbert_order;
@@ -9841,7 +9879,7 @@ end:
         sixel_encoder_release_dither_output(dither);
     } else {
         sixel_palette_request_lookup_options(request, *dither);
-        (*dither)->gpu_policy = request->gpu_policy;
+        (*dither)->gpu_policy = request->gpu_apply_policy;
         (*dither)->gpu_palette_threshold = request->gpu_palette_threshold;
         (*dither)->force_palette = request->force_palette;
     }
@@ -10129,7 +10167,8 @@ end:
     }
     if (SIXEL_SUCCEEDED(status) && dither != NULL && *dither != NULL) {
         sixel_encoder_copy_lookup_options(encoder, *dither);
-        (*dither)->gpu_policy = encoder->gpu_policy;
+        (*dither)->gpu_policy = sixel_encoder_gpu_apply_policy(encoder,
+            (*dither)->use_rgb101_palette);
         (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
         /* pass down the user's demand for an exact palette size */
         (*dither)->force_palette = encoder->force_palette;
@@ -11514,13 +11553,16 @@ sixel_encoder_frame_job_prepare(
         goto end;
     }
 
-    /* Latest owns ordinary CPU palettes and independently scheduled GPU
-     * palettes. Other GPU controllers retain their per-frame contract. */
+    /* Construction on Metal does not change native CPU application or
+     * latest-snapshot admission. Byte GPU controllers retain their existing
+     * scheduling contract; selection still observes completed snapshots. */
     job->context.latest = pipeline != NULL &&
         pipeline->palette_store != NULL && sampling_required &&
         (pipeline->playback != NULL || job->context.multiframe) &&
         !encoder->fstatic &&
-        (encoder->gpu_policy == SIXEL_GPU_POLICY_OFF ||
+        (sixel_encoder_gpu_apply_policy(encoder,
+             sixel_encoder_rgb101_frame(encoder, job->context.frame)) ==
+                SIXEL_GPU_POLICY_OFF ||
          (pipeline->independent && pipeline->playback != NULL &&
           pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST &&
           !encoder->prefer_float32 &&
@@ -17518,6 +17560,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
          pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_AUTO) &&
             !encoder->fstatic &&
             (encoder->gpu_policy == SIXEL_GPU_POLICY_OFF ||
+             sixel_encoder_gpu_kmeans(encoder) ||
              (playback &&
               pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST
               && !encoder->prefer_float32 &&

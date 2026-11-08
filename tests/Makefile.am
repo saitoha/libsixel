@@ -240,6 +240,35 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_GPU_KMEANS_CONTRACT \
+    -DBUILD_TEST_0047_PLAIN_TIES \
+    -DBUILD_TEST_0048_HAMERLY_TIES \
+    -DBUILD_TEST_0049_ELKAN_TIES \
+    -DBUILD_TEST_0050_YINYANG_TIES \
+    -DBUILD_TEST_0051_GPU_TIES \
+    -DBUILD_TEST_0052_TINY_COORDINATE \
+    -DBUILD_TEST_0053_TINY_WEIGHT \
+    -DBUILD_TEST_0054_NARROW_RANGE \
+    -DBUILD_TEST_0055_ZERO_WEIGHTS \
+    -DBUILD_TEST_0056_WEIGHT_CONDITION \
+    -DBUILD_TEST_0057_ZERO_RESIDUAL \
+    -DBUILD_TEST_0058_ZERO_WEIGHT_MEMBERS \
+    -DBUILD_TEST_0059_MANY_EMPTY \
+    -DBUILD_TEST_0060_INIT_AUTO_RECOVERY \
+    -DBUILD_TEST_0061_INIT_FORCE_RECOVERY \
+    -DBUILD_TEST_0062_BUFFER_AUTO_RECOVERY \
+    -DBUILD_TEST_0063_BUFFER_FORCE_RECOVERY \
+    -DBUILD_TEST_0064_COMMAND_AUTO_RECOVERY \
+    -DBUILD_TEST_0065_COMMAND_FORCE_RECOVERY \
+    -DBUILD_TEST_0066_MIXED_RESTARTS \
+    -DBUILD_TEST_0067_WORKLOAD_BOUNDARY \
+    -DBUILD_TEST_0068_SNAKE_SSE \
+    -DBUILD_TEST_0069_GRADIENT_SSE \
+    -DBUILD_TEST_0070_RARE_SSE \
+    -DBUILD_TEST_0082_NUMERIC_AUTO_FALLBACK \
+    -DBUILD_TEST_0083_NUMERIC_FORCE_REJECTION \
+    -DBUILD_TEST_0084_GPU_LATEST_FRONTIER \
+    -DBUILD_TEST_0085_GPU_CANCEL_PUBLICATION \
     -DBUILD_TEST_0172_FHEDT_FRACTIONAL_REUSE \
     -DBUILD_TEST_0064_6BIT_FRACTIONAL_REUSE \
     -DBUILD_TEST_0064_5BIT_FRACTIONAL_REUSE \
@@ -9011,6 +9040,36 @@ test_runner_SOURCES = test_runner.c \
     palette/kmeans/0006_option_atomicity.c \
     palette/kmeans/0014_request_isolation.c \
     _support/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c \
+    palette/kmeans/0047_plain_ties.c \
+    palette/kmeans/0048_hamerly_ties.c \
+    palette/kmeans/0049_elkan_ties.c \
+    palette/kmeans/0050_yinyang_ties.c \
+    palette/kmeans/0051_gpu_ties.c \
+    palette/kmeans/0052_tiny_coordinate.c \
+    palette/kmeans/0053_tiny_weight.c \
+    palette/kmeans/0054_narrow_range.c \
+    palette/kmeans/0055_zero_weights.c \
+    palette/kmeans/0056_weight_condition.c \
+    palette/kmeans/0057_zero_residual.c \
+    palette/kmeans/0058_zero_weight_members.c \
+    palette/kmeans/0059_many_empty.c \
+    palette/kmeans/0060_init_auto_recovery.c \
+    palette/kmeans/0061_init_force_recovery.c \
+    palette/kmeans/0062_buffer_auto_recovery.c \
+    palette/kmeans/0063_buffer_force_recovery.c \
+    palette/kmeans/0064_command_auto_recovery.c \
+    palette/kmeans/0065_command_force_recovery.c \
+    palette/kmeans/0066_mixed_restarts.c \
+    palette/kmeans/0067_workload_boundary.c \
+    palette/kmeans/0068_snake_sse.c \
+    palette/kmeans/0069_gradient_sse.c \
+    palette/kmeans/0070_rare_sse.c \
+    palette/kmeans/0082_numeric_auto_fallback.c \
+    palette/kmeans/0083_numeric_force_rejection.c \
+    palette/kmeans/0084_gpu_latest_frontier.c \
+    palette/kmeans/0085_gpu_cancel_publication.c \
+    _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c \
+    _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.h \
     _support/quant/palette/0001_kmeans_init.c \
     _support/quant/palette/0002_kmedoids_constraints.c \
     _support/quant/palette/0003_kcenter_constraints.c \

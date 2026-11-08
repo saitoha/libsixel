@@ -332,7 +332,8 @@ _quantizemodel() {
                      "${prefix}${key}=pca"
           return 0
         elif [[ ${key} == backend ]]; then
-          compadd -- "${prefix}${key}=cpu" "${prefix}${key}=gpu"
+          compadd -- "${prefix}${key}=cpu" "${prefix}${key}=gpu" \
+                     "${prefix}${key}=auto"
           return 0
         elif [[ ${key} == mapping ]]; then
           compadd -- "${prefix}${key}=uniform" \
@@ -435,7 +436,7 @@ _quantizemodel() {
                    "${prefix}Foff" "${prefix}Fon" \
                    "${prefix}feedback=" \
                    "${prefix}prune=" "${prefix}backend=" \
-                   "${prefix}Gcpu" "${prefix}Ggpu" \
+                   "${prefix}Gcpu" "${prefix}Ggpu" "${prefix}Gauto" \
                    "${prefix}S1" "${prefix}S42" \
                    "${prefix}seed=" \
                    "${prefix}restarts=" \

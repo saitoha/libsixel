@@ -21,7 +21,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto:palette_threshold=4294967295 -Qkmeans:backend=gpu:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 case "$trace" in
-    *LSXKMEANS1\|requested=gpu\|effective=metal\|*) backend_ok=1 ;;
+    *LSXKMEANS1\|requested=gpu\|effective=metal\|*reason=eligible\|*prune=none\|gpu_used=1\|*cpu_workspace=0\|*) backend_ok=1 ;;
     *) : ;;
 esac
 test "$conversion_status:$backend_ok" = 0:1 ||

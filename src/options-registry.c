@@ -1567,7 +1567,8 @@ static sixel_suboption_choice_t const g_lookup_packing_choices[] = {
 
 static sixel_suboption_choice_t const g_kmeans_backend_choices[] = {
     { "cpu", SIXEL_PALETTE_KMEANS_BACKEND_CPU },
-    { "gpu", SIXEL_PALETTE_KMEANS_BACKEND_GPU }
+    { "gpu", SIXEL_PALETTE_KMEANS_BACKEND_GPU },
+    { "auto", SIXEL_PALETTE_KMEANS_BACKEND_AUTO }
 };
 
 static sixel_suboption_choice_t const g_kmeans_init_type_choices[] = {

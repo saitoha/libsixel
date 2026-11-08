@@ -1412,8 +1412,8 @@ sixel_palette_generate_internal(
          * CPU quantizer here would hide the selected GPU stage's failure. */
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat) ||
                 (context.gpu_policy == SIXEL_GPU_POLICY_FORCE &&
-                 sixel_get_kmeans_backend() ==
-                    SIXEL_PALETTE_KMEANS_BACKEND_GPU)) {
+                 sixel_get_kmeans_backend() !=
+                    SIXEL_PALETTE_KMEANS_BACKEND_CPU)) {
             goto end;
         }
     } else if (context.quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
