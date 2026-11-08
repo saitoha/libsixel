@@ -156,6 +156,8 @@ Parallel dispatch requires a threaded build, more than one available slot and at
 
 `sixel_playback_options_t.palette_source` optionally supplies a separate immutable true-color frame for sampling. Its dimensions are independent of the submitted composite, and its pixel format and colorspace must match that composite. Crop and resize settings do not transform this source. Adaptive sampling keeps its normal bounded sample target; explicit full-frame and automatic full-frame retries sample the entire separate source. Submission retains the source wrapper until completion, including cancellation; borrowed pixel storage must also remain valid through the completion callback. Full-frame work that requires private storage clones only this source. A null source uses the submitted image. Options initialized with the previous structure size preserve that behavior without accessing a trailing field.
 
+The [playback guide](../../playback.md#choose-how-palettes-are-made) explains how separate palette sources and reserved colors fit into an application's frame queue.
+
 ## Binning policy
 
 Binning consumes points after their palette-colorspace coordinates are known. It

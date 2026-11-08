@@ -712,7 +712,8 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	tools/reproduce_encoding_mode_figures.sh \
 	docs/encoder/output/or-mode/README.md \
 	docs/encoder/output/terminal-macros.md \
-	docs/encoder/animation.md docs/encoder/output/drcs.md \
+	docs/encoder/animation.md docs/encoder/playback.md \
+	docs/encoder/output/drcs.md \
 	docs/encoder/palette-construction/fixed-palettes.md \
 	docs/cli/clipboard.md docs/cli/diagnostics.md \
 	docs/cli/runtime-policy.md docs/cli/threading-policy.md \
