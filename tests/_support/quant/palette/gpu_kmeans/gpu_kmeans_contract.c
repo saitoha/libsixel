@@ -45,8 +45,8 @@ km_contract_sse(float const *points, unsigned int count,
 static SIXELSTATUS
 km_contract_build(float const *points, unsigned int count, unsigned int k,
                   int backend, int policy, int byte, unsigned int restarts,
-                  unsigned int seed, unsigned int limit, float *centers,
-                  unsigned int *ncolors)
+                  unsigned int seed, unsigned int limit, unsigned int minimum,
+                  float *centers, unsigned int *ncolors)
 {
     sixel_palette_t *palette;
     sixel_allocator_t *allocator;
@@ -71,7 +71,7 @@ km_contract_build(float const *points, unsigned int count, unsigned int k,
     sixel_set_kmeans_backend_override(1, backend);
     sixel_set_kmeans_seed_override(1, seed);
     sixel_set_kmeans_iter_override(1, limit);
-    sixel_set_kmeans_miniter_override(1, limit);
+    sixel_set_kmeans_miniter_override(1, minimum);
     sixel_set_kmeans_polish_iter_override(1, 0);
     sixel_set_kmeans_restarts_override(1, restarts);
     sixel_set_kmeans_init_type_override(1, SIXEL_PALETTE_KMEANS_INIT_NONE);
@@ -306,20 +306,20 @@ kmgpu_contract_fault(int stage, int force, int mixed)
     restarts = mixed ? 3 : 1;
     status = km_contract_build(points, 64, 8,
         SIXEL_PALETTE_KMEANS_BACKEND_CPU, SIXEL_GPU_POLICY_OFF,
-        1, restarts, 7, 4, cpu, &cpu_count);
+        1, restarts, 7, 4, 4, cpu, &cpu_count);
     if (status != SIXEL_OK) return 1;
     sixel_kmeans_gpu_test_fail(stage, mixed ? 2 : 1);
     count = 99;
     status = km_contract_build(points, 64, 8,
         SIXEL_PALETTE_KMEANS_BACKEND_GPU,
         force ? SIXEL_GPU_POLICY_FORCE : SIXEL_GPU_POLICY_AUTO,
-        1, restarts, 7, 4, result, &count);
+        1, restarts, 7, 4, 4, result, &count);
     ok = force ? status != SIXEL_OK && count == 99 :
         status == SIXEL_OK && count == cpu_count &&
         memcmp(cpu, result, count * 3 * sizeof(float)) == 0;
     status = km_contract_build(points, 64, 8,
         SIXEL_PALETTE_KMEANS_BACKEND_GPU, SIXEL_GPU_POLICY_FORCE,
-        1, restarts, 7, 4, recovered, &recovered_count);
+        1, restarts, 7, 4, 4, recovered, &recovered_count);
     sixel_kmeans_gpu_test_fail(0, 0);
     return !ok || status != SIXEL_OK || recovered_count != cpu_count ||
         memcmp(cpu, recovered, cpu_count * 3 * sizeof(float)) != 0;
@@ -328,12 +328,66 @@ kmgpu_contract_fault(int stage, int force, int mixed)
 int
 kmgpu_contract_workload(void)
 {
-    return sixel_kmeans_gpu_worthwhile(4095, 1024, 100) ||
+    return sixel_kmeans_gpu_worthwhile(12287, 1024, 100) ||
         sixel_kmeans_gpu_worthwhile(1048576, 63, 100) ||
-        sixel_kmeans_gpu_worthwhile(1048576, 1024, 3) ||
-        sixel_kmeans_gpu_worthwhile(4096, 64, 63) ||
-        !sixel_kmeans_gpu_worthwhile(4096, 64, 64) ||
-        !sixel_kmeans_gpu_worthwhile(65536, 64, 4);
+        sixel_kmeans_gpu_worthwhile(1048576, 1024, 11) ||
+        sixel_kmeans_gpu_worthwhile(65535, 64, 16) ||
+        !sixel_kmeans_gpu_worthwhile(65536, 64, 16) ||
+        !sixel_kmeans_gpu_worthwhile(12288, 256, 24) ||
+        !sixel_kmeans_gpu_worthwhile(270000, 64, 12) ||
+        !sixel_kmeans_gpu_worthwhile(270000, 256, 24) ||
+        sixel_kmeans_gpu_worthwhile(12288, 64, 12) ||
+        sixel_kmeans_gpu_worthwhile(4096, 256, 24) ||
+        sixel_kmeans_gpu_worthwhile(270000, 16, 4);
+}
+
+/* Exercise the production AUTO route, including resolved iteration bounds.
+ * Each test runs in a fresh process. The shell checks the execution trace,
+ * so a successful CPU fallback cannot masquerade as a warm GPU dispatch. */
+int
+kmgpu_contract_auto(int mode)
+{
+    float *points;
+    float centers[768];
+    double warm_points[6] = {0, 0, 0, 1, 1, 1};
+    double warm_center[3] = {0, 0, 0};
+    sixel_kmeans_gpu_request_t request;
+    unsigned int i, count, iterations;
+    SIXELSTATUS status;
+    int available;
+
+    if (sixel_kmeans_gpu_is_initialized()) return 1;
+    available = sixel_kmeans_gpu_is_available();
+    /* Merely probing the device must not create pipelines. */
+    if (sixel_kmeans_gpu_is_initialized()) return 1;
+    if (mode == 1 && !available) return 77;
+    if (mode != 0 && available) {
+        memset(&request, 0, sizeof(request));
+        request.points = warm_points;
+        request.centers = warm_center;
+        request.point_count = 2;
+        request.center_count = 1;
+        request.min_iterations = request.max_iterations = 1;
+        status = sixel_kmeans_gpu_refine(&request, &iterations);
+        if (status != SIXEL_OK || !sixel_kmeans_gpu_is_initialized())
+            return 1;
+    }
+    points = malloc(12288u * 3u * sizeof(float));
+    if (points == NULL) return 1;
+    /* Binary fractions keep numeric-domain rejection out of this test.
+     * The full, unbinned sample count passes the M/K/product floors. */
+    for (i = 0; i < 12288u; ++i) {
+        points[i * 3] = (float)(i % 32u) / 32;
+        points[i * 3 + 1] = (float)((i / 32u) % 32u) / 32;
+        points[i * 3 + 2] = (float)(i / 1024u) / 16;
+    }
+    status = km_contract_build(points, 12288, 256,
+        SIXEL_PALETTE_KMEANS_BACKEND_AUTO, SIXEL_GPU_POLICY_FORCE,
+        0, 1, 42, 24, mode == 2 ? 1 : 24, centers, &count);
+    free(points);
+    /* AUTO must leave cold state untouched even under FORCE. */
+    return status != SIXEL_OK ||
+        (mode == 0 && sixel_kmeans_gpu_is_initialized());
 }
 
 /* A repository image supplies exactly the same full-frame, no-binning point
@@ -372,13 +426,13 @@ km_contract_image_frame(sixel_frame_t *frame, void *context)
         start = sixel_timer_now();
         status = km_contract_build(points, count, k,
             SIXEL_PALETTE_KMEANS_BACKEND_CPU, SIXEL_GPU_POLICY_OFF,
-            0, 1, seed, limit, cpu, &ncpu);
+            0, 1, seed, limit, limit, cpu, &ncpu);
         cpu_ms = (sixel_timer_now() - start) * 1000;
         if (status != SIXEL_OK) break;
         start = sixel_timer_now();
         status = km_contract_build(points, count, k,
             SIXEL_PALETTE_KMEANS_BACKEND_GPU, SIXEL_GPU_POLICY_FORCE,
-            0, 1, seed, limit, gpu, &ngpu);
+            0, 1, seed, limit, limit, gpu, &ngpu);
         gpu_ms = (sixel_timer_now() - start) * 1000;
         if (status != SIXEL_OK) break;
         cpu_sse = km_contract_sse(points, count, cpu, ncpu);
@@ -386,16 +440,18 @@ km_contract_image_frame(sixel_frame_t *frame, void *context)
         start = sixel_timer_now();
         status = km_contract_build(points, count, k,
             SIXEL_PALETTE_KMEANS_BACKEND_GPU, SIXEL_GPU_POLICY_FORCE,
-            0, 1, seed, limit, repeat, &nrepeat);
+            0, 1, seed, limit, limit, repeat, &nrepeat);
         warm_ms = (sixel_timer_now() - start) * 1000;
         fprintf(stderr, "KMCAL|M=%u|K=%u|I=%u|seed=%u|cpu_sse=%.17g|"
             "gpu_sse=%.17g|relative=%.9g|cpu_ms=%.3f|gpu_ms=%.3f|"
             "warm_ms=%.3f|\n", count, k, limit, seed, cpu_sse, gpu_sse,
             cpu_sse > 0 ? gpu_sse / cpu_sse - 1 : gpu_sse,
             cpu_ms, gpu_ms, warm_ms);
-        /* Provisional validation budget: calibration on actual Metal is
-         * required before selecting AUTO as the default backend. */
-        if (!isfinite(gpu_sse) || gpu_sse > cpu_sse * 1.01 ||
+        /* M3 Max calibration: max absolute relative SSE was 0.180185%.
+         * The 0.25% gate adds 0.069815 percentage points of margin and
+         * still requires exact zero when the CPU score is zero. This is
+         * a fixture validation budget, not an all-input error bound. */
+        if (!isfinite(gpu_sse) || gpu_sse > cpu_sse * 1.0025 ||
                 status != SIXEL_OK || nrepeat != ngpu ||
                 memcmp(gpu, repeat, ngpu * 3 * sizeof(float)) != 0) {
             status = SIXEL_LOGIC_ERROR;
@@ -444,13 +500,13 @@ kmgpu_contract_numeric_fallback(int force)
 
     status = km_contract_build(points, 4, 2,
         SIXEL_PALETTE_KMEANS_BACKEND_CPU, SIXEL_GPU_POLICY_OFF,
-        0, 1, 1, 4, cpu, &ncpu);
+        0, 1, 1, 4, 4, cpu, &ncpu);
     if (status != SIXEL_OK) return 1;
     nresult = 99;
     status = km_contract_build(points, 4, 2,
         SIXEL_PALETTE_KMEANS_BACKEND_GPU,
         force ? SIXEL_GPU_POLICY_FORCE : SIXEL_GPU_POLICY_AUTO,
-        0, 1, 1, 4, result, &nresult);
+        0, 1, 1, 4, 4, result, &nresult);
     if (force) return status == SIXEL_OK || nresult != 99;
     return status != SIXEL_OK || nresult != ncpu ||
         memcmp(cpu, result, ncpu * 3 * sizeof(float)) != 0;

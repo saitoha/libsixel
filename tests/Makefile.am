@@ -269,6 +269,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0083_NUMERIC_FORCE_REJECTION \
     -DBUILD_TEST_0086_REPAIR_TILE_TIES \
     -DBUILD_TEST_0087_WIDE_TILE_REDUCTION \
+    -DBUILD_TEST_0088_AUTO_COLD \
+    -DBUILD_TEST_0089_AUTO_WARM \
+    -DBUILD_TEST_0090_AUTO_MINIMUM \
     -DBUILD_TEST_0084_GPU_LATEST_FRONTIER \
     -DBUILD_TEST_0085_GPU_CANCEL_PUBLICATION \
     -DBUILD_TEST_0172_FHEDT_FRACTIONAL_REUSE \
@@ -9072,6 +9075,9 @@ test_runner_SOURCES = test_runner.c \
     palette/kmeans/0085_gpu_cancel_publication.c \
     palette/kmeans/0086_repair_tile_ties.c \
     palette/kmeans/0087_wide_tile_reduction.c \
+    palette/kmeans/0088_auto_cold.c \
+    palette/kmeans/0089_auto_warm.c \
+    palette/kmeans/0090_auto_minimum.c \
     _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c \
     _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.h \
     _support/quant/palette/0001_kmeans_init.c \

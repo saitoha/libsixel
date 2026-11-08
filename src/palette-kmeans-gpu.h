@@ -32,11 +32,18 @@ typedef struct sixel_kmeans_gpu_request {
 SIXEL_INTERNAL_API int
 sixel_kmeans_gpu_is_available(void);
 
+/* Observe already published pipelines without starting or waiting for cold
+ * initialization. AUTO must not charge compilation to the current request. */
+SIXEL_INTERNAL_API int
+sixel_kmeans_gpu_is_initialized(void);
+
 /* Validate the FP32 arithmetic domain without probing a device. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmeans_gpu_check(sixel_kmeans_gpu_request_t const *request);
 
-/* Construction work is independent of the palette-application threshold. */
+/* Construction work is independent of the palette-application threshold.
+ * iterations is the guaranteed minimum, not the convergence-dependent cap.
+ * AUTO also requires sixel_kmeans_gpu_is_initialized() to admit execution. */
 SIXEL_INTERNAL_API int
 sixel_kmeans_gpu_worthwhile(unsigned int points, unsigned int centers,
                              unsigned int iterations);

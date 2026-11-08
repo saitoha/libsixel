@@ -16,6 +16,7 @@
 
 #if defined(HAVE_METAL)
 int sixel_kmeans_metal_is_available(void);
+int sixel_kmeans_metal_is_initialized(void);
 SIXELSTATUS sixel_kmeans_metal_refine(
     sixel_kmeans_gpu_request_t const *request, unsigned int *iterations);
 #endif
@@ -25,6 +26,16 @@ sixel_kmeans_gpu_is_available(void)
 {
 #if defined(HAVE_METAL)
     return sixel_kmeans_metal_is_available();
+#else
+    return 0;
+#endif
+}
+
+int
+sixel_kmeans_gpu_is_initialized(void)
+{
+#if defined(HAVE_METAL)
+    return sixel_kmeans_metal_is_initialized();
 #else
     return 0;
 #endif
@@ -124,11 +135,12 @@ int
 sixel_kmeans_gpu_worthwhile(unsigned int points, unsigned int centers,
                              unsigned int iterations)
 {
-    /* Conservative opt-in admission floor. Calibration must compare the
-     * default Hamerly solver with cold and warm Metal on the same M/K/I;
-     * satisfying this floor is not a claim of a measured speedup. */
-    return points >= 4096u && centers >= 64u && iterations >= 4u &&
-        (double)points * centers * iterations >= 16777216.0;
+    /* M3 Max calibration excludes small or marginal wins and uses the
+     * guaranteed iteration count, including primary polish. Cold pipeline
+     * initialization is gated separately. This opt-in floor is empirical,
+     * not a universal speed guarantee; see the GPU k-means reference. */
+    return points >= 12288u && centers >= 64u && iterations >= 12u &&
+        (double)points * centers * iterations >= 67108864.0;
 }
 
 #if defined(HAVE_TESTS)

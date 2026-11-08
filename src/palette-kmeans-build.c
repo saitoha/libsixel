@@ -2099,8 +2099,15 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             gpu_requested = 0;
         } else if (backend == SIXEL_PALETTE_KMEANS_BACKEND_AUTO &&
                 !sixel_kmeans_gpu_worthwhile(work_sample_count, k,
-                    max_iterations)) {
+                    min_iterations)) {
             selection_reason = "workload-small";
+            gpu_requested = 0;
+        } else if (backend == SIXEL_PALETTE_KMEANS_BACKEND_AUTO &&
+                !sixel_kmeans_gpu_is_initialized()) {
+            /* A high cap does not guarantee enough iterations to amortize
+             * GPU work, and a cold process must not pay pipeline creation.
+             * Explicit backend=gpu remains the opt-in cold entry point. */
+            selection_reason = "pipeline-cold";
             gpu_requested = 0;
         }
     }

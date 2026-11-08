@@ -310,6 +310,22 @@ sixel_km_metal_prepare(void)
 }
 
 int
+sixel_kmeans_metal_is_initialized(void)
+{
+    int initialized;
+
+    /* The compiler publishes all four pipelines under this lock and never
+     * replaces them after success. A concurrent preparation is still cold
+     * for AUTO: do not wait for it or speculatively compile for later work. */
+    if (pthread_mutex_trylock(&sixel_km_metal_lock) != 0) {
+        return 0;
+    }
+    initialized = sixel_km_metal_initialized;
+    pthread_mutex_unlock(&sixel_km_metal_lock);
+    return initialized;
+}
+
+int
 sixel_kmeans_metal_is_available(void)
 {
     id<MTLDevice> device;
