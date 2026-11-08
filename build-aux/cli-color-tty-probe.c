@@ -19,7 +19,7 @@
 #include <time.h>
 #include <unistd.h>
 #if defined(__CYGWIN__) || defined(__MSYS__)
-# include "../converters/terminal-color-winpipe.h"
+# include "../converters/terminal-color-winpipe.inc.h"
 #endif
 #ifdef IMG2SIXEL_COLOR_PTY_PROBE
 # include <sys/ioctl.h>

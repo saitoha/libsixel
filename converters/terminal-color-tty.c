@@ -29,7 +29,7 @@
 # include <time.h>
 # include <unistd.h>
 # if defined(__CYGWIN__) || defined(__MSYS__)
-#  include "terminal-color-winpipe.h"
+#  include "terminal-color-winpipe.inc.h"
 # endif
 # if defined(CLOCK_MONOTONIC) && defined(O_NOCTTY) && defined(O_NONBLOCK)
 #  define IMG2SIXEL_COLOR_TTY_POSIX 1

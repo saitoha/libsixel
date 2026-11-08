@@ -1178,6 +1178,10 @@ run_case_tap "staticcheck-msys-runtime-arguments" \
     sh "$src_root/tests/_static/sh/staticcheck-msys-runtime-arguments.sh" \
     "$src_root"
 
+run_case_tap "staticcheck-platform-header-guards" \
+    sh "$src_root/tests/_static/sh/staticcheck-platform-header-guards.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-amalgamation-metal-guards" \
     sh "$src_root/tests/_static/sh/staticcheck-amalgamation-metal-guards.sh" \
     "$src_root"

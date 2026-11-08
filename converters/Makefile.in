@@ -146,7 +146,7 @@ PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS) $(pkglibexec_PROGRAMS)
 am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/terminal-color.c $(srcdir)/terminal-color.h \
 	$(srcdir)/terminal-color-tty.c $(srcdir)/terminal-color-tty.h \
-	$(srcdir)/terminal-color-winpipe.h \
+	$(srcdir)/terminal-color-winpipe.inc.h \
 	$(srcdir)/terminal-color-job.c $(srcdir)/terminal-color-job.h \
 	$(srcdir)/completion_utils.c $(srcdir)/completion_utils.h \
 	$(srcdir)/compat.c $(srcdir)/compat.h $(srcdir)/path.c \
@@ -695,7 +695,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_17)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color-tty.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color-tty.h \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color-winpipe.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color-winpipe.inc.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color-job.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color-job.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \

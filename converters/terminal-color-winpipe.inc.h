@@ -2,6 +2,8 @@
 #ifndef IMG2SIXEL_TERMINAL_COLOR_WINPIPE_H
 #define IMG2SIXEL_TERMINAL_COLOR_WINPIPE_H
 
+/* Keep Windows imports guarded independently of the including source. */
+#if defined(__CYGWIN__) || defined(__MSYS__)
 #include <windows.h>
 #include <winternl.h>
 
@@ -44,4 +46,5 @@ img2sixel_color_winpipe_space(HANDLE output, size_t *available)
     return 1;
 }
 
+#endif /* __CYGWIN__ || __MSYS__ */
 #endif /* IMG2SIXEL_TERMINAL_COLOR_WINPIPE_H */

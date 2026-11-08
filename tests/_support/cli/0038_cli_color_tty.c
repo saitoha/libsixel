@@ -48,7 +48,7 @@
 #include <time.h>
 #include <unistd.h>
 #if defined(__CYGWIN__) || defined(__MSYS__)
-# include "converters/terminal-color-winpipe.h"
+# include "converters/terminal-color-winpipe.inc.h"
 #endif
 #if defined(__COSMOPOLITAN__)
 # include <cosmo.h>
