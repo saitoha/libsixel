@@ -28,6 +28,9 @@
 # include <termios.h>
 # include <time.h>
 # include <unistd.h>
+# if defined(__CYGWIN__) || defined(__MSYS__)
+#  include "terminal-color-winpipe.h"
+# endif
 # if defined(CLOCK_MONOTONIC) && defined(O_NOCTTY) && defined(O_NONBLOCK)
 #  define IMG2SIXEL_COLOR_TTY_POSIX 1
 # endif
@@ -51,6 +54,9 @@ struct img2sixel_color_tty {
     int abandoned;
     img2sixel_color_cancel_t cancel;
     void *cancel_context;
+#if defined(__CYGWIN__) || defined(__MSYS__)
+    HANDLE output_handle;
+#endif
 };
 
 static int
@@ -88,6 +94,11 @@ img2sixel_color_tty_current(img2sixel_color_tty_t *tty)
     struct stat current;
 
     return tty != NULL && tty->fd >= 0 &&
+#if defined(__CYGWIN__) || defined(__MSYS__)
+        (tty->output_handle == NULL || tty->output_handle ==
+            GetStdHandle(tty->output_fd == STDOUT_FILENO
+                ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE)) &&
+#endif
         fstat(tty->output_fd, &current) == 0 &&
         img2sixel_color_tty_same(&tty->identity, &current) &&
         (!tty->controlling_alias ||
@@ -122,6 +133,10 @@ img2sixel_color_tty_wait_masked(img2sixel_color_tty_t *tty, int writing,
     time_t seconds;
     long nanoseconds;
     int result;
+#if defined(__CYGWIN__) || defined(__MSYS__)
+    size_t available;
+    int pipe_full;
+#endif
 
     for (;;) {
         if (!img2sixel_color_tty_current(tty)) {
@@ -147,6 +162,27 @@ img2sixel_color_tty_wait_masked(img2sixel_color_tty_t *tty, int writing,
         timeout.tv_nsec = nanoseconds;
         FD_ZERO(&ready);
         FD_SET(tty->fd, &ready);
+#if defined(__CYGWIN__) || defined(__MSYS__)
+        pipe_full = 0;
+        if (writing && tty->output_handle != NULL) {
+            if (!img2sixel_color_winpipe_space(tty->output_handle,
+                                              &available)) {
+                return IMG2SIXEL_COLOR_IO_ERROR;
+            }
+            pipe_full = available == 0u;
+            if (pipe_full) {
+                /* Cygwin/MSYS report writable even with zero pipe quota.
+                 * Their write then waits despite O_NONBLOCK. Poll quota
+                 * with a short signal-aware sleep, under the same deadline.
+                 * No other writer owns this CLI protocol phase. */
+                FD_ZERO(&ready);
+                if (timeout.tv_sec > 0 || timeout.tv_nsec > 1000000L) {
+                    timeout.tv_sec = 0;
+                    timeout.tv_nsec = 1000000L;
+                }
+            }
+        }
+#endif
         result = pselect(tty->fd + 1, writing ? NULL : &ready,
                          writing ? &ready : NULL, NULL, &timeout, mask);
         if (result > 0) {
@@ -170,7 +206,7 @@ img2sixel_color_tty_wait_masked(img2sixel_color_tty_t *tty, int writing,
         if (result < 0 && errno != EINTR) {
             return IMG2SIXEL_COLOR_IO_ERROR;
         }
-        /* Recompute from the absolute deadline after every EINTR. */
+        /* Recompute after an interrupted wait or a quota polling interval. */
     }
 }
 
@@ -250,6 +286,10 @@ img2sixel_color_tty_open(img2sixel_color_tty_t **tty, int output_fd,
     char const *path;
     int fd;
     int controlling_alias;
+#if defined(__CYGWIN__) || defined(__MSYS__)
+    HANDLE output_handle;
+    size_t available;
+#endif
 
     if (tty == NULL) {
         return IMG2SIXEL_COLOR_IO_ERROR;
@@ -259,6 +299,24 @@ img2sixel_color_tty_open(img2sixel_color_tty_t **tty, int output_fd,
         clock_gettime(CLOCK_MONOTONIC, &now) != 0) {
         return IMG2SIXEL_COLOR_IO_UNAVAILABLE;
     }
+#if defined(__CYGWIN__) || defined(__MSYS__)
+    /* Standard handles expose the actual PTY output pipe. _get_osfhandle
+     * exposes its input handle instead, including on O_WRONLY descriptors.
+     * This private CLI transport uses stdout; also admit stderr explicitly.
+     * Never replace an arbitrary descriptor with an unrelated standard one. */
+    if (output_fd != STDOUT_FILENO && output_fd != STDERR_FILENO) {
+        return IMG2SIXEL_COLOR_IO_UNAVAILABLE;
+    }
+    output_handle = GetStdHandle(output_fd == STDOUT_FILENO
+        ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
+    if (GetFileType(output_handle) == FILE_TYPE_PIPE) {
+        if (!img2sixel_color_winpipe_space(output_handle, &available)) {
+            return IMG2SIXEL_COLOR_IO_UNAVAILABLE;
+        }
+    } else {
+        output_handle = NULL;
+    }
+#endif
     path = ttyname(output_fd);
     if (path == NULL) {
         return IMG2SIXEL_COLOR_IO_UNAVAILABLE;
@@ -291,6 +349,9 @@ img2sixel_color_tty_open(img2sixel_color_tty_t **tty, int output_fd,
     created->identity = identity;
     created->cancel = cancel;
     created->cancel_context = context;
+#if defined(__CYGWIN__) || defined(__MSYS__)
+    created->output_handle = output_handle;
+#endif
     *tty = created;
     return IMG2SIXEL_COLOR_IO_OK;
 }

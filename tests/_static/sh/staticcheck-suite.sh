@@ -1062,6 +1062,10 @@ run_case_tap "staticcheck-vm-data-sync" \
     sh "$src_root/tests/_static/sh/staticcheck-vm-data-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-vcpkg-bootstrap" \
+    sh "$src_root/tests/_static/sh/staticcheck-vcpkg-bootstrap.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-source-root" \
     sh "$src_root/tests/_static/sh/staticcheck-test-source-root.sh" \
     "$src_root" || fail_and_exit $?

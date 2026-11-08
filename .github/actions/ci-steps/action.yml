@@ -247,22 +247,36 @@ runs:
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
         if (-not (Test-Path (Join-Path $vcpkgRoot '.git'))) {
           git init $vcpkgRoot
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
-        git -C $vcpkgRoot remote remove origin 2>$null
-        git -C $vcpkgRoot remote add origin https://github.com/microsoft/vcpkg
+        git -C $vcpkgRoot config remote.origin.url https://github.com/microsoft/vcpkg
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
         git -C $vcpkgRoot fetch --depth 1 origin "${{ env.VCPKG_REF }}"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         git -C $vcpkgRoot reset --hard FETCH_HEAD
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
         Set-Location $vcpkgRoot
 
-        cmd /c bootstrap-vcpkg.bat
+        # Retry only bootstrap downloads, not dependency compilation. Native
+        # command failures do not automatically stop a PowerShell script.
+        $bootstrapExit = 1
+        for ($attempt = 1; $attempt -le 3; ++$attempt) {
+          cmd /c bootstrap-vcpkg.bat
+          $bootstrapExit = $LASTEXITCODE
+          if ($bootstrapExit -eq 0) { break }
+          Remove-Item -LiteralPath (Join-Path $vcpkgRoot 'vcpkg.exe') -Force -ErrorAction SilentlyContinue
+          if ($attempt -lt 3) { Start-Sleep -Seconds (5 * $attempt) }
+        }
+        if ($bootstrapExit -ne 0) { exit $bootstrapExit }
         $packages = @('pkgconf')
         $extra = '${{ fromJSON(inputs.matrix_json).vcpkg_packages || '' }}'.Trim()
         if ($extra -ne '') {
           $packages += $extra -split '\s+'
         }
         .\\vcpkg.exe install $packages --triplet x64-windows
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         "VCPKG_DEFAULT_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 

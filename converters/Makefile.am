@@ -127,6 +127,7 @@ img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/terminal-color.h \
                     $(srcdir)/terminal-color-tty.c \
                     $(srcdir)/terminal-color-tty.h \
+                    $(srcdir)/terminal-color-winpipe.h \
                     $(srcdir)/terminal-color-job.c \
                     $(srcdir)/terminal-color-job.h \
                     $(srcdir)/completion_utils.c \

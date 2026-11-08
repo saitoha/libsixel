@@ -47,6 +47,9 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#if defined(__CYGWIN__) || defined(__MSYS__)
+# include "converters/terminal-color-winpipe.h"
+#endif
 #if defined(__COSMOPOLITAN__)
 # include <cosmo.h>
 #endif
@@ -320,8 +323,12 @@ color_tty_child(char const *name, int command, int report)
     struct termios active;
     sigset_t original_mask;
     struct sigaction action;
+#if defined(__CYGWIN__) || defined(__MSYS__)
+    size_t available;
+#else
     struct timeval immediate;
     fd_set writable;
+#endif
     size_t written;
     int fill_ready;
     ssize_t fill_count;
@@ -460,13 +467,14 @@ color_tty_child(char const *name, int command, int report)
         if (output_copy < 0 || output_copy >= FD_SETSIZE) {
             return color_tty_error("cannot open output filler");
         }
-        /* Batch where supported. Hurd and MSYS/Cygwin can keep waiting
-         * after a partial nonblocking write exhausts the output queue.
-         * Readiness promises just one byte, not room for a whole batch.
+        /* Batch where supported. Hurd can keep waiting after a partial
+         * nonblocking write exhausts the output queue. Cygwin/MSYS can
+         * report writable even with no space; query the actual pipe quota
+         * there and never write more than the observed capacity.
          * Queue preparation has its own watchdog; the transport deadlines
          * and their elapsed-time assertions remain unchanged. */
         memset(filler, 'x', sizeof(filler));
-#if defined(__GNU__) || defined(__CYGWIN__) || defined(__MSYS__)
+#if defined(__GNU__)
         fill_size = 1u;
 #else
         fill_size = sizeof(filler);
@@ -474,6 +482,19 @@ color_tty_child(char const *name, int command, int report)
         alarm(10);
         fill_ready = 1;
         for (written = 0u; written < 1024u * 1024u;) {
+#if defined(__CYGWIN__) || defined(__MSYS__)
+            if (!img2sixel_color_winpipe_space(
+                    GetStdHandle(STD_OUTPUT_HANDLE), &available)) {
+                close(output_copy);
+                return color_tty_error("cannot query output pipe quota");
+            }
+            if (available == 0u) {
+                fill_ready = 0;
+                break;
+            }
+            fill_size = available < sizeof(filler)
+                ? available : sizeof(filler);
+#else
             immediate.tv_sec = 0;
             immediate.tv_usec = 0;
             FD_ZERO(&writable);
@@ -483,6 +504,7 @@ color_tty_child(char const *name, int command, int report)
             if (fill_ready <= 0) {
                 break;
             }
+#endif
             fill_count = write(output_copy, filler, fill_size);
             if (fill_count > 0) {
                 written += (size_t)fill_count;

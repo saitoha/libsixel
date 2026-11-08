@@ -18,6 +18,9 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#if defined(__CYGWIN__) || defined(__MSYS__)
+# include "../converters/terminal-color-winpipe.h"
+#endif
 #ifdef IMG2SIXEL_COLOR_PTY_PROBE
 # include <sys/ioctl.h>
 # include <sys/wait.h>
@@ -35,8 +38,15 @@ main(void)
     struct termios mode;
     sigset_t mask;
     fd_set ready;
+#if defined(__CYGWIN__) || defined(__MSYS__)
+    size_t available;
+#endif
 
     result = clock_gettime(CLOCK_MONOTONIC, &now);
+#if defined(__CYGWIN__) || defined(__MSYS__)
+    result += img2sixel_color_winpipe_space(
+        GetStdHandle(STD_OUTPUT_HANDLE), &available);
+#endif
     fd = open(ttyname(1), O_RDWR | O_NOCTTY | O_NONBLOCK);
     result += fcntl(fd, F_SETFD, FD_CLOEXEC);
     result += fstat(fd, &identity) + isatty(fd);
