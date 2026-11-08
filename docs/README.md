@@ -199,6 +199,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 
 ### Animation, threading, and runtime execution
 
+- [Sending a stream of frames with playback](encoder/playback.md) introduces the C playback queue, frame ownership, palette choices, partial updates, and two small usage examples.
 - [Animation playback](encoder/animation.md) explains `-l`, `-S`, `-T`, and `-g` and how animation interacts with other output features.
 - [Threading documentation](threading/README.md) indexes the threading model, band encoding and decoding, budgets, and measurements.
 - [Threading overview](threading/overview.md) defines bands, work bands, ordered publication, and their effect on output.

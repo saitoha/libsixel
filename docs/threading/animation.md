@@ -1,5 +1,7 @@
 # Animation Threading
 
+The [playback guide](../encoder/playback.md) explains when to use the C playback queue and how to submit frames, handle completion, and send partial updates.
+
 For input formats, loader support, playback controls, timing, and output-state interactions, see [Animation playback in img2sixel](../encoder/animation.md). This document covers scheduling and frame ownership. Playback and prepare-ahead workers inherit the owning encoder’s resolved policy snapshot, including its frame keys. Serial playback submission enters the same snapshot. The [palette policy](../cli/threading-policy.md#precedence-and-interactions) defines playback overrides and inheritance; frame mode waits for each frame’s own palette, while eligible latest sessions select a completed palette at application start.
 
 ## Current frame pipeline

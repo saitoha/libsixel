@@ -208,6 +208,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/encoder/output/or-mode/README.md \
 	docs/encoder/output/terminal-macros.md \
 	docs/encoder/animation.md \
+	docs/encoder/playback.md \
 	docs/encoder/output/drcs.md \
 	docs/encoder/palette-construction/fixed-palettes.md \
 	docs/cli/clipboard.md \

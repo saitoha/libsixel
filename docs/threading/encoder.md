@@ -2,6 +2,8 @@
 
 This explanation is for users and contributors inspecting encoder scheduling, allocator details and measurements. The [threading-policy reference](../cli/threading-policy.md) owns options and defaults; [policy modes](policy-modes.md) compares mode behavior across stages.
 
+For a practical introduction to feeding frames from C, the [playback guide](../encoder/playback.md) explains queue capacity, ownership, completion, and usage examples.
+
 ## Execution stages
 
 A queued frame carries its own timeline snapshot. Workers may copy that snapshot back only into private work frames; a shared replay frame retains the loader-owned timeline, which can already describe a later loop. This preserves the zero-copy pixel handoff. The ownership regression blocks the first writer, queues a shared frame, advances its loop number, then releases the writer and checks that completion leaves the source timeline unchanged.
