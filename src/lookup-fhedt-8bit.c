@@ -398,12 +398,36 @@ sixel_lookup_fhedt_resolve_threads_8bit(void)
 #endif  /* SIXEL_ENABLE_THREADS */
 }
 
-static void sixel_lookup_fhedt_dispatch_tiles_8bit(int total_tiles,
-                                             int threads,
-                                             int pin_threads,
-                                             sixel_thread_pool_worker_function_t
-                                                worker,
-                                             void *plan);
+/*
+ * Runs the tile passes of one build.  The worker pool is created by the
+ * first parallel pass and reused by the later ones: drain closes a pass and
+ * resume admits the next, so a build starts its threads once instead of
+ * once per pass.  Only the owning builder touches worker and plan, and only
+ * while the pool is drained.
+ */
+typedef struct sixel_lookup_fhedt_dispatcher_8bit {
+#if SIXEL_ENABLE_THREADS
+    sixel_thread_pool_t *pool;
+    int pool_failed;
+    int drained;
+#endif
+    int threads;
+    int pin_threads;
+    sixel_thread_pool_worker_function_t worker;
+    void *plan;
+} sixel_lookup_fhedt_dispatcher_8bit_t;
+
+static void sixel_lookup_fhedt_dispatcher_init_8bit(
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher,
+    int threads,
+    int pin_threads);
+static void sixel_lookup_fhedt_dispatcher_close_8bit(
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher);
+static void sixel_lookup_fhedt_dispatch_tiles_8bit(
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher,
+    int total_tiles,
+    sixel_thread_pool_worker_function_t worker,
+    void *plan);
 
 static uint32_t
 sixel_lookup_fhedt_cache_hash_8bit(size_t offset)
@@ -901,6 +925,7 @@ sixel_lookup_fhedt_first_touch_8bit(double *distances,
                               int tile_depth)
 {
     sixel_lookup_fhedt_first_touch_plan_8bit_t plan;
+    sixel_lookup_fhedt_dispatcher_8bit_t dispatcher;
     int tiles_y;
     int tiles_z;
 
@@ -916,11 +941,13 @@ sixel_lookup_fhedt_first_touch_8bit(double *distances,
     plan.tiles_y = tiles_y;
     plan.tiles_z = tiles_z;
 
-    sixel_lookup_fhedt_dispatch_tiles_8bit(tiles_y * tiles_z,
-                                     threads,
-                                     pin_threads,
+    sixel_lookup_fhedt_dispatcher_init_8bit(&dispatcher, threads,
+                                            pin_threads);
+    sixel_lookup_fhedt_dispatch_tiles_8bit(&dispatcher,
+                                     tiles_y * tiles_z,
                                      sixel_lookup_fhedt_first_touch_worker_8bit,
                                      &plan);
+    sixel_lookup_fhedt_dispatcher_close_8bit(&dispatcher);
 }
 
 static void
@@ -1523,49 +1550,147 @@ sixel_lookup_fhedt_create_pool_8bit(
 #endif  /* SIXEL_ENABLE_THREADS */
 
 static void
-sixel_lookup_fhedt_dispatch_tiles_8bit(int total_tiles,
-                                 int threads,
-                                 int pin_threads,
-                                 sixel_thread_pool_worker_function_t worker,
-                                 void *plan)
+sixel_lookup_fhedt_run_tiles_8bit(int first_tile,
+                                  int total_tiles,
+                                  sixel_thread_pool_worker_function_t worker,
+                                  void *plan)
+{
+    sixel_thread_pool_job_t job;
+    int job_index;
+
+    for (job_index = first_tile; job_index < total_tiles; ++job_index) {
+        job.band_index = job_index;
+        (void)worker(job, plan, NULL);
+    }
+}
+
+static void
+sixel_lookup_fhedt_dispatcher_init_8bit(
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher,
+    int threads,
+    int pin_threads)
 {
 #if SIXEL_ENABLE_THREADS
-    sixel_thread_pool_t *pool;
-    int queue_depth;
-    int job_index;
-    sixel_thread_pool_job_t job;
-    int status;
+    dispatcher->pool = NULL;
+    dispatcher->pool_failed = 0;
+    dispatcher->drained = 0;
+#endif
+    dispatcher->threads = threads;
+    dispatcher->pin_threads = pin_threads;
+    dispatcher->worker = NULL;
+    dispatcher->plan = NULL;
+}
 
-    if (threads < 2 || total_tiles < 2) {
-        for (job_index = 0; job_index < total_tiles; ++job_index) {
-            job.band_index = job_index;
-            (void)worker(job, plan, NULL);
-        }
-
-        return;
+static void
+sixel_lookup_fhedt_dispatcher_close_8bit(
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher)
+{
+#if SIXEL_ENABLE_THREADS
+    if (dispatcher->pool != NULL) {
+        dispatcher->pool->vtbl->finish(dispatcher->pool);
+        dispatcher->pool->vtbl->unref(dispatcher->pool);
+        dispatcher->pool = NULL;
     }
+#else
+    (void)dispatcher;
+#endif  /* SIXEL_ENABLE_THREADS */
+}
 
+#if SIXEL_ENABLE_THREADS
+/* Forwards a pool job to the pass that currently owns the dispatcher. */
+static int
+sixel_lookup_fhedt_dispatcher_worker_8bit(sixel_thread_pool_job_t job,
+                                          void *userdata,
+                                          void *workspace)
+{
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher;
+
+    dispatcher = (sixel_lookup_fhedt_dispatcher_8bit_t *)userdata;
+    return dispatcher->worker(job, dispatcher->plan, workspace);
+}
+
+/* Gives up reuse; later passes run inline, as on pool creation failure. */
+static void
+sixel_lookup_fhedt_dispatcher_fail_8bit(
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher)
+{
+    sixel_lookup_fhedt_dispatcher_close_8bit(dispatcher);
+    dispatcher->pool_failed = 1;
+}
+
+/* Returns a pool open for a new pass, or NULL to run the pass inline. */
+static sixel_thread_pool_t *
+sixel_lookup_fhedt_dispatcher_open_8bit(
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher,
+    int total_tiles)
+{
+    int threads;
+    SIXELSTATUS status;
+
+    if (dispatcher->pool_failed) {
+        return NULL;
+    }
+    if (dispatcher->pool != NULL) {
+        if (dispatcher->drained) {
+            status = dispatcher->pool->vtbl->resume(dispatcher->pool);
+            if (SIXEL_FAILED(status)) {
+                sixel_lookup_fhedt_dispatcher_fail_8bit(dispatcher);
+                return NULL;
+            }
+            dispatcher->drained = 0;
+        }
+        return dispatcher->pool;
+    }
+    threads = dispatcher->threads;
     if (threads > total_tiles) {
         threads = total_tiles;
     }
-    queue_depth = threads * 3;
-    if (queue_depth > total_tiles) {
-        queue_depth = total_tiles;
-    }
-    status = sixel_lookup_fhedt_create_pool_8bit(&pool,
-                                                 threads,
-                                                 queue_depth,
-                                                 worker,
-                                                 plan);
+    status = sixel_lookup_fhedt_create_pool_8bit(
+        &dispatcher->pool,
+        threads,
+        threads * 3,
+        sixel_lookup_fhedt_dispatcher_worker_8bit,
+        dispatcher);
     if (SIXEL_FAILED(status)) {
-        for (job_index = 0; job_index < total_tiles; ++job_index) {
-            job.band_index = job_index;
-            (void)worker(job, plan, NULL);
-        }
+        dispatcher->pool = NULL;
+        dispatcher->pool_failed = 1;
+        return NULL;
+    }
+    dispatcher->pool->vtbl->set_affinity(dispatcher->pool,
+                                         dispatcher->pin_threads);
+    return dispatcher->pool;
+}
+#endif  /* SIXEL_ENABLE_THREADS */
 
+/*
+ * Runs every tile of one pass and returns after all of them finished, so
+ * the caller may start a pass that reads this one's output.
+ */
+static void
+sixel_lookup_fhedt_dispatch_tiles_8bit(
+    sixel_lookup_fhedt_dispatcher_8bit_t *dispatcher,
+    int total_tiles,
+    sixel_thread_pool_worker_function_t worker,
+    void *plan)
+{
+#if SIXEL_ENABLE_THREADS
+    sixel_thread_pool_t *pool;
+    sixel_thread_pool_job_t job;
+    int job_index;
+    SIXELSTATUS status;
+
+    if (dispatcher->threads < 2 || total_tiles < 2) {
+        sixel_lookup_fhedt_run_tiles_8bit(0, total_tiles, worker, plan);
         return;
     }
-    pool->vtbl->set_affinity(pool, pin_threads);
+    /* No pool job is running here, so the pass can be swapped freely. */
+    dispatcher->worker = worker;
+    dispatcher->plan = plan;
+    pool = sixel_lookup_fhedt_dispatcher_open_8bit(dispatcher, total_tiles);
+    if (pool == NULL) {
+        sixel_lookup_fhedt_run_tiles_8bit(0, total_tiles, worker, plan);
+        return;
+    }
     for (job_index = 0; job_index < total_tiles; ++job_index) {
         job.band_index = job_index;
         status = pool->vtbl->push(pool, job);
@@ -1573,19 +1698,16 @@ sixel_lookup_fhedt_dispatch_tiles_8bit(int total_tiles,
             break;
         }
     }
-    pool->vtbl->finish(pool);
-    (void)pool->vtbl->get_error(pool);
-    pool->vtbl->unref(pool);
-#else
-    sixel_thread_pool_job_t job;
-    int job_index;
-
-    (void)threads;
-    (void)pin_threads;
-    for (job_index = 0; job_index < total_tiles; ++job_index) {
-        job.band_index = job_index;
-        (void)worker(job, plan, NULL);
+    status = pool->vtbl->drain(pool);
+    dispatcher->drained = 1;
+    if (SIXEL_FAILED(status)) {
+        sixel_lookup_fhedt_dispatcher_fail_8bit(dispatcher);
     }
+    /* Tiles the pool did not admit still belong to this pass. */
+    sixel_lookup_fhedt_run_tiles_8bit(job_index, total_tiles, worker, plan);
+#else
+    (void)dispatcher;
+    sixel_lookup_fhedt_run_tiles_8bit(0, total_tiles, worker, plan);
 #endif  /* SIXEL_ENABLE_THREADS */
 }
 
@@ -1602,6 +1724,7 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
     sixel_lookup_fhedt_pass_x_plan_8bit_t plan_x;
     sixel_lookup_fhedt_pass_y_plan_8bit_t plan_y;
     sixel_lookup_fhedt_pass_z_plan_8bit_t plan_z;
+    sixel_lookup_fhedt_dispatcher_8bit_t dispatcher;
     int res;
     size_t plane;
     size_t column;
@@ -1633,6 +1756,8 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
             + (size_t)shared->palette[i * shared->depth + 2] * (size_t)res;
         seeded_columns[column / 8U] |= (unsigned char)(1U << (column % 8U));
     }
+    sixel_lookup_fhedt_dispatcher_init_8bit(&dispatcher, threads,
+                                            pin_threads);
     plan_x.seeded_columns = seeded_columns;
     plan_x.shared = shared;
     plan_x.distances = distances;
@@ -1655,9 +1780,8 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
                                    -1,
                                    -1,
                                    "x-pass");
-    sixel_lookup_fhedt_dispatch_tiles_8bit(tiles_y * tiles_z,
-                                     threads,
-                                     pin_threads,
+    sixel_lookup_fhedt_dispatch_tiles_8bit(&dispatcher,
+                                     tiles_y * tiles_z,
                                      sixel_lookup_fhedt_pass_x_worker_8bit,
                                      &plan_x);
     sixel_lookup_fhedt_timeline_log_8bit(timeline,
@@ -1690,9 +1814,8 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
                                    -1,
                                    -1,
                                    "y-pass");
-    sixel_lookup_fhedt_dispatch_tiles_8bit(tiles_x * tiles_z,
-                                     threads,
-                                     pin_threads,
+    sixel_lookup_fhedt_dispatch_tiles_8bit(&dispatcher,
+                                     tiles_x * tiles_z,
                                      sixel_lookup_fhedt_pass_y_worker_8bit,
                                      &plan_y);
     sixel_lookup_fhedt_timeline_log_8bit(timeline,
@@ -1723,9 +1846,8 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
                                    -1,
                                    -1,
                                    "z-pass");
-    sixel_lookup_fhedt_dispatch_tiles_8bit(tiles_x * tiles_y,
-                                     threads,
-                                     pin_threads,
+    sixel_lookup_fhedt_dispatch_tiles_8bit(&dispatcher,
+                                     tiles_x * tiles_y,
                                      sixel_lookup_fhedt_pass_z_worker_8bit,
                                      &plan_z);
     sixel_lookup_fhedt_timeline_log_8bit(timeline,
@@ -1734,6 +1856,7 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
                                    -1,
                                    -1,
                                    "z-pass");
+    sixel_lookup_fhedt_dispatcher_close_8bit(&dispatcher);
 }
 
 static void
@@ -1756,89 +1879,60 @@ sixel_lookup_fhedt_fill_indices_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
     }
 }
 
+/*
+ * A voxel is a boundary when any of its six axis neighbors maps to another
+ * source.  Rows are res wide and res is 64, 128 or 256, so every row starts
+ * on a bitmap byte and each byte packs eight voxels of one row.  A missing
+ * neighbor at the lattice edge is read as the row itself, which never
+ * differs; this keeps the inner loop free of position branches.
+ */
 static void
 sixel_lookup_fhedt_mark_boundaries_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
                                   int *sources)
 {
     size_t plane;
-    size_t total;
-    size_t offset;
     int res;
-    int x;
     int y;
     int z;
-    int dx;
-    int dy;
-    int dz;
-    int neighbor;
-    int current;
-    size_t bit_index;
-    size_t byte_index;
-    size_t neighbor_offset;
+    int x;
+    int bit;
+    int const *row;
+    int const *below_z;
+    int const *above_z;
+    int const *below_y;
+    int const *above_y;
+    unsigned char *out;
+    unsigned char flags[256];
+    unsigned int packed;
 
     res = shared->resolution;
     plane = (size_t)res * (size_t)res;
-    total = (size_t)res * plane;
-
-    for (offset = 0; offset < (total + 7U) / 8U; ++offset) {
-        shared->boundary[offset] = 0U;
-    }
+    out = shared->boundary;
 
     for (z = 0; z < res; ++z) {
         for (y = 0; y < res; ++y) {
+            row = sources + (size_t)z * plane + (size_t)y * (size_t)res;
+            below_z = z > 0 ? row - plane : row;
+            above_z = z < res - 1 ? row + plane : row;
+            below_y = y > 0 ? row - res : row;
+            above_y = y < res - 1 ? row + res : row;
             for (x = 0; x < res; ++x) {
-                offset = ((size_t)z * plane)
-                       + ((size_t)y * (size_t)res)
-                       + (size_t)x;
-                current = sources[offset];
-                for (dz = -1; dz <= 1; dz += 2) {
-                    if (z + dz < 0 || z + dz >= res) {
-                        continue;
-                    }
-                    neighbor_offset = dz < 0 ? offset - plane
-                                             : offset + plane;
-                    neighbor = sources[neighbor_offset];
-                    if (neighbor != current) {
-                        bit_index = offset;
-                        byte_index = bit_index / 8U;
-                        shared->boundary[byte_index]
-                            |= (unsigned char)(1U
-                                               << (bit_index % 8U));
-                        break;
-                    }
+                flags[x] = (unsigned char)((below_z[x] != row[x]) |
+                                           (above_z[x] != row[x]) |
+                                           (below_y[x] != row[x]) |
+                                           (above_y[x] != row[x]));
+            }
+            for (x = 1; x < res; ++x) {
+                bit = row[x] != row[x - 1];
+                flags[x] |= (unsigned char)bit;
+                flags[x - 1] |= (unsigned char)bit;
+            }
+            for (x = 0; x < res; x += 8) {
+                packed = 0U;
+                for (bit = 0; bit < 8; ++bit) {
+                    packed |= (unsigned int)flags[x + bit] << bit;
                 }
-                for (dy = -1; dy <= 1; dy += 2) {
-                    if (y + dy < 0 || y + dy >= res) {
-                        continue;
-                    }
-                    neighbor_offset = dy < 0 ? offset - (size_t)res
-                                             : offset + (size_t)res;
-                    neighbor = sources[neighbor_offset];
-                    if (neighbor != current) {
-                        bit_index = offset;
-                        byte_index = bit_index / 8U;
-                        shared->boundary[byte_index]
-                            |= (unsigned char)(1U
-                                               << (bit_index % 8U));
-                        break;
-                    }
-                }
-                for (dx = -1; dx <= 1; dx += 2) {
-                    if (x + dx < 0 || x + dx >= res) {
-                        continue;
-                    }
-                    neighbor_offset = dx < 0 ? offset - 1U
-                                             : offset + 1U;
-                    neighbor = sources[neighbor_offset];
-                    if (neighbor != current) {
-                        bit_index = offset;
-                        byte_index = bit_index / 8U;
-                        shared->boundary[byte_index]
-                            |= (unsigned char)(1U
-                                               << (bit_index % 8U));
-                        break;
-                    }
-                }
+                *out++ = (unsigned char)packed;
             }
         }
     }
