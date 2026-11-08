@@ -18,13 +18,13 @@ function valid(text,    n, blocks, i, b, first, second, reset, build) {
             if (index(b, "id: sparc_prepare_1")) {
                 if (first++ || !index(b, "continue-on-error: true") ||
                     index(b, "if:") ||
-                    !index(b, "data-dir: ${{ runner.temp }}/sparc-vm-1")) return 0
+                    !index(b, "data-dir: $HOME/.cache/libsixel-sparc-vm-1")) return 0
             } else if (index(b, "id: sparc_prepare_2")) {
                 if (second++ || !first || !reset ||
                     index(b, "continue-on-error:") ||
                     !index(b, "if: steps.sparc_prepare_1.outcome == '\''failure'\''") ||
                     !index(b, "disable-cache: true") ||
-                    !index(b, "data-dir: ${{ runner.temp }}/sparc-vm-2")) return 0
+                    !index(b, "data-dir: $HOME/.cache/libsixel-sparc-vm-2")) return 0
             } else return 0
         } else if (index(b, "Reset failed SPARC VM before retry")) {
             if (reset++ || !first || second ||

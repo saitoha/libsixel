@@ -12591,6 +12591,7 @@ EXTRA_DIST += _static/sh/staticcheck-emscripten-thread-runtime.sh \
 EXTRA_DIST += _static/sh/staticcheck-ci-vm-result.sh \
     _static/awk/ci-vm-result.awk
 EXTRA_DIST += _static/sh/staticcheck-sparc-vm-retry.sh
+EXTRA_DIST += _static/sh/staticcheck-vm-data-sync.sh
 EXTRA_DIST += _static/sh/staticcheck-test-source-root.sh
 
 EXTRA_DIST += _static/sh/staticcheck-amalgamation-define-header.sh

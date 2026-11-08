@@ -26259,6 +26259,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-ci-vm-result.sh \
 	_static/awk/ci-vm-result.awk \
 	_static/sh/staticcheck-sparc-vm-retry.sh \
+	_static/sh/staticcheck-vm-data-sync.sh \
 	_static/sh/staticcheck-test-source-root.sh \
 	_static/sh/staticcheck-amalgamation-define-header.sh \
 	_static/sh/staticcheck-emscripten-node-stdio.sh \

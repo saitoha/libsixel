@@ -198,7 +198,9 @@ jobs:
           mem: 4096
           release: '11.0'
           sync: scp
-          data-dir: ${{ runner.temp }}/sparc-vm-1
+          # The action syncs $HOME/work, including runner.temp, into the VM.
+          # Keep live disk images outside that tree to avoid copying them.
+          data-dir: $HOME/.cache/libsixel-sparc-vm-1
           prepare: |
             set -eux
             if test '${{ matrix.buildtool }}' = autotools; then
@@ -245,7 +247,7 @@ jobs:
           mem: 4096
           release: '11.0'
           sync: scp
-          data-dir: ${{ runner.temp }}/sparc-vm-2
+          data-dir: $HOME/.cache/libsixel-sparc-vm-2
           prepare: |
             set -eux
             if test '${{ matrix.buildtool }}' = autotools; then
