@@ -1525,6 +1525,11 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     int override_lock_acquired;
     char log_detail[128];
     double wall_start;
+    double restart_start;
+    double seeded;
+    double solved;
+    double scored;
+    int trace_kmeans;
     double init_stop;
     double iterate_start;
     double iterate_stop;
@@ -2099,7 +2104,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             gpu_requested = 0;
         }
     }
+    trace_kmeans =
+        sixel_diagnostics_trace_topic_is_enabled("kmeans_backend");
     for (restart_index = 0u; restart_index < restart_count; ++restart_index) {
+        restart_start = trace_kmeans ? sixel_timer_now() : 0.0;
         /* No previous owner exists at the start of an independent restart. */
         memset(membership, 0, (size_t)work_sample_count * sizeof(*membership));
         hamerly_initialized = 0u;
@@ -2133,6 +2141,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             goto end;
         }
 
+        seeded = trace_kmeans ? sixel_timer_now() : 0.0;
         gpu_completed = 0;
         gpu_iterations = 0u;
         gpu_status = SIXEL_FALSE;
@@ -2630,6 +2639,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             }
         }
 
+        solved = trace_kmeans ? sixel_timer_now() : 0.0;
         objective = sixel_kmeans_assign_samples(centers,
                                                 k,
                                                 work_samples,
@@ -2642,7 +2652,13 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         /* Trace the executed backend, including policy/platform fallback.
          * This is separate from the requested option and remains available
          * in release builds without creating a diagnostic log file. */
-        if (sixel_diagnostics_trace_topic_is_enabled("kmeans_backend")) {
+        if (trace_kmeans) {
+            scored = sixel_timer_now();
+            fprintf(stderr, "LSXKMRESTART1|M=%u|K=%u|restart=%u|"
+                "seed_ms=%.6f|solve_ms=%.6f|score_ms=%.6f|\n",
+                work_sample_count, k, restart_index + 1u,
+                (seeded - restart_start) * 1000.0,
+                (solved - seeded) * 1000.0, (scored - solved) * 1000.0);
             fprintf(stderr,
                 "LSXKMEANS1|requested=%s|effective=%s|iterations=%u|"
                 "status=0x%04x|reason=%s|M=%u|K=%u|restart=%u|"

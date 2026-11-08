@@ -10,9 +10,13 @@
 #include <math.h>
 #include <pthread.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "palette-kmeans-gpu.h"
+#include "compat_stub.h"
+#include "options.h"
+#include "timer.h"
 
 /* Only immutable pipelines and a thread-safe command queue are shared. Each
  * palette attempt owns all buffers, including its convergence state. */
@@ -43,6 +47,7 @@ typedef struct sixel_km_metal_state {
     uint32_t iterations;
     uint32_t failed;
     float delta;
+    uint32_t repairs;
 } sixel_km_metal_state_t;
 
 /* An integer atomic failure flag detects collapsed nonzero distances and
@@ -58,7 +63,8 @@ static char const * const sixel_km_metal_source[] = {
 "using namespace metal;\n"
 "struct Params { uint points, centers, groups, min_iterations;\n"
 " uint round_centers; float threshold; };\n"
-"struct State { uint done, iterations; atomic_uint failed; float delta; };\n"
+"struct State { uint done, iterations; atomic_uint failed; float delta;\n"
+" uint repairs; };\n"
 "kernel void km_assign(\n"
 " device const packed_float3 *points [[buffer(0)]],\n"
 " device const float *weights [[buffer(1)]],\n"
@@ -133,6 +139,7 @@ static char const * const sixel_km_metal_source[] = {
 " }\n"
 " for (uint c = 0; c < p.centers; ++c) {\n"
 "  if (sums[c].w > 0) continue;\n"
+"  ++s.repairs;\n"
 "  float farthest = -1; uint selected = 0;\n"
 "  for (uint i = 0; i < p.points; ++i) {\n"
 "   if (distances[i] > farthest) { farthest = distances[i]; selected = i; }\n"
@@ -293,7 +300,33 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
     double value;
     double margin;
     unsigned int channel;
+    /* Profiling splits dispatches only when explicitly requested. Normal
+     * tracing retains the production single-command-buffer submission. */
+    id<MTLCommandBuffer> commands[116 * 4];
+    double encode_ms[116 * 4];
+    double submit_ms[116 * 4];
+    double phase_ms[9];
+    double start, mark, phase_start, gpu_start, gpu_end, total_ms;
+    char const *profile;
+    char const *phase_names[9] = { "prepare", "allocate", "upload",
+        "encode", "submit", "wait", "validate", "publish", "release" };
+    char const *stage_names[4] = { "assign", "partial", "reduce", "update" };
+    unsigned int command_count, finished_iterations, repairs, command_index;
+    int trace, split, completed, active_phase;
 
+    trace = sixel_diagnostics_trace_topic_is_enabled("kmeans_backend");
+    profile = sixel_compat_getenv("SIXEL_KMEANS_GPU_PROFILE");
+    split = trace && profile != NULL && strcmp(profile, "stages") == 0;
+    start = trace ? sixel_timer_now() : 0.0;
+    phase_start = start;
+    active_phase = 0;
+    command_count = finished_iterations = repairs = 0u;
+    completed = 0;
+    command = nil;
+    memset(commands, 0, sizeof(commands));
+    memset(encode_ms, 0, sizeof(encode_ms));
+    memset(submit_ms, 0, sizeof(submit_ms));
+    memset(phase_ms, 0, sizeof(phase_ms));
     memset(buffers, 0, sizeof(buffers));
     memset(&params, 0, sizeof(params));
     params.points = request->point_count;
@@ -327,6 +360,11 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         if (status != SIXEL_OK) {
             goto cleanup;
         }
+        if (trace) {
+            phase_ms[0] = (sixel_timer_now() - phase_start) * 1000.0;
+            phase_start = sixel_timer_now();
+        }
+        active_phase = 1;
         status = SIXEL_BAD_ALLOCATION;
         for (index = 0u; index < SIXEL_KM_BUFFERS; ++index) {
             buffers[index] = [sixel_km_metal_device
@@ -337,6 +375,11 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
                 goto cleanup;
             }
         }
+        if (trace) {
+            phase_ms[1] = (sixel_timer_now() - phase_start) * 1000.0;
+            phase_start = sixel_timer_now();
+        }
+        active_phase = 2;
         values = [buffers[SIXEL_KM_POINTS] contents];
         for (index = 0u; index < (size_t)params.points * 3u; ++index) {
             values[index] = (float)request->points[index];
@@ -352,13 +395,26 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         }
         state = [buffers[SIXEL_KM_STATE] contents];
         memset(state, 0, sizeof(*state));
-        command = [sixel_km_metal_queue commandBuffer];
-        if (command == nil) {
-            goto cleanup;
+        if (trace) {
+            phase_ms[2] = (sixel_timer_now() - phase_start) * 1000.0;
+            phase_start = sixel_timer_now();
         }
+        active_phase = -1;
+        mark = trace ? sixel_timer_now() : 0.0;
+        if (!split) {
+            command = [sixel_km_metal_queue commandBuffer];
+            if (command == nil) goto cleanup;
+        }
+        if (trace) phase_ms[3] += (sixel_timer_now() - mark) * 1000.0;
         for (iteration = 0u; iteration < request->max_iterations;
                 ++iteration) {
             for (stage = 0u; stage < 4u; ++stage) {
+                command_index = iteration * 4u + stage;
+                mark = trace ? sixel_timer_now() : 0.0;
+                if (split) {
+                    command = [sixel_km_metal_queue commandBuffer];
+                    if (command == nil) goto cleanup;
+                }
                 encoder = [command computeCommandEncoder];
                 if (encoder == nil) {
                     goto cleanup;
@@ -380,17 +436,49 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
                 [encoder dispatchThreadgroups:MTLSizeMake(count, 1, 1)
                     threadsPerThreadgroup:MTLSizeMake(threads, 1, 1)];
                 [encoder endEncoding];
+                if (trace) {
+                    encode_ms[command_index] =
+                        (sixel_timer_now() - mark) * 1000.0;
+                    phase_ms[3] += encode_ms[command_index];
+                }
+                if (split) {
+                    /* Queue order preserves every dependency. There is no
+                     * CPU wait/readback between iterations, even here. */
+                    commands[command_count++] = command;
+                    mark = sixel_timer_now();
+                    [command commit];
+                    submit_ms[command_index] =
+                        (sixel_timer_now() - mark) * 1000.0;
+                    phase_ms[4] += submit_ms[command_index];
+                }
             }
         }
-        [command commit];
+        if (!split) {
+            commands[command_count++] = command;
+            mark = trace ? sixel_timer_now() : 0.0;
+            [command commit];
+            if (trace) phase_ms[4] = (sixel_timer_now() - mark) * 1000.0;
+        }
+        mark = trace ? sixel_timer_now() : 0.0;
         [command waitUntilCompleted];
+        completed = 1;
+        if (trace) phase_ms[5] = (sixel_timer_now() - mark) * 1000.0;
+        phase_start = trace ? sixel_timer_now() : 0.0;
+        active_phase = 6;
         status = SIXEL_RUNTIME_ERROR;
-        if (request->test_failure == 3 ||
-                [command status] != MTLCommandBufferStatusCompleted ||
-                state->failed || state->iterations == 0u ||
+        /* A later buffer can complete after an earlier one failed. Check
+         * every submission before reading or publishing shared results. */
+        for (index = 0u; index < command_count; ++index) {
+            if ([commands[index] status] != MTLCommandBufferStatusCompleted)
+                goto cleanup;
+        }
+        if (request->test_failure == 3 || state->failed ||
+                state->iterations == 0u ||
                 state->iterations > request->max_iterations) {
             goto cleanup;
         }
+        finished_iterations = state->iterations;
+        repairs = state->repairs;
         /* Means must remain in the convex coordinate envelope. Empty
          * centers may retain their seeds; byte rounding expands by 0.5.
          * This also catches unstable cancellation during donor repair. */
@@ -422,6 +510,11 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
                 goto cleanup;
             }
         }
+        if (trace) {
+            phase_ms[6] = (sixel_timer_now() - phase_start) * 1000.0;
+            phase_start = sixel_timer_now();
+        }
+        active_phase = 7;
         /* Publish atomically with respect to fallback: no caller-owned
          * state changes until every output component has been checked. */
         for (index = 0u; index < (size_t)params.centers * 3u; ++index) {
@@ -435,8 +528,53 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         *iterations = state->iterations;
         status = SIXEL_OK;
 cleanup:
+        if (trace && active_phase >= 0)
+            phase_ms[active_phase] +=
+                (sixel_timer_now() - phase_start) * 1000.0;
+        /* Encoding failure after partial submission must still drain the
+         * queue before freeing attempt resources or returning to fallback. */
+        if (!completed && command_count > 0u) {
+            mark = trace ? sixel_timer_now() : 0.0;
+            [commands[command_count - 1u] waitUntilCompleted];
+            if (trace) phase_ms[5] += (sixel_timer_now() - mark) * 1000.0;
+        }
+        mark = trace ? sixel_timer_now() : 0.0;
         for (index = 0u; index < SIXEL_KM_BUFFERS; ++index) {
             [buffers[index] release];
+        }
+        if (trace) {
+            phase_ms[8] = (sixel_timer_now() - mark) * 1000.0;
+            total_ms = (sixel_timer_now() - start) * 1000.0;
+            fprintf(stderr, "LSXKMTIME1|mode=%s|M=%u|K=%u|limit=%u|"
+                "iterations=%u|repairs=%u|commands=%u|status=0x%04x|"
+                "wall_ms=%.6f|device=%s|\n",
+                split ? "stages" : "batch", params.points, params.centers,
+                request->max_iterations, finished_iterations, repairs,
+                command_count, (unsigned int)status, total_ms,
+                [[sixel_km_metal_device name] UTF8String] ?: "unavailable");
+            for (index = 0u; index < 9u; ++index) {
+                fprintf(stderr, "LSXKMPHASE1|phase=%s|cpu_ms=%.6f|\n",
+                    phase_names[index], phase_ms[index]);
+            }
+            for (index = 0u; index < command_count; ++index) {
+                /* GPU timestamps are valid only after completion. Zero
+                 * means unavailable, not a zero-cost GPU dispatch. */
+                gpu_start = [commands[index] GPUStartTime];
+                gpu_end = [commands[index] GPUEndTime];
+                fprintf(stderr, "LSXKMSTAGE1|mode=%s|phase=%s|iteration=%u|"
+                    "noop=%d|gpu_valid=%d|gpu_start_s=%.9f|gpu_end_s=%.9f|"
+                    "gpu_ms=%.6f|encode_ms=%.6f|submit_ms=%.6f|\n",
+                    split ? "stages" : "batch",
+                    split ? stage_names[index % 4u] : "batch",
+                    split ? (unsigned int)(index / 4u + 1u) : 0u,
+                    split && index / 4u >= finished_iterations,
+                    gpu_start > 0.0 && gpu_end >= gpu_start,
+                    gpu_start, gpu_end,
+                    gpu_start > 0.0 && gpu_end >= gpu_start
+                        ? (gpu_end - gpu_start) * 1000.0 : -1.0,
+                    split ? encode_ms[index] : phase_ms[3],
+                    split ? submit_ms[index] : phase_ms[4]);
+            }
         }
     }
     return status;

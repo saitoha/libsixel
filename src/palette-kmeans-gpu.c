@@ -7,9 +7,12 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "palette-kmeans-gpu.h"
 #include "compat_stub.h"
+#include "options.h"
+#include "timer.h"
 
 #if defined(HAVE_METAL)
 int sixel_kmeans_metal_is_available(void);
@@ -153,14 +156,20 @@ sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
 {
     SIXELSTATUS status;
     sixel_kmeans_gpu_request_t attempt;
+    double start;
+    double checked;
+    int trace;
 
     if (iterations == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    trace = sixel_diagnostics_trace_topic_is_enabled("kmeans_backend");
+    start = trace ? sixel_timer_now() : 0.0;
     status = sixel_kmeans_gpu_check(request);
     if (status != SIXEL_OK) {
         return status;
     }
+    checked = trace ? sixel_timer_now() : 0.0;
     attempt = *request;
     attempt.test_failure = 0;
 #if defined(HAVE_TESTS)
@@ -170,9 +179,17 @@ sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
     }
 #endif
 #if defined(HAVE_METAL)
-    return sixel_kmeans_metal_refine(&attempt, iterations);
+    status = sixel_kmeans_metal_refine(&attempt, iterations);
 #else
     (void)attempt;
-    return SIXEL_FALSE;
+    status = SIXEL_FALSE;
 #endif
+    if (trace) {
+        fprintf(stderr, "LSXKMCALL1|M=%u|K=%u|check_ms=%.6f|"
+            "metal_wall_ms=%.6f|status=0x%04x|\n",
+            request->point_count, request->center_count,
+            (checked - start) * 1000.0,
+            (sixel_timer_now() - checked) * 1000.0, (unsigned int)status);
+    }
+    return status;
 }
