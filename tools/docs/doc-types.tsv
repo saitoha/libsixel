@@ -32,7 +32,7 @@ docs/concepts/pixelformat-precision/README.md	explanation	both	storage model + n
 docs/concepts/pixelformat.md	reference	both	pixel representations + explanatory model and contributor test ledger
 docs/concepts/quality-optimization.md	explanation	contributor	
 docs/encoder/animation.md	reference	both	playback matrix + usage/diagnosis how-to and contributor test ledger
-docs/encoder/playback.md	how-to	user	queue explanation + C usage examples
+docs/encoder/playback.md	how-to	user	queue explanation + C usage examples + chafa comparison
 docs/encoder/colorspace-handling/README.md	reference	both	color-space contracts + configuration how-to and implementation references
 docs/encoder/palette-construction/clustering-colorspace/README.md	reference	both	color-space choices + mathematical explanation and measurement reproduction
 docs/encoder/palette-construction/cover-policy/README.md	reference	both	policy contract + reachability/history explanation and contributor test ledger

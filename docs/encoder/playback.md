@@ -1,6 +1,6 @@
 # Sending a stream of frames with playback
 
-This guide is for C programmers who want to send video or remote-desktop images through libsixel. It explains how to use `sixel_playback_t`, with small examples and no threading background required. For file playback in `img2sixel`, see [Animation playback](animation.md). The [public header](../../include/sixel.h.in) owns the exact API rules; [Animation threading](../threading/animation.md) explains the workers inside the library.
+This guide is for C programmers who want to send video or remote-desktop images through libsixel. It explains how to use `sixel_playback_t`, with small examples and no threading background required. The [chafa comparison](#compare-with-chafa) shows which kinds of work can overlap. For file playback in `img2sixel`, see [Animation playback](animation.md). The [public header](../../include/sixel.h.in) owns the exact API rules; [Animation threading](../threading/animation.md) explains the workers inside the library.
 
 ## Decide whether you need playback
 
@@ -31,6 +31,36 @@ Playback manages the handoff and limits how much unfinished work can pile up. It
 | Feed decoded video frames from a player such as 6mov | Playback | Preparation and output can overlap. |
 | Feed changed rectangles from a remote desktop such as 6rdp | Playback with per-frame options | Each accepted rectangle keeps its own placement settings. |
 | Play an animation file with `img2sixel` | The CLI's [animation controls](animation.md) | The loader already supplies the frames. |
+
+## Tell frame overlap from band overlap
+
+A **worker** is a thread: a line of work the program can run alongside other work. A **stage** is one step in processing an image. **Dithering** uses patterns or spreads color error to make a limited palette look smoother. A SIXEL **band** is a strip six pixels high.
+
+libsixel already overlapped dithering, encoding, and writing bands before playback. This is **intra-frame** overlap: work inside one frame. All those workers share the same frame. Repeated direct `sixel_encoder_encode_frame()` calls finish frame A before starting frame B. The following picture leaves out palette preparation and shows three bands of A:
+
+```text
+Time -------------------------------------------------------->
+Direct call: frame A only
+dither     [A band 1][A band 2][A band 3]
+encode               [A band 1][A band 2][A band 3]
+write                          [A band 1][A band 2][A band 3]
+                                                          |
+                                              A returns --+--> start B
+
+Playback can instead overlap DIFFERENT frames:
+prepare    [frame A][frame B][frame C]
+write                [frame A][frame B][frame C]
+```
+
+**Inter-frame** pipelining means that different frames occupy different stages at the same time. That is the frame-level meaning of pipeline in this guide. Band overlap alone does not provide it. The [direct entry point](../../src/encoder.c) and [band encoder](../../src/encoder-core-encode.c) keep these boundaries separate.
+
+| Mechanism | What can overlap? | Where to learn more |
+| --- | --- | --- |
+| Band allocation `PIPELINE` | Dithering, encoding, and ordered writing of bands from one frame. | [Six-row jobs and ordered output](../threading/encoder.md#six-row-jobs-and-ordered-output) |
+| Band allocation `STAGED` | Workers within a phase. All dither workers finish before encoding takes its worker allocation. | [Dither/encode budget policy](../threading/encoder.md#ditherencode-budget-policy) |
+| Playback with preparation overlap | Preparation of a later frame and output of an earlier one. Eligible GPU playback separates more stages. | [Current frame pipeline](../threading/animation.md#current-frame-pipeline) |
+
+The names `PIPELINE` and `STAGED` describe band allocation, not a promise of frame-level pipelining. File-loader read-ahead and playback add separate ways to overlap frames; the band mechanism by itself does not start the next frame.
 
 ## Set up the session
 
@@ -175,7 +205,7 @@ The [delta guide](output/delta-encoding.md#persistent-residual-threshold-control
 
 ## Understand where a GPU helps
 
-A **GPU** is a processor that can do similar pixel calculations together. **Lookup** chooses a palette color for a pixel. **Dithering** uses patterns or spreads color error to make a limited palette look smoother. These are parts of encoding that can use the GPU; writing bytes to a terminal still takes time.
+A **GPU** is a processor that can do similar pixel calculations together. The **CPU** is the computer's general-purpose processor. **Lookup** chooses a palette color for a pixel. Lookup and dithering are parts of encoding that can use the GPU; writing bytes to a terminal still takes time.
 
 Eligible RGB8 GPU sessions use the independent playback controller. RGB8 means one 8-bit value each for red, green, and blue. Here, gamma RGB means the usual nonlinear RGB values rather than linear-light values. This path needs native gamma RGB input/output, preparation overlap, at least two slots, a `PER_FRAME` or `LATEST` mode, and a supplied output object. Other restrictions and fallback paths are described in [Animation threading](../threading/animation.md#current-frame-pipeline).
 
@@ -188,6 +218,108 @@ Eligible RGB8 GPU sessions use the independent playback controller. RGB8 means o
 GPU diffusion has one component for each `-d` method: `lso2`, `fs`, `atkinson`, `jajuni`, `stucki`, `burkes`, `sierra1`, `sierra2`, and `sierra3`. They are distinct methods, not names for one shared diffusion algorithm. See the [dithering reference and GPU method pages](palette-application/dithering/README.md#cli-surface) and [lookup policies](palette-application/lookup-policy/README.md) for supported combinations.
 
 More overlap does not guarantee more frames per second. GPU commands may share the same hardware, and the connection can still dominate. Capacity bounds unfinished frames, not a number of GPU processors. Use the [threading explanation](../threading/animation.md) for internal stages rather than choosing a large queue on the assumption that it must be faster.
+
+## Compare with chafa
+
+chafa is an earlier example of SIXEL animation: its [1.4.0 release notes, dated April 1, 2020][c-news], announce SIXEL output and animation speed controls. The comparison below studies **chafa commit `c897fce60cc4e947a254770ea1c2e320d58e7dce`**. Every chafa source link is pinned to that commit. It covers normal CLI animation in SIXEL mode, with GIF, animated PNG, and WebP as decoder examples.
+
+At this commit, the chafa CLI finishes writing each animation frame before rendering the next. It has file prefetch, parallel work inside a frame, and a writer thread. The animation loop calls `chafa_term_flush()` before advancing. This makes it an example of threaded SIXEL animation, but not of inter-frame rendering/output pipelining in this path. See [`tools/chafa/chafa.c`, `run_generic()`][c-loop].
+
+### Follow a frame through chafa
+
+**Prefetch** means getting input ready before it is needed. chafa's media pipeline has a ring of slots, sized from its resolved thread count. Workers open files and create loaders. The consumer takes results in input-file order. Normal animation requests loaders but disables rendering in those file jobs. Grid mode can request rendered images instead; that is a different path. See [`chicle-media-pipeline.c`, `thread_func()`, `wait_for_next()`, and `chicle_media_pipeline_new()`][c-files], [`chafa.c`, `run_vertical()`][c-vertical], and [`chicle-grid-layout.c`, `chicle_grid_layout_print_chunk()`][c-grid].
+
+The upper line below is file prefetch. The lower loop handles animation for one of those files. A **FIFO** is a queue that removes items in the order they entered. Here the output FIFO holds bytes, not frame tickets. Sources: [`chicle-media-pipeline.c`, `wait_for_next()`][c-files], [`chafa.c`, `run_generic()`][c-loop], and [`chafa-stream-writer.c`, `chafa_stream_writer_write()` and `thread_main()`][c-writer].
+
+```text
+Input files --> [file-loader workers] --> [slots in file order]
+
+Animation loop uses one loader from those slots:
+  +--> get frame --> scale / palette / map / SIXEL string
+  |                              |
+  |                              v
+  |                       byte FIFO --> writer
+  |                                      |
+  |                                      v
+  +-- advance <-- wait if early <-- flush completes
+```
+
+Decoding turns a compressed file into pixels. The three loaders below keep decoder state between calls. Their work is requested **synchronously**: the animation loop waits for each request to finish. WebP's decoder may itself use threads. Source file paths in this table are under `tools/chafa/`.
+
+| Input | What the loader keeps or prepares | Source at the studied commit |
+| --- | --- | --- |
+| GIF | Keeps the decoder and current bitmap. Moving forward clears the decoded flag; asking for pixels decodes the selected frame if needed. | [`chicle-gif-loader.c`, `maybe_decode_frame()`, `chicle_gif_loader_get_frame_data()`, `chicle_gif_loader_goto_next_frame()`][c-gif] |
+| Animated PNG | Keeps an animation canvas. Moving forward decodes the next frame into it. | [`chicle-png-loader.c`, `chicle_png_loader_get_frame_data()`, `chicle_png_loader_goto_next_frame()`][c-png] |
+| WebP | Keeps current and next pixel buffers. Asking for the current delay synchronously decodes one frame ahead to get its timestamp. Moving forward adopts that buffer. This happens before current-frame rendering, not alongside current-frame writing. | [`chicle-webp-loader.c`, `chicle_webp_loader_get_frame_delay()`, `chicle_webp_loader_goto_next_frame()`][c-webp] |
+
+WebP enables its decoder's `use_threads` option in [`chicle_webp_loader_new_from_mapping()`][c-webp-new]. That is parallel work inside the decoder, not a separate chafa animation-rendering lane. A file-prefetch job may also decode initial pixels while creating a loader. These are useful forms of overlap, but their unit is not a queue of rendered animation frames. See the [GIF constructor][c-gif] and [`chicle-media-pipeline.c`, `thread_func()`][c-files].
+
+For each displayed frame, the CLI creates a fresh canvas and places the pixels on it. In SIXEL mode, libchafa scales and maps those pixels, then builds one complete output string. The following steps describe this path, including its waiting points. A **batch** groups work to send to one worker. See [`chafa.c`, `build_canvas()` and `run_generic()`][c-canvas-cli], and [`chafa/chafa-canvas.c`, `chafa_canvas_print_rows()`][c-print].
+
+| Step inside one frame | Work and waiting point | Source at the studied commit |
+| --- | --- | --- |
+| Scale | Smolscale resizes pixels into a shared image buffer. Row batches may run on workers; all finish before palette generation. | [`chafa/internal/chafa-indexed-image.c`, `draw_pixels_pass_1_worker()` and `draw_pixels()`][c-indexed] |
+| Build a palette | For a generated palette, sample colors and repeatedly merge nearby color groups. The initial neighbor search can use workers. Fixed palettes skip generation. | [`chafa/internal/chafa-palette.c`, `find_initial_nearest()`, `pnn_palette()`, `chafa_palette_generate()`][c-palette] |
+| Map and dither | Choose a palette entry for every pixel. None, ordered, and noise modes can split rows among workers. Floyd–Steinberg diffusion uses one batch, carrying color error from row to row. | [`chafa/internal/chafa-indexed-image.c`, `draw_pixels_pass_2_worker()`, `draw_pixels_pass_2_fs()`, `draw_pixels()`][c-indexed] |
+| Build SIXEL | Workers encode batches aligned to six-row bands. All batches finish before their strings are appended in band order. The output includes palette definitions. | [`chafa/internal/chafa-sixel-renderer.c`, `build_sixel_row_worker()`, `build_sixel_palette()`, `chafa_sixel_renderer_build_ansi()`][c-sixel]; [`chafa/internal/chafa-batch.c`, `chafa_process_batches()`][c-batch] |
+| Write | The CLI queues the completed string. A writer removes bytes in order, in chunks of up to 4096 bytes. Its FIFO defaults to 1 MiB and makes producers wait when full. The complete frame string is additional storage outside that FIFO. | [`chafa.c`, `write_image()`][c-write-image]; [`chafa/chafa-stream-writer.c`, `chafa_stream_writer_write()` and `thread_main()`][c-writer] |
+
+chafa's six-row workers divide the work of building one frame. They do not stream completed bands to the terminal while later bands are still being rendered. `chafa_process_batches()` waits for every batch before appending results, and the CLI writes only after `chafa_canvas_print_rows()` returns. See [the batch helper][c-batch], [the canvas print path][c-print], and [`run_generic()`][c-loop].
+
+Between animation frames, the CLI's `write_image_prologue()` moves the cursor back to the image location. `write_image()` sends the strings through `chafa_term_write()` to the byte writer. On Unix-like systems, `safe_write()` handles short writes and retries interrupted writes. See [`tools/chafa/chafa.c`, `write_image_prologue()`, `write_image()`, and `write_gstring_to_stdout()`][c-write-image], [`chafa/chafa-term.c`, `chafa_term_write()` and `chafa_term_flush()`][c-term], and [`chafa/chafa-stream-writer.c`, `safe_write()`][c-writer].
+
+### Compare the timelines and carried state
+
+For libsixel's eligible independent GPU controller, the stage names are P, S, R, and E. A **packet** here means one complete frame's SIXEL bytes. A **dispatcher** is the worker that delivers those packets and reports completion. The [animation threading reference](../threading/animation.md#current-frame-pipeline) owns the exact stage rules; their implementation is [encoder-playback-independent.inc.h](../../src/encoder-playback-independent.inc.h).
+
+| Stage | Plain meaning |
+| --- | --- |
+| P: prepare | Prepare the input and construct its palette. |
+| S: solve | Select a palette and prepare GPU work. Complete a solve without reading retained history when the GPU component supports it. |
+| R: resolve | Finish palette application as needed. With delta enabled, compare with retained history and advance it in frame order. |
+| E: encode | Turn the completed indexed image, whose pixels name palette entries, into a private SIXEL packet. |
+| Dispatcher | Write packets and call `done` in admission order. No bytes for the next frame are sent until the current callback returns. |
+
+The timelines below use imaginary time steps, not measured durations. On the left, B means build the current frame's output; W includes writing and flushing; a dot is an optional timing wait. On the right, numbers are frame numbers. Three slots can keep these three frames in flight. The right-hand schedule requires the eligible GPU controller; ordinary preparation overlap has fewer lanes. The left-hand schedule follows [`chafa.c`, `run_generic()`][c-loop].
+
+```text
+chafa CLI                         libsixel independent playback
+time --> 1   2   3   4   5   6     time --> 1   2   3   4   5   6   7
+main     B1  W1  .   B2  W2  .     P        1   2   3
+                                  S            1   2   3
+B2 begins after W1 and its wait.   R                1   2   3
+File prefetch is a separate lane.  E                    1   2   3
+                                  write/done               1   2   3
+                                  At step 3: P3, S2, R1 coexist.
+```
+
+This is the same distinction as [band overlap versus frame overlap](#tell-frame-overlap-from-band-overlap). chafa's inspected path uses parallel batches inside a frame and a separate byte writer, with a frame boundary between rendering/output cycles. The libsixel controller can put different frames in different stages. This observation does not rank their speed. Sources: [chafa's batch helper][c-batch] and [CLI loop][c-loop]; [libsixel's controller](../../src/encoder-playback-independent.inc.h).
+
+| Question | chafa's inspected CLI SIXEL path | libsixel playback |
+| --- | --- | --- |
+| What is bounded? | File-prefetch slots and an output byte FIFO. Neither is an application reservation for an animation frame. See [`chicle_media_pipeline_new()`][c-files] and [`chafa_stream_writer_write()`][c-writer]. | Capacity covers reservations and admitted frames through completion. `WAIT`, `NOWAIT`, and tickets let the producer control admission. |
+| Are generated palettes reused across frames? | Each fresh canvas generates its own palette from scaled pixels. Fixed palette modes use predefined colors. Palette definitions are emitted again in each SIXEL image; there is no latest-completed-frame palette store in this path. See [`build_canvas()`][c-canvas-cli], [`setup_palette()`][c-canvas], [`chafa_palette_generate()`][c-palette], and [`build_sixel_palette()`][c-sixel]. | `PER_FRAME` uses the current palette; eligible `LATEST` can borrow a compatible earlier one; `AUTO` tests which policy helps. `palette_sequence` records the selection. |
+| What picture is remembered? | Decoder state and pixel buffers survive between frames. The CLI replaces its rendering canvas each frame. Mapping caches and diffusion error rows are created for that draw, then released. See [the loader table](#follow-a-frame-through-chafa), [`run_generic()`][c-loop], and [`draw_pixels()` / `draw_pixels_pass_2_fs()`][c-indexed]. | Optional retained history survives to compare later updates, including damaged rectangles. R owns that history in the independent controller. |
+| Does it skip unchanged output pixels? | The inspected renderer has no previous-frame comparison or damaged-rectangle input. It converts the current canvas to SIXEL. Transparent pixels can leave the display underneath, but this is not a computed delta. See [`draw_all_pixels()`][c-canvas] and [`chafa_sixel_renderer_build_ansi()`][c-sixel]. | [Delta encoding](output/delta-encoding.md) can retain suitable pixels. Per-frame origin and threshold limits describe partial updates. |
+| What runs on a GPU? | The inspected scaling, palette, mapping, and SIXEL paths use CPU work and GLib worker batches. They contain no GPU solve/resolve stage. See [`draw_pixels()`][c-indexed], [`chafa_palette_generate()`][c-palette], and [`chafa_process_batches()`][c-batch]. | Eligible RGB8 sessions use the independent controller for GPU diffusion components and GPU lookup. Availability depends on the selected method and policy. |
+| How is completion observed? | The CLI flushes a byte writer after each frame. There is no admitted-frame result callback in this loop. See [`run_generic()`][c-loop] and [`chafa_stream_writer_flush()`][c-writer-flush]. | Ordered `done` callbacks report per-frame status, palette sequence, and other results. `drain` waits for admitted frames and callbacks. |
+
+chafa's CLI normally makes SIXEL animation pixels opaque unless transparency was explicitly configured. This helps cover the preceding image. It does not implement retained-history comparison. See [`tools/chafa/chafa.c`, `build_config()`][c-config], and [`chafa/chafa-canvas.c`, `draw_all_pixels()`][c-canvas].
+
+### Timing, errors, and stopping
+
+chafa measures the current frame's conversion and output time. It subtracts that time from the requested delay, adjusted by the speed or frames-per-second option. It can sleep for the remaining time; a late frame gets no extra sleep. There is no lateness-based frame dropping in this loop, so slow processing can stretch playback. It does not skip ahead to catch up. See [`tools/chafa/chafa.c`, `run_generic()`][c-loop].
+
+| Event | chafa behavior at the studied commit | Comparison with playback |
+| --- | --- | --- |
+| Input file cannot be opened | The file pipeline returns a loader error. The CLI reports it, counts a failed file, and moves on. See [`thread_func()`][c-files] and [`run_vertical()`][c-vertical]. | Playback accepts already supplied frames; file decoding belongs to the caller. |
+| Decoding stops partway through animation | Handling depends on the loader. Animated PNG stops at a failed next-frame decode and keeps the successful prefix for later loops. A null pixel pointer breaks the CLI frame loop without changing its result to `FILE_FAILED`. See [`chicle_png_loader_goto_next_frame()`][c-png] and [`run_generic()`][c-loop]. | An admitted frame has one ordered completion result; unstarted work after a session failure reports `SIXEL_INTERRUPTED`. |
+| An I/O error is returned to the writer | The writer stops and wakes waiters. Its flush function also ends when the writer has stopped, and returns true without distinguishing that error from a normal drain. The CLI has no per-frame write result here. See [`thread_main()`][c-writer] and [`chafa_stream_writer_flush()`][c-writer-flush]. | `done` reports failures and `drain` returns the first session failure. Already written bytes cannot be undone. |
+| User interrupts | On builds with signal handling, the CLI sets an interrupt flag. The frame loop and short sleep slices check it. A second signal forces exit; where interval timers exist, a 500 ms grace alarm also forces exit. This is process stopping, not frame cancellation with callbacks. See [`chafa.c`, `sigint_handler()`, `install_fast_exit_alarm()`, `fast_exit()`, and `interruptible_usleep()`][c-stop]. | `cancel` interrupts unclaimed admissions while claimed frames finish through delivery. `drain` waits for their callbacks. |
+
+A successful byte drain means output has left the program, not that a terminal has shown the frame. chafa's writer marks itself drained after its pending writes; libsixel's results likewise describe host-side completion. See [`chafa/chafa-stream-writer.c`, `thread_main()`][c-writer] and the [libsixel header](../../include/sixel.h.in).
+
+This comparison is source inspection, not a benchmark or a runtime test of chafa. It does not establish the behavior of every decoder backend, every platform's signal handling, or other libchafa callers. It also does not establish when each scheduling feature first appeared. The dated release notes credit chafa's earlier SIXEL animation support; the pinned code establishes the particular behavior described here.
 
 ## Example: a simple WAIT loop
 
@@ -325,3 +457,32 @@ This guide explains existing contracts rather than defining a separate policy. T
 | Partial updates and frame-count refresh | [Delta coverage](output/delta-encoding.md#test-coverage) |
 
 Those tests establish the stated software behavior for their fixtures. They do not establish terminal presentation timing, a particular frame rate, or end-to-end behavior in a video player or remote desktop. The two C helpers also need application-provided frames and an output destination; syntax checks alone do not prove a working terminal integration.
+
+The chafa comparison is backed by the pinned source references below, not by libsixel's tests. No chafa build or runtime result is claimed.
+
+## References
+
+All chafa links name files at commit `c897fce60cc4e947a254770ea1c2e320d58e7dce`. The comparison names the relevant functions beside each claim. The release-note reference supplies historical dates only.
+
+[c-news]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/NEWS#L754-L783
+[c-loop]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chafa.c#L675-L892
+[c-vertical]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chafa.c#L943-L1014
+[c-canvas-cli]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chafa.c#L577-L892
+[c-config]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chafa.c#L533-L574
+[c-write-image]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chafa.c#L274-L529
+[c-stop]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chafa.c#L65-L194
+[c-files]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chicle-media-pipeline.c#L86-L310
+[c-grid]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chicle-grid-layout.c#L475-L507
+[c-gif]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chicle-gif-loader.c#L79-L262
+[c-png]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chicle-png-loader.c#L268-L345
+[c-webp]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chicle-webp-loader.c#L293-L354
+[c-webp-new]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/tools/chafa/chicle-webp-loader.c#L145-L232
+[c-canvas]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/chafa-canvas.c#L221-L490
+[c-print]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/chafa-canvas.c#L866-L978
+[c-indexed]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/internal/chafa-indexed-image.c#L72-L553
+[c-palette]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/internal/chafa-palette.c#L530-L1074
+[c-sixel]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/internal/chafa-sixel-renderer.c#L416-L560
+[c-batch]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/internal/chafa-batch.c#L71-L178
+[c-term]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/chafa-term.c#L841-L909
+[c-writer]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/chafa-stream-writer.c#L48-L522
+[c-writer-flush]: https://github.com/hpjansson/chafa/blob/c897fce60cc4e947a254770ea1c2e320d58e7dce/chafa/chafa-stream-writer.c#L546-L558
