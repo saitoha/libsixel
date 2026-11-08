@@ -787,17 +787,15 @@ sub-option:
 \fBgain=standard|small-error\fP -> GPU sender gain (default standard)
 .br
 \fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP, \fBburkes\fP and
-\fBsierra\fP also run the four-phase GPU solver with their own coefficients
+\fBsierra\fP also run on their own four-phase GPU components
 when the GPU policy admits an available GPU and the input is RGB8 gamma,
 unless \fBperturb\fP is set or the carry clamp is \fBnone\fP.
 Their deadzone and soft or hard carry clamp apply as in the CPU kernels.
 .br
-\fBphased\fP -> deprecated alias of \fBlso2\fP.
-.br
 Compact diffusion suboption names use one uppercase letter plus the value:
 all methods scan=N, band_overwrap=O, band_width=B, deadzone=D,
 perturb=U, perturb_seed=R;
-lso2/phased gain=G; sierra variant=V; a_dither/x_dither strength=T;
+lso2 gain=G; sierra variant=V; a_dither/x_dither strength=T;
 bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
 channel=C, size=Z.
 
@@ -1993,7 +1991,7 @@ from 0 through 441. The decoder suboption takes precedence.
 set the default diffusion scan order to auto, serpentine, or raster.
 The scan suboption takes precedence.
 .TP 5
-.B SIXEL_DITHER_PHASED_GAIN
+.B SIXEL_DITHER_LSO2_GAIN
 Default lso2 GPU gain: standard or small-error.
 Overridden by \fB-d lso2:gain=VALUE\fP.
 .TP

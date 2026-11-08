@@ -114,16 +114,16 @@ Thread-only cancellation helpers are compiled under the same `SIXEL_ENABLE_THREA
 
 The gated cancellation and failure cases select the CPU backend, so their ownership evidence does not depend on Metal initialization or availability. GPU dispatch and output equivalence are covered by the [encoder execution tests](encoder.md#test-coverage). These tests establish ownership and output behavior, not a scheduling deadline.
 
-The phased integration [coverage](../encoder/palette-application/dithering/phased.md#test-coverage) separately checks solve overlap during a blocked writer, cancellation of a ready solution, later admission after cancellation, writer-failure drain and byte equality with synchronous encoding. These are deterministic ownership checks, not frame-rate guarantees.
+The GPU LSO2 integration [coverage](../encoder/palette-application/dithering/lso2-gpu.md#test-coverage) separately checks solve overlap during a blocked writer, cancellation of a ready solution, later admission after cancellation, writer-failure drain and byte equality with synchronous encoding. These are deterministic ownership checks, not frame-rate guarantees.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| AT-0056 | playback resolve past stalled encode. | [tests/dither/phased/0056_playback_resolve_past_stalled_encode.t](../../tests/dither/phased/0056_playback_resolve_past_stalled_encode.t) |
-| AT-0057 | Encoding uses a distinct packet slot while earlier delivery is stalled; MSVC analysis separately checks the slot-search write bounds. | [tests/dither/phased/0057_playback_encode_past_stalled_delivery.t](../../tests/dither/phased/0057_playback_encode_past_stalled_delivery.t) |
-| AT-0058 | playback claimed cancel completes. | [tests/dither/phased/0058_playback_claimed_cancel_completes.t](../../tests/dither/phased/0058_playback_claimed_cancel_completes.t) |
-| AT-0059 | latest replay t0. | [tests/dither/phased/0059_latest_replay_t0.t](../../tests/dither/phased/0059_latest_replay_t0.t) |
-| AT-0060 | latest replay refresh. | [tests/dither/phased/0060_latest_replay_refresh.t](../../tests/dither/phased/0060_latest_replay_refresh.t) |
-| AT-0061 | latest replay small. | [tests/dither/phased/0061_latest_replay_small.t](../../tests/dither/phased/0061_latest_replay_small.t) |
-| AT-0062 | latest completed own. | [tests/dither/phased/0062_latest_completed_own.t](../../tests/dither/phased/0062_latest_completed_own.t) |
-| AT-0063 | latest excludes future. | [tests/dither/phased/0063_latest_excludes_future.t](../../tests/dither/phased/0063_latest_excludes_future.t) |
-| AT-0067 | A non-native input drains the independent prefix before serial fallback, preserving ordered bytes. | [tests/dither/phased/0067_playback_format_transition.t](../../tests/dither/phased/0067_playback_format_transition.t) |
+| AT-0056 | playback resolve past stalled encode. | [tests/dither/lso2-gpu/0056_playback_resolve_past_stalled_encode.t](../../tests/dither/lso2-gpu/0056_playback_resolve_past_stalled_encode.t) |
+| AT-0057 | Encoding uses a distinct packet slot while earlier delivery is stalled; MSVC analysis separately checks the slot-search write bounds. | [tests/dither/lso2-gpu/0057_playback_encode_past_stalled_delivery.t](../../tests/dither/lso2-gpu/0057_playback_encode_past_stalled_delivery.t) |
+| AT-0058 | playback claimed cancel completes. | [tests/dither/lso2-gpu/0058_playback_claimed_cancel_completes.t](../../tests/dither/lso2-gpu/0058_playback_claimed_cancel_completes.t) |
+| AT-0059 | latest replay t0. | [tests/dither/lso2-gpu/0059_latest_replay_t0.t](../../tests/dither/lso2-gpu/0059_latest_replay_t0.t) |
+| AT-0060 | latest replay refresh. | [tests/dither/lso2-gpu/0060_latest_replay_refresh.t](../../tests/dither/lso2-gpu/0060_latest_replay_refresh.t) |
+| AT-0061 | latest replay small. | [tests/dither/lso2-gpu/0061_latest_replay_small.t](../../tests/dither/lso2-gpu/0061_latest_replay_small.t) |
+| AT-0062 | latest completed own. | [tests/dither/lso2-gpu/0062_latest_completed_own.t](../../tests/dither/lso2-gpu/0062_latest_completed_own.t) |
+| AT-0063 | latest excludes future. | [tests/dither/lso2-gpu/0063_latest_excludes_future.t](../../tests/dither/lso2-gpu/0063_latest_excludes_future.t) |
+| AT-0067 | A non-native input drains the independent prefix before serial fallback, preserving ordered bytes. | [tests/dither/lso2-gpu/0067_playback_format_transition.t](../../tests/dither/lso2-gpu/0067_playback_format_transition.t) |

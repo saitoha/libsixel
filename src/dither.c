@@ -61,7 +61,6 @@
 #include "lookup-policy-fhedt.h"
 #include "oklch-lattice256.h"
 #include "dither-policy.h"
-#include "dither-policy-phased.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"
 #include "timeline-logger.h"
@@ -327,7 +326,7 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
 {
     int method;
 
-    if (dither == NULL) {
+    if (dither == NULL || dither->diffuse_on_gpu) {
         return 0;
     }
     method = dither->method_for_diffuse;
@@ -713,6 +712,40 @@ sixel_dither_prepare_lookup_policy(
     return SIXEL_OK;
 }
 
+/* Each diffusion method owns its GPU component; the method selects the
+ * class, and no component solves another method's kernel. */
+static SIXELSTATUS
+sixel_dither_gpu_component_new(sixel_allocator_t *allocator, int method,
+    sixel_gpu_dither_preparer_interface_t **result)
+{
+    SIXELSTATUS status;
+    sixel_factory_t *factory;
+    void *service;
+    char const *classid;
+
+    *result = NULL;
+    switch (method) {
+    case SIXEL_DIFFUSE_LSO2: classid = "dither/lso2.gpu"; break;
+    case SIXEL_DIFFUSE_FS: classid = "dither/fs.gpu"; break;
+    case SIXEL_DIFFUSE_ATKINSON: classid = "dither/atkinson.gpu"; break;
+    case SIXEL_DIFFUSE_JAJUNI: classid = "dither/jajuni.gpu"; break;
+    case SIXEL_DIFFUSE_STUCKI: classid = "dither/stucki.gpu"; break;
+    case SIXEL_DIFFUSE_BURKES: classid = "dither/burkes.gpu"; break;
+    case SIXEL_DIFFUSE_SIERRA1: classid = "dither/sierra1.gpu"; break;
+    case SIXEL_DIFFUSE_SIERRA2: classid = "dither/sierra2.gpu"; break;
+    case SIXEL_DIFFUSE_SIERRA3: classid = "dither/sierra3.gpu"; break;
+    default: return SIXEL_FEATURE_ERROR;
+    }
+    service = NULL;
+    status = sixel_components_getservice("services/factory", &service);
+    if (SIXEL_FAILED(status)) return status;
+    factory = (sixel_factory_t *)service;
+    status = factory->vtbl->create(factory, classid, allocator,
+        (void **)result);
+    factory->vtbl->unref(factory);
+    return status;
+}
+
 static SIXELSTATUS
 sixel_dither_prepare_dither_policy(
     sixel_dither_t *dither,
@@ -739,14 +772,20 @@ sixel_dither_prepare_dither_policy(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED) {
+    if (dither->diffuse_on_gpu) {
         sixel_dither_policy_capture_options(dither, &request.options);
         request.method_for_scan = method_for_scan;
         request.pixelformat = pixelformat;
+        if (dither->gpu_dither != NULL &&
+                dither->gpu_dither_method != dither->method_for_diffuse) {
+            dither->gpu_dither->vtbl->unref(dither->gpu_dither);
+            dither->gpu_dither = NULL;
+        }
         if (dither->gpu_dither == NULL) {
-            status = sixel_dither_policy_phased_gpu_new(dither->allocator,
-                (void **)&dither->gpu_dither);
+            status = sixel_dither_gpu_component_new(dither->allocator,
+                dither->method_for_diffuse, &dither->gpu_dither);
             if (SIXEL_FAILED(status)) return status;
+            dither->gpu_dither_method = dither->method_for_diffuse;
         }
         status = dither->gpu_dither->vtbl->configure(dither->gpu_dither,
             &request);
@@ -2254,8 +2293,9 @@ sixel_dither_new(
         sizeof((*ppdither)->gpu_lookup_configuration));
     (*ppdither)->lookup_policy = NULL;
     (*ppdither)->gpu_dither = NULL;
-    (*ppdither)->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
-    (*ppdither)->phased_kernel = SIXEL_DIFFUSE_LSO2;
+    (*ppdither)->lso2_gain = SIXEL_LSO2_GAIN_STANDARD;
+    (*ppdither)->diffuse_on_gpu = 0;
+    (*ppdither)->gpu_dither_method = SIXEL_DIFFUSE_NONE;
     (*ppdither)->dither_policy = NULL;
     (*ppdither)->dither_policy_class_name = NULL;
     (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
@@ -4161,9 +4201,7 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     if (prepare_lookup && parallel && !shared) return SIXEL_FALSE;
     scan = dither->method_for_scan;
     if (scan == SIXEL_SCAN_AUTO) {
-        scan = (dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2 ||
-            (dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED &&
-             dither->phased_kernel == SIXEL_DIFFUSE_LSO2))
+        scan = dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2
             ? SIXEL_SCAN_SERPENTINE : SIXEL_SCAN_RASTER;
     }
     status = sixel_dither_prepare_dither_policy(dither, scan,

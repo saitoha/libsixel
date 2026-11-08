@@ -144,8 +144,12 @@ struct sixel_dither {
     int bluenoise_channel_rgb;      /* non-zero for rgb channel mode */
     int bluenoise_size_override;    /* CLI bluenoise size flag */
     int bluenoise_size;             /* parsed bluenoise tile size */
-    int phased_gain; /* Frozen phased coefficient curve. */
-    int phased_kernel; /* Kernel solved by the phased GPU method. */
+    int lso2_gain; /* Frozen LSO2 coefficient curve. */
+    /* The encoder admitted this frame's diffusion to its GPU component.
+     * method_for_diffuse still names the method; the component that runs
+     * it is the GPU one of that method, never a shared solver. */
+    int diffuse_on_gpu;
+    int gpu_dither_method; /* Method of the prepared gpu_dither. */
     int bluenoise_gradient_factor_override; /* CLI gradient gamma override */
     float bluenoise_gradient_factor; /* parsed gradient gamma */
     int quality_mode;               /* quality of histogram */

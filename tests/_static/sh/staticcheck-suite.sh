@@ -1170,8 +1170,8 @@ run_case_tap "staticcheck-assessment-stdio" \
     sh "$src_root/tests/_static/sh/staticcheck-assessment-stdio.sh" \
     "$src_root"
 
-run_case_tap "staticcheck-phased-coefficient-guard" \
-    sh "$src_root/tests/_static/sh/staticcheck-phased-coefficient-guard.sh" \
+run_case_tap "staticcheck-lso2-gpu-coefficient-guard" \
+    sh "$src_root/tests/_static/sh/staticcheck-lso2-gpu-coefficient-guard.sh" \
     "$src_root"
 
 run_case_tap "staticcheck-msys-runtime-arguments" \

@@ -198,4 +198,12 @@ docs/encoder/palette-application/lookup-policy/delaunay.md	reference	both	policy
 docs/encoder/palette-application/lookup-policy/gridlut.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/ordered.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/blockcull.md	reference	both	policy-specific mathematics and cost
-docs/encoder/palette-application/dithering/phased.md	reference	both	
+docs/encoder/palette-application/dithering/lso2-gpu.md	reference	both	
+docs/encoder/palette-application/dithering/fs-gpu.md	reference	both	
+docs/encoder/palette-application/dithering/atkinson-gpu.md	reference	both	
+docs/encoder/palette-application/dithering/jajuni-gpu.md	reference	both	
+docs/encoder/palette-application/dithering/stucki-gpu.md	reference	both	
+docs/encoder/palette-application/dithering/burkes-gpu.md	reference	both	
+docs/encoder/palette-application/dithering/sierra1-gpu.md	reference	both	
+docs/encoder/palette-application/dithering/sierra2-gpu.md	reference	both	
+docs/encoder/palette-application/dithering/sierra3-gpu.md	reference	both	

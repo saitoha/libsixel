@@ -574,6 +574,6 @@ The scheduling unit cases use explicit costs; integration cases inject a monoton
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| TI-64 | pipeline sample stale. | [tests/dither/phased/0064_pipeline_sample_stale.t](../../tests/dither/phased/0064_pipeline_sample_stale.t) |
-| TI-65 | pipeline sample short. | [tests/dither/phased/0065_pipeline_sample_short.t](../../tests/dither/phased/0065_pipeline_sample_short.t) |
-| TI-66 | pipeline sample tail. | [tests/dither/phased/0066_pipeline_sample_tail.t](../../tests/dither/phased/0066_pipeline_sample_tail.t) |
+| TI-64 | pipeline sample stale. | [tests/dither/lso2-gpu/0064_pipeline_sample_stale.t](../../tests/dither/lso2-gpu/0064_pipeline_sample_stale.t) |
+| TI-65 | pipeline sample short. | [tests/dither/lso2-gpu/0065_pipeline_sample_short.t](../../tests/dither/lso2-gpu/0065_pipeline_sample_short.t) |
+| TI-66 | pipeline sample tail. | [tests/dither/lso2-gpu/0066_pipeline_sample_tail.t](../../tests/dither/lso2-gpu/0066_pipeline_sample_tail.t) |

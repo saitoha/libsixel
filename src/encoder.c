@@ -1285,26 +1285,21 @@ sixel_encoder_update_diagnostic_dither(sixel_encoder_t *encoder,
     }
 }
 
-/* The diffusion kernel a phased GPU solve would use: the requested method,
- * with the deprecated phased spelling meaning LSO2. */
-static int
-sixel_encoder_phased_kernel(sixel_encoder_t const *encoder)
-{
-    return encoder->method_for_diffuse == SIXEL_DIFFUSE_PHASED
-        ? SIXEL_DIFFUSE_LSO2 : encoder->method_for_diffuse;
-}
-
 SIXEL_INTERNAL_API int
 sixel_encoder_effective_diffuse(sixel_encoder_t const *encoder)
 {
-    sixel_gpu_device_interface_t *device;
-    int kernel;
+    return encoder->method_for_diffuse;
+}
 
-    kernel = sixel_encoder_phased_kernel(encoder);
-    switch (kernel) {
+SIXEL_INTERNAL_API int
+sixel_encoder_diffuse_on_gpu(sixel_encoder_t const *encoder)
+{
+    sixel_gpu_device_interface_t *device;
+
+    switch (encoder->method_for_diffuse) {
     case SIXEL_DIFFUSE_LSO2:
         /* The LSO2 GPU coefficients assume serpentine order. */
-        if (encoder->method_for_scan == SIXEL_SCAN_RASTER) return kernel;
+        if (encoder->method_for_scan == SIXEL_SCAN_RASTER) return 0;
         break;
     case SIXEL_DIFFUSE_FS:
     case SIXEL_DIFFUSE_ATKINSON:
@@ -1318,24 +1313,24 @@ sixel_encoder_effective_diffuse(sixel_encoder_t const *encoder)
          * Perturbed weights and other limiters stay on the CPU. */
         if (encoder->diffusion_perturb != 0.0f ||
                 encoder->clamp_policy == SIXEL_DITHER_CLAMP_NONE) {
-            return kernel;
+            return 0;
         }
         break;
     default:
-        return kernel;
+        return 0;
     }
     if (encoder->gpu_policy == SIXEL_GPU_POLICY_OFF ||
             encoder->precision_requested == SIXEL_OPTION_PRECISION_FLOAT32 ||
             encoder->prefer_float32 ||
             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
-        return kernel;
+        return 0;
     }
     device = NULL;
     if (sixel_gpu_device_acquire(&device) != SIXEL_OK) {
-        return kernel;
+        return 0;
     }
-    return SIXEL_DIFFUSE_PHASED;
+    return 1;
 }
 
 /* Keep the trace independent of numeric diffusion ABI values. */
@@ -1363,8 +1358,6 @@ sixel_encoder_dither_diffuse_name(int method_for_diffuse)
         return "x_dither";
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         return "bluenoise";
-    case SIXEL_DIFFUSE_PHASED:
-        return "phased";
     case SIXEL_DIFFUSE_LSO2:
         return "lso2";
     case SIXEL_DIFFUSE_SIERRA1:
@@ -1438,7 +1431,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "perturb_seed=%d|perturb_seed_override=%d|"
             "deadzone=%.9g|deadzone_override=%d|"
             "clamp_requested=%d|clamp_effective=%d|"
-            "clamp_threshold=%.9g|rgb101=%d|allocation_mode=%s|codes=",
+            "clamp_threshold=%.9g|rgb101=%d|diffuse_on_gpu=%d|"
+            "allocation_mode=%s|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -1474,6 +1468,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->clamp_policy == SIXEL_DITHER_CLAMP_AUTO
                 ? SIXEL_DITHER_CLAMP_SOFT : dither->clamp_policy,
             dither->clamp_threshold, dither->use_rgb101_palette,
+            dither->diffuse_on_gpu,
             dither->pipeline_last_mode == SIXEL_DITHER_ENCODE_PIPELINE
                 ? "pipeline" : dither->pipeline_last_mode ==
                     SIXEL_DITHER_ENCODE_STAGED ? "staged" : "serial");
@@ -2965,8 +2960,7 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
      * LSO2 here; the frame check rejects it if it resolves to the CPU. */
     dither_limited = encoder->residual_enabled ||
         sixel_encoder_delta_metric(encoder) == SIXEL_DELTA_METRIC_RGB241;
-    diffuse = encoder->method_for_diffuse == SIXEL_DIFFUSE_LSO2
-        ? SIXEL_DIFFUSE_PHASED : encoder->method_for_diffuse;
+    diffuse = encoder->method_for_diffuse;
     if (encoder->update_policy != SIXEL_UPDATE_POLICY_DELTA ||
             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
@@ -2979,7 +2973,7 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
              diffuse != SIXEL_DIFFUSE_A_DITHER &&
              diffuse != SIXEL_DIFFUSE_X_DITHER &&
              diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER &&
-             diffuse != SIXEL_DIFFUSE_PHASED)) {
+             diffuse != SIXEL_DIFFUSE_LSO2)) {
         sixel_helper_set_additional_message(
             "delta residual/rgb241 requires gamma RGB8, RGB output "
             "and none, a_dither, x_dither, bluenoise or GPU lso2 dither.");
@@ -3042,10 +3036,11 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
              dither->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
              dither->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
              dither->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER &&
-             dither->method_for_diffuse != SIXEL_DIFFUSE_PHASED)) {
+             !(dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2 &&
+               dither->diffuse_on_gpu))) {
         sixel_helper_set_additional_message(
             "delta residual/rgb241 needs an RGB8 target and "
-            "none, a_dither, x_dither, bluenoise or phased application.");
+            "none, a_dither, x_dither, bluenoise or GPU lso2 application.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder))
@@ -6025,6 +6020,8 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
     sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
+    context->dither->diffuse_on_gpu = skip_palette_diffusion == 0 &&
+        sixel_encoder_diffuse_on_gpu(context->encoder);
     context->dither->clamp_policy = context->encoder->clamp_policy;
     context->dither->clamp_threshold = context->encoder->clamp_threshold;
     context->dither->diffusion_deadzone =
@@ -6058,9 +6055,7 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
     context->dither->bluenoise_strength_override =
         context->encoder->bluenoise_strength_override;
     context->dither->bluenoise_strength = context->encoder->bluenoise_strength;
-    context->dither->phased_gain = context->encoder->phased_gain;
-    context->dither->phased_kernel =
-        sixel_encoder_phased_kernel(context->encoder);
+    context->dither->lso2_gain = context->encoder->lso2_gain;
     context->dither->bluenoise_gradient_factor_override =
         context->encoder->bluenoise_gradient_factor_override;
     context->dither->bluenoise_gradient_factor =
@@ -7991,6 +7986,10 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
             encoder->macro_number >= 0 || encoder->output_is_png) {
         return 0;
     }
+    /* GPU diffusion components solve in the RGB8 gamma space only. */
+    if (sixel_encoder_diffuse_on_gpu(encoder)) {
+        return 0;
+    }
     switch (sixel_encoder_effective_diffuse(encoder)) {
     case SIXEL_DIFFUSE_AUTO:
     case SIXEL_DIFFUSE_NONE:
@@ -8064,7 +8063,11 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
     /* These CPU spatial kernels consume the unrounded float palette and
      * propagate residuals without byte projection. Positional methods keep
      * their coordinate bias in the same extended lookup space. AUTO resolves
-     * to Atkinson or FS. */
+     * to Atkinson or FS. GPU diffusion components solve in the RGB8 gamma
+     * space only. */
+    if (sixel_encoder_diffuse_on_gpu(encoder)) {
+        return "display-p3 does not support this dither method.";
+    }
     switch (sixel_encoder_effective_diffuse(encoder)) {
     case SIXEL_DIFFUSE_AUTO:
     case SIXEL_DIFFUSE_NONE:
@@ -12451,8 +12454,8 @@ sixel_encoder_new(
     (*ppencoder)->bluenoise_size = 64;
     (*ppencoder)->bluenoise_gradient_factor_override = 0;
     (*ppencoder)->bluenoise_gradient_factor = 0.0f;
-    (*ppencoder)->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
-    (*ppencoder)->phased_gain_override = 0;
+    (*ppencoder)->lso2_gain = SIXEL_LSO2_GAIN_STANDARD;
+    (*ppencoder)->lso2_gain_override = 0;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_largest_override = 0;
@@ -13676,8 +13679,8 @@ sixel_encoder_apply_diffusion_resolution(
     encoder->x_dither_strength = 0.100f;
     encoder->bluenoise_strength = 0.055f;
     encoder->bluenoise_gradient_factor = 0.0f;
-    encoder->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
-    encoder->phased_gain_override = 0;
+    encoder->lso2_gain = SIXEL_LSO2_GAIN_STANDARD;
+    encoder->lso2_gain_override = 0;
     encoder->bluenoise_phase_x = 0;
     encoder->bluenoise_phase_y = 0;
     encoder->bluenoise_seed = 0;

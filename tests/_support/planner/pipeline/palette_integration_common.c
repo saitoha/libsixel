@@ -352,7 +352,7 @@ palette_integration_test_impl(int scenario, int gpu)
         goto end;
     }
     if (gpu && (sixel_encoder_setopt(encoder, 'G', "force") ||
-            sixel_encoder_setopt(encoder, 'd', "phased") ||
+            sixel_encoder_setopt(encoder, 'd', "lso2") ||
             sixel_encoder_setopt(encoder, '~', "ordered") ||
             sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
                 "greedy:B4:palette=latest:prepare=ahead"))) goto end;
