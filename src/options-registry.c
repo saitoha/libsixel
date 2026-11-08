@@ -1094,6 +1094,11 @@ enum {
     SIXEL_DIFFUSION_BASE_PHASED
 };
 
+/* phased remains a deprecated spelling of lso2. */
+#define SIXEL_DIFFUSION_BASE_SET_GPU_LSO2 \
+    (SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_LSO2) | \
+     SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_PHASED))
+
 #define SIXEL_DIFFUSION_BASE_SET_CARRY \
     (SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_AUTO) | \
      SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_FS) | \
@@ -1118,7 +1123,7 @@ static sixel_option_value_schema_t const g_diffusion_values[] = {
         "bluenoise", SIXEL_DIFFUSE_BLUENOISE_DITHER, 6u
     },
     { "lso2", SIXEL_DIFFUSE_LSO2, 0u },
-    { "phased", SIXEL_DIFFUSE_PHASED, 0u }
+    { "phased", SIXEL_DIFFUSE_LSO2, 0u }
 };
 
 enum {
@@ -1877,10 +1882,10 @@ static sixel_suboption_key_t const g_suboptions[] = {
         residual_frames, residual_frames_override),
     SIXEL_REGISTRY_ENCODER_UINT(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
-        "refresh_ms", 'J', "SIXEL_UPDATE_DELTA_REFRESH_MS", NULL, NULL,
+        "refresh", 'J', "SIXEL_UPDATE_DELTA_REFRESH", NULL, NULL,
         0.0, 10000.0, 1,
-        "refresh_ms must be an integer in range 0..10000.",
-        refresh_ms, refresh_ms_override),
+        "refresh must be an integer in range 0..10000.",
+        refresh_frames, refresh_frames_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "progressive", 'P', "SIXEL_UPDATE_DELTA_PROGRESSIVE", NULL, NULL,
@@ -2232,11 +2237,13 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-F merge_lloyd must be 0 or in range 1-30.",
         merge_policy_lloyd,
         merge_policy_lloyd_override),
-    SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
+    SIXEL_REGISTRY_ENCODER_MULTI_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_PHASED,
+        SIXEL_DIFFUSION_BASE_SET_GPU_LSO2,
         "gain", 'G', "SIXEL_DITHER_PHASED_GAIN", NULL, NULL,
-        g_phased_gain_choices, phased_gain),
+        g_phased_gain_choices,
+        phased_gain,
+        phased_gain_override),
 
     SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
         SIXEL_OPTION_SCHEMA_MERGE_POLICY, NULL,

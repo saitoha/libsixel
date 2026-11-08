@@ -7,7 +7,7 @@ test_gpu_ahead_t48_bytes(int argc, char **argv)
 #if SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
     (void)argc;
     (void)argv;
-    return gpu_ahead_compare("delta:T48:refresh_ms=80");
+    return gpu_ahead_compare("delta:T48:refresh=5");
 #else
     (void)argc;
     (void)argv;

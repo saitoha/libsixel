@@ -145,6 +145,7 @@ struct sixel_dither {
     int bluenoise_size_override;    /* CLI bluenoise size flag */
     int bluenoise_size;             /* parsed bluenoise tile size */
     int phased_gain; /* Frozen phased coefficient curve. */
+    int phased_kernel; /* Kernel solved by the phased GPU method. */
     int bluenoise_gradient_factor_override; /* CLI gradient gamma override */
     float bluenoise_gradient_factor; /* parsed gradient gamma */
     int quality_mode;               /* quality of histogram */

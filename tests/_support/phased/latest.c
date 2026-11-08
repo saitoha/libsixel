@@ -94,8 +94,6 @@ phased_latest_replay(char const *method, char const *delta)
         frame = playback_test_small_frame(i);
         PHASED_CHECK(frame != NULL);
         (void)sixel_playback_options_init(&options, sizeof(options));
-        options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
-        options.refresh_time_us = (uint64_t)i * 16667;
         PHASED_CHECK(sixel_playback_submit(trace.playback, frame,
             SIXEL_PLAYBACK_WAIT, 5000, &options) == SIXEL_OK);
         sixel_frame_unref(frame);
@@ -112,8 +110,6 @@ phased_latest_replay(char const *method, char const *delta)
         source = playback_test_small_frame((int)trace.selected[i] - 1);
         PHASED_CHECK(frame && source);
         (void)sixel_playback_options_init(&options, sizeof(options));
-        options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
-        options.refresh_time_us = (uint64_t)i * 16667;
         options.palette_source = source;
         PHASED_CHECK(sixel_playback_submit(serial, frame,
             SIXEL_PLAYBACK_WAIT, 5000, &options) == SIXEL_OK);

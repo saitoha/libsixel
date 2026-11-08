@@ -1245,14 +1245,14 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     }
     /* This pre-palette estimate uses the request. Runtime invokes the same
      * allocator with the completed palette and effective diffusion method. */
-    request.method_for_diffuse = encoder->method_for_diffuse;
+    request.method_for_diffuse = sixel_encoder_effective_diffuse(encoder);
     request.lazy = sixel_threading_policy_mode() ==
         SIXEL_THREADING_POLICY_LAZY;
     request.prefer_staged = sixel_dither_encode_default_staged(
         threads, request.method_for_diffuse);
     request.gpu_encode_only = sixel_gpu_palette_policy_claims_apply_stage(
         encoder->gpu_policy, encoder->gpu_palette_threshold,
-        encoder->lut_policy, encoder->method_for_diffuse,
+        encoder->lut_policy, request.method_for_diffuse,
         encoder->method_for_scan, pixel_count);
     request.threads_max_set = sixel_encoding_planner_resolve_threads_max(
         encoder, &request.threads_max);

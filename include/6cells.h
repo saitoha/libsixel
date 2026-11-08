@@ -1628,6 +1628,9 @@ typedef enum sixel_phased_gain {
     SIXEL_PHASED_GAIN_SMALL_ERROR = 1
 } sixel_phased_gain_t;
 
+/* phased_kernel names the kernel solved by the phased GPU method:
+ * SIXEL_DIFFUSE_LSO2 or a fixed-coefficient method such as SIXEL_DIFFUSE_FS.
+ * Zero means SIXEL_DIFFUSE_LSO2. */
 typedef struct sixel_dither_policy_options {
     int method_for_diffuse;
     int ncolors;
@@ -1647,6 +1650,7 @@ typedef struct sixel_dither_policy_options {
     int bluenoise_size;
     float bluenoise_gradient_factor;
     sixel_phased_gain_t phased_gain;
+    int phased_kernel;
 } sixel_dither_policy_options_t;
 
 typedef struct sixel_dither_policy_prepare_request {

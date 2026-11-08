@@ -4,7 +4,7 @@
 set -eux
 echo "1..1"
 set -v
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-refresh/0021_partial_alpha_rejected || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-refresh/0019_partial_alpha_rejected || {
     echo "not ok 1 - partial alpha rejected"
     exit 0
 }

@@ -2255,6 +2255,7 @@ sixel_dither_new(
     (*ppdither)->lookup_policy = NULL;
     (*ppdither)->gpu_dither = NULL;
     (*ppdither)->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
+    (*ppdither)->phased_kernel = SIXEL_DIFFUSE_LSO2;
     (*ppdither)->dither_policy = NULL;
     (*ppdither)->dither_policy_class_name = NULL;
     (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
@@ -4161,7 +4162,8 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     scan = dither->method_for_scan;
     if (scan == SIXEL_SCAN_AUTO) {
         scan = (dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2 ||
-            dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED)
+            (dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED &&
+             dither->phased_kernel == SIXEL_DIFFUSE_LSO2))
             ? SIXEL_SCAN_SERPENTINE : SIXEL_SCAN_RASTER;
     }
     status = sixel_dither_prepare_dither_policy(dither, scan,

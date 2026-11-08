@@ -1,13 +1,50 @@
 /* SPDX-License-Identifier: MIT */
 /* Four spatial phases, two cycles. k is a subpass, never video time.
- * This source is appended to the injected lookup program at preparation. */
+ * This source is appended to the injected lookup program at preparation.
+ * Each tap names the sender of an error contribution: dy rows above, and
+ * dx columns behind it along the sender row's scan direction. LSO2 weights
+ * depend on the sender's error magnitude; fixed kernels repeat one row.
+ * carry selects the CPU carry contract of the fixed kernels: deadzone,
+ * soft or hard limiting and integer rounding of the corrected sample. */
 struct PhasedParams {
     uint width, height, ncolors, step;
     uint tiles_x, keycolor, delta, threshold;
     uint metric, columns, rows, tiled, selected_threshold;
     uint selection[128];
     uint batch_stage;
+    uint taps, serpentine, carry, clamp_hard;
+    float deadzone, clamp_lower, clamp_upper, reserved;
+    int tap_dx[16];
+    int tap_dy[16];
 };
+
+static int phased_direction(int y, constant PhasedParams &p)
+{
+    return p.serpentine && (y & 1) ? -1 : 1;
+}
+
+/* Limit the corrected sample as the CPU carry limiter does: scale the whole
+ * correction until every channel lies within the soft bounds, preserving
+ * its direction; hard clipping limits each channel independently. */
+static float3 phased_carry(float3 source, float3 incoming,
+    constant PhasedParams &p)
+{
+    float3 value;
+    float scale;
+    uint n;
+
+    if (dot(incoming,incoming) < p.deadzone*p.deadzone) return source;
+    value = source + incoming;
+    if (p.clamp_hard) return rint(clamp(value, 0.f, 255.f));
+    scale = 1.f;
+    for (n = 0; n < 3; ++n) {
+        if (value[n] < p.clamp_lower)
+            scale = min(scale, (source[n]-p.clamp_lower)/(-incoming[n]));
+        else if (value[n] > p.clamp_upper)
+            scale = min(scale, (p.clamp_upper-source[n])/incoming[n]);
+    }
+    return rint(source + incoming*scale);
+}
 
 static float3 phased_color(constant uchar *palette, uint index)
 {
@@ -37,8 +74,8 @@ static float3 phased_send(device const float4 *a, device const float4 *b,
     error = phased_version(uint(x), uint(y), p.step, phase) ? b[i].xyz
         : a[i].xyz;
     row = uint3(clamp(floor(abs(error) + .5f), 0.f, 255.f));
-    return error * float3(weights[8*row.x+tap], weights[8*row.y+tap],
-        weights[8*row.z+tap]);
+    return error * float3(weights[16*row.x+tap], weights[16*row.y+tap],
+        weights[16*row.z+tap]);
 }
 
 #if PHASED_BATCH
@@ -99,9 +136,9 @@ kernel void phased_iterate(device const uchar *source [[buffer(0)]],
     PHASED_QUERY_BUFFERS
     uint lane [[thread_position_in_grid]])
 {
-    uint tile, position, i, best;
-    int x, y, direction, above;
-    float3 incoming, query, previous;
+    uint tile, position, i, best, tap;
+    int x, y, sender;
+    float3 incoming, query, previous, candidate;
     float4 updated, state;
 
 #if PHASED_BATCH
@@ -122,32 +159,46 @@ kernel void phased_iterate(device const uchar *source [[buffer(0)]],
     updated = float4(0.f);
     if (!transparent[i]) {
 #if PHASED_BATCH
-        if (p.batch_stage == 1) {
+        if (p.batch_stage == 1 || p.carry) {
 #endif
-        direction = (y & 1) ? -1 : 1;
-        above = ((y-1) & 1) ? -1 : 1;
-        incoming = phased_send(a,b,phase,weights,x-direction,y,0,p);
-        incoming += phased_send(a,b,phase,weights,x-4*direction,y,1,p);
-        incoming += phased_send(a,b,phase,weights,x+above,y-1,2,p);
-        incoming += phased_send(a,b,phase,weights,x,y-1,3,p);
-        incoming += phased_send(a,b,phase,weights,x-above,y-1,4,p);
-        incoming += phased_send(a,b,phase,weights,x,y-4,5,p);
-        query = clamp(float3(source[3*i],source[3*i+1],source[3*i+2])
-            + incoming, 0.f, 255.f);
-        state = phased_version(uint(x),uint(y),p.step,phase) ? b[i] : a[i];
-        previous = state.xyz + phased_color(palette,uint(state.w));
-        query = previous + (query - previous);
-#if PHASED_BATCH
-            queries[i] = float4(query,1.f);
-            return;
+        incoming = float3(0.f);
+        for (tap = 0; tap < p.taps; ++tap) {
+            sender = y - p.tap_dy[tap];
+            incoming += phased_send(a,b,phase,weights,
+                x - phased_direction(sender,p)*p.tap_dx[tap],sender,tap,p);
         }
-        query = queries[i].xyz;
+        if (p.carry) {
+            /* The rounded candidate carries the residual; lookup uses its
+             * byte projection, as in the CPU carry path. */
+            candidate = phased_carry(float3(source[3*i],source[3*i+1],
+                source[3*i+2]), incoming, p);
+            query = clamp(candidate, 0.f, 255.f);
+        } else {
+            query = clamp(float3(source[3*i],source[3*i+1],source[3*i+2])
+                + incoming, 0.f, 255.f);
+            state = phased_version(uint(x),uint(y),p.step,phase) ? b[i]
+                : a[i];
+            previous = state.xyz + phased_color(palette,uint(state.w));
+            query = previous + (query - previous);
+            candidate = query;
+        }
+#if PHASED_BATCH
+            if (p.batch_stage == 1) {
+                queries[i] = float4(query,1.f);
+                return;
+            }
+        }
+        if (!p.carry) {
+            query = queries[i].xyz;
+            candidate = query;
+        }
 #endif
         best = PHASED_LOOKUP(query, i);
         if (best >= p.ncolors) {
             atomic_store_explicit(invalid, 1u, memory_order_relaxed);
         } else {
-            updated = float4(query - phased_color(palette,best),float(best));
+            updated = float4(candidate - phased_color(palette,best),
+                float(best));
         }
     }
 #if PHASED_BATCH
@@ -182,7 +233,9 @@ kernel void phased_finish(constant uchar *palette [[buffer(1)]],
 #if PHASED_BATCH
     if (p.batch_stage == 1) {
         queries[i] = transparent[i] ? float4(0.f) :
-            float4(a[i].xyz+phased_color(palette,uint(a[i].w)),1.f);
+            float4(p.carry ? clamp(a[i].xyz+phased_color(palette,
+                uint(a[i].w)), 0.f, 255.f)
+                : a[i].xyz+phased_color(palette,uint(a[i].w)),1.f);
         return;
     }
 #endif
@@ -195,6 +248,7 @@ kernel void phased_finish(constant uchar *palette [[buffer(1)]],
          * consulted only now and never seeds a later frame's diffusion. */
         fresh = phased_color(palette,best);
         query = a[i].xyz + fresh;
+        if (p.carry) query = clamp(query, 0.f, 255.f);
         best = PHASED_LOOKUP(query, i);
         if (best >= p.ncolors) {
             atomic_store_explicit(invalid, 1u, memory_order_relaxed);
@@ -246,12 +300,15 @@ kernel void phased_solve_tail(constant uchar *palette [[buffer(1)]],
 #if PHASED_BATCH
     if (p.batch_stage == 1) {
         queries[i] = transparent[i] ? float4(0.f) :
-            float4(a[i].xyz+phased_color(palette,uint(a[i].w)),1.f);
+            float4(p.carry ? clamp(a[i].xyz+phased_color(palette,
+                uint(a[i].w)), 0.f, 255.f)
+                : a[i].xyz+phased_color(palette,uint(a[i].w)),1.f);
         return;
     }
 #endif
     if (transparent[i]) return;
     query = a[i].xyz + phased_color(palette,uint(a[i].w));
+    if (p.carry) query = clamp(query, 0.f, 255.f);
     best = PHASED_LOOKUP(query, i);
     if (best >= p.ncolors) {
         atomic_store_explicit(invalid, 1u, memory_order_relaxed);

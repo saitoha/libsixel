@@ -339,6 +339,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0079_QUEUE_SAMPLE_UNAVAILABLE \
     -DBUILD_TEST_0080_QUEUE_SAMPLE_LIVE \
     -DBUILD_TEST_0081_QUEUE_SAMPLE_TAIL \
+    -DBUILD_TEST_0082_FIXED_KERNELS \
     -DBUILD_TEST_0064_PIPELINE_SAMPLE_STALE \
     -DBUILD_TEST_0065_PIPELINE_SAMPLE_SHORT \
     -DBUILD_TEST_0066_PIPELINE_SAMPLE_TAIL \
@@ -893,28 +894,26 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0039_GRIDLUT_INSTANCE_ISOLATION \
     -DBUILD_TEST_0001_OPTION_ATOMICITY \
     -DBUILD_TEST_0002_STAGGERED_COVERAGE \
-    -DBUILD_TEST_0003_SKIPPED_DEADLINES \
-    -DBUILD_TEST_0004_REPEATED_CLOCK \
-    -DBUILD_TEST_0005_BACKWARD_CLOCK \
+    -DBUILD_TEST_0003_PERIOD_CYCLE \
+    -DBUILD_TEST_0004_UNCOMMITTED_FRAME \
+    -DBUILD_TEST_0005_RECTANGLE_RESTART \
     -DBUILD_TEST_0006_CPU_PLAYBACK \
     -DBUILD_TEST_0007_GPU_PLAYBACK \
     -DBUILD_TEST_0008_LEGACY_OPTIONS \
     -DBUILD_TEST_0009_FAILED_OUTPUT \
     -DBUILD_TEST_0010_LATEST_PLAYBACK \
+    -DBUILD_TEST_0028_ALL_DITHERS \
     -DBUILD_TEST_0011_PARTIAL_DIRECT \
     -DBUILD_TEST_0012_PARTIAL_AHEAD \
     -DBUILD_TEST_0013_PARTIAL_LATEST \
     -DBUILD_TEST_0014_PARTIAL_MOVE_X \
     -DBUILD_TEST_0015_PARTIAL_RESIZE \
     -DBUILD_TEST_0016_PARTIAL_MOVE_Y \
-    -DBUILD_TEST_0017_PARTIAL_REPEAT_TIME \
-    -DBUILD_TEST_0018_PARTIAL_GAP \
-    -DBUILD_TEST_0019_PARTIAL_OUTPUT_FAILURE \
-    -DBUILD_TEST_0020_PARTIAL_OUT_OF_BOUNDS \
-    -DBUILD_TEST_0021_PARTIAL_ALPHA_REJECTED \
-    -DBUILD_TEST_0022_PARTIAL_MOVE_SAME_TIME \
-    -DBUILD_TEST_0023_PARTIAL_RETURN \
-    -DBUILD_TEST_0024_PARTIAL_HEIGHT \
+    -DBUILD_TEST_0017_PARTIAL_OUTPUT_FAILURE \
+    -DBUILD_TEST_0018_PARTIAL_OUT_OF_BOUNDS \
+    -DBUILD_TEST_0019_PARTIAL_ALPHA_REJECTED \
+    -DBUILD_TEST_0020_PARTIAL_RETURN \
+    -DBUILD_TEST_0021_PARTIAL_HEIGHT \
     -DBUILD_TEST_0001_DIRECT \
     -DBUILD_TEST_0002_EYTZINGER \
     -DBUILD_TEST_0003_BLOCKCULL \
@@ -933,12 +932,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0016_INCOMPLETE_SHAPE \
     -DBUILD_TEST_0017_PIXEL_COUNT \
     -DBUILD_TEST_0018_NO_VALID_MASK \
-    -DBUILD_TEST_0025_GPU_DIRECT \
-    -DBUILD_TEST_0026_GPU_AHEAD \
-    -DBUILD_TEST_0027_GPU_LATEST \
-    -DBUILD_TEST_0028_GPU_MOVE \
-    -DBUILD_TEST_0029_GPU_FAILURE \
-    -DBUILD_TEST_0030_GPU_RETURN \
+    -DBUILD_TEST_0022_GPU_DIRECT \
+    -DBUILD_TEST_0023_GPU_AHEAD \
+    -DBUILD_TEST_0024_GPU_LATEST \
+    -DBUILD_TEST_0025_GPU_MOVE \
+    -DBUILD_TEST_0026_GPU_FAILURE \
+    -DBUILD_TEST_0027_GPU_RETURN \
     -DBUILD_TEST_0019_AUTO_RECTANGLE_CUTOFF \
     -DBUILD_TEST_0020_FULL_WIDTH_OFFSET \
     -DBUILD_RECTANGLE_COMMON \
@@ -7280,14 +7279,11 @@ test_runner_SOURCES = test_runner.c \
     delta/refresh/0014_partial_move_x.c \
     delta/refresh/0015_partial_resize.c \
     delta/refresh/0016_partial_move_y.c \
-    delta/refresh/0017_partial_repeat_time.c \
-    delta/refresh/0018_partial_gap.c \
-    delta/refresh/0019_partial_output_failure.c \
-    delta/refresh/0020_partial_out_of_bounds.c \
-    delta/refresh/0021_partial_alpha_rejected.c \
-    delta/refresh/0022_partial_move_same_time.c \
-    delta/refresh/0023_partial_return.c \
-    delta/refresh/0024_partial_height.c \
+    delta/refresh/0017_partial_output_failure.c \
+    delta/refresh/0018_partial_out_of_bounds.c \
+    delta/refresh/0019_partial_alpha_rejected.c \
+    delta/refresh/0020_partial_return.c \
+    delta/refresh/0021_partial_height.c \
     delta/gpu-rectangle/0001_direct.c \
     delta/gpu-rectangle/0002_eytzinger.c \
     delta/gpu-rectangle/0003_blockcull.c \
@@ -7306,26 +7302,27 @@ test_runner_SOURCES = test_runner.c \
     delta/gpu-rectangle/0016_incomplete_shape.c \
     delta/gpu-rectangle/0017_pixel_count.c \
     delta/gpu-rectangle/0018_no_valid_mask.c \
-    delta/refresh/0025_gpu_direct.c \
-    delta/refresh/0026_gpu_ahead.c \
-    delta/refresh/0027_gpu_latest.c \
-    delta/refresh/0028_gpu_move.c \
-    delta/refresh/0029_gpu_failure.c \
-    delta/refresh/0030_gpu_return.c \
+    delta/refresh/0022_gpu_direct.c \
+    delta/refresh/0023_gpu_ahead.c \
+    delta/refresh/0024_gpu_latest.c \
+    delta/refresh/0025_gpu_move.c \
+    delta/refresh/0026_gpu_failure.c \
+    delta/refresh/0027_gpu_return.c \
     delta/gpu-rectangle/0019_auto_rectangle_cutoff.c \
     delta/gpu-rectangle/0020_full_width_offset.c \
     _support/processing/gpu-palette/rectangle_common.c \
     _support/processing/delta-refresh/partial_test_common.c \
     delta/refresh/0001_option_atomicity.c \
     delta/refresh/0002_staggered_coverage.c \
-    delta/refresh/0003_skipped_deadlines.c \
-    delta/refresh/0004_repeated_clock.c \
-    delta/refresh/0005_backward_clock.c \
+    delta/refresh/0003_period_cycle.c \
+    delta/refresh/0004_uncommitted_frame.c \
+    delta/refresh/0005_rectangle_restart.c \
     delta/refresh/0006_cpu_playback.c \
     delta/refresh/0007_gpu_playback.c \
     delta/refresh/0008_legacy_options.c \
     delta/refresh/0009_failed_output.c \
     delta/refresh/0010_latest_playback.c \
+    delta/refresh/0028_all_dithers.c \
     _support/processing/delta-refresh/refresh_test_common.c \
     _support/processing/delta-residual/gate_test_common.c \
     _support/processing/delta-residual/residual_test_common.c \
@@ -7440,6 +7437,7 @@ test_runner_SOURCES = test_runner.c \
     dither/phased/0079_queue_sample_unavailable.c \
     dither/phased/0080_queue_sample_live.c \
     dither/phased/0081_queue_sample_tail.c \
+    dither/phased/0082_fixed_kernels.c \
     dither/phased/0064_pipeline_sample_stale.c \
     dither/phased/0065_pipeline_sample_short.c \
     dither/phased/0066_pipeline_sample_tail.c \

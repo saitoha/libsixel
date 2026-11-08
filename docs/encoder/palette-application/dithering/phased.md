@@ -1,6 +1,6 @@
 # Dithering: `phased`
 
-`phased` is a GPU-only spatial error-diffusion method for RGB8 images in gamma RGB. It uses four spatial phases and two cycles to distribute quantization error within the current image. It has no residual carried between video frames and no CPU implementation. The [dithering reference](README.md) owns the general separation between dither and palette lookup.
+`phased` is a GPU-only spatial error-diffusion method for RGB8 images in gamma RGB. It uses four spatial phases and two cycles to distribute quantization error within the current image. It is the GPU form of `lso2` and of the [fixed kernels](#fixed-kernels). It has no residual carried between video frames and no CPU implementation. The [dithering reference](README.md) owns the general separation between dither and palette lookup.
 
 ## Selection and supported inputs
 
@@ -11,7 +11,13 @@ img2sixel --gpu-policy=auto --precision-policy=8bit \
   --lookup-policy=ordered -d phased:gain=small-error image.png
 ```
 
-`gain=standard` is the default; `gain=small-error` reduces small residuals. `SIXEL_DITHER_PHASED_GAIN` supplies the environment default. Explicit suboptions override that default. The spatial schedule is serpentine; automatic scan selection resolves to serpentine, while an explicit raster scan is rejected. The method does not use a gradient map, add color noise, or implement the CPU methods' deadzone and perturbation controls.
+`gain=standard` is the default; `gain=small-error` reduces small residuals. `SIXEL_DITHER_PHASED_GAIN` supplies the environment default. Explicit suboptions override that default. The LSO2 schedule is serpentine; automatic scan selection resolves to serpentine, while an explicit raster scan is rejected. LSO2 does not use a gradient map, add color noise, or implement the CPU methods' deadzone and perturbation controls.
+
+## Fixed kernels
+
+The same four-phase solver also runs the fixed-coefficient kernels `fs`, `atkinson`, `jajuni`, `stucki`, `burkes` and `sierra` variants 1–3. When the GPU policy admits such a request, the encoder records the requested method as the phased kernel; `phased_kernel` in the dither policy options carries it, and a cleared value means LSO2. Each kernel gathers from the senders of its CPU taps with weight/denominator, both independent of the sender's error magnitude. Senders are mirrored on odd rows only for a serpentine scan; these kernels keep their CPU raster default and accept either scan.
+
+Incoming error follows the CPU carry contract: a correction whose RGB length is below the deadzone is discarded, the corrected sample is limited by the soft (direction-preserving) or hard clamp with the configured threshold, and it is rounded to an integer. The lookup sees the byte projection of that sample, and the residual is measured from the rounded sample. Perturbation and the unbounded `clamp=none` carry have no GPU form: the encoder keeps them on the CPU kernel, and the preparer rejects them. Because the GPU solver and the fractional lookup differ from the sequential CPU scan, output is not byte-identical to the CPU kernel; with every carry discarded, all kernels reduce to the same plain lookup.
 
 Metal, gamma RGB8 source storage and the indexed output component path are required. Float32 images, extended working spaces and legacy-only output modes are unsupported. A GPU policy of `off`, unavailable device, or incompatible lookup returns an error before output rather than substituting another dither. The GPU `auto` small-image cutoff cannot select CPU because this method has no CPU capability.
 
@@ -59,7 +65,7 @@ A completed solution owns its source-derived state, frozen wire palette and geom
 | PH-06 | A byte-only lookup is rejected before execution. | [tests/dither/phased/0006_byte_lookup_rejected.t](../../../../tests/dither/phased/0006_byte_lookup_rejected.t) |
 | PH-07 | GPU auto executes small images despite the CPU cutoff. | [tests/dither/phased/0007_auto_small_image.t](../../../../tests/dither/phased/0007_auto_small_image.t) |
 | PH-08 | Float32 source configuration is rejected. | [tests/dither/phased/0008_float_image_rejected.t](../../../../tests/dither/phased/0008_float_image_rejected.t) |
-| PH-09 | Explicit raster scan is rejected. | [tests/dither/phased/0009_raster_rejected.t](../../../../tests/dither/phased/0009_raster_rejected.t) |
+| PH-09 | Explicit raster scan is rejected for LSO2. | [tests/dither/phased/0009_raster_rejected.t](../../../../tests/dither/phased/0009_raster_rejected.t) |
 | PH-10 | Invalid gain configuration preserves the previous configuration. | [tests/dither/phased/0010_invalid_gain_atomic.t](../../../../tests/dither/phased/0010_invalid_gain_atomic.t) |
 | PH-11 | T0 final selection matches retained-color reference decisions. | [tests/dither/phased/0011_delta_t0.t](../../../../tests/dither/phased/0011_delta_t0.t) |
 | PH-12 | A supplied refresh selection lowers T48 to T0 only at selected pixels. | [tests/dither/phased/0012_delta_refresh.t](../../../../tests/dither/phased/0012_delta_refresh.t) |
@@ -107,6 +113,7 @@ A completed solution owns its source-derived state, frozen wire palette and geom
 
 | PH-54 | Cancelled origin updates do not leak into later admissions. | [tests/dither/phased/0054_playback_cancel_origin.t](../../../../tests/dither/phased/0054_playback_cancel_origin.t) |
 | PH-55 | Later admissions inherit the last successfully applied origin. | [tests/dither/phased/0055_playback_inherited_origin.t](../../../../tests/dither/phased/0055_playback_inherited_origin.t) |
+| PH-56 | Fixed kernels reduce to one plain lookup with all carry discarded, differ with live carry, and reject perturbation, unbounded clamp and invalid limits; a cleared kernel means LSO2. | [tests/dither/phased/0082_fixed_kernels.t](../../../../tests/dither/phased/0082_fixed_kernels.t) |
 
 | PHLUT-01 | `none` preserves the independent phased reference indexes with T48 and spatial T0 refresh selection. | [tests/dither/phased/0068_none_refresh.t](../../../../tests/dither/phased/0068_none_refresh.t) |
 | PHLUT-02 | `delaunay` preserves the independent phased reference indexes with T48 and spatial T0 refresh selection. | [tests/dither/phased/0069_delaunay_refresh.t](../../../../tests/dither/phased/0069_delaunay_refresh.t) |

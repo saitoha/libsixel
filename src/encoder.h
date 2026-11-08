@@ -66,6 +66,12 @@ sixel_encoder_commit_repair(sixel_encoder_t *encoder,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_invalidate_6delta_plane_owned(sixel_encoder_t *encoder);
 
+/* Requested LSO2 runs as the GPU phased solver when this encoder admits a
+ * GPU and the RGB8 gamma serpentine path is available; otherwise it stays
+ * on the CPU kernel. Every admission reads this, never the raw request. */
+SIXEL_INTERNAL_API int
+sixel_encoder_effective_diffuse(sixel_encoder_t const *encoder);
+
 SIXEL_INTERNAL_API int
 sixel_encoder_should_hide_animation_cursor(int is_multiframe,
                                            int fstatic,
@@ -214,6 +220,7 @@ struct sixel_encoder {
     int bluenoise_size_override;
     int bluenoise_size;
     int phased_gain; /* Frozen phased coefficient curve. */
+    int phased_gain_override;
     int bluenoise_gradient_factor_override;
     float bluenoise_gradient_factor;
     int method_for_scan;
@@ -475,10 +482,8 @@ struct sixel_encoder {
     int residual_keep_override;
     unsigned int residual_frames;
     int residual_frames_override;
-    unsigned int refresh_ms;
-    int refresh_ms_override;
-    uint64_t refresh_time_us;
-    int refresh_time_override;
+    unsigned int refresh_frames; /* encoded frames per refresh cycle */
+    int refresh_frames_override;
     /* Tentative observations live here until the output owner commits. */
     sixel_delta_residual_t residual_state;
     /* Runtime ceiling does not mutate the configured maximum or history. */

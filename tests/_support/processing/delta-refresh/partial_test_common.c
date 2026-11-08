@@ -8,7 +8,7 @@
 #include "src/encoder.h"
 #include "src/bluenoise_64x64.h"
 
-/* Every wrapper chooses one rectangle/time transition and checks the entire
+/* Every wrapper chooses one rectangle transition and checks the entire
  * retained canvas against independent wire RGB values, including untouched
  * pixels outside the damage. No perceptual score can hide a misplaced keep. */
 /* Keep assertions local when test support units are amalgamated. */
@@ -72,7 +72,7 @@ test_partial_refresh(int mode, int gpu)
     PR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         gpu ? "force" : "off") == SIXEL_OK);
     PR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
-        "delta:T8:J64") == SIXEL_OK);
+        "delta:T8:J4") == SIXEL_OK);
     PR_REQUIRE(sixel_encoder_set_6delta_plane_size(encoder, 96, 72)
         == SIXEL_OK);
     PR_REQUIRE(sixel_output_new(&output, partial_write, &out, NULL)
@@ -80,8 +80,7 @@ test_partial_refresh(int mode, int gpu)
     PR_REQUIRE(sixel_frame_new(&frame, allocator) == SIXEL_OK);
     PR_REQUIRE(sixel_playback_options_init(&options, sizeof(options))
         == SIXEL_OK);
-    options.flags = SIXEL_PLAYBACK_OPTION_ORIGIN |
-        SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
+    options.flags = SIXEL_PLAYBACK_OPTION_ORIGIN;
     if (mode == 2 || mode == 3) {
         PR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
             "balanced:global_budget=2:prepare=ahead") == SIXEL_OK);
@@ -104,7 +103,6 @@ test_partial_refresh(int mode, int gpu)
             if (mode == 5) width = 31;
             if (mode == 6) oy = 13;
             if (mode == 10) ox = 80;
-            if (mode == 12) ox = 9;
             if (mode == 13) ox = 50;
             if (mode == 14) height = 23;
         }
@@ -114,9 +112,6 @@ test_partial_refresh(int mode, int gpu)
             SIXEL_PIXELFORMAT_RGB888, NULL, 0) == SIXEL_OK);
         options.origin_x = step ? ox : 0;
         options.origin_y = step ? oy : 0;
-        options.refresh_time_us = step < 2 ? 0U :
-            (mode == 7 || mode == 12) ? 0U :
-            mode == 8 ? 80000U : step == 3 ? 32000U : 16000U;
         if (step == 2 && mode == 9) out.fail = 1;
         if (step == 2 && mode == 11) {
             mask = sixel_allocator_malloc(allocator, 32U * 24U);
@@ -141,8 +136,6 @@ test_partial_refresh(int mode, int gpu)
         } else {
             PR_REQUIRE(sixel_encoder_set_6delta_plane_origin(encoder,
                 options.origin_x, options.origin_y) == SIXEL_OK);
-            encoder->refresh_time_override = 1;
-            encoder->refresh_time_us = options.refresh_time_us;
             status = sixel_encoder_encode_frame(encoder, frame, output);
         }
         if (step == 2 && mode >= 9 && mode <= 11) {
@@ -159,8 +152,7 @@ test_partial_refresh(int mode, int gpu)
             selected = x >= ox && x < ox + width &&
                 y >= oy && y < oy + height;
             rank = sixel_bn64[((y + 17) & 63) * 64 + ((x + 37) & 63)];
-            if (mode == 7) selected = 0;
-            else if (mode <= 3) selected = selected && rank < 64U;
+            if (mode <= 3) selected = selected && rank < 64U;
             if (mode == 3 && x >= ox && x < ox + width &&
                     y >= oy && y < oy + height) {
                 /* Latest may still carry the earlier all-102 palette. The
@@ -177,12 +169,12 @@ test_partial_refresh(int mode, int gpu)
                         encoder->accumulation_pixels[pos + i] == 102)
                     continue;
                 if (encoder->accumulation_pixels[pos + i] != expected) {
-                    fprintf(stderr, "rect=%d,%d selected=%lu last=%llu\n",
+                    fprintf(stderr, "rect=%d,%d selected=%lu frame=%llu\n",
                         encoder->residual_state.refresh_origin_x,
                         encoder->residual_state.refresh_origin_y,
                         (unsigned long)encoder->residual_state.selected_pixels,
                         (unsigned long long)
-                            encoder->residual_state.refresh_last_us);
+                            encoder->residual_state.refresh_frame);
                     fprintf(stderr, "pixel (%d,%d): %u != %d\n", x, y,
                         encoder->accumulation_pixels[pos + i], expected);
                     goto end;

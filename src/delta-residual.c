@@ -153,10 +153,9 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
 void
 sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
     int width, int height, int origin_x, int origin_y,
-    unsigned int period_ms, uint64_t time_us,
-    int history_valid)
+    unsigned int period, int history_valid)
 {
-    uint64_t period, previous, current, offset, epoch;
+    uint64_t previous, current, offset;
     uint32_t phases[2];
     unsigned int gx, gy, phase;
     size_t cell, nx, ny;
@@ -168,30 +167,28 @@ sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
     state->pending = 1;
     state->mask.width = width;
     state->mask.height = height;
-    state->refresh_next_us = time_us;
-    state->refresh_next_origin_x = origin_x;
-    state->refresh_next_origin_y = origin_y;
-    state->refresh_next_valid = 1;
     reset = !state->refresh_valid || !history_valid ||
         state->width != width || state->height != height ||
         state->refresh_origin_x != origin_x ||
-        state->refresh_origin_y != origin_y ||
-        time_us < state->refresh_last_us;
-    epoch = reset ? time_us : state->refresh_epoch_us;
-    state->refresh_next_epoch_us = epoch;
-    if (period_ms == 0U || width <= 0 || height <= 0) {
+        state->refresh_origin_y != origin_y;
+    previous = reset ? 0U : state->refresh_frame;
+    current = reset ? 0U : previous + 1U;
+    state->refresh_next_frame = current;
+    state->refresh_next_origin_x = origin_x;
+    state->refresh_next_origin_y = origin_y;
+    state->refresh_next_valid = 1;
+    if (period == 0U || width <= 0 || height <= 0) {
         state->refresh_next_valid = 0;
         return;
     }
-    period = (uint64_t)period_ms * 1000U;
-    previous = reset ? 0U : state->refresh_last_us - epoch;
-    current = time_us - epoch;
     state->mask.columns = 64U;
     state->mask.rows = 64U;
     state->mask.tiled = 1U;
     memset(phases, 0, sizeof(phases));
     for (phase = 0U; phase < 64U; ++phase) {
-        offset = ((uint64_t)phase + 1U) * period / 64U;
+        /* Phase p is due (p + 1) / 64 of a period after the restart; it
+         * is selected by the first encoded frame at or after that point. */
+        offset = (((uint64_t)phase + 1U) * period + 63U) / 64U;
         selected = reset ? history_valid : current >= offset &&
             (previous < offset || (current - offset) / period >
                                   (previous - offset) / period);
