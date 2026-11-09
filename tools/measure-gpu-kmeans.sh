@@ -1,19 +1,25 @@
 #!/bin/sh
-# Rebuild and measure in this worktree; never install or change Git refs.
+# Rebuild and measure in a build directory; never install or change Git refs.
 set -eu
 
 usage() {
-    echo "Usage: $0 [--full] [--baseline INSTRUMENTED_COMMIT]"
+    echo "Usage: $0 [--build-dir DIR] [--full] [--baseline INSTRUMENTED_COMMIT]"
+    echo "  --build-dir  Build directory (default: build-gpu-kmeans in the source tree)."
     echo "  --full       Also run make staticcheck and the complete make check."
     echo "  --baseline   First measure an archived source snapshot inside this build."
     echo "JOBS (default 8) controls build/test parallelism, not concurrent benchmarks."
 }
 
 full=0
+build_arg=
 baseline=
 while test "$#" -gt 0; do
     case "$1" in
         --full) full=1 ;;
+        --build-dir)
+            shift
+            test "$#" -gt 0 || { usage >&2; exit 2; }
+            build_arg=$1 ;;
         --baseline)
             shift
             test "$#" -gt 0 || { usage >&2; exit 2; }
@@ -24,8 +30,10 @@ while test "$#" -gt 0; do
     shift
 done
 
-build=$(CDPATH='' cd -- "${0%/*}" && pwd -P)
-root=$(CDPATH='' cd -- "$build/.." && pwd -P)
+root=$(CDPATH='' cd -- "${0%/*}/.." && pwd -P)
+build=${build_arg:-$root/build-gpu-kmeans}
+mkdir -p "$build"
+build=$(CDPATH='' cd -- "$build" && pwd -P)
 export PATH="$root/.local/bin:$PATH"
 export LC_ALL=C
 jobs=${JOBS:-8}
@@ -86,8 +94,15 @@ if test -n "$baseline"; then
     git -C "$root" archive --format=tar --output="$results/baseline.tar" "$baseline"
     tar -xf "$results/baseline.tar" -C "$results/baseline-src"
     echo "=== Baseline $baseline ==="
-    KMEANS_MEASURE_REVISION=$baseline \
-        sh "$results/baseline-src/build-gpu-kmeans/measure-gpu-kmeans.sh"
+    if test -f "$results/baseline-src/tools/measure-gpu-kmeans.sh"; then
+        KMEANS_MEASURE_REVISION=$baseline \
+            sh "$results/baseline-src/tools/measure-gpu-kmeans.sh" \
+            --build-dir "$results/baseline-src/build-gpu-kmeans"
+    else
+        mkdir -p "$results/baseline-src/build-gpu-kmeans"
+        KMEANS_MEASURE_REVISION=$baseline \
+            sh "$results/baseline-src/build-gpu-kmeans/measure-gpu-kmeans.sh"
+    fi
 fi
 
 if ! test -f "$build/Makefile"; then
