@@ -741,7 +741,7 @@ burkes_gpu_prepare_impl(sixel_allocator_t *allocator,
     unsigned char colors[768], phase[4096];
     uint32_t positions[4096], counts[4];
     double margin;
-    size_t lengths[18], pixels, i, j, k, x, y, bucket;
+    size_t lengths[18], pixels, i, x, y, bucket;
     SIXELSTATUS status;
 
     if (request->device == NULL || request->lookup == NULL ||

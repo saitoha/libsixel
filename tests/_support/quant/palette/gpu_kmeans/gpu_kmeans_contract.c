@@ -221,7 +221,7 @@ kmgpu_contract_ties(int mode)
                 centers[3] != 1) return 1;
     }
     for (i = 0; i < 6; ++i) {
-        if (membership[i] != (i != 0)) return 1;
+        if (membership[i] != (i == 0 ? 0U : 1U)) return 1;
     }
     return 0;
 }
