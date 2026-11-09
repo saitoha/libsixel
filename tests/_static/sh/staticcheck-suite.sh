@@ -398,6 +398,10 @@ run_case_tap "staticcheck-c-preprocessor-portability" \
     sh "$src_root/tests/_static/sh/staticcheck-c-preprocessor-portability.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?
 
+run_case_tap "staticcheck-c-conditional-operand" \
+    sh "$src_root/tests/_static/sh/staticcheck-c-conditional-operand.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-c-octal-escape-boundary" \
     sh "$src_root/tests/_static/sh/staticcheck-c-octal-escape-boundary.sh" \
     "$src_root" || fail_and_exit $?

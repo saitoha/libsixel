@@ -371,6 +371,7 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
     double phase_ms[9];
     double start, mark, phase_start, gpu_start, gpu_end, total_ms;
     char const *profile;
+    char const *device_name;
     char const *phase_names[9] = { "prepare", "allocate", "upload",
         "encode", "submit", "wait", "validate", "publish", "release" };
     char const *stage_names[4] = { "assign", "partial", "reduce", "update" };
@@ -612,13 +613,14 @@ cleanup:
         if (trace) {
             phase_ms[8] = (sixel_timer_now() - mark) * 1000.0;
             total_ms = (sixel_timer_now() - start) * 1000.0;
+            device_name = [[sixel_km_metal_device name] UTF8String];
             fprintf(stderr, "LSXKMTIME1|mode=%s|M=%u|K=%u|limit=%u|"
                 "iterations=%u|repairs=%u|commands=%u|status=0x%04x|"
                 "wall_ms=%.6f|device=%s|\n",
                 split ? "stages" : "batch", params.points, params.centers,
                 request->max_iterations, finished_iterations, repairs,
                 command_count, (unsigned int)status, total_ms,
-                [[sixel_km_metal_device name] UTF8String] ?: "unavailable");
+                device_name != NULL ? device_name : "unavailable");
             for (index = 0u; index < 9u; ++index) {
                 fprintf(stderr, "LSXKMPHASE1|phase=%s|cpu_ms=%.6f|\n",
                     phase_names[index], phase_ms[index]);
