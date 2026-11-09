@@ -9882,6 +9882,17 @@ end:
         (*dither)->gpu_policy = request->gpu_apply_policy;
         (*dither)->gpu_palette_threshold = request->gpu_palette_threshold;
         (*dither)->force_palette = request->force_palette;
+        /* The application precision is frozen just above, and the working
+         * coordinates are final.  A byte-only request keeps no float
+         * palette, so its component and legacy routes see one palette.
+         * An image map stays unrounded: only the copy that applies it
+         * freezes, after this source's coordinates are converted. */
+        if (!request->from_map_image) {
+            status = sixel_dither_freeze_application_precision(*dither);
+            if (SIXEL_FAILED(status)) {
+                sixel_encoder_release_dither_output(dither);
+            }
+        }
     }
     return status;
 }
@@ -10172,6 +10183,16 @@ end:
         (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
         /* pass down the user's demand for an exact palette size */
         (*dither)->force_palette = encoder->force_palette;
+        /* Fixed, mapfile and builtin applications freeze here for the same
+         * reason as a generated palette.  The immutable map source keeps
+         * its float coordinates for the copy that converts them. */
+        if (!from_map_image) {
+            status = sixel_dither_freeze_application_precision(*dither);
+            if (SIXEL_FAILED(status)) {
+                sixel_encoder_release_dither_output(dither);
+                return status;
+            }
+        }
         if (cache_allowed && fixed_palette_cache_candidate != 0
                 && dither_cache_hit == 0) {
             /* The immutable source has a separate lifetime. Retain the

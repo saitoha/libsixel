@@ -5420,8 +5420,16 @@ sixel_encoder_core_encode_dispatch(
     } else {
         status = sixel_encode_indexed_session(request);
         if (status != SIXEL_FALSE) return status;
-        if (sixel_output_is_resolve_only(request->output))
+        if (sixel_output_is_resolve_only(request->output)) {
+            /* A resolve-only output publishes a resolved image and has no
+             * legacy byte adapter to fall back to, so a declined component
+             * session ends the frame.  Name the stage: the caller cannot
+             * otherwise tell this apart from an unsupported output. */
+            sixel_helper_set_additional_message(
+                "resolve-only output requires the indexed component path, "
+                "which declined this dither configuration");
             return SIXEL_FEATURE_ERROR;
+        }
         if (request->dither->diffuse_on_gpu) {
             sixel_helper_set_additional_message(
                 "GPU diffusion requires the RGB8 GPU component path");

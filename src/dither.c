@@ -4165,6 +4165,31 @@ sixel_dither_get_lookup_configuration(sixel_dither_t const *dither,
         configuration);
 }
 
+/*
+ * 8bit applies the palette on the work samples' byte coordinates, so a
+ * float palette kept from construction has no consumer: it only hides the
+ * byte palette from the component route, whose preparation rejects an
+ * authoritative float palette.  Round it once, with the same format the
+ * byte apply would use, and release the float entries.  RGB101 output needs
+ * those coordinates and reports the conflicting request separately.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_freeze_application_precision(sixel_dither_t *dither)
+{
+    int pixelformat;
+
+    if (dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (dither->apply_8bit == 0 || dither->use_rgb101_palette != 0) {
+        return SIXEL_OK;
+    }
+    /* The float palette shares the work samples' gamma coordinates. */
+    pixelformat = SIXEL_PIXELFORMAT_IS_FLOAT32(dither->pixelformat)
+        ? dither->pixelformat : SIXEL_PIXELFORMAT_RGBFLOAT32;
+    return sixel_palette_round_to_bytes(dither->palette, pixelformat);
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     int parallel, int prepare_lookup)
@@ -4520,12 +4545,9 @@ sixel_dither_apply_palette(
         goto end;
     }
     if (dither->apply_8bit != 0 && palette_has_float != 0) {
-        /* 8bit applies bytes: the float palette shares the work samples'
-         * gamma coordinates, so round it with the same format first. */
-        status = sixel_palette_round_to_bytes(
-            palette,
-            source_has_float ? pipeline_pixelformat
-                             : SIXEL_PIXELFORMAT_RGBFLOAT32);
+        /* Construction normally freezes this precision already; a direct
+         * library caller can still install a float palette afterwards. */
+        status = sixel_dither_freeze_application_precision(dither);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

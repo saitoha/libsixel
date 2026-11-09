@@ -2634,6 +2634,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/precision/0008_explicit_float_preserve.c \
 	_support/processing/precision/0009_dither_promotion.c \
 	_support/processing/precision/0018_packed_palette.c \
+	_support/processing/precision/0027_byte_clustering_freeze.c \
 	_support/processing/chunk/0001_chunk_factory.c \
 	decoder/parser/0002_chunk_cancel_callback.c \
 	frame/timeline/0001_timeline_logger_factory.c \
@@ -7671,6 +7672,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/precision/test_runner-0008_explicit_float_preserve.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/precision/test_runner-0009_dither_promotion.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/precision/test_runner-0018_packed_palette.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/precision/test_runner-0027_byte_clustering_freeze.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0002_chunk_cancel_callback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	frame/timeline/test_runner-0001_timeline_logger_factory.$(OBJEXT) \
@@ -10703,6 +10705,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po \
 	_support/processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Po \
 	_support/processing/precision/$(DEPDIR)/test_runner-0018_packed_palette.Po \
+	_support/processing/precision/$(DEPDIR)/test_runner-0027_byte_clustering_freeze.Po \
 	_support/processing/progressive/$(DEPDIR)/test_runner-progressive_application_test_common.Po \
 	_support/processing/progressive/$(DEPDIR)/test_runner-progressive_callback_test_common.Po \
 	_support/processing/progressive/$(DEPDIR)/test_runner-progressive_context_test_common.Po \
@@ -18768,6 +18771,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_EXPLICIT_FLOAT_PRESERVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_DITHER_PROMOTION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PACKED_PALETTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_BYTE_CLUSTERING_FREEZE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_BLACK_LOG1P_MODEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_CHUNK_CANCEL_CALLBACK \
@@ -23540,6 +23544,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/precision/0008_explicit_float_preserve.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/precision/0009_dither_promotion.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/precision/0018_packed_palette.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/precision/0027_byte_clustering_freeze.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/chunk/0001_chunk_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0002_chunk_cancel_callback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    frame/timeline/0001_timeline_logger_factory.c \
@@ -34561,6 +34566,9 @@ _support/processing/precision/test_runner-0009_dither_promotion.$(OBJEXT):  \
 _support/processing/precision/test_runner-0018_packed_palette.$(OBJEXT):  \
 	_support/processing/precision/$(am__dirstamp) \
 	_support/processing/precision/$(DEPDIR)/$(am__dirstamp)
+_support/processing/precision/test_runner-0027_byte_clustering_freeze.$(OBJEXT):  \
+	_support/processing/precision/$(am__dirstamp) \
+	_support/processing/precision/$(DEPDIR)/$(am__dirstamp)
 _support/processing/chunk/$(am__dirstamp):
 	@$(MKDIR_P) _support/processing/chunk
 	@: >>_support/processing/chunk/$(am__dirstamp)
@@ -43376,6 +43384,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/precision/$(DEPDIR)/test_runner-0009_dither_promotion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/precision/$(DEPDIR)/test_runner-0018_packed_palette.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/precision/$(DEPDIR)/test_runner-0027_byte_clustering_freeze.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/progressive/$(DEPDIR)/test_runner-progressive_application_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/progressive/$(DEPDIR)/test_runner-progressive_callback_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/progressive/$(DEPDIR)/test_runner-progressive_context_test_common.Po@am__quote@ # am--include-marker
@@ -82432,6 +82441,20 @@ _support/processing/precision/test_runner-0018_packed_palette.obj: _support/proc
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/precision/0018_packed_palette.c' object='_support/processing/precision/test_runner-0018_packed_palette.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/precision/test_runner-0018_packed_palette.obj `if test -f '_support/processing/precision/0018_packed_palette.c'; then $(CYGPATH_W) '_support/processing/precision/0018_packed_palette.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/precision/0018_packed_palette.c'; fi`
+
+_support/processing/precision/test_runner-0027_byte_clustering_freeze.o: _support/processing/precision/0027_byte_clustering_freeze.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/precision/test_runner-0027_byte_clustering_freeze.o -MD -MP -MF _support/processing/precision/$(DEPDIR)/test_runner-0027_byte_clustering_freeze.Tpo -c -o _support/processing/precision/test_runner-0027_byte_clustering_freeze.o `test -f '_support/processing/precision/0027_byte_clustering_freeze.c' || echo '$(srcdir)/'`_support/processing/precision/0027_byte_clustering_freeze.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/precision/$(DEPDIR)/test_runner-0027_byte_clustering_freeze.Tpo _support/processing/precision/$(DEPDIR)/test_runner-0027_byte_clustering_freeze.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/precision/0027_byte_clustering_freeze.c' object='_support/processing/precision/test_runner-0027_byte_clustering_freeze.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/precision/test_runner-0027_byte_clustering_freeze.o `test -f '_support/processing/precision/0027_byte_clustering_freeze.c' || echo '$(srcdir)/'`_support/processing/precision/0027_byte_clustering_freeze.c
+
+_support/processing/precision/test_runner-0027_byte_clustering_freeze.obj: _support/processing/precision/0027_byte_clustering_freeze.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/precision/test_runner-0027_byte_clustering_freeze.obj -MD -MP -MF _support/processing/precision/$(DEPDIR)/test_runner-0027_byte_clustering_freeze.Tpo -c -o _support/processing/precision/test_runner-0027_byte_clustering_freeze.obj `if test -f '_support/processing/precision/0027_byte_clustering_freeze.c'; then $(CYGPATH_W) '_support/processing/precision/0027_byte_clustering_freeze.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/precision/0027_byte_clustering_freeze.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/precision/$(DEPDIR)/test_runner-0027_byte_clustering_freeze.Tpo _support/processing/precision/$(DEPDIR)/test_runner-0027_byte_clustering_freeze.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/precision/0027_byte_clustering_freeze.c' object='_support/processing/precision/test_runner-0027_byte_clustering_freeze.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/precision/test_runner-0027_byte_clustering_freeze.obj `if test -f '_support/processing/precision/0027_byte_clustering_freeze.c'; then $(CYGPATH_W) '_support/processing/precision/0027_byte_clustering_freeze.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/precision/0027_byte_clustering_freeze.c'; fi`
 
 _support/processing/chunk/test_runner-0001_chunk_factory.o: _support/processing/chunk/0001_chunk_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/chunk/test_runner-0001_chunk_factory.o -MD -MP -MF _support/processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo -c -o _support/processing/chunk/test_runner-0001_chunk_factory.o `test -f '_support/processing/chunk/0001_chunk_factory.c' || echo '$(srcdir)/'`_support/processing/chunk/0001_chunk_factory.c

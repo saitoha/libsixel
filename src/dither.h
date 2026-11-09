@@ -96,6 +96,12 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     int parallel, int prepare_lookup);
 
+/* Discard a construction-time float palette once the requested application
+ * precision is byte-only, so every application route observes one palette.
+ * Call it after the entries reach their final working coordinates. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_freeze_application_precision(sixel_dither_t *dither);
+
 SIXEL_INTERNAL_API SIXELSTATUS sixel_dither_lookup_preparers(
     sixel_dither_t *, sixel_palette_apply_prepare_request_t *);
 
