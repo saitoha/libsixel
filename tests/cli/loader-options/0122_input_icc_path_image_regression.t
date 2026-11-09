@@ -30,7 +30,9 @@ case "${short_trace}" in *LSXSUB1\|*key=path\|stored=1\|binding=path,path_overri
     echo "not ok 1 - ICC short path binding"
     exit 0
 }
+# Keep the registered path byte-identical across both option routes.
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    MSYS2_ARG_CONV_EXCL='SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH=' \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env "SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH=${profile}" -T icc \
     <"${input_image}" 2>&1 >"${env_output}") || {

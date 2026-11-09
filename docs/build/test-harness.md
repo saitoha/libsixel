@@ -45,6 +45,8 @@ Search-path prepending preserves colon-separated POSIX lists and semicolon-separ
 
 ## Autotools execution path
 
+Test support sources in different directories may share a basename. Instrumented clang-cl builds need the [configured native object-output translation](autotools.md#configuration-pipeline) so those translation units also have distinct coverage filenames. Otherwise, process-exit gcov diagnostics can contaminate a test that correctly expects quiet stderr. Keep those diagnostics visible and correct the output naming; filtering them would conceal corrupt coverage. The [object-output check](../../tests/_static/sh/staticcheck-clangcl-object-output.sh) exercises the real adapter with two distinct object paths.
+
 The current [tests/Makefile.am](../../tests/Makefile.am) overrides Automake's `check-TESTS` recipe. Its work can be read as five stages:
 
 1. Build `test_runner`, prepare enabled binding packages, and prepare packaged large fixtures.
@@ -358,5 +360,6 @@ Configure places the fallback on its command search path before Libtool checks. 
 | TH-59 | Equal binary pipe input terminates when stdin is the right operand. | [tests/tools/compare/0012_pipe_right.t](../../tests/tools/compare/0012_pipe_right.t) |
 | TH-60 | Autotools test source roots follow the target path syntax, preserving POSIX path lists for MSYS/Cygwin and compound native Windows filenames. | [tests/_static/sh/staticcheck-test-source-root.sh](../../tests/_static/sh/staticcheck-test-source-root.sh) |
 | TH-61 | Both pkg-config consumers skip the unavailable-tool sentinel before invocation. | [tests/_static/sh/staticcheck-pkg-config-unavailable.sh](../../tests/_static/sh/staticcheck-pkg-config-unavailable.sh) |
+| TH-62 | The clang-cl compiler adapter preserves distinct output paths for equally named test support sources. | [tests/_static/sh/staticcheck-clangcl-object-output.sh](../../tests/_static/sh/staticcheck-clangcl-object-output.sh) |
 
 The discovery checks execute production make assignments, the OpenVMS list recipe, or the shared enumeration helper with tiny source trees in separate build directories. Each file owns one observation. The output checks replace printf with a bounded or failing shell function, so they also detect external-command argument hazards on hosts whose shell has builtin printf. They do not invoke configure, compile the C dispatcher, or reproduce GNV/RMS behavior; native OpenVMS execution remains a platform validation boundary.

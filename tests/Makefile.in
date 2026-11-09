@@ -26532,7 +26532,9 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-msys-runtime-arguments.sh \
 	_static/sh/staticcheck-macos-coverage-reader.sh \
 	decoder/sequence/0001_differential.py \
-	decoder/aspect/0047_differential.py
+	decoder/aspect/0047_differential.py \
+	_static/sh/staticcheck-clangcl-object-output.sh \
+	_static/sh/staticcheck-thread-backend-disabled.sh
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it

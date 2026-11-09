@@ -753,6 +753,14 @@ run_case_tap "staticcheck-cli-string-copy" \
     "$src_root/tests/_static/sh/staticcheck-cli-string-copy.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-thread-backend-disabled" \
+    sh "$src_root/tests/_static/sh/staticcheck-thread-backend-disabled.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-clangcl-object-output" \
+    sh "$src_root/tests/_static/sh/staticcheck-clangcl-object-output.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-clangcl-link-response" \
     sh "$src_root/tests/_static/sh/staticcheck-clangcl-link-response.sh" \
     "$src_root" || fail_and_exit $?

@@ -756,6 +756,18 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
 ])
 
 AC_PROG_CC
+# clang-cl accepts -o for the object but derives gcov files from the source
+# basename. Use Automake's native -Fo translation even when its -c/-o probe
+# succeeds, so different directories can contain equally named sources.
+# A command already wrapped by Automake starts with the adapter, not clang-cl.
+for sixel_cc_driver in $CC; do
+  break
+done
+case "$sixel_cc_driver" in
+  clang-cl|*/clang-cl|*\\clang-cl|clang-cl.exe|*/clang-cl.exe|*\\clang-cl.exe)
+    CC="$SHELL $am_aux_dir/compile $CC"
+    ;;
+esac
 AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
        test "x$ac_env_CC_set" != "xset"], [
   sixel_openvms_cc_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-cc.sh

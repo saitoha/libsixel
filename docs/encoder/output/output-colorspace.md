@@ -1378,7 +1378,9 @@ The named destination checks use independent Decimal primary matrices, Bradford 
 
 These image comparisons check CLI/environment equivalence and gross rendering regressions; the ICC contract tests above independently check numeric transforms and metadata.
 
+The ICC path comparisons pass the same registered path bytes through the short option and `--env NAME=path` routes. On MSYS, the environment-option invocation sets `MSYS2_ARG_CONV_EXCL` only for the relevant `SIXEL_OUTPUT_COLORSPACE_ICC_PATH=` or `SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH=` argument prefix. This prevents an automatic drive-path conversion from changing that route alone while retaining conversion for ordinary file arguments. Each test checks the stored path and requires byte-identical, nonempty image output.
+
 | ID | Observation | Owning test |
 | --- | --- | --- |
-| IO-171 | Output ICC path CLI/environment binding and image sanity. | [tests/cli/loader-options/0121_output_icc_path_image_regression.t](../../../tests/cli/loader-options/0121_output_icc_path_image_regression.t) |
-| IO-172 | Input ICC path CLI/environment binding and image sanity. | [tests/cli/loader-options/0122_input_icc_path_image_regression.t](../../../tests/cli/loader-options/0122_input_icc_path_image_regression.t) |
+| IO-171 | Output ICC path CLI/environment binding and byte-identical, nonempty output, preserving the registered path across MSYS argument conversion. | [tests/cli/loader-options/0121_output_icc_path_image_regression.t](../../../tests/cli/loader-options/0121_output_icc_path_image_regression.t) |
+| IO-172 | Input ICC path CLI/environment binding and byte-identical, nonempty output, preserving the registered path across MSYS argument conversion. | [tests/cli/loader-options/0122_input_icc_path_image_regression.t](../../../tests/cli/loader-options/0122_input_icc_path_image_regression.t) |

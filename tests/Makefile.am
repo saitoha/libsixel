@@ -12763,3 +12763,6 @@ EXTRA_DIST += decoder/sequence/0001_differential.py
 
 # Optional segmented/reference equivalence runner.
 EXTRA_DIST += decoder/aspect/0047_differential.py
+
+EXTRA_DIST += _static/sh/staticcheck-clangcl-object-output.sh \
+    _static/sh/staticcheck-thread-backend-disabled.sh

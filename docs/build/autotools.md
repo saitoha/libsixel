@@ -8,6 +8,8 @@ The maintained inputs are [configure.ac](../../configure.ac), macros under `m4/`
 
 [Autoconf macros and configuration extensions](configure-macros.md) maps every tracked `m4/` file and the project macro definitions inside `configure.ac`. [Build support scripts](support-scripts.md) covers their executable counterparts, including `compile`, MSVC's `ar-lib`, Libtool's `ltmain.sh`, configured test helpers, and Wasm installation adapters.
 
+Configure routes a directly selected `clang-cl` driver through Automake's `compile` adapter even when the compiler accepts `-c -o`. With GNU-style `-o`, clang-cl can derive gcov filenames from the source basename rather than the unique object path. The adapter translates that output option to native `-Fo`, keeping equally named sources in separate coverage files. An already wrapped compiler command is left unchanged. The [object-output check](../../tests/_static/sh/staticcheck-clangcl-object-output.sh) verifies argument translation without requiring a compiler; an instrumented build must still validate the emitted coverage files.
+
 The ordinary sequence is:
 
 ```sh
@@ -168,5 +170,6 @@ The three gperf recipes remove generated `#line` directives before publishing th
 | AT-09 | Hoisted GPU LSO2 coefficient tables and their generator retain the Metal-only boundary. | [tests/_static/sh/staticcheck-lso2-gpu-coefficient-guard.sh](../../tests/_static/sh/staticcheck-lso2-gpu-coefficient-guard.sh) |
 | AT-10 | Nested implementation fragments and shader bytes remain inside every conditional include site, with C guards selecting the active inclusion. | [tests/_static/sh/staticcheck-amalgamation-nested-fragments.sh](../../tests/_static/sh/staticcheck-amalgamation-nested-fragments.sh) |
 | AT-11 | Windows and Metal system imports in collected headers retain their own platform or feature guard. | [tests/_static/sh/staticcheck-platform-header-guards.sh](../../tests/_static/sh/staticcheck-platform-header-guards.sh) |
+| AT-12 | A directly selected clang-cl driver uses native object-output arguments through the compiler adapter without duplicate wrapping. | [tests/_static/sh/staticcheck-clangcl-object-output.sh](../../tests/_static/sh/staticcheck-clangcl-object-output.sh) |
 
-These checks verify the generator boundary without compiling the generated C or the native Objective-C driver. Platform compilation and lifecycle behavior require their respective build and test jobs.
+These checks verify generation and compiler-argument boundaries without compiling the generated C or the native Objective-C driver. Platform compilation and lifecycle behavior require their respective build and test jobs.

@@ -158,6 +158,10 @@ The [WIC probe scope check](../../tests/_static/sh/staticcheck-configure-wic-sco
 
 The independent [nested-fragment check](../../tests/_static/sh/staticcheck-amalgamation-nested-fragments.sh) runs the generator on a tiny source tree with conditional, nested `.inc.h` fragments and generated shader bytes. The independent [clang-cl linker-response check](../../tests/_static/sh/staticcheck-clangcl-link-response.sh) checks configure wiring and runs the real Make recipe against a mock driver with an inventory larger than 128 KiB; a compiler-level response flag is a negative control. These checks require neither a compiler nor Python. The actual platform builds remain necessary to validate compiler and linker behavior.
 
+The independent [clang-cl object-output check](../../tests/_static/sh/staticcheck-clangcl-object-output.sh) extracts the configured compiler selection and invokes the real Automake adapter with a mock driver. Two equally named sources must retain distinct native `-Fo` destinations, and repeating selection must not wrap the adapter again. This protects the [coverage naming contract](../build/autotools.md#configuration-pipeline), without compiling C or inspecting actual gcov files.
+
+The independent [disabled-thread backend check](../../tests/_static/sh/staticcheck-thread-backend-disabled.sh) verifies that the serial branch precedes both native backends and disables both selections in the same conditional group. Negative controls put Windows selection first or leave it enabled in the serial branch. It protects the [serial component synchronization contract](../threading/encoder.md#typed-row-publication-and-drain) using shell and awk; actual native execution remains necessary to validate component lifetimes.
+
 The independent [amalgamation header-scope check](../../tests/_static/sh/staticcheck-amalgamation-header-scope.sh) runs the real generator on a tiny fixture and checks transitive header selection for two consumers plus an unreferenced control. It does not generate the full repository amalgamation or compile it. The [Autotools reference](../build/autotools.md#library-linking-and-generated-translation-units) owns the selection boundary.
 
 The generated-amalgamation-input check runs the generator against a tiny tree before and after adding the generated runner wrapper and selection header. Both outputs must be identical, protecting in-tree incremental builds as well as the initial build. The [Autotools reference](../build/autotools.md#library-linking-and-generated-translation-units) owns this boundary.
@@ -312,6 +316,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-98 | Explicit workflow VM data directories stay outside the source-transfer tree using host cache paths without traversal. | [tests/_static/sh/staticcheck-vm-data-sync.sh](../../tests/_static/sh/staticcheck-vm-data-sync.sh) |
 | SC-99 | vcpkg retries only bounded bootstrap attempts and propagates failure before or during the single dependency installation. | [tests/_static/sh/staticcheck-vcpkg-bootstrap.sh](../../tests/_static/sh/staticcheck-vcpkg-bootstrap.sh) |
 | SC-100 | Collected headers guard Windows and Metal system imports independently of their consumers. | [tests/_static/sh/staticcheck-platform-header-guards.sh](../../tests/_static/sh/staticcheck-platform-header-guards.sh) |
+| SC-101 | clang-cl compiler selection preserves distinct native object outputs and avoids duplicate adapter wrapping. | [tests/_static/sh/staticcheck-clangcl-object-output.sh](../../tests/_static/sh/staticcheck-clangcl-object-output.sh) |
+| SC-102 | Disabling threads selects stub synchronization before either native backend, including Win32 and winpthreads. | [tests/_static/sh/staticcheck-thread-backend-disabled.sh](../../tests/_static/sh/staticcheck-thread-backend-disabled.sh) |
 
 ### Coverage boundary
 

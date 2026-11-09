@@ -99,10 +99,15 @@
 
 /*
  * Backend selection is performed here so the header remains lightweight.
- * WITH_WINPTHREAD forces the pthread path even on Windows to honor
- * user-provided configuration switches.
+ * With thread support enabled, WITH_WINPTHREAD selects the pthread path
+ * even on Windows to honor user-provided configuration switches.
  */
-#if defined(WITH_WINPTHREAD) && WITH_WINPTHREAD
+#if !SIXEL_ENABLE_THREADS
+/* Components can omit mutex initialization in serial builds. Native Windows
+ * mutex calls must therefore be disabled together with worker creation. */
+# define SIXEL_USE_PTHREADS 0
+# define SIXEL_USE_WIN32_THREADS 0
+#elif defined(WITH_WINPTHREAD) && WITH_WINPTHREAD
 # define SIXEL_USE_PTHREADS 1
 # define SIXEL_USE_WIN32_THREADS 0
 #elif defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__)

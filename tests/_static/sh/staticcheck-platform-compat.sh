@@ -281,7 +281,7 @@ cmp -s "$tmpdir/native-windows-expected" \
     failed=1
 }
 
-require_fixed '#if defined(WITH_WINPTHREAD) && WITH_WINPTHREAD' src/threading.c
+require_fixed '#elif defined(WITH_WINPTHREAD) && WITH_WINPTHREAD' src/threading.c
 require_fixed '#elif defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__)' src/threading.c
 require_fixed 'GetEnvironmentVariableA(name, NULL, 0)' src/compat_stub.c
 require_fixed 'SetEnvironmentVariableA(name, value)' src/compat_stub.c
