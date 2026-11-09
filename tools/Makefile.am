@@ -129,6 +129,7 @@ EXTRA_DIST = libsixel-config.in \
              plot_snap_policy_measurements.py \
              plot_threading_measurements.py \
              plot_working_colorspace_measurements.py \
+             measure-gpu-kmeans.sh \
              reproduce_lookup_policy_acceleration.sh \
              reproduce_cover_policy_figures.sh \
              reproduce_crop_resize_measurements.sh \
