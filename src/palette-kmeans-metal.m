@@ -28,9 +28,16 @@ static int sixel_km_metal_initialized = 0;
 static SIXELSTATUS sixel_km_metal_status = SIXEL_FALSE;
 
 enum {
-    SIXEL_KM_POINTS, SIXEL_KM_WEIGHTS, SIXEL_KM_CENTERS,
-    SIXEL_KM_MEMBERSHIP, SIXEL_KM_DISTANCES, SIXEL_KM_PARTIALS,
-    SIXEL_KM_SUMS, SIXEL_KM_STATE, SIXEL_KM_MAXIMA, SIXEL_KM_BUFFERS
+    SIXEL_KM_POINTS,
+    SIXEL_KM_WEIGHTS,
+    SIXEL_KM_CENTERS,
+    SIXEL_KM_MEMBERSHIP,
+    SIXEL_KM_DISTANCES,
+    SIXEL_KM_PARTIALS,
+    SIXEL_KM_SUMS,
+    SIXEL_KM_STATE,
+    SIXEL_KM_MAXIMA,
+    SIXEL_KM_BUFFERS
 };
 
 typedef struct sixel_km_metal_params {
@@ -65,164 +72,167 @@ typedef struct sixel_km_metal_state {
  * when every residual is zero and a previously used donor is selected again.
  * All iterations are submitted together: no CPU readback occurs between
  * assignment, reduction, empty-cluster repair and convergence decisions. */
-static char const * const sixel_km_metal_source[] = {
-"#include <metal_stdlib>\n"
-"using namespace metal;\n"
-"struct Params { uint points, centers, groups, min_iterations;\n"
-" uint round_centers; float threshold; };\n"
-"struct State { uint done, iterations; atomic_uint failed; float delta;\n"
-" uint repairs; };\n"
-"kernel void km_assign(\n"
-" device const packed_float3 *points [[buffer(0)]],\n"
-" device const float *weights [[buffer(1)]],\n"
-" device const packed_float3 *centers [[buffer(2)]],\n"
-" device uint *membership [[buffer(3)]],\n"
-" device float *distances [[buffer(4)]],\n"
-" device State &s [[buffer(7)]],\n"
-" constant Params &p [[buffer(9)]],\n"
-" uint gid [[thread_position_in_grid]]) {\n"
-" if (s.done || gid >= p.points) return;\n"
-" float weight = weights[gid];\n"
-" if (weight <= 0) { membership[gid] = 0; distances[gid] = 0; return; }\n"
-" float3 point = float3(points[gid]);\n"
-" uint owner = s.iterations == 0 ? 0 : membership[gid];\n"
-" float3 d = point - float3(centers[owner]);\n"
-" float best = d.x*d.x + d.y*d.y + d.z*d.z;\n"
-" if (best == 0 && any(d != 0))\n"
-"  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
-" for (uint c = 0; c < p.centers; ++c) {\n"
-"  d = point - float3(centers[c]);\n"
-"  float distance = d.x*d.x + d.y*d.y + d.z*d.z;\n"
-"  if (distance == 0 && any(d != 0))\n"
-"   atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
-"  if (distance < best) { best = distance; owner = c; }\n"
-" }\n"
-" float residual = best * weight;\n"
-" if (!isfinite(residual) || (residual == 0 && best > 0))\n"
-"  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
-" membership[gid] = owner; distances[gid] = residual;\n"
-"}\n",
-"kernel void km_partial(\n"
-" device const packed_float3 *points [[buffer(0)]],\n"
-" device const float *weights [[buffer(1)]],\n"
-" device const uint *membership [[buffer(3)]],\n"
-" device const float *distances [[buffer(4)]],\n"
-" device float4 *partials [[buffer(5)]],\n"
-" device const State &s [[buffer(7)]],\n"
-" device uint *maxima [[buffer(8)]],\n"
-" constant Params &p [[buffer(9)]],\n"
-" uint group [[threadgroup_position_in_grid]],\n"
-" uint lane [[thread_index_in_threadgroup]],\n"
-" uint lanes [[threads_per_threadgroup]]) {\n"
-" threadgroup float4 moments[512];\n"
-" threadgroup uint heads[1024], links[512];\n"
-" uint begin, count, i, c, owner, selected;\n"
-" float weight, farthest;\n"
-" float4 sum;\n"
-" if (s.done) return;\n"
-" begin = group * 512u; count = min(512u, p.points - begin);\n"
-" for (c = lane; c < p.centers; c += lanes) heads[c] = 512u;\n"
-" for (i = lane; i < count; i += lanes) {\n"
-"  weight = weights[begin+i];\n"
-"  moments[i] = float4(float3(points[begin+i]) * weight, weight);\n"
-"  links[i] = membership[begin+i];\n"
-" }\n"
-" threadgroup_barrier(mem_flags::mem_threadgroup);\n"
-" if (lane == 0) {\n"
-"  farthest = -1; selected = begin;\n"
-"  // Prepend in reverse order to preserve ascending sample summation.\n"
-"  for (i = count; i > 0;) {\n"
-"   --i; owner = links[i]; links[i] = heads[owner]; heads[owner] = i;\n"
-"   // Reverse traversal uses >= so equal residuals keep the lowest index.\n"
-"   if (distances[begin+i] >= farthest) {\n"
-"    farthest = distances[begin+i]; selected = begin+i;\n"
-"   }\n"
-"  }\n"
-"  maxima[group] = selected;\n"
-" }\n"
-" threadgroup_barrier(mem_flags::mem_threadgroup);\n"
-" for (c = lane; c < p.centers; c += lanes) {\n"
-"  sum = 0;\n"
-"  for (i = heads[c]; i != 512u; i = links[i]) {\n"
-"   if (moments[i].w > 0) sum += moments[i];\n"
-"  }\n"
-"  partials[group*p.centers+c] = sum;\n"
-" }\n"
-"}\n"
-"kernel void km_reduce(\n"
-" device const float4 *partials [[buffer(5)]],\n"
-" device float4 *sums [[buffer(6)]],\n"
-" device const State &s [[buffer(7)]],\n"
-" constant Params &p [[buffer(9)]],\n"
-" uint gid [[thread_position_in_grid]]) {\n"
-" if (s.done || gid >= p.centers) return;\n"
-" float4 sum = 0;\n"
-" for (uint g = 0; g < p.groups; ++g) sum += partials[g*p.centers+gid];\n"
-" sums[gid] = sum;\n"
-"}\n",
-"kernel void km_update(\n"
-" device const packed_float3 *points [[buffer(0)]],\n"
-" device const float *weights [[buffer(1)]],\n"
-" device packed_float3 *centers [[buffer(2)]],\n"
-" device uint *membership [[buffer(3)]],\n"
-" device float *distances [[buffer(4)]],\n"
-" device float4 *sums [[buffer(6)]],\n"
-" device State &s [[buffer(7)]],\n"
-" device uint *maxima [[buffer(8)]],\n"
-" constant Params &p [[buffer(9)]],\n"
-" uint gid [[thread_position_in_grid]]) {\n"
-" if (gid != 0 || s.done) return;\n"
-" if (atomic_load_explicit(&s.failed, memory_order_relaxed)) {\n"
-"  s.done = 1; return;\n"
-" }\n"
-" for (uint c = 0; c < p.centers; ++c) {\n"
-"  if (sums[c].w > 0) continue;\n"
-"  ++s.repairs;\n"
-"  float farthest = -1; uint selected = 0;\n"
-"  for (uint g = 0; g < p.groups; ++g) {\n"
-"   uint i = maxima[g];\n"
-"   if (distances[i] > farthest) { farthest = distances[i]; selected = i; }\n"
-"  }\n"
-"  uint old = membership[selected]; float weight = weights[selected];\n"
-"  float4 moved = float4(float3(points[selected]) * weight, weight);\n"
-"  if (sums[old].w > 0) {\n"
-"   float4 remaining = sums[old] - moved;\n"
-"   if (p.round_centers) remaining.xyz = max(remaining.xyz, float3(0));\n"
-"   remaining.w = max(remaining.w, 0.0f); sums[old] = remaining;\n"
-"  }\n"
-"  sums[c] = moved; membership[selected] = c; distances[selected] = 0;\n"
-"  // Only the consumed donor changes residual. Refresh just its tile.\n"
-"  uint group = selected / 512u, begin = group * 512u;\n"
-"  uint end = min(begin + 512u, p.points);\n"
-"  farthest = -1; selected = begin;\n"
-"  for (uint i = begin; i < end; ++i) {\n"
-"   if (distances[i] > farthest) { farthest = distances[i]; selected = i; }\n"
-"  }\n"
-"  maxima[group] = selected;\n"
-" }\n"
-" float delta = 0;\n"
-" for (uint c = 0; c < p.centers; ++c) {\n"
-"  if (!all(isfinite(sums[c]))) {\n"
-"   atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
-"   s.done = 1; return;\n"
-"  }\n"
-"  if (sums[c].w <= 0) continue;\n"
-"  float3 next = sums[c].xyz / sums[c].w;\n"
-"  if (p.round_centers) next = floor(clamp(next, 0.0f, 255.0f) + 0.5f);\n"
-"  float3 d = next - float3(centers[c]);\n"
-"  delta += d.x*d.x + d.y*d.y + d.z*d.z; centers[c] = packed_float3(next);\n"
-" }\n"
-" ++s.iterations; s.delta = delta;\n"
-" if (!isfinite(delta)) {\n"
-"  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed); s.done = 1;\n"
-" }\n"
-" else if (delta <= p.threshold && s.iterations >= p.min_iterations)\n"
-"  s.done = 1;\n"
-"}\n"
-};
+static char const *const sixel_km_metal_source[] = {
+    "#include <metal_stdlib>\n"
+    "using namespace metal;\n"
+    "struct Params { uint points, centers, groups, min_iterations;\n"
+    " uint round_centers; float threshold; };\n"
+    "struct State { uint done, iterations; atomic_uint failed; float delta;\n"
+    " uint repairs; };\n"
+    "kernel void km_assign(\n"
+    " device const packed_float3 *points [[buffer(0)]],\n"
+    " device const float *weights [[buffer(1)]],\n"
+    " device const packed_float3 *centers [[buffer(2)]],\n"
+    " device uint *membership [[buffer(3)]],\n"
+    " device float *distances [[buffer(4)]],\n"
+    " device State &s [[buffer(7)]],\n"
+    " constant Params &p [[buffer(9)]],\n"
+    " uint gid [[thread_position_in_grid]]) {\n"
+    " if (s.done || gid >= p.points) return;\n"
+    " float weight = weights[gid];\n"
+    " if (weight <= 0) { membership[gid] = 0; distances[gid] = 0; return; }\n"
+    " float3 point = float3(points[gid]);\n"
+    " uint owner = s.iterations == 0 ? 0 : membership[gid];\n"
+    " float3 d = point - float3(centers[owner]);\n"
+    " float best = d.x*d.x + d.y*d.y + d.z*d.z;\n"
+    " if (best == 0 && any(d != 0))\n"
+    "  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
+    " for (uint c = 0; c < p.centers; ++c) {\n"
+    "  d = point - float3(centers[c]);\n"
+    "  float distance = d.x*d.x + d.y*d.y + d.z*d.z;\n"
+    "  if (distance == 0 && any(d != 0))\n"
+    "   atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
+    "  if (distance < best) { best = distance; owner = c; }\n"
+    " }\n"
+    " float residual = best * weight;\n"
+    " if (!isfinite(residual) || (residual == 0 && best > 0))\n"
+    "  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
+    " membership[gid] = owner; distances[gid] = residual;\n"
+    "}\n",
+    "kernel void km_partial(\n"
+    " device const packed_float3 *points [[buffer(0)]],\n"
+    " device const float *weights [[buffer(1)]],\n"
+    " device const uint *membership [[buffer(3)]],\n"
+    " device const float *distances [[buffer(4)]],\n"
+    " device float4 *partials [[buffer(5)]],\n"
+    " device const State &s [[buffer(7)]],\n"
+    " device uint *maxima [[buffer(8)]],\n"
+    " constant Params &p [[buffer(9)]],\n"
+    " uint group [[threadgroup_position_in_grid]],\n"
+    " uint lane [[thread_index_in_threadgroup]],\n"
+    " uint lanes [[threads_per_threadgroup]]) {\n"
+    " threadgroup float4 moments[512];\n"
+    " threadgroup uint heads[1024], links[512];\n"
+    " uint begin, count, i, c, owner, selected;\n"
+    " float weight, farthest;\n"
+    " float4 sum;\n"
+    " if (s.done) return;\n"
+    " begin = group * 512u; count = min(512u, p.points - begin);\n"
+    " for (c = lane; c < p.centers; c += lanes) heads[c] = 512u;\n"
+    " for (i = lane; i < count; i += lanes) {\n"
+    "  weight = weights[begin+i];\n"
+    "  moments[i] = float4(float3(points[begin+i]) * weight, weight);\n"
+    "  links[i] = membership[begin+i];\n"
+    " }\n"
+    " threadgroup_barrier(mem_flags::mem_threadgroup);\n"
+    " if (lane == 0) {\n"
+    "  farthest = -1; selected = begin;\n"
+    "  // Prepend in reverse order to preserve ascending sample summation.\n"
+    "  for (i = count; i > 0;) {\n"
+    "   --i; owner = links[i]; links[i] = heads[owner]; heads[owner] = i;\n"
+    "   // Reverse traversal uses >= so equal residuals keep the lowest "
+    "index.\n"
+    "   if (distances[begin+i] >= farthest) {\n"
+    "    farthest = distances[begin+i]; selected = begin+i;\n"
+    "   }\n"
+    "  }\n"
+    "  maxima[group] = selected;\n"
+    " }\n"
+    " threadgroup_barrier(mem_flags::mem_threadgroup);\n"
+    " for (c = lane; c < p.centers; c += lanes) {\n"
+    "  sum = 0;\n"
+    "  for (i = heads[c]; i != 512u; i = links[i]) {\n"
+    "   if (moments[i].w > 0) sum += moments[i];\n"
+    "  }\n"
+    "  partials[group*p.centers+c] = sum;\n"
+    " }\n"
+    "}\n"
+    "kernel void km_reduce(\n"
+    " device const float4 *partials [[buffer(5)]],\n"
+    " device float4 *sums [[buffer(6)]],\n"
+    " device const State &s [[buffer(7)]],\n"
+    " constant Params &p [[buffer(9)]],\n"
+    " uint gid [[thread_position_in_grid]]) {\n"
+    " if (s.done || gid >= p.centers) return;\n"
+    " float4 sum = 0;\n"
+    " for (uint g = 0; g < p.groups; ++g) sum += partials[g*p.centers+gid];\n"
+    " sums[gid] = sum;\n"
+    "}\n",
+    "kernel void km_update(\n"
+    " device const packed_float3 *points [[buffer(0)]],\n"
+    " device const float *weights [[buffer(1)]],\n"
+    " device packed_float3 *centers [[buffer(2)]],\n"
+    " device uint *membership [[buffer(3)]],\n"
+    " device float *distances [[buffer(4)]],\n"
+    " device float4 *sums [[buffer(6)]],\n"
+    " device State &s [[buffer(7)]],\n"
+    " device uint *maxima [[buffer(8)]],\n"
+    " constant Params &p [[buffer(9)]],\n"
+    " uint gid [[thread_position_in_grid]]) {\n"
+    " if (gid != 0 || s.done) return;\n"
+    " if (atomic_load_explicit(&s.failed, memory_order_relaxed)) {\n"
+    "  s.done = 1; return;\n"
+    " }\n"
+    " for (uint c = 0; c < p.centers; ++c) {\n"
+    "  if (sums[c].w > 0) continue;\n"
+    "  ++s.repairs;\n"
+    "  float farthest = -1; uint selected = 0;\n"
+    "  for (uint g = 0; g < p.groups; ++g) {\n"
+    "   uint i = maxima[g];\n"
+    "   if (distances[i] > farthest) { farthest = distances[i]; selected = i; "
+    "}\n"
+    "  }\n"
+    "  uint old = membership[selected]; float weight = weights[selected];\n"
+    "  float4 moved = float4(float3(points[selected]) * weight, weight);\n"
+    "  if (sums[old].w > 0) {\n"
+    "   float4 remaining = sums[old] - moved;\n"
+    "   if (p.round_centers) remaining.xyz = max(remaining.xyz, float3(0));\n"
+    "   remaining.w = max(remaining.w, 0.0f); sums[old] = remaining;\n"
+    "  }\n"
+    "  sums[c] = moved; membership[selected] = c; distances[selected] = 0;\n"
+    "  // Only the consumed donor changes residual. Refresh just its tile.\n"
+    "  uint group = selected / 512u, begin = group * 512u;\n"
+    "  uint end = min(begin + 512u, p.points);\n"
+    "  farthest = -1; selected = begin;\n"
+    "  for (uint i = begin; i < end; ++i) {\n"
+    "   if (distances[i] > farthest) { farthest = distances[i]; selected = i; "
+    "}\n"
+    "  }\n"
+    "  maxima[group] = selected;\n"
+    " }\n"
+    " float delta = 0;\n"
+    " for (uint c = 0; c < p.centers; ++c) {\n"
+    "  if (!all(isfinite(sums[c]))) {\n"
+    "   atomic_store_explicit(&s.failed, 1u, memory_order_relaxed);\n"
+    "   s.done = 1; return;\n"
+    "  }\n"
+    "  if (sums[c].w <= 0) continue;\n"
+    "  float3 next = sums[c].xyz / sums[c].w;\n"
+    "  if (p.round_centers) next = floor(clamp(next, 0.0f, 255.0f) + 0.5f);\n"
+    "  float3 d = next - float3(centers[c]);\n"
+    "  delta += d.x*d.x + d.y*d.y + d.z*d.z; centers[c] = "
+    "packed_float3(next);\n"
+    " }\n"
+    " ++s.iterations; s.delta = delta;\n"
+    " if (!isfinite(delta)) {\n"
+    "  atomic_store_explicit(&s.failed, 1u, memory_order_relaxed); s.done = "
+    "1;\n"
+    " }\n"
+    " else if (delta <= p.threshold && s.iterations >= p.min_iterations)\n"
+    "  s.done = 1;\n"
+    "}\n"};
 
-static SIXELSTATUS
-sixel_km_metal_prepare(void)
+static SIXELSTATUS sixel_km_metal_prepare(void)
 {
     NSMutableString *source;
     NSString *chunk;
@@ -260,9 +270,10 @@ sixel_km_metal_prepare(void)
         return SIXEL_BAD_ALLOCATION;
     }
     for (index = 0u; index < sizeof(sixel_km_metal_source) /
-            sizeof(sixel_km_metal_source[0]); ++index) {
-        chunk = [[NSString alloc]
-            initWithUTF8String:sixel_km_metal_source[index]];
+                                 sizeof(sixel_km_metal_source[0]);
+         ++index) {
+        chunk =
+            [[NSString alloc] initWithUTF8String:sixel_km_metal_source[index]];
         if (chunk == nil) {
             [source release];
             return SIXEL_BAD_ALLOCATION;
@@ -278,7 +289,8 @@ sixel_km_metal_prepare(void)
 #pragma clang diagnostic pop
     error = nil;
     library = [sixel_km_metal_device newLibraryWithSource:source
-        options:options error:&error];
+                                                  options:options
+                                                    error:&error];
     [options release];
     [source release];
     if (library == nil) {
@@ -289,14 +301,15 @@ sixel_km_metal_prepare(void)
     names[2] = "km_reduce";
     names[3] = "km_update";
     for (index = 0u; index < 4u; ++index) {
-        function = [library newFunctionWithName:
-            [NSString stringWithUTF8String:names[index]]];
+        function = [library
+            newFunctionWithName:[NSString stringWithUTF8String:names[index]]];
         if (function == nil) {
             [library release];
             return sixel_km_metal_status;
         }
-        sixel_km_metal_pipelines[index] = [sixel_km_metal_device
-            newComputePipelineStateWithFunction:function error:&error];
+        sixel_km_metal_pipelines[index] =
+            [sixel_km_metal_device newComputePipelineStateWithFunction:function
+                                                                 error:&error];
         [function release];
         if (sixel_km_metal_pipelines[index] == nil) {
             [library release];
@@ -309,8 +322,7 @@ sixel_km_metal_prepare(void)
     return SIXEL_OK;
 }
 
-int
-sixel_kmeans_metal_is_initialized(void)
+int sixel_kmeans_metal_is_initialized(void)
 {
     int initialized;
 
@@ -325,8 +337,7 @@ sixel_kmeans_metal_is_initialized(void)
     return initialized;
 }
 
-int
-sixel_kmeans_metal_is_available(void)
+int sixel_kmeans_metal_is_available(void)
 {
     id<MTLDevice> device;
     int available;
@@ -342,7 +353,7 @@ sixel_kmeans_metal_is_available(void)
 
 SIXELSTATUS
 sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
-                         unsigned int *iterations)
+                          unsigned int *iterations)
 {
     SIXELSTATUS status;
     sixel_km_metal_params_t params;
@@ -372,9 +383,10 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
     double start, mark, phase_start, gpu_start, gpu_end, total_ms;
     char const *profile;
     char const *device_name;
-    char const *phase_names[9] = { "prepare", "allocate", "upload",
-        "encode", "submit", "wait", "validate", "publish", "release" };
-    char const *stage_names[4] = { "assign", "partial", "reduce", "update" };
+    char const *phase_names[9] = {"prepare",  "allocate", "upload",
+                                  "encode",   "submit",   "wait",
+                                  "validate", "publish",  "release"};
+    char const *stage_names[4] = {"assign", "partial", "reduce", "update"};
     unsigned int command_count, finished_iterations, repairs, command_index;
     int trace, split, completed, active_phase;
 
@@ -404,8 +416,8 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
     lengths[SIXEL_KM_CENTERS] = (NSUInteger)params.centers * 3u * sizeof(float);
     lengths[SIXEL_KM_MEMBERSHIP] = (NSUInteger)params.points * sizeof(uint32_t);
     lengths[SIXEL_KM_DISTANCES] = lengths[SIXEL_KM_WEIGHTS];
-    lengths[SIXEL_KM_PARTIALS] = (NSUInteger)params.groups * params.centers *
-        4u * sizeof(float);
+    lengths[SIXEL_KM_PARTIALS] =
+        (NSUInteger)params.groups * params.centers * 4u * sizeof(float);
     lengths[SIXEL_KM_SUMS] = (NSUInteger)params.centers * 4u * sizeof(float);
     lengths[SIXEL_KM_STATE] = sizeof(*state);
     lengths[SIXEL_KM_MAXIMA] = (NSUInteger)params.groups * sizeof(uint32_t);
@@ -434,9 +446,9 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         for (index = 0u; index < SIXEL_KM_BUFFERS; ++index) {
             buffers[index] = [sixel_km_metal_device
                 newBufferWithLength:lengths[index]
-                options:MTLResourceStorageModeShared];
+                            options:MTLResourceStorageModeShared];
             if (buffers[index] == nil ||
-                    (request->test_failure == 2 && index == 3u)) {
+                (request->test_failure == 2 && index == 3u)) {
                 goto cleanup;
             }
         }
@@ -451,8 +463,9 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         }
         values = [buffers[SIXEL_KM_WEIGHTS] contents];
         for (index = 0u; index < params.points; ++index) {
-            values[index] = request->weights == NULL ? 1.0f :
-                (float)request->weights[index];
+            values[index] = request->weights == NULL
+                                ? 1.0f
+                                : (float)request->weights[index];
         }
         values = [buffers[SIXEL_KM_CENTERS] contents];
         for (index = 0u; index < (size_t)params.centers * 3u; ++index) {
@@ -468,41 +481,44 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         mark = trace ? sixel_timer_now() : 0.0;
         if (!split) {
             command = [sixel_km_metal_queue commandBuffer];
-            if (command == nil) goto cleanup;
+            if (command == nil)
+                goto cleanup;
         }
-        if (trace) phase_ms[3] += (sixel_timer_now() - mark) * 1000.0;
-        for (iteration = 0u; iteration < request->max_iterations;
-                ++iteration) {
+        if (trace)
+            phase_ms[3] += (sixel_timer_now() - mark) * 1000.0;
+        for (iteration = 0u; iteration < request->max_iterations; ++iteration) {
             for (stage = 0u; stage < 4u; ++stage) {
                 command_index = iteration * 4u + stage;
                 mark = trace ? sixel_timer_now() : 0.0;
                 if (split) {
                     command = [sixel_km_metal_queue commandBuffer];
-                    if (command == nil) goto cleanup;
+                    if (command == nil)
+                        goto cleanup;
                 }
                 encoder = [command computeCommandEncoder];
                 if (encoder == nil) {
                     goto cleanup;
                 }
-                [encoder setComputePipelineState:
-                    sixel_km_metal_pipelines[stage]];
+                [encoder
+                    setComputePipelineState:sixel_km_metal_pipelines[stage]];
                 for (index = 0u; index < SIXEL_KM_BUFFERS; ++index) {
                     [encoder setBuffer:buffers[index] offset:0 atIndex:index];
                 }
-                [encoder setBytes:&params length:sizeof(params)
-                    atIndex:SIXEL_KM_BUFFERS];
+                [encoder setBytes:&params
+                           length:sizeof(params)
+                          atIndex:SIXEL_KM_BUFFERS];
                 threads = stage == 3u ? 1u : 128u;
                 if (threads > [sixel_km_metal_pipelines[stage]
-                        maxTotalThreadsPerThreadgroup]) {
+                                  maxTotalThreadsPerThreadgroup]) {
                     threads = [sixel_km_metal_pipelines[stage]
                         maxTotalThreadsPerThreadgroup];
                 }
                 /* Partial sums use one cooperative group per 512 points;
                  * the other kernels retain one thread per output item. */
-                count = stage == 1u ? counts[stage] :
-                    (counts[stage] + threads - 1u) / threads;
+                count = stage == 1u ? counts[stage]
+                                    : (counts[stage] + threads - 1u) / threads;
                 [encoder dispatchThreadgroups:MTLSizeMake(count, 1, 1)
-                    threadsPerThreadgroup:MTLSizeMake(threads, 1, 1)];
+                        threadsPerThreadgroup:MTLSizeMake(threads, 1, 1)];
                 [encoder endEncoding];
                 if (trace) {
                     encode_ms[command_index] =
@@ -525,12 +541,14 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
             commands[command_count++] = command;
             mark = trace ? sixel_timer_now() : 0.0;
             [command commit];
-            if (trace) phase_ms[4] = (sixel_timer_now() - mark) * 1000.0;
+            if (trace)
+                phase_ms[4] = (sixel_timer_now() - mark) * 1000.0;
         }
         mark = trace ? sixel_timer_now() : 0.0;
         [command waitUntilCompleted];
         completed = 1;
-        if (trace) phase_ms[5] = (sixel_timer_now() - mark) * 1000.0;
+        if (trace)
+            phase_ms[5] = (sixel_timer_now() - mark) * 1000.0;
         phase_start = trace ? sixel_timer_now() : 0.0;
         active_phase = 6;
         status = SIXEL_RUNTIME_ERROR;
@@ -541,8 +559,8 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
                 goto cleanup;
         }
         if (request->test_failure == 3 || state->failed ||
-                state->iterations == 0u ||
-                state->iterations > request->max_iterations) {
+            state->iterations == 0u ||
+            state->iterations > request->max_iterations) {
             goto cleanup;
         }
         finished_iterations = state->iterations;
@@ -568,13 +586,15 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         values = [buffers[SIXEL_KM_CENTERS] contents];
         for (index = 0u; index < (size_t)params.centers * 3u; ++index) {
             channel = (unsigned int)(index % 3u);
-            margin = fmax(maximum[channel] - minimum[channel],
-                fmax(fabs(minimum[channel]), fabs(maximum[channel]))) *
+            margin =
+                fmax(maximum[channel] - minimum[channel],
+                     fmax(fabs(minimum[channel]), fabs(maximum[channel]))) *
                 0.0001;
-            if (request->round_centers) margin += 0.5;
+            if (request->round_centers)
+                margin += 0.5;
             if (!isfinite(values[index]) ||
-                    values[index] < minimum[channel] - margin ||
-                    values[index] > maximum[channel] + margin) {
+                values[index] < minimum[channel] - margin ||
+                values[index] > maximum[channel] + margin) {
                 goto cleanup;
             }
         }
@@ -589,13 +609,12 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
             request->centers[index] = (double)values[index];
         }
         if (request->membership != NULL) {
-            memcpy(request->membership,
-                [buffers[SIXEL_KM_MEMBERSHIP] contents],
-                (size_t)params.points * sizeof(unsigned int));
+            memcpy(request->membership, [buffers[SIXEL_KM_MEMBERSHIP] contents],
+                   (size_t)params.points * sizeof(unsigned int));
         }
         *iterations = state->iterations;
         status = SIXEL_OK;
-cleanup:
+    cleanup:
         if (trace && active_phase >= 0)
             phase_ms[active_phase] +=
                 (sixel_timer_now() - phase_start) * 1000.0;
@@ -604,7 +623,8 @@ cleanup:
         if (!completed && command_count > 0u) {
             mark = trace ? sixel_timer_now() : 0.0;
             [commands[command_count - 1u] waitUntilCompleted];
-            if (trace) phase_ms[5] += (sixel_timer_now() - mark) * 1000.0;
+            if (trace)
+                phase_ms[5] += (sixel_timer_now() - mark) * 1000.0;
         }
         mark = trace ? sixel_timer_now() : 0.0;
         for (index = 0u; index < SIXEL_KM_BUFFERS; ++index) {
@@ -614,35 +634,38 @@ cleanup:
             phase_ms[8] = (sixel_timer_now() - mark) * 1000.0;
             total_ms = (sixel_timer_now() - start) * 1000.0;
             device_name = [[sixel_km_metal_device name] UTF8String];
-            fprintf(stderr, "LSXKMTIME1|mode=%s|M=%u|K=%u|limit=%u|"
-                "iterations=%u|repairs=%u|commands=%u|status=0x%04x|"
-                "wall_ms=%.6f|device=%s|\n",
-                split ? "stages" : "batch", params.points, params.centers,
-                request->max_iterations, finished_iterations, repairs,
-                command_count, (unsigned int)status, total_ms,
-                device_name != NULL ? device_name : "unavailable");
+            fprintf(stderr,
+                    "LSXKMTIME1|mode=%s|M=%u|K=%u|limit=%u|"
+                    "iterations=%u|repairs=%u|commands=%u|status=0x%04x|"
+                    "wall_ms=%.6f|device=%s|\n",
+                    split ? "stages" : "batch", params.points, params.centers,
+                    request->max_iterations, finished_iterations, repairs,
+                    command_count, (unsigned int)status, total_ms,
+                    device_name != NULL ? device_name : "unavailable");
             for (index = 0u; index < 9u; ++index) {
                 fprintf(stderr, "LSXKMPHASE1|phase=%s|cpu_ms=%.6f|\n",
-                    phase_names[index], phase_ms[index]);
+                        phase_names[index], phase_ms[index]);
             }
             for (index = 0u; index < command_count; ++index) {
                 /* GPU timestamps are valid only after completion. Zero
                  * means unavailable, not a zero-cost GPU dispatch. */
                 gpu_start = [commands[index] GPUStartTime];
                 gpu_end = [commands[index] GPUEndTime];
-                fprintf(stderr, "LSXKMSTAGE1|mode=%s|phase=%s|iteration=%u|"
-                    "noop=%d|gpu_valid=%d|gpu_start_s=%.9f|gpu_end_s=%.9f|"
-                    "gpu_ms=%.6f|encode_ms=%.6f|submit_ms=%.6f|\n",
-                    split ? "stages" : "batch",
-                    split ? stage_names[index % 4u] : "batch",
-                    split ? (unsigned int)(index / 4u + 1u) : 0u,
-                    split && index / 4u >= finished_iterations,
-                    gpu_start > 0.0 && gpu_end >= gpu_start,
-                    gpu_start, gpu_end,
-                    gpu_start > 0.0 && gpu_end >= gpu_start
-                        ? (gpu_end - gpu_start) * 1000.0 : -1.0,
-                    split ? encode_ms[index] : phase_ms[3],
-                    split ? submit_ms[index] : phase_ms[4]);
+                fprintf(stderr,
+                        "LSXKMSTAGE1|mode=%s|phase=%s|iteration=%u|"
+                        "noop=%d|gpu_valid=%d|gpu_start_s=%.9f|gpu_end_s=%.9f|"
+                        "gpu_ms=%.6f|encode_ms=%.6f|submit_ms=%.6f|\n",
+                        split ? "stages" : "batch",
+                        split ? stage_names[index % 4u] : "batch",
+                        split ? (unsigned int)(index / 4u + 1u) : 0u,
+                        split && index / 4u >= finished_iterations,
+                        gpu_start > 0.0 && gpu_end >= gpu_start, gpu_start,
+                        gpu_end,
+                        gpu_start > 0.0 && gpu_end >= gpu_start
+                            ? (gpu_end - gpu_start) * 1000.0
+                            : -1.0,
+                        split ? encode_ms[index] : phase_ms[3],
+                        split ? submit_ms[index] : phase_ms[4]);
             }
         }
     }
