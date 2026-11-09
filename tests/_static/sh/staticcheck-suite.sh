@@ -1234,6 +1234,10 @@ run_case_tap "staticcheck-ci-install-path" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-install-path.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-cosmocc-cache-digest" \
+    sh "$src_root/tests/_static/sh/staticcheck-cosmocc-cache-digest.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-ci-haiku-test-deps" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-haiku-test-deps.sh" \
     "$src_root" || fail_and_exit $?

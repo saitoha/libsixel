@@ -487,14 +487,15 @@ runs:
         fi
         # The cache is keyed before download, so use the pinned release and
         # digest rather than hashFiles on a file that may not exist yet.
+        # BSD sha256sum needs short options and an explicit stdin operand.
         if ! printf '%s  %s\n' "$COSMOCC_SHA256" "$archive" |
-            "${sha256[@]}" --check --status; then
+            "${sha256[@]}" -c - >/dev/null; then
           curl --fail --location --connect-timeout 15 --max-time 600 \
             --retry 2 --output "$archive.part" \
             "https://github.com/jart/cosmopolitan/releases/download/${COSMOCC_VERSION}/cosmocc-${COSMOCC_VERSION}.zip"
           # Never publish a partial download or an HTTP error as a cache hit.
           printf '%s  %s\n' "$COSMOCC_SHA256" "$archive.part" |
-            "${sha256[@]}" --check -
+            "${sha256[@]}" -c -
           mv "$archive.part" "$archive"
         fi
         unzip -o -q "$archive"
