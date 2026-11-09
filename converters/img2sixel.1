@@ -214,7 +214,7 @@ choose the upper-level GPU accelerator policy.
 \fBoff\fP keeps all stages on CPU (default); \fBauto\fP tries eligible
 GPU stages with CPU fallback; \fBforce\fP requires supported GPU execution
 for selected GPU stages and palette application.
-K-means additionally requires \fB-Qkmeans:backend=gpu\fP.
+K-means additionally requires \fB-Qkmeans:backend=gpu|auto\fP.
 RGB8 palette application supports none, eytzinger, blockcull, gridlut and
 ordered lookup with none, a_dither, x_dither or bluenoise dithering.
 The encoder suboption \fB:palette_threshold=PIXELS\fP, with short form
@@ -338,20 +338,26 @@ The \fBkmeans\fP base value accepts suboptions using
 .br
 Supported k-means suboptions:
 .br
-\fBbackend\fP (short form \fBGNAME\fP): \fBcpu\fP (default) or \fBgpu\fP.
+\fBbackend\fP (short form \fBGNAME\fP): \fBcpu\fP (default), \fBgpu\fP or \fBauto\fP.
 GPU Lloyd iteration requires a Metal-enabled build and an available device.
-It uses FP32 arithmetic and full center scans; \fBprune\fP controls CPU
-execution. Sampling, initialization, final assignment and merge remain on CPU.
+It uses FP32 arithmetic and full center scans. Explicit \fBprune=elkan|yinyang\fP
+requests CPU iteration under AUTO and conflicts with FORCE.
+The \fBauto\fP backend adds a construction workload floor and uses CPU
+when no device is available, including under FORCE. Native float and named
+output apply the resulting palette on CPU. Sampling, initialization,
+final assignment and merge remain on CPU.
 With \fB--gpu-policy=auto\fP, residual feedback, active iteration snap,
 unsupported platforms, resource/numeric limits and failed GPU attempts fall
-back to CPU from unchanged seeds. With \fBforce\fP they return an error. Supported requests have at most 1048576
+back to CPU from unchanged seeds. FORCE rejects incompatible settings,
+unsafe numeric inputs and failed GPU attempts; \fBbackend=gpu\fP also
+requires an available device. Supported requests have at most 1048576
 weighted points and 1024 internal centers, finite coordinates within
 +/-65536 and nonnegative weights no larger than 4294967295; nonzero
-coordinates and weights must be representable as normal FP32 values.
+coordinates and positive weights must pass FP32 conditioning checks.
 Results need not be bit-identical to CPU double arithmetic.
 \fB--gpu-policy=off\fP (default) keeps k-means on CPU even when
 \fBbackend=gpu\fP is selected. \fBbackend=cpu\fP stays on CPU under
-every GPU policy. \fBforce\fP also retains its palette-application
+every GPU policy. For byte output, FORCE retains its palette-application
 requirement; for example, use \fB--lookup-policy=none -dnone\fP.
 .br
 \fBinittype\fP (short form \fBITYPE\fP): \fBauto\fP, \fBnone\fP, \fBpca\fP.

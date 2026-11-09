@@ -282,7 +282,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      sub-option:\n"
         "        :profile=NAME (:PNAME) compat, speed, quality\n"
         "      kmeans   -> k-means clustering. sub-option:\n"
-        "          :backend=NAME (:GNAME) cpu (default) or gpu.\n"
+        "          :backend=NAME (:GNAME) cpu (default), gpu or auto.\n"
         "              gpu uses Metal FP32 Lloyd iteration when supported;\n"
         "              requires -Gauto (CPU fallback) or -Gforce (error).\n"
         "              Feedback and iteration snap are CPU-only.\n"
@@ -848,7 +848,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    encoder sub-option:\n"
         "      :palette_threshold=PIXELS (:PPIXELS)\n"
         "      set the auto-policy minimum palette-apply pixel count\n"
-        "    gates -Qkmeans:backend=gpu and accelerates RGB8 palette apply\n"
+        "    gates -Qkmeans:backend=gpu|auto and accelerates "
+        "RGB8 palette apply\n"
         "    for none, eytzinger, blockcull, gridlut and ordered lookup\n"
     },
     {
@@ -2137,7 +2138,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_KMEANS_BACKEND",
-        "k-means iteration backend: cpu (default) or gpu.\n"
+        "k-means iteration backend: cpu (default), gpu or auto.\n"
         "Requires -Gauto (CPU fallback) or -Gforce (error if unsupported)."
     },
     {

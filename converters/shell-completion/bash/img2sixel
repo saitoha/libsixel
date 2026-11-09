@@ -192,7 +192,7 @@ _img2sixel()
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
                 elif [[ ${quant_key} == backend ]]; then
-                    for quant_candidate in cpu gpu; do
+                    for quant_candidate in cpu gpu auto; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
@@ -250,7 +250,7 @@ _img2sixel()
                 Iauto Inone Ipca inittype= T0.120 threshold= \
                 N4 N6 N8 binbits= \
                 Muniform Msrgb mapping= Dtrilinear softdist= \
-                Foff Fon feedback= prune= Gcpu Ggpu backend= \
+                Foff Fon feedback= prune= Gcpu Ggpu Gauto backend= \
                 S1 S42 seed= restarts= \
                 iter= iter_max= miniter= polish_iter= \
                 feedback_slots= feedback_interval= \

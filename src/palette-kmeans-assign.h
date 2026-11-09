@@ -25,6 +25,8 @@
 #ifndef LIBSIXEL_PALETTE_KMEANS_ASSIGN_H
 #define LIBSIXEL_PALETTE_KMEANS_ASSIGN_H
 
+#include <sixel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,7 +36,7 @@ sixel_kmeans_compute_half_center_distances(double const *centers,
                                            unsigned int k,
                                            double *half_center_dist);
 
-void
+SIXEL_INTERNAL_API void
 sixel_kmeans_compute_half_center_distance_matrix(double const *centers,
                                                  unsigned int k,
                                                  double *half_center_dist,
@@ -49,6 +51,8 @@ sixel_kmeans_build_yinyang_groups(unsigned int k,
                                   unsigned int *group_offsets,
                                   unsigned int *center_groups);
 
+/* Membership is both input and output. Initialize it to zero for a new
+ * solver run; bound rebuilds preserve existing owners on exact ties. */
 double
 sixel_kmeans_assign_samples_full_second(double const *centers,
                                         unsigned int k,
@@ -93,7 +97,7 @@ sixel_kmeans_assign_samples_full_yinyang(double const *centers,
                                          unsigned int const *group_offsets,
                                          double *group_lower_bounds);
 
-double
+SIXEL_INTERNAL_API double
 sixel_kmeans_assign_samples_elkan(double const *centers,
                                   unsigned int k,
                                   double const *samples,
@@ -109,7 +113,7 @@ sixel_kmeans_assign_samples_elkan(double const *centers,
                                   double const *half_center_dist,
                                   double const *half_center_matrix);
 
-double
+SIXEL_INTERNAL_API double
 sixel_kmeans_assign_samples_yinyang(double const *centers,
                                     unsigned int k,
                                     double const *samples,
@@ -139,7 +143,7 @@ sixel_kmeans_update_elkan_bounds(unsigned int sample_count,
                                  double *lower_matrix,
                                  double const *center_shift);
 
-double
+SIXEL_INTERNAL_API double
 sixel_kmeans_assign_samples_hamerly(double const *centers,
                                     unsigned int k,
                                     double const *samples,
@@ -153,7 +157,7 @@ sixel_kmeans_assign_samples_hamerly(double const *centers,
                                     double *lower_bounds,
                                     double const *half_center_dist);
 
-double
+SIXEL_INTERNAL_API double
 sixel_kmeans_assign_samples(double const *centers,
                             unsigned int k,
                             double const *samples,

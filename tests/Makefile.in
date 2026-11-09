@@ -3888,6 +3888,41 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	palette/kmeans/0006_option_atomicity.c \
 	palette/kmeans/0014_request_isolation.c \
 	_support/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c \
+	palette/kmeans/0047_plain_ties.c \
+	palette/kmeans/0048_hamerly_ties.c \
+	palette/kmeans/0049_elkan_ties.c \
+	palette/kmeans/0050_yinyang_ties.c \
+	palette/kmeans/0051_gpu_ties.c \
+	palette/kmeans/0052_tiny_coordinate.c \
+	palette/kmeans/0053_tiny_weight.c \
+	palette/kmeans/0054_narrow_range.c \
+	palette/kmeans/0055_zero_weights.c \
+	palette/kmeans/0056_weight_condition.c \
+	palette/kmeans/0057_zero_residual.c \
+	palette/kmeans/0058_zero_weight_members.c \
+	palette/kmeans/0059_many_empty.c \
+	palette/kmeans/0060_init_auto_recovery.c \
+	palette/kmeans/0061_init_force_recovery.c \
+	palette/kmeans/0062_buffer_auto_recovery.c \
+	palette/kmeans/0063_buffer_force_recovery.c \
+	palette/kmeans/0064_command_auto_recovery.c \
+	palette/kmeans/0065_command_force_recovery.c \
+	palette/kmeans/0066_mixed_restarts.c \
+	palette/kmeans/0067_workload_boundary.c \
+	palette/kmeans/0068_snake_sse.c \
+	palette/kmeans/0069_gradient_sse.c \
+	palette/kmeans/0070_rare_sse.c \
+	palette/kmeans/0082_numeric_auto_fallback.c \
+	palette/kmeans/0083_numeric_force_rejection.c \
+	palette/kmeans/0084_gpu_latest_frontier.c \
+	palette/kmeans/0085_gpu_cancel_publication.c \
+	palette/kmeans/0086_repair_tile_ties.c \
+	palette/kmeans/0087_wide_tile_reduction.c \
+	palette/kmeans/0088_auto_cold.c \
+	palette/kmeans/0089_auto_warm.c \
+	palette/kmeans/0090_auto_minimum.c \
+	_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c \
+	_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.h \
 	_support/quant/palette/0001_kmeans_init.c \
 	_support/quant/palette/0002_kmedoids_constraints.c \
 	_support/quant/palette/0003_kcenter_constraints.c \
@@ -8853,6 +8888,40 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0006_option_atomicity.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0014_request_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0047_plain_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0048_hamerly_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0049_elkan_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0050_yinyang_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0051_gpu_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0052_tiny_coordinate.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0053_tiny_weight.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0054_narrow_range.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0055_zero_weights.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0056_weight_condition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0057_zero_residual.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0058_zero_weight_members.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0059_many_empty.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0060_init_auto_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0061_init_force_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0062_buffer_auto_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0063_buffer_force_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0064_command_auto_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0065_command_force_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0066_mixed_restarts.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0067_workload_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0068_snake_sse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0069_gradient_sse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0070_rare_sse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0082_numeric_auto_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0083_numeric_force_rejection.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0084_gpu_latest_frontier.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0085_gpu_cancel_publication.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0086_repair_tile_ties.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0087_wide_tile_reduction.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0088_auto_cold.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0089_auto_warm.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/kmeans/test_runner-0090_auto_minimum.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT) \
@@ -10698,6 +10767,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po \
 	_support/quant/palette/destination_snap/$(DEPDIR)/test_runner-0001_destination.Po \
 	_support/quant/palette/direct/$(DEPDIR)/test_runner-0001_float_palette.Po \
+	_support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Po \
 	_support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Po \
 	_support/quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_defaults_common.Po \
 	_support/quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_policy_common.Po \
@@ -14851,6 +14921,39 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	palette/kmeans/$(DEPDIR)/test_runner-0038_kmeans_feedback_snap.Po \
 	palette/kmeans/$(DEPDIR)/test_runner-0039_kmeans_feedback_interval.Po \
 	palette/kmeans/$(DEPDIR)/test_runner-0040_kmeans_unique.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0047_plain_ties.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0048_hamerly_ties.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0049_elkan_ties.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0050_yinyang_ties.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0051_gpu_ties.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0052_tiny_coordinate.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0053_tiny_weight.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0054_narrow_range.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0055_zero_weights.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0056_weight_condition.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0057_zero_residual.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0058_zero_weight_members.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0059_many_empty.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0060_init_auto_recovery.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0061_init_force_recovery.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0062_buffer_auto_recovery.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0063_buffer_force_recovery.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0064_command_auto_recovery.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0065_command_force_recovery.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0066_mixed_restarts.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0067_workload_boundary.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0068_snake_sse.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0069_gradient_sse.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0070_rare_sse.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0082_numeric_auto_fallback.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0088_auto_cold.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0089_auto_warm.Po \
+	palette/kmeans/$(DEPDIR)/test_runner-0090_auto_minimum.Po \
 	palette/kmedoids/$(DEPDIR)/test_runner-0001_medoids_sources.Po \
 	palette/kmedoids/$(DEPDIR)/test_runner-0002_medoids_ward.Po \
 	palette/kmedoids/$(DEPDIR)/test_runner-0003_medoids_snap.Po \
@@ -15854,6 +15957,40 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_GPU_KMEANS_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_PLAIN_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_HAMERLY_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_ELKAN_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_YINYANG_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_GPU_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_TINY_COORDINATE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_TINY_WEIGHT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_NARROW_RANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_ZERO_WEIGHTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_WEIGHT_CONDITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_ZERO_RESIDUAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_ZERO_WEIGHT_MEMBERS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_MANY_EMPTY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_INIT_AUTO_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_INIT_FORCE_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_BUFFER_AUTO_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_BUFFER_FORCE_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_COMMAND_AUTO_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_COMMAND_FORCE_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_MIXED_RESTARTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_WORKLOAD_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_SNAKE_SSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_GRADIENT_SSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_RARE_SSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_NUMERIC_AUTO_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_NUMERIC_FORCE_REJECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_REPAIR_TILE_TIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0087_WIDE_TILE_REDUCTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0088_AUTO_COLD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0089_AUTO_WARM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0090_AUTO_MINIMUM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_GPU_LATEST_FRONTIER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_GPU_CANCEL_PUBLICATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0172_FHEDT_FRACTIONAL_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_6BIT_FRACTIONAL_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_5BIT_FRACTIONAL_REUSE \
@@ -24657,6 +24794,41 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0006_option_atomicity.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0014_request_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0047_plain_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0048_hamerly_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0049_elkan_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0050_yinyang_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0051_gpu_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0052_tiny_coordinate.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0053_tiny_weight.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0054_narrow_range.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0055_zero_weights.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0056_weight_condition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0057_zero_residual.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0058_zero_weight_members.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0059_many_empty.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0060_init_auto_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0061_init_force_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0062_buffer_auto_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0063_buffer_force_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0064_command_auto_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0065_command_force_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0066_mixed_restarts.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0067_workload_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0068_snake_sse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0069_gradient_sse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0070_rare_sse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0082_numeric_auto_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0083_numeric_force_rejection.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0084_gpu_latest_frontier.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0085_gpu_cancel_publication.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0086_repair_tile_ties.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0087_wide_tile_reduction.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0088_auto_cold.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0089_auto_warm.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/kmeans/0090_auto_minimum.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/0002_kmedoids_constraints.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/0003_kcenter_constraints.c \
@@ -38274,6 +38446,108 @@ _support/quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp):
 _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.$(OBJEXT):  \
 	_support/quant/palette/gpu_kmeans/$(am__dirstamp) \
 	_support/quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0047_plain_ties.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0048_hamerly_ties.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0049_elkan_ties.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0050_yinyang_ties.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0051_gpu_ties.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0052_tiny_coordinate.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0053_tiny_weight.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0054_narrow_range.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0055_zero_weights.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0056_weight_condition.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0057_zero_residual.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0058_zero_weight_members.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0059_many_empty.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0060_init_auto_recovery.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0061_init_force_recovery.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0062_buffer_auto_recovery.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0063_buffer_force_recovery.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0064_command_auto_recovery.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0065_command_force_recovery.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0066_mixed_restarts.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0067_workload_boundary.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0068_snake_sse.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0069_gradient_sse.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0070_rare_sse.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0082_numeric_auto_fallback.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0083_numeric_force_rejection.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0084_gpu_latest_frontier.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0085_gpu_cancel_publication.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0086_repair_tile_ties.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0087_wide_tile_reduction.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0088_auto_cold.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0089_auto_warm.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+palette/kmeans/test_runner-0090_auto_minimum.$(OBJEXT):  \
+	palette/kmeans/$(am__dirstamp) \
+	palette/kmeans/$(DEPDIR)/$(am__dirstamp)
+_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.$(OBJEXT):  \
+	_support/quant/palette/gpu_kmeans/$(am__dirstamp) \
+	_support/quant/palette/gpu_kmeans/$(DEPDIR)/$(am__dirstamp)
 _support/quant/palette/test_runner-0001_kmeans_init.$(OBJEXT):  \
 	_support/quant/palette/$(am__dirstamp) \
 	_support/quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -43161,6 +43435,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/quant/palette/cover_mask/$(DEPDIR)/test_runner-0001_cover_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/quant/palette/destination_snap/$(DEPDIR)/test_runner-0001_destination.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/quant/palette/direct/$(DEPDIR)/test_runner-0001_float_palette.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_defaults_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_policy_common.Po@am__quote@ # am--include-marker
@@ -47314,6 +47589,39 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0038_kmeans_feedback_snap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0039_kmeans_feedback_interval.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0040_kmeans_unique.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0047_plain_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0048_hamerly_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0049_elkan_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0050_yinyang_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0051_gpu_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0052_tiny_coordinate.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0053_tiny_weight.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0054_narrow_range.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0055_zero_weights.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0056_weight_condition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0057_zero_residual.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0058_zero_weight_members.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0059_many_empty.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0060_init_auto_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0061_init_force_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0062_buffer_auto_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0063_buffer_force_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0064_command_auto_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0065_command_force_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0066_mixed_restarts.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0067_workload_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0068_snake_sse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0069_gradient_sse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0070_rare_sse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0082_numeric_auto_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0088_auto_cold.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0089_auto_warm.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/kmeans/$(DEPDIR)/test_runner-0090_auto_minimum.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmedoids/$(DEPDIR)/test_runner-0001_medoids_sources.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmedoids/$(DEPDIR)/test_runner-0002_medoids_ward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kmedoids/$(DEPDIR)/test_runner-0003_medoids_snap.Po@am__quote@ # am--include-marker
@@ -99157,6 +99465,482 @@ _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.obj: _suppo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c' object='_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_test_common.obj `if test -f '_support/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; then $(CYGPATH_W) '_support/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/quant/palette/gpu_kmeans/gpu_kmeans_test_common.c'; fi`
+
+palette/kmeans/test_runner-0047_plain_ties.o: palette/kmeans/0047_plain_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0047_plain_ties.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0047_plain_ties.Tpo -c -o palette/kmeans/test_runner-0047_plain_ties.o `test -f 'palette/kmeans/0047_plain_ties.c' || echo '$(srcdir)/'`palette/kmeans/0047_plain_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0047_plain_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0047_plain_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0047_plain_ties.c' object='palette/kmeans/test_runner-0047_plain_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0047_plain_ties.o `test -f 'palette/kmeans/0047_plain_ties.c' || echo '$(srcdir)/'`palette/kmeans/0047_plain_ties.c
+
+palette/kmeans/test_runner-0047_plain_ties.obj: palette/kmeans/0047_plain_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0047_plain_ties.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0047_plain_ties.Tpo -c -o palette/kmeans/test_runner-0047_plain_ties.obj `if test -f 'palette/kmeans/0047_plain_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0047_plain_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0047_plain_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0047_plain_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0047_plain_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0047_plain_ties.c' object='palette/kmeans/test_runner-0047_plain_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0047_plain_ties.obj `if test -f 'palette/kmeans/0047_plain_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0047_plain_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0047_plain_ties.c'; fi`
+
+palette/kmeans/test_runner-0048_hamerly_ties.o: palette/kmeans/0048_hamerly_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0048_hamerly_ties.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0048_hamerly_ties.Tpo -c -o palette/kmeans/test_runner-0048_hamerly_ties.o `test -f 'palette/kmeans/0048_hamerly_ties.c' || echo '$(srcdir)/'`palette/kmeans/0048_hamerly_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0048_hamerly_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0048_hamerly_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0048_hamerly_ties.c' object='palette/kmeans/test_runner-0048_hamerly_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0048_hamerly_ties.o `test -f 'palette/kmeans/0048_hamerly_ties.c' || echo '$(srcdir)/'`palette/kmeans/0048_hamerly_ties.c
+
+palette/kmeans/test_runner-0048_hamerly_ties.obj: palette/kmeans/0048_hamerly_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0048_hamerly_ties.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0048_hamerly_ties.Tpo -c -o palette/kmeans/test_runner-0048_hamerly_ties.obj `if test -f 'palette/kmeans/0048_hamerly_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0048_hamerly_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0048_hamerly_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0048_hamerly_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0048_hamerly_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0048_hamerly_ties.c' object='palette/kmeans/test_runner-0048_hamerly_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0048_hamerly_ties.obj `if test -f 'palette/kmeans/0048_hamerly_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0048_hamerly_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0048_hamerly_ties.c'; fi`
+
+palette/kmeans/test_runner-0049_elkan_ties.o: palette/kmeans/0049_elkan_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0049_elkan_ties.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0049_elkan_ties.Tpo -c -o palette/kmeans/test_runner-0049_elkan_ties.o `test -f 'palette/kmeans/0049_elkan_ties.c' || echo '$(srcdir)/'`palette/kmeans/0049_elkan_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0049_elkan_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0049_elkan_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0049_elkan_ties.c' object='palette/kmeans/test_runner-0049_elkan_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0049_elkan_ties.o `test -f 'palette/kmeans/0049_elkan_ties.c' || echo '$(srcdir)/'`palette/kmeans/0049_elkan_ties.c
+
+palette/kmeans/test_runner-0049_elkan_ties.obj: palette/kmeans/0049_elkan_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0049_elkan_ties.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0049_elkan_ties.Tpo -c -o palette/kmeans/test_runner-0049_elkan_ties.obj `if test -f 'palette/kmeans/0049_elkan_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0049_elkan_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0049_elkan_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0049_elkan_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0049_elkan_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0049_elkan_ties.c' object='palette/kmeans/test_runner-0049_elkan_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0049_elkan_ties.obj `if test -f 'palette/kmeans/0049_elkan_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0049_elkan_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0049_elkan_ties.c'; fi`
+
+palette/kmeans/test_runner-0050_yinyang_ties.o: palette/kmeans/0050_yinyang_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0050_yinyang_ties.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0050_yinyang_ties.Tpo -c -o palette/kmeans/test_runner-0050_yinyang_ties.o `test -f 'palette/kmeans/0050_yinyang_ties.c' || echo '$(srcdir)/'`palette/kmeans/0050_yinyang_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0050_yinyang_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0050_yinyang_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0050_yinyang_ties.c' object='palette/kmeans/test_runner-0050_yinyang_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0050_yinyang_ties.o `test -f 'palette/kmeans/0050_yinyang_ties.c' || echo '$(srcdir)/'`palette/kmeans/0050_yinyang_ties.c
+
+palette/kmeans/test_runner-0050_yinyang_ties.obj: palette/kmeans/0050_yinyang_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0050_yinyang_ties.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0050_yinyang_ties.Tpo -c -o palette/kmeans/test_runner-0050_yinyang_ties.obj `if test -f 'palette/kmeans/0050_yinyang_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0050_yinyang_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0050_yinyang_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0050_yinyang_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0050_yinyang_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0050_yinyang_ties.c' object='palette/kmeans/test_runner-0050_yinyang_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0050_yinyang_ties.obj `if test -f 'palette/kmeans/0050_yinyang_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0050_yinyang_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0050_yinyang_ties.c'; fi`
+
+palette/kmeans/test_runner-0051_gpu_ties.o: palette/kmeans/0051_gpu_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0051_gpu_ties.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0051_gpu_ties.Tpo -c -o palette/kmeans/test_runner-0051_gpu_ties.o `test -f 'palette/kmeans/0051_gpu_ties.c' || echo '$(srcdir)/'`palette/kmeans/0051_gpu_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0051_gpu_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0051_gpu_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0051_gpu_ties.c' object='palette/kmeans/test_runner-0051_gpu_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0051_gpu_ties.o `test -f 'palette/kmeans/0051_gpu_ties.c' || echo '$(srcdir)/'`palette/kmeans/0051_gpu_ties.c
+
+palette/kmeans/test_runner-0051_gpu_ties.obj: palette/kmeans/0051_gpu_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0051_gpu_ties.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0051_gpu_ties.Tpo -c -o palette/kmeans/test_runner-0051_gpu_ties.obj `if test -f 'palette/kmeans/0051_gpu_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0051_gpu_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0051_gpu_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0051_gpu_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0051_gpu_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0051_gpu_ties.c' object='palette/kmeans/test_runner-0051_gpu_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0051_gpu_ties.obj `if test -f 'palette/kmeans/0051_gpu_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0051_gpu_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0051_gpu_ties.c'; fi`
+
+palette/kmeans/test_runner-0052_tiny_coordinate.o: palette/kmeans/0052_tiny_coordinate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0052_tiny_coordinate.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0052_tiny_coordinate.Tpo -c -o palette/kmeans/test_runner-0052_tiny_coordinate.o `test -f 'palette/kmeans/0052_tiny_coordinate.c' || echo '$(srcdir)/'`palette/kmeans/0052_tiny_coordinate.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0052_tiny_coordinate.Tpo palette/kmeans/$(DEPDIR)/test_runner-0052_tiny_coordinate.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0052_tiny_coordinate.c' object='palette/kmeans/test_runner-0052_tiny_coordinate.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0052_tiny_coordinate.o `test -f 'palette/kmeans/0052_tiny_coordinate.c' || echo '$(srcdir)/'`palette/kmeans/0052_tiny_coordinate.c
+
+palette/kmeans/test_runner-0052_tiny_coordinate.obj: palette/kmeans/0052_tiny_coordinate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0052_tiny_coordinate.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0052_tiny_coordinate.Tpo -c -o palette/kmeans/test_runner-0052_tiny_coordinate.obj `if test -f 'palette/kmeans/0052_tiny_coordinate.c'; then $(CYGPATH_W) 'palette/kmeans/0052_tiny_coordinate.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0052_tiny_coordinate.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0052_tiny_coordinate.Tpo palette/kmeans/$(DEPDIR)/test_runner-0052_tiny_coordinate.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0052_tiny_coordinate.c' object='palette/kmeans/test_runner-0052_tiny_coordinate.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0052_tiny_coordinate.obj `if test -f 'palette/kmeans/0052_tiny_coordinate.c'; then $(CYGPATH_W) 'palette/kmeans/0052_tiny_coordinate.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0052_tiny_coordinate.c'; fi`
+
+palette/kmeans/test_runner-0053_tiny_weight.o: palette/kmeans/0053_tiny_weight.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0053_tiny_weight.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0053_tiny_weight.Tpo -c -o palette/kmeans/test_runner-0053_tiny_weight.o `test -f 'palette/kmeans/0053_tiny_weight.c' || echo '$(srcdir)/'`palette/kmeans/0053_tiny_weight.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0053_tiny_weight.Tpo palette/kmeans/$(DEPDIR)/test_runner-0053_tiny_weight.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0053_tiny_weight.c' object='palette/kmeans/test_runner-0053_tiny_weight.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0053_tiny_weight.o `test -f 'palette/kmeans/0053_tiny_weight.c' || echo '$(srcdir)/'`palette/kmeans/0053_tiny_weight.c
+
+palette/kmeans/test_runner-0053_tiny_weight.obj: palette/kmeans/0053_tiny_weight.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0053_tiny_weight.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0053_tiny_weight.Tpo -c -o palette/kmeans/test_runner-0053_tiny_weight.obj `if test -f 'palette/kmeans/0053_tiny_weight.c'; then $(CYGPATH_W) 'palette/kmeans/0053_tiny_weight.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0053_tiny_weight.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0053_tiny_weight.Tpo palette/kmeans/$(DEPDIR)/test_runner-0053_tiny_weight.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0053_tiny_weight.c' object='palette/kmeans/test_runner-0053_tiny_weight.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0053_tiny_weight.obj `if test -f 'palette/kmeans/0053_tiny_weight.c'; then $(CYGPATH_W) 'palette/kmeans/0053_tiny_weight.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0053_tiny_weight.c'; fi`
+
+palette/kmeans/test_runner-0054_narrow_range.o: palette/kmeans/0054_narrow_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0054_narrow_range.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0054_narrow_range.Tpo -c -o palette/kmeans/test_runner-0054_narrow_range.o `test -f 'palette/kmeans/0054_narrow_range.c' || echo '$(srcdir)/'`palette/kmeans/0054_narrow_range.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0054_narrow_range.Tpo palette/kmeans/$(DEPDIR)/test_runner-0054_narrow_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0054_narrow_range.c' object='palette/kmeans/test_runner-0054_narrow_range.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0054_narrow_range.o `test -f 'palette/kmeans/0054_narrow_range.c' || echo '$(srcdir)/'`palette/kmeans/0054_narrow_range.c
+
+palette/kmeans/test_runner-0054_narrow_range.obj: palette/kmeans/0054_narrow_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0054_narrow_range.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0054_narrow_range.Tpo -c -o palette/kmeans/test_runner-0054_narrow_range.obj `if test -f 'palette/kmeans/0054_narrow_range.c'; then $(CYGPATH_W) 'palette/kmeans/0054_narrow_range.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0054_narrow_range.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0054_narrow_range.Tpo palette/kmeans/$(DEPDIR)/test_runner-0054_narrow_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0054_narrow_range.c' object='palette/kmeans/test_runner-0054_narrow_range.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0054_narrow_range.obj `if test -f 'palette/kmeans/0054_narrow_range.c'; then $(CYGPATH_W) 'palette/kmeans/0054_narrow_range.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0054_narrow_range.c'; fi`
+
+palette/kmeans/test_runner-0055_zero_weights.o: palette/kmeans/0055_zero_weights.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0055_zero_weights.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0055_zero_weights.Tpo -c -o palette/kmeans/test_runner-0055_zero_weights.o `test -f 'palette/kmeans/0055_zero_weights.c' || echo '$(srcdir)/'`palette/kmeans/0055_zero_weights.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0055_zero_weights.Tpo palette/kmeans/$(DEPDIR)/test_runner-0055_zero_weights.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0055_zero_weights.c' object='palette/kmeans/test_runner-0055_zero_weights.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0055_zero_weights.o `test -f 'palette/kmeans/0055_zero_weights.c' || echo '$(srcdir)/'`palette/kmeans/0055_zero_weights.c
+
+palette/kmeans/test_runner-0055_zero_weights.obj: palette/kmeans/0055_zero_weights.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0055_zero_weights.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0055_zero_weights.Tpo -c -o palette/kmeans/test_runner-0055_zero_weights.obj `if test -f 'palette/kmeans/0055_zero_weights.c'; then $(CYGPATH_W) 'palette/kmeans/0055_zero_weights.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0055_zero_weights.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0055_zero_weights.Tpo palette/kmeans/$(DEPDIR)/test_runner-0055_zero_weights.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0055_zero_weights.c' object='palette/kmeans/test_runner-0055_zero_weights.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0055_zero_weights.obj `if test -f 'palette/kmeans/0055_zero_weights.c'; then $(CYGPATH_W) 'palette/kmeans/0055_zero_weights.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0055_zero_weights.c'; fi`
+
+palette/kmeans/test_runner-0056_weight_condition.o: palette/kmeans/0056_weight_condition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0056_weight_condition.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0056_weight_condition.Tpo -c -o palette/kmeans/test_runner-0056_weight_condition.o `test -f 'palette/kmeans/0056_weight_condition.c' || echo '$(srcdir)/'`palette/kmeans/0056_weight_condition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0056_weight_condition.Tpo palette/kmeans/$(DEPDIR)/test_runner-0056_weight_condition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0056_weight_condition.c' object='palette/kmeans/test_runner-0056_weight_condition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0056_weight_condition.o `test -f 'palette/kmeans/0056_weight_condition.c' || echo '$(srcdir)/'`palette/kmeans/0056_weight_condition.c
+
+palette/kmeans/test_runner-0056_weight_condition.obj: palette/kmeans/0056_weight_condition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0056_weight_condition.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0056_weight_condition.Tpo -c -o palette/kmeans/test_runner-0056_weight_condition.obj `if test -f 'palette/kmeans/0056_weight_condition.c'; then $(CYGPATH_W) 'palette/kmeans/0056_weight_condition.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0056_weight_condition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0056_weight_condition.Tpo palette/kmeans/$(DEPDIR)/test_runner-0056_weight_condition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0056_weight_condition.c' object='palette/kmeans/test_runner-0056_weight_condition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0056_weight_condition.obj `if test -f 'palette/kmeans/0056_weight_condition.c'; then $(CYGPATH_W) 'palette/kmeans/0056_weight_condition.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0056_weight_condition.c'; fi`
+
+palette/kmeans/test_runner-0057_zero_residual.o: palette/kmeans/0057_zero_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0057_zero_residual.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0057_zero_residual.Tpo -c -o palette/kmeans/test_runner-0057_zero_residual.o `test -f 'palette/kmeans/0057_zero_residual.c' || echo '$(srcdir)/'`palette/kmeans/0057_zero_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0057_zero_residual.Tpo palette/kmeans/$(DEPDIR)/test_runner-0057_zero_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0057_zero_residual.c' object='palette/kmeans/test_runner-0057_zero_residual.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0057_zero_residual.o `test -f 'palette/kmeans/0057_zero_residual.c' || echo '$(srcdir)/'`palette/kmeans/0057_zero_residual.c
+
+palette/kmeans/test_runner-0057_zero_residual.obj: palette/kmeans/0057_zero_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0057_zero_residual.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0057_zero_residual.Tpo -c -o palette/kmeans/test_runner-0057_zero_residual.obj `if test -f 'palette/kmeans/0057_zero_residual.c'; then $(CYGPATH_W) 'palette/kmeans/0057_zero_residual.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0057_zero_residual.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0057_zero_residual.Tpo palette/kmeans/$(DEPDIR)/test_runner-0057_zero_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0057_zero_residual.c' object='palette/kmeans/test_runner-0057_zero_residual.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0057_zero_residual.obj `if test -f 'palette/kmeans/0057_zero_residual.c'; then $(CYGPATH_W) 'palette/kmeans/0057_zero_residual.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0057_zero_residual.c'; fi`
+
+palette/kmeans/test_runner-0058_zero_weight_members.o: palette/kmeans/0058_zero_weight_members.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0058_zero_weight_members.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0058_zero_weight_members.Tpo -c -o palette/kmeans/test_runner-0058_zero_weight_members.o `test -f 'palette/kmeans/0058_zero_weight_members.c' || echo '$(srcdir)/'`palette/kmeans/0058_zero_weight_members.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0058_zero_weight_members.Tpo palette/kmeans/$(DEPDIR)/test_runner-0058_zero_weight_members.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0058_zero_weight_members.c' object='palette/kmeans/test_runner-0058_zero_weight_members.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0058_zero_weight_members.o `test -f 'palette/kmeans/0058_zero_weight_members.c' || echo '$(srcdir)/'`palette/kmeans/0058_zero_weight_members.c
+
+palette/kmeans/test_runner-0058_zero_weight_members.obj: palette/kmeans/0058_zero_weight_members.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0058_zero_weight_members.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0058_zero_weight_members.Tpo -c -o palette/kmeans/test_runner-0058_zero_weight_members.obj `if test -f 'palette/kmeans/0058_zero_weight_members.c'; then $(CYGPATH_W) 'palette/kmeans/0058_zero_weight_members.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0058_zero_weight_members.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0058_zero_weight_members.Tpo palette/kmeans/$(DEPDIR)/test_runner-0058_zero_weight_members.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0058_zero_weight_members.c' object='palette/kmeans/test_runner-0058_zero_weight_members.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0058_zero_weight_members.obj `if test -f 'palette/kmeans/0058_zero_weight_members.c'; then $(CYGPATH_W) 'palette/kmeans/0058_zero_weight_members.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0058_zero_weight_members.c'; fi`
+
+palette/kmeans/test_runner-0059_many_empty.o: palette/kmeans/0059_many_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0059_many_empty.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0059_many_empty.Tpo -c -o palette/kmeans/test_runner-0059_many_empty.o `test -f 'palette/kmeans/0059_many_empty.c' || echo '$(srcdir)/'`palette/kmeans/0059_many_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0059_many_empty.Tpo palette/kmeans/$(DEPDIR)/test_runner-0059_many_empty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0059_many_empty.c' object='palette/kmeans/test_runner-0059_many_empty.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0059_many_empty.o `test -f 'palette/kmeans/0059_many_empty.c' || echo '$(srcdir)/'`palette/kmeans/0059_many_empty.c
+
+palette/kmeans/test_runner-0059_many_empty.obj: palette/kmeans/0059_many_empty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0059_many_empty.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0059_many_empty.Tpo -c -o palette/kmeans/test_runner-0059_many_empty.obj `if test -f 'palette/kmeans/0059_many_empty.c'; then $(CYGPATH_W) 'palette/kmeans/0059_many_empty.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0059_many_empty.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0059_many_empty.Tpo palette/kmeans/$(DEPDIR)/test_runner-0059_many_empty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0059_many_empty.c' object='palette/kmeans/test_runner-0059_many_empty.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0059_many_empty.obj `if test -f 'palette/kmeans/0059_many_empty.c'; then $(CYGPATH_W) 'palette/kmeans/0059_many_empty.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0059_many_empty.c'; fi`
+
+palette/kmeans/test_runner-0060_init_auto_recovery.o: palette/kmeans/0060_init_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0060_init_auto_recovery.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0060_init_auto_recovery.Tpo -c -o palette/kmeans/test_runner-0060_init_auto_recovery.o `test -f 'palette/kmeans/0060_init_auto_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0060_init_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0060_init_auto_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0060_init_auto_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0060_init_auto_recovery.c' object='palette/kmeans/test_runner-0060_init_auto_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0060_init_auto_recovery.o `test -f 'palette/kmeans/0060_init_auto_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0060_init_auto_recovery.c
+
+palette/kmeans/test_runner-0060_init_auto_recovery.obj: palette/kmeans/0060_init_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0060_init_auto_recovery.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0060_init_auto_recovery.Tpo -c -o palette/kmeans/test_runner-0060_init_auto_recovery.obj `if test -f 'palette/kmeans/0060_init_auto_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0060_init_auto_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0060_init_auto_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0060_init_auto_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0060_init_auto_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0060_init_auto_recovery.c' object='palette/kmeans/test_runner-0060_init_auto_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0060_init_auto_recovery.obj `if test -f 'palette/kmeans/0060_init_auto_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0060_init_auto_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0060_init_auto_recovery.c'; fi`
+
+palette/kmeans/test_runner-0061_init_force_recovery.o: palette/kmeans/0061_init_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0061_init_force_recovery.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0061_init_force_recovery.Tpo -c -o palette/kmeans/test_runner-0061_init_force_recovery.o `test -f 'palette/kmeans/0061_init_force_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0061_init_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0061_init_force_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0061_init_force_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0061_init_force_recovery.c' object='palette/kmeans/test_runner-0061_init_force_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0061_init_force_recovery.o `test -f 'palette/kmeans/0061_init_force_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0061_init_force_recovery.c
+
+palette/kmeans/test_runner-0061_init_force_recovery.obj: palette/kmeans/0061_init_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0061_init_force_recovery.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0061_init_force_recovery.Tpo -c -o palette/kmeans/test_runner-0061_init_force_recovery.obj `if test -f 'palette/kmeans/0061_init_force_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0061_init_force_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0061_init_force_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0061_init_force_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0061_init_force_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0061_init_force_recovery.c' object='palette/kmeans/test_runner-0061_init_force_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0061_init_force_recovery.obj `if test -f 'palette/kmeans/0061_init_force_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0061_init_force_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0061_init_force_recovery.c'; fi`
+
+palette/kmeans/test_runner-0062_buffer_auto_recovery.o: palette/kmeans/0062_buffer_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0062_buffer_auto_recovery.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0062_buffer_auto_recovery.Tpo -c -o palette/kmeans/test_runner-0062_buffer_auto_recovery.o `test -f 'palette/kmeans/0062_buffer_auto_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0062_buffer_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0062_buffer_auto_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0062_buffer_auto_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0062_buffer_auto_recovery.c' object='palette/kmeans/test_runner-0062_buffer_auto_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0062_buffer_auto_recovery.o `test -f 'palette/kmeans/0062_buffer_auto_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0062_buffer_auto_recovery.c
+
+palette/kmeans/test_runner-0062_buffer_auto_recovery.obj: palette/kmeans/0062_buffer_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0062_buffer_auto_recovery.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0062_buffer_auto_recovery.Tpo -c -o palette/kmeans/test_runner-0062_buffer_auto_recovery.obj `if test -f 'palette/kmeans/0062_buffer_auto_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0062_buffer_auto_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0062_buffer_auto_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0062_buffer_auto_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0062_buffer_auto_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0062_buffer_auto_recovery.c' object='palette/kmeans/test_runner-0062_buffer_auto_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0062_buffer_auto_recovery.obj `if test -f 'palette/kmeans/0062_buffer_auto_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0062_buffer_auto_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0062_buffer_auto_recovery.c'; fi`
+
+palette/kmeans/test_runner-0063_buffer_force_recovery.o: palette/kmeans/0063_buffer_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0063_buffer_force_recovery.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0063_buffer_force_recovery.Tpo -c -o palette/kmeans/test_runner-0063_buffer_force_recovery.o `test -f 'palette/kmeans/0063_buffer_force_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0063_buffer_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0063_buffer_force_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0063_buffer_force_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0063_buffer_force_recovery.c' object='palette/kmeans/test_runner-0063_buffer_force_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0063_buffer_force_recovery.o `test -f 'palette/kmeans/0063_buffer_force_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0063_buffer_force_recovery.c
+
+palette/kmeans/test_runner-0063_buffer_force_recovery.obj: palette/kmeans/0063_buffer_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0063_buffer_force_recovery.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0063_buffer_force_recovery.Tpo -c -o palette/kmeans/test_runner-0063_buffer_force_recovery.obj `if test -f 'palette/kmeans/0063_buffer_force_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0063_buffer_force_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0063_buffer_force_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0063_buffer_force_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0063_buffer_force_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0063_buffer_force_recovery.c' object='palette/kmeans/test_runner-0063_buffer_force_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0063_buffer_force_recovery.obj `if test -f 'palette/kmeans/0063_buffer_force_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0063_buffer_force_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0063_buffer_force_recovery.c'; fi`
+
+palette/kmeans/test_runner-0064_command_auto_recovery.o: palette/kmeans/0064_command_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0064_command_auto_recovery.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0064_command_auto_recovery.Tpo -c -o palette/kmeans/test_runner-0064_command_auto_recovery.o `test -f 'palette/kmeans/0064_command_auto_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0064_command_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0064_command_auto_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0064_command_auto_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0064_command_auto_recovery.c' object='palette/kmeans/test_runner-0064_command_auto_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0064_command_auto_recovery.o `test -f 'palette/kmeans/0064_command_auto_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0064_command_auto_recovery.c
+
+palette/kmeans/test_runner-0064_command_auto_recovery.obj: palette/kmeans/0064_command_auto_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0064_command_auto_recovery.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0064_command_auto_recovery.Tpo -c -o palette/kmeans/test_runner-0064_command_auto_recovery.obj `if test -f 'palette/kmeans/0064_command_auto_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0064_command_auto_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0064_command_auto_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0064_command_auto_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0064_command_auto_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0064_command_auto_recovery.c' object='palette/kmeans/test_runner-0064_command_auto_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0064_command_auto_recovery.obj `if test -f 'palette/kmeans/0064_command_auto_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0064_command_auto_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0064_command_auto_recovery.c'; fi`
+
+palette/kmeans/test_runner-0065_command_force_recovery.o: palette/kmeans/0065_command_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0065_command_force_recovery.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0065_command_force_recovery.Tpo -c -o palette/kmeans/test_runner-0065_command_force_recovery.o `test -f 'palette/kmeans/0065_command_force_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0065_command_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0065_command_force_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0065_command_force_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0065_command_force_recovery.c' object='palette/kmeans/test_runner-0065_command_force_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0065_command_force_recovery.o `test -f 'palette/kmeans/0065_command_force_recovery.c' || echo '$(srcdir)/'`palette/kmeans/0065_command_force_recovery.c
+
+palette/kmeans/test_runner-0065_command_force_recovery.obj: palette/kmeans/0065_command_force_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0065_command_force_recovery.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0065_command_force_recovery.Tpo -c -o palette/kmeans/test_runner-0065_command_force_recovery.obj `if test -f 'palette/kmeans/0065_command_force_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0065_command_force_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0065_command_force_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0065_command_force_recovery.Tpo palette/kmeans/$(DEPDIR)/test_runner-0065_command_force_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0065_command_force_recovery.c' object='palette/kmeans/test_runner-0065_command_force_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0065_command_force_recovery.obj `if test -f 'palette/kmeans/0065_command_force_recovery.c'; then $(CYGPATH_W) 'palette/kmeans/0065_command_force_recovery.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0065_command_force_recovery.c'; fi`
+
+palette/kmeans/test_runner-0066_mixed_restarts.o: palette/kmeans/0066_mixed_restarts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0066_mixed_restarts.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0066_mixed_restarts.Tpo -c -o palette/kmeans/test_runner-0066_mixed_restarts.o `test -f 'palette/kmeans/0066_mixed_restarts.c' || echo '$(srcdir)/'`palette/kmeans/0066_mixed_restarts.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0066_mixed_restarts.Tpo palette/kmeans/$(DEPDIR)/test_runner-0066_mixed_restarts.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0066_mixed_restarts.c' object='palette/kmeans/test_runner-0066_mixed_restarts.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0066_mixed_restarts.o `test -f 'palette/kmeans/0066_mixed_restarts.c' || echo '$(srcdir)/'`palette/kmeans/0066_mixed_restarts.c
+
+palette/kmeans/test_runner-0066_mixed_restarts.obj: palette/kmeans/0066_mixed_restarts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0066_mixed_restarts.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0066_mixed_restarts.Tpo -c -o palette/kmeans/test_runner-0066_mixed_restarts.obj `if test -f 'palette/kmeans/0066_mixed_restarts.c'; then $(CYGPATH_W) 'palette/kmeans/0066_mixed_restarts.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0066_mixed_restarts.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0066_mixed_restarts.Tpo palette/kmeans/$(DEPDIR)/test_runner-0066_mixed_restarts.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0066_mixed_restarts.c' object='palette/kmeans/test_runner-0066_mixed_restarts.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0066_mixed_restarts.obj `if test -f 'palette/kmeans/0066_mixed_restarts.c'; then $(CYGPATH_W) 'palette/kmeans/0066_mixed_restarts.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0066_mixed_restarts.c'; fi`
+
+palette/kmeans/test_runner-0067_workload_boundary.o: palette/kmeans/0067_workload_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0067_workload_boundary.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0067_workload_boundary.Tpo -c -o palette/kmeans/test_runner-0067_workload_boundary.o `test -f 'palette/kmeans/0067_workload_boundary.c' || echo '$(srcdir)/'`palette/kmeans/0067_workload_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0067_workload_boundary.Tpo palette/kmeans/$(DEPDIR)/test_runner-0067_workload_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0067_workload_boundary.c' object='palette/kmeans/test_runner-0067_workload_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0067_workload_boundary.o `test -f 'palette/kmeans/0067_workload_boundary.c' || echo '$(srcdir)/'`palette/kmeans/0067_workload_boundary.c
+
+palette/kmeans/test_runner-0067_workload_boundary.obj: palette/kmeans/0067_workload_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0067_workload_boundary.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0067_workload_boundary.Tpo -c -o palette/kmeans/test_runner-0067_workload_boundary.obj `if test -f 'palette/kmeans/0067_workload_boundary.c'; then $(CYGPATH_W) 'palette/kmeans/0067_workload_boundary.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0067_workload_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0067_workload_boundary.Tpo palette/kmeans/$(DEPDIR)/test_runner-0067_workload_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0067_workload_boundary.c' object='palette/kmeans/test_runner-0067_workload_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0067_workload_boundary.obj `if test -f 'palette/kmeans/0067_workload_boundary.c'; then $(CYGPATH_W) 'palette/kmeans/0067_workload_boundary.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0067_workload_boundary.c'; fi`
+
+palette/kmeans/test_runner-0068_snake_sse.o: palette/kmeans/0068_snake_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0068_snake_sse.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0068_snake_sse.Tpo -c -o palette/kmeans/test_runner-0068_snake_sse.o `test -f 'palette/kmeans/0068_snake_sse.c' || echo '$(srcdir)/'`palette/kmeans/0068_snake_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0068_snake_sse.Tpo palette/kmeans/$(DEPDIR)/test_runner-0068_snake_sse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0068_snake_sse.c' object='palette/kmeans/test_runner-0068_snake_sse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0068_snake_sse.o `test -f 'palette/kmeans/0068_snake_sse.c' || echo '$(srcdir)/'`palette/kmeans/0068_snake_sse.c
+
+palette/kmeans/test_runner-0068_snake_sse.obj: palette/kmeans/0068_snake_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0068_snake_sse.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0068_snake_sse.Tpo -c -o palette/kmeans/test_runner-0068_snake_sse.obj `if test -f 'palette/kmeans/0068_snake_sse.c'; then $(CYGPATH_W) 'palette/kmeans/0068_snake_sse.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0068_snake_sse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0068_snake_sse.Tpo palette/kmeans/$(DEPDIR)/test_runner-0068_snake_sse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0068_snake_sse.c' object='palette/kmeans/test_runner-0068_snake_sse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0068_snake_sse.obj `if test -f 'palette/kmeans/0068_snake_sse.c'; then $(CYGPATH_W) 'palette/kmeans/0068_snake_sse.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0068_snake_sse.c'; fi`
+
+palette/kmeans/test_runner-0069_gradient_sse.o: palette/kmeans/0069_gradient_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0069_gradient_sse.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0069_gradient_sse.Tpo -c -o palette/kmeans/test_runner-0069_gradient_sse.o `test -f 'palette/kmeans/0069_gradient_sse.c' || echo '$(srcdir)/'`palette/kmeans/0069_gradient_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0069_gradient_sse.Tpo palette/kmeans/$(DEPDIR)/test_runner-0069_gradient_sse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0069_gradient_sse.c' object='palette/kmeans/test_runner-0069_gradient_sse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0069_gradient_sse.o `test -f 'palette/kmeans/0069_gradient_sse.c' || echo '$(srcdir)/'`palette/kmeans/0069_gradient_sse.c
+
+palette/kmeans/test_runner-0069_gradient_sse.obj: palette/kmeans/0069_gradient_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0069_gradient_sse.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0069_gradient_sse.Tpo -c -o palette/kmeans/test_runner-0069_gradient_sse.obj `if test -f 'palette/kmeans/0069_gradient_sse.c'; then $(CYGPATH_W) 'palette/kmeans/0069_gradient_sse.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0069_gradient_sse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0069_gradient_sse.Tpo palette/kmeans/$(DEPDIR)/test_runner-0069_gradient_sse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0069_gradient_sse.c' object='palette/kmeans/test_runner-0069_gradient_sse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0069_gradient_sse.obj `if test -f 'palette/kmeans/0069_gradient_sse.c'; then $(CYGPATH_W) 'palette/kmeans/0069_gradient_sse.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0069_gradient_sse.c'; fi`
+
+palette/kmeans/test_runner-0070_rare_sse.o: palette/kmeans/0070_rare_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0070_rare_sse.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0070_rare_sse.Tpo -c -o palette/kmeans/test_runner-0070_rare_sse.o `test -f 'palette/kmeans/0070_rare_sse.c' || echo '$(srcdir)/'`palette/kmeans/0070_rare_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0070_rare_sse.Tpo palette/kmeans/$(DEPDIR)/test_runner-0070_rare_sse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0070_rare_sse.c' object='palette/kmeans/test_runner-0070_rare_sse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0070_rare_sse.o `test -f 'palette/kmeans/0070_rare_sse.c' || echo '$(srcdir)/'`palette/kmeans/0070_rare_sse.c
+
+palette/kmeans/test_runner-0070_rare_sse.obj: palette/kmeans/0070_rare_sse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0070_rare_sse.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0070_rare_sse.Tpo -c -o palette/kmeans/test_runner-0070_rare_sse.obj `if test -f 'palette/kmeans/0070_rare_sse.c'; then $(CYGPATH_W) 'palette/kmeans/0070_rare_sse.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0070_rare_sse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0070_rare_sse.Tpo palette/kmeans/$(DEPDIR)/test_runner-0070_rare_sse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0070_rare_sse.c' object='palette/kmeans/test_runner-0070_rare_sse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0070_rare_sse.obj `if test -f 'palette/kmeans/0070_rare_sse.c'; then $(CYGPATH_W) 'palette/kmeans/0070_rare_sse.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0070_rare_sse.c'; fi`
+
+palette/kmeans/test_runner-0082_numeric_auto_fallback.o: palette/kmeans/0082_numeric_auto_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0082_numeric_auto_fallback.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0082_numeric_auto_fallback.Tpo -c -o palette/kmeans/test_runner-0082_numeric_auto_fallback.o `test -f 'palette/kmeans/0082_numeric_auto_fallback.c' || echo '$(srcdir)/'`palette/kmeans/0082_numeric_auto_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0082_numeric_auto_fallback.Tpo palette/kmeans/$(DEPDIR)/test_runner-0082_numeric_auto_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0082_numeric_auto_fallback.c' object='palette/kmeans/test_runner-0082_numeric_auto_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0082_numeric_auto_fallback.o `test -f 'palette/kmeans/0082_numeric_auto_fallback.c' || echo '$(srcdir)/'`palette/kmeans/0082_numeric_auto_fallback.c
+
+palette/kmeans/test_runner-0082_numeric_auto_fallback.obj: palette/kmeans/0082_numeric_auto_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0082_numeric_auto_fallback.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0082_numeric_auto_fallback.Tpo -c -o palette/kmeans/test_runner-0082_numeric_auto_fallback.obj `if test -f 'palette/kmeans/0082_numeric_auto_fallback.c'; then $(CYGPATH_W) 'palette/kmeans/0082_numeric_auto_fallback.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0082_numeric_auto_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0082_numeric_auto_fallback.Tpo palette/kmeans/$(DEPDIR)/test_runner-0082_numeric_auto_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0082_numeric_auto_fallback.c' object='palette/kmeans/test_runner-0082_numeric_auto_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0082_numeric_auto_fallback.obj `if test -f 'palette/kmeans/0082_numeric_auto_fallback.c'; then $(CYGPATH_W) 'palette/kmeans/0082_numeric_auto_fallback.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0082_numeric_auto_fallback.c'; fi`
+
+palette/kmeans/test_runner-0083_numeric_force_rejection.o: palette/kmeans/0083_numeric_force_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0083_numeric_force_rejection.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Tpo -c -o palette/kmeans/test_runner-0083_numeric_force_rejection.o `test -f 'palette/kmeans/0083_numeric_force_rejection.c' || echo '$(srcdir)/'`palette/kmeans/0083_numeric_force_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Tpo palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0083_numeric_force_rejection.c' object='palette/kmeans/test_runner-0083_numeric_force_rejection.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0083_numeric_force_rejection.o `test -f 'palette/kmeans/0083_numeric_force_rejection.c' || echo '$(srcdir)/'`palette/kmeans/0083_numeric_force_rejection.c
+
+palette/kmeans/test_runner-0083_numeric_force_rejection.obj: palette/kmeans/0083_numeric_force_rejection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0083_numeric_force_rejection.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Tpo -c -o palette/kmeans/test_runner-0083_numeric_force_rejection.obj `if test -f 'palette/kmeans/0083_numeric_force_rejection.c'; then $(CYGPATH_W) 'palette/kmeans/0083_numeric_force_rejection.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0083_numeric_force_rejection.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Tpo palette/kmeans/$(DEPDIR)/test_runner-0083_numeric_force_rejection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0083_numeric_force_rejection.c' object='palette/kmeans/test_runner-0083_numeric_force_rejection.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0083_numeric_force_rejection.obj `if test -f 'palette/kmeans/0083_numeric_force_rejection.c'; then $(CYGPATH_W) 'palette/kmeans/0083_numeric_force_rejection.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0083_numeric_force_rejection.c'; fi`
+
+palette/kmeans/test_runner-0084_gpu_latest_frontier.o: palette/kmeans/0084_gpu_latest_frontier.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0084_gpu_latest_frontier.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Tpo -c -o palette/kmeans/test_runner-0084_gpu_latest_frontier.o `test -f 'palette/kmeans/0084_gpu_latest_frontier.c' || echo '$(srcdir)/'`palette/kmeans/0084_gpu_latest_frontier.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Tpo palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0084_gpu_latest_frontier.c' object='palette/kmeans/test_runner-0084_gpu_latest_frontier.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0084_gpu_latest_frontier.o `test -f 'palette/kmeans/0084_gpu_latest_frontier.c' || echo '$(srcdir)/'`palette/kmeans/0084_gpu_latest_frontier.c
+
+palette/kmeans/test_runner-0084_gpu_latest_frontier.obj: palette/kmeans/0084_gpu_latest_frontier.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0084_gpu_latest_frontier.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Tpo -c -o palette/kmeans/test_runner-0084_gpu_latest_frontier.obj `if test -f 'palette/kmeans/0084_gpu_latest_frontier.c'; then $(CYGPATH_W) 'palette/kmeans/0084_gpu_latest_frontier.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0084_gpu_latest_frontier.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Tpo palette/kmeans/$(DEPDIR)/test_runner-0084_gpu_latest_frontier.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0084_gpu_latest_frontier.c' object='palette/kmeans/test_runner-0084_gpu_latest_frontier.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0084_gpu_latest_frontier.obj `if test -f 'palette/kmeans/0084_gpu_latest_frontier.c'; then $(CYGPATH_W) 'palette/kmeans/0084_gpu_latest_frontier.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0084_gpu_latest_frontier.c'; fi`
+
+palette/kmeans/test_runner-0085_gpu_cancel_publication.o: palette/kmeans/0085_gpu_cancel_publication.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0085_gpu_cancel_publication.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Tpo -c -o palette/kmeans/test_runner-0085_gpu_cancel_publication.o `test -f 'palette/kmeans/0085_gpu_cancel_publication.c' || echo '$(srcdir)/'`palette/kmeans/0085_gpu_cancel_publication.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Tpo palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0085_gpu_cancel_publication.c' object='palette/kmeans/test_runner-0085_gpu_cancel_publication.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0085_gpu_cancel_publication.o `test -f 'palette/kmeans/0085_gpu_cancel_publication.c' || echo '$(srcdir)/'`palette/kmeans/0085_gpu_cancel_publication.c
+
+palette/kmeans/test_runner-0085_gpu_cancel_publication.obj: palette/kmeans/0085_gpu_cancel_publication.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0085_gpu_cancel_publication.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Tpo -c -o palette/kmeans/test_runner-0085_gpu_cancel_publication.obj `if test -f 'palette/kmeans/0085_gpu_cancel_publication.c'; then $(CYGPATH_W) 'palette/kmeans/0085_gpu_cancel_publication.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0085_gpu_cancel_publication.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Tpo palette/kmeans/$(DEPDIR)/test_runner-0085_gpu_cancel_publication.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0085_gpu_cancel_publication.c' object='palette/kmeans/test_runner-0085_gpu_cancel_publication.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0085_gpu_cancel_publication.obj `if test -f 'palette/kmeans/0085_gpu_cancel_publication.c'; then $(CYGPATH_W) 'palette/kmeans/0085_gpu_cancel_publication.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0085_gpu_cancel_publication.c'; fi`
+
+palette/kmeans/test_runner-0086_repair_tile_ties.o: palette/kmeans/0086_repair_tile_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0086_repair_tile_ties.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Tpo -c -o palette/kmeans/test_runner-0086_repair_tile_ties.o `test -f 'palette/kmeans/0086_repair_tile_ties.c' || echo '$(srcdir)/'`palette/kmeans/0086_repair_tile_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0086_repair_tile_ties.c' object='palette/kmeans/test_runner-0086_repair_tile_ties.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0086_repair_tile_ties.o `test -f 'palette/kmeans/0086_repair_tile_ties.c' || echo '$(srcdir)/'`palette/kmeans/0086_repair_tile_ties.c
+
+palette/kmeans/test_runner-0086_repair_tile_ties.obj: palette/kmeans/0086_repair_tile_ties.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0086_repair_tile_ties.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Tpo -c -o palette/kmeans/test_runner-0086_repair_tile_ties.obj `if test -f 'palette/kmeans/0086_repair_tile_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0086_repair_tile_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0086_repair_tile_ties.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Tpo palette/kmeans/$(DEPDIR)/test_runner-0086_repair_tile_ties.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0086_repair_tile_ties.c' object='palette/kmeans/test_runner-0086_repair_tile_ties.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0086_repair_tile_ties.obj `if test -f 'palette/kmeans/0086_repair_tile_ties.c'; then $(CYGPATH_W) 'palette/kmeans/0086_repair_tile_ties.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0086_repair_tile_ties.c'; fi`
+
+palette/kmeans/test_runner-0087_wide_tile_reduction.o: palette/kmeans/0087_wide_tile_reduction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0087_wide_tile_reduction.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Tpo -c -o palette/kmeans/test_runner-0087_wide_tile_reduction.o `test -f 'palette/kmeans/0087_wide_tile_reduction.c' || echo '$(srcdir)/'`palette/kmeans/0087_wide_tile_reduction.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Tpo palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0087_wide_tile_reduction.c' object='palette/kmeans/test_runner-0087_wide_tile_reduction.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0087_wide_tile_reduction.o `test -f 'palette/kmeans/0087_wide_tile_reduction.c' || echo '$(srcdir)/'`palette/kmeans/0087_wide_tile_reduction.c
+
+palette/kmeans/test_runner-0087_wide_tile_reduction.obj: palette/kmeans/0087_wide_tile_reduction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0087_wide_tile_reduction.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Tpo -c -o palette/kmeans/test_runner-0087_wide_tile_reduction.obj `if test -f 'palette/kmeans/0087_wide_tile_reduction.c'; then $(CYGPATH_W) 'palette/kmeans/0087_wide_tile_reduction.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0087_wide_tile_reduction.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Tpo palette/kmeans/$(DEPDIR)/test_runner-0087_wide_tile_reduction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0087_wide_tile_reduction.c' object='palette/kmeans/test_runner-0087_wide_tile_reduction.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0087_wide_tile_reduction.obj `if test -f 'palette/kmeans/0087_wide_tile_reduction.c'; then $(CYGPATH_W) 'palette/kmeans/0087_wide_tile_reduction.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0087_wide_tile_reduction.c'; fi`
+
+palette/kmeans/test_runner-0088_auto_cold.o: palette/kmeans/0088_auto_cold.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0088_auto_cold.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0088_auto_cold.Tpo -c -o palette/kmeans/test_runner-0088_auto_cold.o `test -f 'palette/kmeans/0088_auto_cold.c' || echo '$(srcdir)/'`palette/kmeans/0088_auto_cold.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0088_auto_cold.Tpo palette/kmeans/$(DEPDIR)/test_runner-0088_auto_cold.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0088_auto_cold.c' object='palette/kmeans/test_runner-0088_auto_cold.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0088_auto_cold.o `test -f 'palette/kmeans/0088_auto_cold.c' || echo '$(srcdir)/'`palette/kmeans/0088_auto_cold.c
+
+palette/kmeans/test_runner-0088_auto_cold.obj: palette/kmeans/0088_auto_cold.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0088_auto_cold.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0088_auto_cold.Tpo -c -o palette/kmeans/test_runner-0088_auto_cold.obj `if test -f 'palette/kmeans/0088_auto_cold.c'; then $(CYGPATH_W) 'palette/kmeans/0088_auto_cold.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0088_auto_cold.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0088_auto_cold.Tpo palette/kmeans/$(DEPDIR)/test_runner-0088_auto_cold.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0088_auto_cold.c' object='palette/kmeans/test_runner-0088_auto_cold.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0088_auto_cold.obj `if test -f 'palette/kmeans/0088_auto_cold.c'; then $(CYGPATH_W) 'palette/kmeans/0088_auto_cold.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0088_auto_cold.c'; fi`
+
+palette/kmeans/test_runner-0089_auto_warm.o: palette/kmeans/0089_auto_warm.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0089_auto_warm.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0089_auto_warm.Tpo -c -o palette/kmeans/test_runner-0089_auto_warm.o `test -f 'palette/kmeans/0089_auto_warm.c' || echo '$(srcdir)/'`palette/kmeans/0089_auto_warm.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0089_auto_warm.Tpo palette/kmeans/$(DEPDIR)/test_runner-0089_auto_warm.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0089_auto_warm.c' object='palette/kmeans/test_runner-0089_auto_warm.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0089_auto_warm.o `test -f 'palette/kmeans/0089_auto_warm.c' || echo '$(srcdir)/'`palette/kmeans/0089_auto_warm.c
+
+palette/kmeans/test_runner-0089_auto_warm.obj: palette/kmeans/0089_auto_warm.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0089_auto_warm.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0089_auto_warm.Tpo -c -o palette/kmeans/test_runner-0089_auto_warm.obj `if test -f 'palette/kmeans/0089_auto_warm.c'; then $(CYGPATH_W) 'palette/kmeans/0089_auto_warm.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0089_auto_warm.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0089_auto_warm.Tpo palette/kmeans/$(DEPDIR)/test_runner-0089_auto_warm.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0089_auto_warm.c' object='palette/kmeans/test_runner-0089_auto_warm.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0089_auto_warm.obj `if test -f 'palette/kmeans/0089_auto_warm.c'; then $(CYGPATH_W) 'palette/kmeans/0089_auto_warm.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0089_auto_warm.c'; fi`
+
+palette/kmeans/test_runner-0090_auto_minimum.o: palette/kmeans/0090_auto_minimum.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0090_auto_minimum.o -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0090_auto_minimum.Tpo -c -o palette/kmeans/test_runner-0090_auto_minimum.o `test -f 'palette/kmeans/0090_auto_minimum.c' || echo '$(srcdir)/'`palette/kmeans/0090_auto_minimum.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0090_auto_minimum.Tpo palette/kmeans/$(DEPDIR)/test_runner-0090_auto_minimum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0090_auto_minimum.c' object='palette/kmeans/test_runner-0090_auto_minimum.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0090_auto_minimum.o `test -f 'palette/kmeans/0090_auto_minimum.c' || echo '$(srcdir)/'`palette/kmeans/0090_auto_minimum.c
+
+palette/kmeans/test_runner-0090_auto_minimum.obj: palette/kmeans/0090_auto_minimum.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/kmeans/test_runner-0090_auto_minimum.obj -MD -MP -MF palette/kmeans/$(DEPDIR)/test_runner-0090_auto_minimum.Tpo -c -o palette/kmeans/test_runner-0090_auto_minimum.obj `if test -f 'palette/kmeans/0090_auto_minimum.c'; then $(CYGPATH_W) 'palette/kmeans/0090_auto_minimum.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0090_auto_minimum.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/kmeans/$(DEPDIR)/test_runner-0090_auto_minimum.Tpo palette/kmeans/$(DEPDIR)/test_runner-0090_auto_minimum.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/kmeans/0090_auto_minimum.c' object='palette/kmeans/test_runner-0090_auto_minimum.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/kmeans/test_runner-0090_auto_minimum.obj `if test -f 'palette/kmeans/0090_auto_minimum.c'; then $(CYGPATH_W) 'palette/kmeans/0090_auto_minimum.c'; else $(CYGPATH_W) '$(srcdir)/palette/kmeans/0090_auto_minimum.c'; fi`
+
+_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.o: _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.o -MD -MP -MF _support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Tpo -c -o _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.o `test -f '_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c' || echo '$(srcdir)/'`_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Tpo _support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c' object='_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.o `test -f '_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c' || echo '$(srcdir)/'`_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c
+
+_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.obj: _support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.obj -MD -MP -MF _support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Tpo -c -o _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.obj `if test -f '_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c'; then $(CYGPATH_W) '_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c'; else $(CYGPATH_W) '$(srcdir)/_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Tpo _support/quant/palette/gpu_kmeans/$(DEPDIR)/test_runner-gpu_kmeans_contract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c' object='_support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/quant/palette/gpu_kmeans/test_runner-gpu_kmeans_contract.obj `if test -f '_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c'; then $(CYGPATH_W) '_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c'; else $(CYGPATH_W) '$(srcdir)/_support/quant/palette/gpu_kmeans/gpu_kmeans_contract.c'; fi`
 
 _support/quant/palette/test_runner-0001_kmeans_init.o: _support/quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF _support/quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o _support/quant/palette/test_runner-0001_kmeans_init.o `test -f '_support/quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`_support/quant/palette/0001_kmeans_init.c

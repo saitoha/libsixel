@@ -193,7 +193,7 @@ This exact native histogram may contain more entries than the legacy 5bit/6bit h
 -Q kmeans[:key=value...]
 ```
 
-`backend=cpu|gpu` selects the primary iteration implementation, with CPU as the default. The opt-in [GPU K-means backend](../gpu-kmeans.md) also requires `--gpu-policy=auto|force`; that reference defines Metal requirements, fallback/error behavior and numerical differences. The pruning policies and bound-storage costs below describe CPU execution.
+`backend=cpu|gpu|auto` selects the primary iteration implementation, with CPU as the default. The opt-in [GPU K-means backend](../gpu-kmeans.md) also requires `--gpu-policy=auto|force`; that reference defines Metal requirements, fallback/error behavior and numerical differences. The pruning policies and bound-storage costs below describe CPU execution.
 
 K-means minimizes weighted within-cluster squared error:
 
@@ -235,9 +235,7 @@ The pruning policies skip distance calculations by maintaining bounds:
 - `yinyang` groups centers and keeps group lower bounds;
 - `auto` currently resolves to `hamerly`.
 
-These policies are intended to preserve the exact nearest-center assignments
-for the same samples and center state, apart from normal floating-point and tie
-effects. They change how much work is needed, not the K-means loss being
+These policies preserve nearest-center assignments for the same samples and center state, subject to normal floating-point arithmetic. The [GPU reference](../gpu-kmeans.md) owns the shared assignment tie rule, backend eligibility, explicit-prune precedence and numerical validation. They change how much work is needed, not the K-means loss being
 optimized. The implementation ideas are described in
 [Elkan's triangle-inequality method](https://cdn.aaai.org/ICML/2003/ICML03-022.pdf),
 [Hamerly's single-bound method](https://doi.org/10.1137/1.9781611972801.12),

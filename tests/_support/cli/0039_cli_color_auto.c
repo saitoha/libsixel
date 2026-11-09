@@ -254,6 +254,18 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     }
     close(slave);
     close(errors);
+    /* Some sandboxes allow PTYs but deny opening the controlling terminal.
+     * The loader's OSC 11 reader requires that separate device access. */
+    if (!baseline && color_auto_is(name, "encoder-reader")) {
+        input = open("/dev/tty", O_RDWR | O_NONBLOCK);
+        if (input < 0 && (errno == EPERM || errno == EACCES)) {
+            _exit(77);
+        }
+        if (input < 0) {
+            _exit(127);
+        }
+        close(input);
+    }
     /* Keep the session leader alive until after the real CLI exits. Darwin
      * revokes the slave when its session leader exits, so checking termios
      * only from the outer parent would observe ENOTTY instead of cleanup. */
@@ -593,6 +605,7 @@ color_auto_finish(color_auto_peer_t *peer, int valid, int expected_exit)
 {
     int status;
     int count;
+    int unavailable;
     fd_set ready;
     struct timeval wait;
 
@@ -637,7 +650,9 @@ color_auto_finish(color_auto_peer_t *peer, int valid, int expected_exit)
         peer->master = -1;
         waitpid(peer->child, &status, 0);
     }
-    if (!WIFEXITED(status) || WEXITSTATUS(status) != expected_exit) {
+    unavailable = WIFEXITED(status) && WEXITSTATUS(status) == 77;
+    if (!unavailable &&
+        (!WIFEXITED(status) || WEXITSTATUS(status) != expected_exit)) {
         valid = color_auto_error("unexpected child exit status");
     }
     if (peer->errors >= 0) {
@@ -678,7 +693,7 @@ color_auto_finish(color_auto_peer_t *peer, int valid, int expected_exit)
     if (!valid) {
         fprintf(stderr, "%s\n", peer->trace);
     }
-    return valid;
+    return unavailable ? 77 : valid;
 }
 
 static int
@@ -879,6 +894,7 @@ test_cli_0039_color_auto(int argc, char **argv)
     char combined[sizeof(peer.trace) + sizeof(peer.image) + 3];
     char *wire_arguments[3];
     int valid;
+    int finished;
     int expected_exit;
     int p3;
     int combined_size;
@@ -982,7 +998,11 @@ test_cli_0039_color_auto(int argc, char **argv)
         return 1;
     }
     valid = color_auto_script(&peer, argv[1], &expected_exit, &p3);
-    if (!color_auto_finish(&peer, valid, expected_exit)) {
+    finished = color_auto_finish(&peer, valid, expected_exit);
+    if (finished == 77) {
+        return 77;
+    }
+    if (!finished) {
         return 1;
     }
     if (expected_exit != 0) {
