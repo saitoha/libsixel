@@ -37,10 +37,17 @@ typedef struct sixel_vk_runtime {
     int debug;
 } sixel_vk_runtime_t;
 
-/* Host-visible, coherent storage buffer that grows on demand. */
+/* Storage buffer that grows on demand. mapped is always host-visible
+ * coherent memory. When that memory is not device-local (discrete GPUs),
+ * buffer is separate VRAM and staging holds the mapped copy; record_upload
+ * and record_download move the bytes inside the command buffer. Otherwise
+ * staging is VK_NULL_HANDLE, buffer is the mapped memory, and both record
+ * calls do nothing. */
 typedef struct sixel_vk_buffer {
     VkBuffer buffer;
     VkDeviceMemory memory;
+    VkBuffer staging;
+    VkDeviceMemory staging_memory;
     void *mapped;
     VkDeviceSize capacity;
 } sixel_vk_buffer_t;
@@ -66,6 +73,18 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve(
     VkDeviceSize size);
 SIXEL_INTERNAL_API void sixel_vk_buffer_release(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer);
+
+/* Copy the first size bytes between staging and device storage. Callers
+ * separate the copies from shader access with sixel_vk_record_barrier(). */
+SIXEL_INTERNAL_API void sixel_vk_buffer_record_upload(
+    VkCommandBuffer command, sixel_vk_buffer_t const *buffer,
+    VkDeviceSize size);
+SIXEL_INTERNAL_API void sixel_vk_buffer_record_download(
+    VkCommandBuffer command, sixel_vk_buffer_t const *buffer,
+    VkDeviceSize size);
+SIXEL_INTERNAL_API void sixel_vk_record_barrier(VkCommandBuffer command,
+    VkPipelineStageFlags src_stage, VkAccessFlags src_access,
+    VkPipelineStageFlags dst_stage, VkAccessFlags dst_access);
 
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_shader_module_create(
     sixel_vk_runtime_t *runtime, sixel_vk_shader_source_t const *source,

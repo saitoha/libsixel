@@ -131,6 +131,8 @@ typedef struct sixel_gpu_vulkan_palette_state {
     VkDescriptorSet descriptor_set;
     sixel_vk_buffer_t buffers[SIXEL_VK_BINDINGS];
     sixel_vk_buffer_t dummy;
+    /* Bytes each binding takes from its staging copy in this apply. */
+    VkDeviceSize upload[SIXEL_VK_BINDINGS];
 } sixel_gpu_vulkan_palette_state_t;
 
 static sixel_gpu_vulkan_palette_state_t g_sixel_vk_palette;
@@ -397,6 +399,7 @@ sixel_gpu_vulkan_upload(sixel_vk_runtime_t *runtime, int slot,
     }
     if (bytes != NULL && size != 0) {
         memcpy(buffer->mapped, bytes, size);
+        g_sixel_vk_palette.upload[slot] = size;
     }
     return SIXEL_OK;
 }
@@ -446,6 +449,10 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     }
 
     sixel_gpu_vulkan_fill_params(&params, request);
+    memset(state->upload, 0, sizeof(state->upload));
+    /* The blue-noise staging copy never changes. Copying the small table
+     * every apply is cheaper than tracking when device storage was filled. */
+    state->upload[SIXEL_VK_BLUE_NOISE] = sizeof(sixel_bn64);
     has_accumulation = params.has_6delta != 0;
     has_valid = has_accumulation && request->accumulation_valid_mask != NULL;
 
@@ -479,6 +486,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             sixel_gpu_vulkan_pack_retained(
                 state->buffers[SIXEL_VK_ACCUMULATION].mapped,
                 request->accumulation_pixels, request, 3U);
+            state->upload[SIXEL_VK_ACCUMULATION] = pixel_count * 3U;
         }
     }
     if (SIXEL_SUCCEEDED(status) && has_valid) {
@@ -488,6 +496,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             sixel_gpu_vulkan_pack_retained(
                 state->buffers[SIXEL_VK_ACCUMULATION_VALID].mapped,
                 request->accumulation_valid_mask, request, 1U);
+            state->upload[SIXEL_VK_ACCUMULATION_VALID] = pixel_count;
         }
     }
     if (SIXEL_SUCCEEDED(status) && request->accumulation_result_mask != NULL) {
@@ -557,6 +566,17 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    for (index = 0; index < SIXEL_VK_BINDINGS; ++index) {
+        if (bound[index] == &state->dummy) {
+            sixel_vk_buffer_record_upload(command, &state->dummy, 4);
+        } else {
+            sixel_vk_buffer_record_upload(command, bound[index],
+                state->upload[index]);
+        }
+    }
+    sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
     vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_COMPUTE,
         state->pipeline);
     vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -564,6 +584,21 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     vkCmdPushConstants(command, state->pipeline_layout,
         VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(range), &range);
     vkCmdDispatch(command, groups_x, groups_y, 1);
+    sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_ACCESS_TRANSFER_READ_BIT);
+    sixel_vk_buffer_record_download(command,
+        &state->buffers[SIXEL_VK_RESULT], pixel_count);
+    if (request->accumulation_result_mask != NULL) {
+        sixel_vk_buffer_record_download(command,
+            &state->buffers[SIXEL_VK_ACCUMULATION_RESULT],
+            request->accumulation_result_mask_size);
+    }
+    /* Make shader and copy writes visible to the mapped host memory. */
+    sixel_vk_record_barrier(command,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
+        VK_PIPELINE_STAGE_HOST_BIT, VK_ACCESS_HOST_READ_BIT);
     status = sixel_vk_submit_and_wait(runtime, command);
     if (SIXEL_FAILED(status)) {
         goto end;

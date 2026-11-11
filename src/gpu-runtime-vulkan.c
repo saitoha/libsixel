@@ -404,11 +404,21 @@ sixel_vk_memory_type(sixel_vk_runtime_t *runtime, uint32_t type_bits,
 void
 sixel_vk_buffer_release(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer)
 {
+    VkDeviceMemory host_memory;
+
     if (runtime == NULL || buffer == NULL) {
         return;
     }
+    host_memory = buffer->staging != VK_NULL_HANDLE
+        ? buffer->staging_memory : buffer->memory;
     if (buffer->mapped != NULL) {
-        vkUnmapMemory(runtime->device, buffer->memory);
+        vkUnmapMemory(runtime->device, host_memory);
+    }
+    if (buffer->staging != VK_NULL_HANDLE) {
+        vkDestroyBuffer(runtime->device, buffer->staging, NULL);
+    }
+    if (buffer->staging_memory != VK_NULL_HANDLE) {
+        vkFreeMemory(runtime->device, buffer->staging_memory, NULL);
     }
     if (buffer->buffer != VK_NULL_HANDLE) {
         vkDestroyBuffer(runtime->device, buffer->buffer, NULL);
@@ -419,14 +429,62 @@ sixel_vk_buffer_release(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer)
     memset(buffer, 0, sizeof(*buffer));
 }
 
-SIXELSTATUS
-sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
-    VkDeviceSize size)
+/* Create one buffer with its own allocation. flags receives the property
+ * flags of the chosen memory type. */
+static SIXELSTATUS
+sixel_vk_allocate(sixel_vk_runtime_t *runtime, VkDeviceSize size,
+    VkBufferUsageFlags usage, VkMemoryPropertyFlags required,
+    VkMemoryPropertyFlags preferred, VkBuffer *buffer, VkDeviceMemory *memory,
+    VkMemoryPropertyFlags *flags)
 {
     VkBufferCreateInfo buffer_info;
     VkMemoryRequirements requirements;
     VkMemoryAllocateInfo allocate_info;
     int type;
+
+    *buffer = VK_NULL_HANDLE;
+    *memory = VK_NULL_HANDLE;
+    memset(&buffer_info, 0, sizeof(buffer_info));
+    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size = size;
+    buffer_info.usage = usage;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    if (vkCreateBuffer(runtime->device, &buffer_info, NULL, buffer)
+            != VK_SUCCESS) {
+        *buffer = VK_NULL_HANDLE;
+        return SIXEL_BAD_ALLOCATION;
+    }
+    vkGetBufferMemoryRequirements(runtime->device, *buffer, &requirements);
+    type = sixel_vk_memory_type(runtime, requirements.memoryTypeBits,
+        required, preferred);
+    memset(&allocate_info, 0, sizeof(allocate_info));
+    allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocate_info.allocationSize = requirements.size;
+    allocate_info.memoryTypeIndex = (uint32_t)(type < 0 ? 0 : type);
+    if (type < 0 ||
+            vkAllocateMemory(runtime->device, &allocate_info, NULL, memory)
+                != VK_SUCCESS ||
+            vkBindBufferMemory(runtime->device, *buffer, *memory, 0)
+                != VK_SUCCESS) {
+        if (type >= 0 && *memory != VK_NULL_HANDLE) {
+            vkFreeMemory(runtime->device, *memory, NULL);
+        }
+        vkDestroyBuffer(runtime->device, *buffer, NULL);
+        *buffer = VK_NULL_HANDLE;
+        *memory = VK_NULL_HANDLE;
+        return SIXEL_BAD_ALLOCATION;
+    }
+    *flags = runtime->memory.memoryTypes[type].propertyFlags;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    VkDeviceSize size)
+{
+    VkMemoryPropertyFlags flags;
+    VkDeviceMemory host_memory;
+    SIXELSTATUS status;
 
     /* Storage-buffer ranges are bound in 4-byte units. */
     size = size == 0 ? 4 : (size + 3U) & ~(VkDeviceSize)3U;
@@ -435,48 +493,98 @@ sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     }
     sixel_vk_buffer_release(runtime, buffer);
 
-    memset(&buffer_info, 0, sizeof(buffer_info));
-    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_info.size = size;
-    buffer_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    if (vkCreateBuffer(runtime->device, &buffer_info, NULL, &buffer->buffer)
-            != VK_SUCCESS) {
-        buffer->buffer = VK_NULL_HANDLE;
-        return SIXEL_BAD_ALLOCATION;
-    }
-    vkGetBufferMemoryRequirements(runtime->device, buffer->buffer,
-        &requirements);
     /* Cached host memory keeps CPU readback of results fast; coherence
      * avoids explicit flush/invalidate around the synchronous submit. */
-    type = sixel_vk_memory_type(runtime, requirements.memoryTypeBits,
+    status = sixel_vk_allocate(runtime, size,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
-    if (type < 0) {
-        sixel_vk_buffer_release(runtime, buffer);
-        return SIXEL_BAD_ALLOCATION;
+        VK_MEMORY_PROPERTY_HOST_CACHED_BIT, &buffer->buffer, &buffer->memory,
+        &flags);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
-    memset(&allocate_info, 0, sizeof(allocate_info));
-    allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocate_info.allocationSize = requirements.size;
-    allocate_info.memoryTypeIndex = (uint32_t)type;
-    if (vkAllocateMemory(runtime->device, &allocate_info, NULL,
-            &buffer->memory) != VK_SUCCESS) {
+    host_memory = buffer->memory;
+    if (!(flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+        /* On a discrete GPU this memory is system RAM: a shader reading it
+         * crosses PCIe on every access, which made the direct scan an order
+         * of magnitude slower than the arithmetic. Keep the host allocation
+         * as a staging copy and give the shader device-local storage. A
+         * device without separate VRAM (integrated, CPU) keeps one buffer. */
+        buffer->staging = buffer->buffer;
+        buffer->staging_memory = buffer->memory;
+        buffer->buffer = VK_NULL_HANDLE;
         buffer->memory = VK_NULL_HANDLE;
-        sixel_vk_buffer_release(runtime, buffer);
-        return SIXEL_BAD_ALLOCATION;
+        status = sixel_vk_allocate(runtime, size,
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 0, &buffer->buffer,
+            &buffer->memory, &flags);
+        if (SIXEL_FAILED(status)) {
+            /* Out of VRAM: binding the host buffer is slow but correct. */
+            buffer->buffer = buffer->staging;
+            buffer->memory = buffer->staging_memory;
+            buffer->staging = VK_NULL_HANDLE;
+            buffer->staging_memory = VK_NULL_HANDLE;
+        }
+        host_memory = buffer->staging != VK_NULL_HANDLE
+            ? buffer->staging_memory : buffer->memory;
     }
-    if (vkBindBufferMemory(runtime->device, buffer->buffer, buffer->memory, 0)
-            != VK_SUCCESS ||
-            vkMapMemory(runtime->device, buffer->memory, 0, VK_WHOLE_SIZE, 0,
-                &buffer->mapped) != VK_SUCCESS) {
+    if (vkMapMemory(runtime->device, host_memory, 0, VK_WHOLE_SIZE, 0,
+            &buffer->mapped) != VK_SUCCESS) {
         buffer->mapped = NULL;
         sixel_vk_buffer_release(runtime, buffer);
         return SIXEL_BAD_ALLOCATION;
     }
     buffer->capacity = size;
     return SIXEL_OK;
+}
+
+void
+sixel_vk_buffer_record_upload(VkCommandBuffer command,
+    sixel_vk_buffer_t const *buffer, VkDeviceSize size)
+{
+    VkBufferCopy region;
+
+    if (buffer->staging == VK_NULL_HANDLE || size == 0) {
+        return;
+    }
+    region.srcOffset = 0;
+    region.dstOffset = 0;
+    region.size = size < buffer->capacity ? size : buffer->capacity;
+    vkCmdCopyBuffer(command, buffer->staging, buffer->buffer, 1, &region);
+}
+
+void
+sixel_vk_buffer_record_download(VkCommandBuffer command,
+    sixel_vk_buffer_t const *buffer, VkDeviceSize size)
+{
+    VkBufferCopy region;
+
+    if (buffer->staging == VK_NULL_HANDLE || size == 0) {
+        return;
+    }
+    region.srcOffset = 0;
+    region.dstOffset = 0;
+    region.size = size < buffer->capacity ? size : buffer->capacity;
+    vkCmdCopyBuffer(command, buffer->buffer, buffer->staging, 1, &region);
+}
+
+void
+sixel_vk_record_barrier(VkCommandBuffer command,
+    VkPipelineStageFlags src_stage, VkAccessFlags src_access,
+    VkPipelineStageFlags dst_stage, VkAccessFlags dst_access)
+{
+    VkMemoryBarrier barrier;
+
+    memset(&barrier, 0, sizeof(barrier));
+    barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+    barrier.srcAccessMask = src_access;
+    barrier.dstAccessMask = dst_access;
+    vkCmdPipelineBarrier(command, src_stage, dst_stage, 0, 1, &barrier, 0,
+        NULL, 0, NULL);
 }
 
 #if defined(HAVE_SHADERC)
