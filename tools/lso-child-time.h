@@ -25,6 +25,7 @@ lso_time_signal(int signo)
 {
   int saved_errno;
   unsigned char event;
+  ssize_t written;
 
   saved_errno = errno;
   event = (unsigned char) signo;
@@ -32,8 +33,11 @@ lso_time_signal(int signo)
     lso_stop_signal = signo;
   }
   if (lso_wake_fd >= 0) {
-    /* A full pipe already wakes poll; never block inside a signal handler. */
-    (void) write((int) lso_wake_fd, &event, 1);
+    /* A full pipe already wakes poll; never block inside a signal handler.
+     * glibc's warn_unused_result ignores a (void) cast, so keep the result
+     * in a variable that is deliberately unused. */
+    written = write((int) lso_wake_fd, &event, 1);
+    (void) written;
   }
   errno = saved_errno;
 }
