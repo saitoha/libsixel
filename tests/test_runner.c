@@ -1550,6 +1550,13 @@ int test_gpupal_0010_comparison_default(int argc, char **argv);
 int test_gpupal_0011_comparison_short(int argc, char **argv);
 int test_gpupal_0018_wire_a(int argc, char **argv);
 int test_gpupal_0019_wire_x(int argc, char **argv);
+int test_gpu_direct_0001_parity_none(int argc, char **argv);
+int test_gpu_direct_0002_parity_a(int argc, char **argv);
+int test_gpu_direct_0003_parity_x(int argc, char **argv);
+int test_gpu_direct_0004_parity_bluenoise(int argc, char **argv);
+int test_gpu_direct_0005_parity_few_colors(int argc, char **argv);
+int test_gpu_direct_0006_wire_a(int argc, char **argv);
+int test_gpu_direct_0007_wire_x(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
@@ -6891,6 +6898,13 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0010_comparison_default },
     { "gpu-palette/0018_wire_a", test_gpupal_0018_wire_a },
     { "gpu-palette/0019_wire_x", test_gpupal_0019_wire_x },
+    { "gpu-direct/0001_parity_none", test_gpu_direct_0001_parity_none },
+    { "gpu-direct/0002_parity_a", test_gpu_direct_0002_parity_a },
+    { "gpu-direct/0003_parity_x", test_gpu_direct_0003_parity_x },
+    { "gpu-direct/0004_parity_bluenoise", test_gpu_direct_0004_parity_bluenoise },
+    { "gpu-direct/0005_parity_few_colors", test_gpu_direct_0005_parity_few_colors },
+    { "gpu-direct/0006_wire_a", test_gpu_direct_0006_wire_a },
+    { "gpu-direct/0007_wire_x", test_gpu_direct_0007_wire_x },
     { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
     { "gpu-palette/0021_blockcull_exact",
       test_gpupal_0021_blockcull_exact },
@@ -13366,6 +13380,8 @@ print_usage(char const *program)
     fprintf(stderr, "usage: %s <test-name> [args...]\n", program);
     fprintf(stderr, "       %s --list\n", program);
     fprintf(stderr, "       %s --require-gpu-palette <test>\n", program);
+    fprintf(stderr, "       %s --require-gpu-palette-direct <test>\n",
+        program);
     fprintf(stderr, "       %s --is-running-under-wine\n", program);
     fprintf(stderr,
             "       %s --win32-ctrl-break-run <delay-ms> <timeout-ms|0> "
@@ -14919,12 +14935,23 @@ main(int argc, char **argv)
                                                argv + first_index));
     }
 
-    /* Probe in the test process so Metal initialization is measured once.
+    /* Probe in the test process so GPU initialization is measured once.
      * AUTO with a zero threshold asks the real backend, unlike FORCE which
      * claims ownership even when the device is unavailable. Each test still
-     * performs its own real dispatch and must report execution failures. */
+     * performs its own real dispatch and must report execution failures.
+     * --require-gpu-palette also needs prepared lookup plans (the complete
+     * backend); --require-gpu-palette-direct accepts any backend that owns
+     * the direct (lookup NONE) apply stage, such as the partial Vulkan port. */
     if (strcmp(argv[first_index], "--require-gpu-palette") == 0) {
         require_gpu_palette = 1;
+        ++first_index;
+        if (argc <= first_index) {
+            print_usage(argv[0]);
+            return test_runner_process_exit_status(EXIT_FAILURE);
+        }
+    } else if (strcmp(argv[first_index],
+            "--require-gpu-palette-direct") == 0) {
+        require_gpu_palette = 2;
         ++first_index;
         if (argc <= first_index) {
             print_usage(argv[0]);
@@ -14939,6 +14966,10 @@ main(int argc, char **argv)
                     !sixel_gpu_palette_policy_claims_apply_stage(
                         SIXEL_GPU_POLICY_AUTO, 0U, SIXEL_LUT_POLICY_NONE,
                         SIXEL_DIFFUSE_NONE, SIXEL_SCAN_RASTER, 1U)) {
+                return test_runner_process_exit_status(77);
+            }
+            if (require_gpu_palette == 1 &&
+                    !sixel_gpu_palette_plan_available()) {
                 return test_runner_process_exit_status(77);
             }
             return test_runner_process_exit_status(

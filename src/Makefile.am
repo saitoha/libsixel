@@ -50,8 +50,37 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/gpu-palette-fused-prefix.metal \
     $(srcdir)/gpu-palette-fused-suffix.metal
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
-BUILT_SOURCES = $(SIXEL_METAL_FRAGMENTS)
-nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS)
+SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp
+SIXEL_VULKAN_FRAGMENTS =
+if HAVE_SHADERC
+SIXEL_VULKAN_FRAGMENTS += \
+    $(patsubst $(srcdir)/%.comp,generated-vulkan/%-shader.inc.h,$(SIXEL_VULKAN_INPUTS))
+endif
+if HAVE_VULKAN_PREBUILT_SPIRV
+SIXEL_VULKAN_FRAGMENTS += \
+    $(patsubst $(srcdir)/%.comp,generated-vulkan/%-spirv.inc.h,$(SIXEL_VULKAN_INPUTS))
+endif
+BUILT_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS)
+nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS)
+
+generated-vulkan/%-shader.inc.h: $(srcdir)/%.comp \
+        $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
+	$(AM_V_GEN)AWK="$(AWK)" $(SHELL) $(top_srcdir)/tools/embed-metal.sh "$<" "$@"
+
+generated-vulkan/%.spv: $(srcdir)/%.comp
+	@mkdir -p generated-vulkan
+	$(AM_V_GEN)$(GLSLC) -O --target-env=vulkan1.2 "$<" -o "$@"
+
+generated-vulkan/%-spirv.inc.h: generated-vulkan/%.spv \
+        $(top_srcdir)/tools/embed-spirv.sh
+	$(AM_V_GEN)$(SHELL) $(top_srcdir)/tools/embed-spirv.sh "$<" "$@"
+
+# Like the Metal consumers below, the phased build compiles objects
+# directly; name the consumer so its embedded shader exists first. A
+# variable keeps automake from treating this as an override of its own
+# compile rule.
+SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-palette-vulkan.lo
+$(SIXEL_VULKAN_CONSUMERS): $(SIXEL_VULKAN_FRAGMENTS)
 
 generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
         $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
@@ -119,7 +148,8 @@ if USING_CL
 MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
 endif
 
-CLEANFILES = $(SIXEL_METAL_FRAGMENTS) *.gcno *.gcda *.gcov *.log test-output.*
+CLEANFILES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS) \
+    generated-vulkan/*.spv *.gcno *.gcda *.gcov *.log test-output.*
 DISTCLEANFILES = \
                 $(DEPDIR)/libsixel_la-gpu-palette.Plo \
                 $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
@@ -163,6 +193,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/retained-plane-gpu.c \
                 $(srcdir)/retained-plane-gpu.h \
                 $(srcdir)/gpu-runtime-metal.h \
+                $(srcdir)/gpu-runtime-vulkan.h \
+                $(srcdir)/gpu-palette-vulkan.h \
                 $(srcdir)/retained-plane-rows.c \
                 $(srcdir)/retained-plane-rows.h \
                 $(srcdir)/retained-plane-workers.c \
@@ -599,6 +631,11 @@ if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
 $(srcdir)/quicklook_thumbnailing.m
 endif
+if HAVE_VULKAN
+libsixel_la_SOURCES += \
+$(srcdir)/gpu-runtime-vulkan.c \
+$(srcdir)/gpu-palette-vulkan.c
+endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
 $(srcdir)/dither-policy-lso2-gpu-metal.m \
@@ -646,6 +683,8 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
                 $(METAL_CFLAGS) \
+                $(VULKAN_CFLAGS) \
+                $(SHADERC_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
                 @THREAD_CFLAGS@
 if BUILDING_ON_WINDOWS
@@ -673,6 +712,8 @@ libsixel_la_LIBADD = $(FLOAT_LOOKUP_LIB) -lm \
                 $(COREGRAPHICS_LIBS) \
                 $(QUICKLOOK_LIBS) \
                 $(METAL_LIBS) \
+                $(VULKAN_LIBS) \
+                $(SHADERC_LIBS) \
                 $(CLIPBOARD_LIBS) \
                 @THREAD_LIBS@
 
@@ -867,4 +908,5 @@ endif
 
 include $(top_srcdir)/build-aux/dependency-bootstrap.am
 
-EXTRA_DIST += lso2-gpu.key $(SIXEL_METAL_INPUTS) generated-metal/meson.build
+EXTRA_DIST += lso2-gpu.key $(SIXEL_METAL_INPUTS) generated-metal/meson.build \
+    $(SIXEL_VULKAN_INPUTS) generated-vulkan/meson.build

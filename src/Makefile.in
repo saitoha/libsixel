@@ -89,17 +89,27 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@HAVE_SHADERC_TRUE@am__append_1 = \
+@HAVE_SHADERC_TRUE@    $(patsubst $(srcdir)/%.comp,generated-vulkan/%-shader.inc.h,$(SIXEL_VULKAN_INPUTS))
+
+@HAVE_VULKAN_PREBUILT_SPIRV_TRUE@am__append_2 = \
+@HAVE_VULKAN_PREBUILT_SPIRV_TRUE@    $(patsubst $(srcdir)/%.comp,generated-vulkan/%-spirv.inc.h,$(SIXEL_VULKAN_INPUTS))
+
 # Compile the large dither unit as a separate translation unit for
 # libsixel amalgamation to avoid compiler ICEs on very large sources.
-@WANT_AMALGAMATED_LIB_TRUE@am__append_1 = \
+@WANT_AMALGAMATED_LIB_TRUE@am__append_3 = \
 @WANT_AMALGAMATED_LIB_TRUE@        -DSIXEL_AMALGAMATION_SPLIT_DITHER=1
 
-@WANT_AMALGAMATED_LIB_TRUE@am__append_2 = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_LIB_TRUE@am__append_3 = $(AMALGAMATION_SIXEL)
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_4 = \
+@WANT_AMALGAMATED_LIB_TRUE@am__append_4 = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_LIB_TRUE@am__append_5 = $(AMALGAMATION_SIXEL)
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_6 = \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/quicklook_thumbnailing.m
 
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_5 = \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_7 = \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-runtime-vulkan.c \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-vulkan.c
+
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_8 = \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/dither-policy-lso2-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/dither-policy-fs-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/dither-policy-atkinson-gpu-metal.m \
@@ -117,13 +127,13 @@ host_triplet = @host@
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/progressive-gpu-metal.m
 
-@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_6 = \
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_9 = \
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_macos.m
 
-@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_7 = \
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_10 = \
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_carbon.c
 
-@WITH_SHEBANG_FILE_TRUE@am__append_8 = $(SIXEL_SHEBANG_STAMP)
+@WITH_SHEBANG_FILE_TRUE@am__append_11 = $(SIXEL_SHEBANG_STAMP)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -197,12 +207,14 @@ libsixel_la_DEPENDENCIES = $(FLOAT_LOOKUP_LIB) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/output-factory.h $(srcdir)/encode-result.c \
 	$(srcdir)/encode-result.h $(srcdir)/retained-plane.c \
 	$(srcdir)/retained-plane-gpu.c $(srcdir)/retained-plane-gpu.h \
-	$(srcdir)/gpu-runtime-metal.h $(srcdir)/retained-plane-rows.c \
+	$(srcdir)/gpu-runtime-metal.h $(srcdir)/gpu-runtime-vulkan.h \
+	$(srcdir)/gpu-palette-vulkan.h $(srcdir)/retained-plane-rows.c \
 	$(srcdir)/retained-plane-rows.h \
 	$(srcdir)/retained-plane-workers.c \
 	$(srcdir)/retained-plane-workers.h $(srcdir)/palette-apply.c \
@@ -482,6 +494,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
 	$(srcdir)/quicklook_thumbnailing.m \
+	$(srcdir)/gpu-runtime-vulkan.c $(srcdir)/gpu-palette-vulkan.c \
 	$(srcdir)/dither-policy-lso2-gpu-metal.m \
 	$(srcdir)/dither-policy-fs-gpu-metal.m \
 	$(srcdir)/dither-policy-atkinson-gpu-metal.m \
@@ -499,7 +512,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
 	$(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-dither-policy-lso2-gpu-metal.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-runtime-vulkan.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette-vulkan.lo
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-dither-policy-lso2-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-fs-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-atkinson-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-jajuni-gpu-metal.lo \
@@ -513,8 +528,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-gpu-compat.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu-metal.lo
-@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
-@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_macos.lo
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_5 = libsixel_la-clipboard_carbon.lo
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encode-result.lo \
@@ -720,16 +735,20 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_decode_pixels.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_atomic_fallback.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_1) $(am__objects_2) \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_3) $(am__objects_4)
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_3) $(am__objects_4) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_5)
 @WANT_AMALGAMATED_LIB_TRUE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither.lo \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_1) $(am__objects_2) \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_3) $(am__objects_4)
-am__objects_5 =
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_3) $(am__objects_4) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_5)
+am__objects_6 =
+am__objects_7 = $(am__objects_6) $(am__objects_6)
 am__dirstamp = $(am__leading_dot)dirstamp
-@WANT_AMALGAMATED_LIB_TRUE@am__objects_6 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
-@WANT_AMALGAMATED_LIB_TRUE@am__objects_7 = $(am__objects_6)
-nodist_libsixel_la_OBJECTS = $(am__objects_5) $(am__objects_7)
+@WANT_AMALGAMATED_LIB_TRUE@am__objects_8 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
+@WANT_AMALGAMATED_LIB_TRUE@am__objects_9 = $(am__objects_8)
+nodist_libsixel_la_OBJECTS = $(am__objects_6) $(am__objects_7) \
+	$(am__objects_9)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) \
 	$(nodist_libsixel_la_OBJECTS)
 libsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
@@ -856,7 +875,9 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-gamut.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-dequant.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo \
+	./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-palette.Plo \
+	./$(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-icc-apply.Plo \
 	./$(DEPDIR)/libsixel_la-icc-parse.Plo \
 	./$(DEPDIR)/libsixel_la-loader-builtin.Plo \
@@ -1110,6 +1131,7 @@ GDK_PIXBUF_MODULEDIR = @GDK_PIXBUF_MODULEDIR@
 GDK_PIXBUF_QUERY_LOADERS = @GDK_PIXBUF_QUERY_LOADERS@
 GD_CFLAGS = @GD_CFLAGS@
 GD_LIBS = @GD_LIBS@
+GLSLC = @GLSLC@
 GREP = @GREP@
 HAVE_TREE_SITTER_C = @HAVE_TREE_SITTER_C@
 INSTALL = @INSTALL@
@@ -1199,6 +1221,8 @@ RUBY_VERSION = @RUBY_VERSION@
 RUNTIME_ENV_IS_OPENVMS = @RUNTIME_ENV_IS_OPENVMS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
+SHADERC_CFLAGS = @SHADERC_CFLAGS@
+SHADERC_LIBS = @SHADERC_LIBS@
 SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
@@ -1228,6 +1252,8 @@ THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
 THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
+VULKAN_CFLAGS = @VULKAN_CFLAGS@
+VULKAN_LIBS = @VULKAN_LIBS@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
 WICCODEC_LDFLAGS = @WICCODEC_LDFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
@@ -1344,8 +1370,18 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/gpu-palette-fused-suffix.metal
 
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
-BUILT_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(am__append_2)
-nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(am__append_3)
+SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp
+SIXEL_VULKAN_FRAGMENTS = $(am__append_1) $(am__append_2)
+BUILT_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS) \
+	$(am__append_4)
+nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS) \
+	$(SIXEL_VULKAN_FRAGMENTS) $(am__append_5)
+
+# Like the Metal consumers below, the phased build compiles objects
+# directly; name the consumer so its embedded shader exists first. A
+# variable keeps automake from treating this as an override of its own
+# compile rule.
+SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-palette-vulkan.lo
 
 # The phased top-level build requests objects directly, bypassing all and
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
@@ -1378,11 +1414,11 @@ SIXEL_METAL_CONSUMERS = \
 @WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_TARGET = sixel.c
 @AMALGAMATION_NEEDS_OBJC_FALSE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_COMPILE = $(LTCOMPILE)
 @AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_COMPILE = $(LTOBJCCOMPILE)
-@AMALGAMATION_NEEDS_OBJC_FALSE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_CPPFLAGS = $(am__append_1)
+@AMALGAMATION_NEEDS_OBJC_FALSE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_CPPFLAGS = $(am__append_3)
 @AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_CPPFLAGS =  \
 @AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATED_LIB_TRUE@	-x \
 @AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATED_LIB_TRUE@	objective-c \
-@AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_1)
+@AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_3)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 # Force cl/clang-cl driver mode to DLL when libtool links shared libraries.
@@ -1392,8 +1428,9 @@ SIXEL_METAL_CONSUMERS = \
 # Pass '-LD' via libtool's compiler-driver escape hatch so it is not
 # misparsed as '-L<path>' during libtool argument scanning.
 @USING_CL_TRUE@MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
-CLEANFILES = $(SIXEL_METAL_FRAGMENTS) *.gcno *.gcda *.gcov *.log \
-	test-output.* $(am__append_8)
+CLEANFILES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS) \
+	generated-vulkan/*.spv *.gcno *.gcda *.gcov *.log \
+	test-output.* $(am__append_11)
 DISTCLEANFILES = \
                 $(DEPDIR)/libsixel_la-gpu-palette.Plo \
                 $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
@@ -1408,6 +1445,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-metal.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-vulkan.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette-vulkan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-rows.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-rows.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-workers.c \
@@ -1835,14 +1874,15 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-service.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_4) \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_5) $(am__append_6) \
-@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_7)
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_6) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_7) $(am__append_8) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_9) $(am__append_10)
 @WANT_AMALGAMATED_LIB_TRUE@libsixel_la_SOURCES = $(srcdir)/dither.c \
 @WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither.h \
 @WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/oklch-lattice256.h \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4) $(am__append_5) \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_6) $(am__append_7)
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_6) $(am__append_7) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_8) $(am__append_9) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_10)
 
 # Isolate arithmetic flags from every other translation unit. Link these
 # objects directly: cosmoar cannot extract dual-architecture convenience
@@ -1875,6 +1915,8 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
                 $(METAL_CFLAGS) \
+                $(VULKAN_CFLAGS) \
+                $(SHADERC_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
                 @THREAD_CFLAGS@
 
@@ -1902,13 +1944,16 @@ libsixel_la_LIBADD = $(FLOAT_LOOKUP_LIB) -lm \
                 $(COREGRAPHICS_LIBS) \
                 $(QUICKLOOK_LIBS) \
                 $(METAL_LIBS) \
+                $(VULKAN_LIBS) \
+                $(SHADERC_LIBS) \
                 $(CLIPBOARD_LIBS) \
                 @THREAD_LIBS@
 
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf $(srcdir)/classid-factory.gperf \
 	$(srcdir)/classid-service.gperf lso2-gpu.key \
-	$(SIXEL_METAL_INPUTS) generated-metal/meson.build
+	$(SIXEL_METAL_INPUTS) generated-metal/meson.build \
+	$(SIXEL_VULKAN_INPUTS) generated-vulkan/meson.build
 @BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@LIBSIXEL_IMPORT_LIB_ALIAS_DEPS = $(top_builddir)/src/.libs/sixel.dll.lib
 GPERF_OPT = --ignore-case --language=ANSI-C
 GPERF_FACTORY_CLASSID_OPT = --language=ANSI-C \
@@ -2194,7 +2239,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gamut.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-dequant.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-apply.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-parse.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-builtin.Plo@am__quote@ # am--include-marker
@@ -3784,6 +3831,20 @@ libsixel_la-sixel_atomic_fallback.lo: sixel_atomic_fallback.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel_atomic_fallback.lo `test -f 'sixel_atomic_fallback.c' || echo '$(srcdir)/'`sixel_atomic_fallback.c
 
+libsixel_la-gpu-runtime-vulkan.lo: gpu-runtime-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-runtime-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Tpo -c -o libsixel_la-gpu-runtime-vulkan.lo `test -f 'gpu-runtime-vulkan.c' || echo '$(srcdir)/'`gpu-runtime-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Tpo $(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-runtime-vulkan.c' object='libsixel_la-gpu-runtime-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-runtime-vulkan.lo `test -f 'gpu-runtime-vulkan.c' || echo '$(srcdir)/'`gpu-runtime-vulkan.c
+
+libsixel_la-gpu-palette-vulkan.lo: gpu-palette-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette-vulkan.Tpo -c -o libsixel_la-gpu-palette-vulkan.lo `test -f 'gpu-palette-vulkan.c' || echo '$(srcdir)/'`gpu-palette-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-palette-vulkan.Tpo $(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-palette-vulkan.c' object='libsixel_la-gpu-palette-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-palette-vulkan.lo `test -f 'gpu-palette-vulkan.c' || echo '$(srcdir)/'`gpu-palette-vulkan.c
+
 libsixel_la-clipboard_carbon.lo: clipboard_carbon.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-clipboard_carbon.lo -MD -MP -MF $(DEPDIR)/libsixel_la-clipboard_carbon.Tpo -c -o libsixel_la-clipboard_carbon.lo `test -f 'clipboard_carbon.c' || echo '$(srcdir)/'`clipboard_carbon.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-clipboard_carbon.Tpo $(DEPDIR)/libsixel_la-clipboard_carbon.Plo
@@ -4229,7 +4290,9 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-gamut.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
@@ -4498,7 +4561,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-gamut.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
@@ -4658,6 +4723,19 @@ uninstall-man: uninstall-man5
 
 .PRECIOUS: Makefile
 
+
+generated-vulkan/%-shader.inc.h: $(srcdir)/%.comp \
+        $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
+	$(AM_V_GEN)AWK="$(AWK)" $(SHELL) $(top_srcdir)/tools/embed-metal.sh "$<" "$@"
+
+generated-vulkan/%.spv: $(srcdir)/%.comp
+	@mkdir -p generated-vulkan
+	$(AM_V_GEN)$(GLSLC) -O --target-env=vulkan1.2 "$<" -o "$@"
+
+generated-vulkan/%-spirv.inc.h: generated-vulkan/%.spv \
+        $(top_srcdir)/tools/embed-spirv.sh
+	$(AM_V_GEN)$(SHELL) $(top_srcdir)/tools/embed-spirv.sh "$<" "$@"
+$(SIXEL_VULKAN_CONSUMERS): $(SIXEL_VULKAN_FRAGMENTS)
 
 generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
         $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk

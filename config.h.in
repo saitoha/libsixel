@@ -449,6 +449,9 @@
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
+/* whether libshaderc compiles Vulkan GLSL at runtime */
+#undef HAVE_SHADERC
+
 /* Define to 1 if you have the `signal' function. */
 #undef HAVE_SIGNAL
 
@@ -595,6 +598,12 @@
 
 /* Define to 1 if the system has the `deprecated' variable attribute */
 #undef HAVE_VAR_ATTRIBUTE_DEPRECATED
+
+/* whether Vulkan GPU palette apply is available */
+#undef HAVE_VULKAN
+
+/* whether Vulkan SPIR-V is compiled at build time */
+#undef HAVE_VULKAN_PREBUILT_SPIRV
 
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID

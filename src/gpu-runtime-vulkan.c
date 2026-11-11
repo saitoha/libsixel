@@ -1,0 +1,655 @@
+/* SPDX-License-Identifier: MIT */
+/*
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
+#if defined(HAVE_VULKAN)
+
+#include <pthread.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#if defined(HAVE_SHADERC)
+#include <shaderc/shaderc.h>
+#endif
+
+#include "compat_stub.h"
+#include "gpu-runtime-vulkan.h"
+
+static pthread_mutex_t g_sixel_vk_lock = PTHREAD_MUTEX_INITIALIZER;
+static sixel_vk_runtime_t g_sixel_vk_runtime;
+static int g_sixel_vk_probed;
+static int g_sixel_vk_available;
+
+void
+sixel_vk_lock(void)
+{
+    (void)pthread_mutex_lock(&g_sixel_vk_lock);
+}
+
+void
+sixel_vk_unlock(void)
+{
+    (void)pthread_mutex_unlock(&g_sixel_vk_lock);
+}
+
+double
+sixel_vk_now_ms(void)
+{
+    struct timespec ts;
+
+    (void)clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double)ts.tv_sec * 1e3 + (double)ts.tv_nsec / 1e6;
+}
+
+static int
+sixel_vk_env_flag(char const *name)
+{
+    char const *value;
+
+    value = getenv(name);
+    return value != NULL && value[0] != '\0' && strcmp(value, "0") != 0;
+}
+
+static int
+sixel_vk_type_rank(VkPhysicalDeviceType type)
+{
+    switch (type) {
+    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+        return 4;
+    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+        return 3;
+    case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+        return 2;
+    case VK_PHYSICAL_DEVICE_TYPE_CPU:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+/* A device qualifies when it offers Vulkan 1.2, a compute queue and the
+ * 8-bit storage/arithmetic features the RGB8 kernels rely on. */
+static int
+sixel_vk_device_usable(VkPhysicalDevice physical, uint32_t *queue_family)
+{
+    VkPhysicalDeviceProperties properties;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceFeatures2 features;
+    VkQueueFamilyProperties *families;
+    uint32_t count;
+    uint32_t index;
+    int found;
+
+    vkGetPhysicalDeviceProperties(physical, &properties);
+    if (properties.apiVersion < VK_API_VERSION_1_2) {
+        return 0;
+    }
+    memset(&features12, 0, sizeof(features12));
+    features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    memset(&features, 0, sizeof(features));
+    features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features.pNext = &features12;
+    vkGetPhysicalDeviceFeatures2(physical, &features);
+    if (!features12.storageBuffer8BitAccess || !features12.shaderInt8) {
+        return 0;
+    }
+    count = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(physical, &count, NULL);
+    if (count == 0) {
+        return 0;
+    }
+    families = (VkQueueFamilyProperties *)calloc(count, sizeof(*families));
+    if (families == NULL) {
+        return 0;
+    }
+    vkGetPhysicalDeviceQueueFamilyProperties(physical, &count, families);
+    found = 0;
+    for (index = 0; index < count; ++index) {
+        if (families[index].queueFlags & VK_QUEUE_COMPUTE_BIT) {
+            *queue_family = index;
+            found = 1;
+            break;
+        }
+    }
+    free(families);
+    return found;
+}
+
+static int
+sixel_vk_select_device(sixel_vk_runtime_t *runtime)
+{
+    VkPhysicalDevice *devices;
+    VkPhysicalDeviceProperties properties;
+    char const *wanted;
+    char *end;
+    long wanted_index;
+    uint32_t count;
+    uint32_t index;
+    uint32_t family;
+    int best_rank;
+    int rank;
+
+    count = 0;
+    if (vkEnumeratePhysicalDevices(runtime->instance, &count, NULL)
+            != VK_SUCCESS || count == 0) {
+        return 0;
+    }
+    devices = (VkPhysicalDevice *)calloc(count, sizeof(*devices));
+    if (devices == NULL) {
+        return 0;
+    }
+    if (vkEnumeratePhysicalDevices(runtime->instance, &count, devices)
+            != VK_SUCCESS) {
+        free(devices);
+        return 0;
+    }
+    wanted = getenv("SIXEL_VULKAN_DEVICE");
+    if (wanted != NULL && wanted[0] == '\0') {
+        wanted = NULL;
+    }
+    wanted_index = -1;
+    if (wanted != NULL) {
+        wanted_index = strtol(wanted, &end, 10);
+        if (*end != '\0') {
+            wanted_index = -1;
+        }
+    }
+    best_rank = 0;
+    for (index = 0; index < count; ++index) {
+        vkGetPhysicalDeviceProperties(devices[index], &properties);
+        if (runtime->debug) {
+            fprintf(stderr, "libsixel: vulkan device %u: %s\n",
+                (unsigned int)index, properties.deviceName);
+        }
+        if (!sixel_vk_device_usable(devices[index], &family)) {
+            continue;
+        }
+        if (wanted != NULL) {
+            if ((wanted_index >= 0 && (long)index == wanted_index) ||
+                    (wanted_index < 0 &&
+                     strstr(properties.deviceName, wanted) != NULL)) {
+                rank = 100;
+            } else {
+                continue;
+            }
+        } else {
+            rank = sixel_vk_type_rank(properties.deviceType) + 1;
+        }
+        if (rank > best_rank) {
+            best_rank = rank;
+            runtime->physical = devices[index];
+            runtime->queue_family = family;
+        }
+    }
+    free(devices);
+    if (best_rank == 0) {
+        return 0;
+    }
+    vkGetPhysicalDeviceProperties(runtime->physical, &runtime->properties);
+    vkGetPhysicalDeviceMemoryProperties(runtime->physical, &runtime->memory);
+    return 1;
+}
+
+static void
+sixel_vk_runtime_teardown(sixel_vk_runtime_t *runtime)
+{
+    if (runtime->command_pool != VK_NULL_HANDLE) {
+        vkDestroyCommandPool(runtime->device, runtime->command_pool, NULL);
+    }
+    if (runtime->device != VK_NULL_HANDLE) {
+        vkDestroyDevice(runtime->device, NULL);
+    }
+    if (runtime->instance != VK_NULL_HANDLE) {
+        vkDestroyInstance(runtime->instance, NULL);
+    }
+    memset(runtime, 0, sizeof(*runtime));
+}
+
+static int
+sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
+{
+    VkApplicationInfo application;
+    VkInstanceCreateInfo instance_info;
+    VkDeviceQueueCreateInfo queue_info;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceFeatures2 features;
+    VkDeviceCreateInfo device_info;
+    VkCommandPoolCreateInfo pool_info;
+    float priority;
+    double started;
+
+    memset(runtime, 0, sizeof(*runtime));
+    runtime->debug = sixel_vk_env_flag("SIXEL_VULKAN_DEBUG");
+    started = sixel_vk_now_ms();
+
+    memset(&application, 0, sizeof(application));
+    application.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    application.pApplicationName = "libsixel";
+    application.pEngineName = "libsixel";
+    application.apiVersion = VK_API_VERSION_1_2;
+    memset(&instance_info, 0, sizeof(instance_info));
+    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_info.pApplicationInfo = &application;
+    if (vkCreateInstance(&instance_info, NULL, &runtime->instance)
+            != VK_SUCCESS) {
+        runtime->instance = VK_NULL_HANDLE;
+        goto fail;
+    }
+    if (!sixel_vk_select_device(runtime)) {
+        goto fail;
+    }
+
+    priority = 1.0f;
+    memset(&queue_info, 0, sizeof(queue_info));
+    queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queue_info.queueFamilyIndex = runtime->queue_family;
+    queue_info.queueCount = 1;
+    queue_info.pQueuePriorities = &priority;
+    memset(&features12, 0, sizeof(features12));
+    features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    features12.storageBuffer8BitAccess = VK_TRUE;
+    features12.shaderInt8 = VK_TRUE;
+    memset(&features, 0, sizeof(features));
+    features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features.pNext = &features12;
+    memset(&device_info, 0, sizeof(device_info));
+    device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    device_info.pNext = &features;
+    device_info.queueCreateInfoCount = 1;
+    device_info.pQueueCreateInfos = &queue_info;
+    if (vkCreateDevice(runtime->physical, &device_info, NULL,
+            &runtime->device) != VK_SUCCESS) {
+        runtime->device = VK_NULL_HANDLE;
+        goto fail;
+    }
+    vkGetDeviceQueue(runtime->device, runtime->queue_family, 0,
+        &runtime->queue);
+
+    memset(&pool_info, 0, sizeof(pool_info));
+    pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    pool_info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+    pool_info.queueFamilyIndex = runtime->queue_family;
+    if (vkCreateCommandPool(runtime->device, &pool_info, NULL,
+            &runtime->command_pool) != VK_SUCCESS) {
+        runtime->command_pool = VK_NULL_HANDLE;
+        goto fail;
+    }
+    if (runtime->debug) {
+        fprintf(stderr, "libsixel: vulkan using %s (init %.2f ms)\n",
+            runtime->properties.deviceName, sixel_vk_now_ms() - started);
+    }
+    return 1;
+
+fail:
+    if (runtime->debug) {
+        fprintf(stderr, "libsixel: vulkan unavailable (%.2f ms)\n",
+            sixel_vk_now_ms() - started);
+    }
+    sixel_vk_runtime_teardown(runtime);
+    return 0;
+}
+
+sixel_vk_runtime_t *
+sixel_vk_runtime_get_locked(void)
+{
+    if (!g_sixel_vk_probed) {
+        g_sixel_vk_probed = 1;
+        g_sixel_vk_available = sixel_vk_runtime_init(&g_sixel_vk_runtime);
+    }
+    return g_sixel_vk_available ? &g_sixel_vk_runtime : NULL;
+}
+
+static int
+sixel_vk_memory_type(sixel_vk_runtime_t *runtime, uint32_t type_bits,
+    VkMemoryPropertyFlags required, VkMemoryPropertyFlags preferred)
+{
+    uint32_t index;
+    VkMemoryPropertyFlags flags;
+
+    for (index = 0; index < runtime->memory.memoryTypeCount; ++index) {
+        flags = runtime->memory.memoryTypes[index].propertyFlags;
+        if ((type_bits & (1U << index)) &&
+                (flags & (required | preferred)) == (required | preferred)) {
+            return (int)index;
+        }
+    }
+    for (index = 0; index < runtime->memory.memoryTypeCount; ++index) {
+        flags = runtime->memory.memoryTypes[index].propertyFlags;
+        if ((type_bits & (1U << index)) && (flags & required) == required) {
+            return (int)index;
+        }
+    }
+    return -1;
+}
+
+void
+sixel_vk_buffer_release(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer)
+{
+    if (runtime == NULL || buffer == NULL) {
+        return;
+    }
+    if (buffer->mapped != NULL) {
+        vkUnmapMemory(runtime->device, buffer->memory);
+    }
+    if (buffer->buffer != VK_NULL_HANDLE) {
+        vkDestroyBuffer(runtime->device, buffer->buffer, NULL);
+    }
+    if (buffer->memory != VK_NULL_HANDLE) {
+        vkFreeMemory(runtime->device, buffer->memory, NULL);
+    }
+    memset(buffer, 0, sizeof(*buffer));
+}
+
+SIXELSTATUS
+sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    VkDeviceSize size)
+{
+    VkBufferCreateInfo buffer_info;
+    VkMemoryRequirements requirements;
+    VkMemoryAllocateInfo allocate_info;
+    int type;
+
+    /* Storage-buffer ranges are bound in 4-byte units. */
+    size = size == 0 ? 4 : (size + 3U) & ~(VkDeviceSize)3U;
+    if (buffer->buffer != VK_NULL_HANDLE && buffer->capacity >= size) {
+        return SIXEL_OK;
+    }
+    sixel_vk_buffer_release(runtime, buffer);
+
+    memset(&buffer_info, 0, sizeof(buffer_info));
+    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size = size;
+    buffer_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    if (vkCreateBuffer(runtime->device, &buffer_info, NULL, &buffer->buffer)
+            != VK_SUCCESS) {
+        buffer->buffer = VK_NULL_HANDLE;
+        return SIXEL_BAD_ALLOCATION;
+    }
+    vkGetBufferMemoryRequirements(runtime->device, buffer->buffer,
+        &requirements);
+    /* Cached host memory keeps CPU readback of results fast; coherence
+     * avoids explicit flush/invalidate around the synchronous submit. */
+    type = sixel_vk_memory_type(runtime, requirements.memoryTypeBits,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
+    if (type < 0) {
+        sixel_vk_buffer_release(runtime, buffer);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memset(&allocate_info, 0, sizeof(allocate_info));
+    allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocate_info.allocationSize = requirements.size;
+    allocate_info.memoryTypeIndex = (uint32_t)type;
+    if (vkAllocateMemory(runtime->device, &allocate_info, NULL,
+            &buffer->memory) != VK_SUCCESS) {
+        buffer->memory = VK_NULL_HANDLE;
+        sixel_vk_buffer_release(runtime, buffer);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (vkBindBufferMemory(runtime->device, buffer->buffer, buffer->memory, 0)
+            != VK_SUCCESS ||
+            vkMapMemory(runtime->device, buffer->memory, 0, VK_WHOLE_SIZE, 0,
+                &buffer->mapped) != VK_SUCCESS) {
+        buffer->mapped = NULL;
+        sixel_vk_buffer_release(runtime, buffer);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    buffer->capacity = size;
+    return SIXEL_OK;
+}
+
+#if defined(HAVE_SHADERC)
+static SIXELSTATUS
+sixel_vk_compile_glsl(sixel_vk_runtime_t *runtime,
+    sixel_vk_shader_source_t const *source, uint32_t **words, size_t *size)
+{
+    shaderc_compiler_t compiler;
+    shaderc_compile_options_t options;
+    shaderc_compilation_result_t result;
+    char *text;
+    size_t length;
+    size_t index;
+    SIXELSTATUS status;
+
+    length = 0;
+    for (index = 0; source->glsl_chunks[index] != NULL; ++index) {
+        length += strlen(source->glsl_chunks[index]);
+    }
+    text = (char *)malloc(length + 1U);
+    if (text == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    length = 0;
+    for (index = 0; source->glsl_chunks[index] != NULL; ++index) {
+        size_t chunk = strlen(source->glsl_chunks[index]);
+        memcpy(text + length, source->glsl_chunks[index], chunk);
+        length += chunk;
+    }
+    text[length] = '\0';
+
+    status = SIXEL_RUNTIME_ERROR;
+    compiler = shaderc_compiler_initialize();
+    options = shaderc_compile_options_initialize();
+    result = NULL;
+    if (compiler == NULL || options == NULL) {
+        goto end;
+    }
+    shaderc_compile_options_set_target_env(options,
+        shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+    shaderc_compile_options_set_optimization_level(options,
+        shaderc_optimization_level_performance);
+    result = shaderc_compile_into_spv(compiler, text, length,
+        shaderc_compute_shader, source->name, "main", options);
+    if (result == NULL ||
+            shaderc_result_get_compilation_status(result) !=
+                shaderc_compilation_status_success) {
+        sixel_helper_set_additional_message(
+            "vulkan: runtime GLSL compilation failed.");
+        if (runtime->debug && result != NULL) {
+            fprintf(stderr, "libsixel: %s: %s\n", source->name,
+                shaderc_result_get_error_message(result));
+        }
+        goto end;
+    }
+    *size = shaderc_result_get_length(result);
+    *words = (uint32_t *)malloc(*size);
+    if (*words == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memcpy(*words, shaderc_result_get_bytes(result), *size);
+    status = SIXEL_OK;
+end:
+    if (result != NULL) {
+        shaderc_result_release(result);
+    }
+    if (options != NULL) {
+        shaderc_compile_options_release(options);
+    }
+    if (compiler != NULL) {
+        shaderc_compiler_release(compiler);
+    }
+    free(text);
+    return status;
+}
+#endif
+
+SIXELSTATUS
+sixel_vk_shader_module_create(sixel_vk_runtime_t *runtime,
+    sixel_vk_shader_source_t const *source, VkShaderModule *module)
+{
+    VkShaderModuleCreateInfo info;
+    char const *mode;
+    uint32_t *words;
+    size_t size;
+    int use_prebuilt;
+    double started;
+    SIXELSTATUS status;
+    VkResult result;
+
+    *module = VK_NULL_HANDLE;
+    words = NULL;
+    size = 0;
+    started = sixel_vk_now_ms();
+    mode = getenv("SIXEL_VULKAN_SHADER");
+    use_prebuilt = source->spirv != NULL && source->spirv_size != 0 &&
+        (mode == NULL || strcmp(mode, "runtime") != 0);
+    if (use_prebuilt) {
+        /* Embedded bytes carry no alignment guarantee for uint32 words. */
+        size = source->spirv_size;
+        words = (uint32_t *)malloc(size);
+        if (words == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(words, source->spirv, size);
+    } else if (mode != NULL && strcmp(mode, "prebuilt") == 0) {
+        sixel_helper_set_additional_message(
+            "vulkan: prebuilt SPIR-V is not available.");
+        return SIXEL_FEATURE_ERROR;
+    } else {
+#if defined(HAVE_SHADERC)
+        if (source->glsl_chunks == NULL) {
+            return SIXEL_FEATURE_ERROR;
+        }
+        status = sixel_vk_compile_glsl(runtime, source, &words, &size);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+#else
+        sixel_helper_set_additional_message(
+            "vulkan: no prebuilt SPIR-V and no runtime GLSL compiler.");
+        return SIXEL_FEATURE_ERROR;
+#endif
+    }
+    if (size == 0 || size % 4U != 0) {
+        free(words);
+        return SIXEL_RUNTIME_ERROR;
+    }
+    memset(&info, 0, sizeof(info));
+    info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    info.codeSize = size;
+    info.pCode = words;
+    result = vkCreateShaderModule(runtime->device, &info, NULL, module);
+    free(words);
+    if (result != VK_SUCCESS) {
+        *module = VK_NULL_HANDLE;
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (runtime->debug) {
+        fprintf(stderr, "libsixel: vulkan shader %s from %s SPIR-V "
+            "(%.2f ms)\n", source->name,
+            use_prebuilt ? "prebuilt" : "runtime-compiled",
+            sixel_vk_now_ms() - started);
+    }
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_command_begin(sixel_vk_runtime_t *runtime, VkCommandBuffer *command)
+{
+    VkCommandBufferAllocateInfo allocate_info;
+    VkCommandBufferBeginInfo begin_info;
+
+    memset(&allocate_info, 0, sizeof(allocate_info));
+    allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocate_info.commandPool = runtime->command_pool;
+    allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocate_info.commandBufferCount = 1;
+    if (vkAllocateCommandBuffers(runtime->device, &allocate_info, command)
+            != VK_SUCCESS) {
+        *command = VK_NULL_HANDLE;
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memset(&begin_info, 0, sizeof(begin_info));
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    if (vkBeginCommandBuffer(*command, &begin_info) != VK_SUCCESS) {
+        sixel_vk_command_free(runtime, *command);
+        *command = VK_NULL_HANDLE;
+        return SIXEL_RUNTIME_ERROR;
+    }
+    return SIXEL_OK;
+}
+
+void
+sixel_vk_command_free(sixel_vk_runtime_t *runtime, VkCommandBuffer command)
+{
+    if (command != VK_NULL_HANDLE) {
+        vkFreeCommandBuffers(runtime->device, runtime->command_pool, 1,
+            &command);
+    }
+}
+
+SIXELSTATUS
+sixel_vk_submit_and_wait(sixel_vk_runtime_t *runtime, VkCommandBuffer command)
+{
+    VkSubmitInfo submit;
+    VkFenceCreateInfo fence_info;
+    VkFence fence;
+    VkResult result;
+
+    if (vkEndCommandBuffer(command) != VK_SUCCESS) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    memset(&fence_info, 0, sizeof(fence_info));
+    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    if (vkCreateFence(runtime->device, &fence_info, NULL, &fence)
+            != VK_SUCCESS) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    memset(&submit, 0, sizeof(submit));
+    submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit.commandBufferCount = 1;
+    submit.pCommandBuffers = &command;
+    result = vkQueueSubmit(runtime->queue, 1, &submit, fence);
+    if (result == VK_SUCCESS) {
+        result = vkWaitForFences(runtime->device, 1, &fence, VK_TRUE,
+            UINT64_MAX);
+    }
+    vkDestroyFence(runtime->device, fence, NULL);
+    if (result != VK_SUCCESS) {
+        sixel_helper_set_additional_message(
+            "vulkan: command submission failed.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    return SIXEL_OK;
+}
+
+#endif /* HAVE_VULKAN */
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

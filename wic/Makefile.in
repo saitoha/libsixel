@@ -359,6 +359,7 @@ GDK_PIXBUF_MODULEDIR = @GDK_PIXBUF_MODULEDIR@
 GDK_PIXBUF_QUERY_LOADERS = @GDK_PIXBUF_QUERY_LOADERS@
 GD_CFLAGS = @GD_CFLAGS@
 GD_LIBS = @GD_LIBS@
+GLSLC = @GLSLC@
 GREP = @GREP@
 HAVE_TREE_SITTER_C = @HAVE_TREE_SITTER_C@
 INSTALL = @INSTALL@
@@ -448,6 +449,8 @@ RUBY_VERSION = @RUBY_VERSION@
 RUNTIME_ENV_IS_OPENVMS = @RUNTIME_ENV_IS_OPENVMS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
+SHADERC_CFLAGS = @SHADERC_CFLAGS@
+SHADERC_LIBS = @SHADERC_LIBS@
 SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
@@ -477,6 +480,8 @@ THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
 THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
+VULKAN_CFLAGS = @VULKAN_CFLAGS@
+VULKAN_LIBS = @VULKAN_LIBS@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
 WICCODEC_LDFLAGS = @WICCODEC_LDFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
@@ -543,6 +548,7 @@ pythondir = @pythondir@
 runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+sixel_have_compare = @sixel_have_compare@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
@@ -791,14 +797,14 @@ $(top_builddir)/tests/extension/wic-installed/decode-red-pixel.$(OBJEXT):  \
 	$(top_builddir)/tests/extension/wic-installed/$(am__dirstamp) \
 	$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/$(am__dirstamp)
 
-wic-installed-decode$(EXEEXT): $(wic_installed_decode_OBJECTS) $(wic_installed_decode_DEPENDENCIES) $(EXTRA_wic_installed_decode_DEPENDENCIES)
+wic-installed-decode$(EXEEXT): $(wic_installed_decode_OBJECTS) $(wic_installed_decode_DEPENDENCIES) $(EXTRA_wic_installed_decode_DEPENDENCIES) 
 	@rm -f wic-installed-decode$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(wic_installed_decode_OBJECTS) $(wic_installed_decode_LDADD) $(LIBS)
 $(top_builddir)/tests/extension/wic-installed/lifetime-probe.$(OBJEXT):  \
 	$(top_builddir)/tests/extension/wic-installed/$(am__dirstamp) \
 	$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/$(am__dirstamp)
 
-wic-installed-lifetime$(EXEEXT): $(wic_installed_lifetime_OBJECTS) $(wic_installed_lifetime_DEPENDENCIES) $(EXTRA_wic_installed_lifetime_DEPENDENCIES)
+wic-installed-lifetime$(EXEEXT): $(wic_installed_lifetime_OBJECTS) $(wic_installed_lifetime_DEPENDENCIES) $(EXTRA_wic_installed_lifetime_DEPENDENCIES) 
 	@rm -f wic-installed-lifetime$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(wic_installed_lifetime_OBJECTS) $(wic_installed_lifetime_LDADD) $(LIBS)
 

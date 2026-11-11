@@ -350,6 +350,7 @@ GDK_PIXBUF_MODULEDIR = @GDK_PIXBUF_MODULEDIR@
 GDK_PIXBUF_QUERY_LOADERS = @GDK_PIXBUF_QUERY_LOADERS@
 GD_CFLAGS = @GD_CFLAGS@
 GD_LIBS = @GD_LIBS@
+GLSLC = @GLSLC@
 GREP = @GREP@
 HAVE_TREE_SITTER_C = @HAVE_TREE_SITTER_C@
 INSTALL = @INSTALL@
@@ -439,6 +440,8 @@ RUBY_VERSION = @RUBY_VERSION@
 RUNTIME_ENV_IS_OPENVMS = @RUNTIME_ENV_IS_OPENVMS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
+SHADERC_CFLAGS = @SHADERC_CFLAGS@
+SHADERC_LIBS = @SHADERC_LIBS@
 SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
@@ -468,6 +471,8 @@ THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
 THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
+VULKAN_CFLAGS = @VULKAN_CFLAGS@
+VULKAN_LIBS = @VULKAN_LIBS@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
 WICCODEC_LDFLAGS = @WICCODEC_LDFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
@@ -576,10 +581,10 @@ DIST_SUBDIRS = \
 # Perl bindings have no recursive Automake subdirectory.
 EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	tools/embed-metal.sh tools/embed-metal.awk \
-	tools/ci-vm-result.sh tools/quicklook-user.sh \
-	tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
-	assessment/meson.build converters/meson.build \
-	examples/meson.build fuzz/meson.build \
+	tools/embed-spirv.sh tools/ci-vm-result.sh \
+	tools/quicklook-user.sh tools/quicklook-ci.py \
+	tools/generate_output_icc_fixtures.py assessment/meson.build \
+	converters/meson.build examples/meson.build fuzz/meson.build \
 	gdk-pixbuf-loader/meson.build images/meson.build \
 	include/meson.build meson.build meson_options.txt \
 	php/meson.build python/meson.build \

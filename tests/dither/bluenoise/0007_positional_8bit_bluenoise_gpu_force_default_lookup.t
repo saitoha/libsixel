@@ -17,7 +17,7 @@ probe_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 input_image="${TOP_SRCDIR}/images/vimperator3.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_GPU_POLICY=force \
-        -d none -p 16 --lookup-policy=none -o /dev/null "${probe_image}" || {
+        -d none -p 16 -o /dev/null "${probe_image}" || {
     printf "1..0 # SKIP forced GPU palette apply is unavailable\n";
     exit 0
 }

@@ -28,6 +28,8 @@ srcs = [
   'retained-plane-gpu.c',
   'retained-plane-gpu.h',
   'gpu-runtime-metal.h',
+  'gpu-runtime-vulkan.h',
+  'gpu-palette-vulkan.h',
   'retained-plane-rows.c',
   'retained-plane-rows.h',
   'retained-plane-workers.c',
@@ -430,6 +432,10 @@ if have_metal
            'progressive-gpu-metal.m']
 endif
 
+if have_vulkan
+  srcs += ['gpu-runtime-vulkan.c', 'gpu-palette-vulkan.c']
+endif
+
 if have_quicklook_thumbnailing
   srcs += ['quicklook_thumbnailing.m']
 endif
@@ -464,7 +470,7 @@ else
   libsixel_sources = srcs
   libsixel_c_args = libsixel_posix_defs
 endif
-libsixel_sources += [sixcells_h] + metal_headers
+libsixel_sources += [sixcells_h] + metal_headers + vulkan_headers
 libsixel_build_deps = deps + msvc_pgo_post_wic_deps
 
 libsixel = library('sixel',

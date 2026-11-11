@@ -37,6 +37,10 @@
 #include "bluenoise_64x64.h"
 #include "options.h"
 #include "dither-common-pipeline.h"
+#if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
+#include "gpu-palette-vulkan.h"
+#define SIXEL_GPU_PALETTE_USE_VULKAN 1
+#endif
 
 typedef struct sixel_gpu_bluenoise_conf {
     float strength;
@@ -494,6 +498,8 @@ sixel_gpu_palette_has_engine(void)
 {
 #if defined(HAVE_METAL)
     return sixel_gpu_palette_metal_is_available();
+#elif defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+    return sixel_gpu_palette_vulkan_is_available();
 #else
     return 0;
 #endif
@@ -531,6 +537,14 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
     int effective_scan;
 
     effective_scan = SIXEL_SCAN_AUTO;
+#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+    /* Decide before probing the device: an unported lookup never runs on
+     * Vulkan, so AUTO must not pay for instance creation. */
+    if (!sixel_gpu_palette_policy_is_force(gpu_policy) &&
+            !sixel_gpu_palette_vulkan_supports_lut(lut_policy)) {
+        return 0;
+    }
+#endif
     if (!sixel_gpu_palette_policy_may_apply(gpu_policy,
                                             auto_threshold,
                                             pixel_count)) {
@@ -595,6 +609,18 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
             request->pixel_count < request->auto_threshold) {
         return SIXEL_FALSE;
     }
+#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+    if (request->program != NULL ||
+            !sixel_gpu_palette_vulkan_supports_lut(request->lut_policy)) {
+        if (sixel_gpu_palette_policy_is_force(request->policy)) {
+            sixel_helper_set_additional_message(
+                "gpu palette apply: this lookup policy has no Vulkan "
+                "program yet.");
+            return SIXEL_FEATURE_ERROR;
+        }
+        return SIXEL_FALSE;
+    }
+#endif
     if (request->method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
         sixel_gpu_palette_prepare_effective_request(&effective, request);
         if (effective.bluenoise_size != SIXEL_BN_W) {
@@ -629,6 +655,14 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
     if (sixel_gpu_palette_policy_is_force(request->policy)) {
         return status;
     }
+#elif defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+    status = sixel_gpu_palette_vulkan_apply(&effective);
+    if (status == SIXEL_OK) {
+        return SIXEL_OK;
+    }
+    if (sixel_gpu_palette_policy_is_force(request->policy)) {
+        return status;
+    }
 #else
     status = SIXEL_FALSE;
 #endif
@@ -642,7 +676,13 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_plan_available(void)
 {
+    /* Prepared lookup plans need a gpu_device and program compiler. The
+     * Vulkan port owns only the direct apply stage so far. */
+#if defined(HAVE_METAL)
     return sixel_gpu_palette_has_engine();
+#else
+    return 0;
+#endif
 }
 
 SIXEL_INTERNAL_API int
@@ -669,6 +709,8 @@ sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request)
     }
 #if defined(HAVE_METAL)
     return sixel_gpu_lookup_compat_apply(request);
+#elif defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+    return sixel_gpu_palette_vulkan_apply(request);
 #else
     return SIXEL_FEATURE_ERROR;
 #endif

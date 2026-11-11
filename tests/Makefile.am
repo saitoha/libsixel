@@ -7382,6 +7382,14 @@ test_runner_SOURCES = test_runner.c \
     dither/a-dither/0038_a_strength_precedence.c \
     dither/x-dither/0044_x_strength_precedence.c \
     _support/processing/gpu-palette/wire_common.c \
+    _support/processing/gpu-palette/direct_parity_common.c \
+    dither/gpu-direct/0001_parity_none.c \
+    dither/gpu-direct/0002_parity_a.c \
+    dither/gpu-direct/0003_parity_x.c \
+    dither/gpu-direct/0004_parity_bluenoise.c \
+    dither/gpu-direct/0005_parity_few_colors.c \
+    dither/gpu-direct/0006_wire_a.c \
+    dither/gpu-direct/0007_wire_x.c \
     lookup/none/0001_wire_rgb_none.c \
     dither/bluenoise/0051_wire_rgb_bluenoise.c \
     lookup/eytzinger/0001_wire_rgb_eytzinger.c \

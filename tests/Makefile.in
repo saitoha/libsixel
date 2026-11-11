@@ -2228,6 +2228,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	dither/a-dither/0038_a_strength_precedence.c \
 	dither/x-dither/0044_x_strength_precedence.c \
 	_support/processing/gpu-palette/wire_common.c \
+	_support/processing/gpu-palette/direct_parity_common.c \
+	dither/gpu-direct/0001_parity_none.c \
+	dither/gpu-direct/0002_parity_a.c \
+	dither/gpu-direct/0003_parity_x.c \
+	dither/gpu-direct/0004_parity_bluenoise.c \
+	dither/gpu-direct/0005_parity_few_colors.c \
+	dither/gpu-direct/0006_wire_a.c \
+	dither/gpu-direct/0007_wire_x.c \
 	lookup/none/0001_wire_rgb_none.c \
 	dither/bluenoise/0051_wire_rgb_bluenoise.c \
 	lookup/eytzinger/0001_wire_rgb_eytzinger.c \
@@ -7271,6 +7279,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/a-dither/test_runner-0038_a_strength_precedence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/x-dither/test_runner-0044_x_strength_precedence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-wire_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-direct_parity_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0001_parity_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0002_parity_a.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0003_parity_x.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0004_parity_bluenoise.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0005_parity_few_colors.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0006_wire_a.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0007_wire_x.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/none/test_runner-0001_wire_rgb_none.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/bluenoise/test_runner-0051_wire_rgb_bluenoise.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/eytzinger/test_runner-0001_wire_rgb_eytzinger.$(OBJEXT) \
@@ -10678,6 +10694,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-byte_state_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-certlut_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Po \
+	_support/processing/gpu-palette/$(DEPDIR)/test_runner-direct_parity_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_failure_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_rows_apply_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_rows_common.Po \
@@ -11809,6 +11826,13 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/dispatch/$(DEPDIR)/test_runner-0049_x_dither_prepared_apply.Po \
 	dither/dispatch/$(DEPDIR)/test_runner-0050_bluenoise_prepared_apply.Po \
 	dither/fs-gpu/$(DEPDIR)/test_runner-0001_fs_gpu_carry.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0004_parity_bluenoise.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0005_parity_few_colors.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0006_wire_a.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0007_wire_x.Po \
 	dither/jajuni-gpu/$(DEPDIR)/test_runner-0001_jajuni_gpu_carry.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0001_standard_indexes.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0002_small_error_indexes.Po \
@@ -15589,6 +15613,7 @@ GDK_PIXBUF_MODULEDIR = @GDK_PIXBUF_MODULEDIR@
 GDK_PIXBUF_QUERY_LOADERS = @GDK_PIXBUF_QUERY_LOADERS@
 GD_CFLAGS = @GD_CFLAGS@
 GD_LIBS = @GD_LIBS@
+GLSLC = @GLSLC@
 GREP = @GREP@
 HAVE_TREE_SITTER_C = @HAVE_TREE_SITTER_C@
 INSTALL = @INSTALL@
@@ -15678,6 +15703,8 @@ RUBY_VERSION = @RUBY_VERSION@
 RUNTIME_ENV_IS_OPENVMS = @RUNTIME_ENV_IS_OPENVMS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
+SHADERC_CFLAGS = @SHADERC_CFLAGS@
+SHADERC_LIBS = @SHADERC_LIBS@
 SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
@@ -15709,6 +15736,8 @@ THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
 THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
+VULKAN_CFLAGS = @VULKAN_CFLAGS@
+VULKAN_LIBS = @VULKAN_LIBS@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
 WICCODEC_LDFLAGS = @WICCODEC_LDFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
@@ -23134,6 +23163,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/a-dither/0038_a_strength_precedence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/x-dither/0044_x_strength_precedence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/wire_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/direct_parity_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0001_parity_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0002_parity_a.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0003_parity_x.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0004_parity_bluenoise.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0005_parity_few_colors.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0006_wire_a.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0007_wire_x.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/none/0001_wire_rgb_none.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/bluenoise/0051_wire_rgb_bluenoise.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/eytzinger/0001_wire_rgb_eytzinger.c \
@@ -33213,6 +33250,36 @@ dither/x-dither/test_runner-0044_x_strength_precedence.$(OBJEXT):  \
 _support/processing/gpu-palette/test_runner-wire_common.$(OBJEXT):  \
 	_support/processing/gpu-palette/$(am__dirstamp) \
 	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+_support/processing/gpu-palette/test_runner-direct_parity_common.$(OBJEXT):  \
+	_support/processing/gpu-palette/$(am__dirstamp) \
+	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/$(am__dirstamp):
+	@$(MKDIR_P) dither/gpu-direct
+	@: >>dither/gpu-direct/$(am__dirstamp)
+dither/gpu-direct/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/gpu-direct/$(DEPDIR)
+	@: >>dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0001_parity_none.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0002_parity_a.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0003_parity_x.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0004_parity_bluenoise.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0005_parity_few_colors.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0006_wire_a.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0007_wire_x.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
 lookup/none/$(am__dirstamp):
 	@$(MKDIR_P) lookup/none
 	@: >>lookup/none/$(am__dirstamp)
@@ -42862,6 +42929,7 @@ mostlyclean-compile:
 	-rm -f dither/clamp/*.$(OBJEXT)
 	-rm -f dither/dispatch/*.$(OBJEXT)
 	-rm -f dither/fs-gpu/*.$(OBJEXT)
+	-rm -f dither/gpu-direct/*.$(OBJEXT)
 	-rm -f dither/jajuni-gpu/*.$(OBJEXT)
 	-rm -f dither/lso2-gpu/*.$(OBJEXT)
 	-rm -f dither/perturb/*.$(OBJEXT)
@@ -43357,6 +43425,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-byte_state_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-certlut_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-direct_parity_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_failure_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_rows_apply_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_rows_common.Po@am__quote@ # am--include-marker
@@ -44488,6 +44557,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/dispatch/$(DEPDIR)/test_runner-0049_x_dither_prepared_apply.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/dispatch/$(DEPDIR)/test_runner-0050_bluenoise_prepared_apply.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0001_fs_gpu_carry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0004_parity_bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0005_parity_few_colors.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0006_wire_a.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0007_wire_x.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0001_jajuni_gpu_carry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0001_standard_indexes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0002_small_error_indexes.Po@am__quote@ # am--include-marker
@@ -76827,6 +76903,118 @@ _support/processing/gpu-palette/test_runner-wire_common.obj: _support/processing
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/wire_common.c' object='_support/processing/gpu-palette/test_runner-wire_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-wire_common.obj `if test -f '_support/processing/gpu-palette/wire_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/wire_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/wire_common.c'; fi`
+
+_support/processing/gpu-palette/test_runner-direct_parity_common.o: _support/processing/gpu-palette/direct_parity_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-direct_parity_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-direct_parity_common.Tpo -c -o _support/processing/gpu-palette/test_runner-direct_parity_common.o `test -f '_support/processing/gpu-palette/direct_parity_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/direct_parity_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-direct_parity_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-direct_parity_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/direct_parity_common.c' object='_support/processing/gpu-palette/test_runner-direct_parity_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-direct_parity_common.o `test -f '_support/processing/gpu-palette/direct_parity_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/direct_parity_common.c
+
+_support/processing/gpu-palette/test_runner-direct_parity_common.obj: _support/processing/gpu-palette/direct_parity_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-direct_parity_common.obj -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-direct_parity_common.Tpo -c -o _support/processing/gpu-palette/test_runner-direct_parity_common.obj `if test -f '_support/processing/gpu-palette/direct_parity_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/direct_parity_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/direct_parity_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-direct_parity_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-direct_parity_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/direct_parity_common.c' object='_support/processing/gpu-palette/test_runner-direct_parity_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-direct_parity_common.obj `if test -f '_support/processing/gpu-palette/direct_parity_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/direct_parity_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/direct_parity_common.c'; fi`
+
+dither/gpu-direct/test_runner-0001_parity_none.o: dither/gpu-direct/0001_parity_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0001_parity_none.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Tpo -c -o dither/gpu-direct/test_runner-0001_parity_none.o `test -f 'dither/gpu-direct/0001_parity_none.c' || echo '$(srcdir)/'`dither/gpu-direct/0001_parity_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0001_parity_none.c' object='dither/gpu-direct/test_runner-0001_parity_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0001_parity_none.o `test -f 'dither/gpu-direct/0001_parity_none.c' || echo '$(srcdir)/'`dither/gpu-direct/0001_parity_none.c
+
+dither/gpu-direct/test_runner-0001_parity_none.obj: dither/gpu-direct/0001_parity_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0001_parity_none.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Tpo -c -o dither/gpu-direct/test_runner-0001_parity_none.obj `if test -f 'dither/gpu-direct/0001_parity_none.c'; then $(CYGPATH_W) 'dither/gpu-direct/0001_parity_none.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0001_parity_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0001_parity_none.c' object='dither/gpu-direct/test_runner-0001_parity_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0001_parity_none.obj `if test -f 'dither/gpu-direct/0001_parity_none.c'; then $(CYGPATH_W) 'dither/gpu-direct/0001_parity_none.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0001_parity_none.c'; fi`
+
+dither/gpu-direct/test_runner-0002_parity_a.o: dither/gpu-direct/0002_parity_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0002_parity_a.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Tpo -c -o dither/gpu-direct/test_runner-0002_parity_a.o `test -f 'dither/gpu-direct/0002_parity_a.c' || echo '$(srcdir)/'`dither/gpu-direct/0002_parity_a.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0002_parity_a.c' object='dither/gpu-direct/test_runner-0002_parity_a.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0002_parity_a.o `test -f 'dither/gpu-direct/0002_parity_a.c' || echo '$(srcdir)/'`dither/gpu-direct/0002_parity_a.c
+
+dither/gpu-direct/test_runner-0002_parity_a.obj: dither/gpu-direct/0002_parity_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0002_parity_a.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Tpo -c -o dither/gpu-direct/test_runner-0002_parity_a.obj `if test -f 'dither/gpu-direct/0002_parity_a.c'; then $(CYGPATH_W) 'dither/gpu-direct/0002_parity_a.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0002_parity_a.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0002_parity_a.c' object='dither/gpu-direct/test_runner-0002_parity_a.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0002_parity_a.obj `if test -f 'dither/gpu-direct/0002_parity_a.c'; then $(CYGPATH_W) 'dither/gpu-direct/0002_parity_a.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0002_parity_a.c'; fi`
+
+dither/gpu-direct/test_runner-0003_parity_x.o: dither/gpu-direct/0003_parity_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0003_parity_x.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Tpo -c -o dither/gpu-direct/test_runner-0003_parity_x.o `test -f 'dither/gpu-direct/0003_parity_x.c' || echo '$(srcdir)/'`dither/gpu-direct/0003_parity_x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0003_parity_x.c' object='dither/gpu-direct/test_runner-0003_parity_x.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0003_parity_x.o `test -f 'dither/gpu-direct/0003_parity_x.c' || echo '$(srcdir)/'`dither/gpu-direct/0003_parity_x.c
+
+dither/gpu-direct/test_runner-0003_parity_x.obj: dither/gpu-direct/0003_parity_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0003_parity_x.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Tpo -c -o dither/gpu-direct/test_runner-0003_parity_x.obj `if test -f 'dither/gpu-direct/0003_parity_x.c'; then $(CYGPATH_W) 'dither/gpu-direct/0003_parity_x.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0003_parity_x.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0003_parity_x.c' object='dither/gpu-direct/test_runner-0003_parity_x.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0003_parity_x.obj `if test -f 'dither/gpu-direct/0003_parity_x.c'; then $(CYGPATH_W) 'dither/gpu-direct/0003_parity_x.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0003_parity_x.c'; fi`
+
+dither/gpu-direct/test_runner-0004_parity_bluenoise.o: dither/gpu-direct/0004_parity_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0004_parity_bluenoise.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0004_parity_bluenoise.Tpo -c -o dither/gpu-direct/test_runner-0004_parity_bluenoise.o `test -f 'dither/gpu-direct/0004_parity_bluenoise.c' || echo '$(srcdir)/'`dither/gpu-direct/0004_parity_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0004_parity_bluenoise.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0004_parity_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0004_parity_bluenoise.c' object='dither/gpu-direct/test_runner-0004_parity_bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0004_parity_bluenoise.o `test -f 'dither/gpu-direct/0004_parity_bluenoise.c' || echo '$(srcdir)/'`dither/gpu-direct/0004_parity_bluenoise.c
+
+dither/gpu-direct/test_runner-0004_parity_bluenoise.obj: dither/gpu-direct/0004_parity_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0004_parity_bluenoise.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0004_parity_bluenoise.Tpo -c -o dither/gpu-direct/test_runner-0004_parity_bluenoise.obj `if test -f 'dither/gpu-direct/0004_parity_bluenoise.c'; then $(CYGPATH_W) 'dither/gpu-direct/0004_parity_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0004_parity_bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0004_parity_bluenoise.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0004_parity_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0004_parity_bluenoise.c' object='dither/gpu-direct/test_runner-0004_parity_bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0004_parity_bluenoise.obj `if test -f 'dither/gpu-direct/0004_parity_bluenoise.c'; then $(CYGPATH_W) 'dither/gpu-direct/0004_parity_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0004_parity_bluenoise.c'; fi`
+
+dither/gpu-direct/test_runner-0005_parity_few_colors.o: dither/gpu-direct/0005_parity_few_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0005_parity_few_colors.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0005_parity_few_colors.Tpo -c -o dither/gpu-direct/test_runner-0005_parity_few_colors.o `test -f 'dither/gpu-direct/0005_parity_few_colors.c' || echo '$(srcdir)/'`dither/gpu-direct/0005_parity_few_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0005_parity_few_colors.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0005_parity_few_colors.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0005_parity_few_colors.c' object='dither/gpu-direct/test_runner-0005_parity_few_colors.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0005_parity_few_colors.o `test -f 'dither/gpu-direct/0005_parity_few_colors.c' || echo '$(srcdir)/'`dither/gpu-direct/0005_parity_few_colors.c
+
+dither/gpu-direct/test_runner-0005_parity_few_colors.obj: dither/gpu-direct/0005_parity_few_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0005_parity_few_colors.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0005_parity_few_colors.Tpo -c -o dither/gpu-direct/test_runner-0005_parity_few_colors.obj `if test -f 'dither/gpu-direct/0005_parity_few_colors.c'; then $(CYGPATH_W) 'dither/gpu-direct/0005_parity_few_colors.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0005_parity_few_colors.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0005_parity_few_colors.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0005_parity_few_colors.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0005_parity_few_colors.c' object='dither/gpu-direct/test_runner-0005_parity_few_colors.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0005_parity_few_colors.obj `if test -f 'dither/gpu-direct/0005_parity_few_colors.c'; then $(CYGPATH_W) 'dither/gpu-direct/0005_parity_few_colors.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0005_parity_few_colors.c'; fi`
+
+dither/gpu-direct/test_runner-0006_wire_a.o: dither/gpu-direct/0006_wire_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0006_wire_a.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0006_wire_a.Tpo -c -o dither/gpu-direct/test_runner-0006_wire_a.o `test -f 'dither/gpu-direct/0006_wire_a.c' || echo '$(srcdir)/'`dither/gpu-direct/0006_wire_a.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0006_wire_a.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0006_wire_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0006_wire_a.c' object='dither/gpu-direct/test_runner-0006_wire_a.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0006_wire_a.o `test -f 'dither/gpu-direct/0006_wire_a.c' || echo '$(srcdir)/'`dither/gpu-direct/0006_wire_a.c
+
+dither/gpu-direct/test_runner-0006_wire_a.obj: dither/gpu-direct/0006_wire_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0006_wire_a.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0006_wire_a.Tpo -c -o dither/gpu-direct/test_runner-0006_wire_a.obj `if test -f 'dither/gpu-direct/0006_wire_a.c'; then $(CYGPATH_W) 'dither/gpu-direct/0006_wire_a.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0006_wire_a.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0006_wire_a.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0006_wire_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0006_wire_a.c' object='dither/gpu-direct/test_runner-0006_wire_a.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0006_wire_a.obj `if test -f 'dither/gpu-direct/0006_wire_a.c'; then $(CYGPATH_W) 'dither/gpu-direct/0006_wire_a.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0006_wire_a.c'; fi`
+
+dither/gpu-direct/test_runner-0007_wire_x.o: dither/gpu-direct/0007_wire_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0007_wire_x.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0007_wire_x.Tpo -c -o dither/gpu-direct/test_runner-0007_wire_x.o `test -f 'dither/gpu-direct/0007_wire_x.c' || echo '$(srcdir)/'`dither/gpu-direct/0007_wire_x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0007_wire_x.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0007_wire_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0007_wire_x.c' object='dither/gpu-direct/test_runner-0007_wire_x.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0007_wire_x.o `test -f 'dither/gpu-direct/0007_wire_x.c' || echo '$(srcdir)/'`dither/gpu-direct/0007_wire_x.c
+
+dither/gpu-direct/test_runner-0007_wire_x.obj: dither/gpu-direct/0007_wire_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0007_wire_x.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0007_wire_x.Tpo -c -o dither/gpu-direct/test_runner-0007_wire_x.obj `if test -f 'dither/gpu-direct/0007_wire_x.c'; then $(CYGPATH_W) 'dither/gpu-direct/0007_wire_x.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0007_wire_x.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0007_wire_x.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0007_wire_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0007_wire_x.c' object='dither/gpu-direct/test_runner-0007_wire_x.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0007_wire_x.obj `if test -f 'dither/gpu-direct/0007_wire_x.c'; then $(CYGPATH_W) 'dither/gpu-direct/0007_wire_x.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0007_wire_x.c'; fi`
 
 lookup/none/test_runner-0001_wire_rgb_none.o: lookup/none/0001_wire_rgb_none.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/none/test_runner-0001_wire_rgb_none.o -MD -MP -MF lookup/none/$(DEPDIR)/test_runner-0001_wire_rgb_none.Tpo -c -o lookup/none/test_runner-0001_wire_rgb_none.o `test -f 'lookup/none/0001_wire_rgb_none.c' || echo '$(srcdir)/'`lookup/none/0001_wire_rgb_none.c
@@ -118692,6 +118880,8 @@ distclean-generic:
 	-$(am__rm_f) dither/dispatch/$(am__dirstamp)
 	-$(am__rm_f) dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) dither/fs-gpu/$(am__dirstamp)
+	-$(am__rm_f) dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) dither/gpu-direct/$(am__dirstamp)
 	-$(am__rm_f) dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) dither/jajuni-gpu/$(am__dirstamp)
 	-$(am__rm_f) dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)

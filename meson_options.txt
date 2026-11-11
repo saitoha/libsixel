@@ -34,6 +34,10 @@ option('gd', type: 'feature', value: 'disabled', description: 'Use GD image libr
 option('coregraphics', type: 'feature', value: 'auto', description: 'Use CoreGraphics framework')
 option('metal', type: 'feature', value: 'auto',
        description: 'Use Metal framework for GPU palette apply')
+option('vulkan', type: 'feature', value: 'auto',
+       description: 'Use Vulkan compute for GPU palette apply (non-Metal hosts)')
+option('shaderc', type: 'feature', value: 'auto',
+       description: 'Compile Vulkan GLSL at runtime with libshaderc')
 option('appkit', type: 'feature', value: 'enabled',
        description: 'Use AppKit clipboard backend on macOS')
 option('quicklook_preview', type: 'feature', value: 'auto', description: 'Use macOS Quick Look for preview extraction')

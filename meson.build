@@ -1755,6 +1755,57 @@ elif metal_opt.enabled()
   error('Metal GPU palette apply requires macOS')
 endif
 
+# Vulkan compute backend. Metal stays the GPU engine on Apple hosts, so
+# Vulkan is probed only where Metal is absent. Shaders come from build-time
+# glslc SPIR-V, runtime libshaderc compilation, or both (prebuilt wins).
+have_vulkan = false
+have_shaderc = false
+have_vulkan_prebuilt_spirv = false
+glslc = disabler()
+vulkan_opt = get_option('vulkan')
+if not vulkan_opt.disabled()
+  if have_metal
+    if vulkan_opt.enabled()
+      error('Vulkan GPU palette apply cannot be combined with Metal')
+    endif
+  elif get_option('amalgamated_lib') or get_option('amalgamated_tools')
+    # The amalgamation generator does not embed Vulkan shaders yet.
+    if vulkan_opt.enabled()
+      error('Vulkan GPU palette apply is not supported in amalgamated builds yet')
+    endif
+  elif host_system == 'windows'
+    if vulkan_opt.enabled()
+      error('Vulkan GPU palette apply is not supported on Windows yet')
+    endif
+  else
+    vulkan_dep = dependency('vulkan', required: vulkan_opt.enabled())
+    if vulkan_dep.found()
+      glslc = find_program('glslc', required: false)
+      shaderc_dep = dependency('shaderc', required: get_option('shaderc'))
+      have_shaderc = shaderc_dep.found()
+      have_vulkan_prebuilt_spirv = glslc.found()
+      if not have_shaderc and not have_vulkan_prebuilt_spirv
+        if vulkan_opt.enabled()
+          error('Vulkan needs glslc at build time or libshaderc at runtime')
+        endif
+      else
+        have_vulkan = true
+        conf.set('HAVE_VULKAN', 1)
+        deps += vulkan_dep
+        link_libs += vulkan_dep
+        if have_shaderc
+          conf.set('HAVE_SHADERC', 1)
+          deps += shaderc_dep
+          link_libs += shaderc_dep
+        endif
+        if have_vulkan_prebuilt_spirv
+          conf.set('HAVE_VULKAN_PREBUILT_SPIRV', 1)
+        endif
+      endif
+    endif
+  endif
+endif
+
 quicklook_preview_opt = get_option('quicklook_preview')
 appkit_opt = get_option('appkit')
 have_quicklook_thumbnailing = false
@@ -2646,6 +2697,7 @@ completion_embed = custom_target('completion_embed.h',
 )
 
 subdir('src/generated-metal')
+subdir('src/generated-vulkan')
 
 if amalgamated_sources_enabled
   subdir('amalgamation')
@@ -2986,6 +3038,17 @@ message('       libtiff                 : ' + tiff_message)
 message('       libwebp                 : ' + webp_message)
 message('       lcms2                   : ' + lcms2_message)
 message('       Metal palette apply     : ' + (have_metal ? 'yes' : 'no'))
+vulkan_summary = 'no'
+if have_vulkan
+  vulkan_summary = 'yes'
+  if have_vulkan_prebuilt_spirv
+    vulkan_summary += ' (prebuilt SPIR-V)'
+  endif
+  if have_shaderc
+    vulkan_summary += ' (runtime shaderc)'
+  endif
+endif
+message('       Vulkan palette apply    : ' + vulkan_summary)
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)

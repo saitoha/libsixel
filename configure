@@ -841,6 +841,17 @@ HAVE_QUICKLOOK_THUMBNAILING_FALSE
 HAVE_QUICKLOOK_THUMBNAILING_TRUE
 QUICKLOOK_LIBS
 QUICKLOOK_CFLAGS
+HAVE_VULKAN_PREBUILT_SPIRV_FALSE
+HAVE_VULKAN_PREBUILT_SPIRV_TRUE
+HAVE_SHADERC_FALSE
+HAVE_SHADERC_TRUE
+HAVE_VULKAN_FALSE
+HAVE_VULKAN_TRUE
+SHADERC_LIBS
+SHADERC_CFLAGS
+GLSLC
+VULKAN_LIBS
+VULKAN_CFLAGS
 HAVE_METAL_FALSE
 HAVE_METAL_TRUE
 METAL_LIBS
@@ -1117,6 +1128,8 @@ enable_gdk_pixbuf_loader
 with_gd
 with_coregraphics
 with_metal
+with_vulkan
+with_shaderc
 enable_appkit
 enable_quicklook_extension
 with_quicklook_package_version
@@ -1183,6 +1196,10 @@ GDK_PIXBUF_LIBS
 GDK_PIXBUF_BINARY_VERSION
 GDK_PIXBUF_MODULEDIR
 GDK_PIXBUF_QUERY_LOADERS
+VULKAN_CFLAGS
+VULKAN_LIBS
+SHADERC_CFLAGS
+SHADERC_LIBS
 GD_CFLAGS
 GD_LIBS
 LIBCURL_CFLAGS
@@ -1957,6 +1974,10 @@ Optional Packages:
   --with-coregraphics     whether to build with CoreGraphics (default: auto)
   --with-metal            whether to build with Metal GPU palette apply
                           (default: auto)
+  --with-vulkan           whether to build with Vulkan compute GPU palette
+                          apply on non-Metal hosts (default: auto)
+  --with-shaderc          whether to compile Vulkan GLSL at runtime with
+                          libshaderc (default: auto)
   --with-quicklook-package-version=M.m.p
                           Quick Look distribution build (default: 1.0.0)
   --with-libcurl          whether to build with libcurl (default: auto)
@@ -2030,6 +2051,13 @@ Some influential environment variables:
   GDK_PIXBUF_QUERY_LOADERS
               value of gdk_pixbuf_query_loaders for gdk-pixbuf-2.0, overriding
               pkg-config
+  VULKAN_CFLAGS
+              C compiler flags for VULKAN, overriding pkg-config
+  VULKAN_LIBS linker flags for VULKAN, overriding pkg-config
+  SHADERC_CFLAGS
+              C compiler flags for SHADERC, overriding pkg-config
+  SHADERC_LIBS
+              linker flags for SHADERC, overriding pkg-config
   GD_CFLAGS   C compiler flags for GD, overriding pkg-config
   GD_LIBS     linker flags for GD, overriding pkg-config
   LIBCURL_CFLAGS
@@ -18576,6 +18604,28 @@ esac
 fi
 
 
+
+# Check whether --with-vulkan was given.
+if test ${with_vulkan+y}
+then :
+  withval=$with_vulkan;
+else case e in #(
+  e) with_vulkan=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-shaderc was given.
+if test ${with_shaderc+y}
+then :
+  withval=$with_shaderc;
+else case e in #(
+  e) with_shaderc=auto ;;
+esac
+fi
+
+
 # Check whether --enable-appkit was given.
 if test ${enable_appkit+y}
 then :
@@ -23994,6 +24044,300 @@ esac
 else
   HAVE_METAL_TRUE='#'
   HAVE_METAL_FALSE=
+fi
+
+
+# Vulkan compute backend. Metal stays the GPU engine on Apple hosts. Shaders
+# come from build-time glslc SPIR-V, runtime libshaderc, or both.
+VULKAN_LIBS=""
+VULKAN_CFLAGS=""
+SHADERC_LIBS=""
+SHADERC_CFLAGS=""
+have_vulkan=no
+have_shaderc=no
+have_vulkan_prebuilt_spirv=no
+if test x$with_vulkan != xno; then
+    if test x$have_metal = xyes; then
+        if test x$with_vulkan = xyes; then
+            as_fn_error $? "Vulkan GPU palette apply cannot be combined with Metal" "$LINENO" 5
+        fi
+    elif test "x$enable_amalgamated_lib" = "xyes" ||
+            test "x$enable_amalgamated_tools" = "xyes"; then
+        # The amalgamation generator does not embed Vulkan shaders yet.
+        if test x$with_vulkan = xyes; then
+            as_fn_error $? "Vulkan GPU palette apply is not supported in amalgamated builds yet" "$LINENO" 5
+        fi
+    else
+        case $host_os in
+          mingw*|cygwin*|msys*)
+            if test x$with_vulkan = xyes; then
+                as_fn_error $? "Vulkan GPU palette apply is not supported on Windows yet" "$LINENO" 5
+            fi
+            ;;
+          *)
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for vulkan" >&5
+printf %s "checking for vulkan... " >&6; }
+
+if test -n "$VULKAN_CFLAGS"; then
+    pkg_cv_VULKAN_CFLAGS="$VULKAN_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"vulkan\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "vulkan") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_VULKAN_CFLAGS=`$PKG_CONFIG --cflags "vulkan" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$VULKAN_LIBS"; then
+    pkg_cv_VULKAN_LIBS="$VULKAN_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"vulkan\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "vulkan") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_VULKAN_LIBS=`$PKG_CONFIG --libs "vulkan" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                VULKAN_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "vulkan" 2>&1`
+        else
+                VULKAN_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "vulkan" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$VULKAN_PKG_ERRORS" >&5
+
+        have_vulkan_dep=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_vulkan_dep=no
+else
+        VULKAN_CFLAGS=$pkg_cv_VULKAN_CFLAGS
+        VULKAN_LIBS=$pkg_cv_VULKAN_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_vulkan_dep=yes
+fi
+            if test x$have_vulkan_dep = xyes; then
+                # Extract the first word of "glslc", so it can be a program name with args.
+set dummy glslc; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_GLSLC+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $GLSLC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_GLSLC="$GLSLC" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_GLSLC="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+GLSLC=$ac_cv_path_GLSLC
+if test -n "$GLSLC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GLSLC" >&5
+printf "%s\n" "$GLSLC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+                if test -n "$GLSLC"; then
+                    have_vulkan_prebuilt_spirv=yes
+                fi
+                if test x$with_shaderc != xno; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for shaderc" >&5
+printf %s "checking for shaderc... " >&6; }
+
+if test -n "$SHADERC_CFLAGS"; then
+    pkg_cv_SHADERC_CFLAGS="$SHADERC_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"shaderc\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "shaderc") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SHADERC_CFLAGS=`$PKG_CONFIG --cflags "shaderc" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$SHADERC_LIBS"; then
+    pkg_cv_SHADERC_LIBS="$SHADERC_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"shaderc\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "shaderc") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SHADERC_LIBS=`$PKG_CONFIG --libs "shaderc" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                SHADERC_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "shaderc" 2>&1`
+        else
+                SHADERC_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "shaderc" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$SHADERC_PKG_ERRORS" >&5
+
+        have_shaderc=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_shaderc=no
+else
+        SHADERC_CFLAGS=$pkg_cv_SHADERC_CFLAGS
+        SHADERC_LIBS=$pkg_cv_SHADERC_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_shaderc=yes
+fi
+                    if test x$have_shaderc = xno && test x$with_shaderc = xyes; then
+                        as_fn_error $? "unable to find libshaderc" "$LINENO" 5
+                    fi
+                fi
+                if test x$have_shaderc = xyes ||
+                        test x$have_vulkan_prebuilt_spirv = xyes; then
+                    have_vulkan=yes
+                elif test x$with_vulkan = xyes; then
+                    as_fn_error $? "Vulkan needs glslc at build time or libshaderc at runtime" "$LINENO" 5
+                fi
+            elif test x$with_vulkan = xyes; then
+                as_fn_error $? "unable to find the Vulkan loader" "$LINENO" 5
+            fi
+            ;;
+        esac
+    fi
+fi
+if test x$have_vulkan = xyes; then
+
+printf "%s\n" "#define HAVE_VULKAN 1" >>confdefs.h
+
+    REQUIRES_PRIVATE="$REQUIRES_PRIVATE vulkan"
+    LIBS_PRIVATE="$LIBS_PRIVATE $VULKAN_LIBS"
+    if test x$have_shaderc = xyes; then
+
+printf "%s\n" "#define HAVE_SHADERC 1" >>confdefs.h
+
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE shaderc"
+        LIBS_PRIVATE="$LIBS_PRIVATE $SHADERC_LIBS"
+    fi
+    if test x$have_vulkan_prebuilt_spirv = xyes; then
+
+printf "%s\n" "#define HAVE_VULKAN_PREBUILT_SPIRV 1" >>confdefs.h
+
+    fi
+else
+    have_shaderc=no
+    have_vulkan_prebuilt_spirv=no
+    VULKAN_LIBS=""
+    VULKAN_CFLAGS=""
+    SHADERC_LIBS=""
+    SHADERC_CFLAGS=""
+fi
+
+
+
+
+
+ if test x$have_vulkan = xyes; then
+  HAVE_VULKAN_TRUE=
+  HAVE_VULKAN_FALSE='#'
+else
+  HAVE_VULKAN_TRUE='#'
+  HAVE_VULKAN_FALSE=
+fi
+
+ if test x$have_shaderc = xyes; then
+  HAVE_SHADERC_TRUE=
+  HAVE_SHADERC_FALSE='#'
+else
+  HAVE_SHADERC_TRUE='#'
+  HAVE_SHADERC_FALSE=
+fi
+
+ if test x$have_vulkan_prebuilt_spirv = xyes; then
+  HAVE_VULKAN_PREBUILT_SPIRV_TRUE=
+  HAVE_VULKAN_PREBUILT_SPIRV_FALSE='#'
+else
+  HAVE_VULKAN_PREBUILT_SPIRV_TRUE='#'
+  HAVE_VULKAN_PREBUILT_SPIRV_FALSE=
 fi
 
 
@@ -34960,6 +35304,18 @@ if test -z "${HAVE_METAL_TRUE}" && test -z "${HAVE_METAL_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_METAL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${HAVE_VULKAN_TRUE}" && test -z "${HAVE_VULKAN_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_VULKAN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_SHADERC_TRUE}" && test -z "${HAVE_SHADERC_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_SHADERC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_VULKAN_PREBUILT_SPIRV_TRUE}" && test -z "${HAVE_VULKAN_PREBUILT_SPIRV_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_VULKAN_PREBUILT_SPIRV\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${HAVE_QUICKLOOK_THUMBNAILING_TRUE}" && test -z "${HAVE_QUICKLOOK_THUMBNAILING_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_QUICKLOOK_THUMBNAILING\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -37549,6 +37905,7 @@ echo "       Bash completion dir     : $message_bashcompletiondir"
 echo "       Zsh completion dir      : $message_zshcompletiondir"
 echo "       QuickLook extension     : $message_quicklook_extension"
 echo "       Metal palette apply     : $have_metal"
+echo "       Vulkan palette apply    : $have_vulkan (prebuilt SPIR-V: $have_vulkan_prebuilt_spirv, runtime shaderc: $have_shaderc)"
 echo "       WIC codec               : $message_wiccodec"
 echo "       Register WIC DLL        : $message_register_dll"
 echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"

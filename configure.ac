@@ -2226,6 +2226,20 @@ AC_ARG_WITH([metal],
             [],
             [with_metal=auto])
 
+AC_ARG_WITH([vulkan],
+            [AS_HELP_STRING([--with-vulkan],
+                            [whether to build with Vulkan compute GPU palette
+                             apply on non-Metal hosts (default: auto)])],
+            [],
+            [with_vulkan=auto])
+
+AC_ARG_WITH([shaderc],
+            [AS_HELP_STRING([--with-shaderc],
+                            [whether to compile Vulkan GLSL at runtime with
+                             libshaderc (default: auto)])],
+            [],
+            [with_shaderc=auto])
+
 AC_ARG_ENABLE([appkit],
               [AS_HELP_STRING([--disable-appkit],
                               [build the macOS clipboard backend without AppKit
@@ -3750,6 +3764,94 @@ esac
 AC_SUBST(METAL_CFLAGS)
 AC_SUBST(METAL_LIBS)
 AM_CONDITIONAL([HAVE_METAL], [test x$have_metal = xyes])
+
+# Vulkan compute backend. Metal stays the GPU engine on Apple hosts. Shaders
+# come from build-time glslc SPIR-V, runtime libshaderc, or both.
+VULKAN_LIBS=""
+VULKAN_CFLAGS=""
+SHADERC_LIBS=""
+SHADERC_CFLAGS=""
+have_vulkan=no
+have_shaderc=no
+have_vulkan_prebuilt_spirv=no
+if test x$with_vulkan != xno; then
+    if test x$have_metal = xyes; then
+        if test x$with_vulkan = xyes; then
+            AC_MSG_ERROR([Vulkan GPU palette apply cannot be combined with Metal])
+        fi
+    elif test "x$enable_amalgamated_lib" = "xyes" ||
+            test "x$enable_amalgamated_tools" = "xyes"; then
+        # The amalgamation generator does not embed Vulkan shaders yet.
+        if test x$with_vulkan = xyes; then
+            AC_MSG_ERROR([Vulkan GPU palette apply is not supported in amalgamated builds yet])
+        fi
+    else
+        case $host_os in
+          mingw*|cygwin*|msys*)
+            if test x$with_vulkan = xyes; then
+                AC_MSG_ERROR([Vulkan GPU palette apply is not supported on Windows yet])
+            fi
+            ;;
+          *)
+            PKG_CHECK_MODULES([VULKAN], [vulkan],
+                              [have_vulkan_dep=yes], [have_vulkan_dep=no])
+            if test x$have_vulkan_dep = xyes; then
+                AC_PATH_PROG([GLSLC], [glslc], [])
+                if test -n "$GLSLC"; then
+                    have_vulkan_prebuilt_spirv=yes
+                fi
+                if test x$with_shaderc != xno; then
+                    PKG_CHECK_MODULES([SHADERC], [shaderc],
+                                      [have_shaderc=yes], [have_shaderc=no])
+                    if test x$have_shaderc = xno && test x$with_shaderc = xyes; then
+                        AC_MSG_ERROR([unable to find libshaderc])
+                    fi
+                fi
+                if test x$have_shaderc = xyes ||
+                        test x$have_vulkan_prebuilt_spirv = xyes; then
+                    have_vulkan=yes
+                elif test x$with_vulkan = xyes; then
+                    AC_MSG_ERROR([Vulkan needs glslc at build time or libshaderc at runtime])
+                fi
+            elif test x$with_vulkan = xyes; then
+                AC_MSG_ERROR([unable to find the Vulkan loader])
+            fi
+            ;;
+        esac
+    fi
+fi
+if test x$have_vulkan = xyes; then
+    AC_DEFINE(HAVE_VULKAN, 1,
+              [whether Vulkan GPU palette apply is available])
+    REQUIRES_PRIVATE="$REQUIRES_PRIVATE vulkan"
+    LIBS_PRIVATE="$LIBS_PRIVATE $VULKAN_LIBS"
+    if test x$have_shaderc = xyes; then
+        AC_DEFINE(HAVE_SHADERC, 1,
+                  [whether libshaderc compiles Vulkan GLSL at runtime])
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE shaderc"
+        LIBS_PRIVATE="$LIBS_PRIVATE $SHADERC_LIBS"
+    fi
+    if test x$have_vulkan_prebuilt_spirv = xyes; then
+        AC_DEFINE(HAVE_VULKAN_PREBUILT_SPIRV, 1,
+                  [whether Vulkan SPIR-V is compiled at build time])
+    fi
+else
+    have_shaderc=no
+    have_vulkan_prebuilt_spirv=no
+    VULKAN_LIBS=""
+    VULKAN_CFLAGS=""
+    SHADERC_LIBS=""
+    SHADERC_CFLAGS=""
+fi
+AC_SUBST(VULKAN_CFLAGS)
+AC_SUBST(VULKAN_LIBS)
+AC_SUBST(SHADERC_CFLAGS)
+AC_SUBST(SHADERC_LIBS)
+AC_SUBST(GLSLC)
+AM_CONDITIONAL([HAVE_VULKAN], [test x$have_vulkan = xyes])
+AM_CONDITIONAL([HAVE_SHADERC], [test x$have_shaderc = xyes])
+AM_CONDITIONAL([HAVE_VULKAN_PREBUILT_SPIRV],
+               [test x$have_vulkan_prebuilt_spirv = xyes])
 
 QUICKLOOK_LIBS=""
 QUICKLOOK_CFLAGS=""
@@ -6164,6 +6266,7 @@ echo "       Bash completion dir     : $message_bashcompletiondir"
 echo "       Zsh completion dir      : $message_zshcompletiondir"
 echo "       QuickLook extension     : $message_quicklook_extension"
 echo "       Metal palette apply     : $have_metal"
+echo "       Vulkan palette apply    : $have_vulkan (prebuilt SPIR-V: $have_vulkan_prebuilt_spirv, runtime shaderc: $have_shaderc)"
 echo "       WIC codec               : $message_wiccodec"
 echo "       Register WIC DLL        : $message_register_dll"
 echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"
