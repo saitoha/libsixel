@@ -361,6 +361,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
 	$(srcdir)/gpu-dequant.h $(srcdir)/delta-residual.c \
 	$(srcdir)/delta-residual.h $(srcdir)/gpu-palette.c \
+	$(srcdir)/gpu-statistics.c \
 	$(srcdir)/lookup-policy-ordered-gpu.c \
 	$(srcdir)/lookup-policy-none-gpu.c \
 	$(srcdir)/lookup-policy-eytzinger-gpu.c \
@@ -394,20 +395,20 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/gpu-palette-fused-suffix.inc.h \
 	$(srcdir)/dither-lookup-preparer.inc.h \
 	$(srcdir)/progressive-gpu.c $(srcdir)/progressive-gpu.h \
-	$(srcdir)/gpu-palette.h $(srcdir)/bluenoise_64x64.h \
-	$(srcdir)/timeline-logger.c $(srcdir)/timeline-logger.h \
-	$(srcdir)/timeline-writer.c $(srcdir)/timeline-writer.h \
-	$(srcdir)/colorspace.c $(srcdir)/colorspace-hls.c \
-	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
-	$(srcdir)/frame-factory.h $(srcdir)/frame-private.h \
-	$(srcdir)/frame-normalize.h $(srcdir)/cpu.c $(srcdir)/cpu.h \
-	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
-	$(srcdir)/filter-colors.c $(srcdir)/filter-colors.h \
-	$(srcdir)/filter-gamut.c $(srcdir)/filter-gamut.h \
-	$(srcdir)/filter-pipeline.c $(srcdir)/filter-pipeline.h \
-	$(srcdir)/filter-load.c $(srcdir)/filter-load.h \
-	$(srcdir)/filter-factory.c $(srcdir)/filter-factory.h \
-	$(srcdir)/filter-factory-binning.c \
+	$(srcdir)/gpu-palette.h $(srcdir)/gpu-statistics.h \
+	$(srcdir)/bluenoise_64x64.h $(srcdir)/timeline-logger.c \
+	$(srcdir)/timeline-logger.h $(srcdir)/timeline-writer.c \
+	$(srcdir)/timeline-writer.h $(srcdir)/colorspace.c \
+	$(srcdir)/colorspace-hls.c $(srcdir)/colorspace.h \
+	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/frame-factory.h \
+	$(srcdir)/frame-private.h $(srcdir)/frame-normalize.h \
+	$(srcdir)/cpu.c $(srcdir)/cpu.h $(srcdir)/pixelformat.c \
+	$(srcdir)/pixelformat.h $(srcdir)/filter-colors.c \
+	$(srcdir)/filter-colors.h $(srcdir)/filter-gamut.c \
+	$(srcdir)/filter-gamut.h $(srcdir)/filter-pipeline.c \
+	$(srcdir)/filter-pipeline.h $(srcdir)/filter-load.c \
+	$(srcdir)/filter-load.h $(srcdir)/filter-factory.c \
+	$(srcdir)/filter-factory.h $(srcdir)/filter-factory-binning.c \
 	$(srcdir)/filter-factory-binning.h \
 	$(srcdir)/filter-final-merge.c $(srcdir)/filter-final-merge.h \
 	$(srcdir)/filter-dither.c $(srcdir)/filter-dither.h \
@@ -630,6 +631,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-delta-residual.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-statistics.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-ordered-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-none-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-eytzinger-gpu.lo \
@@ -878,6 +880,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-palette.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo \
+	./$(DEPDIR)/libsixel_la-gpu-statistics.Plo \
 	./$(DEPDIR)/libsixel_la-icc-apply.Plo \
 	./$(DEPDIR)/libsixel_la-icc-parse.Plo \
 	./$(DEPDIR)/libsixel_la-loader-builtin.Plo \
@@ -1644,6 +1647,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-statistics.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-ordered-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-none-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-eytzinger-gpu.c \
@@ -1680,6 +1684,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-statistics.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/bluenoise_64x64.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timeline-logger.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timeline-logger.h \
@@ -2242,6 +2247,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-statistics.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-apply.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-parse.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-builtin.Plo@am__quote@ # am--include-marker
@@ -3102,6 +3108,13 @@ libsixel_la-gpu-palette.lo: gpu-palette.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-palette.c' object='libsixel_la-gpu-palette.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
+
+libsixel_la-gpu-statistics.lo: gpu-statistics.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-statistics.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-statistics.Tpo -c -o libsixel_la-gpu-statistics.lo `test -f 'gpu-statistics.c' || echo '$(srcdir)/'`gpu-statistics.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-statistics.Tpo $(DEPDIR)/libsixel_la-gpu-statistics.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-statistics.c' object='libsixel_la-gpu-statistics.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-statistics.lo `test -f 'gpu-statistics.c' || echo '$(srcdir)/'`gpu-statistics.c
 
 libsixel_la-lookup-policy-ordered-gpu.lo: lookup-policy-ordered-gpu.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-ordered-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-ordered-gpu.Tpo -c -o libsixel_la-lookup-policy-ordered-gpu.lo `test -f 'lookup-policy-ordered-gpu.c' || echo '$(srcdir)/'`lookup-policy-ordered-gpu.c
@@ -4293,6 +4306,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-statistics.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
@@ -4564,6 +4578,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-runtime-vulkan.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-statistics.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo

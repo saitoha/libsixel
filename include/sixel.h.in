@@ -2610,6 +2610,41 @@ sixel_encoder_encode_bytes(
 }
 #endif
 
+/* GPU usage statistics */
+
+/*
+ * Process-wide counters for GPU work submitted by libsixel itself. They
+ * describe this process's use of the selected backend, not whole-device
+ * utilization, so other applications sharing the GPU never inflate them.
+ * Sampling two snapshots gives a busy ratio:
+ *   (b.busy_nanoseconds - a.busy_nanoseconds) / elapsed wall nanoseconds.
+ * available stays zero until a GPU stage has initialized a backend; querying
+ * statistics never probes or initializes a device. Builds without a GPU
+ * backend always report zeros.
+ */
+#define SIXEL_HAVE_GPU_STATISTICS 1
+
+typedef struct sixel_gpu_statistics {
+    int available;                        /* backend initialized */
+    char backend[16];                     /* "vulkan", "metal" or "" */
+    char device[128];                     /* device name or "" */
+    unsigned long long dispatches;        /* completed GPU submissions */
+    unsigned long long busy_nanoseconds;  /* GPU execution time */
+} sixel_gpu_statistics_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Copy a consistent snapshot of the counters. */
+SIXELAPI SIXELSTATUS
+sixel_gpu_get_statistics(
+    sixel_gpu_statistics_t /* out */ *statistics);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 /* easy encoder API */
 

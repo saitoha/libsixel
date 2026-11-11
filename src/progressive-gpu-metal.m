@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "progressive-gpu.h"
+#include "gpu-runtime-metal.h"
 
 /* Pipelines may be shared, but no surface image or speculative result is
  * process-global. The context owner serializes calls on its own cache. */
@@ -489,6 +490,7 @@ sixel_repair_gpu_metal_scan(void **backend,
          * finish, including failures. A pending update/rebind/destruction
          * may replace these buffers immediately after the gate opens. */
         [command waitUntilCompleted];
+        sixel_gpu_statistics_record_metal(command);
         if ([command status] != MTLCommandBufferStatusCompleted) {
             return SIXEL_RUNTIME_ERROR;
         }
@@ -569,6 +571,7 @@ sixel_repair_gpu_metal_lookup(void **backend,
         /* The owner may reuse lookup scratch or evict a failed cache as
          * soon as we return. No submitted command may outlive this call. */
         [command waitUntilCompleted];
+        sixel_gpu_statistics_record_metal(command);
         if ([command status] != MTLCommandBufferStatusCompleted) {
             return SIXEL_RUNTIME_ERROR;
         }

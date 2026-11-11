@@ -29,6 +29,11 @@ typedef struct sixel_vk_runtime {
     VkCommandPool command_pool;
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceMemoryProperties memory;
+    /* Two timestamps bracket every submission for sixel_gpu_get_statistics;
+     * without timestamp support the submit/wait wall time is recorded. */
+    VkQueryPool timestamps;
+    uint64_t timestamp_mask;
+    double timestamp_period;
     int debug;
 } sixel_vk_runtime_t;
 
@@ -66,8 +71,9 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_shader_module_create(
     sixel_vk_runtime_t *runtime, sixel_vk_shader_source_t const *source,
     VkShaderModule *module);
 
-/* Records nothing itself: allocates a one-shot primary command buffer,
- * lets the caller record, submits, and waits for completion. */
+/* command_begin allocates a one-shot primary command buffer and opens the
+ * statistics bracket; the caller records work; submit_and_wait closes the
+ * bracket, submits, waits and adds the GPU time to the statistics. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_submit_and_wait(
     sixel_vk_runtime_t *runtime, VkCommandBuffer command);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_command_begin(

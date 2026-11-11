@@ -1,6 +1,5 @@
 #!/bin/sh
 # Verify direct GPU X dither preserves wire-color acceptance.
-# Policy: docs/encoder/output/delta-encoding.md
 set -eux
 
 echo "1..1"

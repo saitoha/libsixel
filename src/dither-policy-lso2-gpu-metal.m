@@ -16,6 +16,7 @@
 #include "delta-residual.h"
 #include "bluenoise_64x64.h"
 #include "lso2-gpu-coefficients.h"
+#include "gpu-statistics.h"
 
 static char const * const lso2_gpu_chunks[] = {
 #include <generated-metal/dither-policy-lso2-gpu-shader.inc.h>
@@ -542,6 +543,7 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
     }
     [commands commit];
     [commands waitUntilCompleted];
+    sixel_gpu_statistics_record_metal(commands);
     status = [commands status] == MTLCommandBufferStatusCompleted
         ? SIXEL_OK : SIXEL_RUNTIME_ERROR;
     if (status == SIXEL_OK && *(uint32_t *)[plan->buffers[14] contents])

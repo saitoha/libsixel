@@ -15,6 +15,7 @@
 #include "sixel_atomic.h"
 #include "delta-residual.h"
 #include "bluenoise_64x64.h"
+#include "gpu-statistics.h"
 
 static char const *const fs_gpu_chunks[] = {
 #include <generated-metal/dither-policy-fs-gpu-shader.inc.h>
@@ -585,6 +586,7 @@ fs_gpu_run_impl(fs_gpu_plan_t *plan,
     }
     [commands commit];
     [commands waitUntilCompleted];
+    sixel_gpu_statistics_record_metal(commands);
     status = [commands status] == MTLCommandBufferStatusCompleted
                  ? SIXEL_OK
                  : SIXEL_RUNTIME_ERROR;

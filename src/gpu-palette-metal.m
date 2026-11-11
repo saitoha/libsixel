@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "gpu-statistics.h"
 
 #include <sixel.h>
 
@@ -985,6 +986,7 @@ sixel_gpu_metal_apply_ranges(sixel_gpu_palette_request_t const *request,
         }
         range = &ranges[head];
         [range->command waitUntilCompleted];
+        sixel_gpu_statistics_record_metal(range->command);
         range->completed = 1;
         if (hooks != NULL) ++hooks->completed_chunks;
         if ([range->command status] != MTLCommandBufferStatusCompleted ||
@@ -1042,6 +1044,9 @@ end:
     for (i = 0; i < SIXEL_GPU_RANGE_WINDOW; ++i) {
         if (ranges[i].command == nil) continue;
         [ranges[i].command waitUntilCompleted];
+        if (!ranges[i].completed) {
+            sixel_gpu_statistics_record_metal(ranges[i].command);
+        }
         if (!ranges[i].completed && hooks != NULL) {
             ++hooks->completed_chunks;
         }
@@ -1952,6 +1957,7 @@ sixel_gpu_dequant_metal_fast4_rgba(
         [encoder endEncoding];
         [command_buffer commit];
         [command_buffer waitUntilCompleted];
+        sixel_gpu_statistics_record_metal(command_buffer);
         if ([command_buffer status] != MTLCommandBufferStatusCompleted) {
             sixel_gpu_palette_metal_set_message(
                 "gpu dequant: Metal command failed",
@@ -1976,6 +1982,28 @@ sixel_gpu_dequant_metal_fast4_rgba(
     }
 
     return status;
+}
+
+SIXEL_INTERNAL_API void
+sixel_gpu_statistics_record_metal(id<MTLCommandBuffer> command)
+{
+    static dispatch_once_t published;
+    CFTimeInterval busy;
+
+    if (command == nil) {
+        return;
+    }
+    /* Every Metal stage shares the default device, so the first completed
+     * command names the backend for the whole process. */
+    dispatch_once(&published, ^{
+        @autoreleasepool {
+            sixel_gpu_statistics_set_device("metal",
+                [[[command device] name] UTF8String]);
+        }
+    });
+    busy = [command GPUEndTime] - [command GPUStartTime];
+    sixel_gpu_statistics_record(busy > 0.0
+        ? (unsigned long long)(busy * 1e9) : 0U);
 }
 
 #endif /* defined(HAVE_METAL) */

@@ -132,6 +132,8 @@ or provide the desired directory path explicitly.
 | `--enable-amalgamated-tools` | `no` | Build CLI tools from the amalgamated translation unit. |
 | `--with-coregraphics[=auto]` | `auto` | Use CoreGraphics for macOS-only rendering helpers. |
 | `--with-metal[=auto]` | `auto` | Use Metal for macOS-only GPU helpers. |
+| `--with-vulkan[=auto]` | `auto` | Use Vulkan compute for the direct GPU palette apply on non-Metal hosts. |
+| `--with-shaderc[=auto]` | `auto` | Compile the embedded Vulkan GLSL at run time with libshaderc when no prebuilt SPIR-V is available. |
 | `--with-libcurl[=auto]` | `auto` | Link against libcurl to enable network transfers. |
 | `--with-libfetch[=auto]` | `auto` | Link against libfetch to enable network transfers. |
 | `--with-jpeg[=auto]` | `auto` | Link against libjpeg to decode JPEG input. |
@@ -317,6 +319,8 @@ meson setup builddir
 | `-Dgd=` | feature, `disabled` | Enable helpers based on the GD image library. |
 | `-Dcoregraphics=` | feature, `auto` | Use the CoreGraphics framework on macOS. |
 | `-Dmetal=` | feature, `auto` | Use the Metal framework for macOS GPU helpers. |
+| `-Dvulkan=` | feature, `auto` | Use Vulkan compute for the direct GPU palette apply on non-Metal hosts. |
+| `-Dshaderc=` | feature, `auto` | Compile the embedded Vulkan GLSL at run time with libshaderc when no prebuilt SPIR-V is available. |
 | `-Dappkit=` | feature, `enabled` | Control AppKit clipboard backend support on macOS. |
 | `-Dquicklook_extension=` | feature, `disabled` | Build the macOS Quick Look bundles and development Installer package. |
 | `-Dquicklook_package_version=` | string, `1.0.0` | Set the numeric Installer distribution version independently of the upstream source version. |

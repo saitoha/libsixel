@@ -2539,6 +2539,23 @@ static cli_env_help_t const g_env_help_table[] = {
         "enable timeline line events and log every Nth line. Values below\n"
         "1 and legacy invalid tokens select every line. The\n"
         "-x *:log_lines=VALUE suboption takes precedence."
+    },
+    {
+        "SIXEL_VULKAN_DEVICE",
+        "select the Vulkan GPU by physical-device index or a substring of\n"
+        "its name. The default prefers discrete, then integrated, virtual\n"
+        "and CPU devices."
+    },
+    {
+        "SIXEL_VULKAN_SHADER",
+        "force the Vulkan shader source: 'prebuilt' uses only the SPIR-V\n"
+        "embedded at build time, 'runtime' compiles the embedded GLSL with\n"
+        "libshaderc. The default tries prebuilt first."
+    },
+    {
+        "SIXEL_VULKAN_DEBUG",
+        "print the selected Vulkan device, shader source and dispatch\n"
+        "timing to stderr when set to a nonzero value."
     }
 };
 

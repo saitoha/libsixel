@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gpu-runtime-metal.h"
+#include "gpu-statistics.h"
 #include "retained-plane-gpu.h"
 #include "threading.h"
 
@@ -333,6 +334,7 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
         [command commit];
         sixel_thread_work_end();
         [command waitUntilCompleted];
+        sixel_gpu_statistics_record_metal(command);
         sixel_thread_work_begin();
         if ([command status] != MTLCommandBufferStatusCompleted || fault == 2)
             return status;

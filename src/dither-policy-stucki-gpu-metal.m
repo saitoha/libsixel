@@ -15,6 +15,7 @@
 #include "sixel_atomic.h"
 #include "delta-residual.h"
 #include "bluenoise_64x64.h"
+#include "gpu-statistics.h"
 
 static char const *const stucki_gpu_chunks[] = {
 #include <generated-metal/dither-policy-stucki-gpu-shader.inc.h>
@@ -587,6 +588,7 @@ stucki_gpu_run_impl(stucki_gpu_plan_t *plan,
     }
     [commands commit];
     [commands waitUntilCompleted];
+    sixel_gpu_statistics_record_metal(commands);
     status = [commands status] == MTLCommandBufferStatusCompleted
                  ? SIXEL_OK
                  : SIXEL_RUNTIME_ERROR;

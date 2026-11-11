@@ -392,6 +392,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/delta-residual.c \
                 $(srcdir)/delta-residual.h \
                 $(srcdir)/gpu-palette.c \
+                $(srcdir)/gpu-statistics.c \
                 $(srcdir)/lookup-policy-ordered-gpu.c \
                 $(srcdir)/lookup-policy-none-gpu.c \
                 $(srcdir)/lookup-policy-eytzinger-gpu.c \
@@ -428,6 +429,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/progressive-gpu.c \
                 $(srcdir)/progressive-gpu.h \
                 $(srcdir)/gpu-palette.h \
+                $(srcdir)/gpu-statistics.h \
                 $(srcdir)/bluenoise_64x64.h \
                 $(srcdir)/timeline-logger.c \
                 $(srcdir)/timeline-logger.h \

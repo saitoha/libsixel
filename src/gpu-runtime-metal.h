@@ -12,5 +12,10 @@ sixel_gpu_metal_device(sixel_gpu_device_interface_t *device);
 SIXEL_INTERNAL_API id<MTLBuffer>
 sixel_gpu_metal_buffer(sixel_gpu_device_interface_t *device,
     sixel_gpu_buffer_interface_t *buffer);
+
+/* Record one completed command buffer in the process GPU statistics. Call
+ * after waitUntilCompleted; a command that never ran adds no busy time. */
+SIXEL_INTERNAL_API void
+sixel_gpu_statistics_record_metal(id<MTLCommandBuffer> command);
 #endif
 #endif

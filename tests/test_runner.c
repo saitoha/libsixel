@@ -1557,6 +1557,7 @@ int test_gpu_direct_0004_parity_bluenoise(int argc, char **argv);
 int test_gpu_direct_0005_parity_few_colors(int argc, char **argv);
 int test_gpu_direct_0006_wire_a(int argc, char **argv);
 int test_gpu_direct_0007_wire_x(int argc, char **argv);
+int test_gpu_direct_0008_statistics(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
@@ -6905,6 +6906,7 @@ static test_entry_t const test_entries[] = {
     { "gpu-direct/0005_parity_few_colors", test_gpu_direct_0005_parity_few_colors },
     { "gpu-direct/0006_wire_a", test_gpu_direct_0006_wire_a },
     { "gpu-direct/0007_wire_x", test_gpu_direct_0007_wire_x },
+    { "gpu-direct/0008_statistics", test_gpu_direct_0008_statistics },
     { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
     { "gpu-palette/0021_blockcull_exact",
       test_gpupal_0021_blockcull_exact },

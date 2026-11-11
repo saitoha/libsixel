@@ -40,6 +40,7 @@
 
 #include "compat_stub.h"
 #include "gpu-runtime-vulkan.h"
+#include "gpu-statistics.h"
 
 static pthread_mutex_t g_sixel_vk_lock = PTHREAD_MUTEX_INITIALIZER;
 static sixel_vk_runtime_t g_sixel_vk_runtime;
@@ -67,12 +68,13 @@ sixel_vk_now_ms(void)
     return (double)ts.tv_sec * 1e3 + (double)ts.tv_nsec / 1e6;
 }
 
+/* Literal names keep every environment read reviewable by staticcheck. */
 static int
-sixel_vk_env_flag(char const *name)
+sixel_vk_debug_enabled(void)
 {
     char const *value;
 
-    value = getenv(name);
+    value = sixel_compat_getenv("SIXEL_VULKAN_DEBUG");
     return value != NULL && value[0] != '\0' && strcmp(value, "0") != 0;
 }
 
@@ -169,7 +171,7 @@ sixel_vk_select_device(sixel_vk_runtime_t *runtime)
         free(devices);
         return 0;
     }
-    wanted = getenv("SIXEL_VULKAN_DEVICE");
+    wanted = sixel_compat_getenv("SIXEL_VULKAN_DEVICE");
     if (wanted != NULL && wanted[0] == '\0') {
         wanted = NULL;
     }
@@ -219,6 +221,9 @@ sixel_vk_select_device(sixel_vk_runtime_t *runtime)
 static void
 sixel_vk_runtime_teardown(sixel_vk_runtime_t *runtime)
 {
+    if (runtime->timestamps != VK_NULL_HANDLE) {
+        vkDestroyQueryPool(runtime->device, runtime->timestamps, NULL);
+    }
     if (runtime->command_pool != VK_NULL_HANDLE) {
         vkDestroyCommandPool(runtime->device, runtime->command_pool, NULL);
     }
@@ -229,6 +234,50 @@ sixel_vk_runtime_teardown(sixel_vk_runtime_t *runtime)
         vkDestroyInstance(runtime->instance, NULL);
     }
     memset(runtime, 0, sizeof(*runtime));
+}
+
+/* Timestamps are optional: a queue family without valid bits keeps the
+ * runtime usable and statistics fall back to host wall time. */
+static void
+sixel_vk_timestamps_init(sixel_vk_runtime_t *runtime)
+{
+    VkQueueFamilyProperties *families;
+    VkQueryPoolCreateInfo info;
+    uint32_t count;
+    uint32_t bits;
+
+    if (runtime->properties.limits.timestampPeriod <= 0.0f) {
+        return;
+    }
+    count = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(runtime->physical, &count, NULL);
+    if (count <= runtime->queue_family) {
+        return;
+    }
+    families = (VkQueueFamilyProperties *)calloc(count, sizeof(*families));
+    if (families == NULL) {
+        return;
+    }
+    vkGetPhysicalDeviceQueueFamilyProperties(runtime->physical, &count,
+        families);
+    bits = families[runtime->queue_family].timestampValidBits;
+    free(families);
+    if (bits == 0) {
+        return;
+    }
+    memset(&info, 0, sizeof(info));
+    info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+    info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+    info.queryCount = 2;
+    if (vkCreateQueryPool(runtime->device, &info, NULL, &runtime->timestamps)
+            != VK_SUCCESS) {
+        runtime->timestamps = VK_NULL_HANDLE;
+        return;
+    }
+    runtime->timestamp_mask = bits >= 64 ? ~(uint64_t)0 :
+        (((uint64_t)1 << bits) - 1U);
+    runtime->timestamp_period =
+        (double)runtime->properties.limits.timestampPeriod;
 }
 
 static int
@@ -245,7 +294,7 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
     double started;
 
     memset(runtime, 0, sizeof(*runtime));
-    runtime->debug = sixel_vk_env_flag("SIXEL_VULKAN_DEBUG");
+    runtime->debug = sixel_vk_debug_enabled();
     started = sixel_vk_now_ms();
 
     memset(&application, 0, sizeof(application));
@@ -300,9 +349,13 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
         runtime->command_pool = VK_NULL_HANDLE;
         goto fail;
     }
+    sixel_vk_timestamps_init(runtime);
+    sixel_gpu_statistics_set_device("vulkan", runtime->properties.deviceName);
     if (runtime->debug) {
-        fprintf(stderr, "libsixel: vulkan using %s (init %.2f ms)\n",
-            runtime->properties.deviceName, sixel_vk_now_ms() - started);
+        fprintf(stderr, "libsixel: vulkan using %s (init %.2f ms, "
+            "timestamps %s)\n", runtime->properties.deviceName,
+            sixel_vk_now_ms() - started,
+            runtime->timestamps != VK_NULL_HANDLE ? "on" : "off");
     }
     return 1;
 
@@ -519,7 +572,7 @@ sixel_vk_shader_module_create(sixel_vk_runtime_t *runtime,
     words = NULL;
     size = 0;
     started = sixel_vk_now_ms();
-    mode = getenv("SIXEL_VULKAN_SHADER");
+    mode = sixel_compat_getenv("SIXEL_VULKAN_SHADER");
     use_prebuilt = source->spirv != NULL && source->spirv_size != 0 &&
         (mode == NULL || strcmp(mode, "runtime") != 0);
     if (use_prebuilt) {
@@ -596,6 +649,11 @@ sixel_vk_command_begin(sixel_vk_runtime_t *runtime, VkCommandBuffer *command)
         *command = VK_NULL_HANDLE;
         return SIXEL_RUNTIME_ERROR;
     }
+    if (runtime->timestamps != VK_NULL_HANDLE) {
+        vkCmdResetQueryPool(*command, runtime->timestamps, 0, 2);
+        vkCmdWriteTimestamp(*command, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            runtime->timestamps, 0);
+    }
     return SIXEL_OK;
 }
 
@@ -615,7 +673,14 @@ sixel_vk_submit_and_wait(sixel_vk_runtime_t *runtime, VkCommandBuffer command)
     VkFenceCreateInfo fence_info;
     VkFence fence;
     VkResult result;
+    uint64_t stamps[2];
+    unsigned long long busy;
+    double started;
 
+    if (runtime->timestamps != VK_NULL_HANDLE) {
+        vkCmdWriteTimestamp(command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            runtime->timestamps, 1);
+    }
     if (vkEndCommandBuffer(command) != VK_SUCCESS) {
         return SIXEL_RUNTIME_ERROR;
     }
@@ -629,6 +694,7 @@ sixel_vk_submit_and_wait(sixel_vk_runtime_t *runtime, VkCommandBuffer command)
     submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit.commandBufferCount = 1;
     submit.pCommandBuffers = &command;
+    started = sixel_vk_now_ms();
     result = vkQueueSubmit(runtime->queue, 1, &submit, fence);
     if (result == VK_SUCCESS) {
         result = vkWaitForFences(runtime->device, 1, &fence, VK_TRUE,
@@ -640,6 +706,16 @@ sixel_vk_submit_and_wait(sixel_vk_runtime_t *runtime, VkCommandBuffer command)
             "vulkan: command submission failed.");
         return SIXEL_RUNTIME_ERROR;
     }
+    busy = (unsigned long long)((sixel_vk_now_ms() - started) * 1e6);
+    if (runtime->timestamps != VK_NULL_HANDLE &&
+            vkGetQueryPoolResults(runtime->device, runtime->timestamps, 0, 2,
+                sizeof(stamps), stamps, sizeof(stamps[0]),
+                VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT)
+                == VK_SUCCESS) {
+        busy = (unsigned long long)((double)((stamps[1] - stamps[0]) &
+            runtime->timestamp_mask) * runtime->timestamp_period);
+    }
+    sixel_gpu_statistics_record(busy);
     return SIXEL_OK;
 }
 

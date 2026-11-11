@@ -17,6 +17,7 @@
 #include "compat_stub.h"
 #include "options.h"
 #include "timer.h"
+#include "gpu-runtime-metal.h"
 
 /* Only immutable pipelines and a thread-safe command queue are shared. Each
  * palette attempt owns all buffers, including its convergence state. */
@@ -546,6 +547,7 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         }
         mark = trace ? sixel_timer_now() : 0.0;
         [command waitUntilCompleted];
+        sixel_gpu_statistics_record_metal(command);
         completed = 1;
         if (trace)
             phase_ms[5] = (sixel_timer_now() - mark) * 1000.0;
@@ -623,6 +625,7 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         if (!completed && command_count > 0u) {
             mark = trace ? sixel_timer_now() : 0.0;
             [commands[command_count - 1u] waitUntilCompleted];
+            sixel_gpu_statistics_record_metal(commands[command_count - 1u]);
             if (trace)
                 phase_ms[5] += (sixel_timer_now() - mark) * 1000.0;
         }
