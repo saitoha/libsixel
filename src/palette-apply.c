@@ -474,8 +474,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         }
     } else if (gpu && request->gpu_dither != NULL &&
             request->device == NULL &&
-            sixel_gpu_palette_direct_diffusion_serves(
-                options.method_for_diffuse, request->gpu_direct_lookup.kind)) {
+            sixel_gpu_palette_direct_diffusion_lookup_serves(
+                options.method_for_diffuse, &request->gpu_direct_lookup)) {
         /* A backend without a runtime device (Vulkan) evaluates the
          * resolved lookup configuration inside its own dither plan. */
         memset(&dither_request, 0, sizeof(dither_request));

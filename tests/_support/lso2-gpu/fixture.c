@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #include "fixture.h"
 #include "src/gpu-palette.h"
+#include "src/lookup-policy-gpu.h"
 #include "src/dither-policy-fs-gpu.h"
 #include "src/dither-policy-atkinson-gpu.h"
 #include "src/dither-policy-jajuni-gpu.h"
@@ -91,7 +92,7 @@ lso2_gpu_fixture_open(lso2_gpu_fixture_t *f, int require_gpu)
 }
 
 int
-lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method)
+lso2_gpu_fixture_use_method(lso2_gpu_fixture_t *f, int method)
 {
     static struct {
         int method;
@@ -108,12 +109,7 @@ lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method)
         { SIXEL_DIFFUSE_SIERRA3, sixel_dither_policy_sierra3_gpu_new }
     };
     size_t i;
-    int outcome;
 
-    outcome = lso2_gpu_fixture_open(f, 0);
-    if (outcome != 0) return outcome;
-    if (!sixel_gpu_palette_direct_diffusion_serves(method,
-            SIXEL_LUT_POLICY_AUTO)) return 77;
     for (i = 0; i < sizeof(components) / sizeof(*components); ++i) {
         if (components[i].method != method) continue;
         f->dither->vtbl->unref(f->dither);
@@ -121,19 +117,58 @@ lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method)
         if (components[i].create(f->allocator, (void **)&f->dither)
                 != SIXEL_OK) return 1;
     }
-    if (f->lookup != NULL) f->lookup->vtbl->unref(f->lookup);
-    f->lookup = NULL;
     f->prepare.gpu_dither = f->dither;
-    f->prepare.gpu_lookup = NULL;
-    f->prepare.device = NULL;
-    f->prepare.gpu_direct_lookup.kind = SIXEL_LUT_POLICY_AUTO;
-    f->prepare.gpu_direct_lookup.pixelformat = SIXEL_PIXELFORMAT_RGB888;
     f->configuration.options.method_for_diffuse = method;
     if (method != SIXEL_DIFFUSE_LSO2) {
         /* The fixed-tap components follow the CPU carry limiter. */
         f->configuration.options.clamp_policy = SIXEL_DITHER_CLAMP_SOFT;
         f->configuration.options.clamp_threshold = 1.01;
     }
+    return 0;
+}
+
+int
+lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method)
+{
+    int outcome;
+
+    outcome = lso2_gpu_fixture_open(f, 0);
+    if (outcome != 0) return outcome;
+    if (!sixel_gpu_palette_direct_diffusion_serves(method,
+            SIXEL_LUT_POLICY_AUTO)) return 77;
+    if (lso2_gpu_fixture_use_method(f, method) != 0) return 1;
+    if (f->lookup != NULL) f->lookup->vtbl->unref(f->lookup);
+    f->lookup = NULL;
+    f->prepare.gpu_lookup = NULL;
+    f->prepare.device = NULL;
+    f->prepare.gpu_direct_lookup.kind = SIXEL_LUT_POLICY_AUTO;
+    f->prepare.gpu_direct_lookup.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    return 0;
+}
+
+int
+lso2_gpu_fixture_open_lookup(lso2_gpu_fixture_t *f, int method,
+    sixel_lookup_policy_configuration_t const *configuration)
+{
+    int outcome;
+
+    outcome = lso2_gpu_fixture_open(f, 1);
+    if (outcome == 0) {
+        if (lso2_gpu_fixture_use_method(f, method) != 0) return 1;
+        f->lookup->vtbl->unref(f->lookup);
+        f->lookup = NULL;
+        if (sixel_gpu_lookup_select(f->allocator, configuration, &f->lookup)
+                != SIXEL_OK) return 1;
+        f->prepare.gpu_lookup = f->lookup;
+        return 0;
+    }
+    if (outcome != 77) return outcome;
+    lso2_gpu_fixture_close(f);
+    outcome = lso2_gpu_fixture_open_direct(f, method);
+    if (outcome != 0) return outcome;
+    if (!sixel_gpu_palette_direct_diffusion_lookup_serves(method,
+            configuration)) return 77;
+    f->prepare.gpu_direct_lookup = *configuration;
     return 0;
 }
 

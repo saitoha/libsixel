@@ -643,6 +643,66 @@ sixel_gpu_vulkan_fhedt_record(sixel_vk_runtime_t *runtime,
     return SIXEL_OK;
 }
 
+/* Shared FHEDT table for callers that own their own submission (palette
+ * apply and the diffusion plan). Under sixel_vk_lock(): when the cached
+ * table does not match this palette and these settings, invalidate it,
+ * point the build at the device palette buffer and report a rebuild. The
+ * caller records the build after the palette upload and publishes the
+ * table only after the submission completed. dist2 only changes queries,
+ * so it is not part of the table key. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_gpu_palette_vulkan_fhedt_acquire_locked(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t const *palette_buffer, unsigned char const *palette,
+    int ncolors, int resolution, int refine,
+    sixel_vk_buffer_t const **table, int *rebuild)
+{
+    if (runtime == NULL || palette_buffer == NULL || palette == NULL ||
+            table == NULL || rebuild == NULL || ncolors < 1 ||
+            ncolors > SIXEL_PALETTE_MAX ||
+            (resolution != 64 && resolution != 128 && resolution != 256)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *table = NULL;
+    *rebuild = 0;
+    refine = refine != 0;
+    if (!sixel_gpu_vulkan_fhedt_prepare_locked(runtime) ||
+            !sixel_gpu_vulkan_fhedt_pipelines_locked(runtime, resolution,
+                refine)) {
+        return SIXEL_FEATURE_ERROR;
+    }
+    *rebuild = !g_sixel_vk_fhedt.valid ||
+        g_sixel_vk_fhedt.colors != ncolors ||
+        g_sixel_vk_fhedt.resolution != resolution ||
+        g_sixel_vk_fhedt.refine != refine ||
+        memcmp(g_sixel_vk_fhedt.palette, palette, (size_t)ncolors * 3U) != 0;
+    /* A failed rebuild leaves a partially written table behind. */
+    if (*rebuild) {
+        g_sixel_vk_fhedt.valid = 0;
+    }
+    *table = &g_sixel_vk_fhedt.table;
+    return sixel_gpu_vulkan_fhedt_bind_locked(runtime, palette_buffer,
+        resolution, refine, *rebuild);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_gpu_palette_vulkan_fhedt_record_locked(sixel_vk_runtime_t *runtime,
+    VkCommandBuffer command, int resolution, int refine, int ncolors)
+{
+    return sixel_gpu_vulkan_fhedt_record(runtime, command, resolution,
+        refine != 0, ncolors);
+}
+
+SIXEL_INTERNAL_API void
+sixel_gpu_palette_vulkan_fhedt_publish_locked(unsigned char const *palette,
+    int ncolors, int resolution, int refine)
+{
+    memcpy(g_sixel_vk_fhedt.palette, palette, (size_t)ncolors * 3U);
+    g_sixel_vk_fhedt.colors = ncolors;
+    g_sixel_vk_fhedt.resolution = resolution;
+    g_sixel_vk_fhedt.refine = refine != 0;
+    g_sixel_vk_fhedt.valid = 1;
+}
+
 static void
 sixel_gpu_vulkan_fill_params(sixel_gpu_vulkan_params_t *params,
     sixel_gpu_palette_request_t const *request)

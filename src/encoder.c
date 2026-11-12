@@ -1376,13 +1376,19 @@ static int
 sixel_encoder_dither_lookup_on_gpu(sixel_dither_t const *dither)
 {
     sixel_gpu_device_interface_t *device;
+    sixel_lookup_policy_configuration_t configuration;
 
     device = NULL;
     if (sixel_gpu_device_acquire(&device) == SIXEL_OK) {
         return 1;
     }
-    return sixel_gpu_palette_direct_diffusion_serves(
-        dither->method_for_diffuse, dither->lut_policy);
+    /* FHEDT also needs table settings the device build reproduces. */
+    if (sixel_dither_get_lookup_configuration(dither,
+            SIXEL_PIXELFORMAT_RGB888, &configuration) != SIXEL_OK) {
+        return 0;
+    }
+    return sixel_gpu_palette_direct_diffusion_lookup_serves(
+        dither->method_for_diffuse, &configuration);
 }
 
 /* Keep the trace independent of numeric diffusion ABI values. */

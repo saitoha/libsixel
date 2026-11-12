@@ -744,6 +744,20 @@ sixel_gpu_palette_direct_diffusion_serves(int method_for_diffuse,
 }
 
 SIXEL_INTERNAL_API int
+sixel_gpu_palette_direct_diffusion_lookup_serves(int method_for_diffuse,
+    sixel_lookup_policy_configuration_t const *configuration)
+{
+#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+    return sixel_dither_diffuse_vulkan_lookup_serves(method_for_diffuse,
+        configuration);
+#else
+    (void)method_for_diffuse;
+    (void)configuration;
+    return 0;
+#endif
+}
+
+SIXEL_INTERNAL_API int
 sixel_gpu_palette_rows_per_chunk(int width, int height)
 {
     int bands;

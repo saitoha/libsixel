@@ -59,6 +59,15 @@ int lso2_gpu_fixture_open(lso2_gpu_fixture_t *f, int require_gpu);
  * injected lookup, the AUTO policy in gpu_direct_lookup, and the GPU
  * dither component of METHOD. Returns 77 when no such backend serves it. */
 int lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method);
+/* Swap in the GPU dither component of METHOD; fixed-tap components follow
+ * the CPU carry limiter. */
+int lso2_gpu_fixture_use_method(lso2_gpu_fixture_t *f, int method);
+/* Open for METHOD with the lookup CONFIGURATION on whichever GPU backend
+ * exists: an injected lookup program on a runtime device (Metal), else
+ * the resolved configuration of a device-less backend (Vulkan). Returns
+ * 77 when neither serves it. */
+int lso2_gpu_fixture_open_lookup(lso2_gpu_fixture_t *f, int method,
+    sixel_lookup_policy_configuration_t const *configuration);
 SIXELSTATUS lso2_gpu_fixture_deferred(lso2_gpu_fixture_t *f);
 void lso2_gpu_fixture_close(lso2_gpu_fixture_t *f);
 SIXELSTATUS lso2_gpu_fixture_prepare(lso2_gpu_fixture_t *f);
