@@ -7,6 +7,8 @@
 
 /* Probes the runtime and builds the apply pipeline on first use. */
 SIXEL_INTERNAL_API int sixel_gpu_palette_vulkan_is_available(void);
+/* Exact policies whose indexes the direct scan reproduces. */
+SIXEL_INTERNAL_API int sixel_gpu_palette_vulkan_lut_is_exact(int lut_policy);
 /* Lookup policies with a Vulkan program; others stay on the CPU. */
 SIXEL_INTERNAL_API int sixel_gpu_palette_vulkan_supports_lut(int lut_policy);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_gpu_palette_vulkan_apply(

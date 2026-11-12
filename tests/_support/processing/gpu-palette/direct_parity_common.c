@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
-/* Exact CPU parity for the direct GPU palette apply (lookup NONE, or byte
- * FHEDT where the backend serves it). Every GPU backend that claims this
+/* Exact CPU parity for the direct GPU palette apply (lookup NONE, the
+ * exact policies, or byte FHEDT where the backend serves it). Every GPU backend that claims this
  * stage, including a partial one, must emit the same SIXEL bytes as the CPU
  * for the same palette, method, lookup settings and image. */
 #if defined(HAVE_CONFIG_H)
@@ -16,8 +16,11 @@
 #define DIRECT_PARITY_WIDTH 64
 #define DIRECT_PARITY_HEIGHT 48
 
-/* Lookup settings; resolution zero selects lookup NONE. */
+/* Lookup settings; resolution zero selects lookup NONE, or the exact
+ * policy kind when exact is nonzero (AUTO is zero). */
 typedef struct direct_parity_lookup {
+    int exact;
+    int kind;
     int fhedt_resolution;
     int fhedt_refine;
     int fhedt_use_dist2;
@@ -82,7 +85,9 @@ direct_parity_encode(unsigned char *pixels, unsigned char const *palette,
         dither->x_dither_strength_override = 1;
         dither->a_dither_strength = 0.5f;
         dither->x_dither_strength = 0.5f;
-        if (lookup->fhedt_resolution == 0) {
+        if (lookup->exact) {
+            sixel_dither_set_lut_policy(dither, lookup->kind);
+        } else if (lookup->fhedt_resolution == 0) {
             sixel_dither_set_lut_policy(dither, SIXEL_LUT_POLICY_NONE);
         } else {
             sixel_dither_set_lut_policy(dither, SIXEL_LUT_POLICY_FHEDT);
@@ -155,8 +160,9 @@ direct_parity_run(int method, int ncolors, unsigned int seed,
     if (streams[0].size == 0 || streams[0].size != streams[1].size ||
             memcmp(streams[0].bytes, streams[1].bytes, streams[0].size)) {
         fprintf(stderr, "direct parity mismatch method=%d colors=%d "
-            "fhedt=R%d/refine%d/dist2%d seed=%#x cpu=%zu gpu=%zu bytes\n",
-            method, ncolors, lookup->fhedt_resolution, lookup->fhedt_refine,
+            "lut=%d fhedt=R%d/refine%d/dist2%d seed=%#x cpu=%zu gpu=%zu "
+            "bytes\n", method, ncolors, lookup->exact ? lookup->kind : -1,
+            lookup->fhedt_resolution, lookup->fhedt_refine,
             lookup->fhedt_use_dist2, seed, streams[0].size,
             streams[1].size);
         goto end;
@@ -197,6 +203,38 @@ test_gpu_direct_parity_fhedt(int method, int ncolors, int resolution,
         if (direct_parity_run(method, ncolors, seeds[i], &lookup) !=
                 EXIT_SUCCESS) {
             return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+/* Every exact policy, AUTO included, returns the nearest entry with the
+ * lowest index on ties, so each must match the CPU for every per-pixel
+ * method. */
+int
+test_gpu_direct_parity_exact(int ncolors)
+{
+    static int const kinds[] = {
+        SIXEL_LUT_POLICY_AUTO, SIXEL_LUT_POLICY_VPTREE,
+        SIXEL_LUT_POLICY_DELAUNAY, SIXEL_LUT_POLICY_BLOCKCULL,
+        SIXEL_LUT_POLICY_ORDERED, SIXEL_LUT_POLICY_GRIDLUT
+    };
+    static int const methods[] = {
+        SIXEL_DIFFUSE_NONE, SIXEL_DIFFUSE_A_DITHER, SIXEL_DIFFUSE_X_DITHER,
+        SIXEL_DIFFUSE_BLUENOISE_DITHER
+    };
+    direct_parity_lookup_t lookup;
+    size_t i, j;
+
+    memset(&lookup, 0, sizeof(lookup));
+    lookup.exact = 1;
+    for (i = 0; i < sizeof(kinds) / sizeof(kinds[0]); ++i) {
+        for (j = 0; j < sizeof(methods) / sizeof(methods[0]); ++j) {
+            lookup.kind = kinds[i];
+            if (direct_parity_run(methods[j], ncolors, 0x5eed1234U, &lookup)
+                    != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
         }
     }
     return EXIT_SUCCESS;

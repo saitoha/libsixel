@@ -405,14 +405,11 @@ sixel_dither_diffuse_vulkan_serves(int method_for_diffuse, int lut_policy)
             known = 1;
         }
     }
-    /* AUTO resolves to the exact VP-tree; NONE is the exact scan. Both
-     * select the lowest index among equidistant entries. FHEDT queries the
+    /* Exact policies (AUTO resolves to the VP-tree) select the lowest
+     * index among equidistant entries, as the scan does. FHEDT queries the
      * device table; its settings are checked against the resolved
      * configuration when a plan is prepared. */
-    if (!known || (lut_policy != SIXEL_LUT_POLICY_AUTO &&
-            lut_policy != SIXEL_LUT_POLICY_NONE &&
-            lut_policy != SIXEL_LUT_POLICY_VPTREE &&
-            lut_policy != SIXEL_LUT_POLICY_FHEDT)) {
+    if (!known || !sixel_gpu_palette_vulkan_supports_lut(lut_policy)) {
         return 0;
     }
     sixel_vk_lock();

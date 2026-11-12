@@ -217,6 +217,10 @@ sixel_gpu_palette_direct_lookup_serves(
 /* Whether a backend without a runtime device runs the GPU error diffusion
  * component for METHOD_FOR_DIFFUSE itself, evaluating LUT_POLICY inside
  * its own plan. Always false when component plans have a device. */
+/* Nonzero when the direct-apply backend answers LUT_POLICY with its exact
+ * scan (the indexes of lookup NONE). */
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_direct_lookup_is_exact(int lut_policy);
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_direct_diffusion_serves(int method_for_diffuse,
     int lut_policy);

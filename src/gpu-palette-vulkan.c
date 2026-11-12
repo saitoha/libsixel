@@ -24,8 +24,10 @@
 /*
  * Vulkan palette apply: the legacy whole-frame kernel with the direct
  * (lookup NONE) scan or a byte FHEDT table built on the device in the same
- * submission. Other lookup policies stay on the CPU until their GLSL
- * programs exist; see sixel_gpu_palette_vulkan_supports_lut().
+ * submission. The scan also serves every exact lookup policy, which picks
+ * the lowest index among equidistant entries just as the scan does. Other
+ * lookup policies stay on the CPU until their GLSL programs exist; see
+ * sixel_gpu_palette_vulkan_supports_lut().
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -337,10 +339,25 @@ sixel_gpu_palette_vulkan_is_available(void)
     return available;
 }
 
+/* AUTO resolves to the VP-tree on the CPU. These policies all return the
+ * exact nearest entry with the lowest index on ties, so the direct scan
+ * reproduces their indexes; approximate grids and trees are excluded. */
+int
+sixel_gpu_palette_vulkan_lut_is_exact(int lut_policy)
+{
+    return lut_policy == SIXEL_LUT_POLICY_AUTO ||
+        lut_policy == SIXEL_LUT_POLICY_NONE ||
+        lut_policy == SIXEL_LUT_POLICY_VPTREE ||
+        lut_policy == SIXEL_LUT_POLICY_DELAUNAY ||
+        lut_policy == SIXEL_LUT_POLICY_BLOCKCULL ||
+        lut_policy == SIXEL_LUT_POLICY_ORDERED ||
+        lut_policy == SIXEL_LUT_POLICY_GRIDLUT;
+}
+
 int
 sixel_gpu_palette_vulkan_supports_lut(int lut_policy)
 {
-    return lut_policy == SIXEL_LUT_POLICY_NONE ||
+    return sixel_gpu_palette_vulkan_lut_is_exact(lut_policy) ||
         lut_policy == SIXEL_LUT_POLICY_FHEDT;
 }
 

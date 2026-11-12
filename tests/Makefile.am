@@ -1083,6 +1083,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_DIFFUSE_LSO2_EXPECTED \
     -DBUILD_TEST_0014_DIFFUSE_CARRY \
     -DBUILD_TEST_0015_DIFFUSE_FHEDT \
+    -DBUILD_TEST_0016_PARITY_EXACT \
     -DBUILD_TEST_0006_DIRECT_EXACT \
     -DBUILD_TEST_0001_BLOCKCULL_EXACT \
     -DBUILD_TEST_0001_GRIDLUT_EXACT \
@@ -7417,6 +7418,7 @@ test_runner_SOURCES = test_runner.c \
     dither/gpu-direct/0013_diffuse_lso2_expected.c \
     dither/gpu-direct/0014_diffuse_carry.c \
     dither/gpu-direct/0015_diffuse_fhedt.c \
+    dither/gpu-direct/0016_parity_exact.c \
     lookup/none/0001_wire_rgb_none.c \
     dither/bluenoise/0051_wire_rgb_bluenoise.c \
     lookup/eytzinger/0001_wire_rgb_eytzinger.c \
