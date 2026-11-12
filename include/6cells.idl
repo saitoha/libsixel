@@ -1671,10 +1671,10 @@ coclass dither_policy_sierra3_gpu {
  * is required. A GPU preparer requires the selected runtime device.
  * Legacy lookup_kind/configuration and already prepared CPU objects are
  * adapted before this boundary, never inspected by PaletteApply. The one
- * exception is gpu_direct_lookup: nonzero only when the composition root
- * found that the selected GPU backend applies that lookup kind directly,
- * without a runtime device or prepared program (Vulkan). Zero (AUTO) never
- * selects that path. */
+ * exception is gpu_direct_lookup: its kind is nonzero only when the
+ * composition root found that the selected GPU backend applies that resolved
+ * lookup configuration directly, without a runtime device or prepared program
+ * (Vulkan). Kind zero (AUTO) never selects that path. */
 struct palette_apply_prepare_request {
     palette *working_palette;
     lookup_preparer *cpu_lookup;
@@ -1691,7 +1691,7 @@ struct palette_apply_prepare_request {
     int gpu_policy;
     size_t gpu_auto_threshold;
     gpu_dither_preparer *gpu_dither;
-    int gpu_direct_lookup;
+    lookup_policy_configuration gpu_direct_lookup;
 };
 
 /* Called serially by the producer with a monotonically increasing ready-row

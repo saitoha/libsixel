@@ -79,21 +79,27 @@ sixel_gpu_palette_set_lookup_configuration(sixel_gpu_palette_request_t *request,
         sizeof(request->fhedt_weights));
 }
 
+/* Byte GPU FHEDT tables exist for these settings only. */
+static int
+sixel_gpu_palette_fhedt_settings_supported(int resolution, int refine,
+    int use_dist2, int use_cache, double const weights[3])
+{
+    return (resolution == 64 || resolution == 128 || resolution == 256) &&
+        (refine == 0 || refine == 1) &&
+        (use_dist2 == 0 || use_dist2 == 1) &&
+        use_cache == 0 &&
+        weights[0] > 0.0 && weights[0] <= DBL_MAX &&
+        weights[0] == weights[1] && weights[0] == weights[2];
+}
+
 int
 sixel_gpu_palette_fhedt_is_supported(
     sixel_gpu_palette_request_t const *request)
 {
     return request != NULL && request->fhedt_configured &&
-        (request->fhedt_resolution == 64 ||
-         request->fhedt_resolution == 128 ||
-         request->fhedt_resolution == 256) &&
-        (request->fhedt_refine == 0 || request->fhedt_refine == 1) &&
-        (request->fhedt_use_dist2 == 0 || request->fhedt_use_dist2 == 1) &&
-        request->fhedt_use_cache == 0 &&
-        request->fhedt_weights[0] > 0.0 &&
-        request->fhedt_weights[0] <= DBL_MAX &&
-        request->fhedt_weights[0] == request->fhedt_weights[1] &&
-        request->fhedt_weights[0] == request->fhedt_weights[2];
+        sixel_gpu_palette_fhedt_settings_supported(request->fhedt_resolution,
+            request->fhedt_refine, request->fhedt_use_dist2,
+            request->fhedt_use_cache, request->fhedt_weights);
 }
 
 static int
@@ -702,6 +708,25 @@ sixel_gpu_palette_direct_apply_serves(int lut_policy, int method_for_diffuse)
 {
     return sixel_gpu_palette_method_is_supported(method_for_diffuse) &&
         sixel_gpu_palette_direct_apply_only(lut_policy);
+}
+
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_direct_lookup_serves(
+    sixel_lookup_policy_configuration_t const *configuration,
+    int method_for_diffuse)
+{
+    if (configuration == NULL || !sixel_gpu_palette_direct_apply_serves(
+            configuration->kind, method_for_diffuse)) {
+        return 0;
+    }
+    if (configuration->kind != SIXEL_LUT_POLICY_FHEDT) {
+        return 1;
+    }
+    return configuration->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+        sixel_gpu_palette_fhedt_settings_supported(
+            configuration->fhedt_resolution, configuration->fhedt_refine,
+            configuration->fhedt_use_dist2, configuration->fhedt_use_cache,
+            configuration->fhedt_weights);
 }
 
 SIXEL_INTERNAL_API int

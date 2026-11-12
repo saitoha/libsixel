@@ -1559,6 +1559,9 @@ int test_gpu_direct_0006_wire_a(int argc, char **argv);
 int test_gpu_direct_0007_wire_x(int argc, char **argv);
 int test_gpu_direct_0008_statistics(int argc, char **argv);
 int test_gpu_direct_0009_playback_force(int argc, char **argv);
+int test_gpu_direct_0010_parity_fhedt(int argc, char **argv);
+int test_gpu_direct_0011_parity_fhedt_bluenoise(int argc, char **argv);
+int test_gpu_direct_0012_parity_fhedt_settings(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
@@ -6910,6 +6913,11 @@ static test_entry_t const test_entries[] = {
     { "gpu-direct/0008_statistics", test_gpu_direct_0008_statistics },
     { "gpu-direct/0009_playback_force",
       test_gpu_direct_0009_playback_force },
+    { "gpu-direct/0010_parity_fhedt", test_gpu_direct_0010_parity_fhedt },
+    { "gpu-direct/0011_parity_fhedt_bluenoise",
+      test_gpu_direct_0011_parity_fhedt_bluenoise },
+    { "gpu-direct/0012_parity_fhedt_settings",
+      test_gpu_direct_0012_parity_fhedt_settings },
     { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
     { "gpu-palette/0021_blockcull_exact",
       test_gpupal_0021_blockcull_exact },

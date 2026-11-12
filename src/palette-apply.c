@@ -490,8 +490,9 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         }
     }
     if (status == SIXEL_FEATURE_ERROR && gpu && request->device == NULL &&
-            request->gpu_dither == NULL && request->gpu_direct_lookup != 0 &&
-            sixel_gpu_palette_direct_apply_serves(request->gpu_direct_lookup,
+            request->gpu_dither == NULL &&
+            request->gpu_direct_lookup.kind != SIXEL_LUT_POLICY_AUTO &&
+            sixel_gpu_palette_direct_lookup_serves(&request->gpu_direct_lookup,
                 options.method_for_diffuse)) {
         /* A direct-apply-only backend (Vulkan) has no runtime device or
          * prepared program; run submits the whole request instead. */
@@ -766,8 +767,11 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.ncolors = apply->options.ncolors -
         (apply->options.keycolor_reserved != 0);
     request.program = apply->program;
-    if (apply->program == NULL)
-        request.lut_policy = apply->plan.gpu_direct_lookup;
+    if (apply->program == NULL) {
+        request.lut_policy = apply->plan.gpu_direct_lookup.kind;
+        sixel_gpu_palette_set_lookup_configuration(&request,
+            &apply->plan.gpu_direct_lookup);
+    }
     request.cancel = apply->run->cancel;
     request.cancel_context = apply->run->cancel_context;
     if (apply->run->rows_ready != NULL) {

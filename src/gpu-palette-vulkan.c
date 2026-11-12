@@ -22,9 +22,10 @@
  */
 
 /*
- * Vulkan palette apply, phase 1: the legacy whole-frame kernel with the
- * direct (lookup NONE) scan. Other lookup policies stay on the CPU until
- * their GLSL programs exist; see sixel_gpu_palette_vulkan_supports_lut().
+ * Vulkan palette apply: the legacy whole-frame kernel with the direct
+ * (lookup NONE) scan or a byte FHEDT table built on the device in the same
+ * submission. Other lookup policies stay on the CPU until their GLSL
+ * programs exist; see sixel_gpu_palette_vulkan_supports_lut().
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -51,6 +52,17 @@ static unsigned char const g_sixel_vk_palette_spirv[] = {
 #if defined(HAVE_SHADERC)
 static char const * const g_sixel_vk_palette_glsl[] = {
 #include <generated-vulkan/gpu-palette-vulkan-shader.inc.h>
+    NULL
+};
+#endif
+#if defined(HAVE_VULKAN_PREBUILT_SPIRV)
+static unsigned char const g_sixel_vk_fhedt_spirv[] = {
+#include <generated-vulkan/lookup-policy-fhedt-vulkan-spirv.inc.h>
+};
+#endif
+#if defined(HAVE_SHADERC)
+static char const * const g_sixel_vk_fhedt_glsl[] = {
+#include <generated-vulkan/lookup-policy-fhedt-vulkan-shader.inc.h>
     NULL
 };
 #endif
@@ -99,7 +111,7 @@ typedef struct sixel_gpu_vulkan_range {
 } sixel_gpu_vulkan_range_t;
 
 #define SIXEL_VK_LOCAL_SIZE 64U
-#define SIXEL_VK_BINDINGS 10
+#define SIXEL_VK_BINDINGS 12
 
 enum {
     SIXEL_VK_RESULT = 0,
@@ -111,8 +123,48 @@ enum {
     SIXEL_VK_PARAMS = 6,
     SIXEL_VK_ACCUMULATION = 7,
     SIXEL_VK_ACCUMULATION_VALID = 8,
-    SIXEL_VK_ACCUMULATION_RESULT = 9
+    SIXEL_VK_ACCUMULATION_RESULT = 9,
+    /* Two views of the FHEDT table; never host buffers of their own. */
+    SIXEL_VK_FHEDT_TABLE8 = 10,
+    SIXEL_VK_FHEDT_TABLE32 = 11
 };
+
+/* Must match lookup-policy-fhedt-vulkan.comp. */
+#define SIXEL_VK_FHEDT_KERNELS 5
+#define SIXEL_VK_FHEDT_BINDINGS 5
+#define SIXEL_VK_LOOKUP_FHEDT 5U
+
+typedef struct sixel_gpu_vulkan_fhedt_push {
+    uint32_t count;
+    uint32_t pitch;
+    uint32_t colors;
+    uint32_t shift;
+    uint32_t axis;
+} sixel_gpu_vulkan_fhedt_push_t;
+
+/* Build pipelines are specialized per resolution (64/128/256) and
+ * refinement; the table is cached by the palette and settings it was built
+ * from and published only after its submission completed. */
+typedef struct sixel_gpu_vulkan_fhedt_state {
+    int probed;
+    int ready;
+    VkShaderModule module;
+    VkDescriptorSetLayout set_layout;
+    VkPipelineLayout pipeline_layout;
+    VkDescriptorPool descriptor_pool;
+    /* [0] reads the first grid, [1] the second; see the pass table. */
+    VkDescriptorSet sets[2];
+    VkPipeline pipelines[3][2][SIXEL_VK_FHEDT_KERNELS];
+    int attempted[3][2];
+    sixel_vk_buffer_t first;
+    sixel_vk_buffer_t second;
+    sixel_vk_buffer_t table;
+    int valid;
+    int colors;
+    int resolution;
+    int refine;
+    unsigned char palette[SIXEL_PALETTE_MAX * 3];
+} sixel_gpu_vulkan_fhedt_state_t;
 
 enum {
     SIXEL_VK_MODE_NONE = 0,
@@ -136,6 +188,7 @@ typedef struct sixel_gpu_vulkan_palette_state {
 } sixel_gpu_vulkan_palette_state_t;
 
 static sixel_gpu_vulkan_palette_state_t g_sixel_vk_palette;
+static sixel_gpu_vulkan_fhedt_state_t g_sixel_vk_fhedt;
 
 static int
 sixel_gpu_vulkan_palette_prepare_locked(sixel_vk_runtime_t *runtime)
@@ -287,7 +340,307 @@ sixel_gpu_palette_vulkan_is_available(void)
 int
 sixel_gpu_palette_vulkan_supports_lut(int lut_policy)
 {
-    return lut_policy == SIXEL_LUT_POLICY_NONE;
+    return lut_policy == SIXEL_LUT_POLICY_NONE ||
+        lut_policy == SIXEL_LUT_POLICY_FHEDT;
+}
+
+/* Fold a 1-D invocation count into a 2-D grid within device limits. */
+static SIXELSTATUS
+sixel_gpu_vulkan_groups(sixel_vk_runtime_t const *runtime, uint64_t count,
+    uint32_t *groups_x, uint32_t *groups_y)
+{
+    uint64_t groups;
+    uint32_t limit;
+
+    groups = (count + SIXEL_VK_LOCAL_SIZE - 1U) / SIXEL_VK_LOCAL_SIZE;
+    if (groups == 0) {
+        groups = 1;
+    }
+    limit = runtime->properties.limits.maxComputeWorkGroupCount[0];
+    if (limit > 65535U) {
+        limit = 65535U;
+    }
+    *groups_x = (uint64_t)limit > groups ? (uint32_t)groups : limit;
+    groups = (groups + *groups_x - 1U) / *groups_x;
+    if (groups > runtime->properties.limits.maxComputeWorkGroupCount[1]) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *groups_y = (uint32_t)groups;
+    return SIXEL_OK;
+}
+
+/* Byte queries at R256 are exact lattice points. Their stored label is
+ * already nearest, and corner refinement visits that label first with a
+ * strict distance comparison. Use the byte table without changing ties. */
+static int
+sixel_gpu_vulkan_fhedt_refines(sixel_gpu_palette_request_t const *request)
+{
+    return request->fhedt_refine && request->fhedt_resolution != 256;
+}
+
+static int
+sixel_gpu_vulkan_fhedt_prepare_locked(sixel_vk_runtime_t *runtime)
+{
+    sixel_gpu_vulkan_fhedt_state_t *state;
+    sixel_vk_shader_source_t source;
+    VkDescriptorSetLayoutBinding bindings[SIXEL_VK_FHEDT_BINDINGS];
+    VkDescriptorSetLayoutCreateInfo set_layout_info;
+    VkPushConstantRange push_range;
+    VkPipelineLayoutCreateInfo layout_info;
+    VkDescriptorPoolSize pool_size;
+    VkDescriptorPoolCreateInfo pool_info;
+    VkDescriptorSetLayout layouts[2];
+    VkDescriptorSetAllocateInfo set_info;
+    int index;
+
+    state = &g_sixel_vk_fhedt;
+    if (state->probed) {
+        return state->ready;
+    }
+    state->probed = 1;
+    memset(&source, 0, sizeof(source));
+    source.name = "lookup-policy-fhedt-vulkan.comp";
+#if defined(HAVE_VULKAN_PREBUILT_SPIRV)
+    source.spirv = g_sixel_vk_fhedt_spirv;
+    source.spirv_size = sizeof(g_sixel_vk_fhedt_spirv);
+#endif
+#if defined(HAVE_SHADERC)
+    source.glsl_chunks = g_sixel_vk_fhedt_glsl;
+#endif
+    if (SIXEL_FAILED(sixel_vk_shader_module_create(runtime, &source,
+            &state->module))) {
+        state->module = VK_NULL_HANDLE;
+        return 0;
+    }
+    memset(bindings, 0, sizeof(bindings));
+    for (index = 0; index < SIXEL_VK_FHEDT_BINDINGS; ++index) {
+        bindings[index].binding = (uint32_t)index;
+        bindings[index].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        bindings[index].descriptorCount = 1;
+        bindings[index].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    }
+    memset(&set_layout_info, 0, sizeof(set_layout_info));
+    set_layout_info.sType =
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    set_layout_info.bindingCount = SIXEL_VK_FHEDT_BINDINGS;
+    set_layout_info.pBindings = bindings;
+    if (vkCreateDescriptorSetLayout(runtime->device, &set_layout_info, NULL,
+            &state->set_layout) != VK_SUCCESS) {
+        return 0;
+    }
+    push_range.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    push_range.offset = 0;
+    push_range.size = sizeof(sixel_gpu_vulkan_fhedt_push_t);
+    memset(&layout_info, 0, sizeof(layout_info));
+    layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    layout_info.setLayoutCount = 1;
+    layout_info.pSetLayouts = &state->set_layout;
+    layout_info.pushConstantRangeCount = 1;
+    layout_info.pPushConstantRanges = &push_range;
+    if (vkCreatePipelineLayout(runtime->device, &layout_info, NULL,
+            &state->pipeline_layout) != VK_SUCCESS) {
+        return 0;
+    }
+    pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    pool_size.descriptorCount = 2 * SIXEL_VK_FHEDT_BINDINGS;
+    memset(&pool_info, 0, sizeof(pool_info));
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.maxSets = 2;
+    pool_info.poolSizeCount = 1;
+    pool_info.pPoolSizes = &pool_size;
+    if (vkCreateDescriptorPool(runtime->device, &pool_info, NULL,
+            &state->descriptor_pool) != VK_SUCCESS) {
+        return 0;
+    }
+    layouts[0] = state->set_layout;
+    layouts[1] = state->set_layout;
+    memset(&set_info, 0, sizeof(set_info));
+    set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    set_info.descriptorPool = state->descriptor_pool;
+    set_info.descriptorSetCount = 2;
+    set_info.pSetLayouts = layouts;
+    if (vkAllocateDescriptorSets(runtime->device, &set_info, state->sets)
+            != VK_SUCCESS) {
+        return 0;
+    }
+    state->ready = 1;
+    return 1;
+}
+
+/* Specialize the five build kernels for one resolution and refinement. */
+static int
+sixel_gpu_vulkan_fhedt_pipelines_locked(sixel_vk_runtime_t *runtime,
+    int resolution, int refine)
+{
+    sixel_gpu_vulkan_fhedt_state_t *state;
+    VkSpecializationMapEntry entries[3];
+    VkSpecializationInfo specialization;
+    VkComputePipelineCreateInfo pipeline_info;
+    int32_t constants[3];
+    int slot, kernel, ready;
+    double started;
+
+    state = &g_sixel_vk_fhedt;
+    slot = resolution == 64 ? 0 : resolution == 128 ? 1 : 2;
+    if (state->attempted[slot][refine]) {
+        return state->pipelines[slot][refine][0] != VK_NULL_HANDLE;
+    }
+    state->attempted[slot][refine] = 1;
+    for (kernel = 0; kernel < 3; ++kernel) {
+        entries[kernel].constantID = (uint32_t)kernel;
+        entries[kernel].offset = (uint32_t)(kernel * sizeof(int32_t));
+        entries[kernel].size = sizeof(int32_t);
+    }
+    memset(&specialization, 0, sizeof(specialization));
+    specialization.mapEntryCount = 3;
+    specialization.pMapEntries = entries;
+    specialization.dataSize = sizeof(constants);
+    specialization.pData = constants;
+    memset(&pipeline_info, 0, sizeof(pipeline_info));
+    pipeline_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipeline_info.stage.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    pipeline_info.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    pipeline_info.stage.module = state->module;
+    pipeline_info.stage.pName = "main";
+    pipeline_info.stage.pSpecializationInfo = &specialization;
+    pipeline_info.layout = state->pipeline_layout;
+    constants[1] = resolution;
+    constants[2] = refine;
+    started = sixel_vk_now_ms();
+    ready = 1;
+    for (kernel = 0; kernel < SIXEL_VK_FHEDT_KERNELS; ++kernel) {
+        constants[0] = kernel;
+        if (vkCreateComputePipelines(runtime->device, VK_NULL_HANDLE, 1,
+                &pipeline_info, NULL, &state->pipelines[slot][refine][kernel])
+                != VK_SUCCESS) {
+            state->pipelines[slot][refine][kernel] = VK_NULL_HANDLE;
+            ready = 0;
+        }
+    }
+    if (!ready) {
+        for (kernel = 0; kernel < SIXEL_VK_FHEDT_KERNELS; ++kernel) {
+            if (state->pipelines[slot][refine][kernel] != VK_NULL_HANDLE) {
+                vkDestroyPipeline(runtime->device,
+                    state->pipelines[slot][refine][kernel], NULL);
+                state->pipelines[slot][refine][kernel] = VK_NULL_HANDLE;
+            }
+        }
+    }
+    if (runtime->debug) {
+        fprintf(stderr, "libsixel: vulkan FHEDT R%d%s pipelines %s "
+            "(%.2f ms)\n", resolution, refine ? " refined" : "",
+            ready ? "ready" : "failed", sixel_vk_now_ms() - started);
+    }
+    return ready;
+}
+
+/* Reserve build storage and point both descriptor sets at it. Set 0 reads
+ * the first grid and writes the second; set 1 is the reverse. */
+static SIXELSTATUS
+sixel_gpu_vulkan_fhedt_bind_locked(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t const *palette, int resolution, int refine,
+    int rebuild)
+{
+    sixel_gpu_vulkan_fhedt_state_t *state;
+    VkDescriptorBufferInfo infos[2][SIXEL_VK_FHEDT_BINDINGS];
+    VkWriteDescriptorSet writes[2 * SIXEL_VK_FHEDT_BINDINGS];
+    VkDeviceSize cells;
+    SIXELSTATUS status;
+    int set, index;
+
+    state = &g_sixel_vk_fhedt;
+    cells = (VkDeviceSize)resolution * resolution * resolution;
+    status = sixel_vk_buffer_reserve_device(runtime, &state->table,
+        cells * (refine ? 4U : 1U));
+    if (SIXEL_SUCCEEDED(status) && rebuild) {
+        /* Grid cells plus R*R column heads and one link per seed. */
+        status = sixel_vk_buffer_reserve_device(runtime, &state->first,
+            cells * 4U + SIXEL_PALETTE_MAX * 4U);
+    }
+    if (SIXEL_SUCCEEDED(status) && rebuild) {
+        status = sixel_vk_buffer_reserve_device(runtime, &state->second,
+            cells * 4U);
+    }
+    if (SIXEL_FAILED(status) || !rebuild) {
+        return status;
+    }
+    memset(writes, 0, sizeof(writes));
+    for (set = 0; set < 2; ++set) {
+        infos[set][0].buffer = set == 0 ? state->first.buffer
+            : state->second.buffer;
+        infos[set][1].buffer = set == 0 ? state->second.buffer
+            : state->first.buffer;
+        infos[set][2].buffer = palette->buffer;
+        infos[set][3].buffer = state->table.buffer;
+        infos[set][4].buffer = state->table.buffer;
+        for (index = 0; index < SIXEL_VK_FHEDT_BINDINGS; ++index) {
+            infos[set][index].offset = 0;
+            infos[set][index].range = VK_WHOLE_SIZE;
+            writes[set * SIXEL_VK_FHEDT_BINDINGS + index].sType =
+                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[set * SIXEL_VK_FHEDT_BINDINGS + index].dstSet =
+                state->sets[set];
+            writes[set * SIXEL_VK_FHEDT_BINDINGS + index].dstBinding =
+                (uint32_t)index;
+            writes[set * SIXEL_VK_FHEDT_BINDINGS + index].descriptorCount = 1;
+            writes[set * SIXEL_VK_FHEDT_BINDINGS + index].descriptorType =
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            writes[set * SIXEL_VK_FHEDT_BINDINGS + index].pBufferInfo =
+                &infos[set][index];
+        }
+    }
+    vkUpdateDescriptorSets(runtime->device, 2 * SIXEL_VK_FHEDT_BINDINGS,
+        writes, 0, NULL);
+    return SIXEL_OK;
+}
+
+/* Record the Metal pass sequence: clear heads, seed column lists, X scan,
+ * Y and Z distance transforms, then boundary packing when refining. Each
+ * pass reads what the previous one wrote. */
+static SIXELSTATUS
+sixel_gpu_vulkan_fhedt_record(sixel_vk_runtime_t *runtime,
+    VkCommandBuffer command, int resolution, int refine, int colors)
+{
+    sixel_gpu_vulkan_fhedt_state_t *state;
+    sixel_gpu_vulkan_fhedt_push_t push;
+    uint64_t size, count;
+    uint32_t groups_x, groups_y;
+    int pass, slot, kernel;
+    SIXELSTATUS status;
+
+    state = &g_sixel_vk_fhedt;
+    size = (uint64_t)resolution;
+    slot = resolution == 64 ? 0 : resolution == 128 ? 1 : 2;
+    memset(&push, 0, sizeof(push));
+    push.colors = (uint32_t)colors;
+    push.shift = resolution == 64 ? 2U : resolution == 128 ? 1U : 0U;
+    for (pass = 0; pass < (refine ? 6 : 5); ++pass) {
+        kernel = pass < 3 ? pass : pass < 5 ? 3 : 4;
+        push.axis = pass >= 2 && pass < 5 ? (uint32_t)(pass - 2) : 0U;
+        count = pass == 1 ? (uint64_t)colors :
+            pass == 0 || pass == 3 || pass == 4 ? size * size :
+            size * size * size;
+        status = sixel_gpu_vulkan_groups(runtime, count, &groups_x,
+            &groups_y);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        push.count = (uint32_t)count;
+        push.pitch = groups_x * SIXEL_VK_LOCAL_SIZE;
+        vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_COMPUTE,
+            state->pipelines[slot][refine][kernel]);
+        vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_COMPUTE,
+            state->pipeline_layout, 0, 1,
+            &state->sets[pass == 3 || pass == 5 ? 1 : 0], 0, NULL);
+        vkCmdPushConstants(command, state->pipeline_layout,
+            VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(push), &push);
+        vkCmdDispatch(command, groups_x, groups_y, 1);
+        sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+            VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+    }
+    return SIXEL_OK;
 }
 
 static void
@@ -418,7 +771,6 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     VkDescriptorBufferInfo infos[SIXEL_VK_BINDINGS];
     VkWriteDescriptorSet writes[SIXEL_VK_BINDINGS];
     VkCommandBuffer command;
-    uint64_t groups;
     uint32_t groups_x;
     uint32_t groups_y;
     size_t pixel_count;
@@ -427,6 +779,9 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     double waited;
     int has_accumulation;
     int has_valid;
+    int fhedt;
+    int fhedt_refine;
+    int rebuild;
     int index;
     SIXELSTATUS status;
 
@@ -435,6 +790,12 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             request->retained_rgb != NULL) {
         return SIXEL_FEATURE_ERROR;
     }
+    fhedt = request->lut_policy == SIXEL_LUT_POLICY_FHEDT;
+    if (fhedt && !sixel_gpu_palette_fhedt_is_supported(request)) {
+        return SIXEL_FEATURE_ERROR;
+    }
+    fhedt_refine = fhedt && sixel_gpu_vulkan_fhedt_refines(request);
+    rebuild = 0;
     pixel_count = request->pixel_count;
     command = VK_NULL_HANDLE;
     state = &g_sixel_vk_palette;
@@ -454,6 +815,37 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     }
 
     sixel_gpu_vulkan_fill_params(&params, request);
+    if (fhedt) {
+        if (!sixel_gpu_vulkan_fhedt_prepare_locked(runtime) ||
+                !sixel_gpu_vulkan_fhedt_pipelines_locked(runtime,
+                    request->fhedt_resolution, fhedt_refine)) {
+            sixel_helper_set_additional_message(
+                "gpu palette apply: Vulkan FHEDT pipelines unavailable.");
+            status = SIXEL_FEATURE_ERROR;
+            goto end;
+        }
+        params.lookup_mode = SIXEL_VK_LOOKUP_FHEDT;
+        params.fhedt_resolution = (uint32_t)request->fhedt_resolution;
+        params.fhedt_shift = request->fhedt_resolution == 64 ? 2U :
+            request->fhedt_resolution == 128 ? 1U : 0U;
+        params.fhedt_refine = (uint32_t)fhedt_refine;
+        params.fhedt_dist2 = (uint32_t)request->fhedt_use_dist2;
+        if (request->test_hooks != NULL) {
+            request->test_hooks->fhedt_table_entry_bytes =
+                fhedt_refine ? 4U : 1U;
+        }
+        /* dist2 only changes queries, so it is not part of the table key. */
+        rebuild = !g_sixel_vk_fhedt.valid ||
+            g_sixel_vk_fhedt.colors != request->ncolors ||
+            g_sixel_vk_fhedt.resolution != request->fhedt_resolution ||
+            g_sixel_vk_fhedt.refine != fhedt_refine ||
+            memcmp(g_sixel_vk_fhedt.palette, request->palette,
+                (size_t)request->ncolors * 3U) != 0;
+        /* A failed rebuild leaves a partially written table behind. */
+        if (rebuild) {
+            g_sixel_vk_fhedt.valid = 0;
+        }
+    }
     memset(state->upload, 0, sizeof(state->upload));
     /* The blue-noise staging copy never changes. Copying the small table
      * every apply is cheaper than tracking when device storage was filled. */
@@ -470,6 +862,11 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_gpu_vulkan_upload(runtime, SIXEL_VK_PALETTE,
             request->palette, (size_t)request->ncolors * 3U);
+    }
+    if (SIXEL_SUCCEEDED(status) && fhedt) {
+        status = sixel_gpu_vulkan_fhedt_bind_locked(runtime,
+            &state->buffers[SIXEL_VK_PALETTE], request->fhedt_resolution,
+            fhedt_refine, rebuild);
     }
     if (SIXEL_SUCCEEDED(status) && request->transparent_mask != NULL) {
         status = sixel_gpu_vulkan_upload(runtime, SIXEL_VK_TRANSPARENT,
@@ -533,6 +930,9 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     if (request->accumulation_result_mask == NULL) {
         bound[SIXEL_VK_ACCUMULATION_RESULT] = &state->dummy;
     }
+    bound[SIXEL_VK_FHEDT_TABLE8] = fhedt ? &g_sixel_vk_fhedt.table
+        : &state->dummy;
+    bound[SIXEL_VK_FHEDT_TABLE32] = bound[SIXEL_VK_FHEDT_TABLE8];
     memset(writes, 0, sizeof(writes));
     for (index = 0; index < SIXEL_VK_BINDINGS; ++index) {
         infos[index].buffer = bound[index]->buffer;
@@ -548,19 +948,9 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     vkUpdateDescriptorSets(runtime->device, SIXEL_VK_BINDINGS, writes, 0,
         NULL);
 
-    /* Fold the 1-D pixel range into a 2-D grid within device limits. */
-    groups = ((uint64_t)pixel_count + SIXEL_VK_LOCAL_SIZE - 1U) /
-        SIXEL_VK_LOCAL_SIZE;
-    groups_x = runtime->properties.limits.maxComputeWorkGroupCount[0];
-    if (groups_x > 65535U) {
-        groups_x = 65535U;
-    }
-    if ((uint64_t)groups_x > groups) {
-        groups_x = (uint32_t)groups;
-    }
-    groups_y = (uint32_t)((groups + groups_x - 1U) / groups_x);
-    if (groups_y > runtime->properties.limits.maxComputeWorkGroupCount[1]) {
-        status = SIXEL_BAD_ARGUMENT;
+    status = sixel_gpu_vulkan_groups(runtime, (uint64_t)pixel_count,
+        &groups_x, &groups_y);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
     range.first = 0;
@@ -583,6 +973,15 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
         VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+    if (rebuild) {
+        /* The build reads the palette just uploaded; its last barrier
+         * orders the table writes before the apply dispatch reads them. */
+        status = sixel_gpu_vulkan_fhedt_record(runtime, command,
+            request->fhedt_resolution, fhedt_refine, request->ncolors);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_COMPUTE,
         state->pipeline);
     vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -610,6 +1009,14 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         goto end;
     }
     waited = sixel_vk_now_ms();
+    if (rebuild) {
+        memcpy(g_sixel_vk_fhedt.palette, request->palette,
+            (size_t)request->ncolors * 3U);
+        g_sixel_vk_fhedt.colors = request->ncolors;
+        g_sixel_vk_fhedt.resolution = request->fhedt_resolution;
+        g_sixel_vk_fhedt.refine = fhedt_refine;
+        g_sixel_vk_fhedt.valid = 1;
+    }
 
     if (request->cancel != NULL && request->cancel(request->cancel_context)) {
         status = SIXEL_INTERRUPTED;
@@ -631,10 +1038,12 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         /* stage: host copies into mapped memory; submit: record, submit
          * and fence wait (gpu: device time inside it); read: result copy
          * out of mapped memory. */
-        fprintf(stderr, "libsixel: vulkan palette apply %ux%u, %d colors: "
-            "%.2f ms (stage %.2f, submit %.2f, gpu %.2f, read %.2f)\n",
+        fprintf(stderr, "libsixel: vulkan palette apply %ux%u, %d colors, "
+            "%s: %.2f ms (stage %.2f, submit %.2f, gpu %.2f, read %.2f)\n",
             (unsigned int)request->width, (unsigned int)request->height,
-            request->ncolors, sixel_vk_now_ms() - started,
+            request->ncolors, !fhedt ? "direct" :
+                rebuild ? "fhedt build" : "fhedt reuse",
+            sixel_vk_now_ms() - started,
             staged - started, waited - staged, runtime->last_busy_ms,
             sixel_vk_now_ms() - waited);
     }

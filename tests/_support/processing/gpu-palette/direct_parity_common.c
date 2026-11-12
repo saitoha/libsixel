@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: MIT */
-/* Exact CPU parity for the direct (lookup NONE) GPU palette apply. Every GPU
- * backend that claims this stage, including a partial one, must emit the
- * same SIXEL bytes as the CPU for the same palette, method and image. */
+/* Exact CPU parity for the direct GPU palette apply (lookup NONE, or byte
+ * FHEDT where the backend serves it). Every GPU backend that claims this
+ * stage, including a partial one, must emit the same SIXEL bytes as the CPU
+ * for the same palette, method, lookup settings and image. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -14,6 +15,13 @@
 
 #define DIRECT_PARITY_WIDTH 64
 #define DIRECT_PARITY_HEIGHT 48
+
+/* Lookup settings; resolution zero selects lookup NONE. */
+typedef struct direct_parity_lookup {
+    int fhedt_resolution;
+    int fhedt_refine;
+    int fhedt_use_dist2;
+} direct_parity_lookup_t;
 
 typedef struct direct_parity_stream {
     unsigned char *bytes;
@@ -51,7 +59,8 @@ direct_parity_next(unsigned int *state)
 
 static int
 direct_parity_encode(unsigned char *pixels, unsigned char const *palette,
-    int ncolors, int method, int policy, direct_parity_stream_t *stream)
+    int ncolors, int method, int policy, direct_parity_lookup_t const *lookup,
+    direct_parity_stream_t *stream)
 {
     sixel_dither_t *dither;
     sixel_output_t *output;
@@ -73,7 +82,17 @@ direct_parity_encode(unsigned char *pixels, unsigned char const *palette,
         dither->x_dither_strength_override = 1;
         dither->a_dither_strength = 0.5f;
         dither->x_dither_strength = 0.5f;
-        sixel_dither_set_lut_policy(dither, SIXEL_LUT_POLICY_NONE);
+        if (lookup->fhedt_resolution == 0) {
+            sixel_dither_set_lut_policy(dither, SIXEL_LUT_POLICY_NONE);
+        } else {
+            sixel_dither_set_lut_policy(dither, SIXEL_LUT_POLICY_FHEDT);
+            dither->lut_policy_fhedt_resolution_override = 1;
+            dither->lut_policy_fhedt_resolution = lookup->fhedt_resolution;
+            dither->lut_policy_fhedt_refine_override = 1;
+            dither->lut_policy_fhedt_refine = lookup->fhedt_refine;
+            dither->lut_policy_fhedt_use_dist2_override = 1;
+            dither->lut_policy_fhedt_use_dist2 = lookup->fhedt_use_dist2;
+        }
         sixel_dither_set_diffusion_type(dither, method);
         /* FORCE reports errors instead of silently falling back to CPU. */
         dither->gpu_policy = policy;
@@ -89,8 +108,9 @@ direct_parity_encode(unsigned char *pixels, unsigned char const *palette,
     return SIXEL_SUCCEEDED(status) ? 0 : 1;
 }
 
-int
-test_gpu_direct_parity(int method, int ncolors)
+static int
+direct_parity_run(int method, int ncolors, unsigned int seed,
+    direct_parity_lookup_t const *lookup)
 {
     unsigned char pixels[DIRECT_PARITY_WIDTH * DIRECT_PARITY_HEIGHT * 3];
     unsigned char palette[SIXEL_PALETTE_MAX * 3];
@@ -101,8 +121,7 @@ test_gpu_direct_parity(int method, int ncolors)
 
     /* Smooth gradients exercise positional noise; the LCG term adds ties
      * and near-ties so index order in the scan is observable. */
-    state = 0x5eed1234U + (unsigned int)method * 97U +
-        (unsigned int)ncolors;
+    state = seed + (unsigned int)method * 97U + (unsigned int)ncolors;
     for (y = 0; y < DIRECT_PARITY_HEIGHT; ++y) {
         for (x = 0; x < DIRECT_PARITY_WIDTH; ++x) {
             pixel = pixels + ((size_t)y * DIRECT_PARITY_WIDTH + x) * 3U;
@@ -112,20 +131,33 @@ test_gpu_direct_parity(int method, int ncolors)
                 direct_parity_next(&state) % 5);
         }
     }
-    for (i = 0; i < ncolors * 3; ++i) {
-        palette[i] = (unsigned char)(direct_parity_next(&state) & 0xffU);
+    if (lookup->fhedt_resolution == 0) {
+        for (i = 0; i < ncolors * 3; ++i) {
+            palette[i] = (unsigned char)(direct_parity_next(&state) & 0xffU);
+        }
+    } else {
+        /* Like a quantizer's output, colors sampled from the image cluster
+         * and share table cells, which exercises boundary refinement far
+         * more than uniformly random colors do. */
+        for (i = 0; i < ncolors; ++i) {
+            pixel = pixels + (size_t)(direct_parity_next(&state) %
+                (DIRECT_PARITY_WIDTH * DIRECT_PARITY_HEIGHT)) * 3U;
+            memcpy(palette + i * 3, pixel, 3);
+        }
     }
     memset(streams, 0, sizeof(streams));
     ok = 0;
     for (pass = 0; pass < 2; ++pass) {
         if (direct_parity_encode(pixels, palette, ncolors, method,
                 pass ? SIXEL_GPU_POLICY_FORCE : SIXEL_GPU_POLICY_OFF,
-                &streams[pass])) goto end;
+                lookup, &streams[pass])) goto end;
     }
     if (streams[0].size == 0 || streams[0].size != streams[1].size ||
             memcmp(streams[0].bytes, streams[1].bytes, streams[0].size)) {
         fprintf(stderr, "direct parity mismatch method=%d colors=%d "
-            "cpu=%zu gpu=%zu bytes\n", method, ncolors, streams[0].size,
+            "fhedt=R%d/refine%d/dist2%d seed=%#x cpu=%zu gpu=%zu bytes\n",
+            method, ncolors, lookup->fhedt_resolution, lookup->fhedt_refine,
+            lookup->fhedt_use_dist2, seed, streams[0].size,
             streams[1].size);
         goto end;
     }
@@ -134,4 +166,38 @@ end:
     free(streams[0].bytes);
     free(streams[1].bytes);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_gpu_direct_parity(int method, int ncolors)
+{
+    direct_parity_lookup_t lookup;
+
+    memset(&lookup, 0, sizeof(lookup));
+    return direct_parity_run(method, ncolors, 0x5eed1234U, &lookup);
+}
+
+/* Byte FHEDT at one resolution. A repeated seed repeats the palette, so a
+ * backend that caches its table reuses it; a distinct seed forces a rebuild,
+ * and returning to the first seed rebuilds over a different table. */
+int
+test_gpu_direct_parity_fhedt(int method, int ncolors, int resolution,
+    int refine, int use_dist2)
+{
+    static unsigned int const seeds[] = {
+        0x5eed1234U, 0x5eed1234U, 0x0badf00dU, 0x5eed1234U
+    };
+    direct_parity_lookup_t lookup;
+    size_t i;
+
+    lookup.fhedt_resolution = resolution;
+    lookup.fhedt_refine = refine;
+    lookup.fhedt_use_dist2 = use_dist2;
+    for (i = 0; i < sizeof(seeds) / sizeof(seeds[0]); ++i) {
+        if (direct_parity_run(method, ncolors, seeds[i], &lookup) !=
+                EXIT_SUCCESS) {
+            return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
 }

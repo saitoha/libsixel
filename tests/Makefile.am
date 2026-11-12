@@ -7402,6 +7402,9 @@ test_runner_SOURCES = test_runner.c \
     dither/gpu-direct/0007_wire_x.c \
     dither/gpu-direct/0008_statistics.c \
     dither/gpu-direct/0009_playback_force.c \
+    dither/gpu-direct/0010_parity_fhedt.c \
+    dither/gpu-direct/0011_parity_fhedt_bluenoise.c \
+    dither/gpu-direct/0012_parity_fhedt_settings.c \
     lookup/none/0001_wire_rgb_none.c \
     dither/bluenoise/0051_wire_rgb_bluenoise.c \
     lookup/eytzinger/0001_wire_rgb_eytzinger.c \

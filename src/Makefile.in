@@ -1373,7 +1373,9 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/gpu-palette-fused-suffix.metal
 
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
-SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp
+SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp \
+    $(srcdir)/lookup-policy-fhedt-vulkan.comp
+
 SIXEL_VULKAN_FRAGMENTS = $(am__append_1) $(am__append_2)
 BUILT_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS) \
 	$(am__append_4)

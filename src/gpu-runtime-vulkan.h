@@ -83,6 +83,11 @@ SIXEL_INTERNAL_API sixel_vk_runtime_t *sixel_vk_runtime_get_locked(void);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     VkDeviceSize size, int host_written);
+/* Device-local storage the host never maps (mapped stays NULL), for
+ * intermediate tables that shaders both write and read. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_device(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    VkDeviceSize size);
 SIXEL_INTERNAL_API void sixel_vk_buffer_release(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer);
 

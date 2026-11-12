@@ -287,8 +287,15 @@ sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
                 dither->method_for_diffuse) &&
             sixel_gpu_palette_policy_claims_apply_stage(dither->gpu_policy,
                 dither->gpu_palette_threshold, dither->lut_policy,
-                dither->method_for_diffuse, prepare.scan, pixels))
-        prepare.gpu_direct_lookup = dither->lut_policy;
+                dither->method_for_diffuse, prepare.scan, pixels)) {
+        status = sixel_dither_get_lookup_configuration(dither,
+            prepare.pixelformat, &prepare.gpu_direct_lookup);
+        if (status != SIXEL_OK) goto end;
+        if (!sixel_gpu_palette_direct_lookup_serves(&prepare.gpu_direct_lookup,
+                dither->method_for_diffuse))
+            memset(&prepare.gpu_direct_lookup, 0,
+                sizeof(prepare.gpu_direct_lookup));
+    }
     object = NULL;
     status = sixel_palette_apply_factory_new(dither->allocator, &object);
     if (SIXEL_FAILED(status)) goto end;

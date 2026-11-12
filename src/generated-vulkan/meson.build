@@ -5,6 +5,7 @@
 vulkan_headers = []
 vulkan_sources = files(
   '../gpu-palette-vulkan.comp',
+  '../lookup-policy-fhedt-vulkan.comp',
 )
 if have_vulkan
   foreach input : vulkan_sources

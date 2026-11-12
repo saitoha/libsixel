@@ -1,0 +1,228 @@
+#version 450
+/* SPDX-License-Identifier: MIT */
+/*
+ * Vulkan port of the byte FHEDT table build in
+ * lookup-policy-fhedt-gpu.metal. One module holds all five kernels; the
+ * KERNEL specialization constant selects one per pipeline, and R/REFINE
+ * are specialized the same way as the Metal source defines.
+ *
+ * Bindings: 0 = grid input (also column heads and seed links),
+ * 1 = grid output, 2 = byte palette, 3 = byte table (no refinement),
+ * 4 = 32-bit table (refinement). The host swaps the first two between
+ * passes with a second descriptor set.
+ *
+ * The grid packs cost << 8 | (255 - label), with UINT_MAX for a seedless
+ * cell, exactly as the Metal PACKED form. The refined Z pass writes its
+ * compact label | zero-distance << 9 word into the grid output as a uint
+ * rather than a ushort, so no 16-bit storage feature is required.
+ */
+#extension GL_EXT_shader_8bit_storage : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
+
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+layout(constant_id = 0) const int KERNEL = 0;
+layout(constant_id = 1) const int R = 64;
+layout(constant_id = 2) const int REFINE = 1;
+
+const int KERNEL_CLEAR = 0;
+const int KERNEL_SEED = 1;
+const int KERNEL_X = 2;
+const int KERNEL_EDT = 3;
+const int KERNEL_PACK = 4;
+const uint NONE = 0xffffffffu;
+
+layout(std430, set = 0, binding = 0) buffer Input {
+    uint input_grid[];
+};
+layout(std430, set = 0, binding = 1) buffer Output {
+    uint output_grid[];
+};
+layout(std430, set = 0, binding = 2) readonly buffer Palette {
+    uint8_t palette[];
+};
+layout(std430, set = 0, binding = 3) writeonly buffer Table8 {
+    uint8_t table8[];
+};
+layout(std430, set = 0, binding = 4) writeonly buffer Table32 {
+    uint table32[];
+};
+
+/* count: invocations that do work; pitch: invocations per dispatch row. */
+layout(push_constant) uniform Build {
+    uint count;
+    uint pitch;
+    uint colors;
+    uint shift;
+    uint axis;
+} p;
+
+uint grid_value(int cost, int label)
+{
+    return label < 0 ? NONE : (uint(cost) << 8) | uint(255 - label);
+}
+
+int grid_cost(uint value)
+{
+    return int(value >> 8);
+}
+
+int grid_label(uint value)
+{
+    return value == NONE ? -1 : 255 - int(value & 255u);
+}
+
+/* Only R squared column heads need clearing. */
+void fhedt_clear(uint i)
+{
+    input_grid[i] = NONE;
+}
+
+/* Heads live at [0, R*R); each seed's link at R*R + seed. */
+void fhedt_seed(uint i)
+{
+    uint y = uint(palette[3u * i + 1u]) >> p.shift;
+    uint z = uint(palette[3u * i + 2u]) >> p.shift;
+    uint previous = atomicExchange(input_grid[y + z * uint(R)], i);
+    input_grid[uint(R * R) + i] = previous;
+}
+
+/* A seed's X cost is zero, so scan only that column's palette entries.
+ * Explicit tie rules make the result independent of list order: earlier
+ * X, then last colliding label. */
+void fhedt_x(uint at)
+{
+    uint candidate;
+    int x, seed, best_x, best, cost, minimum;
+
+    x = int(at % uint(R));
+    candidate = input_grid[at / uint(R)];
+    minimum = 1 << 28;
+    best_x = R;
+    best = -1;
+    while (candidate != NONE) {
+        seed = int(uint(palette[3u * candidate]) >> p.shift);
+        cost = (x - seed) * (x - seed);
+        if (cost < minimum || (cost == minimum &&
+                (seed < best_x ||
+                 (seed == best_x && int(candidate) > best)))) {
+            minimum = cost;
+            best_x = seed;
+            best = int(candidate);
+        }
+        candidate = input_grid[uint(R * R) + candidate];
+    }
+    output_grid[at] = grid_value(minimum, best);
+}
+
+/* floor(numerator / denominator) for a positive denominator, without
+ * relying on signed division or remainder rounding. */
+int floor_div(int numerator, int denominator)
+{
+    if (numerator >= 0) {
+        return numerator / denominator;
+    }
+    return -((-numerator + denominator - 1) / denominator);
+}
+
+void fhedt_edt(uint line)
+{
+    int sites[R];
+    int starts[R];
+    int k, q, i, old, numerator, start, end;
+    uint base, stride, at, source;
+    int cost;
+
+    base = p.axis == 0u ? line * uint(R)
+        : p.axis == 1u ? line % uint(R) + (line / uint(R)) * uint(R * R)
+        : line;
+    stride = p.axis == 0u ? 1u : p.axis == 1u ? uint(R) : uint(R * R);
+    k = -1;
+    start = 0;
+    for (q = 0; q < R; ++q) {
+        source = input_grid[base + uint(q) * stride];
+        if (grid_label(source) < 0) continue;
+        start = -1000000000;
+        while (k >= 0) {
+            old = sites[k];
+            numerator = grid_cost(source) + q * q
+                - grid_cost(input_grid[base + uint(old) * stride])
+                - old * old;
+            /* First integer position at which the later source strictly
+             * wins. Flooring preserves the CPU earlier-source tie. */
+            start = floor_div(numerator, 2 * (q - old)) + 1;
+            if (start > starts[k]) break;
+            --k;
+        }
+        ++k;
+        sites[k] = q;
+        starts[k] = k == 0 ? -1000000000 : start;
+    }
+    end = k;
+    k = 0;
+    for (i = 0; i < R; ++i) {
+        at = base + uint(i) * stride;
+        if (end < 0) {
+            output_grid[at] = grid_value(1 << 28, -1);
+            continue;
+        }
+        while (k < end && starts[k + 1] <= i) ++k;
+        old = sites[k];
+        source = input_grid[base + uint(old) * stride];
+        cost = grid_cost(source) + (i - old) * (i - old);
+        if (p.axis == 2u) {
+            if (REFINE != 0) {
+                /* Boundary packing only consumes labels and the
+                 * zero-distance flag. */
+                output_grid[at] = uint(grid_label(source)) |
+                    (uint(cost == 0) << 9);
+            } else {
+                table8[at] = uint8_t(grid_label(source));
+            }
+            continue;
+        }
+        output_grid[at] = grid_value(cost, grid_label(source));
+    }
+}
+
+void fhedt_pack(uint at)
+{
+    uint x, y, z, boundary, label, r;
+
+    r = uint(R);
+    x = at % r;
+    y = (at / r) % r;
+    z = at / (r * r);
+    label = input_grid[at] & 255u;
+    boundary = ((x > 0u && (input_grid[at - 1u] & 255u) != label)
+        || (x + 1u < r && (input_grid[at + 1u] & 255u) != label)
+        || (y > 0u && (input_grid[at - r] & 255u) != label)
+        || (y + 1u < r && (input_grid[at + r] & 255u) != label)
+        || (z > 0u && (input_grid[at - r * r] & 255u) != label)
+        || (z + 1u < r && (input_grid[at + r * r] & 255u) != label))
+        ? 1u : 0u;
+    /* Equal axis weights make the optional dist2 shortcut true only at
+     * zero distance (the CPU safe radius squared is 0.75 grid units). */
+    table32[at] = label | (boundary << 8) | (input_grid[at] & 512u);
+}
+
+void main()
+{
+    uint index = gl_GlobalInvocationID.y * p.pitch +
+        gl_GlobalInvocationID.x;
+
+    if (index >= p.count) {
+        return;
+    }
+    if (KERNEL == KERNEL_CLEAR) {
+        fhedt_clear(index);
+    } else if (KERNEL == KERNEL_SEED) {
+        fhedt_seed(index);
+    } else if (KERNEL == KERNEL_X) {
+        fhedt_x(index);
+    } else if (KERNEL == KERNEL_EDT) {
+        fhedt_edt(index);
+    } else {
+        fhedt_pack(index);
+    }
+}

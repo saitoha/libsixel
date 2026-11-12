@@ -582,6 +582,29 @@ sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     return SIXEL_OK;
 }
 
+SIXELSTATUS
+sixel_vk_buffer_reserve_device(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t *buffer, VkDeviceSize size)
+{
+    VkMemoryPropertyFlags flags;
+    SIXELSTATUS status;
+
+    size = size == 0 ? 4 : (size + 3U) & ~(VkDeviceSize)3U;
+    if (buffer->buffer != VK_NULL_HANDLE && buffer->capacity >= size) {
+        return SIXEL_OK;
+    }
+    sixel_vk_buffer_release(runtime, buffer);
+    status = sixel_vk_allocate(runtime, size,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 0, &buffer->buffer,
+        &buffer->memory, &flags);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    buffer->capacity = size;
+    return SIXEL_OK;
+}
+
 void
 sixel_vk_buffer_record_upload(VkCommandBuffer command,
     sixel_vk_buffer_t const *buffer, VkDeviceSize size)

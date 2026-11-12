@@ -50,7 +50,8 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/gpu-palette-fused-prefix.metal \
     $(srcdir)/gpu-palette-fused-suffix.metal
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
-SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp
+SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp \
+    $(srcdir)/lookup-policy-fhedt-vulkan.comp
 SIXEL_VULKAN_FRAGMENTS =
 if HAVE_SHADERC
 SIXEL_VULKAN_FRAGMENTS += \
