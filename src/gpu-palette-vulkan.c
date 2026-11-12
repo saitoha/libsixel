@@ -249,8 +249,9 @@ sixel_gpu_vulkan_palette_prepare_locked(sixel_vk_runtime_t *runtime)
 
     /* The blue-noise table never changes; upload it once. */
     if (SIXEL_FAILED(sixel_vk_buffer_reserve(runtime,
-            &state->buffers[SIXEL_VK_BLUE_NOISE], sizeof(sixel_bn64))) ||
-            SIXEL_FAILED(sixel_vk_buffer_reserve(runtime, &state->dummy, 4))) {
+            &state->buffers[SIXEL_VK_BLUE_NOISE], sizeof(sixel_bn64), 1)) ||
+            SIXEL_FAILED(sixel_vk_buffer_reserve(runtime, &state->dummy, 4,
+                0))) {
         goto fail;
     }
     memcpy(state->buffers[SIXEL_VK_BLUE_NOISE].mapped, sixel_bn64,
@@ -393,7 +394,9 @@ sixel_gpu_vulkan_upload(sixel_vk_runtime_t *runtime, int slot,
     SIXELSTATUS status;
 
     buffer = &g_sixel_vk_palette.buffers[slot];
-    status = sixel_vk_buffer_reserve(runtime, buffer, size);
+    /* The accumulation result mask is also read back after the dispatch. */
+    status = sixel_vk_buffer_reserve(runtime, buffer, size,
+        slot != SIXEL_VK_ACCUMULATION_RESULT);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -420,6 +423,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     uint32_t groups_y;
     size_t pixel_count;
     double started;
+    double staged;
+    double waited;
     int has_accumulation;
     int has_valid;
     int index;
@@ -457,7 +462,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     has_valid = has_accumulation && request->accumulation_valid_mask != NULL;
 
     status = sixel_vk_buffer_reserve(runtime,
-        &state->buffers[SIXEL_VK_RESULT], pixel_count);
+        &state->buffers[SIXEL_VK_RESULT], pixel_count, 0);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_gpu_vulkan_upload(runtime, SIXEL_VK_PIXELS,
             request->pixels, pixel_count * 3U);
@@ -481,7 +486,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     }
     if (SIXEL_SUCCEEDED(status) && has_accumulation) {
         status = sixel_vk_buffer_reserve(runtime,
-            &state->buffers[SIXEL_VK_ACCUMULATION], pixel_count * 3U);
+            &state->buffers[SIXEL_VK_ACCUMULATION], pixel_count * 3U, 1);
         if (SIXEL_SUCCEEDED(status)) {
             sixel_gpu_vulkan_pack_retained(
                 state->buffers[SIXEL_VK_ACCUMULATION].mapped,
@@ -491,7 +496,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     }
     if (SIXEL_SUCCEEDED(status) && has_valid) {
         status = sixel_vk_buffer_reserve(runtime,
-            &state->buffers[SIXEL_VK_ACCUMULATION_VALID], pixel_count);
+            &state->buffers[SIXEL_VK_ACCUMULATION_VALID], pixel_count, 1);
         if (SIXEL_SUCCEEDED(status)) {
             sixel_gpu_vulkan_pack_retained(
                 state->buffers[SIXEL_VK_ACCUMULATION_VALID].mapped,
@@ -562,6 +567,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     range.count = (uint32_t)pixel_count;
     range.pitch = groups_x * SIXEL_VK_LOCAL_SIZE;
 
+    staged = sixel_vk_now_ms();
     status = sixel_vk_command_begin(runtime, &command);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -603,6 +609,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    waited = sixel_vk_now_ms();
 
     if (request->cancel != NULL && request->cancel(request->cancel_context)) {
         status = SIXEL_INTERRUPTED;
@@ -621,10 +628,15 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         request->test_hooks->peak_inflight = 1;
     }
     if (runtime->debug) {
+        /* stage: host copies into mapped memory; submit: record, submit
+         * and fence wait (gpu: device time inside it); read: result copy
+         * out of mapped memory. */
         fprintf(stderr, "libsixel: vulkan palette apply %ux%u, %d colors: "
-            "%.2f ms\n", (unsigned int)request->width,
-            (unsigned int)request->height, request->ncolors,
-            sixel_vk_now_ms() - started);
+            "%.2f ms (stage %.2f, submit %.2f, gpu %.2f, read %.2f)\n",
+            (unsigned int)request->width, (unsigned int)request->height,
+            request->ncolors, sixel_vk_now_ms() - started,
+            staged - started, waited - staged, runtime->last_busy_ms,
+            sixel_vk_now_ms() - waited);
     }
     status = SIXEL_OK;
 

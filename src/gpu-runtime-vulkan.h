@@ -34,6 +34,13 @@ typedef struct sixel_vk_runtime {
     VkQueryPool timestamps;
     uint64_t timestamp_mask;
     double timestamp_period;
+    /* Device time of the latest submission in milliseconds, or its
+     * submit/wait wall time without timestamps; for debug breakdowns. */
+    double last_busy_ms;
+    /* Reused by every submission under sixel_vk_lock(); allocating and
+     * destroying them per frame cost about 0.5 ms on a discrete GPU. */
+    VkCommandBuffer command;
+    VkFence fence;
     int debug;
 } sixel_vk_runtime_t;
 
@@ -68,9 +75,14 @@ SIXEL_INTERNAL_API void sixel_vk_unlock(void);
 /* Returns NULL when no usable device exists; the probe runs only once. */
 SIXEL_INTERNAL_API sixel_vk_runtime_t *sixel_vk_runtime_get_locked(void);
 
+/* host_written marks a buffer the host only fills and the shader only
+ * reads. It is placed in host-visible device memory when the device exposes
+ * that (resizable BAR, unified memory), so the host writes once and no
+ * staging copy runs. A buffer the host reads back keeps cached host memory
+ * for its mapping. Each buffer must keep the same kind across reserves. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
-    VkDeviceSize size);
+    VkDeviceSize size, int host_written);
 SIXEL_INTERNAL_API void sixel_vk_buffer_release(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer);
 
@@ -90,9 +102,11 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_shader_module_create(
     sixel_vk_runtime_t *runtime, sixel_vk_shader_source_t const *source,
     VkShaderModule *module);
 
-/* command_begin allocates a one-shot primary command buffer and opens the
- * statistics bracket; the caller records work; submit_and_wait closes the
- * bracket, submits, waits and adds the GPU time to the statistics. */
+/* command_begin resets and opens the runtime's single primary command
+ * buffer and the statistics bracket; the caller records work while holding
+ * sixel_vk_lock(); submit_and_wait closes the bracket, submits, waits on the
+ * runtime's fence and adds the GPU time to the statistics. command_free is
+ * kept for symmetry: the buffer is reused by the next command_begin. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_submit_and_wait(
     sixel_vk_runtime_t *runtime, VkCommandBuffer command);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_command_begin(
