@@ -31,7 +31,8 @@ static struct {
 } const gpu_lookup_registrations[] = {
     { SIXEL_LUT_POLICY_NONE, GPU_METAL | GPU_VULKAN,
       sixel_gpu_lookup_none_create },
-    { SIXEL_LUT_POLICY_DELAUNAY, GPU_METAL, sixel_gpu_lookup_delaunay_create },
+    { SIXEL_LUT_POLICY_DELAUNAY, GPU_METAL | GPU_VULKAN,
+      sixel_gpu_lookup_delaunay_create },
     { SIXEL_LUT_POLICY_ORDERED, GPU_METAL | GPU_VULKAN,
       sixel_gpu_lookup_ordered_create },
     { SIXEL_LUT_POLICY_VPTREE, GPU_METAL | GPU_VULKAN,

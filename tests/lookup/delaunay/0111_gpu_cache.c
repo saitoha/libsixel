@@ -20,7 +20,9 @@ test_delaunay_gpu_cache(int argc, char **argv)
     ordered_state_init(&a, 33, 1);
     a.request.lut_policy = SIXEL_LUT_POLICY_DELAUNAY;
     a.request.test_hooks = &hooks;
-    if (!ordered_state_check(&a) || hooks.kernel != 6 || !hooks.rebuild) {
+    /* Both executors must expose the same cache completion protocol. */
+    if (!ordered_state_check(&a) ||
+            (hooks.kernel != 6 && hooks.kernel != 9) || !hooks.rebuild) {
         return EXIT_FAILURE;
     }
     rebuild = 0;
@@ -40,7 +42,7 @@ test_delaunay_gpu_cache(int argc, char **argv)
         if (!ordered_state_check(&b)) return EXIT_FAILURE;
         rebuild = transition == 6;
     }
-    if (!ordered_state_check(&a) || hooks.kernel != 6 ||
+    if (!ordered_state_check(&a) || (hooks.kernel != 6 && hooks.kernel != 9) ||
             hooks.rebuild != rebuild || !hooks.published) {
         return EXIT_FAILURE;
     }

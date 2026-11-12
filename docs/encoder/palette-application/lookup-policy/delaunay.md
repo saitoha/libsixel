@@ -49,9 +49,9 @@ For `U` distinct colors, graph construction sorts `U` lists with radix passes an
 
 A query evaluates the neighbor blocks inside its current distance bound and may visit multiple colors. Sparse adjacency and coherent hints often reduce work, but no constant-time or logarithmic worst-case promise is made. Float queries outside the box scan all representatives. A bulk float workspace occupies 512 KiB per caller when the palette has at most 256 entries. A full cold batch scans `U` representatives for eight queries; warm keys avoid that scan. Its crossover with graph walking depends on palette size, spatial coherence and cache misses.
 
-## Metal byte path
+## GPU byte path
 
-For byte RGB palettes of at most 256 entries, Metal builds a conservative superset of closed Voronoi adjacency. It does not transfer the CPU graph or tetrahedralize the palette. The existing byte palette-application admission rules select this path for `none`, `a_dither`, `x_dither` and `bluenoise` dithering; unsupported inputs retain CPU fallback under GPU `auto`. Native float lookup keeps its CPU implementation.
+For byte RGB palettes of at most 256 entries, Metal and Vulkan build a conservative superset of closed Voronoi adjacency. Neither backend transfers the CPU graph or tetrahedralizes the palette. The existing byte palette-application admission rules select this path for `none`, `a_dither`, `x_dither` and `bluenoise` dithering; unsupported inputs retain CPU fallback under GPU `auto`. Native float lookup keeps its CPU implementation.
 
 | Stage | GPU operation | Exactness boundary |
 | --- | --- | --- |
@@ -60,21 +60,21 @@ For byte RGB palettes of at most 256 entries, Metal builds a conservative supers
 | Seeds | Find the nearest color to each exact rational center of a 16x16x16 grid | The seed chooses a starting color, not a quantized answer |
 | Lookup | Walk four neighbors at a time, ordered by squared color distance, with exact radius pruning and strict packed-key descent | Original post-dither byte queries and lowest-original-index ties match exhaustive lookup |
 
-All bounds, bisector tests, distances and tie keys use integer arithmetic. Duplicate coordinates retain separate indexes. Closed-cell adjacency includes shared faces, edges and vertices, including equal-distance ties. A nonempty vector tail repeats its final valid neighbor; a single-color palette has an empty row. Conservative boxes may retain a dense graph but cannot exclude a necessary improving edge. Byte-vector GPU construction requires 32-lane SIMD groups. Pipeline unavailability detected during execution fails an admitted indexed plan without retrying the frame on CPU.
+All bounds, bisector tests, distances and tie keys use integer arithmetic. Duplicate coordinates retain separate indexes. Closed-cell adjacency includes shared faces, edges and vertices, including equal-distance ties. A nonempty vector tail repeats its final valid neighbor; a single-color palette has an empty row. Conservative boxes may retain a dense graph but cannot exclude a necessary improving edge. The legacy Metal byte builders require 32-lane SIMD groups; Vulkan reduces complete workgroups through shared memory and does not assume a hardware subgroup width. Pipeline unavailability detected during execution fails an admitted indexed plan without retrying the frame on CPU.
 
-The indexed adapter selects the GPU-only preparation plan before constructing a CPU graph; [execution-map](../../execution-map/README.md) owns that admission and fallback contract. Bounds, compact sorted rows, seeds and palette application run in separate compute encoders in one command buffer. Tracked buffers establish dependencies without intermediate CPU waits. One lock protects the cache. Palette size and all palette bytes identify it independently of ordinary uploads and other lookup caches. Identity is published only after successful command completion; a failed rebuild invalidates it. Unchanged palettes reuse the table, while changed or alternating palettes rebuild it.
+The indexed adapter selects the GPU-only preparation plan before constructing a CPU graph; [execution-map](../../execution-map/README.md) owns that admission and fallback contract. Bounds, compact sorted rows, seeds and palette application run in ordered GPU passes. Metal encoder boundaries and Vulkan compute barriers establish dependencies without intermediate CPU waits. One lock protects the cache. Palette size and all palette bytes identify it independently of ordinary uploads and other lookup caches. Identity is published only after successful command completion; a failed rebuild invalidates it. Unchanged palettes reuse the table, while changed or alternating palettes rebuild it.
 
 The cache occupies 537 KiB: two fixed-stride 256x256 uint32 row arrays, 256 degrees, 4096 uint32 seeds and 512 int4 bounds. Construction performs quadratic pair work and `O(K^2 log^2 K)` bitonic work, plus `4096K` seed distance evaluations. Lookup may visit several rows; no universal speed advantage over `ordered` is promised. Include changed-palette construction, uploads and synchronization when measuring application cost.
 
 Transparency, positional dithering, blue-noise configuration and delta keep decisions use the shared GPU path. Kept pixels do no lookup. The retained result mask and history publication follow the same rules as other GPU policies. `SIXEL_TRACE_TOPIC=gpu_contract` reports `kernel=delaunay` and `lookup=delaunay|table=rebuild` or `lookup=delaunay|table=reuse`.
 
-For [GPU diffusion](../dithering/README.md), the policy builds the same conservative adjacency for a scalar fractional graph walk. The outward-rounded boxes already contain continuous Voronoi cells, including fractional points. A seed selects the initial vertex; all query distances retain fractional coordinates. Each move decreases the computed distance/index pair. The row radius test uses `4 * distance_squared + 1`: the extra squared code-value unit conservatively covers float rounding in the pruning bound without changing candidate distances. The plan and builders are owned by [`lookup-policy-delaunay-gpu.c`](../../../../src/lookup-policy-delaunay-gpu.c) and its [fractional shader](../../../../src/lookup-policy-delaunay-fractional-gpu.metal). The fractional builder reduces bounds across its complete 32-thread group, using shared memory when hardware SIMD groups are narrower. Adjacency counts use the actual SIMD lane, group index and group count rather than dividing thread indexes by 32; otherwise valid neighbors can disappear from the graph. The byte vector executor remains unchanged. The [parent reference](README.md) defines fractional precision and cache identity.
+For [GPU diffusion](../dithering/README.md), the policy builds the same conservative adjacency for a scalar fractional graph walk. The outward-rounded boxes already contain continuous Voronoi cells, including fractional points. A seed selects the initial vertex; all query distances retain fractional coordinates. Each move decreases the computed distance/index pair. The row radius test uses `4 * distance_squared + 1`: the extra squared code-value unit conservatively covers float rounding in the pruning bound without changing candidate distances. The plan and builders are owned by [`lookup-policy-delaunay-gpu.c`](../../../../src/lookup-policy-delaunay-gpu.c) and its [Metal fractional shader](../../../../src/lookup-policy-delaunay-fractional-gpu.metal) or [Vulkan program](../../../../src/lookup-policy-delaunay-gpu.glsl). The fractional builder reduces bounds across its complete 32-thread group, using shared memory when hardware SIMD groups are narrower. Adjacency counts use the actual SIMD lane, group index and group count rather than dividing thread indexes by 32; otherwise valid neighbors can disappear from the graph. Vulkan retains the separate four-neighbor integer byte walk and scalar fractional walk, with the same bounds, sorted rows and rational seeds. Its bound builder explicitly derives the signed remainder to preserve Metal's outward rounding without using GLSL remainder on negative operands. The [parent reference](README.md) defines fractional precision and cache identity.
 
 ## Implementation map
 
 The common builder is [`lookup-delaunay-graph.c`](../../../../src/lookup-delaunay-graph.c). [`lookup-delaunay-8bit.c`](../../../../src/lookup-delaunay-8bit.c) and [`lookup-delaunay-float32.c`](../../../../src/lookup-delaunay-float32.c) own query arithmetic, SIMD and memoization. [`lookup-policy-delaunay.c`](../../../../src/lookup-policy-delaunay.c) owns preparation, representation conversion and reuse through `lookup/delaunay.8bit` and `lookup/delaunay.float32`.
 
-The Metal implementation and its cache live in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m); admission is shared through [`gpu-palette.c`](../../../../src/gpu-palette.c) and [`palette-apply.c`](../../../../src/palette-apply.c).
+The legacy Metal byte implementation and its cache live in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m). The Vulkan builders and both query entries belong to [`lookup-policy-delaunay-gpu.glsl`](../../../../src/lookup-policy-delaunay-gpu.glsl), with storage and completion owned by the policy plan; admission is shared through [`gpu-palette.c`](../../../../src/gpu-palette.c) and [`palette-apply.c`](../../../../src/palette-apply.c).
 
 ## Test coverage
 
@@ -140,7 +140,7 @@ The Metal implementation and its cache live in [`gpu-palette-metal.m`](../../../
 | DL-59 | Lookup with an out-of-range hint matches an integer oracle for the grid palette. | [tests/lookup/delaunay/0043_delaunay_byte_stale_grid.t](../../../../tests/lookup/delaunay/0043_delaunay_byte_stale_grid.t) |
 | DL-60 | Lookup with an out-of-range hint matches an integer oracle for a 300-color palette. | [tests/lookup/delaunay/0044_delaunay_byte_stale_large.t](../../../../tests/lookup/delaunay/0044_delaunay_byte_stale_large.t) |
 
-### Metal behavioral contract tests
+### GPU behavioral contract tests
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
@@ -213,7 +213,7 @@ The Metal implementation and its cache live in [`gpu-palette-metal.m`](../../../
 | DLG-67 | Gpu cache after ordered. | [tests/lookup/delaunay/0116_gpu_cache_after_ordered.t](../../../../tests/lookup/delaunay/0116_gpu_cache_after_ordered.t) |
 | DLG-68 | Gpu cache alternating. | [tests/lookup/delaunay/0117_gpu_cache_alternating.t](../../../../tests/lookup/delaunay/0117_gpu_cache_alternating.t) |
 
-Each dither, keep mode and palette size has its own invocation against CPU exhaustive lookup. Geometry cases separately sample random, duplicate, grid, collinear, coplanar and cospherical palettes using palette hits, pair midpoints, seed boundaries and deterministic random queries; they observe actual GPU `auto` admission and the Delaunay kernel. Cache cases observe one transition per invocation. Fault cases exercise allocation, command-encoder and post-completion failure, actual CPU fallback and subsequent rebuild/reuse. These tests skip without a Metal backend and do not enumerate the RGB domain or prove performance on another device.
+Each dither, keep mode and palette size has its own invocation against CPU exhaustive lookup. Geometry cases separately sample random, duplicate, grid, collinear, coplanar and cospherical palettes using palette hits, pair midpoints, seed boundaries and deterministic random queries; they observe actual GPU `auto` admission and the Delaunay kernel. Cache cases observe one transition per invocation. Fault cases exercise allocation, command-encoder and post-completion failure, actual CPU fallback and subsequent rebuild/reuse. These tests run on Metal and Vulkan, skip when the Delaunay provider is unavailable, and do not enumerate the RGB domain or prove performance on another device.
 
 ### Coverage boundary
 
@@ -223,7 +223,7 @@ Float tests sample native coordinates and arithmetic boundaries; they do not enu
 
 ### Fractional GPU queries
 
-These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification). The two shader-injection precision probes remain Metal-only and skip on Vulkan; the diffusion and palette-change fixtures exercise the Vulkan fractional program.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

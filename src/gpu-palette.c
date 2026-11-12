@@ -672,14 +672,9 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_plan_available(void)
 {
-    /* Nonzero when the device carries every lookup policy's program. The
-     * Vulkan device serves only the policies ported to its program ABI so
-     * far; callers check those with sixel_gpu_lookup_has_program(). */
-#if defined(HAVE_METAL)
+    /* Both Metal and Vulkan now carry every registered lookup program.
+     * Keep the device probe so unavailable hardware still skips GPU tests. */
     return sixel_gpu_palette_has_engine();
-#else
-    return 0;
-#endif
 }
 
 SIXEL_INTERNAL_API int

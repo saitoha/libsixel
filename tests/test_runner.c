@@ -15006,7 +15006,7 @@ main(int argc, char **argv)
      * performs its own real dispatch and must report execution failures.
      * --require-gpu-palette also needs prepared lookup plans (the complete
      * backend); --require-gpu-palette-direct accepts any backend that owns
-     * the direct (lookup NONE) apply stage, such as the partial Vulkan port;
+     * the direct (lookup NONE) apply stage;
      * --require-gpu-lookup needs the device to carry the program of the
      * named lookup policy, whichever backend owns it. */
     if (strcmp(argv[first_index], "--require-gpu-palette") == 0) {

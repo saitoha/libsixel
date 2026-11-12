@@ -37,6 +37,7 @@ vulkan_policies = [
   '../lookup-policy-certlut-gpu.glsl',
   '../lookup-policy-gridlut-gpu.glsl',
   '../lookup-policy-blockcull-gpu.glsl',
+  '../lookup-policy-delaunay-gpu.glsl',
 ]
 if have_vulkan
   vulkan_chunks = [vulkan_builder_prefix] + vulkan_policies

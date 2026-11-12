@@ -145,10 +145,11 @@ gpupal_direct_apply(sixel_allocator_t *allocator,
                                          GPUPAL_DIRECT_WIDTH,
                                          GPUPAL_DIRECT_HEIGHT);
     /* Capability is independent of compilation/dispatch success. A silent
-     * direct fallback on a matrix-capable device must fail this test. */
+     * direct fallback on a matrix-capable device must fail this test.
+     * Vulkan uses the provider's generic program executor (kernel 9). */
     if (indexes != NULL && gpu_policy == SIXEL_GPU_POLICY_FORCE &&
-            (!hooks.entered || hooks.kernel !=
-                (hooks.matrix_supported ? 2 : 1))) {
+            (!hooks.entered || (hooks.matrix_supported ? hooks.kernel != 2
+                : (hooks.kernel != 1 && hooks.kernel != 9)))) {
         fprintf(stderr, "GPU kernel mismatch: matrix=%d kernel=%d\n",
             hooks.matrix_supported, hooks.kernel);
         sixel_allocator_free(allocator, indexes);

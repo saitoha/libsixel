@@ -136,7 +136,9 @@ test_fhedt_gpu_reference(int argc, char **argv)
     fixture.request.fhedt_refine = atoi(argv[2]);
     fixture.request.fhedt_use_dist2 = atoi(argv[3]);
     fixture.request.test_hooks = &hooks;
-    return fh_check(&fixture) && hooks.kernel == 7 && hooks.published ? 0 : 1;
+    /* Metal owns the legacy executor; Vulkan composes FHEDT's program. */
+    return fh_check(&fixture) && (hooks.kernel == 7 || hooks.kernel == 9)
+        && hooks.published ? 0 : 1;
 }
 
 /* One state transition per invocation, including a retry after one injected

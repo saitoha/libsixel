@@ -1203,6 +1203,14 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             state->upload[SIXEL_VK_ACCUMULATION_VALID] = pixel_count;
         }
     }
+    if (hooks != NULL) {
+        /* Observe the packed rectangle actually staged for this frame,
+         * including zero bytes when a retained plane is absent. */
+        hooks->retained_rgb_upload_bytes =
+            state->upload[SIXEL_VK_ACCUMULATION];
+        hooks->retained_valid_upload_bytes =
+            state->upload[SIXEL_VK_ACCUMULATION_VALID];
+    }
     if (SIXEL_SUCCEEDED(status) && request->accumulation_result_mask != NULL) {
         status = sixel_gpu_vulkan_upload(runtime,
             SIXEL_VK_ACCUMULATION_RESULT, request->accumulation_result_mask,

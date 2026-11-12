@@ -23,7 +23,11 @@ test_fh_gpu_r256_compact_table(int argc, char **argv)
     fixture.request.fhedt_weights[1] = 1;
     fixture.request.fhedt_weights[2] = 1;
     if (sixel_gpu_palette_apply(&fixture.request) != SIXEL_OK ||
-            hooks.kernel != 7 || !hooks.published) return 1;
+            !hooks.published) return 1;
+    /* Byte compaction is specific to the legacy Metal representation;
+     * the Vulkan provider owns a uint-word table and no legacy table hook. */
+    if (hooks.kernel == 9) return 77;
+    if (hooks.kernel != 7) return 1;
     return hooks.fhedt_table_entry_bytes == 1U ? 0 : 1;
 }
 

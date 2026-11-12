@@ -70,7 +70,9 @@ test_delaunay_gpu_geometry(int argc, char **argv)
     request.lut_policy = SIXEL_LUT_POLICY_DELAUNAY;
     request.method_for_diffuse = SIXEL_DIFFUSE_NONE;
     request.method_for_scan = SIXEL_SCAN_RASTER;
-    if (sixel_gpu_palette_apply(&request) != SIXEL_OK || hooks.kernel != 6) {
+    /* Metal uses its legacy executor; Vulkan composes this policy's GLSL. */
+    if (sixel_gpu_palette_apply(&request) != SIXEL_OK ||
+            (hooks.kernel != 6 && hooks.kernel != 9)) {
         return EXIT_FAILURE;
     }
     for (q = 0; q < 2048; ++q) {

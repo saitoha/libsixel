@@ -81,8 +81,10 @@ test_fh_sparse(int gpu, int resolution, int refine, int weighted, int dense)
         fixture.request.fhedt_weights[0] = 1;
         fixture.request.fhedt_weights[1] = 1;
         fixture.request.fhedt_weights[2] = 1;
+        /* Both backend executors must preserve the same seed tie order. */
         if (sixel_gpu_palette_apply(&fixture.request) != SIXEL_OK ||
-                hooks.kernel != 7 || !hooks.published) goto end;
+                (hooks.kernel != 7 && hooks.kernel != 9) ||
+                !hooks.published) goto end;
     } else {
         if (sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL)
                 != SIXEL_OK ||
