@@ -14,10 +14,10 @@ set -v
 
 status=0
 trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract ${SIXEL_RUNTIME-} \
-    "${TEST_RUNNER_PATH}" --require-gpu-palette \
+    "${TEST_RUNNER_PATH}" --require-gpu-lookup blockcull \
     "gpu-palette/0021_blockcull_exact" 2>&1) || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend is unavailable"
+    echo "ok 1 # SKIP GPU blockcull lookup is unavailable"
     exit 0
 }
 test "$status" -eq 0 || {

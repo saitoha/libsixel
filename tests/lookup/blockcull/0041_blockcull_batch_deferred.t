@@ -6,7 +6,7 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu/blockcull_batch_deferred || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP Metal device unavailable"
+    echo "ok 1 # SKIP GPU blockcull lookup unavailable"
     exit 0
 }
 test "$status" -eq 0 || {

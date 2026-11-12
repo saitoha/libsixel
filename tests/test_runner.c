@@ -1746,6 +1746,8 @@ int test_gpu_5bit_fractional_cache(int, char **);
 int test_gpu_6bit_fractional_cache(int, char **);
 int test_gpu_fhedt_fractional_cache(int, char **);
 int test_gpu_blockcull_batch_opt_in(int, char **);
+int test_gpu_blockcull_vulkan_streamed_tiles(int, char **);
+int test_gpu_blockcull_vulkan_byte_opt_in(int, char **);
 int test_lso2_gpu_none_refresh(int, char **);
 int test_lso2_gpu_delaunay_refresh(int, char **);
 int test_lso2_gpu_vptree_refresh(int, char **);
@@ -7162,6 +7164,10 @@ static test_entry_t const test_entries[] = {
     { "gpu/6bit_fractional_cache", test_gpu_6bit_fractional_cache },
     { "gpu/fhedt_fractional_cache", test_gpu_fhedt_fractional_cache },
     { "gpu/blockcull_batch_opt_in", test_gpu_blockcull_batch_opt_in },
+    { "gpu/blockcull_vulkan_streamed_tiles",
+      test_gpu_blockcull_vulkan_streamed_tiles },
+    { "gpu/blockcull_vulkan_byte_opt_in",
+      test_gpu_blockcull_vulkan_byte_opt_in },
     { "lso2_gpu/none_refresh", test_lso2_gpu_none_refresh },
     { "lso2_gpu/delaunay_refresh", test_lso2_gpu_delaunay_refresh },
     { "lso2_gpu/vptree_refresh", test_lso2_gpu_vptree_refresh },

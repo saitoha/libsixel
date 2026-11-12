@@ -2371,6 +2371,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/6bit/0063_6bit_fractional_cache.c \
 	lookup/fhedt/0171_fhedt_fractional_cache.c \
 	lookup/blockcull/0045_blockcull_batch_opt_in.c \
+	lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c \
+	lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c \
 	lookup/gridlut/0040_gridlut_fractional_reference.c \
 	lookup/gridlut/0041_gridlut_fractional_ties.c \
 	lookup/eytzinger/0060_eytzinger_fractional_reference.c \
@@ -7433,6 +7435,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0063_6bit_fractional_cache.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0171_fhedt_fractional_cache.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/blockcull/test_runner-0045_blockcull_batch_opt_in.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/gridlut/test_runner-0040_gridlut_fractional_reference.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/gridlut/test_runner-0041_gridlut_fractional_ties.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/eytzinger/test_runner-0060_eytzinger_fractional_reference.$(OBJEXT) \
@@ -14115,6 +14119,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/blockcull/$(DEPDIR)/test_runner-0043_blockcull_batch_deferred_refresh.Po \
 	lookup/blockcull/$(DEPDIR)/test_runner-0044_blockcull_fractional_cache.Po \
 	lookup/blockcull/$(DEPDIR)/test_runner-0045_blockcull_batch_opt_in.Po \
+	lookup/blockcull/$(DEPDIR)/test_runner-0046_blockcull_vulkan_streamed_tiles.Po \
+	lookup/blockcull/$(DEPDIR)/test_runner-0047_blockcull_vulkan_byte_opt_in.Po \
 	lookup/certlut/$(DEPDIR)/test_runner-0038_gpu_palette_snapshot.Po \
 	lookup/certlut/$(DEPDIR)/test_runner-0039_gpu_cache_reuse.Po \
 	lookup/certlut/$(DEPDIR)/test_runner-0040_gpu_device_identity.Po \
@@ -16064,6 +16070,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_6BIT_FRACTIONAL_CACHE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0171_FHEDT_FRACTIONAL_CACHE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_BLOCKCULL_BATCH_OPT_IN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_BLOCKCULL_VULKAN_STREAMED_TILES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_BLOCKCULL_VULKAN_BYTE_OPT_IN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FRACTIONAL_REFERENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_BATCH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_GRIDLUT_FRACTIONAL_REFERENCE \
@@ -23356,6 +23364,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0063_6bit_fractional_cache.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0171_fhedt_fractional_cache.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/blockcull/0045_blockcull_batch_opt_in.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/gridlut/0040_gridlut_fractional_reference.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/gridlut/0041_gridlut_fractional_ties.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/eytzinger/0060_eytzinger_fractional_reference.c \
@@ -33821,6 +33831,12 @@ lookup/fhedt/test_runner-0171_fhedt_fractional_cache.$(OBJEXT):  \
 	lookup/fhedt/$(am__dirstamp) \
 	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
 lookup/blockcull/test_runner-0045_blockcull_batch_opt_in.$(OBJEXT):  \
+	lookup/blockcull/$(am__dirstamp) \
+	lookup/blockcull/$(DEPDIR)/$(am__dirstamp)
+lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.$(OBJEXT):  \
+	lookup/blockcull/$(am__dirstamp) \
+	lookup/blockcull/$(DEPDIR)/$(am__dirstamp)
+lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.$(OBJEXT):  \
 	lookup/blockcull/$(am__dirstamp) \
 	lookup/blockcull/$(DEPDIR)/$(am__dirstamp)
 lookup/gridlut/test_runner-0040_gridlut_fractional_reference.$(OBJEXT):  \
@@ -46917,6 +46933,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/blockcull/$(DEPDIR)/test_runner-0043_blockcull_batch_deferred_refresh.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/blockcull/$(DEPDIR)/test_runner-0044_blockcull_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/blockcull/$(DEPDIR)/test_runner-0045_blockcull_batch_opt_in.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/blockcull/$(DEPDIR)/test_runner-0046_blockcull_vulkan_streamed_tiles.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/blockcull/$(DEPDIR)/test_runner-0047_blockcull_vulkan_byte_opt_in.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0038_gpu_palette_snapshot.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0039_gpu_cache_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/certlut/$(DEPDIR)/test_runner-0040_gpu_device_identity.Po@am__quote@ # am--include-marker
@@ -79018,6 +79036,34 @@ lookup/blockcull/test_runner-0045_blockcull_batch_opt_in.obj: lookup/blockcull/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/blockcull/0045_blockcull_batch_opt_in.c' object='lookup/blockcull/test_runner-0045_blockcull_batch_opt_in.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/blockcull/test_runner-0045_blockcull_batch_opt_in.obj `if test -f 'lookup/blockcull/0045_blockcull_batch_opt_in.c'; then $(CYGPATH_W) 'lookup/blockcull/0045_blockcull_batch_opt_in.c'; else $(CYGPATH_W) '$(srcdir)/lookup/blockcull/0045_blockcull_batch_opt_in.c'; fi`
+
+lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.o: lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.o -MD -MP -MF lookup/blockcull/$(DEPDIR)/test_runner-0046_blockcull_vulkan_streamed_tiles.Tpo -c -o lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.o `test -f 'lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c' || echo '$(srcdir)/'`lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/blockcull/$(DEPDIR)/test_runner-0046_blockcull_vulkan_streamed_tiles.Tpo lookup/blockcull/$(DEPDIR)/test_runner-0046_blockcull_vulkan_streamed_tiles.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c' object='lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.o `test -f 'lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c' || echo '$(srcdir)/'`lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c
+
+lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.obj: lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.obj -MD -MP -MF lookup/blockcull/$(DEPDIR)/test_runner-0046_blockcull_vulkan_streamed_tiles.Tpo -c -o lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.obj `if test -f 'lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c'; then $(CYGPATH_W) 'lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c'; else $(CYGPATH_W) '$(srcdir)/lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/blockcull/$(DEPDIR)/test_runner-0046_blockcull_vulkan_streamed_tiles.Tpo lookup/blockcull/$(DEPDIR)/test_runner-0046_blockcull_vulkan_streamed_tiles.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c' object='lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/blockcull/test_runner-0046_blockcull_vulkan_streamed_tiles.obj `if test -f 'lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c'; then $(CYGPATH_W) 'lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c'; else $(CYGPATH_W) '$(srcdir)/lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c'; fi`
+
+lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.o: lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.o -MD -MP -MF lookup/blockcull/$(DEPDIR)/test_runner-0047_blockcull_vulkan_byte_opt_in.Tpo -c -o lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.o `test -f 'lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c' || echo '$(srcdir)/'`lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/blockcull/$(DEPDIR)/test_runner-0047_blockcull_vulkan_byte_opt_in.Tpo lookup/blockcull/$(DEPDIR)/test_runner-0047_blockcull_vulkan_byte_opt_in.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c' object='lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.o `test -f 'lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c' || echo '$(srcdir)/'`lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c
+
+lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.obj: lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.obj -MD -MP -MF lookup/blockcull/$(DEPDIR)/test_runner-0047_blockcull_vulkan_byte_opt_in.Tpo -c -o lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.obj `if test -f 'lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c'; then $(CYGPATH_W) 'lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c'; else $(CYGPATH_W) '$(srcdir)/lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/blockcull/$(DEPDIR)/test_runner-0047_blockcull_vulkan_byte_opt_in.Tpo lookup/blockcull/$(DEPDIR)/test_runner-0047_blockcull_vulkan_byte_opt_in.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c' object='lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/blockcull/test_runner-0047_blockcull_vulkan_byte_opt_in.obj `if test -f 'lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c'; then $(CYGPATH_W) 'lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c'; else $(CYGPATH_W) '$(srcdir)/lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c'; fi`
 
 lookup/gridlut/test_runner-0040_gridlut_fractional_reference.o: lookup/gridlut/0040_gridlut_fractional_reference.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/gridlut/test_runner-0040_gridlut_fractional_reference.o -MD -MP -MF lookup/gridlut/$(DEPDIR)/test_runner-0040_gridlut_fractional_reference.Tpo -c -o lookup/gridlut/test_runner-0040_gridlut_fractional_reference.o `test -f 'lookup/gridlut/0040_gridlut_fractional_reference.c' || echo '$(srcdir)/'`lookup/gridlut/0040_gridlut_fractional_reference.c

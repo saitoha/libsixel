@@ -287,6 +287,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0063_6BIT_FRACTIONAL_CACHE \
     -DBUILD_TEST_0171_FHEDT_FRACTIONAL_CACHE \
     -DBUILD_TEST_0045_BLOCKCULL_BATCH_OPT_IN \
+    -DBUILD_TEST_0046_BLOCKCULL_VULKAN_STREAMED_TILES \
+    -DBUILD_TEST_0047_BLOCKCULL_VULKAN_BYTE_OPT_IN \
     -DBUILD_FRACTIONAL_REFERENCE \
     -DBUILD_BATCH \
     -DBUILD_TEST_0040_GRIDLUT_FRACTIONAL_REFERENCE \
@@ -7547,6 +7549,8 @@ test_runner_SOURCES = test_runner.c \
     lookup/6bit/0063_6bit_fractional_cache.c \
     lookup/fhedt/0171_fhedt_fractional_cache.c \
     lookup/blockcull/0045_blockcull_batch_opt_in.c \
+    lookup/blockcull/0046_blockcull_vulkan_streamed_tiles.c \
+    lookup/blockcull/0047_blockcull_vulkan_byte_opt_in.c \
     lookup/gridlut/0040_gridlut_fractional_reference.c \
     lookup/gridlut/0041_gridlut_fractional_ties.c \
     lookup/eytzinger/0060_eytzinger_fractional_reference.c \

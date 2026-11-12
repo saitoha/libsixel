@@ -476,6 +476,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
              options.method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
              options.method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
              options.method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
+        /* The byte executor accepts both point and collective programs. */
+        execution.allow_batch = 1;
         status = request->gpu_lookup->vtbl->prepare(request->gpu_lookup,
             &execution, request->device, &gpu_plan);
         if (status == SIXEL_OK && gpu_plan == NULL) {

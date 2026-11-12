@@ -57,6 +57,7 @@ gpu_rows_open(gpu_rows_fixture_t *f, int kind)
     if (status != SIXEL_OK || !gpu_component_open(&f->component, kind)) {
         return 1;
     }
+    f->component.request.allow_batch = 1;
     status = f->component.provider->vtbl->prepare(f->component.provider,
         &f->component.request, f->device, &f->component.other);
     if (status != SIXEL_OK) return 1;

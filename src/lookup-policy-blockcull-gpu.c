@@ -18,6 +18,14 @@ static char const * const blockcull_chunks[] = {
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
+#if defined(HAVE_VULKAN)
+static char const * const blockcull_vulkan_chunks[] = {
+#include <generated-vulkan/lookup-policy-blockcull-gpu-shader.inc.h>
+};
+static sixel_gpu_lookup_batch_dispatch_t const blockcull_vulkan_batch = {
+    "lookup_rgb8_batch", { 8, 8 }, { 32, 1, 1 }
+};
+#endif
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
@@ -36,6 +44,7 @@ typedef struct blockcull_plan {
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
     sixel_lookup_policy_configuration_t legacy;
+    int vulkan;
     int busy;
     int valid;
 } blockcull_plan_t;
@@ -90,7 +99,23 @@ blockcull_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (blockcull_plan_t const *)self;
     memset(view, 0, sizeof(*view));
-    /* Byte consumers keep the existing optimized executor. Fractional
+#if defined(HAVE_VULKAN)
+    if (plan->vulkan) {
+        view->program_format = "vulkan.lookup-rgb8.v1";
+        view->logical_name = "blockcull";
+        view->query_kind = plan->query_kind;
+        view->chunks = blockcull_vulkan_chunks;
+        view->chunk_count = sizeof(blockcull_vulkan_chunks) /
+            sizeof(blockcull_vulkan_chunks[0]);
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->ncolors = plan->count;
+        view->workspace_size = 1;
+        view->batch = &blockcull_vulkan_batch;
+        return SIXEL_OK;
+    }
+#endif
+    /* Metal byte consumers keep the existing optimized executor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
         view->program_format = "libsixel.legacy-palette.v1";
@@ -266,21 +291,29 @@ blockcull_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     blockcull_preparer_t *preparer;
     blockcull_plan_t *plan;
     sixel_palette_entries_view_t entries;
+    char const *format;
+    int vulkan;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
+    format = device->vtbl->program_format(device);
+    vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
+#if !defined(HAVE_VULKAN)
+    vulkan = 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            strcmp(device->vtbl->program_format(device),
-                "metal.lookup-rgb8.v1") != 0) return SIXEL_FEATURE_ERROR;
+            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
     }
-    if (request->query_kind == SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL &&
-            !request->allow_batch) return SIXEL_FEATURE_ERROR;
+    if ((vulkan || request->query_kind == SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL)
+            && !request->allow_batch) return SIXEL_FEATURE_ERROR;
     if (request->ncolors < 1 || request->ncolors > 256) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -320,6 +353,7 @@ blockcull_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         device->vtbl->ref(device);
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
+        plan->vulkan = vulkan;
         plan->legacy.kind = SIXEL_LUT_POLICY_BLOCKCULL;
         plan->legacy.pixelformat = SIXEL_PIXELFORMAT_RGB888;
         memcpy(plan->palette, entries.entries, plan->count * 3U);

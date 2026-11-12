@@ -70,6 +70,8 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     memcpy(configuration.fhedt_weights, request->fhedt_weights,
         sizeof(configuration.fhedt_weights));
     memset(&execution, 0, sizeof(execution));
+    /* The byte executor accepts both point and collective programs. */
+    execution.allow_batch = 1;
     (void)pthread_mutex_lock(&gpu_compat_gate);
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) goto end;

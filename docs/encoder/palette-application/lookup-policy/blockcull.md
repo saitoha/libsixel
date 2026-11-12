@@ -15,7 +15,7 @@ palette ──> far(c): largest distance from c to the box ──> U = min far(c
 each sample ──> palette-order scan over the kept colors ──> first minimum
 ```
 
-The method relies on spatial coherence in the image, not on a search structure built from the palette. Its main use is the Metal palette-application path, where a block of pixels shares one culling pass; the CPU implementation is a reference for the same result.
+The method relies on spatial coherence in the image, not on a search structure built from the palette. Its main use is the GPU palette-application path, where a block of pixels shares one culling pass; the CPU implementation is a reference for the same result.
 
 ## Method
 
@@ -55,7 +55,7 @@ For GPU diffusion, the independent fractional provider uses the [tile-batch ABI]
 
 The fractional tile dispatch uses 32 threads, which can span several hardware SIMD groups. Tile bounds, survivor counts and candidate offsets must cover all 32 threads, and candidate publication uses a threadgroup barrier. A 32-wide SIMD group retains the collective fast path; narrower groups use shared-memory reductions and an ordered prefix scan. Partial and transparent tiles make the same group-wide decision before returning. The existing batch equivalence cases compare complete indexed frames with the independent exhaustive point path; native execution on a narrow-SIMD GPU is required to exercise the cross-group branch.
 
-The dither owns query generation and residual updates; the lookup receives neither original pixels nor retained history. Partial tiles and fully inactive tiles remain valid. The additional dispatches and 20 bytes per pixel of dither scratch can make batch execution slower than a fused point policy. [`lookup-policy-blockcull-gpu.c`](../../../../src/lookup-policy-blockcull-gpu.c) and [`lookup-policy-blockcull-fractional-gpu.metal`](../../../../src/lookup-policy-blockcull-fractional-gpu.metal) own this program independently of byte matrix execution.
+The dither owns query generation and residual updates; the lookup receives neither original pixels nor retained history. Partial tiles and fully inactive tiles remain valid. On Metal, the additional dispatches and 20 bytes per pixel of dither scratch can make batch execution slower than a fused point policy. Vulkan uses the same culling bounds and ordered 64-candidate list in a fused 32-thread workgroup for both byte and fractional queries; its shared-memory reductions cover the whole tile regardless of hardware subgroup width. Queries and indexes stay in private shader storage across the collective call. The provider is [`lookup-policy-blockcull-gpu.glsl`](../../../../src/lookup-policy-blockcull-gpu.glsl); it scans all colors only when the candidate list overflows. [`lookup-policy-blockcull-gpu.c`](../../../../src/lookup-policy-blockcull-gpu.c) and [`lookup-policy-blockcull-fractional-gpu.metal`](../../../../src/lookup-policy-blockcull-fractional-gpu.metal) own this program independently of byte matrix execution.
 
 ## Guarantee
 
@@ -84,7 +84,7 @@ The CPU bulk path groups samples along a row only, which limits how small the bo
 | BC-01 | Byte bulk lookup equals an independent palette-order integer scan for palettes of 1 to 256 colors with duplicates and equidistant midpoints, every run length up to 70 and a long run, in both scan directions. | [tests/lookup/blockcull/0002_blockcull_byte_exact.t](../../../../tests/lookup/blockcull/0002_blockcull_byte_exact.t), [tests/_support/processing/lookup/0035_blockcull_exact.c](../../../../tests/_support/processing/lookup/0035_blockcull_exact.c) |
 | BC-02 | Float bulk lookup equals an independent double-distance scan, including runs with NaN, infinite and far out-of-range samples, and equals the VP-tree float metric's index for finite samples. | [tests/lookup/blockcull/0003_blockcull_float_exact.t](../../../../tests/lookup/blockcull/0003_blockcull_float_exact.t) |
 | BC-03 | Both classes satisfy the shared bulk contract: ordered results equal independent point lookups for cold and repeated calls, partial runs and reverse traversal. | [tests/lookup/dispatch/0012_lookup_batch_contract.c](../../../../tests/lookup/dispatch/0012_lookup_batch_contract.c) |
-| BC-04 | Metal blockcull returns the exhaustive index and the CPU keep mask for partial 8-by-8 blocks, smooth and noisy rows that exceed the survivor capacity, duplicate and equidistant colors and interleaved 6delta keeps, and requires the matrix kernel when the device supports simdgroup matrices, otherwise the direct kernel. | [tests/lookup/blockcull/0001_blockcull_exact.t](../../../../tests/lookup/blockcull/0001_blockcull_exact.t), [tests/lookup/blockcull/0001_blockcull_exact.c](../../../../tests/lookup/blockcull/0001_blockcull_exact.c) |
+| BC-04 | GPU blockcull returns the exhaustive index and the CPU keep mask for partial 8-by-8 blocks, smooth and noisy rows that exceed the survivor capacity, duplicate and equidistant colors and interleaved 6delta keeps, and requires the Metal matrix kernel when supported, the Metal direct kernel otherwise, or the Vulkan collective program executor. | [tests/lookup/blockcull/0001_blockcull_exact.t](../../../../tests/lookup/blockcull/0001_blockcull_exact.t), [tests/lookup/blockcull/0001_blockcull_exact.c](../../../../tests/lookup/blockcull/0001_blockcull_exact.c) |
 | BC-05 | Native gamma float lookup retains extended coordinates. | [tests/lookup/blockcull/0004_blockcull_gamma_range.t](../../../../tests/lookup/blockcull/0004_blockcull_gamma_range.t) |
 | BC-06 | Native linear float lookup retains extended coordinates. | [tests/lookup/blockcull/0005_blockcull_linear_range.t](../../../../tests/lookup/blockcull/0005_blockcull_linear_range.t) |
 | BC-07 | Native oklab float lookup retains extended coordinates. | [tests/lookup/blockcull/0006_blockcull_oklab_range.t](../../../../tests/lookup/blockcull/0006_blockcull_oklab_range.t) |
@@ -119,11 +119,11 @@ The CPU bulk path groups samples along a row only, which limits how small the bo
 | BC-36 | din99d decisions follow the normalized channel metric. | [tests/lookup/blockcull/0035_blockcull_din99d_metric.t](../../../../tests/lookup/blockcull/0035_blockcull_din99d_metric.t) |
 | BC-37 | Preparing one float lookup instance does not change another. | [tests/lookup/blockcull/0036_blockcull_instance_isolation.t](../../../../tests/lookup/blockcull/0036_blockcull_instance_isolation.t) |
 
-BC-04 skips when the Metal palette backend is unavailable. The tests establish index equality, not speed; they do not cover the per-call cost or the crossover between culling and exhaustive scans.
+BC-04 skips when the blockcull GPU provider is unavailable. The tests establish index equality, not speed; they do not cover the per-call cost or the crossover between culling and exhaustive scans.
 
 The native-float cases below the byte contracts cover five colorspaces, fractional and extended coordinates, several palette sizes, independent metric decisions and instance isolation. GPU selection assertions use device capability independently of pipeline compilation; unavailable devices skip rather than count as matrix-kernel evidence.
 
-The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Batch equivalence cases run on Metal and Vulkan and skip when the blockcull provider is unavailable; Metal shader-injection probes remain Metal-only. These checks do not rank perceived quality or establish throughput.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

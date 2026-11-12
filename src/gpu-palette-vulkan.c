@@ -519,7 +519,17 @@ sixel_gpu_vulkan_view_check(sixel_gpu_lookup_program_view_t const *view,
 {
     if (view->program_format == NULL ||
             strcmp(view->program_format, "vulkan.lookup-rgb8.v1") != 0 ||
-            view->query_kind != query_kind || view->batch != NULL) {
+            view->query_kind != query_kind) {
+        return SIXEL_FEATURE_ERROR;
+    }
+    /* Vulkan collective programs expose an inline entry; all lanes call
+     * it once with two queries, including inactive lanes. Other shapes
+     * require an executor of their own and must not become scalar scans. */
+    if (view->batch != NULL && (view->batch->entry_point == NULL ||
+            strcmp(view->batch->entry_point, "lookup_rgb8_batch") != 0 ||
+            view->batch->tile[0] != 8 || view->batch->tile[1] != 8 ||
+            view->batch->threads[0] != 32 || view->batch->threads[1] != 1 ||
+            view->batch->threads[2] != 1)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (view->palette == NULL || view->ncolors < 1 ||
@@ -1338,8 +1348,13 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             }
             offset = (size_t)chunk->first * request->width;
             length = (size_t)chunk->rows * request->width;
-            status = sixel_gpu_vulkan_groups(runtime, (uint64_t)length,
-                &groups_x, &groups_y);
+            /* Batch tiles are relative to this streamed row range, so
+             * partial chunks neither revisit nor omit any published row. */
+            status = sixel_gpu_vulkan_groups(runtime,
+                view->batch != NULL
+                    ? (((uint64_t)request->width + 7U) / 8U) *
+                        (((uint64_t)chunk->rows + 7U) / 8U) * 64U
+                    : (uint64_t)length, &groups_x, &groups_y);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }

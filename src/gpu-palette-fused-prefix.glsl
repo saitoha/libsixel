@@ -6,7 +6,7 @@
  * mirror gpu-palette-fused-prefix.metal so that positional dither,
  * transparency and 6delta keeps produce the same indexes as the Metal and
  * CPU paths. A lookup policy's own GLSL follows this prefix and supplies
- * lookup_rgb8(); gpu-palette-fused-suffix.glsl closes the kernel. This
+ * lookup_rgb8() or a tile collective; the suffix closes the kernel. This
  * component never interprets the policy, its constants or its workspace.
  *
  * Bindings 0..9 follow the Metal buffer indexes. The program ABI adds
@@ -17,7 +17,6 @@
 #extension GL_EXT_shader_8bit_storage : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
 
-layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 layout(std430, set = 0, binding = 0) writeonly buffer Result {
     uint8_t result[];

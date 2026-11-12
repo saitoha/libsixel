@@ -7,6 +7,23 @@
  *
  * KERNEL selects initialize, iterate, finish, solve_tail or resolve.
  */
+/* Batch programs consume two spatial queries per lane. Point programs
+ * retain their linear 64-thread dispatch. The host validates the shape. */
+#if defined(SIXEL_LOOKUP_BATCH)
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+#else
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+#endif
+
+#if defined(SIXEL_LOOKUP_BATCH)
+/* Private query slots survive the collective lookup. Stage one only
+ * gathers queries; stage two consumes their indexes. No image-sized batch
+ * scratch or extra dispatch is needed, and residual ownership stays here. */
+vec4 batch_queries[2];
+uvec2 batch_indexes;
+uint batch_stage, batch_slot;
+#endif
+
 layout(constant_id = 0) const int KERNEL = 0;
 
 const int LSO2_GPU_INITIALIZE = 0;
@@ -157,11 +174,22 @@ void lso2_gpu_initialize(uint i)
     uint best;
 
     if (transparent[i] != uint8_t(0)) {
+#if defined(SIXEL_LOOKUP_BATCH)
+        if (batch_stage == 1u) return;
+#endif
         a[i] = vec4(0.0);
         return;
     }
     query = lso2_gpu_source(i);
+#if defined(SIXEL_LOOKUP_BATCH)
+    if (batch_stage == 1u) {
+        batch_queries[batch_slot] = vec4(query, 1.0);
+        return;
+    }
+    best = batch_indexes[batch_slot];
+#else
     best = lookup_rgb8_fractional(query, p.ncolors);
+#endif
     if (best >= p.ncolors) {
         atomicOr(invalid[0], 1u);
         a[i] = vec4(0.0);
@@ -178,10 +206,15 @@ void lso2_gpu_iterate(uint lane)
     precise vec3 query, previous;
     vec4 updated, state;
 
+#if defined(SIXEL_LOOKUP_BATCH)
+    x = int(lane % p.width);
+    y = int(lane / p.width);
+#else
     tile = lane / 1024u;
     position = positions[(pc.step % 4u) * 1024u + lane % 1024u];
     x = int((tile % p.tiles_x) * 64u + position % 64u);
     y = int((tile / p.tiles_x) * 64u + position / 64u);
+#endif
     if (x >= int(p.width) || y >= int(p.height)) {
         return;
     }
@@ -201,13 +234,24 @@ void lso2_gpu_iterate(uint lane)
         previous = state.xyz + lso2_gpu_color(uint(state.w));
         /* precise keeps the Metal rounding of this round trip. */
         query = previous + (query - previous);
+#if defined(SIXEL_LOOKUP_BATCH)
+        if (batch_stage == 1u) {
+            batch_queries[batch_slot] = vec4(query, 1.0);
+            return;
+        }
+        best = batch_indexes[batch_slot];
+#else
         best = lookup_rgb8_fractional(query, p.ncolors);
+#endif
         if (best >= p.ncolors) {
             atomicOr(invalid[0], 1u);
         } else {
             updated = vec4(query - lso2_gpu_color(best), float(best));
         }
     }
+#if defined(SIXEL_LOOKUP_BATCH)
+    if (batch_stage == 1u) return;
+#endif
     /* Earlier phases read new generations; this phase reads the old one.
      * No invocation can read another same-phase invocation's write. */
     if ((((pc.step / 4u) + 1u) & 1u) != 0u) {
@@ -230,13 +274,24 @@ void lso2_gpu_finish(uint i)
         /* Reconstruct the solved fractional query. Retained history is
          * consulted only now and never seeds a later frame's diffusion. */
         query = lso2_gpu_solved_query(a[i]);
+#if defined(SIXEL_LOOKUP_BATCH)
+        if (batch_stage == 1u) {
+            batch_queries[batch_slot] = vec4(query, 1.0);
+            return;
+        }
+        best = batch_indexes[batch_slot];
+#else
         best = lookup_rgb8_fractional(query, p.ncolors);
+#endif
         if (best >= p.ncolors) {
             atomicOr(invalid[0], 1u);
             return;
         }
         code = lso2_gpu_classify(i, query, best);
     }
+#if defined(SIXEL_LOOKUP_BATCH)
+    if (batch_stage == 1u) return;
+#endif
     result[i] = uint8_t(code != 0u ? p.keycolor : best);
     skip[i] = uint8_t(code);
 }
@@ -252,7 +307,15 @@ void lso2_gpu_solve_tail(uint i)
         return;
     }
     query = lso2_gpu_solved_query(a[i]);
+#if defined(SIXEL_LOOKUP_BATCH)
+    if (batch_stage == 1u) {
+        batch_queries[batch_slot] = vec4(query, 1.0);
+        return;
+    }
+    best = batch_indexes[batch_slot];
+#else
     best = lookup_rgb8_fractional(query, p.ncolors);
+#endif
     if (best >= p.ncolors) {
         atomicOr(invalid[0], 1u);
         return;
@@ -277,14 +340,8 @@ void lso2_gpu_resolve(uint i)
     skip[i] = uint8_t(code);
 }
 
-void main()
+void lso2_gpu_run(uint index)
 {
-    uint index;
-
-    index = gl_GlobalInvocationID.y * pc.pitch + gl_GlobalInvocationID.x;
-    if (index >= pc.count) {
-        return;
-    }
     if (KERNEL == LSO2_GPU_INITIALIZE) {
         lso2_gpu_initialize(index);
     } else if (KERNEL == LSO2_GPU_ITERATE) {
@@ -296,4 +353,50 @@ void main()
     } else {
         lso2_gpu_resolve(index);
     }
+}
+
+void main()
+{
+#if defined(SIXEL_LOOKUP_BATCH)
+    uint tile, columns, pos, h, x, y, index[2];
+    bool enabled[2];
+
+    columns = (p.width + 7u) / 8u;
+    tile = gl_WorkGroupID.y * gl_NumWorkGroups.x + gl_WorkGroupID.x;
+    for (h = 0u; h < 2u; ++h) {
+        pos = gl_LocalInvocationID.x + h * 32u;
+        x = (tile % columns) * 8u + pos % 8u;
+        y = (tile / columns) * 8u + pos / 8u;
+        index[h] = y * p.width + x;
+        enabled[h] = x < p.width && y < p.height;
+        if (enabled[h] && KERNEL == LSO2_GPU_ITERATE) {
+            enabled[h] = uint(phase[(y & 63u) * 64u + (x & 63u)])
+                == pc.step % 4u;
+        }
+        batch_queries[h] = vec4(0.0);
+    }
+    /* Deferred resolve consumes the frozen solution without any lookup. */
+    if (KERNEL > LSO2_GPU_SOLVE_TAIL) {
+        for (h = 0u; h < 2u; ++h) {
+            if (enabled[h]) lso2_gpu_resolve(index[h]);
+        }
+        return;
+    }
+    batch_stage = 1u;
+    for (h = 0u; h < 2u; ++h) {
+        batch_slot = h;
+        if (enabled[h]) lso2_gpu_run(index[h]);
+    }
+    lookup_rgb8_batch(batch_queries, p.ncolors, batch_indexes);
+    batch_stage = 2u;
+    for (h = 0u; h < 2u; ++h) {
+        batch_slot = h;
+        if (enabled[h]) lso2_gpu_run(index[h]);
+    }
+#else
+    uint index;
+
+    index = gl_GlobalInvocationID.y * pc.pitch + gl_GlobalInvocationID.x;
+    if (index < pc.count) lso2_gpu_run(index);
+#endif
 }

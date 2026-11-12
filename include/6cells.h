@@ -2029,7 +2029,20 @@ typedef struct sixel_gpu_lookup_batch_dispatch {
  * 0..3 with uint lookup_count at 1, define SIXEL_LOOKUP_BUILDER, and run
  * main() { <entry_point>(); } with the pass's local dimensions as
  * specialization constants 0..2; builder code is guarded by
- * SIXEL_LOOKUP_BUILDER. There is no batch entry yet. */
+ * SIXEL_LOOKUP_BUILDER.
+ *
+ * Vulkan batch chunks define SIXEL_LOOKUP_BATCH and replace point entries
+ * with void lookup_rgb8_batch(vec4 queries[2], uint ncolors,
+ *                            out uvec2 indexes).
+ * The descriptor names this entry, an 8x8 tile and 32x1x1 local threads;
+ * other shapes are rejected. Lane l owns tile positions l and l+32 in
+ * row-major order. All lanes call the collective once, including padding.
+ * Query activity and result validation follow the Metal batch contract.
+ * The consumer retains queries/indexes in private shader storage across
+ * the collective; no image-sized query plane or extra dispatch is needed.
+ * The lookup may use shared storage and workgroup barriers, but never sees
+ * source images, residuals or history. Both query kinds require allow_batch
+ * for this descriptor; byte palette consumers explicitly opt in. */
 /* Query kind is an ABI specialization and part of cache identity.
  * BYTE exposes the uchar3 entry above. FRACTIONAL additionally exposes
  * uint lookup_rgb8_fractional(float3 query, constant uchar *palette,

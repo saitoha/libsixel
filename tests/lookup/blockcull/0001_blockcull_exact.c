@@ -4,7 +4,7 @@
  * Policy: docs/encoder/palette-application/lookup-policy/blockcull.md
  */
 /*
- * Metal blockcull must return the exhaustive scan's index for every pixel.
+ * GPU blockcull must return the exhaustive scan's index for every pixel.
  * The image width and height leave partial 8x8 blocks. Smooth ramps keep
  * blocks narrow so culling removes most colors; random rows widen blocks
  * until more colors survive than the kernel's threadgroup capacity and the
@@ -176,11 +176,12 @@ gpupal_cull_apply(sixel_allocator_t *allocator,
     indexes = sixel_dither_apply_palette(dither, pixels,
                                          GPUPAL_CULL_WIDTH,
                                          GPUPAL_CULL_HEIGHT);
-    /* Capability is independent of compilation/dispatch success. A silent
-     * direct fallback on a matrix-capable device must fail this test. */
+    /* Vulkan's program executor runs this policy's collective GLSL.
+     * Metal must select its matrix kernel whenever hardware supports it;
+     * a silent direct fallback on a matrix-capable device must fail. */
     if (indexes != NULL && gpu_policy == SIXEL_GPU_POLICY_FORCE &&
-            (!hooks.entered || hooks.kernel !=
-                (hooks.matrix_supported ? (ncolors > 32 ? 3 : 2) : 1))) {
+            (!hooks.entered || (hooks.kernel != 9 && hooks.kernel !=
+                (hooks.matrix_supported ? (ncolors > 32 ? 3 : 2) : 1)))) {
         fprintf(stderr, "GPU kernel mismatch: matrix=%d kernel=%d\n",
             hooks.matrix_supported, hooks.kernel);
         sixel_allocator_free(allocator, indexes);

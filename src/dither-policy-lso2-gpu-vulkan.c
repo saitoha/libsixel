@@ -779,7 +779,8 @@ lso2_gpu_vk_bind_locked(sixel_vk_runtime_t *runtime,
 
 static SIXELSTATUS
 lso2_gpu_vk_dispatch(sixel_vk_runtime_t *runtime, VkCommandBuffer command,
-    VkPipeline pipeline, uint32_t step, uint64_t count)
+    VkPipeline pipeline, uint32_t step, uint64_t count,
+    lso2_gpu_vk_plan_t const *plan)
 {
     lso2_gpu_vk_state_t *state;
     lso2_gpu_vk_push_t push;
@@ -787,6 +788,12 @@ lso2_gpu_vk_dispatch(sixel_vk_runtime_t *runtime, VkCommandBuffer command,
     SIXELSTATUS status;
 
     state = &lso2_gpu_vk_state;
+    /* One workgroup per spatial 8x8 tile for the collective ABI. The
+     * groups helper counts 64 logical pixels, while GLSL uses 32 lanes. */
+    if (plan->view.batch != NULL) {
+        count = ((uint64_t)plan->params.width + 7U) / 8U *
+            (((uint64_t)plan->params.height + 7U) / 8U) * 64U;
+    }
     status = lso2_gpu_vk_groups(runtime, count, &groups_x, &groups_y);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1001,7 +1008,7 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
         status = lso2_gpu_vk_dispatch(runtime, command,
             plan->code->kernels[kernel],
             pass == 0 ? 0U : (uint32_t)(pass - 1),
-            kernel == LSO2_GPU_VK_ITERATE ? lanes : pixels);
+            kernel == LSO2_GPU_VK_ITERATE ? lanes : pixels, plan);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1344,7 +1351,7 @@ sixel_dither_lso2_gpu_vulkan_prepare(sixel_allocator_t *allocator,
     lookup_request.pixelformat = request->pixelformat;
     lookup_request.colorspace = request->colorspace;
     lookup_request.query_kind = SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL;
-    lookup_request.allow_batch = 0;
+    lookup_request.allow_batch = 1;
     status = request->lookup->vtbl->prepare(request->lookup, &lookup_request,
         request->device, &plan->lookup);
     if (status != SIXEL_OK) {
