@@ -10,6 +10,12 @@
 static char const * const vptree_chunks[] = {
 #include <generated-metal/lookup-policy-vptree-gpu-shader.inc.h>
 };
+#if defined(HAVE_VULKAN)
+/* Readable source: lookup-policy-vptree-gpu.glsl. */
+static char const * const vptree_vulkan_chunks[] = {
+#include <generated-vulkan/lookup-policy-vptree-gpu-shader.inc.h>
+};
+#endif
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
@@ -23,6 +29,7 @@ typedef struct vptree_plan {
     unsigned char palette[768];
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
+    int vulkan;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
@@ -82,6 +89,15 @@ vptree_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->logical_name = "vptree";
     view->chunks = vptree_chunks;
     view->chunk_count = sizeof(vptree_chunks) / sizeof(vptree_chunks[0]);
+#if defined(HAVE_VULKAN)
+    /* The Vulkan program keeps the same table, passes and workspace. */
+    if (plan->vulkan) {
+        view->program_format = "vulkan.lookup-rgb8.v1";
+        view->chunks = vptree_vulkan_chunks;
+        view->chunk_count = sizeof(vptree_vulkan_chunks) /
+            sizeof(vptree_vulkan_chunks[0]);
+    }
+#endif
     view->palette = plan->palette;
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
@@ -238,19 +254,27 @@ vptree_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     vptree_plan_t *plan;
     sixel_palette_entries_view_t entries;
     unsigned int width;
+    char const *format;
+    int vulkan;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
+    format = device->vtbl->program_format(device);
+    vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
+#if !defined(HAVE_VULKAN)
+    vulkan = 0;
+#endif
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            strcmp(device->vtbl->program_format(device),
-                "metal.lookup-rgb8.v1") != 0) return SIXEL_FEATURE_ERROR;
+            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->ncolors < 1 || request->ncolors > 256) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -290,6 +314,7 @@ vptree_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         device->vtbl->ref(device);
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
+        plan->vulkan = vulkan;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         width = 32;
         while (width < plan->count) width *= 2;
