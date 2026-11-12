@@ -35,6 +35,7 @@ vulkan_policies = [
   '../lookup-policy-rbc-gpu.glsl',
   '../lookup-policy-mahalanobis-gpu.glsl',
   '../lookup-policy-certlut-gpu.glsl',
+  '../lookup-policy-gridlut-gpu.glsl',
 ]
 if have_vulkan
   vulkan_chunks = [vulkan_builder_prefix] + vulkan_policies

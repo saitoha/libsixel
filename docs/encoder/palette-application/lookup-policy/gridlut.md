@@ -40,7 +40,7 @@ The table occupies `4096 * 65 = 266240` bytes: one count and 64 byte indexes per
 
 Lookup runs after positional or blue-noise dither, using the same transparency, delta keep and retained-plane update stages as other GPU policies. A kept pixel performs no candidate lookup. GPU admission otherwise follows the byte RGB palette-application rules; unsupported shapes use the CPU path under GPU `auto`. With `SIXEL_TRACE_TOPIC=gpu_contract`, the selected path reports `LSXGPU2|consumer=palette-apply|kernel=gridlut`.
 
-Fractional GPU diffusion queries use an independent provider in [`lookup-policy-gridlut-gpu.c`](../../../../src/lookup-policy-gridlut-gpu.c) and [`lookup-policy-gridlut-fractional-gpu.metal`](../../../../src/lookup-policy-gridlut-fractional-gpu.metal). Each cell's closed upper bound is `min(low+16,255)`, covering the fractional strip above the last integer. Integer box-distance bounds retain every possible winner, the 64-entry overflow path scans the full palette, and final distances keep the original fractional query. Palette order breaks ties. Byte execution retains its byte-cell bounds. Plans key precision independently and lease their own workspace through completion.
+Fractional GPU diffusion queries use an independent provider in [`lookup-policy-gridlut-gpu.c`](../../../../src/lookup-policy-gridlut-gpu.c) and [`lookup-policy-gridlut-fractional-gpu.metal`](../../../../src/lookup-policy-gridlut-fractional-gpu.metal). Each cell's closed upper bound is `min(low+16,255)`, covering the fractional strip above the last integer. Integer box-distance bounds retain every possible winner, the 64-entry overflow path scans the full palette, and final distances keep the original fractional query. Palette order breaks ties. Byte execution retains its byte-cell bounds. Vulkan uses [`lookup-policy-gridlut-gpu.glsl`](../../../../src/lookup-policy-gridlut-gpu.glsl) for both queries, with the same byte table layout and a builder constant selecting the byte or fractional cell bounds. Plans key precision independently and lease their own workspace through completion.
 
 ## Guarantee
 
@@ -56,7 +56,7 @@ The GPU construction cost is paid once per palette change, even if delta keeps m
 
 ## Implementation map
 
-[`lookup-policy-gridlut.c`](../../../../src/lookup-policy-gridlut.c) owns CPU preparation, exact byte lookup and float delegation. [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m) owns GPU construction, cache identity, lookup and dispatch. [`options-registry.c`](../../../../src/options-registry.c) registers the unique `g` prefix.
+[`lookup-policy-gridlut.c`](../../../../src/lookup-policy-gridlut.c) owns CPU preparation, exact byte lookup and float delegation. [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m) owns legacy Metal byte construction, cache identity, lookup and dispatch; [`lookup-policy-gridlut-gpu.c`](../../../../src/lookup-policy-gridlut-gpu.c) owns Metal fractional and Vulkan byte and fractional plans. [`options-registry.c`](../../../../src/options-registry.c) registers the unique `g` prefix.
 
 ## Test coverage
 
@@ -66,7 +66,7 @@ The GPU construction cost is paid once per palette change, even if delta keeps m
 | --- | --- | --- |
 | GL-01 | Byte queries equal an independent exhaustive scan at every grid-cell corner, on random and palette-hit queries, duplicate colors, overflow, reverse traversal and re-preparation with a changed palette of equal size. | [tests/lookup/gridlut/0005_gridlut_byte_exact.t](../../../../tests/lookup/gridlut/0005_gridlut_byte_exact.t), [tests/_support/processing/lookup/0037_gridlut_exact.c](../../../../tests/_support/processing/lookup/0037_gridlut_exact.c) |
 | GL-02 | Float delegation matches an independent double-distance scan, nonfinite handling and finite VP-tree metric results. | [tests/lookup/gridlut/0006_gridlut_float_exact.t](../../../../tests/lookup/gridlut/0006_gridlut_float_exact.t) |
-| GL-03 | Metal indexes and delta keep masks equal CPU exhaustive lookup with none, bluenoise and positional dithering, candidate overflow, repeated palettes and changed palettes of equal size; the gridlut kernel is selected. | [tests/lookup/gridlut/0001_gridlut_exact.t](../../../../tests/lookup/gridlut/0001_gridlut_exact.t), [tests/lookup/gridlut/0001_gridlut_exact.c](../../../../tests/lookup/gridlut/0001_gridlut_exact.c) |
+| GL-03 | GPU indexes and delta keep masks equal CPU exhaustive lookup with none, bluenoise and positional dithering, candidate overflow, repeated palettes and changed palettes of equal size; the gridlut kernel is selected. | [tests/lookup/gridlut/0001_gridlut_exact.t](../../../../tests/lookup/gridlut/0001_gridlut_exact.t), [tests/lookup/gridlut/0001_gridlut_exact.c](../../../../tests/lookup/gridlut/0001_gridlut_exact.c) |
 | GL-04 | gridlut allocation failure falls back and rebuilds. | [tests/lookup/gridlut/0002_gridlut_allocation_failure.t](../../../../tests/lookup/gridlut/0002_gridlut_allocation_failure.t) |
 | GL-05 | gridlut encoder failure falls back and rebuilds. | [tests/lookup/gridlut/0003_gridlut_encoder_failure.t](../../../../tests/lookup/gridlut/0003_gridlut_encoder_failure.t) |
 | GL-06 | gridlut completion failure falls back and rebuilds. | [tests/lookup/gridlut/0004_gridlut_completion_failure.t](../../../../tests/lookup/gridlut/0004_gridlut_completion_failure.t) |
@@ -104,7 +104,7 @@ The GPU construction cost is paid once per palette change, even if delta keeps m
 | GL-38 | din99d decisions follow the normalized channel metric. | [tests/lookup/gridlut/0038_gridlut_din99d_metric.t](../../../../tests/lookup/gridlut/0038_gridlut_din99d_metric.t) |
 | GL-39 | Preparing one float lookup instance does not change another. | [tests/lookup/gridlut/0039_gridlut_instance_isolation.t](../../../../tests/lookup/gridlut/0039_gridlut_instance_isolation.t) |
 
-GL-03 skips without a Metal palette backend. The shared [CLI prefix contract](../../../cli/prefix-matching.md) checks that every registered lookup policy has a unique initial. These tests establish selection and exactness, not performance or perceived quality.
+GL-03 through GL-06 require a GPU device that carries the gridlut program, Metal or Vulkan. The shared [CLI prefix contract](../../../cli/prefix-matching.md) checks that every registered lookup policy has a unique initial. These tests establish selection and exactness, not performance or perceived quality.
 
 The native-float matrix covers five colorspaces, fractional and extended coordinates, palette sizes and instance isolation. GPU failure cases inject allocation, encoder-creation and post-completion errors around real backend execution, then require AUTO CPU fallback, cache rebuilding and later reuse. They do not simulate a device reset or an operating-system allocation failure.
 

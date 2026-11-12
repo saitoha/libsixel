@@ -6,10 +6,10 @@ echo "1..1"
 set -v
 
 status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup gridlut \
     gpu-palette/0027_gridlut_allocation_failure || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend unavailable"
+    echo "ok 1 # SKIP GPU gridlut program unavailable"
     exit 0
 }
 test "$status" -eq 0 || {

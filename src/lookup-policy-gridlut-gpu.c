@@ -10,6 +10,12 @@
 static char const * const gridlut_chunks[] = {
 #include <generated-metal/lookup-policy-gridlut-fractional-gpu-shader.inc.h>
 };
+#if defined(HAVE_VULKAN)
+/* Readable source: lookup-policy-gridlut-gpu.glsl. */
+static char const * const gridlut_vulkan_chunks[] = {
+#include <generated-vulkan/lookup-policy-gridlut-gpu-shader.inc.h>
+};
+#endif
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
@@ -23,8 +29,10 @@ typedef struct gridlut_plan {
     unsigned char palette[768];
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
+    uint32_t fractional;
     sixel_lookup_policy_configuration_t legacy;
     sixel_gpu_lookup_build_pass_t pass;
+    int vulkan;
     int busy;
     int valid;
 } gridlut_plan_t;
@@ -79,7 +87,28 @@ gridlut_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (gridlut_plan_t const *)self;
     memset(view, 0, sizeof(*view));
-    /* Byte consumers keep the existing optimized executor. Fractional
+#if defined(HAVE_VULKAN)
+    /* Vulkan owns both queries. Its builder uses the constant to retain
+     * the respective Metal byte and fractional cell bounds. */
+    if (plan->vulkan) {
+        view->program_format = "vulkan.lookup-rgb8.v1";
+        view->logical_name = "gridlut";
+        view->query_kind = plan->query_kind;
+        view->chunks = gridlut_vulkan_chunks;
+        view->chunk_count = sizeof(gridlut_vulkan_chunks) /
+            sizeof(gridlut_vulkan_chunks[0]);
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->ncolors = plan->count;
+        view->constants = &plan->fractional;
+        view->constants_size = sizeof(plan->fractional);
+        view->workspace_size = 266240;
+        view->build_passes = &plan->pass;
+        view->build_pass_count = 1;
+        return SIXEL_OK;
+    }
+#endif
+    /* Metal byte consumers keep the optimized executor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
         view->program_format = "libsixel.legacy-palette.v1";
@@ -193,8 +222,8 @@ gridlut_begin(sixel_gpu_lookup_plan_interface_t *self,
     status = SIXEL_OK;
     if (plan->workspace == NULL) {
         status = plan->device->vtbl->create_buffer(plan->device,
-            plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE
-                ? 1 : 266240, &plan->workspace);
+            plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE &&
+                !plan->vulkan ? 1 : 266240, &plan->workspace);
     }
     if (SIXEL_FAILED(status)) {
         sixel_mutex_unlock(&plan->gate);
@@ -253,15 +282,23 @@ gridlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     gridlut_preparer_t *preparer;
     gridlut_plan_t *plan;
     sixel_palette_entries_view_t entries;
+    char const *format;
+    int vulkan;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
+    format = device->vtbl->program_format(device);
+    vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
+#if !defined(HAVE_VULKAN)
+    vulkan = 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            strcmp(device->vtbl->program_format(device),
-                "metal.lookup-rgb8.v1") != 0) return SIXEL_FEATURE_ERROR;
+            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
@@ -305,6 +342,11 @@ gridlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         device->vtbl->ref(device);
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
+        plan->vulkan = vulkan;
+        /* The Vulkan builder constant is a uint32 word, independent of
+         * the C enum's storage. Metal keeps its existing builder ABI. */
+        plan->fractional = request->query_kind ==
+            SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL;
         plan->legacy.kind = SIXEL_LUT_POLICY_GRIDLUT;
         plan->legacy.pixelformat = SIXEL_PIXELFORMAT_RGB888;
         memcpy(plan->palette, entries.entries, plan->count * 3U);

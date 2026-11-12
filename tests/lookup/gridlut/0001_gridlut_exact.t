@@ -14,10 +14,10 @@ set -v
 
 status=0
 trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract ${SIXEL_RUNTIME-} \
-    "${TEST_RUNNER_PATH}" --require-gpu-palette \
+    "${TEST_RUNNER_PATH}" --require-gpu-lookup gridlut \
     "gpu-palette/0022_gridlut_exact" 2>&1) || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend is unavailable"
+    echo "ok 1 # SKIP GPU gridlut program is unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
@@ -31,7 +31,7 @@ case "${trace}" in
     *) false ;;
 esac || {
     printf '# %s\n' "${trace}"
-    echo "not ok 1 - GPU gridlut did not select a culling or direct kernel"
+    echo "not ok 1 - GPU gridlut did not select its own kernel"
     exit 0
 }
 

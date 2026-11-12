@@ -34,7 +34,7 @@ gpupal_grid_next(unsigned int *state)
     return (*state >> 16) & 0x7fffU;
 }
 
-/* Random colors whose last entry repeats the first. */
+/* Random colors with a duplicate, or distinct colors in one overflow cell. */
 static void
 gpupal_grid_palette(unsigned char *palette, int ncolors, unsigned int seed)
 {
@@ -49,7 +49,13 @@ gpupal_grid_palette(unsigned char *palette, int ncolors, unsigned int seed)
         memcpy(palette + (ncolors - 1) * 3, palette, 3);
     }
     if (ncolors == 129) {
-        memset(palette, 42, (size_t)ncolors * 3U);
+        /* Every color wins at its own coordinate in the same cell. A
+         * truncated list cannot hide behind duplicate-color ties. */
+        for (index = 0; index < ncolors; ++index) {
+            palette[index * 3] = (unsigned char)(index & 15);
+            palette[index * 3 + 1] = (unsigned char)(index >> 4);
+            palette[index * 3 + 2] = 7;
+        }
     }
     memset(palette + ncolors * 3, 0, 3);
 }
@@ -95,6 +101,10 @@ gpupal_grid_pixels(unsigned char *pixels, unsigned char const *palette,
                 }
             }
         }
+    }
+    /* Force one exact hit beyond the stored candidate capacity. */
+    if (ncolors == 129) {
+        memcpy(pixels, palette + 128 * 3, 3);
     }
 }
 

@@ -44,7 +44,8 @@ static struct {
       sixel_gpu_lookup_certlut_create },
     { SIXEL_LUT_POLICY_EYTZINGER, GPU_METAL | GPU_VULKAN,
       sixel_gpu_lookup_eytzinger_create },
-    { SIXEL_LUT_POLICY_GRIDLUT, GPU_METAL, sixel_gpu_lookup_gridlut_create },
+    { SIXEL_LUT_POLICY_GRIDLUT, GPU_METAL | GPU_VULKAN,
+      sixel_gpu_lookup_gridlut_create },
     { SIXEL_LUT_POLICY_BLOCKCULL, GPU_METAL,
       sixel_gpu_lookup_blockcull_create }
 };
