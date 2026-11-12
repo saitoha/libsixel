@@ -10,6 +10,12 @@
 static char const * const eytzinger_chunks[] = {
 #include <generated-metal/lookup-policy-eytzinger-fractional-gpu-shader.inc.h>
 };
+#if defined(HAVE_VULKAN)
+/* Readable source: lookup-policy-eytzinger-gpu.glsl. */
+static char const * const eytzinger_vulkan_chunks[] = {
+#include <generated-vulkan/lookup-policy-eytzinger-gpu-shader.inc.h>
+};
+#endif
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
@@ -25,6 +31,7 @@ typedef struct eytzinger_plan {
     sixel_gpu_lookup_query_kind_t query_kind;
     sixel_lookup_policy_configuration_t legacy;
     sixel_gpu_lookup_build_pass_t pass;
+    int vulkan;
     int busy;
     int valid;
 } eytzinger_plan_t;
@@ -79,6 +86,24 @@ eytzinger_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (eytzinger_plan_t const *)self;
     memset(view, 0, sizeof(*view));
+#if defined(HAVE_VULKAN)
+    /* The Vulkan program serves both query kinds from its sorted table. */
+    if (plan->vulkan) {
+        view->program_format = "vulkan.lookup-rgb8.v1";
+        view->logical_name = "eytzinger";
+        view->query_kind = plan->query_kind;
+        view->chunks = eytzinger_vulkan_chunks;
+        view->chunk_count = sizeof(eytzinger_vulkan_chunks) /
+            sizeof(eytzinger_vulkan_chunks[0]);
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->ncolors = plan->count;
+        view->workspace_size = 1024;
+        view->build_passes = &plan->pass;
+        view->build_pass_count = 1;
+        return SIXEL_OK;
+    }
+#endif
     /* Byte consumers keep the existing optimized executor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
@@ -194,8 +219,8 @@ eytzinger_begin(sixel_gpu_lookup_plan_interface_t *self,
     status = SIXEL_OK;
     if (plan->workspace == NULL) {
         status = plan->device->vtbl->create_buffer(plan->device,
-            plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE
-                ? 1 : 1024, &plan->workspace);
+            plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE &&
+                !plan->vulkan ? 1 : 1024, &plan->workspace);
     }
     if (SIXEL_FAILED(status)) {
         sixel_mutex_unlock(&plan->gate);
@@ -256,15 +281,23 @@ eytzinger_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     eytzinger_preparer_t *preparer;
     eytzinger_plan_t *plan;
     sixel_palette_entries_view_t entries;
+    char const *format;
+    int vulkan;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
+    format = device->vtbl->program_format(device);
+    vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
+#if !defined(HAVE_VULKAN)
+    vulkan = 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            strcmp(device->vtbl->program_format(device),
-                "metal.lookup-rgb8.v1") != 0) return SIXEL_FEATURE_ERROR;
+            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
@@ -316,6 +349,13 @@ eytzinger_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->pass.threads[0] = 32;
         plan->pass.groups[1] = plan->pass.groups[2] = 1;
         plan->pass.threads[1] = plan->pass.threads[2] = 1;
+        plan->vulkan = vulkan;
+        if (vulkan) {
+            /* lookup-policy-eytzinger-gpu.glsl: one 64-wide invocation per
+             * palette entry. */
+            plan->pass.groups[0] = 4;
+            plan->pass.threads[0] = 64;
+        }
         if (preparer->cached != NULL) {
             eytzinger_plan_unref(&preparer->cached->iface);
         }

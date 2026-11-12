@@ -81,7 +81,7 @@ The 8-bit implementation projects with `h(r,g,b) = r + g + b`, finds the lower b
 
 This is `Theta(log K)` plus a fixed amount of work, but it is approximate. Two colors can have distant projection keys yet be close in RGB, and a fixed window can omit the true nearest palette entry. The unnormalized sum projection is not itself a general lower bound for squared RGB distance.
 
-GPU diffusion queries preserve the approximate six-neighbor window and projection stopping rule while evaluating the unrounded fractional query. An independent GPU rank sort orders `(r+g+b, palette_index)`, and fractional projection lower-bound search chooses the starting entry without rounding the query to RGB8. Equal computed distances among examined candidates choose the lowest palette index. This is not the CPU float32 exact metric search. [`lookup-policy-eytzinger-gpu.c`](../../../../src/lookup-policy-eytzinger-gpu.c) owns the fractional plan and [`lookup-policy-eytzinger-fractional-gpu.metal`](../../../../src/lookup-policy-eytzinger-fractional-gpu.metal) owns its construction and search; the optimized legacy byte path remains separate.
+GPU diffusion queries preserve the approximate six-neighbor window and projection stopping rule while evaluating the unrounded fractional query. An independent GPU rank sort orders `(r+g+b, palette_index)`, and fractional projection lower-bound search chooses the starting entry without rounding the query to RGB8. Equal computed distances among examined candidates choose the lowest palette index. This is not the CPU float32 exact metric search. [`lookup-policy-eytzinger-gpu.c`](../../../../src/lookup-policy-eytzinger-gpu.c) owns the fractional plan and [`lookup-policy-eytzinger-fractional-gpu.metal`](../../../../src/lookup-policy-eytzinger-fractional-gpu.metal) owns its construction and search; the optimized legacy byte path remains separate. On Vulkan, [`lookup-policy-eytzinger-gpu.glsl`](../../../../src/lookup-policy-eytzinger-gpu.glsl) owns the same rank sort and fractional search together with a byte search that keeps the legacy path's window, stopping rule and first-found distance tie.
 
 ### Float32 query and guarantee
 
@@ -119,7 +119,7 @@ The CPU implementation is [`lookup-policy-eytzinger.c`](../../../../src/lookup-p
 
 <!-- test-coverage: enforced -->
 
-The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without a Metal or Vulkan backend. These checks do not rank perceived quality or establish throughput.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

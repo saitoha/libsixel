@@ -29,6 +29,7 @@ vulkan_policies = [
   '../lookup-policy-none-gpu.glsl',
   '../lookup-policy-fhedt-gpu.glsl',
   '../lookup-policy-bitlut-gpu.glsl',
+  '../lookup-policy-eytzinger-gpu.glsl',
 ]
 if have_vulkan
   vulkan_chunks = [vulkan_builder_prefix] + vulkan_policies
