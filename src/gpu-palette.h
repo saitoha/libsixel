@@ -198,32 +198,6 @@ sixel_gpu_palette_auto_threshold(void);
  * neither rereads options nor retries a failed GPU frame on the CPU. */
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_plan_available(void);
-
-/* True when LUT_POLICY can reach the GPU only through direct apply: an
- * engine exists, but component plans cannot be prepared for it. */
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_apply_only(int lut_policy);
-
-/* Whether a direct-apply-only backend can serve this lookup and diffusion
- * without a prepared program. */
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_apply_serves(int lut_policy, int method_for_diffuse);
-/* As above for a resolved configuration: FHEDT also needs settings the
- * byte GPU table supports (resolution, equal weights, no query cache). */
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_lookup_serves(
-    sixel_lookup_policy_configuration_t const *configuration,
-    int method_for_diffuse);
-/* Whether a backend without a runtime device runs the GPU error diffusion
- * component for METHOD_FOR_DIFFUSE itself, evaluating LUT_POLICY inside
- * its own plan. Always false when component plans have a device. */
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_diffusion_serves(int method_for_diffuse,
-    int lut_policy);
-/* As above for a resolved lookup configuration (FHEDT settings too). */
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_diffusion_lookup_serves(int method_for_diffuse,
-    sixel_lookup_policy_configuration_t const *configuration);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request);
 

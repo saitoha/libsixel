@@ -650,34 +650,27 @@ sixel_vk_record_barrier(VkCommandBuffer command,
         NULL, 0, NULL);
 }
 
+#if defined(HAVE_VULKAN_PREBUILT_SPIRV)
+/* Every composed lookup program the build matrix produced, keyed by the
+ * POSIX cksum CRC and length of its exact GLSL text. */
+typedef struct sixel_vk_composed_spirv {
+    uint32_t crc;
+    size_t length;
+    unsigned char const *spirv;
+    size_t spirv_size;
+} sixel_vk_composed_spirv_t;
+#include <generated-vulkan/lookup-programs-spirv.inc.h>
+#endif
+
 #if defined(HAVE_SHADERC)
 static SIXELSTATUS
-sixel_vk_compile_glsl(sixel_vk_runtime_t *runtime,
-    sixel_vk_shader_source_t const *source, uint32_t **words, size_t *size)
+sixel_vk_compile_text(sixel_vk_runtime_t *runtime, char const *name,
+    char const *text, size_t length, uint32_t **words, size_t *size)
 {
     shaderc_compiler_t compiler;
     shaderc_compile_options_t options;
     shaderc_compilation_result_t result;
-    char *text;
-    size_t length;
-    size_t index;
     SIXELSTATUS status;
-
-    length = 0;
-    for (index = 0; source->glsl_chunks[index] != NULL; ++index) {
-        length += strlen(source->glsl_chunks[index]);
-    }
-    text = (char *)malloc(length + 1U);
-    if (text == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-    length = 0;
-    for (index = 0; source->glsl_chunks[index] != NULL; ++index) {
-        size_t chunk = strlen(source->glsl_chunks[index]);
-        memcpy(text + length, source->glsl_chunks[index], chunk);
-        length += chunk;
-    }
-    text[length] = '\0';
 
     status = SIXEL_RUNTIME_ERROR;
     compiler = shaderc_compiler_initialize();
@@ -691,14 +684,14 @@ sixel_vk_compile_glsl(sixel_vk_runtime_t *runtime,
     shaderc_compile_options_set_optimization_level(options,
         shaderc_optimization_level_performance);
     result = shaderc_compile_into_spv(compiler, text, length,
-        shaderc_compute_shader, source->name, "main", options);
+        shaderc_compute_shader, name, "main", options);
     if (result == NULL ||
             shaderc_result_get_compilation_status(result) !=
                 shaderc_compilation_status_success) {
         sixel_helper_set_additional_message(
             "vulkan: runtime GLSL compilation failed.");
         if (runtime->debug && result != NULL) {
-            fprintf(stderr, "libsixel: %s: %s\n", source->name,
+            fprintf(stderr, "libsixel: %s: %s\n", name,
                 shaderc_result_get_error_message(result));
         }
         goto end;
@@ -721,58 +714,18 @@ end:
     if (compiler != NULL) {
         shaderc_compiler_release(compiler);
     }
-    free(text);
     return status;
 }
 #endif
 
-SIXELSTATUS
-sixel_vk_shader_module_create(sixel_vk_runtime_t *runtime,
-    sixel_vk_shader_source_t const *source, VkShaderModule *module)
+static SIXELSTATUS
+sixel_vk_module_from_words(sixel_vk_runtime_t *runtime, char const *name,
+    char const *origin, uint32_t *words, size_t size, double started,
+    VkShaderModule *module)
 {
     VkShaderModuleCreateInfo info;
-    char const *mode;
-    uint32_t *words;
-    size_t size;
-    int use_prebuilt;
-    double started;
-    SIXELSTATUS status;
     VkResult result;
 
-    *module = VK_NULL_HANDLE;
-    words = NULL;
-    size = 0;
-    started = sixel_vk_now_ms();
-    mode = sixel_compat_getenv("SIXEL_VULKAN_SHADER");
-    use_prebuilt = source->spirv != NULL && source->spirv_size != 0 &&
-        (mode == NULL || strcmp(mode, "runtime") != 0);
-    if (use_prebuilt) {
-        /* Embedded bytes carry no alignment guarantee for uint32 words. */
-        size = source->spirv_size;
-        words = (uint32_t *)malloc(size);
-        if (words == NULL) {
-            return SIXEL_BAD_ALLOCATION;
-        }
-        memcpy(words, source->spirv, size);
-    } else if (mode != NULL && strcmp(mode, "prebuilt") == 0) {
-        sixel_helper_set_additional_message(
-            "vulkan: prebuilt SPIR-V is not available.");
-        return SIXEL_FEATURE_ERROR;
-    } else {
-#if defined(HAVE_SHADERC)
-        if (source->glsl_chunks == NULL) {
-            return SIXEL_FEATURE_ERROR;
-        }
-        status = sixel_vk_compile_glsl(runtime, source, &words, &size);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-#else
-        sixel_helper_set_additional_message(
-            "vulkan: no prebuilt SPIR-V and no runtime GLSL compiler.");
-        return SIXEL_FEATURE_ERROR;
-#endif
-    }
     if (size == 0 || size % 4U != 0) {
         free(words);
         return SIXEL_RUNTIME_ERROR;
@@ -789,11 +742,137 @@ sixel_vk_shader_module_create(sixel_vk_runtime_t *runtime,
     }
     if (runtime->debug) {
         fprintf(stderr, "libsixel: vulkan shader %s from %s SPIR-V "
-            "(%.2f ms)\n", source->name,
-            use_prebuilt ? "prebuilt" : "runtime-compiled",
-            sixel_vk_now_ms() - started);
+            "(%.2f ms)\n", name, origin, sixel_vk_now_ms() - started);
     }
     return SIXEL_OK;
+}
+
+/* Copy embedded bytes, which carry no alignment guarantee, into words. */
+static SIXELSTATUS
+sixel_vk_copy_words(unsigned char const *spirv, size_t size,
+    uint32_t **words)
+{
+    *words = (uint32_t *)malloc(size == 0 ? 1U : size);
+    if (*words == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(*words, spirv, size);
+    return SIXEL_OK;
+}
+
+/* POSIX cksum: CRC-32 (polynomial 0x04c11db7, most significant bit first)
+ * over the bytes and then the length, complemented. The build matrix keys
+ * its SPIR-V with cksum(1), so both sides name one text identically. */
+static uint32_t
+sixel_vk_cksum_byte(uint32_t crc, unsigned int byte)
+{
+    int bit;
+
+    crc ^= (uint32_t)(byte & 0xffU) << 24;
+    for (bit = 0; bit < 8; ++bit) {
+        crc = (crc & 0x80000000U) != 0
+            ? (crc << 1) ^ 0x04c11db7U : crc << 1;
+    }
+    return crc;
+}
+
+SIXELSTATUS
+sixel_vk_shader_module_compose(sixel_vk_runtime_t *runtime, char const *name,
+    sixel_vk_source_part_t const *parts, size_t part_count,
+    VkShaderModule *module)
+{
+    char const *mode;
+    char const *chunk;
+    uint32_t *words;
+    uint32_t crc;
+    size_t length;
+    size_t size;
+    size_t part;
+    size_t index;
+    size_t remaining;
+    double started;
+    SIXELSTATUS status;
+#if defined(HAVE_VULKAN_PREBUILT_SPIRV)
+    size_t entry;
+#endif
+#if defined(HAVE_SHADERC)
+    char *text;
+#endif
+
+    *module = VK_NULL_HANDLE;
+    words = NULL;
+    size = 0;
+    started = sixel_vk_now_ms();
+    mode = sixel_compat_getenv("SIXEL_VULKAN_SHADER");
+    crc = 0;
+    length = 0;
+    for (part = 0; part < part_count; ++part) {
+        for (index = 0; index < parts[part].count; ++index) {
+            if (parts[part].chunks[index] == NULL) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            for (chunk = parts[part].chunks[index]; *chunk != '\0';
+                    ++chunk) {
+                crc = sixel_vk_cksum_byte(crc, (unsigned char)*chunk);
+                ++length;
+            }
+        }
+    }
+    for (remaining = length; remaining != 0; remaining >>= 8) {
+        crc = sixel_vk_cksum_byte(crc, (unsigned int)(remaining & 0xffU));
+    }
+    crc = ~crc;
+#if defined(HAVE_VULKAN_PREBUILT_SPIRV)
+    if (mode == NULL || strcmp(mode, "runtime") != 0) {
+        for (entry = 0; entry < sizeof(sixel_vk_composed_spirv) /
+                sizeof(sixel_vk_composed_spirv[0]); ++entry) {
+            if (sixel_vk_composed_spirv[entry].crc == crc &&
+                    sixel_vk_composed_spirv[entry].length == length) {
+                size = sixel_vk_composed_spirv[entry].spirv_size;
+                status = sixel_vk_copy_words(
+                    sixel_vk_composed_spirv[entry].spirv, size, &words);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                return sixel_vk_module_from_words(runtime, name,
+                    "prebuilt", words, size, started, module);
+            }
+        }
+    }
+#endif
+    if (mode != NULL && strcmp(mode, "prebuilt") == 0) {
+        sixel_helper_set_additional_message(
+            "vulkan: prebuilt SPIR-V is not available.");
+        return SIXEL_FEATURE_ERROR;
+    }
+#if defined(HAVE_SHADERC)
+    text = (char *)malloc(length + 1U);
+    if (text == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    length = 0;
+    for (part = 0; part < part_count; ++part) {
+        for (index = 0; index < parts[part].count; ++index) {
+            size = strlen(parts[part].chunks[index]);
+            memcpy(text + length, parts[part].chunks[index], size);
+            length += size;
+        }
+    }
+    text[length] = '\0';
+    status = sixel_vk_compile_text(runtime, name, text, length, &words,
+        &size);
+    free(text);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_vk_module_from_words(runtime, name, "runtime-compiled",
+        words, size, started, module);
+#else
+    sixel_helper_set_additional_message(
+        "vulkan: this lookup program was not built and no runtime GLSL "
+        "compiler is available.");
+    return SIXEL_FEATURE_ERROR;
+#endif
 }
 
 SIXELSTATUS

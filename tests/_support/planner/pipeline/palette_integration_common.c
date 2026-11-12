@@ -8,6 +8,7 @@
 #include "src/encoder.h"
 #include "src/dither.h"
 #include "src/gpu-program.h"
+#include "src/lookup-policy-gpu.h"
 #include "playback_test_common.h"
 #include "palette_integration_common.h"
 
@@ -332,7 +333,12 @@ palette_integration_test_impl(int scenario, int gpu)
         status = sixel_gpu_device_acquire(&device);
         if (status == SIXEL_FEATURE_ERROR) return 77;
         if (status != SIXEL_OK) return 1;
+        /* The GPU scenario diffuses through the ordered lookup. */
+        status = sixel_gpu_lookup_has_program(SIXEL_LUT_POLICY_ORDERED,
+            device->vtbl->program_format(device)) ? SIXEL_OK
+            : SIXEL_FEATURE_ERROR;
         device->vtbl->unref(device);
+        if (status != SIXEL_OK) return 77;
     }
     if (sixel_mutex_init(&state.mutex) != 0) {
         return 1;

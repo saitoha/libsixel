@@ -2,6 +2,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include <string.h>
 #include "lookup-policy-gpu.h"
 #include "lookup-policy-none-gpu.h"
 #include "lookup-policy-delaunay-gpu.h"
@@ -18,34 +19,47 @@
 
 /* Composition is the only layer that knows concrete lookup constructors.
  * Independent providers extend this table; execution does not change. */
+/* formats lists the program formats a provider has its own program for;
+ * the composition root admits a backend only for those providers. */
+#define GPU_METAL 1
+#define GPU_VULKAN 2
 static struct {
     int kind;
+    int formats;
     SIXELSTATUS (*create)(sixel_allocator_t *,
         sixel_gpu_lookup_preparer_interface_t **);
 } const gpu_lookup_registrations[] = {
-    { SIXEL_LUT_POLICY_NONE, sixel_gpu_lookup_none_create },
-    { SIXEL_LUT_POLICY_DELAUNAY, sixel_gpu_lookup_delaunay_create },
-    { SIXEL_LUT_POLICY_ORDERED, sixel_gpu_lookup_ordered_create },
-    { SIXEL_LUT_POLICY_VPTREE, sixel_gpu_lookup_vptree_create },
-    { SIXEL_LUT_POLICY_RBC, sixel_gpu_lookup_rbc_create },
-    { SIXEL_LUT_POLICY_MAHALANOBIS, sixel_gpu_lookup_mahalanobis_create },
-    { SIXEL_LUT_POLICY_CERTLUT, sixel_gpu_lookup_certlut_create },
-    { SIXEL_LUT_POLICY_EYTZINGER, sixel_gpu_lookup_eytzinger_create },
-    { SIXEL_LUT_POLICY_GRIDLUT, sixel_gpu_lookup_gridlut_create },
-    { SIXEL_LUT_POLICY_BLOCKCULL, sixel_gpu_lookup_blockcull_create }
+    { SIXEL_LUT_POLICY_NONE, GPU_METAL | GPU_VULKAN,
+      sixel_gpu_lookup_none_create },
+    { SIXEL_LUT_POLICY_DELAUNAY, GPU_METAL, sixel_gpu_lookup_delaunay_create },
+    { SIXEL_LUT_POLICY_ORDERED, GPU_METAL, sixel_gpu_lookup_ordered_create },
+    { SIXEL_LUT_POLICY_VPTREE, GPU_METAL, sixel_gpu_lookup_vptree_create },
+    { SIXEL_LUT_POLICY_RBC, GPU_METAL, sixel_gpu_lookup_rbc_create },
+    { SIXEL_LUT_POLICY_MAHALANOBIS, GPU_METAL,
+      sixel_gpu_lookup_mahalanobis_create },
+    { SIXEL_LUT_POLICY_CERTLUT, GPU_METAL, sixel_gpu_lookup_certlut_create },
+    { SIXEL_LUT_POLICY_EYTZINGER, GPU_METAL,
+      sixel_gpu_lookup_eytzinger_create },
+    { SIXEL_LUT_POLICY_GRIDLUT, GPU_METAL, sixel_gpu_lookup_gridlut_create },
+    { SIXEL_LUT_POLICY_BLOCKCULL, GPU_METAL,
+      sixel_gpu_lookup_blockcull_create }
 };
 
 /* These providers retain their own resolved settings, without exposing
  * configuration-specific branches to dither or palette application. */
 static struct {
     int kind;
+    int formats;
     SIXELSTATUS (*create)(sixel_allocator_t *,
         sixel_lookup_policy_configuration_t const *,
         sixel_gpu_lookup_preparer_interface_t **);
 } const gpu_configured_registrations[] = {
-    { SIXEL_LUT_POLICY_5BIT, sixel_gpu_lookup_bitlut_create },
-    { SIXEL_LUT_POLICY_6BIT, sixel_gpu_lookup_bitlut_create },
-    { SIXEL_LUT_POLICY_FHEDT, sixel_gpu_lookup_fhedt_create }
+    { SIXEL_LUT_POLICY_5BIT, GPU_METAL | GPU_VULKAN,
+      sixel_gpu_lookup_bitlut_create },
+    { SIXEL_LUT_POLICY_6BIT, GPU_METAL | GPU_VULKAN,
+      sixel_gpu_lookup_bitlut_create },
+    { SIXEL_LUT_POLICY_FHEDT, GPU_METAL | GPU_VULKAN,
+      sixel_gpu_lookup_fhedt_create }
 };
 
 int
@@ -60,6 +74,31 @@ sixel_gpu_lookup_registered(int kind)
     for (i = 0; i < sizeof(gpu_configured_registrations) /
             sizeof(*gpu_configured_registrations); ++i) {
         if (gpu_configured_registrations[i].kind == kind) return 1;
+    }
+    return 0;
+}
+
+int
+sixel_gpu_lookup_has_program(int kind, char const *program_format)
+{
+    size_t i;
+    int format;
+
+    if (program_format == NULL) return 0;
+    format = strcmp(program_format, "metal.lookup-rgb8.v1") == 0 ? GPU_METAL
+        : strcmp(program_format, "vulkan.lookup-rgb8.v1") == 0 ? GPU_VULKAN
+        : 0;
+    for (i = 0; i < sizeof(gpu_lookup_registrations) /
+            sizeof(*gpu_lookup_registrations); ++i) {
+        if (gpu_lookup_registrations[i].kind == kind) {
+            return (gpu_lookup_registrations[i].formats & format) != 0;
+        }
+    }
+    for (i = 0; i < sizeof(gpu_configured_registrations) /
+            sizeof(*gpu_configured_registrations); ++i) {
+        if (gpu_configured_registrations[i].kind == kind) {
+            return (gpu_configured_registrations[i].formats & format) != 0;
+        }
     }
     return 0;
 }

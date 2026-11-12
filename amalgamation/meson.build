@@ -179,7 +179,7 @@ amalgamation_units = files(
   '../src/dither-policy-sierra2-gpu-metal.m',
   '../src/dither-policy-sierra3-gpu-metal.m',
   '../src/gpu-palette-metal.m',
-  '../src/lookup-policy-gpu-compat.m',
+  '../src/lookup-policy-gpu-compat.c',
   '../src/timeline-logger.c',
   '../src/timeline-writer.c',
   '../src/colorspace.c',

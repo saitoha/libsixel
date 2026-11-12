@@ -2,6 +2,7 @@
 #include "tests/_support/lso2-gpu/fixture.h"
 #include "tests/_support/planner/pipeline/playback_test_common.h"
 #include "src/encoder.h"
+#include "src/lookup-policy-gpu.h"
 #include <stdlib.h>
 
 /* The frame sequence and refresh clock are fixed. Both paths construct the
@@ -33,6 +34,12 @@ lso2_gpu_playback_compare_impl(char const *method, char const *delta,
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) { outcome = 77; goto end; }
     LSO2_GPU_CHECK(status == SIXEL_OK);
+    /* The encoder selects the ordered lookup for GPU diffusion. */
+    if (!sixel_gpu_lookup_has_program(SIXEL_LUT_POLICY_ORDERED,
+            device->vtbl->program_format(device))) {
+        outcome = 77;
+        goto end;
+    }
     a = playback_test_encoder(0, "4");
     b = playback_test_encoder(0, "4");
     LSO2_GPU_CHECK(a != NULL && b != NULL);

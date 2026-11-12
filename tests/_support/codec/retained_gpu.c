@@ -5,6 +5,7 @@
 #include <string.h>
 #include "indexed_component_common.h"
 #include "src/gpu-palette.h"
+#include "src/lookup-policy-gpu.h"
 
 static SIXELSTATUS
 retained_gpu_fixture_begin(indexed_fixture_t *f, int paint, int resolved)
@@ -78,6 +79,7 @@ retained_gpu_observe_impl(int observation, int resolved)
     sixel_encode_identity_t identity;
     SIXELSTATUS status;
     int ok;
+    int skipped;
     int x;
     int y;
     size_t pixel;
@@ -87,6 +89,7 @@ retained_gpu_observe_impl(int observation, int resolved)
     device = NULL;
     memset(&f, 0, sizeof(f));
     ok = 0;
+    skipped = 0;
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
     if (status != SIXEL_OK || !indexed_fixture_init(&f)) goto end;
@@ -101,7 +104,10 @@ retained_gpu_observe_impl(int observation, int resolved)
         memset(f.image->skip, SIXEL_INDEXED_KEEP, f.image->pixels);
         f.image->skip[255] = SIXEL_INDEXED_KEEP_APPROXIMATE;
     }
-    if (f.plane->vtbl->set_device(f.plane, device) != SIXEL_OK) goto end;
+    /* Retained GPU storage exists only on devices that implement it. */
+    status = f.plane->vtbl->set_device(f.plane, device);
+    if (status == SIXEL_FEATURE_ERROR) skipped = 1;
+    if (status != SIXEL_OK) goto end;
     if (f.plane->vtbl->acquire_read(f.plane, &f.read) != SIXEL_OK ||
             sixel_retained_read_get_view(f.read, &before) != SIXEL_OK ||
             sixel_retained_read_get_gpu_view(f.read, device, &previous) !=
@@ -267,6 +273,7 @@ retained_gpu_observe_impl(int observation, int resolved)
 end:
     indexed_fixture_destroy(&f);
     if (device != NULL) device->vtbl->unref(device);
+    if (skipped) return 77;
     return ok ? 0 : 1;
 }
 
@@ -301,6 +308,11 @@ retained_gpu_lookup_observe(int observation)
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
     if (status != SIXEL_OK) goto end;
+    if (!sixel_gpu_lookup_has_program(SIXEL_LUT_POLICY_ORDERED,
+            device->vtbl->program_format(device))) {
+        device->vtbl->unref(device);
+        return 77;
+    }
     memset(&request, 0, sizeof(request));
     memset(&hooks, 0, sizeof(hooks));
     memset(skip, 0, sizeof(skip));
@@ -417,11 +429,13 @@ retained_gpu_sequence_observe(int observation)
     int second;
     int legacy;
     int ok;
+    int skipped;
     size_t p;
 
     device = NULL;
     memset(&f, 0, sizeof(f));
     ok = 0;
+    skipped = 0;
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
     if (status != SIXEL_OK || !indexed_fixture_init(&f)) goto end;
@@ -436,7 +450,10 @@ retained_gpu_sequence_observe(int observation)
     memset(rgb, 17, 8 * 3 * 3);
     memset(valid, 0, 8 * 3);
     sixel_retained_plane_legacy_unmap(f.plane);
-    if (f.plane->vtbl->set_device(f.plane, device) != SIXEL_OK) goto end;
+    /* Retained GPU storage exists only on devices that implement it. */
+    status = f.plane->vtbl->set_device(f.plane, device);
+    if (status == SIXEL_FEATURE_ERROR) skipped = 1;
+    if (status != SIXEL_OK) goto end;
     for (phase = 0; phase < 2; ++phase) {
         if (!retained_gpu_sequence_image(&f, phase) ||
                 retained_gpu_fixture_begin(&f, 0, 0) != SIXEL_OK ||
@@ -484,6 +501,7 @@ retained_gpu_sequence_observe(int observation)
 end:
     indexed_fixture_destroy(&f);
     if (device != NULL) device->vtbl->unref(device);
+    if (skipped) return 77;
     return ok ? 0 : 1;
 }
 

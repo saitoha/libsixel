@@ -2,11 +2,12 @@
 #include "tests/_support/lso2-gpu/fixture.h"
 #include "tests/_support/lso2-gpu/expected_taps.h"
 
-/* Device-less GPU diffusion (Vulkan) for every fixed-tap method. A deadzone
- * above every possible correction discards all carry, so the result is
- * the exact nearest entry of each source pixel in either scan. Live carry
- * reproduces the frozen indexes, and the deferred solve and resolve
- * against history agree with the monolithic run and the frozen indexes. */
+/* GPU diffusion through the NONE lookup program for every fixed-tap method,
+ * on Metal and Vulkan alike. A deadzone above every possible correction
+ * discards all carry, so the result is the exact nearest entry of each
+ * source pixel in either scan. Live carry reproduces the frozen indexes, and
+ * the deferred solve and resolve against history agree with the monolithic
+ * run and the frozen indexes. */
 
 static int
 direct_carry_frozen(unsigned char const *indexes, char const *expected)

@@ -39,7 +39,6 @@
 #include "dither-common-pipeline.h"
 #if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
 #include "gpu-palette-vulkan.h"
-#include "dither-diffuse-vulkan.h"
 #define SIXEL_GPU_PALETTE_USE_VULKAN 1
 #endif
 
@@ -52,10 +51,11 @@ typedef struct sixel_gpu_bluenoise_conf {
     int size;
 } sixel_gpu_bluenoise_conf_t;
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN)
 SIXELSTATUS
 sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request);
-
+#endif
+#if defined(HAVE_METAL)
 int
 sixel_gpu_palette_metal_is_available(void);
 #endif
@@ -80,27 +80,21 @@ sixel_gpu_palette_set_lookup_configuration(sixel_gpu_palette_request_t *request,
         sizeof(request->fhedt_weights));
 }
 
-/* Byte GPU FHEDT tables exist for these settings only. */
-static int
-sixel_gpu_palette_fhedt_settings_supported(int resolution, int refine,
-    int use_dist2, int use_cache, double const weights[3])
-{
-    return (resolution == 64 || resolution == 128 || resolution == 256) &&
-        (refine == 0 || refine == 1) &&
-        (use_dist2 == 0 || use_dist2 == 1) &&
-        use_cache == 0 &&
-        weights[0] > 0.0 && weights[0] <= DBL_MAX &&
-        weights[0] == weights[1] && weights[0] == weights[2];
-}
-
 int
 sixel_gpu_palette_fhedt_is_supported(
     sixel_gpu_palette_request_t const *request)
 {
     return request != NULL && request->fhedt_configured &&
-        sixel_gpu_palette_fhedt_settings_supported(request->fhedt_resolution,
-            request->fhedt_refine, request->fhedt_use_dist2,
-            request->fhedt_use_cache, request->fhedt_weights);
+        (request->fhedt_resolution == 64 ||
+         request->fhedt_resolution == 128 ||
+         request->fhedt_resolution == 256) &&
+        (request->fhedt_refine == 0 || request->fhedt_refine == 1) &&
+        (request->fhedt_use_dist2 == 0 || request->fhedt_use_dist2 == 1) &&
+        request->fhedt_use_cache == 0 &&
+        request->fhedt_weights[0] > 0.0 &&
+        request->fhedt_weights[0] <= DBL_MAX &&
+        request->fhedt_weights[0] == request->fhedt_weights[1] &&
+        request->fhedt_weights[0] == request->fhedt_weights[2];
 }
 
 static int
@@ -545,10 +539,12 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
 
     effective_scan = SIXEL_SCAN_AUTO;
 #if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    /* Decide before probing the device: an unported lookup never runs on
-     * Vulkan, so AUTO must not pay for instance creation. */
+    /* Decide before probing the device: a lookup policy without its own
+     * Vulkan program never runs there, so AUTO must not pay for instance
+     * creation. */
     if (!sixel_gpu_palette_policy_is_force(gpu_policy) &&
-            !sixel_gpu_palette_vulkan_supports_lut(lut_policy)) {
+            !sixel_gpu_lookup_has_program(lut_policy,
+                "vulkan.lookup-rgb8.v1")) {
         return 0;
     }
 #endif
@@ -617,8 +613,9 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
         return SIXEL_FALSE;
     }
 #if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    if (request->program != NULL ||
-            !sixel_gpu_palette_vulkan_supports_lut(request->lut_policy)) {
+    if (request->program == NULL &&
+            !sixel_gpu_lookup_has_program(request->lut_policy,
+                "vulkan.lookup-rgb8.v1")) {
         if (sixel_gpu_palette_policy_is_force(request->policy)) {
             sixel_helper_set_additional_message(
                 "gpu palette apply: this lookup policy has no Vulkan "
@@ -654,16 +651,8 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
         return SIXEL_FALSE;
     }
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN)
     status = sixel_gpu_lookup_compat_apply(&effective);
-    if (status == SIXEL_OK) {
-        return SIXEL_OK;
-    }
-    if (sixel_gpu_palette_policy_is_force(request->policy)) {
-        return status;
-    }
-#elif defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    status = sixel_gpu_palette_vulkan_apply(&effective);
     if (status == SIXEL_OK) {
         return SIXEL_OK;
     }
@@ -683,76 +672,12 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_plan_available(void)
 {
-    /* Prepared lookup plans need a gpu_device and program compiler. The
-     * Vulkan port owns only the direct apply stage so far. */
+    /* Nonzero when the device carries every lookup policy's program. The
+     * Vulkan device serves only the policies ported to its program ABI so
+     * far; callers check those with sixel_gpu_lookup_has_program(). */
 #if defined(HAVE_METAL)
     return sixel_gpu_palette_has_engine();
 #else
-    return 0;
-#endif
-}
-
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_apply_only(int lut_policy)
-{
-#if !defined(HAVE_METAL) && defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    return sixel_gpu_palette_vulkan_supports_lut(lut_policy) &&
-        sixel_gpu_palette_has_engine();
-#else
-    (void)lut_policy;
-    return 0;
-#endif
-}
-
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_apply_serves(int lut_policy, int method_for_diffuse)
-{
-    return sixel_gpu_palette_method_is_supported(method_for_diffuse) &&
-        sixel_gpu_palette_direct_apply_only(lut_policy);
-}
-
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_lookup_serves(
-    sixel_lookup_policy_configuration_t const *configuration,
-    int method_for_diffuse)
-{
-    if (configuration == NULL || !sixel_gpu_palette_direct_apply_serves(
-            configuration->kind, method_for_diffuse)) {
-        return 0;
-    }
-    if (configuration->kind != SIXEL_LUT_POLICY_FHEDT) {
-        return 1;
-    }
-    return configuration->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-        sixel_gpu_palette_fhedt_settings_supported(
-            configuration->fhedt_resolution, configuration->fhedt_refine,
-            configuration->fhedt_use_dist2, configuration->fhedt_use_cache,
-            configuration->fhedt_weights);
-}
-
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_diffusion_serves(int method_for_diffuse,
-    int lut_policy)
-{
-#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    return sixel_dither_diffuse_vulkan_serves(method_for_diffuse, lut_policy);
-#else
-    (void)method_for_diffuse;
-    (void)lut_policy;
-    return 0;
-#endif
-}
-
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_diffusion_lookup_serves(int method_for_diffuse,
-    sixel_lookup_policy_configuration_t const *configuration)
-{
-#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    return sixel_dither_diffuse_vulkan_lookup_serves(method_for_diffuse,
-        configuration);
-#else
-    (void)method_for_diffuse;
-    (void)configuration;
     return 0;
 #endif
 }
@@ -779,16 +704,14 @@ sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request)
     if (!sixel_gpu_palette_request_is_supported(request)) {
         return SIXEL_BAD_ARGUMENT;
     }
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN)
     return sixel_gpu_lookup_compat_apply(request);
-#elif defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    return sixel_gpu_palette_vulkan_apply(request);
 #else
     return SIXEL_FEATURE_ERROR;
 #endif
 }
 
-#if !defined(HAVE_METAL)
+#if !defined(HAVE_METAL) && !defined(SIXEL_GPU_PALETTE_USE_VULKAN)
 SIXELSTATUS
 sixel_gpu_device_acquire(sixel_gpu_device_interface_t **device)
 {

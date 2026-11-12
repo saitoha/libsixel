@@ -6,13 +6,19 @@
 #include "lookup-policy-bitlut-gpu.h"
 #include "threading.h"
 #include "sixel_atomic.h"
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 #include <pthread.h>
 #endif
 /* Readable source: lookup-policy-bitlut-fractional-gpu.metal. */
 static char const * const bitlut_chunks[] = {
 #include <generated-metal/lookup-policy-bitlut-fractional-gpu-shader.inc.h>
 };
+#if defined(HAVE_VULKAN)
+/* Readable source: lookup-policy-bitlut-gpu.glsl. */
+static char const * const bitlut_vulkan_chunks[] = {
+#include <generated-vulkan/lookup-policy-bitlut-gpu-shader.inc.h>
+};
+#endif
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
@@ -31,6 +37,7 @@ typedef struct bitlut_plan {
     uint32_t constants[4];
     sixel_gpu_lookup_build_pass_t passes[6];
     size_t pass_count;
+    int vulkan;
     int busy;
     int valid;
 } bitlut_plan_t;
@@ -56,7 +63,7 @@ typedef struct bitlut_preparer {
  * shared-instance settings never disable it. Active bindings retain exclusive
  * workspaces; neither another palette nor another in-flight frame can
  * overwrite them. One idle allocation bounds the retained cache capacity. */
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 static pthread_mutex_t bitlut_idle_gate = PTHREAD_MUTEX_INITIALIZER;
 static struct {
     sixel_gpu_device_interface_t *device;
@@ -68,13 +75,20 @@ static struct {
 } bitlut_idle;
 #endif
 
+/* Metal byte queries use the legacy executor and own no table here. */
+static int
+bitlut_owns_table(bitlut_plan_t const *plan)
+{
+    return plan->vulkan || plan->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE;
+}
+
 static void
 bitlut_borrow(bitlut_plan_t *plan)
 {
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     sixel_gpu_device_interface_t *device;
 
-    if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) return;
+    if (!bitlut_owns_table(plan)) return;
     device = NULL;
     (void)pthread_mutex_lock(&bitlut_idle_gate);
     if (bitlut_idle.device == plan->device &&
@@ -99,12 +113,12 @@ bitlut_borrow(bitlut_plan_t *plan)
 static void
 bitlut_recycle(bitlut_plan_t *plan)
 {
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     sixel_gpu_device_interface_t *device;
     sixel_gpu_buffer_interface_t *workspace;
 
-    if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE ||
-            plan->workspace == NULL || plan->busy) return;
+    if (!bitlut_owns_table(plan) || plan->workspace == NULL ||
+            plan->busy) return;
     plan->device->vtbl->ref(plan->device);
     (void)pthread_mutex_lock(&bitlut_idle_gate);
     device = bitlut_idle.device;
@@ -160,6 +174,25 @@ bitlut_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (bitlut_plan_t const *)self;
     memset(view, 0, sizeof(*view));
+#if defined(HAVE_VULKAN)
+    if (plan->vulkan) {
+        view->program_format = "vulkan.lookup-rgb8.v1";
+        view->logical_name = "bitlut";
+        view->query_kind = plan->query_kind;
+        view->chunks = bitlut_vulkan_chunks;
+        view->chunk_count = sizeof(bitlut_vulkan_chunks) /
+            sizeof(bitlut_vulkan_chunks[0]);
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->ncolors = plan->count;
+        view->workspace_size = plan->workspace_size;
+        view->constants = plan->constants;
+        view->constants_size = sizeof(plan->constants);
+        view->build_passes = plan->passes;
+        view->build_pass_count = plan->pass_count;
+        return SIXEL_OK;
+    }
+#endif
     /* Byte consumers keep the existing optimized executor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
@@ -339,15 +372,23 @@ bitlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     bitlut_preparer_t *preparer;
     bitlut_plan_t *plan;
     sixel_palette_entries_view_t entries;
+    char const *format;
+    int vulkan;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
+    format = device->vtbl->program_format(device);
+    vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
+#if !defined(HAVE_VULKAN)
+    vulkan = 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            strcmp(device->vtbl->program_format(device),
-                "metal.lookup-rgb8.v1") != 0) return SIXEL_FEATURE_ERROR;
+            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
@@ -401,8 +442,16 @@ bitlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->passes[0].threads[0] = 128;
         plan->passes[0].groups[1] = plan->passes[0].groups[2] = 1;
         plan->passes[0].threads[1] = plan->passes[0].threads[2] = 1;
-        if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE)
+        plan->vulkan = vulkan;
+        if (vulkan) {
+            /* lookup-policy-bitlut-gpu.glsl: one 64-wide invocation per
+             * cell for both query kinds. */
+            plan->passes[0].entry_point = "bitlut_build";
+            plan->passes[0].groups[0] = plan->workspace_size / 64U;
+            plan->passes[0].threads[0] = 64;
+        } else if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
             plan->workspace_size = 1;
+        }
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         if (preparer->cached != NULL) {
             bitlut_plan_unref(&preparer->cached->iface);

@@ -30,7 +30,6 @@ srcs = [
   'gpu-runtime-metal.h',
   'gpu-runtime-vulkan.h',
   'gpu-palette-vulkan.h',
-  'dither-diffuse-vulkan.h',
   'retained-plane-rows.c',
   'retained-plane-rows.h',
   'retained-plane-workers.c',
@@ -203,6 +202,7 @@ srcs = [
   'lookup-policy-certlut-gpu.c',
   'lookup-policy-gpu-legacy.c',
   'lookup-policy-gpu-registry.c',
+  'lookup-policy-gpu-compat.c',
   'lookup-policy-gpu.h',
   'lookup-policy-ordered-gpu.h',
   'lookup-policy-none-gpu.h',
@@ -431,13 +431,21 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['dither-policy-lso2-gpu-metal.m', 'dither-policy-fs-gpu-metal.m', 'dither-policy-atkinson-gpu-metal.m', 'dither-policy-jajuni-gpu-metal.m', 'dither-policy-stucki-gpu-metal.m', 'dither-policy-burkes-gpu-metal.m', 'dither-policy-sierra1-gpu-metal.m', 'dither-policy-sierra2-gpu-metal.m', 'dither-policy-sierra3-gpu-metal.m', 'retained-plane-metal.m', 'lookup-policy-gpu-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
+  srcs += ['dither-policy-lso2-gpu-metal.m', 'dither-policy-fs-gpu-metal.m', 'dither-policy-atkinson-gpu-metal.m', 'dither-policy-jajuni-gpu-metal.m', 'dither-policy-stucki-gpu-metal.m', 'dither-policy-burkes-gpu-metal.m', 'dither-policy-sierra1-gpu-metal.m', 'dither-policy-sierra2-gpu-metal.m', 'dither-policy-sierra3-gpu-metal.m', 'retained-plane-metal.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
            'progressive-gpu-metal.m']
 endif
 
 if have_vulkan
   srcs += ['gpu-runtime-vulkan.c', 'gpu-palette-vulkan.c',
-           'dither-diffuse-vulkan.c']
+           'dither-policy-lso2-gpu-vulkan.c',
+           'dither-policy-fs-gpu-vulkan.c',
+           'dither-policy-atkinson-gpu-vulkan.c',
+           'dither-policy-jajuni-gpu-vulkan.c',
+           'dither-policy-stucki-gpu-vulkan.c',
+           'dither-policy-burkes-gpu-vulkan.c',
+           'dither-policy-sierra1-gpu-vulkan.c',
+           'dither-policy-sierra2-gpu-vulkan.c',
+           'dither-policy-sierra3-gpu-vulkan.c']
 endif
 
 if have_quicklook_thumbnailing

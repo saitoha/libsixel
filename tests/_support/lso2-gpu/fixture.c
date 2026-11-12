@@ -11,8 +11,18 @@
 #include "src/dither-policy-sierra2-gpu.h"
 #include "src/dither-policy-sierra3-gpu.h"
 
+/* Nonzero when the acquired device carries a program for KIND. A device
+ * whose ABI does not carry that policy yet skips the test rather than
+ * running a different lookup. */
 int
-lso2_gpu_fixture_open(lso2_gpu_fixture_t *f, int require_gpu)
+lso2_gpu_fixture_serves(lso2_gpu_fixture_t const *f, int kind)
+{
+    return f->device != NULL && sixel_gpu_lookup_has_program(kind,
+        f->device->vtbl->program_format(f->device));
+}
+
+static int
+lso2_gpu_fixture_open_device(lso2_gpu_fixture_t *f, int require_gpu)
 {
     sixel_palette_entries_request_t entries;
     sixel_wire_palette_request_t wire;
@@ -92,6 +102,19 @@ lso2_gpu_fixture_open(lso2_gpu_fixture_t *f, int require_gpu)
 }
 
 int
+lso2_gpu_fixture_open(lso2_gpu_fixture_t *f, int require_gpu)
+{
+    int outcome;
+
+    outcome = lso2_gpu_fixture_open_device(f, require_gpu);
+    if (outcome == 0 && require_gpu &&
+            !lso2_gpu_fixture_serves(f, SIXEL_LUT_POLICY_ORDERED)) {
+        return 77;
+    }
+    return outcome;
+}
+
+int
 lso2_gpu_fixture_use_method(lso2_gpu_fixture_t *f, int method)
 {
     static struct {
@@ -128,48 +151,32 @@ lso2_gpu_fixture_use_method(lso2_gpu_fixture_t *f, int method)
 }
 
 int
-lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method)
-{
-    int outcome;
-
-    outcome = lso2_gpu_fixture_open(f, 0);
-    if (outcome != 0) return outcome;
-    if (!sixel_gpu_palette_direct_diffusion_serves(method,
-            SIXEL_LUT_POLICY_NONE)) return 77;
-    if (lso2_gpu_fixture_use_method(f, method) != 0) return 1;
-    if (f->lookup != NULL) f->lookup->vtbl->unref(f->lookup);
-    f->lookup = NULL;
-    f->prepare.gpu_lookup = NULL;
-    f->prepare.device = NULL;
-    f->prepare.gpu_direct_lookup.kind = SIXEL_LUT_POLICY_NONE;
-    f->prepare.gpu_direct_lookup.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    return 0;
-}
-
-int
 lso2_gpu_fixture_open_lookup(lso2_gpu_fixture_t *f, int method,
     sixel_lookup_policy_configuration_t const *configuration)
 {
     int outcome;
 
-    outcome = lso2_gpu_fixture_open(f, 1);
-    if (outcome == 0) {
-        if (lso2_gpu_fixture_use_method(f, method) != 0) return 1;
-        f->lookup->vtbl->unref(f->lookup);
-        f->lookup = NULL;
-        if (sixel_gpu_lookup_select(f->allocator, configuration, &f->lookup)
-                != SIXEL_OK) return 1;
-        f->prepare.gpu_lookup = f->lookup;
-        return 0;
-    }
-    if (outcome != 77) return outcome;
-    lso2_gpu_fixture_close(f);
-    outcome = lso2_gpu_fixture_open_direct(f, method);
+    outcome = lso2_gpu_fixture_open_device(f, 1);
     if (outcome != 0) return outcome;
-    if (!sixel_gpu_palette_direct_diffusion_lookup_serves(method,
-            configuration)) return 77;
-    f->prepare.gpu_direct_lookup = *configuration;
+    if (!lso2_gpu_fixture_serves(f, configuration->kind)) return 77;
+    if (lso2_gpu_fixture_use_method(f, method) != 0) return 1;
+    f->lookup->vtbl->unref(f->lookup);
+    f->lookup = NULL;
+    if (sixel_gpu_lookup_select(f->allocator, configuration, &f->lookup)
+            != SIXEL_OK) return 1;
+    f->prepare.gpu_lookup = f->lookup;
     return 0;
+}
+
+int
+lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method)
+{
+    sixel_lookup_policy_configuration_t configuration;
+
+    memset(&configuration, 0, sizeof(configuration));
+    configuration.kind = SIXEL_LUT_POLICY_NONE;
+    configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    return lso2_gpu_fixture_open_lookup(f, method, &configuration);
 }
 
 SIXELSTATUS

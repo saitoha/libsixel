@@ -15,4 +15,9 @@ sixel_dither_burkes_gpu_metal_prepare(sixel_allocator_t *,
     sixel_dither_policy_prepare_request_t const *,
     sixel_gpu_dither_prepare_request_t const *,
     sixel_gpu_dither_plan_interface_t **);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_burkes_gpu_vulkan_prepare(sixel_allocator_t *,
+    sixel_dither_policy_prepare_request_t const *,
+    sixel_gpu_dither_prepare_request_t const *,
+    sixel_gpu_dither_plan_interface_t **);
 #endif

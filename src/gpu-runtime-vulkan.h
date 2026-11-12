@@ -59,16 +59,6 @@ typedef struct sixel_vk_buffer {
     VkDeviceSize capacity;
 } sixel_vk_buffer_t;
 
-/* One compute shader in both embedded forms. Either may be absent:
- * spirv is the build-time glslc output, glsl_chunks the NULL-terminated
- * source compiled with libshaderc when the prebuilt form is missing. */
-typedef struct sixel_vk_shader_source {
-    char const *name;
-    unsigned char const *spirv;
-    size_t spirv_size;
-    char const * const *glsl_chunks;
-} sixel_vk_shader_source_t;
-
 SIXEL_INTERNAL_API void sixel_vk_lock(void);
 SIXEL_INTERNAL_API void sixel_vk_unlock(void);
 
@@ -103,8 +93,19 @@ SIXEL_INTERNAL_API void sixel_vk_record_barrier(VkCommandBuffer command,
     VkPipelineStageFlags src_stage, VkAccessFlags src_access,
     VkPipelineStageFlags dst_stage, VkAccessFlags dst_access);
 
-SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_shader_module_create(
-    sixel_vk_runtime_t *runtime, sixel_vk_shader_source_t const *source,
+/* One run of embedded GLSL chunks; a composed program concatenates runs. */
+typedef struct sixel_vk_source_part {
+    char const * const *chunks;
+    size_t count;
+} sixel_vk_source_part_t;
+
+/* Create a module from the exact concatenation of parts. Its SPIR-V comes
+ * from the build-time program matrix when that text was built there, and
+ * otherwise from libshaderc. The text, not a policy name, is the identity:
+ * a composition the matrix lacks fails without a runtime compiler. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_shader_module_compose(
+    sixel_vk_runtime_t *runtime, char const *name,
+    sixel_vk_source_part_t const *parts, size_t part_count,
     VkShaderModule *module);
 
 /* command_begin resets and opens the runtime's single primary command

@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: MIT */
 #include "tests/_support/lso2-gpu/fixture.h"
 
-/* GPU error diffusion through a 5bit/6bit cell-center table, on Metal
- * (injected program) or Vulkan (device-less table). A deadzone above every
- * possible correction discards all carry, so each index is the fractional
- * bit LUT reference of its source pixel. Live carry with history
+/* GPU error diffusion through a 5bit/6bit cell-center table, on Metal or
+ * Vulkan, each composing the policy's own lookup program. A deadzone above
+ * every possible correction discards all carry, so each index is the
+ * fractional bit LUT reference of its source pixel. Live carry with history
  * reproduces the frozen indexes through both the monolithic run and the
  * deferred solve and resolve. Indexes are one digit per pixel of the 19x17
  * gray fixture, serpentine against the offset baseline; Metal and Vulkan

@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 #include "gpu_rows_common.h"
+#include "src/lookup-policy-gpu.h"
 
 static int
 gpu_rows_cancel(void *context)
@@ -35,12 +36,24 @@ gpu_rows_open(gpu_rows_fixture_t *f, int kind)
     sixel_gpu_lookup_program_view_t view;
     SIXELSTATUS status;
     int i;
+    /* The policy gpu_component_open() creates for each fixture kind. */
+    static int const policies[] = {
+        SIXEL_LUT_POLICY_VPTREE, SIXEL_LUT_POLICY_ORDERED,
+        SIXEL_LUT_POLICY_RBC, SIXEL_LUT_POLICY_MAHALANOBIS,
+        SIXEL_LUT_POLICY_CERTLUT
+    };
 
     memset(f, 0, sizeof(*f));
     f->cancel_after = -1;
     f->callback_status = SIXEL_OK;
     status = sixel_gpu_device_acquire(&f->device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
+    /* A device without a program for this policy refuses the plan. */
+    if (status == SIXEL_OK && kind >= 0 && kind <= 4 &&
+            !sixel_gpu_lookup_has_program(policies[kind],
+                f->device->vtbl->program_format(f->device))) {
+        return 77;
+    }
     if (status != SIXEL_OK || !gpu_component_open(&f->component, kind)) {
         return 1;
     }

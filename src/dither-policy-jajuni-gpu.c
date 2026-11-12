@@ -5,7 +5,6 @@
 #include <math.h>
 #include <string.h>
 #include "dither-policy-jajuni-gpu.h"
-#include "dither-diffuse-vulkan.h"
 #include "sixel_atomic.h"
 
 typedef struct jajuni_gpu_preparer {
@@ -98,7 +97,7 @@ jajuni_gpu_prepare(sixel_gpu_dither_preparer_interface_t const *self,
     return sixel_dither_jajuni_gpu_metal_prepare(preparer->allocator,
         &preparer->configuration, request, result);
 #elif defined(HAVE_VULKAN)
-    return sixel_dither_diffuse_vulkan_prepare(preparer->allocator,
+    return sixel_dither_jajuni_gpu_vulkan_prepare(preparer->allocator,
         &preparer->configuration, request, result);
 #else
     return SIXEL_FEATURE_ERROR;

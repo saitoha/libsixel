@@ -2,9 +2,9 @@
 #include "tests/_support/lso2-gpu/fixture.h"
 #include "tests/_support/lso2-gpu/expected.h"
 
-/* A device-less GPU backend (Vulkan) must reproduce the frozen LSO2
- * scatter-oracle indexes that the Metal component reproduces, through
- * both the monolithic run and the deferred solve/resolve. */
+/* GPU LSO2 diffusion through the NONE lookup program reproduces the frozen
+ * LSO2 scatter-oracle indexes on Metal and Vulkan alike, through both the
+ * monolithic run and the deferred solve/resolve. */
 enum { DIRECT_LSO2_PLAIN, DIRECT_LSO2_T0, DIRECT_LSO2_REFRESH };
 
 static int

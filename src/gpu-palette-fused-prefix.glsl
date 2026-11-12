@@ -1,13 +1,18 @@
 #version 450
 /* SPDX-License-Identifier: MIT */
 /*
- * Vulkan port of the legacy palette-apply kernel (lookup modes DIRECT and
- * FHEDT). prepare_query()/finish_pixel() mirror
- * gpu-palette-fused-prefix.metal so that positional dither, transparency
- * and 6delta keeps produce the same indexes as the Metal and CPU paths.
- * Bindings 0..9 follow the Metal buffer indexes; 10 and 11 view the FHEDT
- * table built by lookup-policy-fhedt-vulkan.comp as bytes or words. The
- * dispatch range lives in push constants.
+ * Palette-apply consumer of the "vulkan.lookup-rgb8.v1" program ABI: the
+ * prefix of the fused per-pixel kernel. prepare_query()/finish_pixel()
+ * mirror gpu-palette-fused-prefix.metal so that positional dither,
+ * transparency and 6delta keeps produce the same indexes as the Metal and
+ * CPU paths. A lookup policy's own GLSL follows this prefix and supplies
+ * lookup_rgb8(); gpu-palette-fused-suffix.glsl closes the kernel. This
+ * component never interprets the policy, its constants or its workspace.
+ *
+ * Bindings 0..9 follow the Metal buffer indexes. The program ABI adds
+ * lookup_palette at 2, the plan constants as words at 10, the policy's
+ * workspace at SIXEL_LOOKUP_WORKSPACE_BINDING (11) and an invalid-index
+ * flag at 12. The dispatch range lives in push constants.
  */
 #extension GL_EXT_shader_8bit_storage : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
@@ -20,8 +25,8 @@ layout(std430, set = 0, binding = 0) writeonly buffer Result {
 layout(std430, set = 0, binding = 1) readonly buffer Pixels {
     uint8_t pixels[];
 };
-layout(std430, set = 0, binding = 2) readonly buffer Palette {
-    uint8_t palette[];
+layout(std430, set = 0, binding = 2) readonly buffer LookupPalette {
+    uint8_t lookup_palette[];
 };
 layout(std430, set = 0, binding = 3) readonly buffer TransparentMask {
     uint8_t transparent_mask[];
@@ -38,8 +43,6 @@ layout(std430, set = 0, binding = 6) readonly buffer Params {
     uint width;
     uint height;
     uint ncolors;
-    uint lookup_mode;
-    uint fhedt_resolution, fhedt_shift, fhedt_refine, fhedt_dist2;
     uint mode;
     uint has_transparent;
     uint transparent_size;
@@ -77,13 +80,12 @@ layout(std430, set = 0, binding = 8) readonly buffer AccumulationValid {
 layout(std430, set = 0, binding = 9) writeonly buffer AccumulationResult {
     uint8_t accumulation_result_mask[];
 };
-/* FHEDT table: bytes without refinement, label | boundary << 8 |
- * zero-distance << 9 words with it. Both bind the same buffer. */
-layout(std430, set = 0, binding = 10) readonly buffer FhedtTable8 {
-    uint8_t fhedt_table8[];
+layout(std430, set = 0, binding = 10) readonly buffer LookupConstants {
+    uint lookup_constants[];
 };
-layout(std430, set = 0, binding = 11) readonly buffer FhedtTable32 {
-    uint fhedt_table32[];
+#define SIXEL_LOOKUP_WORKSPACE_BINDING 11
+layout(std430, set = 0, binding = 12) buffer LookupInvalid {
+    uint lookup_invalid;
 };
 
 /* first: first pixel of this dispatch; count: pixels in this dispatch;
@@ -144,14 +146,6 @@ float gradient_weight(uint x, uint y, uint index)
     attenuated = pow(normalized, params.bluenoise_gradient_factor);
     attenuated = clamp(attenuated, 0.0, 1.0);
     return 1.0 - attenuated;
-}
-
-uint palette_distance(uvec3 q, uint palette_index)
-{
-    int dr = int(q.x) - int(uint(palette[palette_index * 3u + 0u]));
-    int dg = int(q.y) - int(uint(palette[palette_index * 3u + 1u]));
-    int db = int(q.z) - int(uint(palette[palette_index * 3u + 2u]));
-    return uint(dr * dr + dg * dg + db * db);
 }
 
 uint sixdelta_palette_distance(uvec3 q, uint palette_index)
@@ -307,96 +301,3 @@ void finish_pixel(uint gid, uvec3 comparison, uint best)
     result[gid] = uint8_t(best);
 }
 
-/* Byte FHEDT preserves the CPU quantized-coordinate and corner tie order,
- * as fhedt_palette_lookup() in lookup-policy-fhedt-gpu-query.metal. */
-uint fhedt_lookup(uvec3 q)
-{
-    uint r, at, word, best, minimum, dist2, candidate, x, y, z;
-    uvec3 cell, corner;
-    ivec3 d, color;
-
-    r = params.fhedt_resolution;
-    cell = q >> params.fhedt_shift;
-    at = cell.x + cell.y * r + cell.z * r * r;
-    if (params.fhedt_refine == 0u) {
-        return uint(fhedt_table8[at]);
-    }
-    word = fhedt_table32[at];
-    best = word & 255u;
-    if ((word & 256u) != 0u &&
-            !(params.fhedt_dist2 != 0u && (word & 512u) != 0u)) {
-        minimum = 0xffffffffu;
-        for (z = 0u; z < 2u; ++z) {
-            for (y = 0u; y < 2u; ++y) {
-                for (x = 0u; x < 2u; ++x) {
-                    corner = min(cell + uvec3(x, y, z), uvec3(r - 1u));
-                    at = corner.x + corner.y * r + corner.z * r * r;
-                    candidate = fhedt_table32[at] & 255u;
-                    color = ivec3(int(uint(palette[candidate * 3u])),
-                        int(uint(palette[candidate * 3u + 1u])),
-                        int(uint(palette[candidate * 3u + 2u])));
-                    color = (color >> int(params.fhedt_shift)) <<
-                        int(params.fhedt_shift);
-                    d = ivec3(q) - color;
-                    dist2 = uint(d.x * d.x + d.y * d.y + d.z * d.z);
-                    if (dist2 < minimum) {
-                        minimum = dist2;
-                        best = candidate;
-                    }
-                }
-            }
-        }
-    }
-    return best;
-}
-
-/* 5bit/6bit cell-center tables (lookup modes 6 and 7, bits + 1) round
- * each channel to its nearest cell, as the byte query in
- * lookup-policy-bitlut-gpu.metal. */
-uint bitlut_lookup(uvec3 q)
-{
-    uint bits, shift;
-    uvec3 cell;
-
-    bits = params.lookup_mode - 1u;
-    shift = 8u - bits;
-    cell = min((q + (1u << (shift - 1u))) >> shift,
-        uvec3((1u << bits) - 1u));
-    return uint(fhedt_table8[(cell.x << (2u * bits)) | (cell.y << bits) |
-        cell.z]);
-}
-
-void main()
-{
-    uvec3 query;
-    uvec3 source;
-    uint best;
-    uint best_dist;
-    uint local = gl_GlobalInvocationID.y * range.pitch +
-        gl_GlobalInvocationID.x;
-    uint gid;
-
-    if (local >= range.count) {
-        return;
-    }
-    gid = range.first + local;
-    if (prepare_query(gid, query, source)) {
-        return;
-    }
-    if (params.lookup_mode == 5u) {
-        best = fhedt_lookup(query);
-    } else if (params.lookup_mode >= 6u) {
-        best = bitlut_lookup(query);
-    } else {
-        best = 0u;
-        best_dist = 0xffffffffu;
-        for (uint i = 0u; i < params.ncolors; ++i) {
-            uint dist = palette_distance(query, i);
-            if (dist < best_dist) {
-                best_dist = dist;
-                best = i;
-            }
-        }
-    }
-    finish_pixel(gid, source, best);
-}

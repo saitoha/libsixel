@@ -2014,7 +2014,22 @@ typedef struct sixel_gpu_lookup_batch_dispatch {
  *
  * Providers own builders, constants, workspace layout and query code together.
  * VP-tree and ordered maintain separate implementations and caches. There is
- * no shared distance-row, candidate-builder or search service. */
+ * no shared distance-row, candidate-builder or search service.
+ *
+ * "vulkan.lookup-rgb8.v1" is the same contract in GLSL 450. Chunks are
+ * fixed text, so the build-time program matrix holds SPIR-V for every
+ * consumer and provider pair; a composition missing there needs a runtime
+ * GLSL compiler. A consumer prefix declares uint8_t lookup_palette[] and
+ * uint lookup_constants[] (constants must be whole words) and defines
+ * SIXEL_LOOKUP_WORKSPACE_BINDING, at which the provider declares its own
+ * workspace block. The point entries are
+ *   uint lookup_rgb8(uvec3 query, uint ncolors);
+ *   uint lookup_rgb8_fractional(vec3 query, uint ncolors);
+ * and a provider defines both. Builders keep buffers 0..3 as bindings
+ * 0..3 with uint lookup_count at 1, define SIXEL_LOOKUP_BUILDER, and run
+ * main() { <entry_point>(); } with the pass's local dimensions as
+ * specialization constants 0..2; builder code is guarded by
+ * SIXEL_LOOKUP_BUILDER. There is no batch entry yet. */
 /* Query kind is an ABI specialization and part of cache identity.
  * BYTE exposes the uchar3 entry above. FRACTIONAL additionally exposes
  * uint lookup_rgb8_fractional(float3 query, constant uchar *palette,
@@ -2226,12 +2241,7 @@ struct sixel_gpu_lookup_preparer_interface {
  * The working and emitted palettes have equal counts; a dither declares
  * which representation its lookup and residual use. Each diffusion method's
  * GPU dither uses the emitted RGB8 entries, excluding the reserved
- * transparency entry.
- *
- * A backend without a runtime device (Vulkan) receives NULL lookup and
- * device and the resolved lookup configuration in direct_lookup instead;
- * its plan serves only the policies that have their own Vulkan
- * implementation and refuses the others, AUTO included. */
+ * transparency entry. */
 typedef struct sixel_gpu_dither_prepare_request {
     sixel_palette_t *working_palette;
     sixel_gpu_lookup_preparer_interface_t *lookup;
@@ -2240,7 +2250,6 @@ typedef struct sixel_gpu_dither_prepare_request {
     int pixelformat;
     int colorspace;
     int scan;
-    sixel_lookup_policy_configuration_t direct_lookup;
 } sixel_gpu_dither_prepare_request_t;
 
 /* All views are borrowed until run returns after draining GPU work. Result
@@ -2602,11 +2611,7 @@ struct sixel_gpu_dither_preparer_interface {
  * unavailable, not a request for enum-based discovery. At least one preparer
  * is required. A GPU preparer requires the selected runtime device.
  * Legacy lookup_kind/configuration and already prepared CPU objects are
- * adapted before this boundary, never inspected by PaletteApply. The one
- * exception is gpu_direct_lookup: its kind is nonzero only when the
- * composition root found that the selected GPU backend applies that resolved
- * lookup configuration directly, without a runtime device or prepared program
- * (Vulkan). Kind zero (AUTO) never selects that path. */
+ * adapted before this boundary, never inspected by PaletteApply. */
 typedef struct sixel_palette_apply_prepare_request {
     sixel_palette_t *working_palette;
     sixel_lookup_preparer_interface_t *cpu_lookup;
@@ -2623,7 +2628,6 @@ typedef struct sixel_palette_apply_prepare_request {
     int gpu_policy;
     size_t gpu_auto_threshold;
     sixel_gpu_dither_preparer_interface_t *gpu_dither;
-    sixel_lookup_policy_configuration_t gpu_direct_lookup;
 } sixel_palette_apply_prepare_request_t;
 
 /* Called serially by the producer with a monotonically increasing ready-row

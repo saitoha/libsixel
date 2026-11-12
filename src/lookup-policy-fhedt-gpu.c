@@ -8,13 +8,20 @@
 #include "lookup-policy-fhedt-gpu.h"
 #include "threading.h"
 #include "sixel_atomic.h"
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 #include <pthread.h>
 #endif
 /* Readable source: lookup-policy-fhedt-fractional-gpu.metal. */
 static char const * const fhedt_chunks[] = {
 #include <generated-metal/lookup-policy-fhedt-fractional-gpu-shader.inc.h>
 };
+#if defined(HAVE_VULKAN)
+/* Readable source: lookup-policy-fhedt-gpu.glsl. Its text is fixed so the
+ * build-time program matrix covers it; settings travel as constants. */
+static char const * const fhedt_vulkan_chunks[] = {
+#include <generated-vulkan/lookup-policy-fhedt-gpu-shader.inc.h>
+};
+#endif
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
@@ -32,9 +39,14 @@ typedef struct fhedt_plan {
     char specialization[80];
     char const *chunks[1+sizeof(fhedt_chunks)/sizeof(*fhedt_chunks)];
     size_t workspace_size;
+    /* Metal reads constants; the Vulkan program reads vulkan_constants:
+     * shift, refine, dist2, resolution and the finished table's word
+     * offset in the workspace. */
     uint32_t constants[4];
+    uint32_t vulkan_constants[5];
     sixel_gpu_lookup_build_pass_t passes[6];
     size_t pass_count;
+    int vulkan;
     int busy;
     int valid;
 } fhedt_plan_t;
@@ -60,7 +72,7 @@ typedef struct fhedt_preparer {
  * shared-instance settings never disable it. Active bindings retain exclusive
  * workspaces; neither another palette nor another in-flight frame can
  * overwrite them. One idle allocation bounds the retained cache capacity. */
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 static pthread_mutex_t fhedt_idle_gate = PTHREAD_MUTEX_INITIALIZER;
 static struct {
     sixel_gpu_device_interface_t *device;
@@ -68,17 +80,25 @@ static struct {
     unsigned char palette[768];
     unsigned int count;
     uint32_t constants[4];
+    uint32_t vulkan_constants[5];
     int valid;
 } fhedt_idle;
 #endif
 
+/* Metal byte queries use the legacy executor and own no table here. */
+static int
+fhedt_owns_table(fhedt_plan_t const *plan)
+{
+    return plan->vulkan || plan->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE;
+}
+
 static void
 fhedt_borrow(fhedt_plan_t *plan)
 {
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     sixel_gpu_device_interface_t *device;
 
-    if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) return;
+    if (!fhedt_owns_table(plan)) return;
     device = NULL;
     (void)pthread_mutex_lock(&fhedt_idle_gate);
     if (fhedt_idle.device == plan->device &&
@@ -88,6 +108,8 @@ fhedt_borrow(fhedt_plan_t *plan)
         plan->valid = fhedt_idle.valid && fhedt_idle.count == plan->count &&
             memcmp(fhedt_idle.constants, plan->constants,
                 sizeof(plan->constants)) == 0 &&
+            memcmp(fhedt_idle.vulkan_constants, plan->vulkan_constants,
+                sizeof(plan->vulkan_constants)) == 0 &&
             memcmp(fhedt_idle.palette, plan->palette, plan->count*3U) == 0;
         device = fhedt_idle.device;
         fhedt_idle.device = NULL;
@@ -103,12 +125,12 @@ fhedt_borrow(fhedt_plan_t *plan)
 static void
 fhedt_recycle(fhedt_plan_t *plan)
 {
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     sixel_gpu_device_interface_t *device;
     sixel_gpu_buffer_interface_t *workspace;
 
-    if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE ||
-            plan->workspace == NULL || plan->busy) return;
+    if (!fhedt_owns_table(plan) || plan->workspace == NULL ||
+            plan->busy) return;
     plan->device->vtbl->ref(plan->device);
     (void)pthread_mutex_lock(&fhedt_idle_gate);
     device = fhedt_idle.device;
@@ -118,6 +140,8 @@ fhedt_recycle(fhedt_plan_t *plan)
     fhedt_idle.count = plan->count;
     fhedt_idle.valid = plan->valid;
     memcpy(fhedt_idle.constants, plan->constants, sizeof(plan->constants));
+    memcpy(fhedt_idle.vulkan_constants, plan->vulkan_constants,
+        sizeof(plan->vulkan_constants));
     memcpy(fhedt_idle.palette, plan->palette, plan->count*3U);
     plan->workspace = NULL;
     plan->valid = 0;
@@ -164,6 +188,25 @@ fhedt_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (fhedt_plan_t const *)self;
     memset(view, 0, sizeof(*view));
+#if defined(HAVE_VULKAN)
+    if (plan->vulkan) {
+        view->program_format = "vulkan.lookup-rgb8.v1";
+        view->logical_name = "fhedt";
+        view->query_kind = plan->query_kind;
+        view->chunks = fhedt_vulkan_chunks;
+        view->chunk_count = sizeof(fhedt_vulkan_chunks) /
+            sizeof(fhedt_vulkan_chunks[0]);
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->ncolors = plan->count;
+        view->workspace_size = plan->workspace_size;
+        view->constants = plan->vulkan_constants;
+        view->constants_size = sizeof(plan->vulkan_constants);
+        view->build_passes = plan->passes;
+        view->build_pass_count = plan->pass_count;
+        return SIXEL_OK;
+    }
+#endif
     /* Byte consumers keep the existing optimized executor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
@@ -334,6 +377,56 @@ fhedt_unref(sixel_gpu_lookup_preparer_interface_t *self)
     sixel_allocator_unref(allocator);
 }
 
+#if defined(HAVE_VULKAN)
+/* One 64-wide dispatch covering count invocations, folded into a second
+ * group dimension past 65535 groups; the entries flatten both. */
+static void
+fhedt_vulkan_pass(sixel_gpu_lookup_build_pass_t *pass, char const *entry,
+    size_t count)
+{
+    size_t groups;
+
+    groups = (count + 63U) / 64U;
+    pass->entry_point = entry;
+    pass->groups[0] = groups < 65535U ? groups : 65535U;
+    pass->groups[1] = (groups + pass->groups[0] - 1U) / pass->groups[0];
+    pass->groups[2] = 1;
+    pass->threads[0] = 64;
+    pass->threads[1] = pass->threads[2] = 1;
+}
+
+/* The Vulkan program's layout, described in lookup-policy-fhedt-gpu.glsl.
+ * Byte queries at R256 are exact lattice points: their stored label is
+ * already nearest and corner refinement would visit it first with a strict
+ * comparison, so byte R256 skips the boundary table without changing ties.
+ * Fractional R256 still needs refinement between lattice points. */
+static void
+fhedt_vulkan_layout(fhedt_plan_t *plan)
+{
+    size_t r, cells;
+    int refine;
+
+    r = (size_t)plan->legacy.fhedt_resolution;
+    cells = r * r * r;
+    refine = plan->legacy.fhedt_refine &&
+        (plan->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE || r != 256);
+    plan->vulkan_constants[0] = r == 64 ? 2 : r == 128 ? 1 : 0;
+    plan->vulkan_constants[1] = (uint32_t)refine;
+    plan->vulkan_constants[2] = (uint32_t)plan->legacy.fhedt_use_dist2;
+    plan->vulkan_constants[3] = (uint32_t)r;
+    plan->vulkan_constants[4] = (uint32_t)(r * r + 256U +
+        (refine ? cells : 0U));
+    plan->workspace_size = (r * r + 256U + 2U * cells) * sizeof(uint32_t);
+    fhedt_vulkan_pass(&plan->passes[0], "fhedt_clear", r * r);
+    fhedt_vulkan_pass(&plan->passes[1], "fhedt_seed", plan->count);
+    fhedt_vulkan_pass(&plan->passes[2], "fhedt_x", cells);
+    fhedt_vulkan_pass(&plan->passes[3], "fhedt_y", r * r);
+    fhedt_vulkan_pass(&plan->passes[4], "fhedt_z", r * r);
+    fhedt_vulkan_pass(&plan->passes[5], "fhedt_pack", cells);
+    plan->pass_count = refine ? 6 : 5;
+}
+#endif
+
 static SIXELSTATUS
 fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_lookup_execution_request_t const *request,
@@ -345,15 +438,23 @@ fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_palette_entries_view_t entries;
     sixel_gpu_palette_request_t admission;
     size_t r, cells, i;
+    char const *format;
+    int vulkan;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
+    format = device->vtbl->program_format(device);
+    vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
+#if !defined(HAVE_VULKAN)
+    vulkan = 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            strcmp(device->vtbl->program_format(device),
-                "metal.lookup-rgb8.v1") != 0) return SIXEL_FEATURE_ERROR;
+            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
@@ -437,6 +538,10 @@ fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->passes[5].groups[0] = cells/32;
         if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE)
             plan->workspace_size = 1;
+        plan->vulkan = vulkan;
+#if defined(HAVE_VULKAN)
+        if (vulkan) fhedt_vulkan_layout(plan);
+#endif
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         if (preparer->cached != NULL) {
             fhedt_plan_unref(&preparer->cached->iface);

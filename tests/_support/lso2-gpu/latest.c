@@ -4,6 +4,7 @@
 #endif
 #include "fixture.h"
 #include "src/encoder.h"
+#include "src/lookup-policy-gpu.h"
 #include "tests/_support/planner/pipeline/playback_test_common.h"
 #include <stdlib.h>
 
@@ -70,6 +71,12 @@ lso2_gpu_latest_replay(char const *method, char const *delta)
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
     LSO2_GPU_CHECK(status == SIXEL_OK);
+    /* The encoder selects the ordered lookup for GPU diffusion. */
+    if (!sixel_gpu_lookup_has_program(SIXEL_LUT_POLICY_ORDERED,
+            device->vtbl->program_format(device))) {
+        result = 77;
+        goto end;
+    }
     a = playback_test_encoder(0, "4");
     b = playback_test_encoder(0, "4");
     LSO2_GPU_CHECK(a && b);

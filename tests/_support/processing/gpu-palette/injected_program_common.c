@@ -116,6 +116,12 @@ injected_gpu_program_test(int invalid)
     memset(&request, 0, sizeof(request));
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
+    /* third_chunks is Metal source; other program formats cannot host it. */
+    if (status == SIXEL_OK && strcmp(device->vtbl->program_format(device),
+            "metal.lookup-rgb8.v1") != 0) {
+        outcome = 77;
+        goto end;
+    }
     if (status != SIXEL_OK || !gpu_component_open(&fixture, 0)) goto end;
     if (fixture.provider->vtbl->prepare(fixture.provider, &fixture.request,
             device, &fixture.other) != SIXEL_OK) goto end;

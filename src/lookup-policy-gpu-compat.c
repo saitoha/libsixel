@@ -2,7 +2,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,8 +23,15 @@ typedef struct gpu_compat_provider {
 static pthread_mutex_t gpu_compat_gate = PTHREAD_MUTEX_INITIALIZER;
 static gpu_compat_provider_t *gpu_compat_providers;
 
+/* The backend runtime that executes a prepared program. */
+#if defined(HAVE_METAL)
 SIXELSTATUS sixel_gpu_palette_metal_apply(
     sixel_gpu_palette_request_t const *request);
+#define gpu_compat_run sixel_gpu_palette_metal_apply
+#else
+#include "gpu-palette-vulkan.h"
+#define gpu_compat_run sixel_gpu_palette_vulkan_apply
+#endif
 
 SIXELSTATUS
 sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
@@ -45,7 +52,7 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
 
     if (request->program != NULL ||
             !sixel_gpu_lookup_registered(request->lut_policy)) {
-        return sixel_gpu_palette_metal_apply(request);
+        return gpu_compat_run(request);
     }
     allocator = NULL;
     palette = NULL;
@@ -117,7 +124,7 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     if (SIXEL_FAILED(status)) goto end;
     run = *request;
     run.program = program;
-    status = sixel_gpu_palette_metal_apply(&run);
+    status = gpu_compat_run(&run);
 end:
     sixel_gpu_program_destroy(program);
     if (plan != NULL) plan->vtbl->unref(plan);

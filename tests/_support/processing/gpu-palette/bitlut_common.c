@@ -11,6 +11,27 @@
 #include "src/lookup-policy.h"
 #include "src/encoder-core-private.h"
 
+/* Metal answers byte bit-LUT queries with its legacy table executor
+ * (kernel 8). A device without that executor runs the policy's injected
+ * RGB8 program (kernel 9), whose table is private to the lookup plan. */
+static int
+bitlut_expected_kernel(void)
+{
+    sixel_gpu_device_interface_t *device;
+    int kernel;
+
+    device = NULL;
+    kernel = 8;
+    if (sixel_gpu_device_acquire(&device) == SIXEL_OK && device != NULL) {
+        if (strcmp(device->vtbl->program_format(device),
+                "metal.lookup-rgb8.v1") != 0) {
+            kernel = 9;
+        }
+        device->vtbl->unref(device);
+    }
+    return kernel;
+}
+
 /* Enumerate a channel's byte preimage rather than repeating the GPU's
  * endpoint formula. Doubled centers and integer distances are exact. */
 static int
@@ -202,9 +223,12 @@ test_bitlut_gpu(int bits, int observation)
     status = sixel_gpu_palette_apply(&request);
     if (observation == 21)
         return status == SIXEL_FALSE && !hooks.entered ? 0 : 1;
-    if (status != SIXEL_OK || hooks.kernel != 8 || !hooks.published) return 1;
-    if (observation == 3)
+    if (status != SIXEL_OK || hooks.kernel != bitlut_expected_kernel() ||
+            !hooks.published) return 1;
+    if (observation == 3) {
+        if (hooks.kernel != 8) return 77;
         return hooks.bitlut_table_bytes == ((size_t)1U << (bits * 3)) ? 0 : 1;
+    }
     if (observation >= 4 && observation <= 11) {
         memcpy(first, output, sizeof(first));
         if (observation == 5) palette[0] ^= 127;
@@ -351,7 +375,8 @@ test_bitlut_encode(int bits, int observation)
         if (observation == 4) {
             ok = dither->lookup_policy != NULL;
         } else if (reuse) {
-            if (hooks.kernel != 8 || !hooks.published) {
+            if (hooks.kernel != bitlut_expected_kernel() ||
+                    !hooks.published) {
                 fprintf(stderr, "kernel=%d published=%d\n", hooks.kernel,
                     hooks.published);
                 goto end;

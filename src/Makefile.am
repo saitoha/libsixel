@@ -50,40 +50,88 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/gpu-palette-fused-prefix.metal \
     $(srcdir)/gpu-palette-fused-suffix.metal
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
-SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp \
-    $(srcdir)/lookup-policy-fhedt-vulkan.comp \
-    $(srcdir)/lookup-policy-bitlut-vulkan.comp \
-    $(srcdir)/dither-diffuse-vulkan.comp
+# The "vulkan.lookup-rgb8.v1" programs. Every GLSL chunk is embedded as
+# text: the runtime composes consumer prefix, lookup policy and consumer
+# body, and that exact text identifies the program. With glslc the whole
+# (consumer x policy) matrix and every policy builder is also compiled to
+# SPIR-V; libshaderc compiles any other composition at runtime.
+SIXEL_VULKAN_BUILDER_PREFIX = $(srcdir)/gpu-lookup-builder-prefix.glsl
+SIXEL_VULKAN_POLICIES = $(srcdir)/lookup-policy-none-gpu.glsl \
+    $(srcdir)/lookup-policy-fhedt-gpu.glsl \
+    $(srcdir)/lookup-policy-bitlut-gpu.glsl
+SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/gpu-palette-fused-prefix.glsl:$(srcdir)/gpu-palette-fused-suffix.glsl \
+    $(srcdir)/dither-policy-lso2-gpu-prefix.glsl:$(srcdir)/dither-policy-lso2-gpu.glsl \
+    $(srcdir)/dither-policy-fs-gpu-prefix.glsl:$(srcdir)/dither-policy-fs-gpu.glsl \
+    $(srcdir)/dither-policy-atkinson-gpu-prefix.glsl:$(srcdir)/dither-policy-atkinson-gpu.glsl \
+    $(srcdir)/dither-policy-jajuni-gpu-prefix.glsl:$(srcdir)/dither-policy-jajuni-gpu.glsl \
+    $(srcdir)/dither-policy-stucki-gpu-prefix.glsl:$(srcdir)/dither-policy-stucki-gpu.glsl \
+    $(srcdir)/dither-policy-burkes-gpu-prefix.glsl:$(srcdir)/dither-policy-burkes-gpu.glsl \
+    $(srcdir)/dither-policy-sierra1-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra1-gpu.glsl \
+    $(srcdir)/dither-policy-sierra2-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra2-gpu.glsl \
+    $(srcdir)/dither-policy-sierra3-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra3-gpu.glsl
+SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-lookup-builder-prefix.glsl \
+    $(srcdir)/gpu-palette-fused-prefix.glsl \
+    $(srcdir)/gpu-palette-fused-suffix.glsl \
+    $(srcdir)/dither-policy-lso2-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-lso2-gpu.glsl \
+    $(srcdir)/dither-policy-fs-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-fs-gpu.glsl \
+    $(srcdir)/dither-policy-atkinson-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-atkinson-gpu.glsl \
+    $(srcdir)/dither-policy-jajuni-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-jajuni-gpu.glsl \
+    $(srcdir)/dither-policy-stucki-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-stucki-gpu.glsl \
+    $(srcdir)/dither-policy-burkes-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-burkes-gpu.glsl \
+    $(srcdir)/dither-policy-sierra1-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-sierra1-gpu.glsl \
+    $(srcdir)/dither-policy-sierra2-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-sierra2-gpu.glsl \
+    $(srcdir)/dither-policy-sierra3-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-sierra3-gpu.glsl \
+    $(srcdir)/lookup-policy-none-gpu.glsl \
+    $(srcdir)/lookup-policy-fhedt-gpu.glsl \
+    $(srcdir)/lookup-policy-bitlut-gpu.glsl
 SIXEL_VULKAN_FRAGMENTS =
-if HAVE_SHADERC
+if HAVE_VULKAN
 SIXEL_VULKAN_FRAGMENTS += \
-    $(patsubst $(srcdir)/%.comp,generated-vulkan/%-shader.inc.h,$(SIXEL_VULKAN_INPUTS))
-endif
+    $(patsubst $(srcdir)/%.glsl,generated-vulkan/%-shader.inc.h,$(SIXEL_VULKAN_INPUTS))
 if HAVE_VULKAN_PREBUILT_SPIRV
-SIXEL_VULKAN_FRAGMENTS += \
-    $(patsubst $(srcdir)/%.comp,generated-vulkan/%-spirv.inc.h,$(SIXEL_VULKAN_INPUTS))
+SIXEL_VULKAN_FRAGMENTS += generated-vulkan/lookup-programs-spirv.inc.h
+endif
 endif
 BUILT_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS)
 nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS)
 
-generated-vulkan/%-shader.inc.h: $(srcdir)/%.comp \
+generated-vulkan/%-shader.inc.h: $(srcdir)/%.glsl \
         $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
 	$(AM_V_GEN)AWK="$(AWK)" $(SHELL) $(top_srcdir)/tools/embed-metal.sh "$<" "$@"
 
-generated-vulkan/%.spv: $(srcdir)/%.comp
-	@mkdir -p generated-vulkan
-	$(AM_V_GEN)$(GLSLC) -O --target-env=vulkan1.2 "$<" -o "$@"
-
-generated-vulkan/%-spirv.inc.h: generated-vulkan/%.spv \
-        $(top_srcdir)/tools/embed-spirv.sh
-	$(AM_V_GEN)$(SHELL) $(top_srcdir)/tools/embed-spirv.sh "$<" "$@"
+generated-vulkan/lookup-programs-spirv.inc.h: $(SIXEL_VULKAN_INPUTS) \
+        $(top_srcdir)/tools/gen-vulkan-programs.sh
+	$(AM_V_GEN)$(SHELL) $(top_srcdir)/tools/gen-vulkan-programs.sh \
+	    "$(GLSLC)" "$@" $(SIXEL_VULKAN_BUILDER_PREFIX) \
+	    $(SIXEL_VULKAN_CONSUMER_PAIRS) -- $(SIXEL_VULKAN_POLICIES)
 
 # Like the Metal consumers below, the phased build compiles objects
-# directly; name the consumer so its embedded shader exists first. A
+# directly; name the consumers so their embedded shaders exist first. A
 # variable keeps automake from treating this as an override of its own
 # compile rule.
-SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-palette-vulkan.lo \
-    libsixel_la-dither-diffuse-vulkan.lo
+SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
+    libsixel_la-gpu-palette-vulkan.lo \
+    libsixel_la-dither-policy-lso2-gpu-vulkan.lo \
+    libsixel_la-dither-policy-fs-gpu-vulkan.lo \
+    libsixel_la-dither-policy-atkinson-gpu-vulkan.lo \
+    libsixel_la-dither-policy-jajuni-gpu-vulkan.lo \
+    libsixel_la-dither-policy-stucki-gpu-vulkan.lo \
+    libsixel_la-dither-policy-burkes-gpu-vulkan.lo \
+    libsixel_la-dither-policy-sierra1-gpu-vulkan.lo \
+    libsixel_la-dither-policy-sierra2-gpu-vulkan.lo \
+    libsixel_la-dither-policy-sierra3-gpu-vulkan.lo \
+    libsixel_la-lookup-policy-none-gpu.lo \
+    libsixel_la-lookup-policy-fhedt-gpu.lo \
+    libsixel_la-lookup-policy-bitlut-gpu.lo
 $(SIXEL_VULKAN_CONSUMERS): $(SIXEL_VULKAN_FRAGMENTS)
 
 generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
@@ -153,7 +201,7 @@ MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
 endif
 
 CLEANFILES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS) \
-    generated-vulkan/*.spv *.gcno *.gcda *.gcov *.log test-output.*
+    *.gcno *.gcda *.gcov *.log test-output.*
 DISTCLEANFILES = \
                 $(DEPDIR)/libsixel_la-gpu-palette.Plo \
                 $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
@@ -199,7 +247,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/gpu-runtime-metal.h \
                 $(srcdir)/gpu-runtime-vulkan.h \
                 $(srcdir)/gpu-palette-vulkan.h \
-                $(srcdir)/dither-diffuse-vulkan.h \
                 $(srcdir)/retained-plane-rows.c \
                 $(srcdir)/retained-plane-rows.h \
                 $(srcdir)/retained-plane-workers.c \
@@ -412,6 +459,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-certlut-gpu.c \
                 $(srcdir)/lookup-policy-gpu-legacy.c \
                 $(srcdir)/lookup-policy-gpu-registry.c \
+                $(srcdir)/lookup-policy-gpu-compat.c \
                 $(srcdir)/lookup-policy-gpu.h \
                 $(srcdir)/lookup-policy-ordered-gpu.h \
                 $(srcdir)/lookup-policy-none-gpu.h \
@@ -642,7 +690,15 @@ if HAVE_VULKAN
 libsixel_la_SOURCES += \
 $(srcdir)/gpu-runtime-vulkan.c \
 $(srcdir)/gpu-palette-vulkan.c \
-$(srcdir)/dither-diffuse-vulkan.c
+$(srcdir)/dither-policy-lso2-gpu-vulkan.c \
+$(srcdir)/dither-policy-fs-gpu-vulkan.c \
+$(srcdir)/dither-policy-atkinson-gpu-vulkan.c \
+$(srcdir)/dither-policy-jajuni-gpu-vulkan.c \
+$(srcdir)/dither-policy-stucki-gpu-vulkan.c \
+$(srcdir)/dither-policy-burkes-gpu-vulkan.c \
+$(srcdir)/dither-policy-sierra1-gpu-vulkan.c \
+$(srcdir)/dither-policy-sierra2-gpu-vulkan.c \
+$(srcdir)/dither-policy-sierra3-gpu-vulkan.c
 endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
@@ -657,7 +713,6 @@ $(srcdir)/dither-policy-sierra2-gpu-metal.m \
 $(srcdir)/dither-policy-sierra3-gpu-metal.m \
 $(srcdir)/gpu-palette-metal.m \
 $(srcdir)/retained-plane-metal.m \
-$(srcdir)/lookup-policy-gpu-compat.m \
 $(srcdir)/lookup-policy-fhedt-gpu.inc.h \
 $(srcdir)/lookup-policy-bitlut-gpu.inc.h \
 $(srcdir)/palette-kmeans-metal.m \

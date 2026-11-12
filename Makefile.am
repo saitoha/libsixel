@@ -47,7 +47,7 @@ DIST_SUBDIRS = \
 export CKSUM
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh tools/embed-metal.awk tools/embed-spirv.sh \
+EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh tools/embed-metal.awk tools/gen-vulkan-programs.sh \
     tools/ci-vm-result.sh tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
     assessment/meson.build \
     converters/meson.build \

@@ -48,5 +48,8 @@ int lso2_gpu_rendezvous_submit_origin(struct lso2_gpu_rendezvous_fixture *s,
     int index, int origin);
 int lso2_gpu_rendezvous_wait(struct lso2_gpu_rendezvous_fixture *s, int *value);
 void lso2_gpu_rendezvous_release(struct lso2_gpu_rendezvous_fixture *s, int *gate);
+/* 0 when the acquired GPU device serves the encoder's GPU diffusion lookup
+ * (ORDERED), 77 when no device or no such program exists, 1 on failure. */
+int lso2_gpu_rendezvous_device(void);
 #endif
 #endif

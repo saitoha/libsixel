@@ -191,6 +191,12 @@ lso2_gpu_fractional_config_check(
     memset(&probe, 0, sizeof(probe));
     outcome = lso2_gpu_fixture_open(&f, 1);
     if (outcome != 0) goto end;
+    /* The probe wraps the subject in Metal source. */
+    if (strcmp(f.device->vtbl->program_format(f.device),
+            "metal.lookup-rgb8.v1") != 0) {
+        outcome = 77;
+        goto end;
+    }
     outcome = 1;
     count = ties ? 5 : 40;
     memset(definitions, 0, sizeof(definitions));
@@ -303,6 +309,12 @@ lso2_gpu_fractional_reuse_check(int kind)
     memset(&probe, 0, sizeof(probe));
     outcome = lso2_gpu_fixture_open(&f, 1);
     if (outcome != 0) goto end;
+    /* The probe wraps the subject in Metal source. */
+    if (strcmp(f.device->vtbl->program_format(f.device),
+            "metal.lookup-rgb8.v1") != 0) {
+        outcome = 77;
+        goto end;
+    }
     outcome = 1;
     memset(&configuration, 0, sizeof(configuration));
     configuration.kind = kind;
@@ -344,6 +356,12 @@ lso2_gpu_batch_fault_check(int fault)
     memset(&probe,0,sizeof(probe));
     outcome = lso2_gpu_fixture_open(&f,1);
     if (outcome != 0) goto end;
+    /* The probe wraps the subject in Metal source. */
+    if (strcmp(f.device->vtbl->program_format(f.device),
+            "metal.lookup-rgb8.v1") != 0) {
+        outcome = 77;
+        goto end;
+    }
     outcome = 1;
     memset(&configuration,0,sizeof(configuration));
     configuration.kind = SIXEL_LUT_POLICY_BLOCKCULL;

@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 #include "rendezvous.h"
+#include "src/lookup-policy-gpu.h"
 #include <stdlib.h>
 #include <string.h>
 #if SIXEL_ENABLE_THREADS
@@ -281,5 +282,21 @@ int
 lso2_gpu_rendezvous_submit(struct lso2_gpu_rendezvous_fixture *s, int index)
 {
     return lso2_gpu_rendezvous_submit_origin(s, index, -1);
+}
+int
+lso2_gpu_rendezvous_device(void)
+{
+    sixel_gpu_device_interface_t *device;
+    SIXELSTATUS status;
+    int outcome;
+
+    device = NULL;
+    status = sixel_gpu_device_acquire(&device);
+    if (status == SIXEL_FEATURE_ERROR) return 77;
+    if (status != SIXEL_OK) return 1;
+    outcome = sixel_gpu_lookup_has_program(SIXEL_LUT_POLICY_ORDERED,
+        device->vtbl->program_format(device)) ? 0 : 77;
+    device->vtbl->unref(device);
+    return outcome;
 }
 #endif

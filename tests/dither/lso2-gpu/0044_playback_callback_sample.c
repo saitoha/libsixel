@@ -6,17 +6,13 @@ test_lso2_gpu_playback_callback_sample(int argc, char **argv)
 {
 #if SIXEL_ENABLE_THREADS && SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
     struct lso2_gpu_rendezvous_fixture s;
-    sixel_gpu_device_interface_t *device;
-    SIXELSTATUS status;
+    int status;
     int ok;
 
     (void)argc;
     (void)argv;
-    device = NULL;
-    status = sixel_gpu_device_acquire(&device);
-    if (status == SIXEL_FEATURE_ERROR) return 77;
-    if (status != SIXEL_OK) return 1;
-    device->vtbl->unref(device);
+    status = lso2_gpu_rendezvous_device();
+    if (status != 0) return status;
     ok = 0;
     AHEAD_CHECK(!lso2_gpu_rendezvous_open(&s, "force", "ahead", "delta:T0"));
     AHEAD_CHECK(lso2_gpu_rendezvous_submit(&s, 0));
