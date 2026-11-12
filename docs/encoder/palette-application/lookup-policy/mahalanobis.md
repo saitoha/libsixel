@@ -92,7 +92,7 @@ The policy was introduced with RBC in the [`mahalanobis` implementation commit](
 
 <!-- test-coverage: enforced -->
 
-The GPU cases fix one policy, input configuration and observation per file. Shader cases require Metal; plan lifetime and admission cases use an opaque test device and run without GPU hardware. Exact no-dither cases use an independent integer exhaustive oracle; positional-dither and rectangle cases compare with the CPU path. These bounded fixtures do not enumerate the full RGB cube or establish performance on every GPU.
+The GPU cases fix one policy, input configuration and observation per file. Program-specific shader cases require Metal; exact no-dither, positional-dither and rectangle cases also run on Vulkan, whose direct palette scan serves this policy. Plan lifetime and admission cases use an opaque test device and run without GPU hardware. Exact no-dither cases use an independent integer exhaustive oracle; positional-dither and rectangle cases compare with the CPU path. These bounded fixtures do not enumerate the full RGB cube or establish performance on every GPU.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

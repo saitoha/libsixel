@@ -382,7 +382,10 @@ sixel_gpu_palette_vulkan_is_available(void)
 
 /* AUTO resolves to the VP-tree on the CPU. These policies all return the
  * exact nearest entry with the lowest index on ties, so the direct scan
- * reproduces their indexes; approximate grids and trees are excluded. */
+ * reproduces their indexes; approximate grids and trees are excluded.
+ * MAHALANOBIS, RBC and CERTLUT qualify through their RGB8 GPU contract,
+ * which is the unweighted first-index scan; for CERTLUT that intentionally
+ * differs from the approximate CPU byte cache. */
 int
 sixel_gpu_palette_vulkan_lut_is_exact(int lut_policy)
 {
@@ -392,7 +395,10 @@ sixel_gpu_palette_vulkan_lut_is_exact(int lut_policy)
         lut_policy == SIXEL_LUT_POLICY_DELAUNAY ||
         lut_policy == SIXEL_LUT_POLICY_BLOCKCULL ||
         lut_policy == SIXEL_LUT_POLICY_ORDERED ||
-        lut_policy == SIXEL_LUT_POLICY_GRIDLUT;
+        lut_policy == SIXEL_LUT_POLICY_GRIDLUT ||
+        lut_policy == SIXEL_LUT_POLICY_MAHALANOBIS ||
+        lut_policy == SIXEL_LUT_POLICY_RBC ||
+        lut_policy == SIXEL_LUT_POLICY_CERTLUT;
 }
 
 int

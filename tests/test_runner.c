@@ -1567,6 +1567,7 @@ int test_gpu_direct_0014_diffuse_carry(int argc, char **argv);
 int test_gpu_direct_0015_diffuse_fhedt(int argc, char **argv);
 int test_gpu_direct_0016_parity_exact(int argc, char **argv);
 int test_gpu_direct_0017_diffuse_bitlut(int argc, char **argv);
+int test_gpu_direct_0018_diffuse_exact(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
@@ -6930,6 +6931,7 @@ static test_entry_t const test_entries[] = {
     { "gpu-direct/0016_parity_exact", test_gpu_direct_0016_parity_exact },
     { "gpu-direct/0017_diffuse_bitlut",
       test_gpu_direct_0017_diffuse_bitlut },
+    { "gpu-direct/0018_diffuse_exact", test_gpu_direct_0018_diffuse_exact },
     { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
     { "gpu-palette/0021_blockcull_exact",
       test_gpupal_0021_blockcull_exact },
