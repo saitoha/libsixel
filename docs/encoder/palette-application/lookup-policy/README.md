@@ -280,7 +280,7 @@ Direct and end-to-end coverage is under [`tests/lookup`](../../../../tests/looku
 
 ### Fractional GPU lookup verification
 
-The exact fractional backend fixtures use quarter-code queries with an independent double exhaustive oracle. Approximate policies use separate references for their declared cell-center, projected-window or grid-refinement rules; those tests do not claim equivalence to exhaustive nearest-color lookup. Squared distances multiplied by 16 are integers below `3 * 1020^2 < 2^24`, so the float32 arithmetic is exact for these witnesses. They include the fractional strip above a cell's last integer. Ties and cache identity are separate cases; these samples do not exhaust the RGB cube. GPU query cases require Metal; cache cases use an injected test device. The individual method pages own their test inventories.
+The exact fractional backend fixtures use quarter-code queries with an independent double exhaustive oracle. Approximate policies use separate references for their declared cell-center, projected-window or grid-refinement rules; those tests do not claim equivalence to exhaustive nearest-color lookup. Squared distances multiplied by 16 are integers below `3 * 1020^2 < 2^24`, so the float32 arithmetic is exact for these witnesses. They include the fractional strip above a cell's last integer. Ties and cache identity are separate cases; these samples do not exhaust the RGB cube. GPU query cases require Metal, except the Delaunay probes which also run on Vulkan with libshaderc; cache cases use an injected test device. The individual method pages own their test inventories.
 
 <!-- test-coverage: enforced -->
 

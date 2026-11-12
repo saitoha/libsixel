@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: MIT */
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
 #include <stdlib.h>
 #include <stdint.h>
 #include "fixture.h"
@@ -23,6 +26,7 @@ typedef struct probe_preparer {
     sixel_gpu_lookup_preparer_interface_t *subject;
     char const *suffix;
     int batch_fault;
+    int fractional_fault;
     unsigned int *builds;
 } probe_preparer_t;
 
@@ -152,7 +156,11 @@ probe_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     }
     /* Copy the terminator within the exact allocation made above. */
     memcpy(p->suffix, provider->suffix, suffix_size);
-    p->chunks[0] = "#define lookup_rgb8_fractional subject_fractional\n";
+    p->chunks[0] = provider->fractional_fault
+        ? "#define lookup_rgb8_fractional subject_fractional\n"
+          "#define SIXEL_TEST_PROBE_FAULT 1u\n"
+        : "#define lookup_rgb8_fractional subject_fractional\n"
+          "#define SIXEL_TEST_PROBE_FAULT 0u\n";
     for (i = 0; i < p->view.chunk_count; ++i)
         p->chunks[i+1] = p->view.chunks[i];
     p->chunks[i+1] = p->suffix;
@@ -183,20 +191,34 @@ lso2_gpu_fractional_config_check(
     sixel_wire_color_definition_t definitions[41];
     unsigned char colors[123];
     char suffix[16384];
+    char const *format, *vector, *arguments;
     size_t used;
     double q[3];
     unsigned int i, c, count, seed, expected, value;
-    int outcome, written;
+    int outcome, written, vulkan, delaunay;
 
     memset(&probe, 0, sizeof(probe));
     outcome = lso2_gpu_fixture_open(&f, 1);
     if (outcome != 0) goto end;
-    /* The probe wraps the subject in Metal source. */
-    if (strcmp(f.device->vtbl->program_format(f.device),
-            "metal.lookup-rgb8.v1") != 0) {
+    format = f.device->vtbl->program_format(f.device);
+    vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
+    delaunay = configuration->kind == SIXEL_LUT_POLICY_DELAUNAY;
+    /* Only Delaunay's scalar probes currently supply both shader ABIs.
+     * Other precision and batch-fault fixtures retain their own scope. */
+    if ((!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0) ||
+            (vulkan && !delaunay)) {
         outcome = 77;
         goto end;
     }
+#if !defined(HAVE_SHADERC)
+    /* The decorated source is deliberately absent from the production
+     * SPIR-V matrix, so a Vulkan probe needs runtime GLSL compilation. */
+    if (vulkan) {
+        fprintf(stderr, "Vulkan fractional probe requires libshaderc\n");
+        outcome = 77;
+        goto end;
+    }
+#endif
     outcome = 1;
     count = ties ? 5 : 40;
     memset(definitions, 0, sizeof(definitions));
@@ -235,9 +257,12 @@ lso2_gpu_fractional_config_check(
         f.pixels[3*i+1] = (unsigned char)(i*17);
         f.pixels[3*i+2] = (unsigned char)(i*73);
     }
+    vector = vulkan ? "vec4" : "float4";
+    arguments = vulkan ? "n" : "p,n,c,w";
     used = (size_t)snprintf(suffix, sizeof(suffix),
-        "\n#undef lookup_rgb8_fractional\n"
-        "constant float4 probes[128] = {\n");
+        "\n#undef lookup_rgb8_fractional\n%s\n", vulkan
+            ? "const vec4 probes[128] = vec4[128]("
+            : "constant float4 probes[128] = {");
     seed = 7;
     for (i = 0; i < 128; ++i) {
         for (c = 0; c < 3; ++c) {
@@ -257,17 +282,36 @@ lso2_gpu_fractional_config_check(
         if (i == 3 && ties) { q[0] = 15; q[1] = q[2] = 0; }
         expected = lso2_gpu_fractional_reference(configuration,colors,count,q);
         written = snprintf(suffix+used, sizeof(suffix)-used,
-            "float4(%.2ff,%.2ff,%.2ff,%u.0f),\n", q[0],q[1],q[2],expected);
+            "%s(%.2ff,%.2ff,%.2ff,%u.0f)%s\n", vector,
+            q[0],q[1],q[2],expected, i+1 < 128 ? "," : "");
         LSO2_GPU_CHECK(written > 0 && (size_t)written < sizeof(suffix)-used);
         used += (size_t)written;
     }
-    written = snprintf(suffix+used, sizeof(suffix)-used,
-        "};\nstatic uint lookup_rgb8_fractional(float3 q,"
-        " constant uchar *p,uint n,constant uchar *c,"
-        " device const uchar *w) {\n"
-        "float4 probe = probes[uint(q.x) %% 128u];\n"
-        "if (subject_fractional(probe.xyz,p,n,c,w) != uint(probe.w)) "
-        "return n;\nreturn subject_fractional(q,p,n,c,w);\n}\n");
+    written = snprintf(suffix+used, sizeof(suffix)-used, "%s\n", vulkan
+        ? ");\nuint lookup_rgb8_fractional(vec3 q,uint n) {"
+        : "};\nstatic uint lookup_rgb8_fractional(float3 q,"
+          " constant uchar *p,uint n,constant uchar *c,"
+          " device const uchar *w) {");
+    LSO2_GPU_CHECK(written > 0 && (size_t)written < sizeof(suffix)-used);
+    used += (size_t)written;
+    if (delaunay) {
+        /* Check every witness independently of the dither's query values.
+         * Flipping only the last expected index proves the loop reaches
+         * its end and that the consumer rejects a failed probe. */
+        written = snprintf(suffix+used, sizeof(suffix)-used,
+            "for (uint i=0u;i<128u;++i) {\n"
+            "%s probe=probes[i];\n"
+            "uint expected=uint(probe.w) ^ "
+            "(i==127u ? SIXEL_TEST_PROBE_FAULT : 0u);\n"
+            "if (subject_fractional(probe.xyz,%s) != expected) return n;\n"
+            "}\nreturn subject_fractional(q,%s);\n}\n",
+            vector, arguments, arguments);
+    } else {
+        written = snprintf(suffix+used, sizeof(suffix)-used,
+            "float4 probe = probes[uint(q.x) %% 128u];\n"
+            "if (subject_fractional(probe.xyz,p,n,c,w) != uint(probe.w)) "
+            "return n;\nreturn subject_fractional(q,p,n,c,w);\n}\n");
+    }
     LSO2_GPU_CHECK(written > 0 && (size_t)written < sizeof(suffix)-used);
     LSO2_GPU_CHECK(sixel_gpu_lookup_select(f.allocator, configuration,
         &probe.subject) == SIXEL_OK);
@@ -276,6 +320,18 @@ lso2_gpu_fractional_config_check(
     f.prepare.gpu_lookup = &probe.iface;
     LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
     LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_OK);
+    if (delaunay) {
+        /* A different decorated source must not reuse an uninstrumented
+         * prebuilt program or the successful probe's cached pipeline. */
+        probe.fractional_fault = 1;
+        LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
+        LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_BAD_ARGUMENT);
+        LSO2_GPU_CHECK(sixel_indexed_frame_get_state(f.image) !=
+            SIXEL_INDEXED_COMPLETE);
+        probe.fractional_fault = 0;
+        LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
+        LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_OK);
+    }
     outcome = 0;
 end:
     lso2_gpu_fixture_close(&f);
@@ -309,7 +365,8 @@ lso2_gpu_fractional_reuse_check(int kind)
     memset(&probe, 0, sizeof(probe));
     outcome = lso2_gpu_fixture_open(&f, 1);
     if (outcome != 0) goto end;
-    /* The probe wraps the subject in Metal source. */
+    /* Reuse coverage remains Metal-only; its admission is independent of
+     * the scalar precision probes above. This probe only counts builds. */
     if (strcmp(f.device->vtbl->program_format(f.device),
             "metal.lookup-rgb8.v1") != 0) {
         outcome = 77;
