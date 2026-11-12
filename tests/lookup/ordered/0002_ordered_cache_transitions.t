@@ -7,7 +7,7 @@ echo "1..1"
 set -v
 
 status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup ordered \
     gpu-palette/0024_ordered_cache_transitions || status=$?
 test "$status" -ne 77 || {
     echo "ok 1 # SKIP GPU palette backend is unavailable"

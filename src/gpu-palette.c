@@ -683,6 +683,22 @@ sixel_gpu_palette_plan_available(void)
 }
 
 SIXEL_INTERNAL_API int
+sixel_gpu_palette_lookup_available(int kind)
+{
+    sixel_gpu_device_interface_t *device;
+    int served;
+
+    device = NULL;
+    if (sixel_gpu_device_acquire(&device) != SIXEL_OK || device == NULL) {
+        return 0;
+    }
+    served = sixel_gpu_lookup_has_program(kind,
+        device->vtbl->program_format(device));
+    device->vtbl->unref(device);
+    return served;
+}
+
+SIXEL_INTERNAL_API int
 sixel_gpu_palette_rows_per_chunk(int width, int height)
 {
     int bands;

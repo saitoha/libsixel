@@ -198,6 +198,10 @@ sixel_gpu_palette_auto_threshold(void);
  * neither rereads options nor retries a failed GPU frame on the CPU. */
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_plan_available(void);
+/* Nonzero when the current GPU device carries the program of lookup policy
+ * kind (one of SIXEL_LUT_POLICY_*), so a plan for it can be prepared. */
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_lookup_available(int kind);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request);
 

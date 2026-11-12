@@ -15,7 +15,7 @@ set -v
 # Keep capability initialization and real dispatch in one timed process.
 status=0
 
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette gpu-palette/0007_wire_rgb_eytzinger || status=$?
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup eytzinger gpu-palette/0007_wire_rgb_eytzinger || status=$?
 test "$status" -ne 77 || {
     echo "ok 1 # SKIP GPU palette backend is unavailable"
     exit 0

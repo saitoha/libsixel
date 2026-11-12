@@ -7,7 +7,7 @@ echo "1..1"
 set -v
 
 status=0
-trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
+trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup ordered \
     gpu-palette/0023_ordered_exact 1 1 1 2>&1) || status=$?
 test "$status" -ne 77 || {
     echo "ok 1 # SKIP GPU palette backend unavailable"

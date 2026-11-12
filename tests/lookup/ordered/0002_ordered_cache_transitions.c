@@ -27,8 +27,11 @@ test_gpupal_0024_ordered_cache_transitions(int argc, char **argv)
     if (!ordered_state_check(&b) || !ordered_state_check(&a)) {
         return EXIT_FAILURE;
     }
+    /* A device without gridlut's own program refuses that request; the
+     * other transitions still observe the ordered table. */
     b.request.lut_policy = SIXEL_LUT_POLICY_GRIDLUT;
-    if (!ordered_state_check(&b) || !ordered_state_check(&a)) {
+    if (sixel_gpu_palette_lookup_available(SIXEL_LUT_POLICY_GRIDLUT) &&
+            (!ordered_state_check(&b) || !ordered_state_check(&a))) {
         return EXIT_FAILURE;
     }
     b.request.lut_policy = SIXEL_LUT_POLICY_ORDERED;

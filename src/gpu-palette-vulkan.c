@@ -52,6 +52,7 @@
 #include "gpu-palette-vulkan.h"
 #include "gpu-program.h"
 #include "gpu-runtime-vulkan.h"
+#include "loader-common.h"
 #include "sixel_atomic.h"
 #include "bluenoise_64x64.h"
 
@@ -1109,6 +1110,14 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         request->test_hooks->kernel = 9;
         request->test_hooks->rebuild = binding_view.needs_build;
         request->test_hooks->published = 0;
+    }
+    if (sixel_trace_topic_is_enabled("gpu_contract")) {
+        /* The same observation lines as the Metal generic program. */
+        fprintf(stderr, "LSXGPU2|consumer=palette-apply|kernel=%s\n",
+            view->logical_name != NULL ? view->logical_name : "lookup");
+        fprintf(stderr, "LSXGPU3|lookup=%s|table=%s\n",
+            view->logical_name != NULL ? view->logical_name : "lookup",
+            binding_view.needs_build ? "rebuild" : "reuse");
     }
 
     sixel_gpu_vulkan_fill_params(&params, request);

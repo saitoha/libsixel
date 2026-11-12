@@ -13405,6 +13405,8 @@ print_usage(char const *program)
     fprintf(stderr, "       %s --require-gpu-palette <test>\n", program);
     fprintf(stderr, "       %s --require-gpu-palette-direct <test>\n",
         program);
+    fprintf(stderr, "       %s --require-gpu-lookup <policy> <test>\n",
+        program);
     fprintf(stderr, "       %s --is-running-under-wine\n", program);
     fprintf(stderr,
             "       %s --win32-ctrl-break-run <delay-ms> <timeout-ms|0> "
@@ -14897,6 +14899,38 @@ test_runner_process_exit_status(int status)
     return status;
 }
 
+/* The lookup policy named by --require-gpu-lookup, or -1. */
+static int
+test_runner_lookup_kind(char const *name)
+{
+    static struct {
+        char const *name;
+        int kind;
+    } const kinds[] = {
+        { "none", SIXEL_LUT_POLICY_NONE },
+        { "5bit", SIXEL_LUT_POLICY_5BIT },
+        { "6bit", SIXEL_LUT_POLICY_6BIT },
+        { "certlut", SIXEL_LUT_POLICY_CERTLUT },
+        { "fhedt", SIXEL_LUT_POLICY_FHEDT },
+        { "eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
+        { "vptree", SIXEL_LUT_POLICY_VPTREE },
+        { "rbc", SIXEL_LUT_POLICY_RBC },
+        { "mahalanobis", SIXEL_LUT_POLICY_MAHALANOBIS },
+        { "delaunay", SIXEL_LUT_POLICY_DELAUNAY },
+        { "blockcull", SIXEL_LUT_POLICY_BLOCKCULL },
+        { "gridlut", SIXEL_LUT_POLICY_GRIDLUT },
+        { "ordered", SIXEL_LUT_POLICY_ORDERED }
+    };
+    size_t index;
+
+    for (index = 0u; index < sizeof(kinds) / sizeof(kinds[0]); ++index) {
+        if (strcmp(name, kinds[index].name) == 0) {
+            return kinds[index].kind;
+        }
+    }
+    return -1;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -14904,8 +14938,10 @@ main(int argc, char **argv)
     char const *requested;
     int first_index;
     int require_gpu_palette;
+    int require_lookup;
 
     require_gpu_palette = 0;
+    require_lookup = -1;
     index = 0u;
     requested = NULL;
     first_index = 1;
@@ -14964,7 +15000,9 @@ main(int argc, char **argv)
      * performs its own real dispatch and must report execution failures.
      * --require-gpu-palette also needs prepared lookup plans (the complete
      * backend); --require-gpu-palette-direct accepts any backend that owns
-     * the direct (lookup NONE) apply stage, such as the partial Vulkan port. */
+     * the direct (lookup NONE) apply stage, such as the partial Vulkan port;
+     * --require-gpu-lookup needs the device to carry the program of the
+     * named lookup policy, whichever backend owns it. */
     if (strcmp(argv[first_index], "--require-gpu-palette") == 0) {
         require_gpu_palette = 1;
         ++first_index;
@@ -14977,6 +15015,15 @@ main(int argc, char **argv)
         require_gpu_palette = 2;
         ++first_index;
         if (argc <= first_index) {
+            print_usage(argv[0]);
+            return test_runner_process_exit_status(EXIT_FAILURE);
+        }
+    } else if (strcmp(argv[first_index], "--require-gpu-lookup") == 0) {
+        require_gpu_palette = 3;
+        first_index += 2;
+        if (argc <= first_index ||
+                (require_lookup = test_runner_lookup_kind(
+                    argv[first_index - 1])) < 0) {
             print_usage(argv[0]);
             return test_runner_process_exit_status(EXIT_FAILURE);
         }
@@ -14993,6 +15040,10 @@ main(int argc, char **argv)
             }
             if (require_gpu_palette == 1 &&
                     !sixel_gpu_palette_plan_available()) {
+                return test_runner_process_exit_status(77);
+            }
+            if (require_gpu_palette == 3 &&
+                    !sixel_gpu_palette_lookup_available(require_lookup)) {
                 return test_runner_process_exit_status(77);
             }
             return test_runner_process_exit_status(
