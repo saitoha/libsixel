@@ -52,6 +52,7 @@ SIXEL_METAL_INPUTS = \
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
 SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp \
     $(srcdir)/lookup-policy-fhedt-vulkan.comp \
+    $(srcdir)/lookup-policy-bitlut-vulkan.comp \
     $(srcdir)/dither-diffuse-vulkan.comp
 SIXEL_VULKAN_FRAGMENTS =
 if HAVE_SHADERC

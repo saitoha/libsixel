@@ -1,0 +1,65 @@
+#version 450
+/* SPDX-License-Identifier: MIT */
+/*
+ * Vulkan port of the 5bit/6bit cell-center table build in
+ * lookup-policy-bitlut-gpu.metal. One invocation fills one cell with the
+ * nearest palette entry to that cell's center, lowest index on ties. The
+ * table is immutable for a palette, so it does not depend on the CPU
+ * first-query memo's traversal history.
+ *
+ * Bindings: 0 = byte palette, 1 = byte table.
+ */
+#extension GL_EXT_shader_8bit_storage : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int8 : require
+
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+layout(std430, set = 0, binding = 0) readonly buffer Palette {
+    uint8_t palette[];
+};
+layout(std430, set = 0, binding = 1) writeonly buffer Table {
+    uint8_t table[];
+};
+
+/* count: cells; pitch: invocations per dispatch row. */
+layout(push_constant) uniform Build {
+    uint count;
+    uint pitch;
+    uint colors;
+    uint bits;
+} p;
+
+void main()
+{
+    uint cell, side, shift, half_step, best, distance, i, d;
+    uvec3 address;
+    ivec3 low, high, center2, delta;
+
+    cell = gl_GlobalInvocationID.y * p.pitch + gl_GlobalInvocationID.x;
+    if (cell >= p.count) {
+        return;
+    }
+    side = 1u << p.bits;
+    shift = 8u - p.bits;
+    half_step = 1u << (shift - 1u);
+    address = uvec3(cell >> (2u * p.bits), (cell >> p.bits) & (side - 1u),
+        cell & (side - 1u));
+    low = max(ivec3(address << shift) - int(half_step), ivec3(0));
+    high = ivec3((address + 1u) << shift) - int(half_step) - 1;
+    high = mix(high, ivec3(255), equal(address, uvec3(side - 1u)));
+    /* Twice the center keeps half-byte endpoints exact, including the
+     * clipped first cell and the saturated final cell. */
+    center2 = low + high;
+    best = 0u;
+    distance = 0xffffffffu;
+    for (i = 0u; i < p.colors; ++i) {
+        delta = center2 - 2 * ivec3(int(palette[3u * i]),
+            int(palette[3u * i + 1u]), int(palette[3u * i + 2u]));
+        d = uint(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+        if (d < distance) {
+            distance = d;
+            best = i;
+        }
+    }
+    table[cell] = uint8_t(best);
+}

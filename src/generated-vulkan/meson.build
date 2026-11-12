@@ -6,6 +6,7 @@ vulkan_headers = []
 vulkan_sources = files(
   '../gpu-palette-vulkan.comp',
   '../lookup-policy-fhedt-vulkan.comp',
+  '../lookup-policy-bitlut-vulkan.comp',
   '../dither-diffuse-vulkan.comp',
 )
 if have_vulkan

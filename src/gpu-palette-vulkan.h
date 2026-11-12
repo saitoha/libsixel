@@ -26,5 +26,15 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_gpu_palette_vulkan_fhedt_record_locked(
     int refine, int ncolors);
 SIXEL_INTERNAL_API void sixel_gpu_palette_vulkan_fhedt_publish_locked(
     unsigned char const *palette, int ncolors, int resolution, int refine);
+/* The same contract for the shared 5bit/6bit cell-center byte table. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_gpu_palette_vulkan_bitlut_acquire_locked(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t const *palette_buffer,
+    unsigned char const *palette, int ncolors, int bits,
+    sixel_vk_buffer_t const **table, int *rebuild);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_gpu_palette_vulkan_bitlut_record_locked(
+    sixel_vk_runtime_t *runtime, VkCommandBuffer command, int bits,
+    int ncolors);
+SIXEL_INTERNAL_API void sixel_gpu_palette_vulkan_bitlut_publish_locked(
+    unsigned char const *palette, int ncolors, int bits);
 #endif
 #endif

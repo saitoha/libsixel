@@ -350,6 +350,22 @@ uint fhedt_lookup(uvec3 q)
     return best;
 }
 
+/* 5bit/6bit cell-center tables (lookup modes 6 and 7, bits + 1) round
+ * each channel to its nearest cell, as the byte query in
+ * lookup-policy-bitlut-gpu.metal. */
+uint bitlut_lookup(uvec3 q)
+{
+    uint bits, shift;
+    uvec3 cell;
+
+    bits = params.lookup_mode - 1u;
+    shift = 8u - bits;
+    cell = min((q + (1u << (shift - 1u))) >> shift,
+        uvec3((1u << bits) - 1u));
+    return uint(fhedt_table8[(cell.x << (2u * bits)) | (cell.y << bits) |
+        cell.z]);
+}
+
 void main()
 {
     uvec3 query;
@@ -369,6 +385,8 @@ void main()
     }
     if (params.lookup_mode == 5u) {
         best = fhedt_lookup(query);
+    } else if (params.lookup_mode >= 6u) {
+        best = bitlut_lookup(query);
     } else {
         best = 0u;
         best_dist = 0xffffffffu;

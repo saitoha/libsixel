@@ -5,8 +5,8 @@
  * and dither-policy-lso2-gpu-metal.m: initialize, eight iterate subpasses
  * (four spatial phases, two cycles), then finish for a monolithic run or
  * solve_tail for a deferred solve whose resolve compares against history.
- * The lookup is the exact scan or the shared FHEDT table that
- * gpu-palette-vulkan.c builds on the device, rebuilt in the same
+ * The lookup is the exact scan or the shared FHEDT or 5bit/6bit table
+ * that gpu-palette-vulkan.c builds on the device, rebuilt in the same
  * submission whenever the palette or the table settings change.
  *
  * Every Vulkan call runs under sixel_vk_lock(). One descriptor set is
@@ -66,7 +66,8 @@ enum {
     SIXEL_VK_DIFFUSE_RESULT = 11,
     SIXEL_VK_DIFFUSE_INVALID = 12,
     SIXEL_VK_DIFFUSE_SKIP = 13,
-    /* Two views of the shared FHEDT table; never bundle buffers. */
+    /* Two views of the shared FHEDT table, or the 5bit/6bit table through
+     * the byte view; never bundle buffers. */
     SIXEL_VK_DIFFUSE_FHEDT_TABLE8 = 14,
     SIXEL_VK_DIFFUSE_FHEDT_TABLE32 = 15,
     SIXEL_VK_DIFFUSE_BINDINGS = 16
@@ -99,7 +100,7 @@ typedef struct sixel_vk_diffuse_params {
     float tap_weights[SIXEL_VK_DIFFUSE_TAPS];
     uint32_t selection[128];
     uint32_t lookup, fhedt_resolution, fhedt_shift, fhedt_refine;
-    uint32_t fhedt_dist2, unused[3];
+    uint32_t fhedt_dist2, bitlut_bits, unused[2];
 } sixel_vk_diffuse_params_t;
 
 typedef struct sixel_vk_diffuse_push {
@@ -406,9 +407,9 @@ sixel_dither_diffuse_vulkan_serves(int method_for_diffuse, int lut_policy)
         }
     }
     /* Exact policies (AUTO resolves to the VP-tree) select the lowest
-     * index among equidistant entries, as the scan does. FHEDT queries the
-     * device table; its settings are checked against the resolved
-     * configuration when a plan is prepared. */
+     * index among equidistant entries, as the scan does. FHEDT and
+     * 5bit/6bit query a device table; FHEDT settings are checked against
+     * the resolved configuration when a plan is prepared. */
     if (!known || !sixel_gpu_palette_vulkan_supports_lut(lut_policy)) {
         return 0;
     }
@@ -430,6 +431,10 @@ sixel_dither_diffuse_vulkan_lookup_serves(int method_for_diffuse,
     if (configuration == NULL || !sixel_dither_diffuse_vulkan_serves(
             method_for_diffuse, configuration->kind)) {
         return 0;
+    }
+    if (configuration->kind == SIXEL_LUT_POLICY_5BIT ||
+            configuration->kind == SIXEL_LUT_POLICY_6BIT) {
+        return configuration->pixelformat == SIXEL_PIXELFORMAT_RGB888;
     }
     if (configuration->kind != SIXEL_LUT_POLICY_FHEDT) {
         return 1;
@@ -842,7 +847,14 @@ sixel_vk_diffuse_run_impl(sixel_vk_diffuse_plan_t *plan,
      * still holds this plan's colors from its solve upload. */
     table = NULL;
     rebuild = 0;
-    if (params.lookup != 0) {
+    if (params.lookup == 2) {
+        status = sixel_gpu_palette_vulkan_bitlut_acquire_locked(runtime,
+            &buffers[SIXEL_VK_DIFFUSE_PALETTE], plan->palette,
+            (int)params.ncolors, (int)params.bitlut_bits, &table, &rebuild);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else if (params.lookup != 0) {
         status = sixel_gpu_palette_vulkan_fhedt_acquire_locked(runtime,
             &buffers[SIXEL_VK_DIFFUSE_PALETTE], plan->palette,
             (int)params.ncolors, (int)params.fhedt_resolution,
@@ -882,9 +894,12 @@ sixel_vk_diffuse_run_impl(sixel_vk_diffuse_plan_t *plan,
     if (rebuild) {
         /* The build reads the uploaded palette; its last barrier orders
          * the table writes before the first lookup. */
-        status = sixel_gpu_palette_vulkan_fhedt_record_locked(runtime,
-            command, (int)params.fhedt_resolution, (int)params.fhedt_refine,
-            (int)params.ncolors);
+        status = params.lookup == 2
+            ? sixel_gpu_palette_vulkan_bitlut_record_locked(runtime,
+                command, (int)params.bitlut_bits, (int)params.ncolors)
+            : sixel_gpu_palette_vulkan_fhedt_record_locked(runtime,
+                command, (int)params.fhedt_resolution,
+                (int)params.fhedt_refine, (int)params.ncolors);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -925,7 +940,10 @@ sixel_vk_diffuse_run_impl(sixel_vk_diffuse_plan_t *plan,
         goto end;
     }
     waited = sixel_vk_now_ms();
-    if (rebuild) {
+    if (rebuild && params.lookup == 2) {
+        sixel_gpu_palette_vulkan_bitlut_publish_locked(plan->palette,
+            (int)params.ncolors, (int)params.bitlut_bits);
+    } else if (rebuild) {
         sixel_gpu_palette_vulkan_fhedt_publish_locked(plan->palette,
             (int)params.ncolors, (int)params.fhedt_resolution,
             (int)params.fhedt_refine);
@@ -953,8 +971,10 @@ sixel_vk_diffuse_run_impl(sixel_vk_diffuse_plan_t *plan,
             (unsigned int)params.ncolors,
             mode == SIXEL_VK_DIFFUSE_RUN ? "run"
                 : mode == SIXEL_VK_DIFFUSE_SOLVE ? "solve" : "resolve",
-            params.lookup == 0 ? "" : rebuild ? ", fhedt build"
-                : ", fhedt reuse",
+            params.lookup == 0 ? ""
+                : params.lookup == 2 ? (rebuild ? ", bitlut build"
+                    : ", bitlut reuse")
+                : rebuild ? ", fhedt build" : ", fhedt reuse",
             sixel_vk_now_ms() - started, staged - started, waited - staged,
             runtime->last_busy_ms, sixel_vk_now_ms() - waited);
     }
@@ -1329,6 +1349,11 @@ sixel_dither_diffuse_vulkan_prepare(sixel_allocator_t *allocator,
             admission.fhedt_resolution == 128 ? 1U : 0U;
         plan->params.fhedt_refine = (uint32_t)admission.fhedt_refine;
         plan->params.fhedt_dist2 = (uint32_t)admission.fhedt_use_dist2;
+    } else if (request->direct_lookup.kind == SIXEL_LUT_POLICY_5BIT ||
+            request->direct_lookup.kind == SIXEL_LUT_POLICY_6BIT) {
+        plan->params.lookup = 2U;
+        plan->params.bitlut_bits =
+            request->direct_lookup.kind == SIXEL_LUT_POLICY_5BIT ? 5U : 6U;
     }
 
     sixel_vk_lock();
