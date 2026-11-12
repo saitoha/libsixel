@@ -5,7 +5,7 @@
  * and dither-policy-lso2-gpu-metal.m: initialize, eight iterate subpasses
  * (four spatial phases, two cycles), then finish for a monolithic run or
  * solve_tail for a deferred solve whose resolve compares against history.
- * The lookup is the exact scan or the shared FHEDT or 5bit/6bit table
+ * The lookup is the NONE scan or the shared FHEDT or 5bit/6bit table
  * that gpu-palette-vulkan.c builds on the device, rebuilt in the same
  * submission whenever the palette or the table settings change.
  *
@@ -406,10 +406,10 @@ sixel_dither_diffuse_vulkan_serves(int method_for_diffuse, int lut_policy)
             known = 1;
         }
     }
-    /* Exact policies (AUTO resolves to the VP-tree) select the lowest
-     * index among equidistant entries, as the scan does. FHEDT and
-     * 5bit/6bit query a device table; FHEDT settings are checked against
-     * the resolved configuration when a plan is prepared. */
+    /* NONE is the exact scan; FHEDT and 5bit/6bit query the device table
+     * their own Vulkan builds produce. FHEDT settings are checked against
+     * the resolved configuration when a plan is prepared. Other policies,
+     * AUTO included, have no Vulkan implementation yet. */
     if (!known || !sixel_gpu_palette_vulkan_supports_lut(lut_policy)) {
         return 0;
     }

@@ -56,7 +56,7 @@ unsigned int lso2_gpu_fractional_reference(
 SIXELSTATUS lso2_gpu_fixture_baseline(lso2_gpu_fixture_t *f, int offset);
 int lso2_gpu_fixture_open(lso2_gpu_fixture_t *f, int require_gpu);
 /* Open for a GPU backend without a runtime device (Vulkan): no device or
- * injected lookup, the AUTO policy in gpu_direct_lookup, and the GPU
+ * injected lookup, the NONE policy in gpu_direct_lookup, and the GPU
  * dither component of METHOD. Returns 77 when no such backend serves it. */
 int lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method);
 /* Swap in the GPU dither component of METHOD; fixed-tap components follow

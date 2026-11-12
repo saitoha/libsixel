@@ -135,13 +135,13 @@ lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method)
     outcome = lso2_gpu_fixture_open(f, 0);
     if (outcome != 0) return outcome;
     if (!sixel_gpu_palette_direct_diffusion_serves(method,
-            SIXEL_LUT_POLICY_AUTO)) return 77;
+            SIXEL_LUT_POLICY_NONE)) return 77;
     if (lso2_gpu_fixture_use_method(f, method) != 0) return 1;
     if (f->lookup != NULL) f->lookup->vtbl->unref(f->lookup);
     f->lookup = NULL;
     f->prepare.gpu_lookup = NULL;
     f->prepare.device = NULL;
-    f->prepare.gpu_direct_lookup.kind = SIXEL_LUT_POLICY_AUTO;
+    f->prepare.gpu_direct_lookup.kind = SIXEL_LUT_POLICY_NONE;
     f->prepare.gpu_direct_lookup.pixelformat = SIXEL_PIXELFORMAT_RGB888;
     return 0;
 }

@@ -5,7 +5,7 @@ echo "1..1"
 set -v
 
 status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette-direct \
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
     certlut/gpu_auto_failure_cpu_lookup || status=$?
 test "$status" -ne 77 || {
     echo "ok 1 # SKIP GPU palette backend unavailable"

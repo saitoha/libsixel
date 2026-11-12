@@ -149,7 +149,7 @@ direct_bitlut_frozen(unsigned char const *indexes, char const *expected)
 }
 
 int
-test_gpu_direct_0017_diffuse_bitlut(int argc, char **argv)
+test_gpu_direct_0016_diffuse_bitlut(int argc, char **argv)
 {
     unsigned char plain[LSO2_GPU_PIXELS], reference[LSO2_GPU_PIXELS];
     unsigned char run[LSO2_GPU_PIXELS], deferred[LSO2_GPU_PIXELS];

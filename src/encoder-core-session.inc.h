@@ -302,11 +302,6 @@ sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
                 dither->method_for_diffuse))
             memset(&prepare.gpu_direct_lookup, 0,
                 sizeof(prepare.gpu_direct_lookup));
-        else if (sixel_gpu_palette_direct_lookup_is_exact(
-                prepare.gpu_direct_lookup.kind))
-            /* The direct scan answers every exact policy, and a zeroed
-             * configuration (AUTO) means no direct lookup. */
-            prepare.gpu_direct_lookup.kind = SIXEL_LUT_POLICY_NONE;
     }
     object = NULL;
     status = sixel_palette_apply_factory_new(dither->allocator, &object);

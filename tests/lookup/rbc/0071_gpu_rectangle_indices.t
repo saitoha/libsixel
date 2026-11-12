@@ -5,7 +5,7 @@ echo "1..1"
 set -v
 
 status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette-direct rbc/gpu_rectangle_indices || status=$?
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette rbc/gpu_rectangle_indices || status=$?
 test "$status" -ne 77 || {
     echo "ok 1 # SKIP GPU palette backend unavailable"
     exit 0

@@ -8,12 +8,12 @@
  * Vulkan execution of the four-phase GPU error diffusion that the Metal
  * dither/<method>.gpu components run. Vulkan has no runtime device or
  * injected lookup program; request->direct_lookup names the resolved
- * policy, and a plan either scans the palette for the exact nearest entry
- * or queries a device FHEDT table.
+ * policy: NONE scans the palette, FHEDT and 5bit/6bit query their device
+ * tables. Other policies have no Vulkan implementation.
  */
 
 /* Nonzero when a usable Vulkan device can diffuse method_for_diffuse with
- * the lookup policy kind lut_policy (AUTO resolves to an exact policy). */
+ * the lookup policy kind lut_policy. */
 SIXEL_INTERNAL_API int
 sixel_dither_diffuse_vulkan_serves(int method_for_diffuse, int lut_policy);
 

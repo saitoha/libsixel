@@ -60,19 +60,6 @@ int
 sixel_gpu_palette_metal_is_available(void);
 #endif
 
-/* Nonzero when the backend evaluates the AUTO lookup with its exact
- * result, so an AUTO policy can be claimed like an explicit exact one. */
-static int
-sixel_gpu_palette_auto_lookup_is_exact(int lut_policy)
-{
-#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    return lut_policy == SIXEL_LUT_POLICY_AUTO;
-#else
-    (void)lut_policy;
-    return 0;
-#endif
-}
-
 static int
 sixel_gpu_palette_policy_is_force(int policy)
 {
@@ -133,11 +120,8 @@ sixel_gpu_palette_lut_policy_is_supported(
      * 5bit/6bit GPU contract uses immutable cell-center tables, deliberately
      * independent of the CPU first-query memo's traversal history.
      * Keep AUTO conservative for other policies because
-     * the GPU path does not reproduce their output semantics. The Vulkan
-     * direct scan reproduces the exact VP-tree that AUTO resolves to.
+     * the GPU path does not reproduce their output semantics.
      */
-    if (sixel_gpu_palette_auto_lookup_is_exact(request->lut_policy))
-        return 1;
     if (request->lut_policy == SIXEL_LUT_POLICY_FHEDT)
         return sixel_gpu_palette_fhedt_is_supported(request);
     if (sixel_gpu_lookup_registered(request->lut_policy) ||
@@ -576,8 +560,7 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
     if (sixel_gpu_palette_policy_is_force(gpu_policy)) {
         return 1;
     }
-    if (!sixel_gpu_palette_auto_lookup_is_exact(lut_policy) &&
-            !sixel_gpu_lookup_registered(lut_policy) &&
+    if (!sixel_gpu_lookup_registered(lut_policy) &&
             lut_policy != SIXEL_LUT_POLICY_5BIT &&
             lut_policy != SIXEL_LUT_POLICY_6BIT &&
             lut_policy != SIXEL_LUT_POLICY_NONE &&
@@ -745,17 +728,6 @@ sixel_gpu_palette_direct_lookup_serves(
             configuration->fhedt_resolution, configuration->fhedt_refine,
             configuration->fhedt_use_dist2, configuration->fhedt_use_cache,
             configuration->fhedt_weights);
-}
-
-SIXEL_INTERNAL_API int
-sixel_gpu_palette_direct_lookup_is_exact(int lut_policy)
-{
-#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    return sixel_gpu_palette_vulkan_lut_is_exact(lut_policy);
-#else
-    (void)lut_policy;
-    return 0;
-#endif
 }
 
 SIXEL_INTERNAL_API int

@@ -2230,8 +2230,8 @@ struct sixel_gpu_lookup_preparer_interface {
  *
  * A backend without a runtime device (Vulkan) receives NULL lookup and
  * device and the resolved lookup configuration in direct_lookup instead;
- * its plan serves only the exact policies it can evaluate itself. Kind
- * zero (AUTO) is the exact default policy. */
+ * its plan serves only the policies that have their own Vulkan
+ * implementation and refuses the others, AUTO included. */
 typedef struct sixel_gpu_dither_prepare_request {
     sixel_palette_t *working_palette;
     sixel_gpu_lookup_preparer_interface_t *lookup;
