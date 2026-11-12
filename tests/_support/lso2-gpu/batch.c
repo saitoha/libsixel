@@ -22,6 +22,11 @@ lso2_gpu_batch_equivalence(unsigned int count, int transparent, int deferred,
 
     outcome = lso2_gpu_fixture_open(&f, 1);
     if (outcome != 0) goto end;
+    /* The device must have the blockcull program. */
+    if (!lso2_gpu_fixture_serves(&f, SIXEL_LUT_POLICY_BLOCKCULL)) {
+        outcome = 77;
+        goto end;
+    }
     outcome = 1;
     memset(definitions,0,sizeof(definitions));
     memset(colors,0,sizeof(colors));

@@ -2,6 +2,8 @@
 /* The legacy adapter retains whole-image dispatch.
  * Policy: docs/threading/encoder.md
  */
+#include <string.h>
+
 #include "tests/_support/processing/gpu-palette/gpu_rows_common.h"
 
 int
@@ -16,6 +18,13 @@ test_gpu_rows_legacy_whole(int argc, char **argv)
     if (outcome != 0) {
         gpu_rows_close(&f);
         return outcome;
+    }
+    /* Only the Metal palette application keeps a program-less legacy
+     * executor; another runtime refuses a request without a program. */
+    if (strcmp(f.device->vtbl->program_format(f.device),
+            "metal.lookup-rgb8.v1") != 0) {
+        gpu_rows_close(&f);
+        return 77;
     }
     outcome = 1;
     f.request.program = NULL;

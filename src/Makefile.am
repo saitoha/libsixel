@@ -59,7 +59,8 @@ SIXEL_VULKAN_BUILDER_PREFIX = $(srcdir)/gpu-lookup-builder-prefix.glsl
 SIXEL_VULKAN_POLICIES = $(srcdir)/lookup-policy-none-gpu.glsl \
     $(srcdir)/lookup-policy-fhedt-gpu.glsl \
     $(srcdir)/lookup-policy-bitlut-gpu.glsl \
-    $(srcdir)/lookup-policy-eytzinger-gpu.glsl
+    $(srcdir)/lookup-policy-eytzinger-gpu.glsl \
+    $(srcdir)/lookup-policy-ordered-gpu.glsl
 SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/gpu-palette-fused-prefix.glsl:$(srcdir)/gpu-palette-fused-suffix.glsl \
     $(srcdir)/dither-policy-lso2-gpu-prefix.glsl:$(srcdir)/dither-policy-lso2-gpu.glsl \
     $(srcdir)/dither-policy-fs-gpu-prefix.glsl:$(srcdir)/dither-policy-fs-gpu.glsl \
@@ -94,7 +95,8 @@ SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-lookup-builder-prefix.glsl \
     $(srcdir)/lookup-policy-none-gpu.glsl \
     $(srcdir)/lookup-policy-fhedt-gpu.glsl \
     $(srcdir)/lookup-policy-bitlut-gpu.glsl \
-    $(srcdir)/lookup-policy-eytzinger-gpu.glsl
+    $(srcdir)/lookup-policy-eytzinger-gpu.glsl \
+    $(srcdir)/lookup-policy-ordered-gpu.glsl
 SIXEL_VULKAN_FRAGMENTS =
 if HAVE_VULKAN
 SIXEL_VULKAN_FRAGMENTS += \
@@ -134,7 +136,8 @@ SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-lookup-policy-none-gpu.lo \
     libsixel_la-lookup-policy-fhedt-gpu.lo \
     libsixel_la-lookup-policy-bitlut-gpu.lo \
-    libsixel_la-lookup-policy-eytzinger-gpu.lo
+    libsixel_la-lookup-policy-eytzinger-gpu.lo \
+    libsixel_la-lookup-policy-ordered-gpu.lo
 $(SIXEL_VULKAN_CONSUMERS): $(SIXEL_VULKAN_FRAGMENTS)
 
 generated-metal/%-shader.inc.h: $(srcdir)/%.metal \

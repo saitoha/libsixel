@@ -16,6 +16,11 @@ test_lso2_gpu_delaunay_refresh(int argc, char **argv)
     (void)argv;
     outcome = lso2_gpu_fixture_open(&f, 1);
     if (outcome != 0) goto end;
+    /* The device must have this policy's own program. */
+    if (!lso2_gpu_fixture_serves(&f, SIXEL_LUT_POLICY_DELAUNAY)) {
+        outcome = 77;
+        goto end;
+    }
     outcome = 1;
     f.lookup->vtbl->unref(f.lookup);
     f.lookup = NULL;
