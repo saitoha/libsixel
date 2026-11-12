@@ -85,7 +85,7 @@ one 8-bit query           Theta(K)
 
 ## Metal RGB8 execution
 
-The RGB888 gamma-space GPU provider is independent of the CPU float cluster implementation and of other lookup policies. It preserves the CPU byte scan's unweighted squared RGB distance and first-index tie rule. The injected program supports 1 through 256 paintable colors; shared PaletteApply admission controls eligible dithers and delta views as described in the [execution map](../../execution-map/README.md#4-lookup-per-pixel-application-and-output).
+The RGB888 gamma-space GPU provider is independent of the CPU float cluster implementation and of other lookup policies. On Vulkan, [`lookup-policy-rbc-gpu.glsl`](../../../../src/lookup-policy-rbc-gpu.glsl) owns the same three passes, table and both queries. It preserves the CPU byte scan's unweighted squared RGB distance and first-index tie rule. The injected program supports 1 through 256 paintable colors; shared PaletteApply admission controls eligible dithers and delta views as described in the [execution map](../../execution-map/README.md#4-lookup-per-pixel-application-and-output).
 
 Three GPU passes prepare a private cluster table. The sequence separates each producer from its consumer before pixel lookup begins:
 
@@ -115,7 +115,7 @@ The policy was added with the related Mahalanobis policy in the [`rbc` implement
 
 <!-- test-coverage: enforced -->
 
-The GPU cases fix one policy, input configuration and observation per file. Shader cases require Metal; plan lifetime and admission cases use an opaque test device and run without GPU hardware. Exact no-dither cases use an independent integer exhaustive oracle; positional-dither and rectangle cases compare with the CPU path. These bounded fixtures do not enumerate the full RGB cube or establish performance on every GPU.
+The GPU cases fix one policy, input configuration and observation per file. Shader cases require a GPU device that carries the rbc program, Metal or Vulkan; plan lifetime and admission cases use an opaque test device and run without GPU hardware. Exact no-dither cases use an independent integer exhaustive oracle; positional-dither and rectangle cases compare with the CPU path. These bounded fixtures do not enumerate the full RGB cube or establish performance on every GPU.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

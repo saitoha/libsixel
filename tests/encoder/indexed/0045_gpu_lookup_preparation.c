@@ -43,7 +43,9 @@ indexed_gpu_lookup_preparation_test(int mode, int lookup)
     SIXELSTATUS status;
 
     if (mode < 0 || mode > 5) return 1;
-    if (mode <= 1 && !sixel_gpu_palette_plan_available()) return 77;
+    /* Modes 0 and 1 apply the lookup on the GPU; the device must carry
+     * that policy's own program. */
+    if (mode <= 1 && !sixel_gpu_palette_lookup_available(lookup)) return 77;
     memset(dither, 0, sizeof(dither));
     memset(output, 0, sizeof(output));
     memset(streams, 0, sizeof(streams));
