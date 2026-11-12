@@ -4,8 +4,9 @@
 # shellcheck disable=SC2016
 set -eu
 : "${AWK:=awk}"
-# Amalgamation hoists this header outside the Objective-C source guard.
-printf '%s\n' '#if defined(HAVE_METAL)'
+# Amalgamation hoists this header outside the Objective-C source guard;
+# only the GPU backends (Metal, Vulkan) consume these tables.
+printf '%s\n' '#if defined(HAVE_METAL) || defined(HAVE_VULKAN)'
 "$AWK" -v NAME=lso2_gpu_ratios -f "${0%/*}/gen_varcoefs.awk" "$1" |
     "$AWK" '
     /^   \{/ {
@@ -20,4 +21,4 @@ printf '%s\n' '#if defined(HAVE_METAL)'
     $1 == "gain" { printf "    { %s, %s },\n", $2, $3 }
     END { print "};" }
     ' "$1"
-printf '%s\n' '#endif /* HAVE_METAL */'
+printf '%s\n' '#endif /* HAVE_METAL || HAVE_VULKAN */'

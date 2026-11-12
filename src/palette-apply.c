@@ -472,6 +472,24 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         if (status == SIXEL_OK && gpu_dither == NULL) {
             status = SIXEL_LOGIC_ERROR;
         }
+    } else if (gpu && request->gpu_dither != NULL &&
+            request->device == NULL &&
+            sixel_gpu_palette_direct_diffusion_serves(
+                options.method_for_diffuse, request->gpu_direct_lookup.kind)) {
+        /* A backend without a runtime device (Vulkan) evaluates the
+         * resolved lookup configuration inside its own dither plan. */
+        memset(&dither_request, 0, sizeof(dither_request));
+        dither_request.working_palette = request->working_palette;
+        dither_request.output = request->output;
+        dither_request.pixelformat = request->pixelformat;
+        dither_request.colorspace = request->colorspace;
+        dither_request.scan = request->scan;
+        dither_request.direct_lookup = request->gpu_direct_lookup;
+        status = request->gpu_dither->vtbl->prepare(request->gpu_dither,
+            &dither_request, &gpu_dither);
+        if (status == SIXEL_OK && gpu_dither == NULL) {
+            status = SIXEL_LOGIC_ERROR;
+        }
     } else if (gpu && request->gpu_dither == NULL &&
             request->gpu_lookup != NULL && request->device != NULL &&
             (options.method_for_diffuse == SIXEL_DIFFUSE_NONE ||

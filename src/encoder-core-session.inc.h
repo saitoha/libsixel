@@ -280,6 +280,13 @@ sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
     prepare.gpu_auto_threshold = dither->gpu_palette_threshold;
     status = sixel_dither_lookup_preparers(dither, &prepare);
     if (status != SIXEL_OK) goto end;
+    /* A GPU dither without a runtime device (Vulkan) evaluates the
+     * resolved lookup configuration itself. */
+    if (prepare.device == NULL && prepare.gpu_dither != NULL) {
+        status = sixel_dither_get_lookup_configuration(dither,
+            prepare.pixelformat, &prepare.gpu_direct_lookup);
+        if (status != SIXEL_OK) goto end;
+    }
     /* A direct-apply-only backend (Vulkan) has no runtime device. Admit it
      * with the legacy apply predicate so R and the synchronous path agree. */
     if (prepare.device == NULL && prepare.gpu_dither == NULL &&

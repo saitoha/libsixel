@@ -5,6 +5,7 @@
 #include <math.h>
 #include <string.h>
 #include "dither-policy-burkes-gpu.h"
+#include "dither-diffuse-vulkan.h"
 #include "sixel_atomic.h"
 
 typedef struct burkes_gpu_preparer {
@@ -95,6 +96,9 @@ burkes_gpu_prepare(sixel_gpu_dither_preparer_interface_t const *self,
     if (!preparer->configured) return SIXEL_LOGIC_ERROR;
 #if defined(HAVE_METAL)
     return sixel_dither_burkes_gpu_metal_prepare(preparer->allocator,
+        &preparer->configuration, request, result);
+#elif defined(HAVE_VULKAN)
+    return sixel_dither_diffuse_vulkan_prepare(preparer->allocator,
         &preparer->configuration, request, result);
 #else
     return SIXEL_FEATURE_ERROR;

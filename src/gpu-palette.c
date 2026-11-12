@@ -39,6 +39,7 @@
 #include "dither-common-pipeline.h"
 #if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
 #include "gpu-palette-vulkan.h"
+#include "dither-diffuse-vulkan.h"
 #define SIXEL_GPU_PALETTE_USE_VULKAN 1
 #endif
 
@@ -727,6 +728,19 @@ sixel_gpu_palette_direct_lookup_serves(
             configuration->fhedt_resolution, configuration->fhedt_refine,
             configuration->fhedt_use_dist2, configuration->fhedt_use_cache,
             configuration->fhedt_weights);
+}
+
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_direct_diffusion_serves(int method_for_diffuse,
+    int lut_policy)
+{
+#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+    return sixel_dither_diffuse_vulkan_serves(method_for_diffuse, lut_policy);
+#else
+    (void)method_for_diffuse;
+    (void)lut_policy;
+    return 0;
+#endif
 }
 
 SIXEL_INTERNAL_API int

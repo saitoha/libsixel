@@ -30,6 +30,7 @@ srcs = [
   'gpu-runtime-metal.h',
   'gpu-runtime-vulkan.h',
   'gpu-palette-vulkan.h',
+  'dither-diffuse-vulkan.h',
   'retained-plane-rows.c',
   'retained-plane-rows.h',
   'retained-plane-workers.c',
@@ -435,7 +436,8 @@ if have_metal
 endif
 
 if have_vulkan
-  srcs += ['gpu-runtime-vulkan.c', 'gpu-palette-vulkan.c']
+  srcs += ['gpu-runtime-vulkan.c', 'gpu-palette-vulkan.c',
+           'dither-diffuse-vulkan.c']
 endif
 
 if have_quicklook_thumbnailing

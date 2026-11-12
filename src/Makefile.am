@@ -51,7 +51,8 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/gpu-palette-fused-suffix.metal
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
 SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-palette-vulkan.comp \
-    $(srcdir)/lookup-policy-fhedt-vulkan.comp
+    $(srcdir)/lookup-policy-fhedt-vulkan.comp \
+    $(srcdir)/dither-diffuse-vulkan.comp
 SIXEL_VULKAN_FRAGMENTS =
 if HAVE_SHADERC
 SIXEL_VULKAN_FRAGMENTS += \
@@ -80,7 +81,8 @@ generated-vulkan/%-spirv.inc.h: generated-vulkan/%.spv \
 # directly; name the consumer so its embedded shader exists first. A
 # variable keeps automake from treating this as an override of its own
 # compile rule.
-SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-palette-vulkan.lo
+SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-palette-vulkan.lo \
+    libsixel_la-dither-diffuse-vulkan.lo
 $(SIXEL_VULKAN_CONSUMERS): $(SIXEL_VULKAN_FRAGMENTS)
 
 generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
@@ -196,6 +198,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/gpu-runtime-metal.h \
                 $(srcdir)/gpu-runtime-vulkan.h \
                 $(srcdir)/gpu-palette-vulkan.h \
+                $(srcdir)/dither-diffuse-vulkan.h \
                 $(srcdir)/retained-plane-rows.c \
                 $(srcdir)/retained-plane-rows.h \
                 $(srcdir)/retained-plane-workers.c \
@@ -637,7 +640,8 @@ endif
 if HAVE_VULKAN
 libsixel_la_SOURCES += \
 $(srcdir)/gpu-runtime-vulkan.c \
-$(srcdir)/gpu-palette-vulkan.c
+$(srcdir)/gpu-palette-vulkan.c \
+$(srcdir)/dither-diffuse-vulkan.c
 endif
 if HAVE_METAL
 libsixel_la_SOURCES += \

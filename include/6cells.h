@@ -2226,7 +2226,12 @@ struct sixel_gpu_lookup_preparer_interface {
  * The working and emitted palettes have equal counts; a dither declares
  * which representation its lookup and residual use. Each diffusion method's
  * GPU dither uses the emitted RGB8 entries, excluding the reserved
- * transparency entry. */
+ * transparency entry.
+ *
+ * A backend without a runtime device (Vulkan) receives NULL lookup and
+ * device and the resolved lookup configuration in direct_lookup instead;
+ * its plan serves only the exact policies it can evaluate itself. Kind
+ * zero (AUTO) is the exact default policy. */
 typedef struct sixel_gpu_dither_prepare_request {
     sixel_palette_t *working_palette;
     sixel_gpu_lookup_preparer_interface_t *lookup;
@@ -2235,6 +2240,7 @@ typedef struct sixel_gpu_dither_prepare_request {
     int pixelformat;
     int colorspace;
     int scan;
+    sixel_lookup_policy_configuration_t direct_lookup;
 } sixel_gpu_dither_prepare_request_t;
 
 /* All views are borrowed until run returns after draining GPU work. Result

@@ -1,5 +1,14 @@
 /* SPDX-License-Identifier: MIT */
 #include "fixture.h"
+#include "src/gpu-palette.h"
+#include "src/dither-policy-fs-gpu.h"
+#include "src/dither-policy-atkinson-gpu.h"
+#include "src/dither-policy-jajuni-gpu.h"
+#include "src/dither-policy-stucki-gpu.h"
+#include "src/dither-policy-burkes-gpu.h"
+#include "src/dither-policy-sierra1-gpu.h"
+#include "src/dither-policy-sierra2-gpu.h"
+#include "src/dither-policy-sierra3-gpu.h"
 
 int
 lso2_gpu_fixture_open(lso2_gpu_fixture_t *f, int require_gpu)
@@ -78,6 +87,53 @@ lso2_gpu_fixture_open(lso2_gpu_fixture_t *f, int require_gpu)
     f->prepare.output.keycolor_reserved = 1;
     f->prepare.output.transparent_background = 1;
     f->run.source = sixel_frame_as_interface(f->source);
+    return 0;
+}
+
+int
+lso2_gpu_fixture_open_direct(lso2_gpu_fixture_t *f, int method)
+{
+    static struct {
+        int method;
+        SIXELSTATUS (*create)(sixel_allocator_t *, void **);
+    } const components[] = {
+        { SIXEL_DIFFUSE_LSO2, sixel_dither_policy_lso2_gpu_new },
+        { SIXEL_DIFFUSE_FS, sixel_dither_policy_fs_gpu_new },
+        { SIXEL_DIFFUSE_ATKINSON, sixel_dither_policy_atkinson_gpu_new },
+        { SIXEL_DIFFUSE_JAJUNI, sixel_dither_policy_jajuni_gpu_new },
+        { SIXEL_DIFFUSE_STUCKI, sixel_dither_policy_stucki_gpu_new },
+        { SIXEL_DIFFUSE_BURKES, sixel_dither_policy_burkes_gpu_new },
+        { SIXEL_DIFFUSE_SIERRA1, sixel_dither_policy_sierra1_gpu_new },
+        { SIXEL_DIFFUSE_SIERRA2, sixel_dither_policy_sierra2_gpu_new },
+        { SIXEL_DIFFUSE_SIERRA3, sixel_dither_policy_sierra3_gpu_new }
+    };
+    size_t i;
+    int outcome;
+
+    outcome = lso2_gpu_fixture_open(f, 0);
+    if (outcome != 0) return outcome;
+    if (!sixel_gpu_palette_direct_diffusion_serves(method,
+            SIXEL_LUT_POLICY_AUTO)) return 77;
+    for (i = 0; i < sizeof(components) / sizeof(*components); ++i) {
+        if (components[i].method != method) continue;
+        f->dither->vtbl->unref(f->dither);
+        f->dither = NULL;
+        if (components[i].create(f->allocator, (void **)&f->dither)
+                != SIXEL_OK) return 1;
+    }
+    if (f->lookup != NULL) f->lookup->vtbl->unref(f->lookup);
+    f->lookup = NULL;
+    f->prepare.gpu_dither = f->dither;
+    f->prepare.gpu_lookup = NULL;
+    f->prepare.device = NULL;
+    f->prepare.gpu_direct_lookup.kind = SIXEL_LUT_POLICY_AUTO;
+    f->prepare.gpu_direct_lookup.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    f->configuration.options.method_for_diffuse = method;
+    if (method != SIXEL_DIFFUSE_LSO2) {
+        /* The fixed-tap components follow the CPU carry limiter. */
+        f->configuration.options.clamp_policy = SIXEL_DITHER_CLAMP_SOFT;
+        f->configuration.options.clamp_threshold = 1.01;
+    }
     return 0;
 }
 

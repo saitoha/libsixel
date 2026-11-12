@@ -1360,9 +1360,29 @@ sixel_encoder_diffuse_on_gpu(sixel_encoder_t const *encoder)
     }
     device = NULL;
     if (sixel_gpu_device_acquire(&device) != SIXEL_OK) {
-        return 0;
+        /* A backend without a runtime device (Vulkan) diffuses itself
+         * when it can evaluate the requested lookup policy. */
+        return sixel_gpu_palette_direct_diffusion_serves(
+            encoder->method_for_diffuse, encoder->lut_policy);
     }
     return 1;
+}
+
+/* A backend without a runtime device evaluates the lookup inside its own
+ * diffusion plan, so it must also accept the policy the palette stage
+ * finally resolved (a speed profile can replace AUTO). The CPU dither is
+ * dropped once GPU diffusion is selected; no later fallback exists. */
+static int
+sixel_encoder_dither_lookup_on_gpu(sixel_dither_t const *dither)
+{
+    sixel_gpu_device_interface_t *device;
+
+    device = NULL;
+    if (sixel_gpu_device_acquire(&device) == SIXEL_OK) {
+        return 1;
+    }
+    return sixel_gpu_palette_direct_diffusion_serves(
+        dither->method_for_diffuse, dither->lut_policy);
 }
 
 /* Keep the trace independent of numeric diffusion ABI values. */
@@ -6055,7 +6075,8 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
     }
     sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
     context->dither->diffuse_on_gpu = skip_palette_diffusion == 0 &&
-        sixel_encoder_diffuse_on_gpu(context->encoder);
+        sixel_encoder_diffuse_on_gpu(context->encoder) &&
+        sixel_encoder_dither_lookup_on_gpu(context->dither);
     context->dither->clamp_policy = context->encoder->clamp_policy;
     context->dither->clamp_threshold = context->encoder->clamp_threshold;
     context->dither->diffusion_deadzone =

@@ -1077,6 +1077,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0007_WIRE_X \
     -DBUILD_TEST_0008_STATISTICS \
     -DBUILD_TEST_0009_PLAYBACK_FORCE \
+    -DBUILD_TEST_0010_PARITY_FHEDT \
+    -DBUILD_TEST_0011_PARITY_FHEDT_BLUENOISE \
+    -DBUILD_TEST_0012_PARITY_FHEDT_SETTINGS \
+    -DBUILD_TEST_0013_DIFFUSE_LSO2_EXPECTED \
+    -DBUILD_TEST_0014_DIFFUSE_CARRY \
     -DBUILD_TEST_0006_DIRECT_EXACT \
     -DBUILD_TEST_0001_BLOCKCULL_EXACT \
     -DBUILD_TEST_0001_GRIDLUT_EXACT \
@@ -7408,6 +7413,8 @@ test_runner_SOURCES = test_runner.c \
     dither/gpu-direct/0010_parity_fhedt.c \
     dither/gpu-direct/0011_parity_fhedt_bluenoise.c \
     dither/gpu-direct/0012_parity_fhedt_settings.c \
+    dither/gpu-direct/0013_diffuse_lso2_expected.c \
+    dither/gpu-direct/0014_diffuse_carry.c \
     lookup/none/0001_wire_rgb_none.c \
     dither/bluenoise/0051_wire_rgb_bluenoise.c \
     lookup/eytzinger/0001_wire_rgb_eytzinger.c \
@@ -7590,6 +7597,7 @@ test_runner_SOURCES = test_runner.c \
     lookup/certlut/0085_gpu_certlut_fractional_ties.c \
     _support/lso2-gpu/fixture.h \
     _support/lso2-gpu/expected.h \
+    _support/lso2-gpu/expected_taps.h \
     encoder/indexed/0129_gpu_rows_ordered_indexes.c \
     encoder/indexed/0130_gpu_rows_rbc_indexes.c \
     encoder/indexed/0131_gpu_rows_mahalanobis_indexes.c \
