@@ -23,7 +23,7 @@ void main()
     }
     best = lookup_rgb8(query, params.ncolors);
     if (best >= params.ncolors) {
-        atomicOr(lookup_invalid, 1u);
+        atomicOr(lookup_invalid[range.flag], 1u);
         return;
     }
     finish_pixel(gid, source, best);

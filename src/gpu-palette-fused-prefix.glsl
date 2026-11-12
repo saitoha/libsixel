@@ -84,16 +84,19 @@ layout(std430, set = 0, binding = 10) readonly buffer LookupConstants {
     uint lookup_constants[];
 };
 #define SIXEL_LOOKUP_WORKSPACE_BINDING 11
+/* One validation word per in-flight row range. */
 layout(std430, set = 0, binding = 12) buffer LookupInvalid {
-    uint lookup_invalid;
+    uint lookup_invalid[];
 };
 
 /* first: first pixel of this dispatch; count: pixels in this dispatch;
- * pitch: invocations per dispatch row (groups.x * local_size_x). */
+ * pitch: invocations per dispatch row (groups.x * local_size_x); flag: the
+ * range's validation word. */
 layout(push_constant) uniform Range {
     uint first;
     uint count;
     uint pitch;
+    uint flag;
 } range;
 
 float bn_sample(int x, int y)

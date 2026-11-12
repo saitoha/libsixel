@@ -20,6 +20,9 @@
  *   SIXEL_VULKAN_SHADER  "prebuilt" or "runtime" to force one SPIR-V source
  *   SIXEL_VULKAN_DEBUG   nonzero prints device/shader/timing notes to stderr
  */
+/* Command buffers a pipelined submission may keep in flight at once. */
+#define SIXEL_VK_RING 3
+
 typedef struct sixel_vk_runtime {
     VkInstance instance;
     VkPhysicalDevice physical;
@@ -41,6 +44,11 @@ typedef struct sixel_vk_runtime {
      * destroying them per frame cost about 0.5 ms on a discrete GPU. */
     VkCommandBuffer command;
     VkFence fence;
+    /* A ring for work that overlaps the host: each slot owns a command
+     * buffer and a fence, and submitted_ms brackets its wall time. */
+    VkCommandBuffer ring[SIXEL_VK_RING];
+    VkFence ring_fences[SIXEL_VK_RING];
+    double ring_submitted_ms[SIXEL_VK_RING];
     int debug;
 } sixel_vk_runtime_t;
 
@@ -89,6 +97,11 @@ SIXEL_INTERNAL_API void sixel_vk_buffer_record_upload(
 SIXEL_INTERNAL_API void sixel_vk_buffer_record_download(
     VkCommandBuffer command, sixel_vk_buffer_t const *buffer,
     VkDeviceSize size);
+/* Copy size bytes at offset from device storage to the same offset of
+ * staging. */
+SIXEL_INTERNAL_API void sixel_vk_buffer_record_download_range(
+    VkCommandBuffer command, sixel_vk_buffer_t const *buffer,
+    VkDeviceSize offset, VkDeviceSize size);
 SIXEL_INTERNAL_API void sixel_vk_record_barrier(VkCommandBuffer command,
     VkPipelineStageFlags src_stage, VkAccessFlags src_access,
     VkPipelineStageFlags dst_stage, VkAccessFlags dst_access);
@@ -119,6 +132,19 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_command_begin(
     sixel_vk_runtime_t *runtime, VkCommandBuffer *command);
 SIXEL_INTERNAL_API void sixel_vk_command_free(
     sixel_vk_runtime_t *runtime, VkCommandBuffer command);
+
+/* Pipelined submission through ring slot slot (0 .. SIXEL_VK_RING - 1).
+ * ring_begin resets and opens the slot's command buffer, which must not be
+ * in flight; ring_submit closes and submits it without waiting; ring_wait
+ * waits for its fence and adds the submit-to-completion wall time to the
+ * statistics. Every submitted slot must be waited for before the caller
+ * releases sixel_vk_lock() or reuses the slot. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_ring_begin(
+    sixel_vk_runtime_t *runtime, int slot, VkCommandBuffer *command);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_ring_submit(
+    sixel_vk_runtime_t *runtime, int slot);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_ring_wait(
+    sixel_vk_runtime_t *runtime, int slot);
 
 SIXEL_INTERNAL_API double sixel_vk_now_ms(void);
 #endif

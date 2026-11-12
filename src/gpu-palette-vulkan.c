@@ -106,7 +106,16 @@ typedef struct sixel_gpu_vulkan_range {
     uint32_t first;
     uint32_t count;
     uint32_t pitch;
+    uint32_t flag;
 } sixel_gpu_vulkan_range_t;
+
+/* A row range submitted through one runtime ring slot. */
+typedef struct sixel_gpu_vulkan_chunk {
+    int first;
+    int rows;
+    int inflight;
+    unsigned int sequence;
+} sixel_gpu_vulkan_chunk_t;
 
 #define SIXEL_VK_LOCAL_SIZE 64U
 #define SIXEL_VK_BINDINGS 13
@@ -1009,6 +1018,9 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     sixel_vk_runtime_t *runtime;
     sixel_gpu_vulkan_params_t params;
     sixel_gpu_vulkan_range_t range;
+    sixel_gpu_vulkan_chunk_t chunks[SIXEL_VK_RING];
+    sixel_gpu_vulkan_chunk_t *chunk;
+    sixel_gpu_palette_test_hooks_t *hooks;
     sixel_gpu_program_t *program;
     sixel_gpu_lookup_program_view_t const *view;
     sixel_gpu_lookup_binding_interface_t *binding;
@@ -1022,7 +1034,11 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     uint32_t groups_x;
     uint32_t groups_y;
     uint32_t count;
+    uint32_t zeros[SIXEL_VK_RING];
+    uint32_t flag;
     size_t pixel_count;
+    size_t offset;
+    size_t length;
     double started;
     double staged;
     double waited;
@@ -1030,6 +1046,13 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     int has_valid;
     int index;
     int locked;
+    int streamed;
+    int rows;
+    int next;
+    int head;
+    int pending;
+    int slot;
+    unsigned int submitted;
     SIXELSTATUS status;
 
     program = request == NULL ? NULL : request->program;
@@ -1044,6 +1067,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         return SIXEL_BAD_ARGUMENT;
     }
     pixel_count = request->pixel_count;
+    hooks = request->test_hooks;
+    memset(chunks, 0, sizeof(chunks));
     command = VK_NULL_HANDLE;
     runtime = NULL;
     locked = 0;
@@ -1112,9 +1137,11 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             view->constants_size != 0 ? view->constants_size : 4U);
     }
     if (SIXEL_SUCCEEDED(status)) {
-        count = 0;
-        status = sixel_gpu_vulkan_upload(runtime, SIXEL_VK_INVALID, &count,
-            sizeof(count));
+        /* One cleared validation word per ring slot; a reused slot clears
+         * its word again in its own command. */
+        memset(zeros, 0, sizeof(zeros));
+        status = sixel_gpu_vulkan_upload(runtime, SIXEL_VK_INVALID, zeros,
+            sizeof(zeros));
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_vk_buffer_reserve(runtime, &state->count,
@@ -1214,100 +1241,205 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     vkUpdateDescriptorSets(runtime->device, SIXEL_VK_BINDINGS + 4, writes, 0,
         NULL);
 
-    status = sixel_gpu_vulkan_groups(runtime, (uint64_t)pixel_count,
-        &groups_x, &groups_y);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    range.first = 0;
-    range.count = (uint32_t)pixel_count;
-    range.pitch = groups_x * SIXEL_VK_LOCAL_SIZE;
-
+    /* Rows stream to the caller in ranges when it consumes them, as the
+     * Metal palette application does: up to SIXEL_VK_RING commands stay in
+     * flight, each with its own validation word, and completed ranges are
+     * copied out and published in submission order. Otherwise one range
+     * covers the frame. */
+    streamed = request->rows_ready != NULL && request->rows_per_chunk > 0 &&
+        request->rows_per_chunk < request->height;
+    rows = streamed ? request->rows_per_chunk : request->height;
+    next = head = pending = 0;
+    submitted = 0;
     staged = sixel_vk_now_ms();
-    status = sixel_vk_command_begin(runtime, &command);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    for (index = 0; index < SIXEL_VK_BINDINGS; ++index) {
-        if (bound[index] == &state->dummy) {
-            sixel_vk_buffer_record_upload(command, &state->dummy, 4);
-        } else if (index != SIXEL_VK_WORKSPACE) {
-            sixel_vk_buffer_record_upload(command, bound[index],
-                state->upload[index]);
+    while (next < request->height || pending != 0) {
+        while (next < request->height && pending < SIXEL_VK_RING) {
+            if (request->cancel != NULL &&
+                    request->cancel(request->cancel_context)) {
+                status = SIXEL_INTERRUPTED;
+                goto end;
+            }
+            /* Test fault 2 models a failed submission of one command. */
+            if (hooks != NULL && hooks->fault == 2 &&
+                    hooks->fault_after_chunks == submitted) {
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
+            slot = (head + pending) % SIXEL_VK_RING;
+            chunk = &chunks[slot];
+            chunk->first = next;
+            chunk->rows = request->height - next < rows
+                ? request->height - next : rows;
+            chunk->sequence = submitted;
+            status = sixel_vk_ring_begin(runtime, slot, &command);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            if (submitted == 0) {
+                for (index = 0; index < SIXEL_VK_BINDINGS; ++index) {
+                    if (bound[index] == &state->dummy) {
+                        sixel_vk_buffer_record_upload(command, &state->dummy,
+                            4);
+                    } else if (index != SIXEL_VK_WORKSPACE) {
+                        sixel_vk_buffer_record_upload(command, bound[index],
+                            state->upload[index]);
+                    }
+                }
+                sixel_vk_buffer_record_upload(command, &state->count,
+                    sizeof(count));
+                sixel_vk_record_barrier(command,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_ACCESS_TRANSFER_WRITE_BIT,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
+                if (binding_view.needs_build) {
+                    /* The builders read the palette just uploaded; their
+                     * barriers order the workspace writes before the
+                     * fused kernel reads them. */
+                    sixel_gpu_vulkan_builders_record(command,
+                        state->builder_layout, state->builder_set,
+                        &program->compiled->builders, view);
+                }
+            } else {
+                /* Order this range after every earlier submission's
+                 * uploads, builds, dispatches and copies. */
+                sixel_vk_record_barrier(command,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT |
+                        VK_ACCESS_TRANSFER_READ_BIT |
+                        VK_ACCESS_TRANSFER_WRITE_BIT);
+                if (submitted >= SIXEL_VK_RING) {
+                    /* The slot's previous range has completed and been
+                     * read; clear its validation word for this one. */
+                    vkCmdFillBuffer(command,
+                        state->buffers[SIXEL_VK_INVALID].buffer,
+                        (VkDeviceSize)slot * sizeof(uint32_t),
+                        sizeof(uint32_t), 0);
+                    sixel_vk_record_barrier(command,
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_ACCESS_TRANSFER_WRITE_BIT,
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                        VK_ACCESS_SHADER_READ_BIT |
+                            VK_ACCESS_SHADER_WRITE_BIT);
+                }
+            }
+            offset = (size_t)chunk->first * request->width;
+            length = (size_t)chunk->rows * request->width;
+            status = sixel_gpu_vulkan_groups(runtime, (uint64_t)length,
+                &groups_x, &groups_y);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            range.first = (uint32_t)offset;
+            range.count = (uint32_t)length;
+            range.pitch = groups_x * SIXEL_VK_LOCAL_SIZE;
+            range.flag = (uint32_t)slot;
+            vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_COMPUTE,
+                program->compiled->fused);
+            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_COMPUTE,
+                state->pipeline_layout, 0, 1, &state->descriptor_set, 0,
+                NULL);
+            vkCmdPushConstants(command, state->pipeline_layout,
+                VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(range), &range);
+            vkCmdDispatch(command, groups_x, groups_y, 1);
+            sixel_vk_record_barrier(command,
+                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VK_ACCESS_TRANSFER_READ_BIT);
+            sixel_vk_buffer_record_download_range(command,
+                &state->buffers[SIXEL_VK_RESULT], offset, length);
+            sixel_vk_buffer_record_download_range(command,
+                &state->buffers[SIXEL_VK_INVALID],
+                (VkDeviceSize)slot * sizeof(uint32_t), sizeof(uint32_t));
+            if (request->accumulation_result_mask != NULL) {
+                sixel_vk_buffer_record_download_range(command,
+                    &state->buffers[SIXEL_VK_ACCUMULATION_RESULT], offset,
+                    length);
+            }
+            /* Make shader and copy writes visible to mapped host memory. */
+            sixel_vk_record_barrier(command,
+                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
+                VK_PIPELINE_STAGE_HOST_BIT, VK_ACCESS_HOST_READ_BIT);
+            status = sixel_vk_ring_submit(runtime, slot);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            chunk->inflight = 1;
+            ++submitted;
+            ++pending;
+            next += chunk->rows;
+            if (hooks != NULL) {
+                hooks->submitted_chunks = submitted;
+                if ((unsigned int)pending > hooks->peak_inflight) {
+                    hooks->peak_inflight = (unsigned int)pending;
+                }
+            }
         }
-    }
-    sixel_vk_buffer_record_upload(command, &state->count, sizeof(count));
-    sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-        VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
-    if (binding_view.needs_build) {
-        /* The builders read the palette just uploaded; their barriers
-         * order the workspace writes before the fused kernel reads them. */
-        sixel_gpu_vulkan_builders_record(command, state->builder_layout,
-            state->builder_set, &program->compiled->builders, view);
-    }
-    vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_COMPUTE,
-        program->compiled->fused);
-    vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_COMPUTE,
-        state->pipeline_layout, 0, 1, &state->descriptor_set, 0, NULL);
-    vkCmdPushConstants(command, state->pipeline_layout,
-        VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(range), &range);
-    vkCmdDispatch(command, groups_x, groups_y, 1);
-    sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-        VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_ACCESS_TRANSFER_READ_BIT);
-    sixel_vk_buffer_record_download(command,
-        &state->buffers[SIXEL_VK_RESULT], pixel_count);
-    sixel_vk_buffer_record_download(command,
-        &state->buffers[SIXEL_VK_INVALID], sizeof(count));
-    if (request->accumulation_result_mask != NULL) {
-        sixel_vk_buffer_record_download(command,
-            &state->buffers[SIXEL_VK_ACCUMULATION_RESULT],
-            request->accumulation_result_mask_size);
-    }
-    /* Make shader and copy writes visible to the mapped host memory. */
-    sixel_vk_record_barrier(command,
-        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
-        VK_PIPELINE_STAGE_HOST_BIT, VK_ACCESS_HOST_READ_BIT);
-    /* Test faults 2 and 3 model a failed submission and a failed
-     * completion; neither lets the lease publish a build. */
-    if (request->test_hooks != NULL && request->test_hooks->fault == 2) {
-        status = SIXEL_RUNTIME_ERROR;
-        goto end;
-    }
-    status = sixel_vk_submit_and_wait(runtime, command);
-    if (SIXEL_SUCCEEDED(status) && request->test_hooks != NULL &&
-            request->test_hooks->fault == 3) {
-        status = SIXEL_RUNTIME_ERROR;
-    }
-    if (SIXEL_FAILED(status)) {
-        goto end;
+        chunk = &chunks[head];
+        status = sixel_vk_ring_wait(runtime, head);
+        chunk->inflight = 0;
+        if (hooks != NULL) {
+            ++hooks->completed_chunks;
+        }
+        /* Test fault 3 models a failed completion of one command; neither
+         * fault lets the lease publish a build. */
+        if (SIXEL_SUCCEEDED(status) && hooks != NULL && hooks->fault == 3 &&
+                hooks->fault_after_chunks == chunk->sequence) {
+            status = SIXEL_RUNTIME_ERROR;
+        }
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        memcpy(&flag, (unsigned char *)state->buffers[SIXEL_VK_INVALID]
+            .mapped + (size_t)head * sizeof(uint32_t), sizeof(flag));
+        if (flag != 0) {
+            sixel_helper_set_additional_message(
+                "gpu palette apply: the lookup returned an invalid index.");
+            status = SIXEL_LOGIC_ERROR;
+            goto end;
+        }
+        if (request->cancel != NULL &&
+                request->cancel(request->cancel_context)) {
+            status = SIXEL_INTERRUPTED;
+            goto end;
+        }
+        offset = (size_t)chunk->first * request->width;
+        length = (size_t)chunk->rows * request->width;
+        memcpy(request->dest + offset,
+            (unsigned char *)state->buffers[SIXEL_VK_RESULT].mapped + offset,
+            length);
+        if (request->accumulation_result_mask != NULL) {
+            memcpy(request->accumulation_result_mask + offset,
+                (unsigned char *)
+                    state->buffers[SIXEL_VK_ACCUMULATION_RESULT].mapped +
+                    offset, length);
+        }
+        if (streamed) {
+            /* The callback runs on the caller under the runtime lock and
+             * must not reenter GPU execution. Later ranges continue on the
+             * device while it consumes this completed prefix. */
+            status = request->rows_ready(request->rows_context,
+                chunk->first + chunk->rows);
+            if (status != SIXEL_OK) {
+                goto end;
+            }
+            if (hooks != NULL) {
+                hooks->notified_rows =
+                    (unsigned int)(chunk->first + chunk->rows);
+            }
+        }
+        head = (head + 1) % SIXEL_VK_RING;
+        --pending;
     }
     waited = sixel_vk_now_ms();
-    memcpy(&count, state->buffers[SIXEL_VK_INVALID].mapped, sizeof(count));
-    if (count != 0) {
-        sixel_helper_set_additional_message(
-            "gpu palette apply: the lookup returned an invalid index.");
-        status = SIXEL_LOGIC_ERROR;
-        goto end;
-    }
-    if (request->cancel != NULL && request->cancel(request->cancel_context)) {
-        status = SIXEL_INTERRUPTED;
-        goto end;
-    }
-    memcpy(request->dest, state->buffers[SIXEL_VK_RESULT].mapped,
-        pixel_count);
-    if (request->accumulation_result_mask != NULL) {
-        memcpy(request->accumulation_result_mask,
-            state->buffers[SIXEL_VK_ACCUMULATION_RESULT].mapped,
-            request->accumulation_result_mask_size);
-    }
-    if (request->test_hooks != NULL) {
-        request->test_hooks->published = 1;
-        request->test_hooks->submitted_chunks = 1;
-        request->test_hooks->completed_chunks = 1;
-        request->test_hooks->peak_inflight = 1;
+    if (hooks != NULL) {
+        hooks->published = 1;
     }
     if (runtime->debug) {
         /* stage: host copies into mapped memory; submit: record, submit
@@ -1327,8 +1459,16 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     status = SIXEL_OK;
 
 end:
-    if (command != VK_NULL_HANDLE) {
-        sixel_vk_command_free(runtime, command);
+    /* Never finish the lookup lease or release the shared buffers while a
+     * submitted range can still write. */
+    for (slot = 0; slot < SIXEL_VK_RING; ++slot) {
+        if (chunks[slot].inflight) {
+            (void)sixel_vk_ring_wait(runtime, slot);
+            chunks[slot].inflight = 0;
+            if (hooks != NULL) {
+                ++hooks->completed_chunks;
+            }
+        }
     }
     if (locked) {
         sixel_vk_unlock();
