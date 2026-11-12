@@ -686,6 +686,18 @@ sixel_gpu_palette_plan_available(void)
 }
 
 SIXEL_INTERNAL_API int
+sixel_gpu_palette_direct_apply_only(int lut_policy)
+{
+#if !defined(HAVE_METAL) && defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+    return sixel_gpu_palette_vulkan_supports_lut(lut_policy) &&
+        sixel_gpu_palette_has_engine();
+#else
+    (void)lut_policy;
+    return 0;
+#endif
+}
+
+SIXEL_INTERNAL_API int
 sixel_gpu_palette_rows_per_chunk(int width, int height)
 {
     int bands;

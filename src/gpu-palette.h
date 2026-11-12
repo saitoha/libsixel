@@ -198,6 +198,11 @@ sixel_gpu_palette_auto_threshold(void);
  * neither rereads options nor retries a failed GPU frame on the CPU. */
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_plan_available(void);
+
+/* True when LUT_POLICY can reach the GPU only through direct apply: an
+ * engine exists, but component plans cannot be prepared for it. */
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_direct_apply_only(int lut_policy);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request);
 
