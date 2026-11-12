@@ -10,6 +10,12 @@
 static char const * const mahal_chunks[] = {
 #include <generated-metal/lookup-policy-mahalanobis-gpu-shader.inc.h>
 };
+#if defined(HAVE_VULKAN)
+/* Readable source: lookup-policy-mahalanobis-gpu.glsl. */
+static char const * const mahal_vulkan_chunks[] = {
+#include <generated-vulkan/lookup-policy-mahalanobis-gpu-shader.inc.h>
+};
+#endif
 
 /* Byte Mahalanobis lookup retains its exhaustive RGB metric. The GPU
  * packs a private four-wide palette; no covariance or other policy is used.
@@ -26,6 +32,7 @@ typedef struct mahal_plan {
     unsigned char palette[768];
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
+    int vulkan;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
@@ -85,6 +92,15 @@ mahal_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->logical_name = "mahalanobis";
     view->chunks = mahal_chunks;
     view->chunk_count = sizeof(mahal_chunks) / sizeof(mahal_chunks[0]);
+#if defined(HAVE_VULKAN)
+    /* Both programs own the same packed palette and single build pass. */
+    if (plan->vulkan) {
+        view->program_format = "vulkan.lookup-rgb8.v1";
+        view->chunks = mahal_vulkan_chunks;
+        view->chunk_count = sizeof(mahal_vulkan_chunks) /
+            sizeof(mahal_vulkan_chunks[0]);
+    }
+#endif
     view->palette = plan->palette;
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
@@ -241,19 +257,27 @@ mahal_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     mahal_preparer_t *preparer;
     mahal_plan_t *plan;
     sixel_palette_entries_view_t entries;
+    char const *format;
+    int vulkan;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
+    format = device->vtbl->program_format(device);
+    vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
+#if !defined(HAVE_VULKAN)
+    vulkan = 0;
+#endif
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            strcmp(device->vtbl->program_format(device),
-                "metal.lookup-rgb8.v1") != 0) return SIXEL_FEATURE_ERROR;
+            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->ncolors < 1 || request->ncolors > 256) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -293,6 +317,7 @@ mahal_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         device->vtbl->ref(device);
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
+        plan->vulkan = vulkan;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         plan->passes[0].entry_point = "mahalanobis_build";
         plan->passes[0].groups[0] = 8;

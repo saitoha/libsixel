@@ -74,7 +74,7 @@ Any future pruning rule must prove a lower bound in the same metric as the final
 
 ## Metal RGB8 execution
 
-The RGB888 gamma-space GPU provider preserves the CPU byte implementation's unweighted exhaustive RGB metric and first-index tie rule. It does not compute covariance, change the selected distance or call another policy's search. Its shader, preparation, workspace and cache are independently owned. The injected program supports 1 through 256 paintable colors; shared PaletteApply admission controls eligible dithers and delta views as described in the [execution map](../../execution-map/README.md#4-lookup-per-pixel-application-and-output).
+The RGB888 gamma-space GPU provider preserves the CPU byte implementation's unweighted exhaustive RGB metric and first-index tie rule. It does not compute covariance, change the selected distance or call another policy's search. Its shader, preparation, workspace and cache are independently owned. On Vulkan, [`lookup-policy-mahalanobis-gpu.glsl`](../../../../src/lookup-policy-mahalanobis-gpu.glsl) implements the same palette packing and byte and fractional queries. The injected program supports 1 through 256 paintable colors; shared PaletteApply admission controls eligible dithers and delta views as described in the [execution map](../../execution-map/README.md#4-lookup-per-pixel-application-and-output).
 
 One GPU pass packs the palette into 256 four-byte entries containing RGB and original index. A query scans four entries at a time and minimizes a packed distance/index key. Short vector tails repeat the last valid entry, retaining the first-index tie rule without reading outside the palette. The private workspace uses 1,024 bytes. One GPU pass writes a fixed 256 packed entries; palette identity checks and copies take `O(K)` host work, and each query takes `Theta(K)` work.
 
@@ -92,7 +92,7 @@ The policy was introduced with RBC in the [`mahalanobis` implementation commit](
 
 <!-- test-coverage: enforced -->
 
-The GPU cases fix one policy, input configuration and observation per file. Shader cases require Metal; plan lifetime and admission cases use an opaque test device and run without GPU hardware. Exact no-dither cases use an independent integer exhaustive oracle; positional-dither and rectangle cases compare with the CPU path. These bounded fixtures do not enumerate the full RGB cube or establish performance on every GPU.
+The GPU cases fix one policy, input configuration and observation per file. Byte shader cases require a GPU device that carries the mahalanobis program, Metal or Vulkan; plan lifetime and admission cases use an opaque test device and run without GPU hardware. Exact no-dither cases use an independent integer exhaustive oracle; positional-dither and rectangle cases compare with the CPU path. These bounded fixtures do not enumerate the full RGB cube or establish performance on every GPU.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
@@ -136,7 +136,7 @@ The GPU cases fix one policy, input configuration and observation per file. Shad
 
 ### Fractional GPU queries
 
-These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+The fractional precision probes require Metal. These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

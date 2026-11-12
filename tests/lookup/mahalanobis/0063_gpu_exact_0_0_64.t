@@ -5,9 +5,9 @@ echo "1..1"
 set -v
 
 status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette mahalanobis/gpu_exact_0_0_64 || status=$?
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup mahalanobis mahalanobis/gpu_exact_0_0_64 || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend unavailable"
+    echo "ok 1 # SKIP GPU mahalanobis program unavailable"
     exit 0
 }
 test "$status" -eq 0 || {

@@ -38,7 +38,7 @@ static struct {
       sixel_gpu_lookup_vptree_create },
     { SIXEL_LUT_POLICY_RBC, GPU_METAL | GPU_VULKAN,
       sixel_gpu_lookup_rbc_create },
-    { SIXEL_LUT_POLICY_MAHALANOBIS, GPU_METAL,
+    { SIXEL_LUT_POLICY_MAHALANOBIS, GPU_METAL | GPU_VULKAN,
       sixel_gpu_lookup_mahalanobis_create },
     { SIXEL_LUT_POLICY_CERTLUT, GPU_METAL, sixel_gpu_lookup_certlut_create },
     { SIXEL_LUT_POLICY_EYTZINGER, GPU_METAL | GPU_VULKAN,
