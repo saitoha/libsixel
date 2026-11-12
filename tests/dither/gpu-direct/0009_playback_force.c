@@ -3,17 +3,35 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include <6cells.h>
 
 #define PLAYBACK_WIDTH 96
 #define PLAYBACK_HEIGHT 48
 #define PLAYBACK_FRAMES 4
 
 static int g_playback_failures;
+static int g_playback_serial;
+static sixel_playback_t *g_playback;
 
 static void
 playback_force_done(sixel_playback_result_t const *result, void *context)
 {
+    sixel_playback_pipeline_sample_t sample;
+    unsigned int required;
+
     (void)context;
+    /* Apply and encode must run as separate pipelined stages, so a direct
+     * backend never collapses them onto the synchronous controller. */
+    required = SIXEL_PLAYBACK_PIPELINE_INDEPENDENT |
+        SIXEL_PLAYBACK_PIPELINE_RESOLVE | SIXEL_PLAYBACK_PIPELINE_ENCODE;
+    memset(&sample, 0, sizeof(sample));
+    sample.struct_size = sizeof(sample);
+    if (SIXEL_SUCCEEDED(result->status) &&
+            (SIXEL_FAILED(sixel_playback_get_pipeline_sample(g_playback,
+                result->sequence, &sample)) ||
+             (sample.valid & required) != required)) {
+        g_playback_serial++;
+    }
     if (SIXEL_FAILED(result->status)) {
         fprintf(stderr, "frame %llu failed: %s\n",
             (unsigned long long)result->sequence,
@@ -58,6 +76,8 @@ test_gpu_direct_0009_playback_force(int argc, char **argv)
     playback = NULL;
     result = 1;
     g_playback_failures = 0;
+    g_playback_serial = 0;
+    g_playback = NULL;
     size = (size_t)PLAYBACK_WIDTH * PLAYBACK_HEIGHT * 3;
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder,
@@ -83,6 +103,7 @@ test_gpu_direct_0009_playback_force(int argc, char **argv)
             sixel_helper_format_error(status));
         goto end;
     }
+    g_playback = playback;
     if (SIXEL_FAILED(sixel_gpu_get_statistics(&before))) goto end;
     for (n = 0; n < PLAYBACK_FRAMES; ++n) {
         pixels = malloc(size);
@@ -123,6 +144,11 @@ test_gpu_direct_0009_playback_force(int argc, char **argv)
     if (SIXEL_FAILED(sixel_gpu_get_statistics(&after))) goto end;
     if (after.dispatches <= before.dispatches) {
         fprintf(stderr, "queued frames never reached the GPU\n");
+        goto end;
+    }
+    if (g_playback_serial != 0) {
+        fprintf(stderr, "%d frames ran apply and encode serially\n",
+            g_playback_serial);
         goto end;
     }
     result = 0;

@@ -54,7 +54,8 @@ sixel_palette_apply_clear_plan(sixel_palette_apply_storage_t *apply)
         if (apply->lookup != NULL) {
             apply->lookup->vtbl->unref(apply->lookup);
         }
-        if (apply->gpu) apply->plan.device->vtbl->unref(apply->plan.device);
+        if (apply->gpu && apply->plan.device != NULL)
+            apply->plan.device->vtbl->unref(apply->plan.device);
         if (apply->plan.dither != NULL) {
             apply->plan.dither->vtbl->unref(apply->plan.dither);
         }
@@ -373,7 +374,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     unsigned char *ready;
     size_t pixels;
     size_t i;
-    int gpu;
+    int gpu, direct;
     SIXELSTATUS status;
 
     if (self == NULL || request == NULL || request->working_palette == NULL ||
@@ -429,6 +430,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     gpu_plan = NULL;
     program = NULL;
     gpu_dither = NULL;
+    direct = 0;
     gpu = request->gpu_policy != SIXEL_GPU_POLICY_OFF &&
         !(request->dither != NULL &&
           request->gpu_policy == SIXEL_GPU_POLICY_AUTO &&
@@ -487,6 +489,15 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
             gpu_plan->vtbl->unref(gpu_plan);
         }
     }
+    if (status == SIXEL_FEATURE_ERROR && gpu && request->device == NULL &&
+            request->gpu_dither == NULL && request->gpu_direct_lookup != 0 &&
+            sixel_gpu_palette_direct_apply_serves(request->gpu_direct_lookup,
+                options.method_for_diffuse)) {
+        /* A direct-apply-only backend (Vulkan) has no runtime device or
+         * prepared program; run submits the whole request instead. */
+        direct = 1;
+        status = SIXEL_OK;
+    }
     if (status == SIXEL_FEATURE_ERROR &&
             request->gpu_policy != SIXEL_GPU_POLICY_FORCE &&
             request->dither != NULL && request->cpu_lookup != NULL) {
@@ -494,7 +505,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
             &execution, &lookup);
     }
     if (status == SIXEL_OK && program == NULL && lookup == NULL &&
-            gpu_dither == NULL) {
+            gpu_dither == NULL && !direct) {
         status = SIXEL_LOGIC_ERROR;
     }
     if (status != SIXEL_OK) {
@@ -525,8 +536,9 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     apply->gpu_dither = gpu_dither;
     apply->deferred = deferred;
     apply->options = options;
-    apply->gpu = program != NULL || gpu_dither != NULL;
-    if (apply->gpu) request->device->vtbl->ref(request->device);
+    apply->gpu = program != NULL || gpu_dither != NULL || direct;
+    if (apply->gpu && request->device != NULL)
+        request->device->vtbl->ref(request->device);
     apply->ready = ready;
     request->working_palette->vtbl->ref(request->working_palette);
     if (request->dither != NULL) request->dither->vtbl->ref(request->dither);
@@ -754,6 +766,8 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.ncolors = apply->options.ncolors -
         (apply->options.keycolor_reserved != 0);
     request.program = apply->program;
+    if (apply->program == NULL)
+        request.lut_policy = apply->plan.gpu_direct_lookup;
     request.cancel = apply->run->cancel;
     request.cancel_context = apply->run->cancel_context;
     if (apply->run->rows_ready != NULL) {
@@ -777,7 +791,8 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.accumulation_origin_y = execution->origin_y;
     request.accumulation_valid_mask = execution->retained_valid;
     request.accumulation_valid_mask_size = execution->retained_valid_size;
-    if (execution->delta_enabled && apply->run->baseline != NULL) {
+    if (execution->delta_enabled && apply->run->baseline != NULL &&
+            apply->plan.device != NULL) {
         status = sixel_retained_read_get_gpu_view(apply->run->baseline,
             apply->plan.device, &retained);
         if (status == SIXEL_OK) {

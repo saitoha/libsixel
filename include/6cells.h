@@ -2596,7 +2596,11 @@ struct sixel_gpu_dither_preparer_interface {
  * unavailable, not a request for enum-based discovery. At least one preparer
  * is required. A GPU preparer requires the selected runtime device.
  * Legacy lookup_kind/configuration and already prepared CPU objects are
- * adapted before this boundary, never inspected by PaletteApply. */
+ * adapted before this boundary, never inspected by PaletteApply. The one
+ * exception is gpu_direct_lookup: nonzero only when the composition root
+ * found that the selected GPU backend applies that lookup kind directly,
+ * without a runtime device or prepared program (Vulkan). Zero (AUTO) never
+ * selects that path. */
 typedef struct sixel_palette_apply_prepare_request {
     sixel_palette_t *working_palette;
     sixel_lookup_preparer_interface_t *cpu_lookup;
@@ -2613,6 +2617,7 @@ typedef struct sixel_palette_apply_prepare_request {
     int gpu_policy;
     size_t gpu_auto_threshold;
     sixel_gpu_dither_preparer_interface_t *gpu_dither;
+    int gpu_direct_lookup;
 } sixel_palette_apply_prepare_request_t;
 
 /* Called serially by the producer with a monotonically increasing ready-row

@@ -203,6 +203,11 @@ sixel_gpu_palette_plan_available(void);
  * engine exists, but component plans cannot be prepared for it. */
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_direct_apply_only(int lut_policy);
+
+/* Whether a direct-apply-only backend can serve this lookup and diffusion
+ * without a prepared program. */
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_direct_apply_serves(int lut_policy, int method_for_diffuse);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request);
 

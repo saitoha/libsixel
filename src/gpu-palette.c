@@ -698,6 +698,13 @@ sixel_gpu_palette_direct_apply_only(int lut_policy)
 }
 
 SIXEL_INTERNAL_API int
+sixel_gpu_palette_direct_apply_serves(int lut_policy, int method_for_diffuse)
+{
+    return sixel_gpu_palette_method_is_supported(method_for_diffuse) &&
+        sixel_gpu_palette_direct_apply_only(lut_policy);
+}
+
+SIXEL_INTERNAL_API int
 sixel_gpu_palette_rows_per_chunk(int width, int height)
 {
     int bands;

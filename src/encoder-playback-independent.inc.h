@@ -666,14 +666,17 @@ sixel_encoder_frame_pipeline_run_deferred(
     int amount, finished;
 
     encoder = pipeline->encoder;
-    /* R resolves through the component PaletteApply, whose GPU plans need a
-     * gpu_device. With a direct-apply-only backend (Vulkan) R would fail
-     * every FORCE frame and run AUTO on the CPU; the synchronous controller
-     * keeps the GPU direct apply. */
+    /* R resolves through the component PaletteApply. A direct-apply-only
+     * backend (Vulkan) serves R without a gpu_device only for per-pixel
+     * methods without a gradient map; anything else would fail every FORCE
+     * frame in R, so the synchronous controller keeps that work. */
     if (pipeline->playback == NULL || pipeline->playback->capacity < 2 ||
             pipeline->output == NULL ||
             encoder->gpu_policy == SIXEL_GPU_POLICY_OFF ||
-            sixel_gpu_palette_direct_apply_only(encoder->lut_policy) ||
+            (sixel_gpu_palette_direct_apply_only(encoder->lut_policy) &&
+             (!sixel_gpu_palette_direct_apply_serves(encoder->lut_policy,
+                 encoder->method_for_diffuse) ||
+              encoder->bluenoise_gradient_factor != 0)) ||
             encoder->prefer_float32 || encoder->gamut_mapper != NULL ||
             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
