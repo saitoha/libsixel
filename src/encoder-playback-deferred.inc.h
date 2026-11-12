@@ -289,6 +289,8 @@ sixel_encoder_frame_pipeline_run_deferred_legacy(
     SIXELSTATUS status;
     unsigned int i;
     int entered, resolved, publish;
+    sixel_playback_stage_sample_t prepared;
+    double emit_started;
 
     encoder = pipeline->encoder;
     if (pipeline->playback == NULL || pipeline->playback->capacity < 2 ||
@@ -385,8 +387,21 @@ sixel_encoder_frame_pipeline_run_deferred_legacy(
                 sixel_playback_ready_credit(q);
                 resolved = 1; /* Ordinary apply retains CPU prepare-ahead. */
             }
+            prepared = slot->metadata.stages;
+            emit_started = sixel_timer_monotonic();
             status = sixel_encoder_frame_job_emit(slot->job);
             slot->metadata.stages = slot->job->context.deferred.stages;
+            if (!(slot->metadata.stages.valid &
+                    SIXEL_PLAYBACK_STAGE_DEFERRED)) {
+                /* Ordinary apply (including direct GPU apply) records no
+                 * deferred stages. Keep the producer's prepare time and
+                 * time apply+encode as EMIT so callers still see where a
+                 * queued frame spent its time. */
+                slot->metadata.stages = prepared;
+                slot->metadata.stages.emit_seconds =
+                    sixel_timer_monotonic() - emit_started;
+                slot->metadata.stages.valid |= SIXEL_PLAYBACK_STAGE_EMIT;
+            }
             resolved |= (slot->metadata.stages.valid &
                 SIXEL_PLAYBACK_STAGE_RESOLVE) != 0;
         }
