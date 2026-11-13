@@ -1587,7 +1587,7 @@ jobs:
               --with-gdk-pixbuf2
             extra_packages: >-
               clang
-              libgdk-pixbuf2.0-dev
+              libgdk-pixbuf-2.0-dev
             pip_packages: >-
               gcovr
             exec_type: bash
@@ -1986,7 +1986,7 @@ jobs:
             extra_packages: >-
               meson
               clang
-              libgdk-pixbuf2.0-dev
+              libgdk-pixbuf-2.0-dev
             pip_packages: >-
               gcovr
             exec_type: bash
@@ -3658,7 +3658,7 @@ jobs:
               --with-gdk-pixbuf2
             extra_packages: >-
               clang
-              libgdk-pixbuf2.0-dev
+              libgdk-pixbuf-2.0-dev
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-ASan-UBSan-use-after-scope-gdk-pixbuf2
@@ -3678,7 +3678,7 @@ jobs:
             extra_packages: >-
               meson
               clang
-              libgdk-pixbuf2.0-dev
+              libgdk-pixbuf-2.0-dev
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-ASan-UBSan-use-after-scope-GD-no-aborttrace
