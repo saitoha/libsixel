@@ -2244,7 +2244,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	dither/gpu-direct/0013_diffuse_lso2_expected.c \
 	dither/gpu-direct/0014_diffuse_carry.c \
 	dither/gpu-direct/0015_diffuse_fhedt.c \
-	dither/gpu-direct/0016_diffuse_bitlut.c \
+	dither/gpu-direct/0016_diffuse_rgb_cell.c \
 	lookup/none/0001_wire_rgb_none.c \
 	dither/bluenoise/0051_wire_rgb_bluenoise.c \
 	lookup/eytzinger/0001_wire_rgb_eytzinger.c \
@@ -2358,7 +2358,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/lso2-gpu/fixture.c _support/lso2-gpu/fractional.c \
 	lookup/fhedt/0172_fhedt_fractional_reuse.c \
 	lookup/6bit/0064_6bit_fractional_reuse.c \
+	lookup/6bit/0065_6bit_fractional_policy_isolation.c \
 	lookup/5bit/0064_5bit_fractional_reuse.c \
+	lookup/5bit/0065_5bit_fractional_policy_isolation.c \
 	_support/lso2-gpu/fractional_reference.c \
 	_support/lso2-gpu/batch.c \
 	dither/lso2-gpu/0075_batch_zero_tile.c \
@@ -2509,7 +2511,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/5bit/0038_5bit_gpu_reuse.c \
 	lookup/5bit/0039_5bit_gpu_palette_rebuild.c \
 	lookup/5bit/0040_5bit_gpu_count_rebuild.c \
-	lookup/5bit/0041_5bit_gpu_bits_rebuild.c \
+	lookup/5bit/0041_5bit_gpu_policy_isolation.c \
 	lookup/5bit/0042_5bit_gpu_allocation_recovery.c \
 	lookup/5bit/0043_5bit_gpu_encoder_recovery.c \
 	lookup/5bit/0044_5bit_gpu_completion_recovery.c \
@@ -2536,7 +2538,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/6bit/0038_6bit_gpu_reuse.c \
 	lookup/6bit/0039_6bit_gpu_palette_rebuild.c \
 	lookup/6bit/0040_6bit_gpu_count_rebuild.c \
-	lookup/6bit/0041_6bit_gpu_bits_rebuild.c \
+	lookup/6bit/0041_6bit_gpu_policy_isolation.c \
 	lookup/6bit/0042_6bit_gpu_allocation_recovery.c \
 	lookup/6bit/0043_6bit_gpu_encoder_recovery.c \
 	lookup/6bit/0044_6bit_gpu_completion_recovery.c \
@@ -2556,7 +2558,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/6bit/0058_6bit_gpu_shared_override.c \
 	lookup/6bit/0059_6bit_gpu_packing_override.c \
 	lookup/6bit/0060_6bit_gpu_cpu_fallback.c \
-	_support/processing/gpu-palette/bitlut_common.c \
+	_support/processing/gpu-palette/rgb_cell_common.c \
 	lookup/fhedt/0147_gpu_r256_compact_table.c \
 	lookup/fhedt/0148_gpu_sparse_r64.c \
 	lookup/fhedt/0149_gpu_sparse_r128.c \
@@ -7307,7 +7309,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0013_diffuse_lso2_expected.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0014_diffuse_carry.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0015_diffuse_fhedt.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0016_diffuse_bitlut.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/none/test_runner-0001_wire_rgb_none.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/bluenoise/test_runner-0051_wire_rgb_bluenoise.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/eytzinger/test_runner-0001_wire_rgb_eytzinger.$(OBJEXT) \
@@ -7422,7 +7424,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-fractional.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0172_fhedt_fractional_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0064_6bit_fractional_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0064_5bit_fractional_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-fractional_reference.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-batch.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0075_batch_zero_tile.$(OBJEXT) \
@@ -7570,7 +7574,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0038_5bit_gpu_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0039_5bit_gpu_palette_rebuild.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0040_5bit_gpu_count_rebuild.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0042_5bit_gpu_allocation_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0043_5bit_gpu_encoder_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0044_5bit_gpu_completion_recovery.$(OBJEXT) \
@@ -7597,7 +7601,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0038_6bit_gpu_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0039_6bit_gpu_palette_rebuild.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0040_6bit_gpu_count_rebuild.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0042_6bit_gpu_allocation_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0043_6bit_gpu_encoder_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0044_6bit_gpu_completion_recovery.$(OBJEXT) \
@@ -7617,7 +7621,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0058_6bit_gpu_shared_override.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0059_6bit_gpu_packing_override.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/6bit/test_runner-0060_6bit_gpu_cpu_fallback.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-bitlut_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-rgb_cell_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0147_gpu_r256_compact_table.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0148_gpu_sparse_r64.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0149_gpu_sparse_r128.$(OBJEXT) \
@@ -10713,7 +10717,6 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
-	_support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-byte_state_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-certlut_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Po \
@@ -10725,6 +10728,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Po \
+	_support/processing/gpu-palette/$(DEPDIR)/test_runner-rgb_cell_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-0035_blockcull_exact.Po \
@@ -11864,7 +11868,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/gpu-direct/$(DEPDIR)/test_runner-0013_diffuse_lso2_expected.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0014_diffuse_carry.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0015_diffuse_fhedt.Po \
-	dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_bitlut.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Po \
 	dither/jajuni-gpu/$(DEPDIR)/test_runner-0001_jajuni_gpu_carry.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0001_standard_indexes.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0002_small_error_indexes.Po \
@@ -14017,7 +14021,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/5bit/$(DEPDIR)/test_runner-0038_5bit_gpu_reuse.Po \
 	lookup/5bit/$(DEPDIR)/test_runner-0039_5bit_gpu_palette_rebuild.Po \
 	lookup/5bit/$(DEPDIR)/test_runner-0040_5bit_gpu_count_rebuild.Po \
-	lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_bits_rebuild.Po \
+	lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_policy_isolation.Po \
 	lookup/5bit/$(DEPDIR)/test_runner-0042_5bit_gpu_allocation_recovery.Po \
 	lookup/5bit/$(DEPDIR)/test_runner-0043_5bit_gpu_encoder_recovery.Po \
 	lookup/5bit/$(DEPDIR)/test_runner-0044_5bit_gpu_completion_recovery.Po \
@@ -14041,6 +14045,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/5bit/$(DEPDIR)/test_runner-0062_5bit_fractional_ties.Po \
 	lookup/5bit/$(DEPDIR)/test_runner-0063_5bit_fractional_cache.Po \
 	lookup/5bit/$(DEPDIR)/test_runner-0064_5bit_fractional_reuse.Po \
+	lookup/5bit/$(DEPDIR)/test_runner-0065_5bit_fractional_policy_isolation.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0016_6bit_near_tie_tail.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0017_6bit_tiny_distances.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0018_6bit_magnitude_boundary.Po \
@@ -14052,7 +14057,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/6bit/$(DEPDIR)/test_runner-0038_6bit_gpu_reuse.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0039_6bit_gpu_palette_rebuild.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0040_6bit_gpu_count_rebuild.Po \
-	lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_bits_rebuild.Po \
+	lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_policy_isolation.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0042_6bit_gpu_allocation_recovery.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0043_6bit_gpu_encoder_recovery.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0044_6bit_gpu_completion_recovery.Po \
@@ -14076,6 +14081,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/6bit/$(DEPDIR)/test_runner-0062_6bit_fractional_ties.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0063_6bit_fractional_cache.Po \
 	lookup/6bit/$(DEPDIR)/test_runner-0064_6bit_fractional_reuse.Po \
+	lookup/6bit/$(DEPDIR)/test_runner-0065_6bit_fractional_policy_isolation.Po \
 	lookup/blockcull/$(DEPDIR)/test_runner-0001_blockcull_exact.Po \
 	lookup/blockcull/$(DEPDIR)/test_runner-0004_blockcull_gamma_range.Po \
 	lookup/blockcull/$(DEPDIR)/test_runner-0005_blockcull_linear_range.Po \
@@ -16059,7 +16065,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_GPU_CANCEL_PUBLICATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0172_FHEDT_FRACTIONAL_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_6BIT_FRACTIONAL_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_6BIT_FRACTIONAL_POLICY_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_5BIT_FRACTIONAL_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_5BIT_FRACTIONAL_POLICY_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_BATCH_ZERO_TILE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0076_BATCH_THREAD_OVERFLOW \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_BATCH_INVALID_INDEX \
@@ -16868,7 +16876,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_DIFFUSE_LSO2_EXPECTED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_DIFFUSE_CARRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_DIFFUSE_FHEDT \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_DIFFUSE_BITLUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_DIFFUSE_RGB_CELL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_DIRECT_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BLOCKCULL_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GRIDLUT_EXACT \
@@ -19532,7 +19540,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_FLOAT_REFERENCE_R128 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_FLOAT_REFERENCE_R256 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_SPARSE_TEST_COMMON \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_BITLUT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RGB_CELL_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_5BIT_GPU_CENTERS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_5BIT_GPU_TIE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_5BIT_GPU_INDEX255 \
@@ -19540,7 +19548,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_5BIT_GPU_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_5BIT_GPU_PALETTE_REBUILD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_5BIT_GPU_COUNT_REBUILD \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_5BIT_GPU_BITS_REBUILD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_5BIT_GPU_POLICY_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_5BIT_GPU_ALLOCATION_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_5BIT_GPU_ENCODER_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_5BIT_GPU_COMPLETION_RECOVERY \
@@ -19567,7 +19575,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_6BIT_GPU_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_6BIT_GPU_PALETTE_REBUILD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_6BIT_GPU_COUNT_REBUILD \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_6BIT_GPU_BITS_REBUILD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_6BIT_GPU_POLICY_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_6BIT_GPU_ALLOCATION_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_6BIT_GPU_ENCODER_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_6BIT_GPU_COMPLETION_RECOVERY \
@@ -23235,7 +23243,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0013_diffuse_lso2_expected.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0014_diffuse_carry.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0015_diffuse_fhedt.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0016_diffuse_bitlut.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0016_diffuse_rgb_cell.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/none/0001_wire_rgb_none.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/bluenoise/0051_wire_rgb_bluenoise.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/eytzinger/0001_wire_rgb_eytzinger.c \
@@ -23351,7 +23359,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/fractional.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0172_fhedt_fractional_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0064_6bit_fractional_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0065_6bit_fractional_policy_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0064_5bit_fractional_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0065_5bit_fractional_policy_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/fractional_reference.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/batch.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0075_batch_zero_tile.c \
@@ -23503,7 +23513,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0038_5bit_gpu_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0039_5bit_gpu_palette_rebuild.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0040_5bit_gpu_count_rebuild.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0041_5bit_gpu_bits_rebuild.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0041_5bit_gpu_policy_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0042_5bit_gpu_allocation_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0043_5bit_gpu_encoder_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0044_5bit_gpu_completion_recovery.c \
@@ -23530,7 +23540,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0038_6bit_gpu_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0039_6bit_gpu_palette_rebuild.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0040_6bit_gpu_count_rebuild.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0041_6bit_gpu_bits_rebuild.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0041_6bit_gpu_policy_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0042_6bit_gpu_allocation_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0043_6bit_gpu_encoder_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0044_6bit_gpu_completion_recovery.c \
@@ -23550,7 +23560,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0058_6bit_gpu_shared_override.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0059_6bit_gpu_packing_override.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/6bit/0060_6bit_gpu_cpu_fallback.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/bitlut_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/rgb_cell_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0147_gpu_r256_compact_table.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0148_gpu_sparse_r64.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0149_gpu_sparse_r128.c \
@@ -33377,7 +33387,7 @@ dither/gpu-direct/test_runner-0014_diffuse_carry.$(OBJEXT):  \
 dither/gpu-direct/test_runner-0015_diffuse_fhedt.$(OBJEXT):  \
 	dither/gpu-direct/$(am__dirstamp) \
 	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
-dither/gpu-direct/test_runner-0016_diffuse_bitlut.$(OBJEXT):  \
+dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.$(OBJEXT):  \
 	dither/gpu-direct/$(am__dirstamp) \
 	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
 lookup/none/$(am__dirstamp):
@@ -33794,7 +33804,13 @@ lookup/fhedt/test_runner-0172_fhedt_fractional_reuse.$(OBJEXT):  \
 lookup/6bit/test_runner-0064_6bit_fractional_reuse.$(OBJEXT):  \
 	lookup/6bit/$(am__dirstamp) \
 	lookup/6bit/$(DEPDIR)/$(am__dirstamp)
+lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.$(OBJEXT):  \
+	lookup/6bit/$(am__dirstamp) \
+	lookup/6bit/$(DEPDIR)/$(am__dirstamp)
 lookup/5bit/test_runner-0064_5bit_fractional_reuse.$(OBJEXT):  \
+	lookup/5bit/$(am__dirstamp) \
+	lookup/5bit/$(DEPDIR)/$(am__dirstamp)
+lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.$(OBJEXT):  \
 	lookup/5bit/$(am__dirstamp) \
 	lookup/5bit/$(DEPDIR)/$(am__dirstamp)
 _support/lso2-gpu/test_runner-fractional_reference.$(OBJEXT):  \
@@ -34244,7 +34260,7 @@ lookup/5bit/test_runner-0039_5bit_gpu_palette_rebuild.$(OBJEXT):  \
 lookup/5bit/test_runner-0040_5bit_gpu_count_rebuild.$(OBJEXT):  \
 	lookup/5bit/$(am__dirstamp) \
 	lookup/5bit/$(DEPDIR)/$(am__dirstamp)
-lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.$(OBJEXT):  \
+lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.$(OBJEXT):  \
 	lookup/5bit/$(am__dirstamp) \
 	lookup/5bit/$(DEPDIR)/$(am__dirstamp)
 lookup/5bit/test_runner-0042_5bit_gpu_allocation_recovery.$(OBJEXT):  \
@@ -34325,7 +34341,7 @@ lookup/6bit/test_runner-0039_6bit_gpu_palette_rebuild.$(OBJEXT):  \
 lookup/6bit/test_runner-0040_6bit_gpu_count_rebuild.$(OBJEXT):  \
 	lookup/6bit/$(am__dirstamp) \
 	lookup/6bit/$(DEPDIR)/$(am__dirstamp)
-lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.$(OBJEXT):  \
+lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.$(OBJEXT):  \
 	lookup/6bit/$(am__dirstamp) \
 	lookup/6bit/$(DEPDIR)/$(am__dirstamp)
 lookup/6bit/test_runner-0042_6bit_gpu_allocation_recovery.$(OBJEXT):  \
@@ -34385,7 +34401,7 @@ lookup/6bit/test_runner-0059_6bit_gpu_packing_override.$(OBJEXT):  \
 lookup/6bit/test_runner-0060_6bit_gpu_cpu_fallback.$(OBJEXT):  \
 	lookup/6bit/$(am__dirstamp) \
 	lookup/6bit/$(DEPDIR)/$(am__dirstamp)
-_support/processing/gpu-palette/test_runner-bitlut_common.$(OBJEXT):  \
+_support/processing/gpu-palette/test_runner-rgb_cell_common.$(OBJEXT):  \
 	_support/processing/gpu-palette/$(am__dirstamp) \
 	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 lookup/fhedt/test_runner-0147_gpu_r256_compact_table.$(OBJEXT):  \
@@ -43527,7 +43543,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-byte_state_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-certlut_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Po@am__quote@ # am--include-marker
@@ -43539,6 +43554,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-rgb_cell_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-0035_blockcull_exact.Po@am__quote@ # am--include-marker
@@ -44678,7 +44694,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0013_diffuse_lso2_expected.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0014_diffuse_carry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0015_diffuse_fhedt.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_bitlut.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0001_jajuni_gpu_carry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0001_standard_indexes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0002_small_error_indexes.Po@am__quote@ # am--include-marker
@@ -46831,7 +46847,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0038_5bit_gpu_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0039_5bit_gpu_palette_rebuild.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0040_5bit_gpu_count_rebuild.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_bits_rebuild.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_policy_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0042_5bit_gpu_allocation_recovery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0043_5bit_gpu_encoder_recovery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0044_5bit_gpu_completion_recovery.Po@am__quote@ # am--include-marker
@@ -46855,6 +46871,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0062_5bit_fractional_ties.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0063_5bit_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0064_5bit_fractional_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/5bit/$(DEPDIR)/test_runner-0065_5bit_fractional_policy_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0016_6bit_near_tie_tail.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0017_6bit_tiny_distances.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0018_6bit_magnitude_boundary.Po@am__quote@ # am--include-marker
@@ -46866,7 +46883,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0038_6bit_gpu_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0039_6bit_gpu_palette_rebuild.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0040_6bit_gpu_count_rebuild.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_bits_rebuild.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_policy_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0042_6bit_gpu_allocation_recovery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0043_6bit_gpu_encoder_recovery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0044_6bit_gpu_completion_recovery.Po@am__quote@ # am--include-marker
@@ -46890,6 +46907,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0062_6bit_fractional_ties.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0063_6bit_fractional_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0064_6bit_fractional_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/6bit/$(DEPDIR)/test_runner-0065_6bit_fractional_policy_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/blockcull/$(DEPDIR)/test_runner-0001_blockcull_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/blockcull/$(DEPDIR)/test_runner-0004_blockcull_gamma_range.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/blockcull/$(DEPDIR)/test_runner-0005_blockcull_linear_range.Po@am__quote@ # am--include-marker
@@ -77245,19 +77263,19 @@ dither/gpu-direct/test_runner-0015_diffuse_fhedt.obj: dither/gpu-direct/0015_dif
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0015_diffuse_fhedt.obj `if test -f 'dither/gpu-direct/0015_diffuse_fhedt.c'; then $(CYGPATH_W) 'dither/gpu-direct/0015_diffuse_fhedt.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0015_diffuse_fhedt.c'; fi`
 
-dither/gpu-direct/test_runner-0016_diffuse_bitlut.o: dither/gpu-direct/0016_diffuse_bitlut.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0016_diffuse_bitlut.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_bitlut.Tpo -c -o dither/gpu-direct/test_runner-0016_diffuse_bitlut.o `test -f 'dither/gpu-direct/0016_diffuse_bitlut.c' || echo '$(srcdir)/'`dither/gpu-direct/0016_diffuse_bitlut.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_bitlut.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_bitlut.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0016_diffuse_bitlut.c' object='dither/gpu-direct/test_runner-0016_diffuse_bitlut.o' libtool=no @AMDEPBACKSLASH@
+dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.o: dither/gpu-direct/0016_diffuse_rgb_cell.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Tpo -c -o dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.o `test -f 'dither/gpu-direct/0016_diffuse_rgb_cell.c' || echo '$(srcdir)/'`dither/gpu-direct/0016_diffuse_rgb_cell.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0016_diffuse_rgb_cell.c' object='dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0016_diffuse_bitlut.o `test -f 'dither/gpu-direct/0016_diffuse_bitlut.c' || echo '$(srcdir)/'`dither/gpu-direct/0016_diffuse_bitlut.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.o `test -f 'dither/gpu-direct/0016_diffuse_rgb_cell.c' || echo '$(srcdir)/'`dither/gpu-direct/0016_diffuse_rgb_cell.c
 
-dither/gpu-direct/test_runner-0016_diffuse_bitlut.obj: dither/gpu-direct/0016_diffuse_bitlut.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0016_diffuse_bitlut.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_bitlut.Tpo -c -o dither/gpu-direct/test_runner-0016_diffuse_bitlut.obj `if test -f 'dither/gpu-direct/0016_diffuse_bitlut.c'; then $(CYGPATH_W) 'dither/gpu-direct/0016_diffuse_bitlut.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0016_diffuse_bitlut.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_bitlut.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_bitlut.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0016_diffuse_bitlut.c' object='dither/gpu-direct/test_runner-0016_diffuse_bitlut.obj' libtool=no @AMDEPBACKSLASH@
+dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.obj: dither/gpu-direct/0016_diffuse_rgb_cell.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Tpo -c -o dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.obj `if test -f 'dither/gpu-direct/0016_diffuse_rgb_cell.c'; then $(CYGPATH_W) 'dither/gpu-direct/0016_diffuse_rgb_cell.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0016_diffuse_rgb_cell.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0016_diffuse_rgb_cell.c' object='dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0016_diffuse_bitlut.obj `if test -f 'dither/gpu-direct/0016_diffuse_bitlut.c'; then $(CYGPATH_W) 'dither/gpu-direct/0016_diffuse_bitlut.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0016_diffuse_bitlut.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0016_diffuse_rgb_cell.obj `if test -f 'dither/gpu-direct/0016_diffuse_rgb_cell.c'; then $(CYGPATH_W) 'dither/gpu-direct/0016_diffuse_rgb_cell.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0016_diffuse_rgb_cell.c'; fi`
 
 lookup/none/test_runner-0001_wire_rgb_none.o: lookup/none/0001_wire_rgb_none.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/none/test_runner-0001_wire_rgb_none.o -MD -MP -MF lookup/none/$(DEPDIR)/test_runner-0001_wire_rgb_none.Tpo -c -o lookup/none/test_runner-0001_wire_rgb_none.o `test -f 'lookup/none/0001_wire_rgb_none.c' || echo '$(srcdir)/'`lookup/none/0001_wire_rgb_none.c
@@ -78855,6 +78873,20 @@ lookup/6bit/test_runner-0064_6bit_fractional_reuse.obj: lookup/6bit/0064_6bit_fr
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0064_6bit_fractional_reuse.obj `if test -f 'lookup/6bit/0064_6bit_fractional_reuse.c'; then $(CYGPATH_W) 'lookup/6bit/0064_6bit_fractional_reuse.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0064_6bit_fractional_reuse.c'; fi`
 
+lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.o: lookup/6bit/0065_6bit_fractional_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.o -MD -MP -MF lookup/6bit/$(DEPDIR)/test_runner-0065_6bit_fractional_policy_isolation.Tpo -c -o lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.o `test -f 'lookup/6bit/0065_6bit_fractional_policy_isolation.c' || echo '$(srcdir)/'`lookup/6bit/0065_6bit_fractional_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/6bit/$(DEPDIR)/test_runner-0065_6bit_fractional_policy_isolation.Tpo lookup/6bit/$(DEPDIR)/test_runner-0065_6bit_fractional_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/6bit/0065_6bit_fractional_policy_isolation.c' object='lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.o `test -f 'lookup/6bit/0065_6bit_fractional_policy_isolation.c' || echo '$(srcdir)/'`lookup/6bit/0065_6bit_fractional_policy_isolation.c
+
+lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.obj: lookup/6bit/0065_6bit_fractional_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.obj -MD -MP -MF lookup/6bit/$(DEPDIR)/test_runner-0065_6bit_fractional_policy_isolation.Tpo -c -o lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.obj `if test -f 'lookup/6bit/0065_6bit_fractional_policy_isolation.c'; then $(CYGPATH_W) 'lookup/6bit/0065_6bit_fractional_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0065_6bit_fractional_policy_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/6bit/$(DEPDIR)/test_runner-0065_6bit_fractional_policy_isolation.Tpo lookup/6bit/$(DEPDIR)/test_runner-0065_6bit_fractional_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/6bit/0065_6bit_fractional_policy_isolation.c' object='lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0065_6bit_fractional_policy_isolation.obj `if test -f 'lookup/6bit/0065_6bit_fractional_policy_isolation.c'; then $(CYGPATH_W) 'lookup/6bit/0065_6bit_fractional_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0065_6bit_fractional_policy_isolation.c'; fi`
+
 lookup/5bit/test_runner-0064_5bit_fractional_reuse.o: lookup/5bit/0064_5bit_fractional_reuse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0064_5bit_fractional_reuse.o -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0064_5bit_fractional_reuse.Tpo -c -o lookup/5bit/test_runner-0064_5bit_fractional_reuse.o `test -f 'lookup/5bit/0064_5bit_fractional_reuse.c' || echo '$(srcdir)/'`lookup/5bit/0064_5bit_fractional_reuse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/5bit/$(DEPDIR)/test_runner-0064_5bit_fractional_reuse.Tpo lookup/5bit/$(DEPDIR)/test_runner-0064_5bit_fractional_reuse.Po
@@ -78868,6 +78900,20 @@ lookup/5bit/test_runner-0064_5bit_fractional_reuse.obj: lookup/5bit/0064_5bit_fr
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/5bit/0064_5bit_fractional_reuse.c' object='lookup/5bit/test_runner-0064_5bit_fractional_reuse.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/5bit/test_runner-0064_5bit_fractional_reuse.obj `if test -f 'lookup/5bit/0064_5bit_fractional_reuse.c'; then $(CYGPATH_W) 'lookup/5bit/0064_5bit_fractional_reuse.c'; else $(CYGPATH_W) '$(srcdir)/lookup/5bit/0064_5bit_fractional_reuse.c'; fi`
+
+lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.o: lookup/5bit/0065_5bit_fractional_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.o -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0065_5bit_fractional_policy_isolation.Tpo -c -o lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.o `test -f 'lookup/5bit/0065_5bit_fractional_policy_isolation.c' || echo '$(srcdir)/'`lookup/5bit/0065_5bit_fractional_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/5bit/$(DEPDIR)/test_runner-0065_5bit_fractional_policy_isolation.Tpo lookup/5bit/$(DEPDIR)/test_runner-0065_5bit_fractional_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/5bit/0065_5bit_fractional_policy_isolation.c' object='lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.o `test -f 'lookup/5bit/0065_5bit_fractional_policy_isolation.c' || echo '$(srcdir)/'`lookup/5bit/0065_5bit_fractional_policy_isolation.c
+
+lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.obj: lookup/5bit/0065_5bit_fractional_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.obj -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0065_5bit_fractional_policy_isolation.Tpo -c -o lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.obj `if test -f 'lookup/5bit/0065_5bit_fractional_policy_isolation.c'; then $(CYGPATH_W) 'lookup/5bit/0065_5bit_fractional_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/lookup/5bit/0065_5bit_fractional_policy_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/5bit/$(DEPDIR)/test_runner-0065_5bit_fractional_policy_isolation.Tpo lookup/5bit/$(DEPDIR)/test_runner-0065_5bit_fractional_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/5bit/0065_5bit_fractional_policy_isolation.c' object='lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/5bit/test_runner-0065_5bit_fractional_policy_isolation.obj `if test -f 'lookup/5bit/0065_5bit_fractional_policy_isolation.c'; then $(CYGPATH_W) 'lookup/5bit/0065_5bit_fractional_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/lookup/5bit/0065_5bit_fractional_policy_isolation.c'; fi`
 
 _support/lso2-gpu/test_runner-fractional_reference.o: _support/lso2-gpu/fractional_reference.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/lso2-gpu/test_runner-fractional_reference.o -MD -MP -MF _support/lso2-gpu/$(DEPDIR)/test_runner-fractional_reference.Tpo -c -o _support/lso2-gpu/test_runner-fractional_reference.o `test -f '_support/lso2-gpu/fractional_reference.c' || echo '$(srcdir)/'`_support/lso2-gpu/fractional_reference.c
@@ -80927,19 +80973,19 @@ lookup/5bit/test_runner-0040_5bit_gpu_count_rebuild.obj: lookup/5bit/0040_5bit_g
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/5bit/test_runner-0040_5bit_gpu_count_rebuild.obj `if test -f 'lookup/5bit/0040_5bit_gpu_count_rebuild.c'; then $(CYGPATH_W) 'lookup/5bit/0040_5bit_gpu_count_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/lookup/5bit/0040_5bit_gpu_count_rebuild.c'; fi`
 
-lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.o: lookup/5bit/0041_5bit_gpu_bits_rebuild.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.o -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_bits_rebuild.Tpo -c -o lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.o `test -f 'lookup/5bit/0041_5bit_gpu_bits_rebuild.c' || echo '$(srcdir)/'`lookup/5bit/0041_5bit_gpu_bits_rebuild.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_bits_rebuild.Tpo lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_bits_rebuild.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/5bit/0041_5bit_gpu_bits_rebuild.c' object='lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.o' libtool=no @AMDEPBACKSLASH@
+lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.o: lookup/5bit/0041_5bit_gpu_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.o -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_policy_isolation.Tpo -c -o lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.o `test -f 'lookup/5bit/0041_5bit_gpu_policy_isolation.c' || echo '$(srcdir)/'`lookup/5bit/0041_5bit_gpu_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_policy_isolation.Tpo lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/5bit/0041_5bit_gpu_policy_isolation.c' object='lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.o `test -f 'lookup/5bit/0041_5bit_gpu_bits_rebuild.c' || echo '$(srcdir)/'`lookup/5bit/0041_5bit_gpu_bits_rebuild.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.o `test -f 'lookup/5bit/0041_5bit_gpu_policy_isolation.c' || echo '$(srcdir)/'`lookup/5bit/0041_5bit_gpu_policy_isolation.c
 
-lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.obj: lookup/5bit/0041_5bit_gpu_bits_rebuild.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.obj -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_bits_rebuild.Tpo -c -o lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.obj `if test -f 'lookup/5bit/0041_5bit_gpu_bits_rebuild.c'; then $(CYGPATH_W) 'lookup/5bit/0041_5bit_gpu_bits_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/lookup/5bit/0041_5bit_gpu_bits_rebuild.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_bits_rebuild.Tpo lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_bits_rebuild.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/5bit/0041_5bit_gpu_bits_rebuild.c' object='lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.obj' libtool=no @AMDEPBACKSLASH@
+lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.obj: lookup/5bit/0041_5bit_gpu_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.obj -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_policy_isolation.Tpo -c -o lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.obj `if test -f 'lookup/5bit/0041_5bit_gpu_policy_isolation.c'; then $(CYGPATH_W) 'lookup/5bit/0041_5bit_gpu_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/lookup/5bit/0041_5bit_gpu_policy_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_policy_isolation.Tpo lookup/5bit/$(DEPDIR)/test_runner-0041_5bit_gpu_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/5bit/0041_5bit_gpu_policy_isolation.c' object='lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/5bit/test_runner-0041_5bit_gpu_bits_rebuild.obj `if test -f 'lookup/5bit/0041_5bit_gpu_bits_rebuild.c'; then $(CYGPATH_W) 'lookup/5bit/0041_5bit_gpu_bits_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/lookup/5bit/0041_5bit_gpu_bits_rebuild.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/5bit/test_runner-0041_5bit_gpu_policy_isolation.obj `if test -f 'lookup/5bit/0041_5bit_gpu_policy_isolation.c'; then $(CYGPATH_W) 'lookup/5bit/0041_5bit_gpu_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/lookup/5bit/0041_5bit_gpu_policy_isolation.c'; fi`
 
 lookup/5bit/test_runner-0042_5bit_gpu_allocation_recovery.o: lookup/5bit/0042_5bit_gpu_allocation_recovery.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0042_5bit_gpu_allocation_recovery.o -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0042_5bit_gpu_allocation_recovery.Tpo -c -o lookup/5bit/test_runner-0042_5bit_gpu_allocation_recovery.o `test -f 'lookup/5bit/0042_5bit_gpu_allocation_recovery.c' || echo '$(srcdir)/'`lookup/5bit/0042_5bit_gpu_allocation_recovery.c
@@ -81305,19 +81351,19 @@ lookup/6bit/test_runner-0040_6bit_gpu_count_rebuild.obj: lookup/6bit/0040_6bit_g
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0040_6bit_gpu_count_rebuild.obj `if test -f 'lookup/6bit/0040_6bit_gpu_count_rebuild.c'; then $(CYGPATH_W) 'lookup/6bit/0040_6bit_gpu_count_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0040_6bit_gpu_count_rebuild.c'; fi`
 
-lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.o: lookup/6bit/0041_6bit_gpu_bits_rebuild.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.o -MD -MP -MF lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_bits_rebuild.Tpo -c -o lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.o `test -f 'lookup/6bit/0041_6bit_gpu_bits_rebuild.c' || echo '$(srcdir)/'`lookup/6bit/0041_6bit_gpu_bits_rebuild.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_bits_rebuild.Tpo lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_bits_rebuild.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/6bit/0041_6bit_gpu_bits_rebuild.c' object='lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.o' libtool=no @AMDEPBACKSLASH@
+lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.o: lookup/6bit/0041_6bit_gpu_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.o -MD -MP -MF lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_policy_isolation.Tpo -c -o lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.o `test -f 'lookup/6bit/0041_6bit_gpu_policy_isolation.c' || echo '$(srcdir)/'`lookup/6bit/0041_6bit_gpu_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_policy_isolation.Tpo lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/6bit/0041_6bit_gpu_policy_isolation.c' object='lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.o `test -f 'lookup/6bit/0041_6bit_gpu_bits_rebuild.c' || echo '$(srcdir)/'`lookup/6bit/0041_6bit_gpu_bits_rebuild.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.o `test -f 'lookup/6bit/0041_6bit_gpu_policy_isolation.c' || echo '$(srcdir)/'`lookup/6bit/0041_6bit_gpu_policy_isolation.c
 
-lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.obj: lookup/6bit/0041_6bit_gpu_bits_rebuild.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.obj -MD -MP -MF lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_bits_rebuild.Tpo -c -o lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.obj `if test -f 'lookup/6bit/0041_6bit_gpu_bits_rebuild.c'; then $(CYGPATH_W) 'lookup/6bit/0041_6bit_gpu_bits_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0041_6bit_gpu_bits_rebuild.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_bits_rebuild.Tpo lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_bits_rebuild.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/6bit/0041_6bit_gpu_bits_rebuild.c' object='lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.obj' libtool=no @AMDEPBACKSLASH@
+lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.obj: lookup/6bit/0041_6bit_gpu_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.obj -MD -MP -MF lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_policy_isolation.Tpo -c -o lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.obj `if test -f 'lookup/6bit/0041_6bit_gpu_policy_isolation.c'; then $(CYGPATH_W) 'lookup/6bit/0041_6bit_gpu_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0041_6bit_gpu_policy_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_policy_isolation.Tpo lookup/6bit/$(DEPDIR)/test_runner-0041_6bit_gpu_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/6bit/0041_6bit_gpu_policy_isolation.c' object='lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0041_6bit_gpu_bits_rebuild.obj `if test -f 'lookup/6bit/0041_6bit_gpu_bits_rebuild.c'; then $(CYGPATH_W) 'lookup/6bit/0041_6bit_gpu_bits_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0041_6bit_gpu_bits_rebuild.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0041_6bit_gpu_policy_isolation.obj `if test -f 'lookup/6bit/0041_6bit_gpu_policy_isolation.c'; then $(CYGPATH_W) 'lookup/6bit/0041_6bit_gpu_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0041_6bit_gpu_policy_isolation.c'; fi`
 
 lookup/6bit/test_runner-0042_6bit_gpu_allocation_recovery.o: lookup/6bit/0042_6bit_gpu_allocation_recovery.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/6bit/test_runner-0042_6bit_gpu_allocation_recovery.o -MD -MP -MF lookup/6bit/$(DEPDIR)/test_runner-0042_6bit_gpu_allocation_recovery.Tpo -c -o lookup/6bit/test_runner-0042_6bit_gpu_allocation_recovery.o `test -f 'lookup/6bit/0042_6bit_gpu_allocation_recovery.c' || echo '$(srcdir)/'`lookup/6bit/0042_6bit_gpu_allocation_recovery.c
@@ -81585,19 +81631,19 @@ lookup/6bit/test_runner-0060_6bit_gpu_cpu_fallback.obj: lookup/6bit/0060_6bit_gp
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/6bit/test_runner-0060_6bit_gpu_cpu_fallback.obj `if test -f 'lookup/6bit/0060_6bit_gpu_cpu_fallback.c'; then $(CYGPATH_W) 'lookup/6bit/0060_6bit_gpu_cpu_fallback.c'; else $(CYGPATH_W) '$(srcdir)/lookup/6bit/0060_6bit_gpu_cpu_fallback.c'; fi`
 
-_support/processing/gpu-palette/test_runner-bitlut_common.o: _support/processing/gpu-palette/bitlut_common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-bitlut_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Tpo -c -o _support/processing/gpu-palette/test_runner-bitlut_common.o `test -f '_support/processing/gpu-palette/bitlut_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/bitlut_common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/bitlut_common.c' object='_support/processing/gpu-palette/test_runner-bitlut_common.o' libtool=no @AMDEPBACKSLASH@
+_support/processing/gpu-palette/test_runner-rgb_cell_common.o: _support/processing/gpu-palette/rgb_cell_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-rgb_cell_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-rgb_cell_common.Tpo -c -o _support/processing/gpu-palette/test_runner-rgb_cell_common.o `test -f '_support/processing/gpu-palette/rgb_cell_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/rgb_cell_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-rgb_cell_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-rgb_cell_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/rgb_cell_common.c' object='_support/processing/gpu-palette/test_runner-rgb_cell_common.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-bitlut_common.o `test -f '_support/processing/gpu-palette/bitlut_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/bitlut_common.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-rgb_cell_common.o `test -f '_support/processing/gpu-palette/rgb_cell_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/rgb_cell_common.c
 
-_support/processing/gpu-palette/test_runner-bitlut_common.obj: _support/processing/gpu-palette/bitlut_common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-bitlut_common.obj -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Tpo -c -o _support/processing/gpu-palette/test_runner-bitlut_common.obj `if test -f '_support/processing/gpu-palette/bitlut_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/bitlut_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/bitlut_common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/bitlut_common.c' object='_support/processing/gpu-palette/test_runner-bitlut_common.obj' libtool=no @AMDEPBACKSLASH@
+_support/processing/gpu-palette/test_runner-rgb_cell_common.obj: _support/processing/gpu-palette/rgb_cell_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-rgb_cell_common.obj -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-rgb_cell_common.Tpo -c -o _support/processing/gpu-palette/test_runner-rgb_cell_common.obj `if test -f '_support/processing/gpu-palette/rgb_cell_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/rgb_cell_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/rgb_cell_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-rgb_cell_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-rgb_cell_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/rgb_cell_common.c' object='_support/processing/gpu-palette/test_runner-rgb_cell_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-bitlut_common.obj `if test -f '_support/processing/gpu-palette/bitlut_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/bitlut_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/bitlut_common.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-rgb_cell_common.obj `if test -f '_support/processing/gpu-palette/rgb_cell_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/rgb_cell_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/rgb_cell_common.c'; fi`
 
 lookup/fhedt/test_runner-0147_gpu_r256_compact_table.o: lookup/fhedt/0147_gpu_r256_compact_table.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0147_gpu_r256_compact_table.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Tpo -c -o lookup/fhedt/test_runner-0147_gpu_r256_compact_table.o `test -f 'lookup/fhedt/0147_gpu_r256_compact_table.c' || echo '$(srcdir)/'`lookup/fhedt/0147_gpu_r256_compact_table.c

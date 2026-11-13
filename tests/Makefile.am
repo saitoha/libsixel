@@ -276,7 +276,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0085_GPU_CANCEL_PUBLICATION \
     -DBUILD_TEST_0172_FHEDT_FRACTIONAL_REUSE \
     -DBUILD_TEST_0064_6BIT_FRACTIONAL_REUSE \
+    -DBUILD_TEST_0065_6BIT_FRACTIONAL_POLICY_ISOLATION \
     -DBUILD_TEST_0064_5BIT_FRACTIONAL_REUSE \
+    -DBUILD_TEST_0065_5BIT_FRACTIONAL_POLICY_ISOLATION \
     -DBUILD_TEST_0075_BATCH_ZERO_TILE \
     -DBUILD_TEST_0076_BATCH_THREAD_OVERFLOW \
     -DBUILD_TEST_0077_BATCH_INVALID_INDEX \
@@ -1085,7 +1087,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_DIFFUSE_LSO2_EXPECTED \
     -DBUILD_TEST_0014_DIFFUSE_CARRY \
     -DBUILD_TEST_0015_DIFFUSE_FHEDT \
-    -DBUILD_TEST_0016_DIFFUSE_BITLUT \
+    -DBUILD_TEST_0016_DIFFUSE_RGB_CELL \
     -DBUILD_TEST_0006_DIRECT_EXACT \
     -DBUILD_TEST_0001_BLOCKCULL_EXACT \
     -DBUILD_TEST_0001_GRIDLUT_EXACT \
@@ -3749,7 +3751,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0051_FLOAT_REFERENCE_R128 \
     -DBUILD_TEST_0052_FLOAT_REFERENCE_R256 \
     -DBUILD_FHEDT_SPARSE_TEST_COMMON \
-    -DBUILD_BITLUT_COMMON \
+    -DBUILD_RGB_CELL_COMMON \
     -DBUILD_TEST_0034_5BIT_GPU_CENTERS \
     -DBUILD_TEST_0035_5BIT_GPU_TIE \
     -DBUILD_TEST_0036_5BIT_GPU_INDEX255 \
@@ -3757,7 +3759,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0038_5BIT_GPU_REUSE \
     -DBUILD_TEST_0039_5BIT_GPU_PALETTE_REBUILD \
     -DBUILD_TEST_0040_5BIT_GPU_COUNT_REBUILD \
-    -DBUILD_TEST_0041_5BIT_GPU_BITS_REBUILD \
+    -DBUILD_TEST_0041_5BIT_GPU_POLICY_ISOLATION \
     -DBUILD_TEST_0042_5BIT_GPU_ALLOCATION_RECOVERY \
     -DBUILD_TEST_0043_5BIT_GPU_ENCODER_RECOVERY \
     -DBUILD_TEST_0044_5BIT_GPU_COMPLETION_RECOVERY \
@@ -3784,7 +3786,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0038_6BIT_GPU_REUSE \
     -DBUILD_TEST_0039_6BIT_GPU_PALETTE_REBUILD \
     -DBUILD_TEST_0040_6BIT_GPU_COUNT_REBUILD \
-    -DBUILD_TEST_0041_6BIT_GPU_BITS_REBUILD \
+    -DBUILD_TEST_0041_6BIT_GPU_POLICY_ISOLATION \
     -DBUILD_TEST_0042_6BIT_GPU_ALLOCATION_RECOVERY \
     -DBUILD_TEST_0043_6BIT_GPU_ENCODER_RECOVERY \
     -DBUILD_TEST_0044_6BIT_GPU_COMPLETION_RECOVERY \
@@ -7420,7 +7422,7 @@ test_runner_SOURCES = test_runner.c \
     dither/gpu-direct/0013_diffuse_lso2_expected.c \
     dither/gpu-direct/0014_diffuse_carry.c \
     dither/gpu-direct/0015_diffuse_fhedt.c \
-    dither/gpu-direct/0016_diffuse_bitlut.c \
+    dither/gpu-direct/0016_diffuse_rgb_cell.c \
     lookup/none/0001_wire_rgb_none.c \
     dither/bluenoise/0051_wire_rgb_bluenoise.c \
     lookup/eytzinger/0001_wire_rgb_eytzinger.c \
@@ -7536,7 +7538,9 @@ test_runner_SOURCES = test_runner.c \
     _support/lso2-gpu/fractional.c \
     lookup/fhedt/0172_fhedt_fractional_reuse.c \
     lookup/6bit/0064_6bit_fractional_reuse.c \
+    lookup/6bit/0065_6bit_fractional_policy_isolation.c \
     lookup/5bit/0064_5bit_fractional_reuse.c \
+    lookup/5bit/0065_5bit_fractional_policy_isolation.c \
     _support/lso2-gpu/fractional_reference.c \
     _support/lso2-gpu/batch.c \
     dither/lso2-gpu/0075_batch_zero_tile.c \
@@ -7688,7 +7692,7 @@ test_runner_SOURCES = test_runner.c \
     lookup/5bit/0038_5bit_gpu_reuse.c \
     lookup/5bit/0039_5bit_gpu_palette_rebuild.c \
     lookup/5bit/0040_5bit_gpu_count_rebuild.c \
-    lookup/5bit/0041_5bit_gpu_bits_rebuild.c \
+    lookup/5bit/0041_5bit_gpu_policy_isolation.c \
     lookup/5bit/0042_5bit_gpu_allocation_recovery.c \
     lookup/5bit/0043_5bit_gpu_encoder_recovery.c \
     lookup/5bit/0044_5bit_gpu_completion_recovery.c \
@@ -7715,7 +7719,7 @@ test_runner_SOURCES = test_runner.c \
     lookup/6bit/0038_6bit_gpu_reuse.c \
     lookup/6bit/0039_6bit_gpu_palette_rebuild.c \
     lookup/6bit/0040_6bit_gpu_count_rebuild.c \
-    lookup/6bit/0041_6bit_gpu_bits_rebuild.c \
+    lookup/6bit/0041_6bit_gpu_policy_isolation.c \
     lookup/6bit/0042_6bit_gpu_allocation_recovery.c \
     lookup/6bit/0043_6bit_gpu_encoder_recovery.c \
     lookup/6bit/0044_6bit_gpu_completion_recovery.c \
@@ -7735,7 +7739,7 @@ test_runner_SOURCES = test_runner.c \
     lookup/6bit/0058_6bit_gpu_shared_override.c \
     lookup/6bit/0059_6bit_gpu_packing_override.c \
     lookup/6bit/0060_6bit_gpu_cpu_fallback.c \
-    _support/processing/gpu-palette/bitlut_common.c \
+    _support/processing/gpu-palette/rgb_cell_common.c \
     lookup/fhedt/0147_gpu_r256_compact_table.c \
     lookup/fhedt/0148_gpu_sparse_r64.c \
     lookup/fhedt/0149_gpu_sparse_r128.c \

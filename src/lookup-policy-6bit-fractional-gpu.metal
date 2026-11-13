@@ -1,16 +1,17 @@
+/* SPDX-License-Identifier: MIT */
 #include <metal_stdlib>
 using namespace metal;
-kernel void bitlut_fractional_build(
+kernel void lookup_6bit_fractional_build(
     constant uchar *palette [[buffer(0)]],
     constant uint &count [[buffer(1)]],
-    constant uint &bits_setting [[buffer(2)]],
     device uchar *table [[buffer(3)]],
     uint cell [[thread_position_in_grid]])
 {
     uint bits, side, shift, half_step, best, distance, i, d;
     uint3 address;
     int3 low, high, center2, delta;
-    bits = bits_setting;
+    /* This builder owns the fixed 64^3 table for 6bit. */
+    bits = 6u;
     side = 1u << bits;
     if (cell >= side * side * side) return;
     shift = 8u - bits;
@@ -44,8 +45,8 @@ static uint lookup_rgb8_fractional(float3 query, constant uchar *palette,
     uint bits, shift, side;
     uint3 address;
 
-    (void)palette; (void)count;
-    bits = *(constant uint *)configuration;
+    (void)palette; (void)count; (void)configuration;
+    bits = 6u;
     shift = 8-bits;
     side = 1u << bits;
     address = min(uint3((query+float(1u << (shift-1))) /

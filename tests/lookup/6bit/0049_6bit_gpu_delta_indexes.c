@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Verify 6bit GPU delta indexes. */
-int test_bitlut_gpu(int bits, int observation);
+int test_rgb_cell_gpu(int bits, int observation);
 
 int
 test_bit6_gpu_delta_indexes(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_bitlut_gpu(6, 15);
+    return test_rgb_cell_gpu(6, 15);
 }
 
 /* emacs Local Variables:      */

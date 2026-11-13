@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Verify 6bit GPU auto no cpu. */
-int test_bitlut_encode(int bits, int observation);
+int test_rgb_cell_encode(int bits, int observation);
 
 int
 test_bit6_gpu_auto_no_cpu(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_bitlut_encode(6, 1);
+    return test_rgb_cell_encode(6, 1);
 }
 
 /* emacs Local Variables:      */

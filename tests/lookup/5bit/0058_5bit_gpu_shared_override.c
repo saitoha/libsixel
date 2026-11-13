@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Verify 5bit GPU shared override. */
-int test_bitlut_encode(int bits, int observation);
+int test_rgb_cell_encode(int bits, int observation);
 
 int
 test_bit5_gpu_shared_override(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_bitlut_encode(5, 2);
+    return test_rgb_cell_encode(5, 2);
 }
 
 /* emacs Local Variables:      */

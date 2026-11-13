@@ -1,14 +1,16 @@
+/* SPDX-License-Identifier: MIT */
 #include <metal_stdlib>
 using namespace metal;
-kernel void bitlut_build(device uchar *table [[buffer(0)]],
+kernel void lookup_6bit_build(device uchar *table [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
-    constant uint2 &p [[buffer(2)]],
+    constant uint &count [[buffer(2)]],
     uint cell [[thread_position_in_grid]])
 {
     uint bits, side, shift, half_step, best, distance, i, d;
     uint3 address;
     int3 low, high, center2, delta;
-    bits = p.x;
+    /* The 6bit table has its own builder and fixed geometry. */
+    bits = 6u;
     side = 1u << bits;
     if (cell >= side * side * side) return;
     shift = 8u - bits;
@@ -23,7 +25,7 @@ kernel void bitlut_build(device uchar *table [[buffer(0)]],
     center2 = low + high;
     best = 0u;
     distance = UINT_MAX;
-    for (i = 0u; i < p.y; ++i) {
+    for (i = 0u; i < count; ++i) {
         delta = center2 - 2 * int3(palette[3u * i],
             palette[3u * i + 1u], palette[3u * i + 2u]);
         d = uint(delta.x * delta.x + delta.y * delta.y +

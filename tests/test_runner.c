@@ -1565,7 +1565,7 @@ int test_gpu_direct_0012_parity_fhedt_settings(int argc, char **argv);
 int test_gpu_direct_0013_diffuse_lso2_expected(int argc, char **argv);
 int test_gpu_direct_0014_diffuse_carry(int argc, char **argv);
 int test_gpu_direct_0015_diffuse_fhedt(int argc, char **argv);
-int test_gpu_direct_0016_diffuse_bitlut(int argc, char **argv);
+int test_gpu_direct_0016_diffuse_rgb_cell(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
@@ -1576,7 +1576,7 @@ int test_bit5_gpu_table_bytes(int argc, char **argv);
 int test_bit5_gpu_reuse(int argc, char **argv);
 int test_bit5_gpu_palette_rebuild(int argc, char **argv);
 int test_bit5_gpu_count_rebuild(int argc, char **argv);
-int test_bit5_gpu_bits_rebuild(int argc, char **argv);
+int test_bit5_gpu_policy_isolation(int argc, char **argv);
 int test_bit5_gpu_allocation_recovery(int argc, char **argv);
 int test_bit5_gpu_encoder_recovery(int argc, char **argv);
 int test_bit5_gpu_completion_recovery(int argc, char **argv);
@@ -1603,7 +1603,7 @@ int test_bit6_gpu_table_bytes(int argc, char **argv);
 int test_bit6_gpu_reuse(int argc, char **argv);
 int test_bit6_gpu_palette_rebuild(int argc, char **argv);
 int test_bit6_gpu_count_rebuild(int argc, char **argv);
-int test_bit6_gpu_bits_rebuild(int argc, char **argv);
+int test_bit6_gpu_policy_isolation(int argc, char **argv);
 int test_bit6_gpu_allocation_recovery(int argc, char **argv);
 int test_bit6_gpu_encoder_recovery(int argc, char **argv);
 int test_bit6_gpu_completion_recovery(int argc, char **argv);
@@ -1710,7 +1710,9 @@ int test_gpu_gridlut_fractional_ties(int, char **);
 int test_gpu_eytzinger_fractional_reference(int, char **);
 int test_gpu_eytzinger_fractional_ties(int, char **);
 int test_gpu_5bit_fractional_reuse(int, char **);
+int test_gpu_5bit_fractional_policy_isolation(int, char **);
 int test_gpu_6bit_fractional_reuse(int, char **);
+int test_gpu_6bit_fractional_policy_isolation(int, char **);
 int test_gpu_fhedt_fractional_reuse(int, char **);
 int test_gpu_5bit_fractional_reference(int, char **);
 int test_gpu_5bit_fractional_ties(int, char **);
@@ -6928,8 +6930,8 @@ static test_entry_t const test_entries[] = {
       test_gpu_direct_0013_diffuse_lso2_expected },
     { "gpu-direct/0014_diffuse_carry", test_gpu_direct_0014_diffuse_carry },
     { "gpu-direct/0015_diffuse_fhedt", test_gpu_direct_0015_diffuse_fhedt },
-    { "gpu-direct/0016_diffuse_bitlut",
-      test_gpu_direct_0016_diffuse_bitlut },
+    { "gpu-direct/0016_diffuse_rgb_cell",
+      test_gpu_direct_0016_diffuse_rgb_cell },
     { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
     { "gpu-palette/0021_blockcull_exact",
       test_gpupal_0021_blockcull_exact },
@@ -6942,7 +6944,7 @@ static test_entry_t const test_entries[] = {
     { "5bit/gpu_reuse", test_bit5_gpu_reuse },
     { "5bit/gpu_palette_rebuild", test_bit5_gpu_palette_rebuild },
     { "5bit/gpu_count_rebuild", test_bit5_gpu_count_rebuild },
-    { "5bit/gpu_bits_rebuild", test_bit5_gpu_bits_rebuild },
+    { "5bit/gpu_policy_isolation", test_bit5_gpu_policy_isolation },
     { "5bit/gpu_allocation_recovery", test_bit5_gpu_allocation_recovery },
     { "5bit/gpu_encoder_recovery", test_bit5_gpu_encoder_recovery },
     { "5bit/gpu_completion_recovery", test_bit5_gpu_completion_recovery },
@@ -6969,7 +6971,7 @@ static test_entry_t const test_entries[] = {
     { "6bit/gpu_reuse", test_bit6_gpu_reuse },
     { "6bit/gpu_palette_rebuild", test_bit6_gpu_palette_rebuild },
     { "6bit/gpu_count_rebuild", test_bit6_gpu_count_rebuild },
-    { "6bit/gpu_bits_rebuild", test_bit6_gpu_bits_rebuild },
+    { "6bit/gpu_policy_isolation", test_bit6_gpu_policy_isolation },
     { "6bit/gpu_allocation_recovery", test_bit6_gpu_allocation_recovery },
     { "6bit/gpu_encoder_recovery", test_bit6_gpu_encoder_recovery },
     { "6bit/gpu_completion_recovery", test_bit6_gpu_completion_recovery },
@@ -7125,7 +7127,11 @@ static test_entry_t const test_entries[] = {
         test_gpu_eytzinger_fractional_reference },
     { "gpu/eytzinger_fractional_ties", test_gpu_eytzinger_fractional_ties },
     { "gpu/5bit_fractional_reuse", test_gpu_5bit_fractional_reuse },
+    { "gpu/5bit_fractional_policy_isolation",
+      test_gpu_5bit_fractional_policy_isolation },
     { "gpu/6bit_fractional_reuse", test_gpu_6bit_fractional_reuse },
+    { "gpu/6bit_fractional_policy_isolation",
+      test_gpu_6bit_fractional_policy_isolation },
     { "gpu/fhedt_fractional_reuse", test_gpu_fhedt_fractional_reuse },
     { "gpu/5bit_fractional_reference", test_gpu_5bit_fractional_reference },
     { "gpu/5bit_fractional_ties", test_gpu_5bit_fractional_ties },

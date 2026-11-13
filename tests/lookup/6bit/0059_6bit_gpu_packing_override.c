@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Verify 6bit GPU packing override. */
-int test_bitlut_encode(int bits, int observation);
+int test_rgb_cell_encode(int bits, int observation);
 
 int
 test_bit6_gpu_packing_override(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_bitlut_encode(6, 3);
+    return test_rgb_cell_encode(6, 3);
 }
 
 /* emacs Local Variables:      */

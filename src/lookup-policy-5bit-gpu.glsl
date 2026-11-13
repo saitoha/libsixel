@@ -1,30 +1,30 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * 5bit/6bit cell-center lookup in the "vulkan.lookup-rgb8.v1" program ABI,
- * a port of lookup-policy-bitlut-gpu.metal and its fractional form. The
+ * 5bit cell-center lookup in the "vulkan.lookup-rgb8.v1" program ABI,
+ * a port of lookup-policy-5bit-gpu.metal and its fractional form. The
  * builder fills one byte per cell with the palette entry nearest to that
  * cell's center, lowest index on ties. The table is immutable for a
  * palette, so it does not depend on the CPU first-query memo's traversal
  * history.
  *
- * Constants (words): 0 bits per channel. The workspace is the byte table
- * of 2^(3 * bits) cells.
+ * Geometry belongs to this policy: a 32^3 byte table (32768 bytes).
+ * No runtime constant selects another lookup policy or table width.
  *
- * vulkan-builders: bitlut_build
+ * vulkan-builders: lookup_5bit_build
  */
 layout(std430, set = 0, binding = SIXEL_LOOKUP_WORKSPACE_BINDING)
-    buffer BitlutWorkspace {
-    uint8_t bitlut_table[];
+    buffer Lookup5bitWorkspace {
+    uint8_t lookup5_table[];
 };
 
 #if defined(SIXEL_LOOKUP_BUILDER)
-void bitlut_build()
+void lookup_5bit_build()
 {
     uint bits, cell, side, shift, half_step, best, distance, i, d;
     uvec3 address;
     ivec3 low, high, center2, delta;
 
-    bits = lookup_constants[0];
+    bits = 5u;
     cell = gl_GlobalInvocationID.y * gl_NumWorkGroups.x *
         gl_WorkGroupSize.x + gl_GlobalInvocationID.x;
     if (cell >= 1u << (3u * bits)) {
@@ -53,15 +53,15 @@ void bitlut_build()
             best = i;
         }
     }
-    bitlut_table[cell] = uint8_t(best);
+    lookup5_table[cell] = uint8_t(best);
 }
 #endif
 
-uint bitlut_entry(uvec3 address)
+uint lookup5_entry(uvec3 address)
 {
-    uint bits = lookup_constants[0];
+    uint bits = 5u;
 
-    return uint(bitlut_table[(address.x << (2u * bits)) |
+    return uint(lookup5_table[(address.x << (2u * bits)) |
         (address.y << bits) | address.z]);
 }
 
@@ -70,9 +70,9 @@ uint lookup_rgb8(uvec3 query, uint ncolors)
 {
     uint bits, shift;
 
-    bits = lookup_constants[0];
+    bits = 5u;
     shift = 8u - bits;
-    return bitlut_entry(min((query + (1u << (shift - 1u))) >> shift,
+    return lookup5_entry(min((query + (1u << (shift - 1u))) >> shift,
         uvec3((1u << bits) - 1u)));
 }
 
@@ -83,8 +83,8 @@ uint lookup_rgb8_fractional(vec3 query, uint ncolors)
 {
     uint bits, shift;
 
-    bits = lookup_constants[0];
+    bits = 5u;
     shift = 8u - bits;
-    return bitlut_entry(min(uvec3(max(query + float(1u << (shift - 1u)),
+    return lookup5_entry(min(uvec3(max(query + float(1u << (shift - 1u)),
         0.0) / float(1u << shift)), uvec3((1u << bits) - 1u)));
 }

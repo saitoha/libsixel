@@ -388,6 +388,65 @@ end:
     return outcome;
 }
 
+/* Interleave independently prepared policies while the first frozen plan
+ * remains alive. Each cold table must build once; neither completed table
+ * may evict the other policy's workspace, even through another preparer. */
+int
+lso2_gpu_fractional_policy_isolation_check(int kind)
+{
+    lso2_gpu_fixture_t f[2];
+    probe_preparer_t probe[2];
+    sixel_lookup_policy_configuration_t configuration;
+    unsigned int builds[2];
+    unsigned char indexes[2][LSO2_GPU_PIXELS];
+    int outcome, i, policy;
+
+    memset(f, 0, sizeof(f));
+    memset(probe, 0, sizeof(probe));
+    memset(builds, 0, sizeof(builds));
+    memset(&configuration, 0, sizeof(configuration));
+    configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    for (i = 0; i < 2; ++i) {
+        policy = i == 0 ? kind : kind == SIXEL_LUT_POLICY_5BIT
+            ? SIXEL_LUT_POLICY_6BIT : SIXEL_LUT_POLICY_5BIT;
+        outcome = lso2_gpu_fixture_open(&f[i], 1);
+        if (outcome != 0) goto end;
+        if (!lso2_gpu_fixture_serves(&f[i], policy)) {
+            outcome = 77;
+            goto end;
+        }
+        outcome = 1;
+        configuration.kind = policy;
+        LSO2_GPU_CHECK(sixel_gpu_lookup_select(f[i].allocator,
+            &configuration, &probe[i].subject) == SIXEL_OK);
+        probe[i].iface.vtbl = &probe_provider_vtbl;
+        probe[i].builds = &builds[i];
+        f[i].prepare.gpu_lookup = &probe[i].iface;
+        LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f[i]) == SIXEL_OK);
+        /* Preparation probes an interrupted lease to reserve capacity;
+         * count only the actual solve's build request below. */
+        builds[i] = 0;
+        LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f[i]) == SIXEL_OK);
+        LSO2_GPU_CHECK(builds[i] == 1);
+        memcpy(indexes[i], f[i].image->indexes, sizeof(indexes[i]));
+    }
+    for (i = 0; i < 2; ++i) {
+        builds[i] = 0;
+        LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f[i]) == SIXEL_OK);
+        LSO2_GPU_CHECK(builds[i] == 0);
+        LSO2_GPU_CHECK(memcmp(indexes[i], f[i].image->indexes,
+            sizeof(indexes[i])) == 0);
+    }
+    outcome = 0;
+end:
+    for (i = 0; i < 2; ++i) {
+        lso2_gpu_fixture_close(&f[i]);
+        if (probe[i].subject != NULL)
+            probe[i].subject->vtbl->unref(probe[i].subject);
+    }
+    return outcome;
+}
+
 /* The consumer must reject malformed capabilities before execution and
  * invalidate, rather than publish, an out-of-range collective result. */
 int

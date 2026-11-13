@@ -20,21 +20,18 @@ kernel void sixel_gpu_palette_apply(
     uchar3 source;
     uint best;
     uint best_dist;
-    uint bits, shift, at;
-    uint3 cell;
     if (prepare_query(result, pixels, transparent_mask, blue_noise,
                       gradient, params, accumulation,
                       accumulation_valid_mask, accumulation_result_mask,
                       gid, query, source)) {
         return;
     }
-    if (params.lookup_mode >= 6u) {
-        bits = params.lookup_mode - 1u;
-        shift = 8u - bits;
-        cell = min((uint3(query) + (1u << (shift - 1u))) >>
-            shift, uint3((1u << bits) - 1u));
-        at = (cell.x << (2u * bits)) | (cell.y << bits) | cell.z;
-        best = uint(((device const uchar *)lookup_storage)[at]);
+    if (params.lookup_mode == 6u) {
+        best = lookup_5bit_palette_lookup(
+            (device const uchar *)lookup_storage, query);
+    } else if (params.lookup_mode == 7u) {
+        best = lookup_6bit_palette_lookup(
+            (device const uchar *)lookup_storage, query);
     } else if (params.lookup_mode == 5u) {
         best = fhedt_palette_lookup(palette, lookup_storage, query, params);
     } else if (params.lookup_mode == 4u) {

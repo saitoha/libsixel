@@ -62,7 +62,7 @@ typedef struct sixel_gpu_palette_test_hooks {
     size_t retained_valid_upload_bytes;
     /* Physical FHEDT table format, independent of requested refinement. */
     size_t fhedt_table_entry_bytes;
-    size_t bitlut_table_bytes;
+    size_t lookup_table_bytes;
 } sixel_gpu_palette_test_hooks_t;
 
 /*

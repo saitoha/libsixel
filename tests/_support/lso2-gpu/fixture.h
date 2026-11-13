@@ -47,6 +47,7 @@ int lso2_gpu_batch_fault_check(int);
 int lso2_gpu_batch_equivalence(unsigned int, int, int, int);
 int lso2_gpu_fractional_check(int kind, int ties);
 int lso2_gpu_fractional_reuse_check(int kind);
+int lso2_gpu_fractional_policy_isolation_check(int kind);
 int lso2_gpu_fractional_config_check(
     sixel_lookup_policy_configuration_t const *, int);
 unsigned int lso2_gpu_fractional_reference(

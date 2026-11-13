@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Verify 6bit GPU transparent. */
-int test_bitlut_gpu(int bits, int observation);
+int test_rgb_cell_gpu(int bits, int observation);
 
 int
 test_bit6_gpu_transparent(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_bitlut_gpu(6, 19);
+    return test_rgb_cell_gpu(6, 19);
 }
 
 /* emacs Local Variables:      */

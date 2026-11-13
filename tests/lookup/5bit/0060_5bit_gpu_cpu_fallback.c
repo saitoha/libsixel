@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Verify 5bit GPU cpu fallback. */
-int test_bitlut_encode(int bits, int observation);
+int test_rgb_cell_encode(int bits, int observation);
 
 int
 test_bit5_gpu_cpu_fallback(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_bitlut_encode(5, 4);
+    return test_rgb_cell_encode(5, 4);
 }
 
 /* emacs Local Variables:      */

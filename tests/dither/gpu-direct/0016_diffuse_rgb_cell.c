@@ -10,13 +10,13 @@
  * gray fixture, serpentine against the offset baseline; Metal and Vulkan
  * produced identical indexes when these were recorded. */
 
-typedef struct direct_bitlut_case {
+typedef struct direct_rgb_cell_case {
     int kind;
     char const *fs;
     char const *lso2;
-} direct_bitlut_case_t;
+} direct_rgb_cell_case_t;
 
-static direct_bitlut_case_t const direct_bitlut_cases[] = {
+static direct_rgb_cell_case_t const direct_rgb_cell_cases[] = {
     { SIXEL_LUT_POLICY_5BIT,
       "0001010111111212222"
       "0001100111111112222"
@@ -90,7 +90,7 @@ static direct_bitlut_case_t const direct_bitlut_cases[] = {
 };
 
 static int
-direct_bitlut_solve(direct_bitlut_case_t const *c, int method,
+direct_rgb_cell_solve(direct_rgb_cell_case_t const *c, int method,
     double deadzone, int history, int deferred, unsigned char *indexes,
     unsigned char *reference)
 {
@@ -136,7 +136,7 @@ end:
 }
 
 static int
-direct_bitlut_frozen(unsigned char const *indexes, char const *expected)
+direct_rgb_cell_frozen(unsigned char const *indexes, char const *expected)
 {
     int i;
 
@@ -149,40 +149,40 @@ direct_bitlut_frozen(unsigned char const *indexes, char const *expected)
 }
 
 int
-test_gpu_direct_0016_diffuse_bitlut(int argc, char **argv)
+test_gpu_direct_0016_diffuse_rgb_cell(int argc, char **argv)
 {
     unsigned char plain[LSO2_GPU_PIXELS], reference[LSO2_GPU_PIXELS];
     unsigned char run[LSO2_GPU_PIXELS], deferred[LSO2_GPU_PIXELS];
-    direct_bitlut_case_t const *c;
+    direct_rgb_cell_case_t const *c;
     size_t n;
     int k, method, outcome;
 
     (void)argc;
     (void)argv;
-    for (n = 0; n < sizeof(direct_bitlut_cases) /
-            sizeof(*direct_bitlut_cases); ++n) {
-        c = &direct_bitlut_cases[n];
+    for (n = 0; n < sizeof(direct_rgb_cell_cases) /
+            sizeof(*direct_rgb_cell_cases); ++n) {
+        c = &direct_rgb_cell_cases[n];
         for (k = 0; k < 2; ++k) {
             method = k == 0 ? SIXEL_DIFFUSE_FS : SIXEL_DIFFUSE_LSO2;
             /* LSO2 has no deadzone; the fixed-tap limiter has one. */
             if (method == SIXEL_DIFFUSE_FS) {
-                outcome = direct_bitlut_solve(c, method, 1.0e6, 0, 0, plain,
+                outcome = direct_rgb_cell_solve(c, method, 1.0e6, 0, 0, plain,
                     reference);
                 if (outcome != 0) return outcome;
                 if (memcmp(plain, reference, LSO2_GPU_PIXELS) != 0) {
-                    fprintf(stderr, "direct bitlut: kind %d lookup "
+                    fprintf(stderr, "direct rgb_cell: kind %d lookup "
                         "mismatch\n", c->kind);
                     return 1;
                 }
             }
-            outcome = direct_bitlut_solve(c, method, 0.0, 1, 0, run, NULL);
+            outcome = direct_rgb_cell_solve(c, method, 0.0, 1, 0, run, NULL);
             if (outcome != 0) return outcome;
-            outcome = direct_bitlut_solve(c, method, 0.0, 1, 1, deferred,
+            outcome = direct_rgb_cell_solve(c, method, 0.0, 1, 1, deferred,
                 NULL);
             if (outcome != 0) return outcome;
             if (memcmp(run, deferred, LSO2_GPU_PIXELS) != 0 ||
-                    !direct_bitlut_frozen(run, k == 0 ? c->fs : c->lso2)) {
-                fprintf(stderr, "direct bitlut: kind %d method %d "
+                    !direct_rgb_cell_frozen(run, k == 0 ? c->fs : c->lso2)) {
+                fprintf(stderr, "direct rgb_cell: kind %d method %d "
                     "history mismatch\n", c->kind, method);
                 return 1;
             }

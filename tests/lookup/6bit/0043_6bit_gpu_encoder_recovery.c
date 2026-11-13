@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Verify 6bit GPU encoder recovery. */
-int test_bitlut_gpu(int bits, int observation);
+int test_rgb_cell_gpu(int bits, int observation);
 
 int
 test_bit6_gpu_encoder_recovery(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_bitlut_gpu(6, 9);
+    return test_rgb_cell_gpu(6, 9);
 }
 
 /* emacs Local Variables:      */

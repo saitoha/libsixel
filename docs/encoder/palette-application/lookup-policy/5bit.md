@@ -56,28 +56,28 @@ The later answer can be approximate, and it depends on traversal history. The ma
 
 Serial, worker-local parallel (`shared_instance=0`), and shared parallel (`shared_instance=1`) 8-bit paths all populate their dense tables. With a shared instance, multiple workers can observe the same empty bucket, scan different candidate colors, and store different valid palette indices; whichever write becomes visible determines the cached representative, so repeated runs need not be byte-reproducible. Relaxed atomic loads and stores make those accesses well-defined without ordering surrounding work. The float32 backend still performs an exhaustive scan using the normalized weighted metric described in the index.
 
-## Metal application
+## GPU application
 
-The Metal backend eagerly builds all `32^3` entries at palette application. Each cell stores the nearest actual palette entry to the center of the byte values mapped to that cell by `q5`. The palette itself is not snapped to the grid. Distances use doubled integer coordinates so half-byte centers are represented exactly; equal distances choose the lowest palette index. Edge cells use their actual clipped byte intervals.
+The Metal and Vulkan backends eagerly build all `32^3` entries at palette application. Each cell stores the nearest actual palette entry to the center of the byte values mapped to that cell by `q5`. The palette itself is not snapped to the grid. Distances use doubled integer coordinates so half-byte centers are represented exactly; equal distances choose the lowest palette index. Edge cells use their actual clipped byte intervals.
 
 | Backend | Cell representative | Population | Query |
 | --- | --- | --- | --- |
 | CPU | First observed query | Lazy palette scan | Cached index, possibly traversal-dependent |
-| Metal | Center of the cell's integer byte interval | Complete table before application | One byte-table read, independent of traversal |
+| Metal / Vulkan | Center of the cell's integer byte interval | Complete table before application | One byte-table read, independent of traversal |
 
 Both are approximate for an arbitrary query inside a cell. CPU and GPU output can differ even with the same palette and dither settings; this path does not promise index equivalence to CPU memoization or exhaustive `none` lookup.
 
-For byte-query dithers, the table is always process-global and shared under the Metal dispatch mutex. GPU packing is linear; the CPU `shared_instance` and `packing` suboptions do not change this behavior. The active table contains 32 KiB of entries, with palette index 255 available as an ordinary value for 256-color palettes. Reuse requires identical bit width, palette count and ordered palette bytes. Geometry and dither parameters do not affect table identity. The shared allocation grows to the largest requested table and retains that capacity, so using `6bit` can leave a 256 KiB allocation resident during later `5bit` calls.
+For Metal byte-query dithers, `5bit` owns a process-global table guarded by the Metal dispatch mutex. Its builder, query shader and cache are independent of `6bit`; alternating policies preserves both completed tables. GPU packing is linear; the CPU `shared_instance` and `packing` suboptions do not change this behavior. The table contains 32 KiB of entries, with palette index 255 available as an ordinary value for 256-color palettes. Reuse requires identical palette count and ordered palette bytes. Geometry and dither parameters do not affect table identity.
 
 Construction and application use the same command buffer with an encoder boundary. Cache identity is published only after successful completion. A failed rebuild invalidates the table so a subsequent call rebuilds it; failed application does not publish indexes. A cold application costs `Theta(G K + P)` and a reusable application costs `Theta(P + K)`, where `G = 32^3`. Shader compilation is a separate first-use cost.
 
 RGB888 application supports `none`, arithmetic `a`/`x`, and `bluenoise` dithering, transparency, and eligible partial-rectangle delta comparison. Native float lookup remains CPU-only. The public feature macro `SIXEL_HAVE_GPU_PREBUILT_BIT_LOOKUP` lets clients admit this policy without relying on older libraries that could reinterpret forced unsupported lookup as direct scanning. GPU-only preparation needs the existing lookup kind and builds no CPU memo table; an automatic GPU rejection can still prepare the CPU policy before output.
 
-The Metal implementation is [lookup-policy-bitlut-gpu.inc.h](../../../../src/lookup-policy-bitlut-gpu.inc.h). The [execution map](../../execution-map/README.md) describes component ownership.
+The Metal implementation is [lookup-policy-5bit-gpu.inc.h](../../../../src/lookup-policy-5bit-gpu.inc.h). The [execution map](../../execution-map/README.md) describes component ownership.
 
-GPU diffusion uses an independent fractional program in [`lookup-policy-bitlut-gpu.c`](../../../../src/lookup-policy-bitlut-gpu.c) and [`lookup-policy-bitlut-fractional-gpu.metal`](../../../../src/lookup-policy-bitlut-fractional-gpu.metal). The continuous query selects the rounded `5bit` address directly, without an intermediate RGB8 rounding. Representatives remain the centers of the integer byte intervals, preserving the declared approximation. The table is completely prebuilt; there is no first-query memoization.
+GPU diffusion uses an independent fractional program in [`lookup-policy-5bit-gpu.c`](../../../../src/lookup-policy-5bit-gpu.c) and [`lookup-policy-5bit-fractional-gpu.metal`](../../../../src/lookup-policy-5bit-fractional-gpu.metal). Vulkan byte and fractional queries use the policy-owned [`lookup-policy-5bit-gpu.glsl`](../../../../src/lookup-policy-5bit-gpu.glsl) program. The continuous query selects the rounded `5bit` address directly, without an intermediate RGB8 rounding. Representatives remain the centers of the integer byte intervals, preserving the declared approximation. The table is completely prebuilt; there is no first-query memoization.
 
-A process-wide idle slot always shares completed fractional workspace across preparers, independent of CPU `shared_instance` and packing. Active bindings keep exclusive allocations and cannot overwrite another palette's table. Reuse requires matching device, bit width, ordered palette and successful completion. Completed solves return workspace to the slot while a deferred solution may still retain its frozen plan. The slot holds at most one idle allocation; in-flight plans may temporarily hold additional tables. Byte and fractional execution retain separate caches.
+A process-wide idle slot belonging only to `5bit` shares completed workspace across preparers for Metal fractional queries and Vulkan byte/fractional queries, independent of CPU `shared_instance` and packing. Active bindings keep exclusive allocations and cannot overwrite another palette's table. Reuse requires matching device, palette count, ordered palette and successful completion. Completed solves return workspace to the slot while a deferred solution may still retain its frozen plan. The slot holds at most one idle 32 KiB allocation; in-flight plans may temporarily hold additional tables. The Metal byte executor retains its own cache. Neither cache can be borrowed, resized or invalidated by `6bit`.
 
 ## Cost
 
@@ -133,7 +133,7 @@ The bounded byte-ramp oracle independently enumerates each channel's bucket prei
 | GPU-05 | Unchanged palette reuses the table. | [tests/lookup/5bit/0038_5bit_gpu_reuse.t](../../../../tests/lookup/5bit/0038_5bit_gpu_reuse.t) |
 | GPU-06 | Changed palette bytes rebuild the table. | [tests/lookup/5bit/0039_5bit_gpu_palette_rebuild.t](../../../../tests/lookup/5bit/0039_5bit_gpu_palette_rebuild.t) |
 | GPU-07 | Changed color count rebuilds the table. | [tests/lookup/5bit/0040_5bit_gpu_count_rebuild.t](../../../../tests/lookup/5bit/0040_5bit_gpu_count_rebuild.t) |
-| GPU-08 | Switching bit width invalidates the table identity. | [tests/lookup/5bit/0041_5bit_gpu_bits_rebuild.t](../../../../tests/lookup/5bit/0041_5bit_gpu_bits_rebuild.t) |
+| GPU-08 | Running `6bit` between two `5bit` byte applications preserves the original table and indexes without rebuilding. | [tests/lookup/5bit/0041_5bit_gpu_policy_isolation.t](../../../../tests/lookup/5bit/0041_5bit_gpu_policy_isolation.t) |
 | GPU-09 | Allocation failure invalidates a rebuild and allows recovery. | [tests/lookup/5bit/0042_5bit_gpu_allocation_recovery.t](../../../../tests/lookup/5bit/0042_5bit_gpu_allocation_recovery.t) |
 | GPU-10 | Encoder failure invalidates a rebuild and allows recovery. | [tests/lookup/5bit/0043_5bit_gpu_encoder_recovery.t](../../../../tests/lookup/5bit/0043_5bit_gpu_encoder_recovery.t) |
 | GPU-11 | Completion failure invalidates a rebuild and allows recovery. | [tests/lookup/5bit/0044_5bit_gpu_completion_recovery.t](../../../../tests/lookup/5bit/0044_5bit_gpu_completion_recovery.t) |
@@ -162,3 +162,4 @@ The fractional cases use bounded fixtures at fixed settings and the [fractional 
 | FRAC-02 | 5bit fractional ties. | [tests/lookup/5bit/0062_5bit_fractional_ties.t](../../../../tests/lookup/5bit/0062_5bit_fractional_ties.t) |
 | FRAC-03 | 5bit fractional cache. | [tests/lookup/5bit/0063_5bit_fractional_cache.t](../../../../tests/lookup/5bit/0063_5bit_fractional_cache.t) |
 | FRAC-04 | A completed fractional solve returns its shared table for reuse without rebuilding on the next solve. | [tests/lookup/5bit/0064_5bit_fractional_reuse.t](../../../../tests/lookup/5bit/0064_5bit_fractional_reuse.t) |
+| FRAC-05 | Interleaving `6bit` and `5bit` fractional solves preserves each completed table and output without rebuilding. | [tests/lookup/5bit/0065_5bit_fractional_policy_isolation.t](../../../../tests/lookup/5bit/0065_5bit_fractional_policy_isolation.t) |

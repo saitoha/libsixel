@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Verify 6bit GPU arithmetic a. */
-int test_bitlut_gpu(int bits, int observation);
+int test_rgb_cell_gpu(int bits, int observation);
 
 int
 test_bit6_gpu_arithmetic_a(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return test_bitlut_gpu(6, 13);
+    return test_rgb_cell_gpu(6, 13);
 }
 
 /* emacs Local Variables:      */

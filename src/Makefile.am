@@ -27,7 +27,8 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-eytzinger-fractional-gpu.metal \
     $(srcdir)/lookup-policy-gridlut-fractional-gpu.metal \
     $(srcdir)/lookup-policy-blockcull-fractional-gpu.metal \
-    $(srcdir)/lookup-policy-bitlut-fractional-gpu.metal \
+    $(srcdir)/lookup-policy-5bit-fractional-gpu.metal \
+    $(srcdir)/lookup-policy-6bit-fractional-gpu.metal \
     $(srcdir)/lookup-policy-fhedt-fractional-gpu.metal \
     $(srcdir)/lookup-policy-delaunay-fractional-gpu.metal \
     $(srcdir)/lookup-policy-vptree-gpu.metal \
@@ -40,13 +41,16 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-delaunay-gpu.metal \
     $(srcdir)/lookup-policy-eytzinger-gpu.metal \
     $(srcdir)/lookup-policy-fhedt-gpu-query.metal \
+    $(srcdir)/lookup-policy-5bit-gpu-query.metal \
+    $(srcdir)/lookup-policy-6bit-gpu-query.metal \
     $(srcdir)/gpu-palette-legacy-pixel.metal \
     $(srcdir)/gpu-palette-legacy-apply.metal \
     $(srcdir)/gpu-dequant-fast4.metal \
     $(srcdir)/lookup-policy-none-gpu.metal \
     $(srcdir)/lookup-policy-blockcull-gpu.metal \
     $(srcdir)/lookup-policy-fhedt-gpu.metal \
-    $(srcdir)/lookup-policy-bitlut-gpu.metal \
+    $(srcdir)/lookup-policy-5bit-gpu.metal \
+    $(srcdir)/lookup-policy-6bit-gpu.metal \
     $(srcdir)/gpu-palette-fused-prefix.metal \
     $(srcdir)/gpu-palette-fused-suffix.metal
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
@@ -58,7 +62,8 @@ SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.in
 SIXEL_VULKAN_BUILDER_PREFIX = $(srcdir)/gpu-lookup-builder-prefix.glsl
 SIXEL_VULKAN_POLICIES = $(srcdir)/lookup-policy-none-gpu.glsl \
     $(srcdir)/lookup-policy-fhedt-gpu.glsl \
-    $(srcdir)/lookup-policy-bitlut-gpu.glsl \
+    $(srcdir)/lookup-policy-5bit-gpu.glsl \
+    $(srcdir)/lookup-policy-6bit-gpu.glsl \
     $(srcdir)/lookup-policy-eytzinger-gpu.glsl \
     $(srcdir)/lookup-policy-ordered-gpu.glsl \
     $(srcdir)/lookup-policy-vptree-gpu.glsl \
@@ -101,7 +106,8 @@ SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-lookup-builder-prefix.glsl \
     $(srcdir)/dither-policy-sierra3-gpu.glsl \
     $(srcdir)/lookup-policy-none-gpu.glsl \
     $(srcdir)/lookup-policy-fhedt-gpu.glsl \
-    $(srcdir)/lookup-policy-bitlut-gpu.glsl \
+    $(srcdir)/lookup-policy-5bit-gpu.glsl \
+    $(srcdir)/lookup-policy-6bit-gpu.glsl \
     $(srcdir)/lookup-policy-eytzinger-gpu.glsl \
     $(srcdir)/lookup-policy-ordered-gpu.glsl \
     $(srcdir)/lookup-policy-vptree-gpu.glsl \
@@ -149,7 +155,8 @@ SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-dither-policy-sierra3-gpu-vulkan.lo \
     libsixel_la-lookup-policy-none-gpu.lo \
     libsixel_la-lookup-policy-fhedt-gpu.lo \
-    libsixel_la-lookup-policy-bitlut-gpu.lo \
+    libsixel_la-lookup-policy-5bit-gpu.lo \
+    libsixel_la-lookup-policy-6bit-gpu.lo \
     libsixel_la-lookup-policy-eytzinger-gpu.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-vptree-gpu.lo \
@@ -183,7 +190,8 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-lookup-policy-eytzinger-gpu.lo \
     libsixel_la-lookup-policy-gridlut-gpu.lo \
     libsixel_la-lookup-policy-blockcull-gpu.lo \
-    libsixel_la-lookup-policy-bitlut-gpu.lo \
+    libsixel_la-lookup-policy-5bit-gpu.lo \
+    libsixel_la-lookup-policy-6bit-gpu.lo \
     libsixel_la-lookup-policy-fhedt-gpu.lo \
     libsixel_la-lookup-policy-delaunay-gpu.lo \
     libsixel_la-lookup-policy-vptree-gpu.lo \
@@ -477,7 +485,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-eytzinger-gpu.c \
                 $(srcdir)/lookup-policy-gridlut-gpu.c \
                 $(srcdir)/lookup-policy-blockcull-gpu.c \
-                $(srcdir)/lookup-policy-bitlut-gpu.c \
+                $(srcdir)/lookup-policy-5bit-gpu.c \
+                $(srcdir)/lookup-policy-6bit-gpu.c \
                 $(srcdir)/lookup-policy-fhedt-gpu.c \
                 $(srcdir)/lookup-policy-delaunay-gpu.c \
                 $(srcdir)/lookup-policy-vptree-gpu.c \
@@ -493,7 +502,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-eytzinger-gpu.h \
                 $(srcdir)/lookup-policy-gridlut-gpu.h \
                 $(srcdir)/lookup-policy-blockcull-gpu.h \
-                $(srcdir)/lookup-policy-bitlut-gpu.h \
+                $(srcdir)/lookup-policy-5bit-gpu.h \
+                $(srcdir)/lookup-policy-6bit-gpu.h \
                 $(srcdir)/lookup-policy-fhedt-gpu.h \
                 $(srcdir)/lookup-policy-delaunay-gpu.h \
                 $(srcdir)/lookup-policy-vptree-gpu.h \
@@ -741,7 +751,8 @@ $(srcdir)/dither-policy-sierra3-gpu-metal.m \
 $(srcdir)/gpu-palette-metal.m \
 $(srcdir)/retained-plane-metal.m \
 $(srcdir)/lookup-policy-fhedt-gpu.inc.h \
-$(srcdir)/lookup-policy-bitlut-gpu.inc.h \
+$(srcdir)/lookup-policy-5bit-gpu.inc.h \
+$(srcdir)/lookup-policy-6bit-gpu.inc.h \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/progressive-gpu-metal.m
 endif

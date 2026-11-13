@@ -11,11 +11,11 @@
 #include "src/lookup-policy.h"
 #include "src/encoder-core-private.h"
 
-/* Metal answers byte bit-LUT queries with its legacy table executor
+/* Metal answers byte 5bit and 6bit queries with its legacy table executor
  * (kernel 8). A device without that executor runs the policy's injected
  * RGB8 program (kernel 9), whose table is private to the lookup plan. */
 static int
-bitlut_expected_kernel(void)
+rgb_cell_expected_kernel(void)
 {
     sixel_gpu_device_interface_t *device;
     int kernel;
@@ -35,7 +35,7 @@ bitlut_expected_kernel(void)
 /* Enumerate a channel's byte preimage rather than repeating the GPU's
  * endpoint formula. Doubled centers and integer distances are exact. */
 static int
-bitlut_reference(unsigned char const *palette, int colors,
+rgb_cell_reference(unsigned char const *palette, int colors,
     unsigned char const *query, int bits)
 {
     int center[3], axis, value, bucket, key, low, high, step, maximum;
@@ -78,7 +78,7 @@ bitlut_reference(unsigned char const *palette, int colors,
  * Positional formulas are shared contracts; cell selection above has an
  * independent discrete oracle. No diffusion error propagates between pixels. */
 static void
-bitlut_query(unsigned char *query, unsigned char const *source, int i,
+rgb_cell_query(unsigned char *query, unsigned char const *source, int i,
     int method)
 {
     int c, x, y, value;
@@ -106,7 +106,7 @@ bitlut_query(unsigned char *query, unsigned char const *source, int i,
 }
 
 static int
-bitlut_distance(unsigned char const *a, unsigned char const *b)
+rgb_cell_distance(unsigned char const *a, unsigned char const *b)
 {
     int i, d, sum;
 
@@ -121,7 +121,7 @@ bitlut_distance(unsigned char const *a, unsigned char const *b)
 /* Each wrapper fixes one bit width and one observation. The byte ramp
  * crosses every rounding boundary without exhaustive RGB-space traversal. */
 int
-test_bitlut_gpu(int bits, int observation)
+test_rgb_cell_gpu(int bits, int observation)
 {
     sixel_gpu_palette_request_t request;
     sixel_gpu_palette_test_hooks_t hooks;
@@ -223,11 +223,11 @@ test_bitlut_gpu(int bits, int observation)
     status = sixel_gpu_palette_apply(&request);
     if (observation == 21)
         return status == SIXEL_FALSE && !hooks.entered ? 0 : 1;
-    if (status != SIXEL_OK || hooks.kernel != bitlut_expected_kernel() ||
+    if (status != SIXEL_OK || hooks.kernel != rgb_cell_expected_kernel() ||
             !hooks.published) return 1;
     if (observation == 3) {
         if (hooks.kernel != 8) return 77;
-        return hooks.bitlut_table_bytes == ((size_t)1U << (bits * 3)) ? 0 : 1;
+        return hooks.lookup_table_bytes == ((size_t)1U << (bits * 3)) ? 0 : 1;
     }
     if (observation >= 4 && observation <= 11) {
         memcpy(first, output, sizeof(first));
@@ -236,7 +236,11 @@ test_bitlut_gpu(int bits, int observation)
         if (observation == 7) {
             request.lut_policy = bits == 5 ? SIXEL_LUT_POLICY_6BIT
                 : SIXEL_LUT_POLICY_5BIT;
-            if (sixel_gpu_palette_apply(&request) != SIXEL_OK) return 1;
+            /* The other policy must build its own table without evicting
+             * the completed table retained by the original policy. */
+            hooks.rebuild = -1;
+            if (sixel_gpu_palette_apply(&request) != SIXEL_OK ||
+                    hooks.rebuild != 1) return 1;
             request.lut_policy = bits == 5 ? SIXEL_LUT_POLICY_5BIT
                 : SIXEL_LUT_POLICY_6BIT;
         }
@@ -261,6 +265,9 @@ test_bitlut_gpu(int bits, int observation)
         hooks.rebuild = -1;
         if (sixel_gpu_palette_apply(&request) != SIXEL_OK) return 1;
         if (observation == 4) return hooks.rebuild == 0 ? 0 : 1;
+        if (observation == 7)
+            return hooks.rebuild == 0 &&
+                !memcmp(first, output, sizeof(first)) ? 0 : 1;
         if (observation == 11) {
             for (i = 0; i < 256; ++i)
                 if (output[i] != first[255 - i]) return 1;
@@ -272,8 +279,8 @@ test_bitlut_gpu(int bits, int observation)
         return hooks.rebuild == 1 ? 0 : 1;
     }
     for (i = 0; i < 256; ++i) {
-        bitlut_query(query, pixels + i * 3, i, request.method_for_diffuse);
-        best = bitlut_reference(palette, colors, query, bits);
+        rgb_cell_query(query, pixels + i * 3, i, request.method_for_diffuse);
+        best = rgb_cell_reference(palette, colors, query, bits);
         want_mask = 0;
         if (keep) {
             pos = offset + (i / 16) * 20 + i % 16;
@@ -286,8 +293,8 @@ test_bitlut_gpu(int bits, int observation)
                 want_mask = memcmp(pixels + i * 3, retained + pos * 3, 3)
                     ? 3 : 1;
             } else if (valid[pos] &&
-                    bitlut_distance(pixels + i * 3, retained + pos * 3) <=
-                    bitlut_distance(pixels + i * 3, palette + best * 3)) {
+                    rgb_cell_distance(pixels + i * 3, retained + pos * 3) <=
+                    rgb_cell_distance(pixels + i * 3, palette + best * 3)) {
                 want_mask = 1;
             }
             if (want_mask) best = 255;
@@ -303,7 +310,7 @@ test_bitlut_gpu(int bits, int observation)
 }
 
 static int
-bitlut_stream_write(char *data, int size, void *context)
+rgb_cell_stream_write(char *data, int size, void *context)
 {
     size_t *count;
 
@@ -317,7 +324,7 @@ bitlut_stream_write(char *data, int size, void *context)
 /* Ownership is observed after a complete encode, not inferred from the
  * selected option. Separate dither objects must share only the GPU table. */
 int
-test_bitlut_encode(int bits, int observation)
+test_rgb_cell_encode(int bits, int observation)
 {
     sixel_dither_t *dither;
     sixel_output_t *output;
@@ -340,7 +347,7 @@ test_bitlut_encode(int bits, int observation)
     reuse = observation == 2 || observation == 3;
     for (pass = 0; pass <= reuse; ++pass) {
         if (sixel_dither_new(&dither, 3, NULL) != SIXEL_OK ||
-                sixel_output_new(&output, bitlut_stream_write, &count,
+                sixel_output_new(&output, rgb_cell_stream_write, &count,
                     NULL) != SIXEL_OK) goto end;
         sixel_dither_set_palette(dither, palette);
         sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGB888);
@@ -375,7 +382,7 @@ test_bitlut_encode(int bits, int observation)
         if (observation == 4) {
             ok = dither->lookup_policy != NULL;
         } else if (reuse) {
-            if (hooks.kernel != bitlut_expected_kernel() ||
+            if (hooks.kernel != rgb_cell_expected_kernel() ||
                     !hooks.published) {
                 fprintf(stderr, "kernel=%d published=%d\n", hooks.kernel,
                     hooks.published);

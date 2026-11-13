@@ -14,7 +14,8 @@
 #include "lookup-policy-eytzinger-gpu.h"
 #include "lookup-policy-gridlut-gpu.h"
 #include "lookup-policy-blockcull-gpu.h"
-#include "lookup-policy-bitlut-gpu.h"
+#include "lookup-policy-5bit-gpu.h"
+#include "lookup-policy-6bit-gpu.h"
 #include "lookup-policy-fhedt-gpu.h"
 
 /* Composition is the only layer that knows concrete lookup constructors.
@@ -61,9 +62,9 @@ static struct {
         sixel_gpu_lookup_preparer_interface_t **);
 } const gpu_configured_registrations[] = {
     { SIXEL_LUT_POLICY_5BIT, GPU_METAL | GPU_VULKAN,
-      sixel_gpu_lookup_bitlut_create },
+      sixel_gpu_lookup_5bit_create },
     { SIXEL_LUT_POLICY_6BIT, GPU_METAL | GPU_VULKAN,
-      sixel_gpu_lookup_bitlut_create },
+      sixel_gpu_lookup_6bit_create },
     { SIXEL_LUT_POLICY_FHEDT, GPU_METAL | GPU_VULKAN,
       sixel_gpu_lookup_fhedt_create }
 };

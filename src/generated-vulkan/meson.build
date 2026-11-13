@@ -28,7 +28,8 @@ vulkan_builder_prefix = '../gpu-lookup-builder-prefix.glsl'
 vulkan_policies = [
   '../lookup-policy-none-gpu.glsl',
   '../lookup-policy-fhedt-gpu.glsl',
-  '../lookup-policy-bitlut-gpu.glsl',
+  '../lookup-policy-5bit-gpu.glsl',
+  '../lookup-policy-6bit-gpu.glsl',
   '../lookup-policy-eytzinger-gpu.glsl',
   '../lookup-policy-ordered-gpu.glsl',
   '../lookup-policy-vptree-gpu.glsl',
