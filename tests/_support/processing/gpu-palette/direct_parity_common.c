@@ -110,13 +110,14 @@ direct_parity_encode(unsigned char *pixels, unsigned char const *palette,
 
 static int
 direct_parity_run(int method, int ncolors, unsigned int seed,
-    direct_parity_lookup_t const *lookup)
+    direct_parity_lookup_t const *lookup, direct_parity_stream_t *reference)
 {
     unsigned char pixels[DIRECT_PARITY_WIDTH * DIRECT_PARITY_HEIGHT * 3];
     unsigned char palette[SIXEL_PALETTE_MAX * 3];
     direct_parity_stream_t streams[2];
+    direct_parity_stream_t *cpu;
     unsigned int state;
-    int x, y, i, pass, ok;
+    int x, y, i, ok;
     unsigned char *pixel;
 
     /* Smooth gradients exercise positional noise; the LCG term adds ties
@@ -146,18 +147,18 @@ direct_parity_run(int method, int ncolors, unsigned int seed,
         }
     }
     memset(streams, 0, sizeof(streams));
+    cpu = reference == NULL ? &streams[0] : reference;
     ok = 0;
-    for (pass = 0; pass < 2; ++pass) {
-        if (direct_parity_encode(pixels, palette, ncolors, method,
-                pass ? SIXEL_GPU_POLICY_FORCE : SIXEL_GPU_POLICY_OFF,
-                lookup, &streams[pass])) goto end;
-    }
-    if (streams[0].size == 0 || streams[0].size != streams[1].size ||
-            memcmp(streams[0].bytes, streams[1].bytes, streams[0].size)) {
+    if (cpu->size == 0 && direct_parity_encode(pixels, palette, ncolors,
+            method, SIXEL_GPU_POLICY_OFF, lookup, cpu)) goto end;
+    if (direct_parity_encode(pixels, palette, ncolors, method,
+            SIXEL_GPU_POLICY_FORCE, lookup, &streams[1])) goto end;
+    if (cpu->size == 0 || cpu->size != streams[1].size ||
+            memcmp(cpu->bytes, streams[1].bytes, cpu->size)) {
         fprintf(stderr, "direct parity mismatch method=%d colors=%d "
             "fhedt=R%d/refine%d/dist2%d seed=%#x cpu=%zu gpu=%zu bytes\n",
             method, ncolors, lookup->fhedt_resolution, lookup->fhedt_refine,
-            lookup->fhedt_use_dist2, seed, streams[0].size,
+            lookup->fhedt_use_dist2, seed, cpu->size,
             streams[1].size);
         goto end;
     }
@@ -174,7 +175,7 @@ test_gpu_direct_parity(int method, int ncolors)
     direct_parity_lookup_t lookup;
 
     memset(&lookup, 0, sizeof(lookup));
-    return direct_parity_run(method, ncolors, 0x5eed1234U, &lookup);
+    return direct_parity_run(method, ncolors, 0x5eed1234U, &lookup, NULL);
 }
 
 /* Byte FHEDT at one resolution. A repeated seed repeats the palette, so a
@@ -188,16 +189,27 @@ test_gpu_direct_parity_fhedt(int method, int ncolors, int resolution,
         0x5eed1234U, 0x5eed1234U, 0x0badf00dU, 0x5eed1234U
     };
     direct_parity_lookup_t lookup;
+    direct_parity_stream_t references[2];
     size_t i;
+    int outcome;
 
     lookup.fhedt_resolution = resolution;
     lookup.fhedt_refine = refine;
     lookup.fhedt_use_dist2 = use_dist2;
+    memset(references, 0, sizeof(references));
+    outcome = EXIT_SUCCESS;
+    /* Each seed defines immutable pixels and a palette. Build its CPU
+     * oracle once, retaining both references through A, A, B, A. Every GPU
+     * encode still creates a fresh dither and compares the complete bytes,
+     * so cache reuse, replacement and restoration remain observable. */
     for (i = 0; i < sizeof(seeds) / sizeof(seeds[0]); ++i) {
-        if (direct_parity_run(method, ncolors, seeds[i], &lookup) !=
-                EXIT_SUCCESS) {
-            return EXIT_FAILURE;
+        if (direct_parity_run(method, ncolors, seeds[i], &lookup,
+                &references[i == 2]) != EXIT_SUCCESS) {
+            outcome = EXIT_FAILURE;
+            break;
         }
     }
-    return EXIT_SUCCESS;
+    free(references[0].bytes);
+    free(references[1].bytes);
+    return outcome;
 }

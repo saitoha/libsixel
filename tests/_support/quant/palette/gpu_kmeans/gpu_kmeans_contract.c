@@ -25,7 +25,17 @@ static double km_contract_sse(float const *points, unsigned int count,
     double best, distance, diff, total;
 
     total = 0.0;
+    best = DBL_MAX;
     for (i = 0; i < count; ++i) {
+        /* Equal adjacent samples have the same exhaustive minimum. Reuse
+         * only that distance, not a weighted/merged contribution: adding
+         * once per original pixel preserves the exact summation order and
+         * keeps every sample, including isolated rare colors, observable. */
+        if (i != 0 && memcmp(points + i * 3, points + (i - 1) * 3,
+                3 * sizeof(*points)) == 0) {
+            total += best;
+            continue;
+        }
         best = DBL_MAX;
         for (c = 0; c < k; ++c) {
             distance = 0.0;
