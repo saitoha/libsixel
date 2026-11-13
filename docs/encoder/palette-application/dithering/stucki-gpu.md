@@ -46,7 +46,16 @@ The final display decision against retained history, the deferred solve and reso
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| STUCKIG-01 | The component accepts only `stucki` with bounded carry limits, rejects perturbation and `clamp=none`, reduces to the plain lookup in either scan when every carry is discarded, and differs from it with live carry. | [tests/dither/stucki-gpu/0001_stucki_gpu_carry.t](../../../../tests/dither/stucki-gpu/0001_stucki_gpu_carry.t) |
+| STUCKIG-01 | Raster scan accepts soft clamp threshold 1.01 and deadzone 5. | [tests/dither/stucki-gpu/0001_accept_raster_soft.t](../../../../tests/dither/stucki-gpu/0001_accept_raster_soft.t) |
+| STUCKIG-02 | Serpentine scan accepts hard clamp threshold 1 and zero deadzone. | [tests/dither/stucki-gpu/0002_accept_serpentine_hard.t](../../../../tests/dither/stucki-gpu/0002_accept_serpentine_hard.t) |
+| STUCKIG-03 | A different fixed-tap method is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/stucki-gpu/0003_reject_other_method.t](../../../../tests/dither/stucki-gpu/0003_reject_other_method.t) |
+| STUCKIG-04 | `lso2` is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/stucki-gpu/0004_reject_lso2_method.t](../../../../tests/dither/stucki-gpu/0004_reject_lso2_method.t) |
+| STUCKIG-05 | Unbounded clamp is rejected with `SIXEL_FEATURE_ERROR`. | [tests/dither/stucki-gpu/0005_reject_unbounded_clamp.t](../../../../tests/dither/stucki-gpu/0005_reject_unbounded_clamp.t) |
+| STUCKIG-06 | Perturbation is rejected with `SIXEL_FEATURE_ERROR`. | [tests/dither/stucki-gpu/0006_reject_perturbation.t](../../../../tests/dither/stucki-gpu/0006_reject_perturbation.t) |
+| STUCKIG-07 | Clamp threshold 0.5 is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/stucki-gpu/0007_reject_low_clamp.t](../../../../tests/dither/stucki-gpu/0007_reject_low_clamp.t) |
+| STUCKIG-08 | A negative deadzone is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/stucki-gpu/0008_reject_negative_deadzone.t](../../../../tests/dither/stucki-gpu/0008_reject_negative_deadzone.t) |
+| STUCKIG-09 | Discarding every carry gives equal raster and serpentine indexes. | [tests/dither/stucki-gpu/0009_deadzone_scan_parity.t](../../../../tests/dither/stucki-gpu/0009_deadzone_scan_parity.t) |
+| STUCKIG-10 | Live carry changes indexes relative to the same fixture with carry discarded. | [tests/dither/stucki-gpu/0010_live_carry_changes_indexes.t](../../../../tests/dither/stucki-gpu/0010_live_carry_changes_indexes.t) |
 
 ### Quality and verification limits
 

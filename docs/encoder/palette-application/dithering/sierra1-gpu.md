@@ -37,7 +37,16 @@ The final display decision against retained history, the deferred solve and reso
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| SIERRA1G-01 | The component accepts only `sierra` with bounded carry limits, rejects perturbation and `clamp=none`, reduces to the plain lookup in either scan when every carry is discarded, and differs from it with live carry. | [tests/dither/sierra1-gpu/0001_sierra1_gpu_carry.t](../../../../tests/dither/sierra1-gpu/0001_sierra1_gpu_carry.t) |
+| SIERRA1G-01 | Raster scan accepts soft clamp threshold 1.01 and deadzone 5. | [tests/dither/sierra1-gpu/0001_accept_raster_soft.t](../../../../tests/dither/sierra1-gpu/0001_accept_raster_soft.t) |
+| SIERRA1G-02 | Serpentine scan accepts hard clamp threshold 1 and zero deadzone. | [tests/dither/sierra1-gpu/0002_accept_serpentine_hard.t](../../../../tests/dither/sierra1-gpu/0002_accept_serpentine_hard.t) |
+| SIERRA1G-03 | A different fixed-tap method is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/sierra1-gpu/0003_reject_other_method.t](../../../../tests/dither/sierra1-gpu/0003_reject_other_method.t) |
+| SIERRA1G-04 | `lso2` is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/sierra1-gpu/0004_reject_lso2_method.t](../../../../tests/dither/sierra1-gpu/0004_reject_lso2_method.t) |
+| SIERRA1G-05 | Unbounded clamp is rejected with `SIXEL_FEATURE_ERROR`. | [tests/dither/sierra1-gpu/0005_reject_unbounded_clamp.t](../../../../tests/dither/sierra1-gpu/0005_reject_unbounded_clamp.t) |
+| SIERRA1G-06 | Perturbation is rejected with `SIXEL_FEATURE_ERROR`. | [tests/dither/sierra1-gpu/0006_reject_perturbation.t](../../../../tests/dither/sierra1-gpu/0006_reject_perturbation.t) |
+| SIERRA1G-07 | Clamp threshold 0.5 is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/sierra1-gpu/0007_reject_low_clamp.t](../../../../tests/dither/sierra1-gpu/0007_reject_low_clamp.t) |
+| SIERRA1G-08 | A negative deadzone is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/sierra1-gpu/0008_reject_negative_deadzone.t](../../../../tests/dither/sierra1-gpu/0008_reject_negative_deadzone.t) |
+| SIERRA1G-09 | Discarding every carry gives equal raster and serpentine indexes. | [tests/dither/sierra1-gpu/0009_deadzone_scan_parity.t](../../../../tests/dither/sierra1-gpu/0009_deadzone_scan_parity.t) |
+| SIERRA1G-10 | Live carry changes indexes relative to the same fixture with carry discarded. | [tests/dither/sierra1-gpu/0010_live_carry_changes_indexes.t](../../../../tests/dither/sierra1-gpu/0010_live_carry_changes_indexes.t) |
 
 ### Quality and verification limits
 

@@ -38,7 +38,16 @@ The final display decision against retained history, the deferred solve and reso
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| FSG-01 | The component accepts only `fs` with bounded carry limits, rejects perturbation and `clamp=none`, reduces to the plain lookup in either scan when every carry is discarded, and differs from it with live carry. | [tests/dither/fs-gpu/0001_fs_gpu_carry.t](../../../../tests/dither/fs-gpu/0001_fs_gpu_carry.t) |
+| FSG-01 | Raster scan accepts soft clamp threshold 1.01 and deadzone 5. | [tests/dither/fs-gpu/0001_accept_raster_soft.t](../../../../tests/dither/fs-gpu/0001_accept_raster_soft.t) |
+| FSG-02 | Serpentine scan accepts hard clamp threshold 1 and zero deadzone. | [tests/dither/fs-gpu/0002_accept_serpentine_hard.t](../../../../tests/dither/fs-gpu/0002_accept_serpentine_hard.t) |
+| FSG-03 | A different fixed-tap method is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/fs-gpu/0003_reject_other_method.t](../../../../tests/dither/fs-gpu/0003_reject_other_method.t) |
+| FSG-04 | `lso2` is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/fs-gpu/0004_reject_lso2_method.t](../../../../tests/dither/fs-gpu/0004_reject_lso2_method.t) |
+| FSG-05 | Unbounded clamp is rejected with `SIXEL_FEATURE_ERROR`. | [tests/dither/fs-gpu/0005_reject_unbounded_clamp.t](../../../../tests/dither/fs-gpu/0005_reject_unbounded_clamp.t) |
+| FSG-06 | Perturbation is rejected with `SIXEL_FEATURE_ERROR`. | [tests/dither/fs-gpu/0006_reject_perturbation.t](../../../../tests/dither/fs-gpu/0006_reject_perturbation.t) |
+| FSG-07 | Clamp threshold 0.5 is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/fs-gpu/0007_reject_low_clamp.t](../../../../tests/dither/fs-gpu/0007_reject_low_clamp.t) |
+| FSG-08 | A negative deadzone is rejected with `SIXEL_BAD_ARGUMENT`. | [tests/dither/fs-gpu/0008_reject_negative_deadzone.t](../../../../tests/dither/fs-gpu/0008_reject_negative_deadzone.t) |
+| FSG-09 | Discarding every carry gives equal raster and serpentine indexes. | [tests/dither/fs-gpu/0009_deadzone_scan_parity.t](../../../../tests/dither/fs-gpu/0009_deadzone_scan_parity.t) |
+| FSG-10 | Live carry changes indexes relative to the same fixture with carry discarded. | [tests/dither/fs-gpu/0010_live_carry_changes_indexes.t](../../../../tests/dither/fs-gpu/0010_live_carry_changes_indexes.t) |
 
 ### Quality and verification limits
 

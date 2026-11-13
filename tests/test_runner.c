@@ -549,7 +549,6 @@ int test_refresh_0007(int argc, char **argv);
 int test_refresh_0008(int argc, char **argv);
 int test_refresh_0009(int argc, char **argv);
 int test_refresh_0010(int argc, char **argv);
-int test_refresh_0028(int argc, char **argv);
 
 int test_progressive_0001(int argc, char **argv);
 int test_progressive_0002(int argc, char **argv);
@@ -785,7 +784,6 @@ int test_progressive_0100(int argc, char **argv);
 int test_playback_0020(int argc, char **argv);
 int test_playback_0021(int argc, char **argv);
 int test_playback_0022(int argc, char **argv);
-int test_playback_0026(int argc, char **argv);
 int test_palette_stage2_0027(int argc, char **argv);
 int test_palette_stage2_0028(int argc, char **argv);
 int test_palette_stage2_0029(int argc, char **argv);
@@ -1538,9 +1536,7 @@ int test_filter_0053_palette_colors_failure_output(int argc, char **argv);
 int test_filter_0054_binning_statistics_colorspace(int argc, char **argv);
 int test_filter_0046_filter_sample_parallel_exact(int argc, char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
-int test_gpupal_0002_reserved_key(int argc, char **argv);
 int test_gpupal_0003_fade_history(int argc, char **argv);
-int test_gpupal_0004_auto_strength(int argc, char **argv);
 int test_gpupal_0005_wire_rgb_none(int argc, char **argv);
 int test_gpupal_0006_wire_rgb_bluenoise(int argc, char **argv);
 int test_gpupal_0007_wire_rgb_eytzinger(int argc, char **argv);
@@ -1548,27 +1544,15 @@ int test_gpupal_0008_wire_hls_none(int argc, char **argv);
 int test_gpupal_0009_wire_hls_bluenoise(int argc, char **argv);
 int test_gpupal_0010_comparison_default(int argc, char **argv);
 int test_gpupal_0011_comparison_short(int argc, char **argv);
-int test_gpupal_0018_wire_a(int argc, char **argv);
-int test_gpupal_0019_wire_x(int argc, char **argv);
 int test_gpu_direct_0001_parity_none(int argc, char **argv);
 int test_gpu_direct_0002_parity_a(int argc, char **argv);
 int test_gpu_direct_0003_parity_x(int argc, char **argv);
 int test_gpu_direct_0004_parity_bluenoise(int argc, char **argv);
 int test_gpu_direct_0005_parity_few_colors(int argc, char **argv);
-int test_gpu_direct_0006_wire_a(int argc, char **argv);
-int test_gpu_direct_0007_wire_x(int argc, char **argv);
 int test_gpu_direct_0008_statistics(int argc, char **argv);
 int test_gpu_direct_0009_playback_force(int argc, char **argv);
 int test_gpu_direct_0010_parity_fhedt(int argc, char **argv);
 int test_gpu_direct_0011_parity_fhedt_bluenoise(int argc, char **argv);
-int test_gpu_direct_0012_parity_fhedt_settings(int argc, char **argv);
-int test_gpu_direct_0013_diffuse_lso2_expected(int argc, char **argv);
-int test_gpu_direct_0014_diffuse_carry(int argc, char **argv);
-int test_gpu_direct_0015_diffuse_fhedt(int argc, char **argv);
-int test_gpu_direct_0016_diffuse_rgb_cell(int argc, char **argv);
-int test_gpupal_0020_direct_exact(int argc, char **argv);
-int test_gpupal_0021_blockcull_exact(int argc, char **argv);
-int test_gpupal_0022_gridlut_exact(int argc, char **argv);
 int test_bit5_gpu_centers(int argc, char **argv);
 int test_bit5_gpu_tie(int argc, char **argv);
 int test_bit5_gpu_index255(int argc, char **argv);
@@ -2430,9 +2414,6 @@ int test_kmgpu_0064_command_auto_recovery(int argc, char **argv);
 int test_kmgpu_0065_command_force_recovery(int argc, char **argv);
 int test_kmgpu_0066_mixed_restarts(int argc, char **argv);
 int test_kmgpu_0067_workload_boundary(int argc, char **argv);
-int test_kmgpu_0068_snake_sse(int argc, char **argv);
-int test_kmgpu_0069_gradient_sse(int argc, char **argv);
-int test_kmgpu_0070_rare_sse(int argc, char **argv);
 
 int test_palette_0001_kmeans_init(int argc, char **argv);
 int test_palette_0002_kmedoids_constraints(int argc, char **argv);
@@ -5271,14 +5252,6 @@ int test_lso2_gpu_queue_sample_short(int, char **);
 int test_lso2_gpu_queue_sample_unavailable(int, char **);
 int test_lso2_gpu_queue_sample_live(int, char **);
 int test_lso2_gpu_queue_sample_tail(int, char **);
-int test_fs_gpu_carry(int, char **);
-int test_atkinson_gpu_carry(int, char **);
-int test_jajuni_gpu_carry(int, char **);
-int test_stucki_gpu_carry(int, char **);
-int test_burkes_gpu_carry(int, char **);
-int test_sierra1_gpu_carry(int, char **);
-int test_sierra2_gpu_carry(int, char **);
-int test_sierra3_gpu_carry(int, char **);
 int test_lso2_gpu_pipeline_sample_stale(int, char **);
 int test_lso2_gpu_pipeline_sample_short(int, char **);
 int test_lso2_gpu_pipeline_sample_tail(int, char **);
@@ -5289,7 +5262,990 @@ int test_lso2_gpu_latest_excludes_future(int, char **);
 
 
 
+int test_delta_palette_0126(int, char **);
+int test_delta_palette_0127(int, char **);
+int test_delta_palette_0128(int, char **);
+int test_delta_palette_0129(int, char **);
+int test_delta_refresh_0028(int, char **);
+int test_delta_refresh_0029(int, char **);
+int test_delta_refresh_0030(int, char **);
+int test_delta_refresh_0031(int, char **);
+int test_delta_refresh_0032(int, char **);
+int test_delta_refresh_0033(int, char **);
+int test_delta_refresh_0034(int, char **);
+int test_delta_refresh_0035(int, char **);
+int test_delta_refresh_0036(int, char **);
+int test_delta_refresh_0037(int, char **);
+int test_delta_refresh_0038(int, char **);
+int test_delta_refresh_0039(int, char **);
+int test_delta_refresh_0040(int, char **);
+int test_delta_refresh_0041(int, char **);
+int test_delta_refresh_0042(int, char **);
+int test_delta_refresh_0043(int, char **);
+int test_delta_refresh_0044(int, char **);
+int test_delta_refresh_0045(int, char **);
+int test_delta_refresh_0046(int, char **);
+int test_delta_refresh_0047(int, char **);
+int test_delta_refresh_0048(int, char **);
+int test_delta_refresh_0049(int, char **);
+int test_delta_refresh_0050(int, char **);
+int test_delta_refresh_0051(int, char **);
+int test_delta_refresh_0052(int, char **);
+int test_delta_refresh_0053(int, char **);
+int test_delta_refresh_0054(int, char **);
+int test_delta_refresh_0055(int, char **);
+int test_delta_refresh_0056(int, char **);
+int test_delta_refresh_0057(int, char **);
+int test_dither_a_dither_0039(int, char **);
+int test_dither_a_dither_0044(int, char **);
+int test_dither_a_dither_0045(int, char **);
+int test_dither_a_dither_0046(int, char **);
+int test_dither_atkinson_gpu_0001(int, char **);
+int test_dither_atkinson_gpu_0002(int, char **);
+int test_dither_atkinson_gpu_0003(int, char **);
+int test_dither_atkinson_gpu_0004(int, char **);
+int test_dither_atkinson_gpu_0005(int, char **);
+int test_dither_atkinson_gpu_0006(int, char **);
+int test_dither_atkinson_gpu_0007(int, char **);
+int test_dither_atkinson_gpu_0008(int, char **);
+int test_dither_atkinson_gpu_0009(int, char **);
+int test_dither_atkinson_gpu_0010(int, char **);
+int test_dither_bluenoise_0050(int, char **);
+int test_dither_bluenoise_0057(int, char **);
+int test_dither_bluenoise_0058(int, char **);
+int test_dither_bluenoise_0059(int, char **);
+int test_dither_bluenoise_0060(int, char **);
+int test_dither_bluenoise_0061(int, char **);
+int test_dither_bluenoise_0062(int, char **);
+int test_dither_burkes_gpu_0001(int, char **);
+int test_dither_burkes_gpu_0002(int, char **);
+int test_dither_burkes_gpu_0003(int, char **);
+int test_dither_burkes_gpu_0004(int, char **);
+int test_dither_burkes_gpu_0005(int, char **);
+int test_dither_burkes_gpu_0006(int, char **);
+int test_dither_burkes_gpu_0007(int, char **);
+int test_dither_burkes_gpu_0008(int, char **);
+int test_dither_burkes_gpu_0009(int, char **);
+int test_dither_burkes_gpu_0010(int, char **);
+int test_dither_fs_gpu_0001(int, char **);
+int test_dither_fs_gpu_0002(int, char **);
+int test_dither_fs_gpu_0003(int, char **);
+int test_dither_fs_gpu_0004(int, char **);
+int test_dither_fs_gpu_0005(int, char **);
+int test_dither_fs_gpu_0006(int, char **);
+int test_dither_fs_gpu_0007(int, char **);
+int test_dither_fs_gpu_0008(int, char **);
+int test_dither_fs_gpu_0009(int, char **);
+int test_dither_fs_gpu_0010(int, char **);
+int test_dither_gpu_direct_0006(int, char **);
+int test_dither_gpu_direct_0007(int, char **);
+int test_dither_gpu_direct_0012(int, char **);
+int test_dither_gpu_direct_0013(int, char **);
+int test_dither_gpu_direct_0014(int, char **);
+int test_dither_gpu_direct_0015(int, char **);
+int test_dither_gpu_direct_0016(int, char **);
+int test_dither_gpu_direct_0021(int, char **);
+int test_dither_gpu_direct_0022(int, char **);
+int test_dither_gpu_direct_0023(int, char **);
+int test_dither_gpu_direct_0024(int, char **);
+int test_dither_gpu_direct_0025(int, char **);
+int test_dither_gpu_direct_0026(int, char **);
+int test_dither_gpu_direct_0027(int, char **);
+int test_dither_gpu_direct_0028(int, char **);
+int test_dither_gpu_direct_0029(int, char **);
+int test_dither_gpu_direct_0030(int, char **);
+int test_dither_gpu_direct_0031(int, char **);
+int test_dither_gpu_direct_0032(int, char **);
+int test_dither_gpu_direct_0033(int, char **);
+int test_dither_gpu_direct_0034(int, char **);
+int test_dither_gpu_direct_0035(int, char **);
+int test_dither_gpu_direct_0036(int, char **);
+int test_dither_gpu_direct_0037(int, char **);
+int test_dither_gpu_direct_0038(int, char **);
+int test_dither_gpu_direct_0039(int, char **);
+int test_dither_gpu_direct_0040(int, char **);
+int test_dither_gpu_direct_0041(int, char **);
+int test_dither_gpu_direct_0042(int, char **);
+int test_dither_gpu_direct_0043(int, char **);
+int test_dither_gpu_direct_0044(int, char **);
+int test_dither_gpu_direct_0045(int, char **);
+int test_dither_gpu_direct_0046(int, char **);
+int test_dither_gpu_direct_0047(int, char **);
+int test_dither_gpu_direct_0048(int, char **);
+int test_dither_gpu_direct_0049(int, char **);
+int test_dither_gpu_direct_0050(int, char **);
+int test_dither_gpu_direct_0051(int, char **);
+int test_dither_gpu_direct_0052(int, char **);
+int test_dither_gpu_direct_0053(int, char **);
+int test_dither_gpu_direct_0054(int, char **);
+int test_dither_gpu_direct_0055(int, char **);
+int test_dither_gpu_direct_0056(int, char **);
+int test_dither_gpu_direct_0057(int, char **);
+int test_dither_gpu_direct_0058(int, char **);
+int test_dither_gpu_direct_0059(int, char **);
+int test_dither_gpu_direct_0060(int, char **);
+int test_dither_gpu_direct_0061(int, char **);
+int test_dither_gpu_direct_0062(int, char **);
+int test_dither_gpu_direct_0063(int, char **);
+int test_dither_gpu_direct_0064(int, char **);
+int test_dither_gpu_direct_0065(int, char **);
+int test_dither_gpu_direct_0066(int, char **);
+int test_dither_gpu_direct_0067(int, char **);
+int test_dither_gpu_direct_0068(int, char **);
+int test_dither_gpu_direct_0069(int, char **);
+int test_dither_gpu_direct_0070(int, char **);
+int test_dither_gpu_direct_0071(int, char **);
+int test_dither_gpu_direct_0072(int, char **);
+int test_dither_gpu_direct_0073(int, char **);
+int test_dither_gpu_direct_0074(int, char **);
+int test_dither_gpu_direct_0075(int, char **);
+int test_dither_gpu_direct_0076(int, char **);
+int test_dither_gpu_direct_0077(int, char **);
+int test_dither_gpu_direct_0078(int, char **);
+int test_dither_gpu_direct_0079(int, char **);
+int test_dither_gpu_direct_0080(int, char **);
+int test_dither_gpu_direct_0081(int, char **);
+int test_dither_gpu_direct_0082(int, char **);
+int test_dither_gpu_direct_0083(int, char **);
+int test_dither_gpu_direct_0084(int, char **);
+int test_dither_gpu_direct_0085(int, char **);
+int test_dither_gpu_direct_0086(int, char **);
+int test_dither_gpu_direct_0087(int, char **);
+int test_dither_gpu_direct_0088(int, char **);
+int test_dither_gpu_direct_0089(int, char **);
+int test_dither_gpu_direct_0090(int, char **);
+int test_dither_gpu_direct_0091(int, char **);
+int test_dither_gpu_direct_0092(int, char **);
+int test_dither_gpu_direct_0093(int, char **);
+int test_dither_gpu_direct_0094(int, char **);
+int test_dither_gpu_direct_0095(int, char **);
+int test_dither_gpu_direct_0096(int, char **);
+int test_dither_gpu_direct_0097(int, char **);
+int test_dither_gpu_direct_0098(int, char **);
+int test_dither_gpu_direct_0099(int, char **);
+int test_dither_gpu_direct_0100(int, char **);
+int test_dither_gpu_direct_0101(int, char **);
+int test_dither_jajuni_gpu_0001(int, char **);
+int test_dither_jajuni_gpu_0002(int, char **);
+int test_dither_jajuni_gpu_0003(int, char **);
+int test_dither_jajuni_gpu_0004(int, char **);
+int test_dither_jajuni_gpu_0005(int, char **);
+int test_dither_jajuni_gpu_0006(int, char **);
+int test_dither_jajuni_gpu_0007(int, char **);
+int test_dither_jajuni_gpu_0008(int, char **);
+int test_dither_jajuni_gpu_0009(int, char **);
+int test_dither_jajuni_gpu_0010(int, char **);
+int test_dither_sierra1_gpu_0001(int, char **);
+int test_dither_sierra1_gpu_0002(int, char **);
+int test_dither_sierra1_gpu_0003(int, char **);
+int test_dither_sierra1_gpu_0004(int, char **);
+int test_dither_sierra1_gpu_0005(int, char **);
+int test_dither_sierra1_gpu_0006(int, char **);
+int test_dither_sierra1_gpu_0007(int, char **);
+int test_dither_sierra1_gpu_0008(int, char **);
+int test_dither_sierra1_gpu_0009(int, char **);
+int test_dither_sierra1_gpu_0010(int, char **);
+int test_dither_sierra2_gpu_0001(int, char **);
+int test_dither_sierra2_gpu_0002(int, char **);
+int test_dither_sierra2_gpu_0003(int, char **);
+int test_dither_sierra2_gpu_0004(int, char **);
+int test_dither_sierra2_gpu_0005(int, char **);
+int test_dither_sierra2_gpu_0006(int, char **);
+int test_dither_sierra2_gpu_0007(int, char **);
+int test_dither_sierra2_gpu_0008(int, char **);
+int test_dither_sierra2_gpu_0009(int, char **);
+int test_dither_sierra2_gpu_0010(int, char **);
+int test_dither_sierra3_gpu_0001(int, char **);
+int test_dither_sierra3_gpu_0002(int, char **);
+int test_dither_sierra3_gpu_0003(int, char **);
+int test_dither_sierra3_gpu_0004(int, char **);
+int test_dither_sierra3_gpu_0005(int, char **);
+int test_dither_sierra3_gpu_0006(int, char **);
+int test_dither_sierra3_gpu_0007(int, char **);
+int test_dither_sierra3_gpu_0008(int, char **);
+int test_dither_sierra3_gpu_0009(int, char **);
+int test_dither_sierra3_gpu_0010(int, char **);
+int test_dither_stucki_gpu_0001(int, char **);
+int test_dither_stucki_gpu_0002(int, char **);
+int test_dither_stucki_gpu_0003(int, char **);
+int test_dither_stucki_gpu_0004(int, char **);
+int test_dither_stucki_gpu_0005(int, char **);
+int test_dither_stucki_gpu_0006(int, char **);
+int test_dither_stucki_gpu_0007(int, char **);
+int test_dither_stucki_gpu_0008(int, char **);
+int test_dither_stucki_gpu_0009(int, char **);
+int test_dither_stucki_gpu_0010(int, char **);
+int test_dither_x_dither_0045(int, char **);
+int test_dither_x_dither_0050(int, char **);
+int test_dither_x_dither_0051(int, char **);
+int test_dither_x_dither_0052(int, char **);
+int test_encoder_playback_palette_0001(int, char **);
+int test_encoder_playback_palette_0002(int, char **);
+int test_encoder_playback_palette_0003(int, char **);
+int test_encoder_playback_palette_0004(int, char **);
+int test_encoder_playback_palette_0005(int, char **);
+int test_encoder_playback_palette_0006(int, char **);
+int test_encoder_playback_palette_0007(int, char **);
+int test_encoder_playback_palette_0008(int, char **);
+int test_encoder_playback_palette_0009(int, char **);
+int test_encoder_playback_palette_0010(int, char **);
+int test_encoder_playback_palette_0011(int, char **);
+int test_encoder_playback_palette_0012(int, char **);
+int test_encoder_playback_palette_0013(int, char **);
+int test_encoder_playback_palette_0014(int, char **);
+int test_encoder_playback_palette_0015(int, char **);
+int test_encoder_playback_palette_0016(int, char **);
+int test_encoder_playback_palette_0017(int, char **);
+int test_encoder_playback_palette_0018(int, char **);
+int test_encoder_playback_palette_0019(int, char **);
+int test_encoder_playback_palette_0020(int, char **);
+int test_encoder_playback_palette_0021(int, char **);
+int test_encoder_playback_palette_0022(int, char **);
+int test_encoder_playback_palette_0023(int, char **);
+int test_encoder_playback_palette_0024(int, char **);
+int test_lookup_blockcull_0001(int, char **);
+int test_lookup_blockcull_0050(int, char **);
+int test_lookup_blockcull_0051(int, char **);
+int test_lookup_blockcull_0052(int, char **);
+int test_lookup_blockcull_0053(int, char **);
+int test_lookup_blockcull_0054(int, char **);
+int test_lookup_blockcull_0055(int, char **);
+int test_lookup_blockcull_0056(int, char **);
+int test_lookup_blockcull_0057(int, char **);
+int test_lookup_blockcull_0058(int, char **);
+int test_lookup_blockcull_0059(int, char **);
+int test_lookup_blockcull_0060(int, char **);
+int test_lookup_dispatch_0003(int, char **);
+int test_lookup_dispatch_0006(int, char **);
+int test_lookup_dispatch_0028(int, char **);
+int test_lookup_dispatch_0029(int, char **);
+int test_lookup_dispatch_0030(int, char **);
+int test_lookup_dispatch_0031(int, char **);
+int test_lookup_dispatch_0032(int, char **);
+int test_lookup_dispatch_0033(int, char **);
+int test_lookup_dispatch_0034(int, char **);
+int test_lookup_dispatch_0035(int, char **);
+int test_lookup_dispatch_0036(int, char **);
+int test_lookup_dispatch_0037(int, char **);
+int test_lookup_dispatch_0038(int, char **);
+int test_lookup_dispatch_0039(int, char **);
+int test_lookup_dispatch_0040(int, char **);
+int test_lookup_dispatch_0041(int, char **);
+int test_lookup_dispatch_0042(int, char **);
+int test_lookup_dispatch_0043(int, char **);
+int test_lookup_dispatch_0044(int, char **);
+int test_lookup_dispatch_0045(int, char **);
+int test_lookup_gridlut_0001(int, char **);
+int test_lookup_gridlut_0045(int, char **);
+int test_lookup_gridlut_0046(int, char **);
+int test_lookup_gridlut_0047(int, char **);
+int test_lookup_gridlut_0048(int, char **);
+int test_lookup_gridlut_0049(int, char **);
+int test_lookup_gridlut_0050(int, char **);
+int test_lookup_gridlut_0051(int, char **);
+int test_lookup_gridlut_0052(int, char **);
+int test_lookup_gridlut_0053(int, char **);
+int test_lookup_gridlut_0054(int, char **);
+int test_lookup_gridlut_0055(int, char **);
+int test_lookup_gridlut_0056(int, char **);
+int test_lookup_gridlut_0057(int, char **);
+int test_lookup_gridlut_0058(int, char **);
+int test_lookup_gridlut_0059(int, char **);
+int test_lookup_gridlut_0060(int, char **);
+int test_lookup_gridlut_0061(int, char **);
+int test_lookup_gridlut_0062(int, char **);
+int test_lookup_gridlut_0063(int, char **);
+int test_lookup_gridlut_0064(int, char **);
+int test_lookup_gridlut_0065(int, char **);
+int test_lookup_gridlut_0066(int, char **);
+int test_lookup_gridlut_0067(int, char **);
+int test_lookup_gridlut_0068(int, char **);
+int test_lookup_gridlut_0069(int, char **);
+int test_lookup_gridlut_0070(int, char **);
+int test_lookup_gridlut_0071(int, char **);
+int test_lookup_gridlut_0072(int, char **);
+int test_lookup_gridlut_0073(int, char **);
+int test_lookup_gridlut_0074(int, char **);
+int test_lookup_gridlut_0075(int, char **);
+int test_lookup_gridlut_0076(int, char **);
+int test_lookup_gridlut_0077(int, char **);
+int test_lookup_gridlut_0078(int, char **);
+int test_lookup_gridlut_0079(int, char **);
+int test_palette_kmeans_0068(int, char **);
+int test_palette_kmeans_0069(int, char **);
+int test_palette_kmeans_0070(int, char **);
+int test_palette_kmeans_0091(int, char **);
+int test_palette_kmeans_0092(int, char **);
+int test_palette_kmeans_0093(int, char **);
+int test_palette_kmeans_0094(int, char **);
+int test_palette_kmeans_0095(int, char **);
+int test_palette_kmeans_0096(int, char **);
+int test_palette_kmeans_0097(int, char **);
+int test_palette_kmeans_0098(int, char **);
+int test_palette_kmeans_0099(int, char **);
+int test_palette_kmeans_0100(int, char **);
+int test_palette_kmeans_0101(int, char **);
+int test_palette_kmeans_0102(int, char **);
+int test_palette_kmeans_0103(int, char **);
+int test_palette_kmeans_0104(int, char **);
+int test_palette_kmeans_0105(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "delta/palette/0126_refine_initially_unneeded",
+      test_delta_palette_0126 },
+    { "delta/palette/0127_painted_pixels_null",
+      test_delta_palette_0127 },
+    { "delta/palette/0128_threshold_limit_reject_256",
+      test_delta_palette_0128 },
+    { "delta/palette/0129_threshold_limit_instance_isolation",
+      test_delta_palette_0129 },
+    { "delta/refresh/0028_none_gpu_off_refresh_t0",
+      test_delta_refresh_0028 },
+    { "delta/refresh/0029_none_gpu_auto_refresh_t0",
+      test_delta_refresh_0029 },
+    { "delta/refresh/0030_atkinson_gpu_off_refresh_t0",
+      test_delta_refresh_0030 },
+    { "delta/refresh/0031_atkinson_gpu_auto_refresh_t0",
+      test_delta_refresh_0031 },
+    { "delta/refresh/0032_fs_gpu_off_refresh_t0",
+      test_delta_refresh_0032 },
+    { "delta/refresh/0033_fs_gpu_auto_refresh_t0",
+      test_delta_refresh_0033 },
+    { "delta/refresh/0034_fs_serpentine_gpu_off_refresh_t0",
+      test_delta_refresh_0034 },
+    { "delta/refresh/0035_fs_serpentine_gpu_auto_refresh_t0",
+      test_delta_refresh_0035 },
+    { "delta/refresh/0036_jajuni_gpu_off_refresh_t0",
+      test_delta_refresh_0036 },
+    { "delta/refresh/0037_jajuni_gpu_auto_refresh_t0",
+      test_delta_refresh_0037 },
+    { "delta/refresh/0038_stucki_gpu_off_refresh_t0",
+      test_delta_refresh_0038 },
+    { "delta/refresh/0039_stucki_gpu_auto_refresh_t0",
+      test_delta_refresh_0039 },
+    { "delta/refresh/0040_burkes_gpu_off_refresh_t0",
+      test_delta_refresh_0040 },
+    { "delta/refresh/0041_burkes_gpu_auto_refresh_t0",
+      test_delta_refresh_0041 },
+    { "delta/refresh/0042_sierra1_gpu_off_refresh_t0",
+      test_delta_refresh_0042 },
+    { "delta/refresh/0043_sierra1_gpu_auto_refresh_t0",
+      test_delta_refresh_0043 },
+    { "delta/refresh/0044_sierra2_gpu_off_refresh_t0",
+      test_delta_refresh_0044 },
+    { "delta/refresh/0045_sierra2_gpu_auto_refresh_t0",
+      test_delta_refresh_0045 },
+    { "delta/refresh/0046_sierra3_gpu_off_refresh_t0",
+      test_delta_refresh_0046 },
+    { "delta/refresh/0047_sierra3_gpu_auto_refresh_t0",
+      test_delta_refresh_0047 },
+    { "delta/refresh/0048_a_dither_gpu_off_refresh_t0",
+      test_delta_refresh_0048 },
+    { "delta/refresh/0049_a_dither_gpu_auto_refresh_t0",
+      test_delta_refresh_0049 },
+    { "delta/refresh/0050_x_dither_gpu_off_refresh_t0",
+      test_delta_refresh_0050 },
+    { "delta/refresh/0051_x_dither_gpu_auto_refresh_t0",
+      test_delta_refresh_0051 },
+    { "delta/refresh/0052_bluenoise_gpu_off_refresh_t0",
+      test_delta_refresh_0052 },
+    { "delta/refresh/0053_bluenoise_gpu_auto_refresh_t0",
+      test_delta_refresh_0053 },
+    { "delta/refresh/0054_lso2_gpu_off_refresh_t0",
+      test_delta_refresh_0054 },
+    { "delta/refresh/0055_lso2_gpu_auto_refresh_t0",
+      test_delta_refresh_0055 },
+    { "delta/refresh/0056_lso2_raster_gpu_off_refresh_t0",
+      test_delta_refresh_0056 },
+    { "delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0",
+      test_delta_refresh_0057 },
+    { "dither/a-dither/0039_wire_a_rgb_none",
+      test_dither_a_dither_0039 },
+    { "dither/a-dither/0044_wire_a_rgb_eytzinger",
+      test_dither_a_dither_0044 },
+    { "dither/a-dither/0045_wire_a_hls_none",
+      test_dither_a_dither_0045 },
+    { "dither/a-dither/0046_wire_a_hls_eytzinger",
+      test_dither_a_dither_0046 },
+    { "dither/atkinson-gpu/0001_accept_raster_soft",
+      test_dither_atkinson_gpu_0001 },
+    { "dither/atkinson-gpu/0002_accept_serpentine_hard",
+      test_dither_atkinson_gpu_0002 },
+    { "dither/atkinson-gpu/0003_reject_other_method",
+      test_dither_atkinson_gpu_0003 },
+    { "dither/atkinson-gpu/0004_reject_lso2_method",
+      test_dither_atkinson_gpu_0004 },
+    { "dither/atkinson-gpu/0005_reject_unbounded_clamp",
+      test_dither_atkinson_gpu_0005 },
+    { "dither/atkinson-gpu/0006_reject_perturbation",
+      test_dither_atkinson_gpu_0006 },
+    { "dither/atkinson-gpu/0007_reject_low_clamp",
+      test_dither_atkinson_gpu_0007 },
+    { "dither/atkinson-gpu/0008_reject_negative_deadzone",
+      test_dither_atkinson_gpu_0008 },
+    { "dither/atkinson-gpu/0009_deadzone_scan_parity",
+      test_dither_atkinson_gpu_0009 },
+    { "dither/atkinson-gpu/0010_live_carry_changes_indexes",
+      test_dither_atkinson_gpu_0010 },
+    { "dither/bluenoise/0050_auto_strength_p256_cold",
+      test_dither_bluenoise_0050 },
+    { "dither/bluenoise/0057_auto_strength_p64_after_p256",
+      test_dither_bluenoise_0057 },
+    { "dither/bluenoise/0058_auto_strength_reserved65_after_p64",
+      test_dither_bluenoise_0058 },
+    { "dither/bluenoise/0059_auto_strength_p16_after_reserved65",
+      test_dither_bluenoise_0059 },
+    { "dither/bluenoise/0060_auto_strength_p2_after_p16",
+      test_dither_bluenoise_0060 },
+    { "dither/bluenoise/0061_auto_strength_p1_after_p2",
+      test_dither_bluenoise_0061 },
+    { "dither/bluenoise/0062_auto_strength_p256_after_p1",
+      test_dither_bluenoise_0062 },
+    { "dither/burkes-gpu/0001_accept_raster_soft",
+      test_dither_burkes_gpu_0001 },
+    { "dither/burkes-gpu/0002_accept_serpentine_hard",
+      test_dither_burkes_gpu_0002 },
+    { "dither/burkes-gpu/0003_reject_other_method",
+      test_dither_burkes_gpu_0003 },
+    { "dither/burkes-gpu/0004_reject_lso2_method",
+      test_dither_burkes_gpu_0004 },
+    { "dither/burkes-gpu/0005_reject_unbounded_clamp",
+      test_dither_burkes_gpu_0005 },
+    { "dither/burkes-gpu/0006_reject_perturbation",
+      test_dither_burkes_gpu_0006 },
+    { "dither/burkes-gpu/0007_reject_low_clamp",
+      test_dither_burkes_gpu_0007 },
+    { "dither/burkes-gpu/0008_reject_negative_deadzone",
+      test_dither_burkes_gpu_0008 },
+    { "dither/burkes-gpu/0009_deadzone_scan_parity",
+      test_dither_burkes_gpu_0009 },
+    { "dither/burkes-gpu/0010_live_carry_changes_indexes",
+      test_dither_burkes_gpu_0010 },
+    { "dither/fs-gpu/0001_accept_raster_soft",
+      test_dither_fs_gpu_0001 },
+    { "dither/fs-gpu/0002_accept_serpentine_hard",
+      test_dither_fs_gpu_0002 },
+    { "dither/fs-gpu/0003_reject_other_method",
+      test_dither_fs_gpu_0003 },
+    { "dither/fs-gpu/0004_reject_lso2_method",
+      test_dither_fs_gpu_0004 },
+    { "dither/fs-gpu/0005_reject_unbounded_clamp",
+      test_dither_fs_gpu_0005 },
+    { "dither/fs-gpu/0006_reject_perturbation",
+      test_dither_fs_gpu_0006 },
+    { "dither/fs-gpu/0007_reject_low_clamp",
+      test_dither_fs_gpu_0007 },
+    { "dither/fs-gpu/0008_reject_negative_deadzone",
+      test_dither_fs_gpu_0008 },
+    { "dither/fs-gpu/0009_deadzone_scan_parity",
+      test_dither_fs_gpu_0009 },
+    { "dither/fs-gpu/0010_live_carry_changes_indexes",
+      test_dither_fs_gpu_0010 },
+    { "dither/gpu-direct/0006_parity_fhedt_x_p256_r256_f1_d0",
+      test_dither_gpu_direct_0006 },
+    { "dither/gpu-direct/0007_parity_fhedt_none_p256_r64_f0_d0",
+      test_dither_gpu_direct_0007 },
+    { "dither/gpu-direct/0012_parity_fhedt_none_p256_r128_f1_d0",
+      test_dither_gpu_direct_0012 },
+    { "dither/gpu-direct/0013_lso2_standard_run",
+      test_dither_gpu_direct_0013 },
+    { "dither/gpu-direct/0014_fs_deadzone_raster",
+      test_dither_gpu_direct_0014 },
+    { "dither/gpu-direct/0015_fhedt_r64_f0_d0_fs_deadzone",
+      test_dither_gpu_direct_0015 },
+    { "dither/gpu-direct/0016_rgb_cell_5bit_fs_deadzone",
+      test_dither_gpu_direct_0016 },
+    { "dither/gpu-direct/0021_parity_fhedt_a_p16_r64_f1_d1",
+      test_dither_gpu_direct_0021 },
+    { "dither/gpu-direct/0022_lso2_standard_deferred",
+      test_dither_gpu_direct_0022 },
+    { "dither/gpu-direct/0023_lso2_small_error_run",
+      test_dither_gpu_direct_0023 },
+    { "dither/gpu-direct/0024_lso2_small_error_deferred",
+      test_dither_gpu_direct_0024 },
+    { "dither/gpu-direct/0025_lso2_t0_run",
+      test_dither_gpu_direct_0025 },
+    { "dither/gpu-direct/0026_lso2_t0_deferred",
+      test_dither_gpu_direct_0026 },
+    { "dither/gpu-direct/0027_lso2_refresh_run",
+      test_dither_gpu_direct_0027 },
+    { "dither/gpu-direct/0028_lso2_refresh_deferred",
+      test_dither_gpu_direct_0028 },
+    { "dither/gpu-direct/0029_lso2_palette256",
+      test_dither_gpu_direct_0029 },
+    { "dither/gpu-direct/0030_fs_deadzone_serpentine",
+      test_dither_gpu_direct_0030 },
+    { "dither/gpu-direct/0031_fs_live_raster",
+      test_dither_gpu_direct_0031 },
+    { "dither/gpu-direct/0032_fs_history_run",
+      test_dither_gpu_direct_0032 },
+    { "dither/gpu-direct/0033_fs_history_deferred",
+      test_dither_gpu_direct_0033 },
+    { "dither/gpu-direct/0034_atkinson_deadzone_raster",
+      test_dither_gpu_direct_0034 },
+    { "dither/gpu-direct/0035_atkinson_deadzone_serpentine",
+      test_dither_gpu_direct_0035 },
+    { "dither/gpu-direct/0036_atkinson_live_raster",
+      test_dither_gpu_direct_0036 },
+    { "dither/gpu-direct/0037_atkinson_history_run",
+      test_dither_gpu_direct_0037 },
+    { "dither/gpu-direct/0038_atkinson_history_deferred",
+      test_dither_gpu_direct_0038 },
+    { "dither/gpu-direct/0039_jajuni_deadzone_raster",
+      test_dither_gpu_direct_0039 },
+    { "dither/gpu-direct/0040_jajuni_deadzone_serpentine",
+      test_dither_gpu_direct_0040 },
+    { "dither/gpu-direct/0041_jajuni_live_raster",
+      test_dither_gpu_direct_0041 },
+    { "dither/gpu-direct/0042_jajuni_history_run",
+      test_dither_gpu_direct_0042 },
+    { "dither/gpu-direct/0043_jajuni_history_deferred",
+      test_dither_gpu_direct_0043 },
+    { "dither/gpu-direct/0044_stucki_deadzone_raster",
+      test_dither_gpu_direct_0044 },
+    { "dither/gpu-direct/0045_stucki_deadzone_serpentine",
+      test_dither_gpu_direct_0045 },
+    { "dither/gpu-direct/0046_stucki_live_raster",
+      test_dither_gpu_direct_0046 },
+    { "dither/gpu-direct/0047_stucki_history_run",
+      test_dither_gpu_direct_0047 },
+    { "dither/gpu-direct/0048_stucki_history_deferred",
+      test_dither_gpu_direct_0048 },
+    { "dither/gpu-direct/0049_burkes_deadzone_raster",
+      test_dither_gpu_direct_0049 },
+    { "dither/gpu-direct/0050_burkes_deadzone_serpentine",
+      test_dither_gpu_direct_0050 },
+    { "dither/gpu-direct/0051_burkes_live_raster",
+      test_dither_gpu_direct_0051 },
+    { "dither/gpu-direct/0052_burkes_history_run",
+      test_dither_gpu_direct_0052 },
+    { "dither/gpu-direct/0053_burkes_history_deferred",
+      test_dither_gpu_direct_0053 },
+    { "dither/gpu-direct/0054_sierra1_deadzone_raster",
+      test_dither_gpu_direct_0054 },
+    { "dither/gpu-direct/0055_sierra1_deadzone_serpentine",
+      test_dither_gpu_direct_0055 },
+    { "dither/gpu-direct/0056_sierra1_live_raster",
+      test_dither_gpu_direct_0056 },
+    { "dither/gpu-direct/0057_sierra1_history_run",
+      test_dither_gpu_direct_0057 },
+    { "dither/gpu-direct/0058_sierra1_history_deferred",
+      test_dither_gpu_direct_0058 },
+    { "dither/gpu-direct/0059_sierra2_deadzone_raster",
+      test_dither_gpu_direct_0059 },
+    { "dither/gpu-direct/0060_sierra2_deadzone_serpentine",
+      test_dither_gpu_direct_0060 },
+    { "dither/gpu-direct/0061_sierra2_live_raster",
+      test_dither_gpu_direct_0061 },
+    { "dither/gpu-direct/0062_sierra2_history_run",
+      test_dither_gpu_direct_0062 },
+    { "dither/gpu-direct/0063_sierra2_history_deferred",
+      test_dither_gpu_direct_0063 },
+    { "dither/gpu-direct/0064_sierra3_deadzone_raster",
+      test_dither_gpu_direct_0064 },
+    { "dither/gpu-direct/0065_sierra3_deadzone_serpentine",
+      test_dither_gpu_direct_0065 },
+    { "dither/gpu-direct/0066_sierra3_live_raster",
+      test_dither_gpu_direct_0066 },
+    { "dither/gpu-direct/0067_sierra3_history_run",
+      test_dither_gpu_direct_0067 },
+    { "dither/gpu-direct/0068_sierra3_history_deferred",
+      test_dither_gpu_direct_0068 },
+    { "dither/gpu-direct/0069_fhedt_r64_f0_d0_fs_history_run",
+      test_dither_gpu_direct_0069 },
+    { "dither/gpu-direct/0070_fhedt_r64_f0_d0_fs_history_deferred",
+      test_dither_gpu_direct_0070 },
+    { "dither/gpu-direct/0071_fhedt_r64_f0_d0_lso2_history_run",
+      test_dither_gpu_direct_0071 },
+    { "dither/gpu-direct/0072_fhedt_r64_f0_d0_lso2_history_deferred",
+      test_dither_gpu_direct_0072 },
+    { "dither/gpu-direct/0073_fhedt_r64_f1_d1_fs_deadzone",
+      test_dither_gpu_direct_0073 },
+    { "dither/gpu-direct/0074_fhedt_r64_f1_d1_fs_history_run",
+      test_dither_gpu_direct_0074 },
+    { "dither/gpu-direct/0075_fhedt_r64_f1_d1_fs_history_deferred",
+      test_dither_gpu_direct_0075 },
+    { "dither/gpu-direct/0076_fhedt_r64_f1_d1_lso2_history_run",
+      test_dither_gpu_direct_0076 },
+    { "dither/gpu-direct/0077_fhedt_r64_f1_d1_lso2_history_deferred",
+      test_dither_gpu_direct_0077 },
+    { "dither/gpu-direct/0078_fhedt_r128_f1_d0_fs_deadzone",
+      test_dither_gpu_direct_0078 },
+    { "dither/gpu-direct/0079_fhedt_r128_f1_d0_fs_history_run",
+      test_dither_gpu_direct_0079 },
+    { "dither/gpu-direct/0080_fhedt_r128_f1_d0_fs_history_deferred",
+      test_dither_gpu_direct_0080 },
+    { "dither/gpu-direct/0081_fhedt_r128_f1_d0_lso2_history_run",
+      test_dither_gpu_direct_0081 },
+    { "dither/gpu-direct/0082_fhedt_r128_f1_d0_lso2_history_deferred",
+      test_dither_gpu_direct_0082 },
+    { "dither/gpu-direct/0083_fhedt_r256_f1_d0_fs_deadzone",
+      test_dither_gpu_direct_0083 },
+    { "dither/gpu-direct/0084_fhedt_r256_f1_d0_fs_history_run",
+      test_dither_gpu_direct_0084 },
+    { "dither/gpu-direct/0085_fhedt_r256_f1_d0_fs_history_deferred",
+      test_dither_gpu_direct_0085 },
+    { "dither/gpu-direct/0086_fhedt_r256_f1_d0_lso2_history_run",
+      test_dither_gpu_direct_0086 },
+    { "dither/gpu-direct/0087_fhedt_r256_f1_d0_lso2_history_deferred",
+      test_dither_gpu_direct_0087 },
+    { "dither/gpu-direct/0088_fhedt_r256_f0_d0_fs_deadzone",
+      test_dither_gpu_direct_0088 },
+    { "dither/gpu-direct/0089_fhedt_r256_f0_d0_fs_history_run",
+      test_dither_gpu_direct_0089 },
+    { "dither/gpu-direct/0090_fhedt_r256_f0_d0_fs_history_deferred",
+      test_dither_gpu_direct_0090 },
+    { "dither/gpu-direct/0091_fhedt_r256_f0_d0_lso2_history_run",
+      test_dither_gpu_direct_0091 },
+    { "dither/gpu-direct/0092_fhedt_r256_f0_d0_lso2_history_deferred",
+      test_dither_gpu_direct_0092 },
+    { "dither/gpu-direct/0093_rgb_cell_5bit_fs_history_run",
+      test_dither_gpu_direct_0093 },
+    { "dither/gpu-direct/0094_rgb_cell_5bit_fs_history_deferred",
+      test_dither_gpu_direct_0094 },
+    { "dither/gpu-direct/0095_rgb_cell_5bit_lso2_history_run",
+      test_dither_gpu_direct_0095 },
+    { "dither/gpu-direct/0096_rgb_cell_5bit_lso2_history_deferred",
+      test_dither_gpu_direct_0096 },
+    { "dither/gpu-direct/0097_rgb_cell_6bit_fs_deadzone",
+      test_dither_gpu_direct_0097 },
+    { "dither/gpu-direct/0098_rgb_cell_6bit_fs_history_run",
+      test_dither_gpu_direct_0098 },
+    { "dither/gpu-direct/0099_rgb_cell_6bit_fs_history_deferred",
+      test_dither_gpu_direct_0099 },
+    { "dither/gpu-direct/0100_rgb_cell_6bit_lso2_history_run",
+      test_dither_gpu_direct_0100 },
+    { "dither/gpu-direct/0101_rgb_cell_6bit_lso2_history_deferred",
+      test_dither_gpu_direct_0101 },
+    { "dither/jajuni-gpu/0001_accept_raster_soft",
+      test_dither_jajuni_gpu_0001 },
+    { "dither/jajuni-gpu/0002_accept_serpentine_hard",
+      test_dither_jajuni_gpu_0002 },
+    { "dither/jajuni-gpu/0003_reject_other_method",
+      test_dither_jajuni_gpu_0003 },
+    { "dither/jajuni-gpu/0004_reject_lso2_method",
+      test_dither_jajuni_gpu_0004 },
+    { "dither/jajuni-gpu/0005_reject_unbounded_clamp",
+      test_dither_jajuni_gpu_0005 },
+    { "dither/jajuni-gpu/0006_reject_perturbation",
+      test_dither_jajuni_gpu_0006 },
+    { "dither/jajuni-gpu/0007_reject_low_clamp",
+      test_dither_jajuni_gpu_0007 },
+    { "dither/jajuni-gpu/0008_reject_negative_deadzone",
+      test_dither_jajuni_gpu_0008 },
+    { "dither/jajuni-gpu/0009_deadzone_scan_parity",
+      test_dither_jajuni_gpu_0009 },
+    { "dither/jajuni-gpu/0010_live_carry_changes_indexes",
+      test_dither_jajuni_gpu_0010 },
+    { "dither/sierra1-gpu/0001_accept_raster_soft",
+      test_dither_sierra1_gpu_0001 },
+    { "dither/sierra1-gpu/0002_accept_serpentine_hard",
+      test_dither_sierra1_gpu_0002 },
+    { "dither/sierra1-gpu/0003_reject_other_method",
+      test_dither_sierra1_gpu_0003 },
+    { "dither/sierra1-gpu/0004_reject_lso2_method",
+      test_dither_sierra1_gpu_0004 },
+    { "dither/sierra1-gpu/0005_reject_unbounded_clamp",
+      test_dither_sierra1_gpu_0005 },
+    { "dither/sierra1-gpu/0006_reject_perturbation",
+      test_dither_sierra1_gpu_0006 },
+    { "dither/sierra1-gpu/0007_reject_low_clamp",
+      test_dither_sierra1_gpu_0007 },
+    { "dither/sierra1-gpu/0008_reject_negative_deadzone",
+      test_dither_sierra1_gpu_0008 },
+    { "dither/sierra1-gpu/0009_deadzone_scan_parity",
+      test_dither_sierra1_gpu_0009 },
+    { "dither/sierra1-gpu/0010_live_carry_changes_indexes",
+      test_dither_sierra1_gpu_0010 },
+    { "dither/sierra2-gpu/0001_accept_raster_soft",
+      test_dither_sierra2_gpu_0001 },
+    { "dither/sierra2-gpu/0002_accept_serpentine_hard",
+      test_dither_sierra2_gpu_0002 },
+    { "dither/sierra2-gpu/0003_reject_other_method",
+      test_dither_sierra2_gpu_0003 },
+    { "dither/sierra2-gpu/0004_reject_lso2_method",
+      test_dither_sierra2_gpu_0004 },
+    { "dither/sierra2-gpu/0005_reject_unbounded_clamp",
+      test_dither_sierra2_gpu_0005 },
+    { "dither/sierra2-gpu/0006_reject_perturbation",
+      test_dither_sierra2_gpu_0006 },
+    { "dither/sierra2-gpu/0007_reject_low_clamp",
+      test_dither_sierra2_gpu_0007 },
+    { "dither/sierra2-gpu/0008_reject_negative_deadzone",
+      test_dither_sierra2_gpu_0008 },
+    { "dither/sierra2-gpu/0009_deadzone_scan_parity",
+      test_dither_sierra2_gpu_0009 },
+    { "dither/sierra2-gpu/0010_live_carry_changes_indexes",
+      test_dither_sierra2_gpu_0010 },
+    { "dither/sierra3-gpu/0001_accept_raster_soft",
+      test_dither_sierra3_gpu_0001 },
+    { "dither/sierra3-gpu/0002_accept_serpentine_hard",
+      test_dither_sierra3_gpu_0002 },
+    { "dither/sierra3-gpu/0003_reject_other_method",
+      test_dither_sierra3_gpu_0003 },
+    { "dither/sierra3-gpu/0004_reject_lso2_method",
+      test_dither_sierra3_gpu_0004 },
+    { "dither/sierra3-gpu/0005_reject_unbounded_clamp",
+      test_dither_sierra3_gpu_0005 },
+    { "dither/sierra3-gpu/0006_reject_perturbation",
+      test_dither_sierra3_gpu_0006 },
+    { "dither/sierra3-gpu/0007_reject_low_clamp",
+      test_dither_sierra3_gpu_0007 },
+    { "dither/sierra3-gpu/0008_reject_negative_deadzone",
+      test_dither_sierra3_gpu_0008 },
+    { "dither/sierra3-gpu/0009_deadzone_scan_parity",
+      test_dither_sierra3_gpu_0009 },
+    { "dither/sierra3-gpu/0010_live_carry_changes_indexes",
+      test_dither_sierra3_gpu_0010 },
+    { "dither/stucki-gpu/0001_accept_raster_soft",
+      test_dither_stucki_gpu_0001 },
+    { "dither/stucki-gpu/0002_accept_serpentine_hard",
+      test_dither_stucki_gpu_0002 },
+    { "dither/stucki-gpu/0003_reject_other_method",
+      test_dither_stucki_gpu_0003 },
+    { "dither/stucki-gpu/0004_reject_lso2_method",
+      test_dither_stucki_gpu_0004 },
+    { "dither/stucki-gpu/0005_reject_unbounded_clamp",
+      test_dither_stucki_gpu_0005 },
+    { "dither/stucki-gpu/0006_reject_perturbation",
+      test_dither_stucki_gpu_0006 },
+    { "dither/stucki-gpu/0007_reject_low_clamp",
+      test_dither_stucki_gpu_0007 },
+    { "dither/stucki-gpu/0008_reject_negative_deadzone",
+      test_dither_stucki_gpu_0008 },
+    { "dither/stucki-gpu/0009_deadzone_scan_parity",
+      test_dither_stucki_gpu_0009 },
+    { "dither/stucki-gpu/0010_live_carry_changes_indexes",
+      test_dither_stucki_gpu_0010 },
+    { "dither/x-dither/0045_wire_x_rgb_none",
+      test_dither_x_dither_0045 },
+    { "dither/x-dither/0050_wire_x_rgb_eytzinger",
+      test_dither_x_dither_0050 },
+    { "dither/x-dither/0051_wire_x_hls_none",
+      test_dither_x_dither_0051 },
+    { "dither/x-dither/0052_wire_x_hls_eytzinger",
+      test_dither_x_dither_0052 },
+    { "encoder/playback-palette/0001_b1_frame_inherit_session",
+      test_encoder_playback_palette_0001 },
+    { "encoder/playback-palette/0002_b1_frame_frame_session",
+      test_encoder_playback_palette_0002 },
+    { "encoder/playback-palette/0003_b1_frame_latest_session",
+      test_encoder_playback_palette_0003 },
+    { "encoder/playback-palette/0004_b1_frame_auto_session",
+      test_encoder_playback_palette_0004 },
+    { "encoder/playback-palette/0005_b1_latest_inherit_session",
+      test_encoder_playback_palette_0005 },
+    { "encoder/playback-palette/0006_b1_latest_frame_session",
+      test_encoder_playback_palette_0006 },
+    { "encoder/playback-palette/0007_b1_latest_latest_session",
+      test_encoder_playback_palette_0007 },
+    { "encoder/playback-palette/0008_b1_latest_auto_session",
+      test_encoder_playback_palette_0008 },
+    { "encoder/playback-palette/0009_b1_auto_inherit_session",
+      test_encoder_playback_palette_0009 },
+    { "encoder/playback-palette/0010_b1_auto_frame_session",
+      test_encoder_playback_palette_0010 },
+    { "encoder/playback-palette/0011_b1_auto_latest_session",
+      test_encoder_playback_palette_0011 },
+    { "encoder/playback-palette/0012_b1_auto_auto_session",
+      test_encoder_playback_palette_0012 },
+    { "encoder/playback-palette/0013_b4_frame_inherit_session",
+      test_encoder_playback_palette_0013 },
+    { "encoder/playback-palette/0014_b4_frame_frame_session",
+      test_encoder_playback_palette_0014 },
+    { "encoder/playback-palette/0015_b4_frame_latest_session",
+      test_encoder_playback_palette_0015 },
+    { "encoder/playback-palette/0016_b4_frame_auto_session",
+      test_encoder_playback_palette_0016 },
+    { "encoder/playback-palette/0017_b4_latest_inherit_session",
+      test_encoder_playback_palette_0017 },
+    { "encoder/playback-palette/0018_b4_latest_frame_session",
+      test_encoder_playback_palette_0018 },
+    { "encoder/playback-palette/0019_b4_latest_latest_session",
+      test_encoder_playback_palette_0019 },
+    { "encoder/playback-palette/0020_b4_latest_auto_session",
+      test_encoder_playback_palette_0020 },
+    { "encoder/playback-palette/0021_b4_auto_inherit_session",
+      test_encoder_playback_palette_0021 },
+    { "encoder/playback-palette/0022_b4_auto_frame_session",
+      test_encoder_playback_palette_0022 },
+    { "encoder/playback-palette/0023_b4_auto_latest_session",
+      test_encoder_playback_palette_0023 },
+    { "encoder/playback-palette/0024_b4_auto_auto_session",
+      test_encoder_playback_palette_0024 },
+    { "lookup/blockcull/0001_exact_none_p2_keep0",
+      test_lookup_blockcull_0001 },
+    { "lookup/blockcull/0050_exact_none_p2_keep1",
+      test_lookup_blockcull_0050 },
+    { "lookup/blockcull/0051_exact_none_p33_keep0",
+      test_lookup_blockcull_0051 },
+    { "lookup/blockcull/0052_exact_none_p33_keep1",
+      test_lookup_blockcull_0052 },
+    { "lookup/blockcull/0053_exact_none_p64_keep0",
+      test_lookup_blockcull_0053 },
+    { "lookup/blockcull/0054_exact_none_p64_keep1",
+      test_lookup_blockcull_0054 },
+    { "lookup/blockcull/0055_exact_none_p129_keep0",
+      test_lookup_blockcull_0055 },
+    { "lookup/blockcull/0056_exact_none_p129_keep1",
+      test_lookup_blockcull_0056 },
+    { "lookup/blockcull/0057_exact_none_p200_keep0",
+      test_lookup_blockcull_0057 },
+    { "lookup/blockcull/0058_exact_none_p200_keep1",
+      test_lookup_blockcull_0058 },
+    { "lookup/blockcull/0059_exact_none_p255_keep0",
+      test_lookup_blockcull_0059 },
+    { "lookup/blockcull/0060_exact_none_p255_keep1",
+      test_lookup_blockcull_0060 },
+    { "lookup/dispatch/0003_reserved_key_none_none",
+      test_lookup_dispatch_0003 },
+    { "lookup/dispatch/0006_exact_none_p2_keep0",
+      test_lookup_dispatch_0006 },
+    { "lookup/dispatch/0028_exact_none_p2_keep1",
+      test_lookup_dispatch_0028 },
+    { "lookup/dispatch/0029_exact_none_p7_keep0",
+      test_lookup_dispatch_0029 },
+    { "lookup/dispatch/0030_exact_none_p7_keep1",
+      test_lookup_dispatch_0030 },
+    { "lookup/dispatch/0031_exact_none_p8_keep0",
+      test_lookup_dispatch_0031 },
+    { "lookup/dispatch/0032_exact_none_p8_keep1",
+      test_lookup_dispatch_0032 },
+    { "lookup/dispatch/0033_exact_none_p9_keep0",
+      test_lookup_dispatch_0033 },
+    { "lookup/dispatch/0034_exact_none_p9_keep1",
+      test_lookup_dispatch_0034 },
+    { "lookup/dispatch/0035_exact_none_p33_keep0",
+      test_lookup_dispatch_0035 },
+    { "lookup/dispatch/0036_exact_none_p33_keep1",
+      test_lookup_dispatch_0036 },
+    { "lookup/dispatch/0037_exact_none_p64_keep0",
+      test_lookup_dispatch_0037 },
+    { "lookup/dispatch/0038_exact_none_p64_keep1",
+      test_lookup_dispatch_0038 },
+    { "lookup/dispatch/0039_exact_none_p200_keep0",
+      test_lookup_dispatch_0039 },
+    { "lookup/dispatch/0040_exact_none_p200_keep1",
+      test_lookup_dispatch_0040 },
+    { "lookup/dispatch/0041_exact_none_p255_keep0",
+      test_lookup_dispatch_0041 },
+    { "lookup/dispatch/0042_exact_none_p255_keep1",
+      test_lookup_dispatch_0042 },
+    { "lookup/dispatch/0043_reserved_key_none_bluenoise",
+      test_lookup_dispatch_0043 },
+    { "lookup/dispatch/0044_reserved_key_eytzinger_none",
+      test_lookup_dispatch_0044 },
+    { "lookup/dispatch/0045_reserved_key_eytzinger_bluenoise",
+      test_lookup_dispatch_0045 },
+    { "lookup/gridlut/0001_exact_none_p2_keep0",
+      test_lookup_gridlut_0001 },
+    { "lookup/gridlut/0045_exact_none_p2_keep1",
+      test_lookup_gridlut_0045 },
+    { "lookup/gridlut/0046_exact_none_p33_keep0",
+      test_lookup_gridlut_0046 },
+    { "lookup/gridlut/0047_exact_none_p33_keep1",
+      test_lookup_gridlut_0047 },
+    { "lookup/gridlut/0048_exact_none_p64_keep0",
+      test_lookup_gridlut_0048 },
+    { "lookup/gridlut/0049_exact_none_p64_keep1",
+      test_lookup_gridlut_0049 },
+    { "lookup/gridlut/0050_exact_none_p129_keep0",
+      test_lookup_gridlut_0050 },
+    { "lookup/gridlut/0051_exact_none_p129_keep1",
+      test_lookup_gridlut_0051 },
+    { "lookup/gridlut/0052_exact_none_p200_keep0",
+      test_lookup_gridlut_0052 },
+    { "lookup/gridlut/0053_exact_none_p200_keep1",
+      test_lookup_gridlut_0053 },
+    { "lookup/gridlut/0054_exact_none_p255_keep0",
+      test_lookup_gridlut_0054 },
+    { "lookup/gridlut/0055_exact_none_p255_keep1",
+      test_lookup_gridlut_0055 },
+    { "lookup/gridlut/0056_exact_bluenoise_p2_keep0",
+      test_lookup_gridlut_0056 },
+    { "lookup/gridlut/0057_exact_bluenoise_p2_keep1",
+      test_lookup_gridlut_0057 },
+    { "lookup/gridlut/0058_exact_bluenoise_p33_keep0",
+      test_lookup_gridlut_0058 },
+    { "lookup/gridlut/0059_exact_bluenoise_p33_keep1",
+      test_lookup_gridlut_0059 },
+    { "lookup/gridlut/0060_exact_bluenoise_p64_keep0",
+      test_lookup_gridlut_0060 },
+    { "lookup/gridlut/0061_exact_bluenoise_p64_keep1",
+      test_lookup_gridlut_0061 },
+    { "lookup/gridlut/0062_exact_bluenoise_p129_keep0",
+      test_lookup_gridlut_0062 },
+    { "lookup/gridlut/0063_exact_bluenoise_p129_keep1",
+      test_lookup_gridlut_0063 },
+    { "lookup/gridlut/0064_exact_bluenoise_p200_keep0",
+      test_lookup_gridlut_0064 },
+    { "lookup/gridlut/0065_exact_bluenoise_p200_keep1",
+      test_lookup_gridlut_0065 },
+    { "lookup/gridlut/0066_exact_bluenoise_p255_keep0",
+      test_lookup_gridlut_0066 },
+    { "lookup/gridlut/0067_exact_bluenoise_p255_keep1",
+      test_lookup_gridlut_0067 },
+    { "lookup/gridlut/0068_exact_x_p2_keep0",
+      test_lookup_gridlut_0068 },
+    { "lookup/gridlut/0069_exact_x_p2_keep1",
+      test_lookup_gridlut_0069 },
+    { "lookup/gridlut/0070_exact_x_p33_keep0",
+      test_lookup_gridlut_0070 },
+    { "lookup/gridlut/0071_exact_x_p33_keep1",
+      test_lookup_gridlut_0071 },
+    { "lookup/gridlut/0072_exact_x_p64_keep0",
+      test_lookup_gridlut_0072 },
+    { "lookup/gridlut/0073_exact_x_p64_keep1",
+      test_lookup_gridlut_0073 },
+    { "lookup/gridlut/0074_exact_x_p129_keep0",
+      test_lookup_gridlut_0074 },
+    { "lookup/gridlut/0075_exact_x_p129_keep1",
+      test_lookup_gridlut_0075 },
+    { "lookup/gridlut/0076_exact_x_p200_keep0",
+      test_lookup_gridlut_0076 },
+    { "lookup/gridlut/0077_exact_x_p200_keep1",
+      test_lookup_gridlut_0077 },
+    { "lookup/gridlut/0078_exact_x_p255_keep0",
+      test_lookup_gridlut_0078 },
+    { "lookup/gridlut/0079_exact_x_p255_keep1",
+      test_lookup_gridlut_0079 },
+    { "palette/kmeans/0068_snake_sse_k16_i4_s1",
+      test_palette_kmeans_0068 },
+    { "palette/kmeans/0069_gradient_sse_k16_i4_s1",
+      test_palette_kmeans_0069 },
+    { "palette/kmeans/0070_rare_sse_k16_i4_s1",
+      test_palette_kmeans_0070 },
+    { "palette/kmeans/0091_snake_repeat_k16_i4_s1",
+      test_palette_kmeans_0091 },
+    { "palette/kmeans/0092_snake_sse_k64_i12_s7",
+      test_palette_kmeans_0092 },
+    { "palette/kmeans/0093_snake_repeat_k64_i12_s7",
+      test_palette_kmeans_0093 },
+    { "palette/kmeans/0094_snake_sse_k256_i24_s42",
+      test_palette_kmeans_0094 },
+    { "palette/kmeans/0095_snake_repeat_k256_i24_s42",
+      test_palette_kmeans_0095 },
+    { "palette/kmeans/0096_gradient_repeat_k16_i4_s1",
+      test_palette_kmeans_0096 },
+    { "palette/kmeans/0097_gradient_sse_k64_i12_s7",
+      test_palette_kmeans_0097 },
+    { "palette/kmeans/0098_gradient_repeat_k64_i12_s7",
+      test_palette_kmeans_0098 },
+    { "palette/kmeans/0099_gradient_sse_k256_i24_s42",
+      test_palette_kmeans_0099 },
+    { "palette/kmeans/0100_gradient_repeat_k256_i24_s42",
+      test_palette_kmeans_0100 },
+    { "palette/kmeans/0101_rare_repeat_k16_i4_s1",
+      test_palette_kmeans_0101 },
+    { "palette/kmeans/0102_rare_sse_k64_i12_s7",
+      test_palette_kmeans_0102 },
+    { "palette/kmeans/0103_rare_repeat_k64_i12_s7",
+      test_palette_kmeans_0103 },
+    { "palette/kmeans/0104_rare_sse_k256_i24_s42",
+      test_palette_kmeans_0104 },
+    { "palette/kmeans/0105_rare_repeat_k256_i24_s42",
+      test_palette_kmeans_0105 },
+
     { "lso2_gpu/playback_resolve_past_stalled_encode",
       test_lso2_gpu_playback_resolve_past_stalled_encode },
     { "lso2_gpu/playback_encode_past_stalled_delivery",
@@ -5303,14 +6259,6 @@ static test_entry_t const test_entries[] = {
     { "lso2_gpu/queue_sample_unavailable", test_lso2_gpu_queue_sample_unavailable },
     { "lso2_gpu/queue_sample_live", test_lso2_gpu_queue_sample_live },
     { "lso2_gpu/queue_sample_tail", test_lso2_gpu_queue_sample_tail },
-    { "fs_gpu/carry", test_fs_gpu_carry },
-    { "atkinson_gpu/carry", test_atkinson_gpu_carry },
-    { "jajuni_gpu/carry", test_jajuni_gpu_carry },
-    { "stucki_gpu/carry", test_stucki_gpu_carry },
-    { "burkes_gpu/carry", test_burkes_gpu_carry },
-    { "sierra1_gpu/carry", test_sierra1_gpu_carry },
-    { "sierra2_gpu/carry", test_sierra2_gpu_carry },
-    { "sierra3_gpu/carry", test_sierra3_gpu_carry },
     { "lso2_gpu/pipeline_sample_stale", test_lso2_gpu_pipeline_sample_stale },
     { "lso2_gpu/pipeline_sample_short", test_lso2_gpu_pipeline_sample_short },
     { "lso2_gpu/pipeline_sample_tail", test_lso2_gpu_pipeline_sample_tail },
@@ -6927,9 +7875,7 @@ static test_entry_t const test_entries[] = {
       test_filter_0046_filter_sample_parallel_exact },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
-    { "gpu-palette/0002_reserved_key", test_gpupal_0002_reserved_key },
     { "gpu-palette/0003_fade_history", test_gpupal_0003_fade_history },
-    { "gpu-palette/0004_auto_strength", test_gpupal_0004_auto_strength },
     { "gpu-palette/0005_wire_rgb_none",
       test_gpupal_0005_wire_rgb_none },
     { "gpu-palette/0006_wire_rgb_bluenoise",
@@ -6942,34 +7888,17 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0009_wire_hls_bluenoise },
     { "gpu-palette/0010_comparison_default",
       test_gpupal_0010_comparison_default },
-    { "gpu-palette/0018_wire_a", test_gpupal_0018_wire_a },
-    { "gpu-palette/0019_wire_x", test_gpupal_0019_wire_x },
     { "gpu-direct/0001_parity_none", test_gpu_direct_0001_parity_none },
     { "gpu-direct/0002_parity_a", test_gpu_direct_0002_parity_a },
     { "gpu-direct/0003_parity_x", test_gpu_direct_0003_parity_x },
     { "gpu-direct/0004_parity_bluenoise", test_gpu_direct_0004_parity_bluenoise },
     { "gpu-direct/0005_parity_few_colors", test_gpu_direct_0005_parity_few_colors },
-    { "gpu-direct/0006_wire_a", test_gpu_direct_0006_wire_a },
-    { "gpu-direct/0007_wire_x", test_gpu_direct_0007_wire_x },
     { "gpu-direct/0008_statistics", test_gpu_direct_0008_statistics },
     { "gpu-direct/0009_playback_force",
       test_gpu_direct_0009_playback_force },
     { "gpu-direct/0010_parity_fhedt", test_gpu_direct_0010_parity_fhedt },
     { "gpu-direct/0011_parity_fhedt_bluenoise",
       test_gpu_direct_0011_parity_fhedt_bluenoise },
-    { "gpu-direct/0012_parity_fhedt_settings",
-      test_gpu_direct_0012_parity_fhedt_settings },
-    { "gpu-direct/0013_diffuse_lso2_expected",
-      test_gpu_direct_0013_diffuse_lso2_expected },
-    { "gpu-direct/0014_diffuse_carry", test_gpu_direct_0014_diffuse_carry },
-    { "gpu-direct/0015_diffuse_fhedt", test_gpu_direct_0015_diffuse_fhedt },
-    { "gpu-direct/0016_diffuse_rgb_cell",
-      test_gpu_direct_0016_diffuse_rgb_cell },
-    { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
-    { "gpu-palette/0021_blockcull_exact",
-      test_gpupal_0021_blockcull_exact },
-    { "gpu-palette/0022_gridlut_exact",
-      test_gpupal_0022_gridlut_exact },
     { "5bit/gpu_centers", test_bit5_gpu_centers },
     { "5bit/gpu_tie", test_bit5_gpu_tie },
     { "5bit/gpu_index255", test_bit5_gpu_index255 },
@@ -8014,8 +8943,6 @@ static test_entry_t const test_entries[] = {
       test_refresh_0009 },
     { "delta-refresh/0010_latest_playback",
       test_refresh_0010 },
-    { "delta-refresh/0028_all_dithers",
-      test_refresh_0028 },
     { "delta-residual/0001_defaults", test_residual_0001 },
     { "delta-residual/0002_option_routes", test_residual_0002 },
     { "delta-residual/0003_invalid_option_atomicity", test_residual_0003 },
@@ -8518,8 +9445,6 @@ static test_entry_t const test_entries[] = {
       test_playback_0021 },
     { "planner/pipeline/0022_playback_cancel_failure",
       test_playback_0022 },
-    { "planner/pipeline/0026_playback_palette_policy",
-      test_playback_0026 },
     { "planner/pipeline/0027_palette_request_ownership",
       test_palette_stage2_0027 },
     { "planner/pipeline/0028_palette_snapshot_bytes",
@@ -9462,12 +10387,6 @@ static test_entry_t const test_entries[] = {
       test_kmgpu_0066_mixed_restarts },
     { "gpu-kmeans/0067_workload_boundary",
       test_kmgpu_0067_workload_boundary },
-    { "gpu-kmeans/0068_snake_sse",
-      test_kmgpu_0068_snake_sse },
-    { "gpu-kmeans/0069_gradient_sse",
-      test_kmgpu_0069_gradient_sse },
-    { "gpu-kmeans/0070_rare_sse",
-      test_kmgpu_0070_rare_sse },
     { "gpu-kmeans/0082_numeric_auto_fallback",
       test_kmgpu_0082_numeric_auto_fallback },
     { "gpu-kmeans/0083_numeric_force_rejection",

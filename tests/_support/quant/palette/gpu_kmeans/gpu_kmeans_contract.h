@@ -7,6 +7,7 @@ int kmgpu_contract_degenerate(int mode);
 int kmgpu_contract_fault(int stage, int force, int mixed);
 int kmgpu_contract_workload(void);
 int kmgpu_contract_auto(int mode);
-int kmgpu_contract_image(char const *filename);
+int kmgpu_contract_image(char const *, unsigned int, unsigned int,
+    unsigned int, int);
 int kmgpu_contract_numeric_fallback(int force);
 #endif

@@ -240,6 +240,280 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_ATKINSON_CARRY_COMMON \
+    -DBUILD_AUTO_STRENGTH_COMMON \
+    -DBUILD_BURKES_CARRY_COMMON \
+    -DBUILD_CULL_EXACT_COMMON \
+    -DBUILD_DIRECT_CARRY_COMMON \
+    -DBUILD_DIRECT_EXACT_COMMON \
+    -DBUILD_DIRECT_FHEDT_COMMON \
+    -DBUILD_DIRECT_LSO2_COMMON \
+    -DBUILD_DIRECT_RGB_CELL_COMMON \
+    -DBUILD_FS_CARRY_COMMON \
+    -DBUILD_GRID_EXACT_COMMON \
+    -DBUILD_JAJUNI_CARRY_COMMON \
+    -DBUILD_PLAYBACK_PALETTE_COMMON \
+    -DBUILD_RESERVED_KEY_COMMON \
+    -DBUILD_SIERRA1_CARRY_COMMON \
+    -DBUILD_SIERRA2_CARRY_COMMON \
+    -DBUILD_SIERRA3_CARRY_COMMON \
+    -DBUILD_STUCKI_CARRY_COMMON \
+    -DBUILD_TEST_0001_ACCEPT_RASTER_SOFT \
+    -DBUILD_TEST_0001_B1_FRAME_INHERIT_SESSION \
+    -DBUILD_TEST_0001_EXACT_NONE_P2_KEEP0 \
+    -DBUILD_TEST_0002_ACCEPT_SERPENTINE_HARD \
+    -DBUILD_TEST_0002_B1_FRAME_FRAME_SESSION \
+    -DBUILD_TEST_0003_B1_FRAME_LATEST_SESSION \
+    -DBUILD_TEST_0003_REJECT_OTHER_METHOD \
+    -DBUILD_TEST_0003_RESERVED_KEY_NONE_NONE \
+    -DBUILD_TEST_0004_B1_FRAME_AUTO_SESSION \
+    -DBUILD_TEST_0004_REJECT_LSO2_METHOD \
+    -DBUILD_TEST_0005_B1_LATEST_INHERIT_SESSION \
+    -DBUILD_TEST_0005_REJECT_UNBOUNDED_CLAMP \
+    -DBUILD_TEST_0006_B1_LATEST_FRAME_SESSION \
+    -DBUILD_TEST_0006_EXACT_NONE_P2_KEEP0 \
+    -DBUILD_TEST_0006_PARITY_FHEDT_X_P256_R256_F1_D0 \
+    -DBUILD_TEST_0006_REJECT_PERTURBATION \
+    -DBUILD_TEST_0007_B1_LATEST_LATEST_SESSION \
+    -DBUILD_TEST_0007_PARITY_FHEDT_NONE_P256_R64_F0_D0 \
+    -DBUILD_TEST_0007_REJECT_LOW_CLAMP \
+    -DBUILD_TEST_0008_B1_LATEST_AUTO_SESSION \
+    -DBUILD_TEST_0008_REJECT_NEGATIVE_DEADZONE \
+    -DBUILD_TEST_0009_B1_AUTO_INHERIT_SESSION \
+    -DBUILD_TEST_0009_DEADZONE_SCAN_PARITY \
+    -DBUILD_TEST_0010_B1_AUTO_FRAME_SESSION \
+    -DBUILD_TEST_0010_LIVE_CARRY_CHANGES_INDEXES \
+    -DBUILD_TEST_0011_B1_AUTO_LATEST_SESSION \
+    -DBUILD_TEST_0012_B1_AUTO_AUTO_SESSION \
+    -DBUILD_TEST_0012_PARITY_FHEDT_NONE_P256_R128_F1_D0 \
+    -DBUILD_TEST_0013_B4_FRAME_INHERIT_SESSION \
+    -DBUILD_TEST_0013_LSO2_STANDARD_RUN \
+    -DBUILD_TEST_0014_B4_FRAME_FRAME_SESSION \
+    -DBUILD_TEST_0014_FS_DEADZONE_RASTER \
+    -DBUILD_TEST_0015_B4_FRAME_LATEST_SESSION \
+    -DBUILD_TEST_0015_FHEDT_R64_F0_D0_FS_DEADZONE \
+    -DBUILD_TEST_0016_B4_FRAME_AUTO_SESSION \
+    -DBUILD_TEST_0016_RGB_CELL_5BIT_FS_DEADZONE \
+    -DBUILD_TEST_0017_B4_LATEST_INHERIT_SESSION \
+    -DBUILD_TEST_0018_B4_LATEST_FRAME_SESSION \
+    -DBUILD_TEST_0019_B4_LATEST_LATEST_SESSION \
+    -DBUILD_TEST_0020_B4_LATEST_AUTO_SESSION \
+    -DBUILD_TEST_0021_B4_AUTO_INHERIT_SESSION \
+    -DBUILD_TEST_0021_PARITY_FHEDT_A_P16_R64_F1_D1 \
+    -DBUILD_TEST_0022_B4_AUTO_FRAME_SESSION \
+    -DBUILD_TEST_0022_LSO2_STANDARD_DEFERRED \
+    -DBUILD_TEST_0023_B4_AUTO_LATEST_SESSION \
+    -DBUILD_TEST_0023_LSO2_SMALL_ERROR_RUN \
+    -DBUILD_TEST_0024_B4_AUTO_AUTO_SESSION \
+    -DBUILD_TEST_0024_LSO2_SMALL_ERROR_DEFERRED \
+    -DBUILD_TEST_0025_LSO2_T0_RUN \
+    -DBUILD_TEST_0026_LSO2_T0_DEFERRED \
+    -DBUILD_TEST_0027_LSO2_REFRESH_RUN \
+    -DBUILD_TEST_0028_EXACT_NONE_P2_KEEP1 \
+    -DBUILD_TEST_0028_LSO2_REFRESH_DEFERRED \
+    -DBUILD_TEST_0028_NONE_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0029_EXACT_NONE_P7_KEEP0 \
+    -DBUILD_TEST_0029_LSO2_PALETTE256 \
+    -DBUILD_TEST_0029_NONE_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0030_ATKINSON_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0030_EXACT_NONE_P7_KEEP1 \
+    -DBUILD_TEST_0030_FS_DEADZONE_SERPENTINE \
+    -DBUILD_TEST_0031_ATKINSON_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0031_EXACT_NONE_P8_KEEP0 \
+    -DBUILD_TEST_0031_FS_LIVE_RASTER \
+    -DBUILD_TEST_0032_EXACT_NONE_P8_KEEP1 \
+    -DBUILD_TEST_0032_FS_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0032_FS_HISTORY_RUN \
+    -DBUILD_TEST_0033_EXACT_NONE_P9_KEEP0 \
+    -DBUILD_TEST_0033_FS_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0033_FS_HISTORY_DEFERRED \
+    -DBUILD_TEST_0034_ATKINSON_DEADZONE_RASTER \
+    -DBUILD_TEST_0034_EXACT_NONE_P9_KEEP1 \
+    -DBUILD_TEST_0034_FS_SERPENTINE_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0035_ATKINSON_DEADZONE_SERPENTINE \
+    -DBUILD_TEST_0035_EXACT_NONE_P33_KEEP0 \
+    -DBUILD_TEST_0035_FS_SERPENTINE_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0036_ATKINSON_LIVE_RASTER \
+    -DBUILD_TEST_0036_EXACT_NONE_P33_KEEP1 \
+    -DBUILD_TEST_0036_JAJUNI_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0037_ATKINSON_HISTORY_RUN \
+    -DBUILD_TEST_0037_EXACT_NONE_P64_KEEP0 \
+    -DBUILD_TEST_0037_JAJUNI_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0038_ATKINSON_HISTORY_DEFERRED \
+    -DBUILD_TEST_0038_EXACT_NONE_P64_KEEP1 \
+    -DBUILD_TEST_0038_STUCKI_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0039_EXACT_NONE_P200_KEEP0 \
+    -DBUILD_TEST_0039_JAJUNI_DEADZONE_RASTER \
+    -DBUILD_TEST_0039_STUCKI_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0039_WIRE_A_RGB_NONE \
+    -DBUILD_TEST_0040_BURKES_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0040_EXACT_NONE_P200_KEEP1 \
+    -DBUILD_TEST_0040_JAJUNI_DEADZONE_SERPENTINE \
+    -DBUILD_TEST_0041_BURKES_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0041_EXACT_NONE_P255_KEEP0 \
+    -DBUILD_TEST_0041_JAJUNI_LIVE_RASTER \
+    -DBUILD_TEST_0042_EXACT_NONE_P255_KEEP1 \
+    -DBUILD_TEST_0042_JAJUNI_HISTORY_RUN \
+    -DBUILD_TEST_0042_SIERRA1_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0043_JAJUNI_HISTORY_DEFERRED \
+    -DBUILD_TEST_0043_RESERVED_KEY_NONE_BLUENOISE \
+    -DBUILD_TEST_0043_SIERRA1_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0044_RESERVED_KEY_EYTZINGER_NONE \
+    -DBUILD_TEST_0044_SIERRA2_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0044_STUCKI_DEADZONE_RASTER \
+    -DBUILD_TEST_0044_WIRE_A_RGB_EYTZINGER \
+    -DBUILD_TEST_0045_EXACT_NONE_P2_KEEP1 \
+    -DBUILD_TEST_0045_RESERVED_KEY_EYTZINGER_BLUENOISE \
+    -DBUILD_TEST_0045_SIERRA2_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0045_STUCKI_DEADZONE_SERPENTINE \
+    -DBUILD_TEST_0045_WIRE_A_HLS_NONE \
+    -DBUILD_TEST_0045_WIRE_X_RGB_NONE \
+    -DBUILD_TEST_0046_EXACT_NONE_P33_KEEP0 \
+    -DBUILD_TEST_0046_SIERRA3_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0046_STUCKI_LIVE_RASTER \
+    -DBUILD_TEST_0046_WIRE_A_HLS_EYTZINGER \
+    -DBUILD_TEST_0047_EXACT_NONE_P33_KEEP1 \
+    -DBUILD_TEST_0047_SIERRA3_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0047_STUCKI_HISTORY_RUN \
+    -DBUILD_TEST_0048_A_DITHER_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0048_EXACT_NONE_P64_KEEP0 \
+    -DBUILD_TEST_0048_STUCKI_HISTORY_DEFERRED \
+    -DBUILD_TEST_0049_A_DITHER_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0049_BURKES_DEADZONE_RASTER \
+    -DBUILD_TEST_0049_EXACT_NONE_P64_KEEP1 \
+    -DBUILD_TEST_0050_AUTO_STRENGTH_P256_COLD \
+    -DBUILD_TEST_0050_BURKES_DEADZONE_SERPENTINE \
+    -DBUILD_TEST_0050_EXACT_NONE_P129_KEEP0 \
+    -DBUILD_TEST_0050_EXACT_NONE_P2_KEEP1 \
+    -DBUILD_TEST_0050_WIRE_X_RGB_EYTZINGER \
+    -DBUILD_TEST_0050_X_DITHER_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0051_BURKES_LIVE_RASTER \
+    -DBUILD_TEST_0051_EXACT_NONE_P129_KEEP1 \
+    -DBUILD_TEST_0051_EXACT_NONE_P33_KEEP0 \
+    -DBUILD_TEST_0051_WIRE_X_HLS_NONE \
+    -DBUILD_TEST_0051_X_DITHER_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0052_BLUENOISE_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0052_BURKES_HISTORY_RUN \
+    -DBUILD_TEST_0052_EXACT_NONE_P200_KEEP0 \
+    -DBUILD_TEST_0052_EXACT_NONE_P33_KEEP1 \
+    -DBUILD_TEST_0052_WIRE_X_HLS_EYTZINGER \
+    -DBUILD_TEST_0053_BLUENOISE_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0053_BURKES_HISTORY_DEFERRED \
+    -DBUILD_TEST_0053_EXACT_NONE_P200_KEEP1 \
+    -DBUILD_TEST_0053_EXACT_NONE_P64_KEEP0 \
+    -DBUILD_TEST_0054_EXACT_NONE_P255_KEEP0 \
+    -DBUILD_TEST_0054_EXACT_NONE_P64_KEEP1 \
+    -DBUILD_TEST_0054_LSO2_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0054_SIERRA1_DEADZONE_RASTER \
+    -DBUILD_TEST_0055_EXACT_NONE_P129_KEEP0 \
+    -DBUILD_TEST_0055_EXACT_NONE_P255_KEEP1 \
+    -DBUILD_TEST_0055_LSO2_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0055_SIERRA1_DEADZONE_SERPENTINE \
+    -DBUILD_TEST_0056_EXACT_BLUENOISE_P2_KEEP0 \
+    -DBUILD_TEST_0056_EXACT_NONE_P129_KEEP1 \
+    -DBUILD_TEST_0056_LSO2_RASTER_GPU_OFF_REFRESH_T0 \
+    -DBUILD_TEST_0056_SIERRA1_LIVE_RASTER \
+    -DBUILD_TEST_0057_AUTO_STRENGTH_P64_AFTER_P256 \
+    -DBUILD_TEST_0057_EXACT_BLUENOISE_P2_KEEP1 \
+    -DBUILD_TEST_0057_EXACT_NONE_P200_KEEP0 \
+    -DBUILD_TEST_0057_LSO2_RASTER_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0057_SIERRA1_HISTORY_RUN \
+    -DBUILD_TEST_0058_AUTO_STRENGTH_RESERVED65_AFTER_P64 \
+    -DBUILD_TEST_0058_EXACT_BLUENOISE_P33_KEEP0 \
+    -DBUILD_TEST_0058_EXACT_NONE_P200_KEEP1 \
+    -DBUILD_TEST_0058_SIERRA1_HISTORY_DEFERRED \
+    -DBUILD_TEST_0059_AUTO_STRENGTH_P16_AFTER_RESERVED65 \
+    -DBUILD_TEST_0059_EXACT_BLUENOISE_P33_KEEP1 \
+    -DBUILD_TEST_0059_EXACT_NONE_P255_KEEP0 \
+    -DBUILD_TEST_0059_SIERRA2_DEADZONE_RASTER \
+    -DBUILD_TEST_0060_AUTO_STRENGTH_P2_AFTER_P16 \
+    -DBUILD_TEST_0060_EXACT_BLUENOISE_P64_KEEP0 \
+    -DBUILD_TEST_0060_EXACT_NONE_P255_KEEP1 \
+    -DBUILD_TEST_0060_SIERRA2_DEADZONE_SERPENTINE \
+    -DBUILD_TEST_0061_AUTO_STRENGTH_P1_AFTER_P2 \
+    -DBUILD_TEST_0061_EXACT_BLUENOISE_P64_KEEP1 \
+    -DBUILD_TEST_0061_SIERRA2_LIVE_RASTER \
+    -DBUILD_TEST_0062_AUTO_STRENGTH_P256_AFTER_P1 \
+    -DBUILD_TEST_0062_EXACT_BLUENOISE_P129_KEEP0 \
+    -DBUILD_TEST_0062_SIERRA2_HISTORY_RUN \
+    -DBUILD_TEST_0063_EXACT_BLUENOISE_P129_KEEP1 \
+    -DBUILD_TEST_0063_SIERRA2_HISTORY_DEFERRED \
+    -DBUILD_TEST_0064_EXACT_BLUENOISE_P200_KEEP0 \
+    -DBUILD_TEST_0064_SIERRA3_DEADZONE_RASTER \
+    -DBUILD_TEST_0065_EXACT_BLUENOISE_P200_KEEP1 \
+    -DBUILD_TEST_0065_SIERRA3_DEADZONE_SERPENTINE \
+    -DBUILD_TEST_0066_EXACT_BLUENOISE_P255_KEEP0 \
+    -DBUILD_TEST_0066_SIERRA3_LIVE_RASTER \
+    -DBUILD_TEST_0067_EXACT_BLUENOISE_P255_KEEP1 \
+    -DBUILD_TEST_0067_SIERRA3_HISTORY_RUN \
+    -DBUILD_TEST_0068_EXACT_X_P2_KEEP0 \
+    -DBUILD_TEST_0068_SIERRA3_HISTORY_DEFERRED \
+    -DBUILD_TEST_0068_SNAKE_SSE_K16_I4_S1 \
+    -DBUILD_TEST_0069_EXACT_X_P2_KEEP1 \
+    -DBUILD_TEST_0069_FHEDT_R64_F0_D0_FS_HISTORY_RUN \
+    -DBUILD_TEST_0069_GRADIENT_SSE_K16_I4_S1 \
+    -DBUILD_TEST_0070_EXACT_X_P33_KEEP0 \
+    -DBUILD_TEST_0070_FHEDT_R64_F0_D0_FS_HISTORY_DEFERRED \
+    -DBUILD_TEST_0070_RARE_SSE_K16_I4_S1 \
+    -DBUILD_TEST_0071_EXACT_X_P33_KEEP1 \
+    -DBUILD_TEST_0071_FHEDT_R64_F0_D0_LSO2_HISTORY_RUN \
+    -DBUILD_TEST_0072_EXACT_X_P64_KEEP0 \
+    -DBUILD_TEST_0072_FHEDT_R64_F0_D0_LSO2_HISTORY_DEFERRED \
+    -DBUILD_TEST_0073_EXACT_X_P64_KEEP1 \
+    -DBUILD_TEST_0073_FHEDT_R64_F1_D1_FS_DEADZONE \
+    -DBUILD_TEST_0074_EXACT_X_P129_KEEP0 \
+    -DBUILD_TEST_0074_FHEDT_R64_F1_D1_FS_HISTORY_RUN \
+    -DBUILD_TEST_0075_EXACT_X_P129_KEEP1 \
+    -DBUILD_TEST_0075_FHEDT_R64_F1_D1_FS_HISTORY_DEFERRED \
+    -DBUILD_TEST_0076_EXACT_X_P200_KEEP0 \
+    -DBUILD_TEST_0076_FHEDT_R64_F1_D1_LSO2_HISTORY_RUN \
+    -DBUILD_TEST_0077_EXACT_X_P200_KEEP1 \
+    -DBUILD_TEST_0077_FHEDT_R64_F1_D1_LSO2_HISTORY_DEFERRED \
+    -DBUILD_TEST_0078_EXACT_X_P255_KEEP0 \
+    -DBUILD_TEST_0078_FHEDT_R128_F1_D0_FS_DEADZONE \
+    -DBUILD_TEST_0079_EXACT_X_P255_KEEP1 \
+    -DBUILD_TEST_0079_FHEDT_R128_F1_D0_FS_HISTORY_RUN \
+    -DBUILD_TEST_0080_FHEDT_R128_F1_D0_FS_HISTORY_DEFERRED \
+    -DBUILD_TEST_0081_FHEDT_R128_F1_D0_LSO2_HISTORY_RUN \
+    -DBUILD_TEST_0082_FHEDT_R128_F1_D0_LSO2_HISTORY_DEFERRED \
+    -DBUILD_TEST_0083_FHEDT_R256_F1_D0_FS_DEADZONE \
+    -DBUILD_TEST_0084_FHEDT_R256_F1_D0_FS_HISTORY_RUN \
+    -DBUILD_TEST_0085_FHEDT_R256_F1_D0_FS_HISTORY_DEFERRED \
+    -DBUILD_TEST_0086_FHEDT_R256_F1_D0_LSO2_HISTORY_RUN \
+    -DBUILD_TEST_0087_FHEDT_R256_F1_D0_LSO2_HISTORY_DEFERRED \
+    -DBUILD_TEST_0088_FHEDT_R256_F0_D0_FS_DEADZONE \
+    -DBUILD_TEST_0089_FHEDT_R256_F0_D0_FS_HISTORY_RUN \
+    -DBUILD_TEST_0090_FHEDT_R256_F0_D0_FS_HISTORY_DEFERRED \
+    -DBUILD_TEST_0091_FHEDT_R256_F0_D0_LSO2_HISTORY_RUN \
+    -DBUILD_TEST_0091_SNAKE_REPEAT_K16_I4_S1 \
+    -DBUILD_TEST_0092_FHEDT_R256_F0_D0_LSO2_HISTORY_DEFERRED \
+    -DBUILD_TEST_0092_SNAKE_SSE_K64_I12_S7 \
+    -DBUILD_TEST_0093_RGB_CELL_5BIT_FS_HISTORY_RUN \
+    -DBUILD_TEST_0093_SNAKE_REPEAT_K64_I12_S7 \
+    -DBUILD_TEST_0094_RGB_CELL_5BIT_FS_HISTORY_DEFERRED \
+    -DBUILD_TEST_0094_SNAKE_SSE_K256_I24_S42 \
+    -DBUILD_TEST_0095_RGB_CELL_5BIT_LSO2_HISTORY_RUN \
+    -DBUILD_TEST_0095_SNAKE_REPEAT_K256_I24_S42 \
+    -DBUILD_TEST_0096_GRADIENT_REPEAT_K16_I4_S1 \
+    -DBUILD_TEST_0096_RGB_CELL_5BIT_LSO2_HISTORY_DEFERRED \
+    -DBUILD_TEST_0097_GRADIENT_SSE_K64_I12_S7 \
+    -DBUILD_TEST_0097_RGB_CELL_6BIT_FS_DEADZONE \
+    -DBUILD_TEST_0098_GRADIENT_REPEAT_K64_I12_S7 \
+    -DBUILD_TEST_0098_RGB_CELL_6BIT_FS_HISTORY_RUN \
+    -DBUILD_TEST_0099_GRADIENT_SSE_K256_I24_S42 \
+    -DBUILD_TEST_0099_RGB_CELL_6BIT_FS_HISTORY_DEFERRED \
+    -DBUILD_TEST_0100_GRADIENT_REPEAT_K256_I24_S42 \
+    -DBUILD_TEST_0100_RGB_CELL_6BIT_LSO2_HISTORY_RUN \
+    -DBUILD_TEST_0101_RARE_REPEAT_K16_I4_S1 \
+    -DBUILD_TEST_0101_RGB_CELL_6BIT_LSO2_HISTORY_DEFERRED \
+    -DBUILD_TEST_0102_RARE_SSE_K64_I12_S7 \
+    -DBUILD_TEST_0103_RARE_REPEAT_K64_I12_S7 \
+    -DBUILD_TEST_0104_RARE_SSE_K256_I24_S42 \
+    -DBUILD_TEST_0105_RARE_REPEAT_K256_I24_S42 \
+    -DBUILD_TEST_0126_REFINE_INITIALLY_UNNEEDED \
+    -DBUILD_TEST_0127_PAINTED_PIXELS_NULL \
+    -DBUILD_TEST_0128_THRESHOLD_LIMIT_REJECT_256 \
+    -DBUILD_TEST_0129_THRESHOLD_LIMIT_INSTANCE_ISOLATION \
     -DBUILD_TEST_0044_FLOAT_POLICY_IDENTITY \
     -DBUILD_TEST_0089_FLOAT_POLICY_IDENTITY \
     -DBUILD_INTERLEAVED_COMMON \
@@ -294,9 +568,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0065_COMMAND_FORCE_RECOVERY \
     -DBUILD_TEST_0066_MIXED_RESTARTS \
     -DBUILD_TEST_0067_WORKLOAD_BOUNDARY \
-    -DBUILD_TEST_0068_SNAKE_SSE \
-    -DBUILD_TEST_0069_GRADIENT_SSE \
-    -DBUILD_TEST_0070_RARE_SSE \
     -DBUILD_TEST_0082_NUMERIC_AUTO_FALLBACK \
     -DBUILD_TEST_0083_NUMERIC_FORCE_REJECTION \
     -DBUILD_TEST_0086_REPAIR_TILE_TIES \
@@ -380,7 +651,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0057_GPU_VPTREE_FRACTIONAL_CACHE \
     -DBUILD_LATEST_FALLBACK \
     -DBUILD_TEST_0193_LATEST_BUILTIN_FALLBACK \
-    -DBUILD_TEST_0194_LATEST_HIGH_COLOR_FALLBACK \
+    -DBUILD_TEST_0026_LATEST_HIGH_COLOR_FALLBACK \
     -DBUILD_TEST_0067_PLAYBACK_FORMAT_TRANSITION \
     -DBUILD_LATEST \
     -DBUILD_TEST_0033_ADVANCE_WITHOUT_RECEIPT \
@@ -409,14 +680,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0079_QUEUE_SAMPLE_UNAVAILABLE \
     -DBUILD_TEST_0080_QUEUE_SAMPLE_LIVE \
     -DBUILD_TEST_0081_QUEUE_SAMPLE_TAIL \
-    -DBUILD_TEST_0001_FS_GPU_CARRY \
-    -DBUILD_TEST_0001_ATKINSON_GPU_CARRY \
-    -DBUILD_TEST_0001_JAJUNI_GPU_CARRY \
-    -DBUILD_TEST_0001_STUCKI_GPU_CARRY \
-    -DBUILD_TEST_0001_BURKES_GPU_CARRY \
-    -DBUILD_TEST_0001_SIERRA1_GPU_CARRY \
-    -DBUILD_TEST_0001_SIERRA2_GPU_CARRY \
-    -DBUILD_TEST_0001_SIERRA3_GPU_CARRY \
     -DBUILD_TEST_0064_PIPELINE_SAMPLE_STALE \
     -DBUILD_TEST_0065_PIPELINE_SAMPLE_SHORT \
     -DBUILD_TEST_0066_PIPELINE_SAMPLE_TAIL \
@@ -980,7 +1243,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_LEGACY_OPTIONS \
     -DBUILD_TEST_0009_FAILED_OUTPUT \
     -DBUILD_TEST_0010_LATEST_PLAYBACK \
-    -DBUILD_TEST_0028_ALL_DITHERS \
     -DBUILD_TEST_0011_PARTIAL_DIRECT \
     -DBUILD_TEST_0012_PARTIAL_AHEAD \
     -DBUILD_TEST_0013_PARTIAL_LATEST \
@@ -1099,8 +1361,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0043_X_AUTO_STRENGTH \
     -DBUILD_TEST_0038_A_STRENGTH_PRECEDENCE \
     -DBUILD_TEST_0044_X_STRENGTH_PRECEDENCE \
-    -DBUILD_TEST_0039_WIRE_A \
-    -DBUILD_TEST_0045_WIRE_X \
     -DBUILD_TEST_0001_PARITY_NONE \
     -DBUILD_TEST_0002_PARITY_A \
     -DBUILD_TEST_0003_PARITY_X \
@@ -1108,21 +1368,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0005_PARITY_FEW_COLORS \
     -DBUILD_TEST_0010_PARITY_FHEDT \
     -DBUILD_TEST_0011_PARITY_FHEDT_BLUENOISE \
-    -DBUILD_TEST_0012_PARITY_FHEDT_SETTINGS \
-    -DBUILD_TEST_0006_WIRE_A \
-    -DBUILD_TEST_0007_WIRE_X \
     -DBUILD_TEST_0008_STATISTICS \
     -DBUILD_TEST_0009_PLAYBACK_FORCE \
     -DBUILD_TEST_0010_PARITY_FHEDT \
     -DBUILD_TEST_0011_PARITY_FHEDT_BLUENOISE \
-    -DBUILD_TEST_0012_PARITY_FHEDT_SETTINGS \
-    -DBUILD_TEST_0013_DIFFUSE_LSO2_EXPECTED \
-    -DBUILD_TEST_0014_DIFFUSE_CARRY \
-    -DBUILD_TEST_0015_DIFFUSE_FHEDT \
-    -DBUILD_TEST_0016_DIFFUSE_RGB_CELL \
-    -DBUILD_TEST_0006_DIRECT_EXACT \
-    -DBUILD_TEST_0001_BLOCKCULL_EXACT \
-    -DBUILD_TEST_0001_GRIDLUT_EXACT \
     -DBUILD_TEST_0001_ORDERED_EXACT \
     -DBUILD_LOOKUP_EXACT_COMMON \
     -DBUILD_TEST_0143_GPU_RECTANGLE \
@@ -1250,7 +1499,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0020_PLAYBACK_DIRECT_EQUIVALENCE \
     -DBUILD_TEST_0021_PLAYBACK_ADMISSION \
     -DBUILD_TEST_0022_PLAYBACK_CANCEL_FAILURE \
-    -DBUILD_TEST_0026_PLAYBACK_PALETTE_POLICY \
     -DBUILD_TEST_0027_PALETTE_REQUEST_OWNERSHIP \
     -DBUILD_TEST_0028_PALETTE_SNAPSHOT_BYTES \
     -DBUILD_TEST_0029_PALETTE_SNAPSHOT_FLOAT \
@@ -3056,9 +3304,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0017_POSITIONAL_8BIT_NO_DIFFUSE_GPU_6DELTA \
     -DBUILD_TEST_0008_POSITIONAL_8BIT_BLUENOISE_GPU_FORCE_KEEP_OFFSET \
     -DBUILD_TEST_0002_GPU_PALETTE_THRESHOLD_STRTOUL \
-    -DBUILD_TEST_0003_RESERVED_KEY \
     -DBUILD_TEST_0049_FADE_HISTORY \
-    -DBUILD_TEST_0050_AUTO_STRENGTH \
     -DBUILD_TEST_0001_WIRE_RGB_NONE \
     -DBUILD_TEST_0051_WIRE_RGB_BLUENOISE \
     -DBUILD_TEST_0001_WIRE_RGB_EYTZINGER \
@@ -5337,6 +5583,351 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    _support/lso2-gpu/atkinson_carry_common.c \
+    _support/lso2-gpu/burkes_carry_common.c \
+    _support/lso2-gpu/direct_carry_common.c \
+    _support/lso2-gpu/direct_fhedt_common.c \
+    _support/lso2-gpu/direct_lso2_common.c \
+    _support/lso2-gpu/direct_rgb_cell_common.c \
+    _support/lso2-gpu/fs_carry_common.c \
+    _support/lso2-gpu/jajuni_carry_common.c \
+    _support/lso2-gpu/sierra1_carry_common.c \
+    _support/lso2-gpu/sierra2_carry_common.c \
+    _support/lso2-gpu/sierra3_carry_common.c \
+    _support/lso2-gpu/stucki_carry_common.c \
+    _support/planner/pipeline/playback_palette_common.c \
+    _support/processing/gpu-palette/auto_strength_common.c \
+    _support/processing/gpu-palette/cull_exact_common.c \
+    _support/processing/gpu-palette/direct_exact_common.c \
+    _support/processing/gpu-palette/grid_exact_common.c \
+    _support/processing/gpu-palette/reserved_key_common.c \
+    delta/palette/0126_refine_initially_unneeded.c \
+    delta/palette/0127_painted_pixels_null.c \
+    delta/palette/0128_threshold_limit_reject_256.c \
+    delta/palette/0129_threshold_limit_instance_isolation.c \
+    delta/refresh/0028_none_gpu_off_refresh_t0.c \
+    delta/refresh/0029_none_gpu_auto_refresh_t0.c \
+    delta/refresh/0030_atkinson_gpu_off_refresh_t0.c \
+    delta/refresh/0031_atkinson_gpu_auto_refresh_t0.c \
+    delta/refresh/0032_fs_gpu_off_refresh_t0.c \
+    delta/refresh/0033_fs_gpu_auto_refresh_t0.c \
+    delta/refresh/0034_fs_serpentine_gpu_off_refresh_t0.c \
+    delta/refresh/0035_fs_serpentine_gpu_auto_refresh_t0.c \
+    delta/refresh/0036_jajuni_gpu_off_refresh_t0.c \
+    delta/refresh/0037_jajuni_gpu_auto_refresh_t0.c \
+    delta/refresh/0038_stucki_gpu_off_refresh_t0.c \
+    delta/refresh/0039_stucki_gpu_auto_refresh_t0.c \
+    delta/refresh/0040_burkes_gpu_off_refresh_t0.c \
+    delta/refresh/0041_burkes_gpu_auto_refresh_t0.c \
+    delta/refresh/0042_sierra1_gpu_off_refresh_t0.c \
+    delta/refresh/0043_sierra1_gpu_auto_refresh_t0.c \
+    delta/refresh/0044_sierra2_gpu_off_refresh_t0.c \
+    delta/refresh/0045_sierra2_gpu_auto_refresh_t0.c \
+    delta/refresh/0046_sierra3_gpu_off_refresh_t0.c \
+    delta/refresh/0047_sierra3_gpu_auto_refresh_t0.c \
+    delta/refresh/0048_a_dither_gpu_off_refresh_t0.c \
+    delta/refresh/0049_a_dither_gpu_auto_refresh_t0.c \
+    delta/refresh/0050_x_dither_gpu_off_refresh_t0.c \
+    delta/refresh/0051_x_dither_gpu_auto_refresh_t0.c \
+    delta/refresh/0052_bluenoise_gpu_off_refresh_t0.c \
+    delta/refresh/0053_bluenoise_gpu_auto_refresh_t0.c \
+    delta/refresh/0054_lso2_gpu_off_refresh_t0.c \
+    delta/refresh/0055_lso2_gpu_auto_refresh_t0.c \
+    delta/refresh/0056_lso2_raster_gpu_off_refresh_t0.c \
+    delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0.c \
+    dither/a-dither/0039_wire_a_rgb_none.c \
+    dither/a-dither/0044_wire_a_rgb_eytzinger.c \
+    dither/a-dither/0045_wire_a_hls_none.c \
+    dither/a-dither/0046_wire_a_hls_eytzinger.c \
+    dither/atkinson-gpu/0001_accept_raster_soft.c \
+    dither/atkinson-gpu/0002_accept_serpentine_hard.c \
+    dither/atkinson-gpu/0003_reject_other_method.c \
+    dither/atkinson-gpu/0004_reject_lso2_method.c \
+    dither/atkinson-gpu/0005_reject_unbounded_clamp.c \
+    dither/atkinson-gpu/0006_reject_perturbation.c \
+    dither/atkinson-gpu/0007_reject_low_clamp.c \
+    dither/atkinson-gpu/0008_reject_negative_deadzone.c \
+    dither/atkinson-gpu/0009_deadzone_scan_parity.c \
+    dither/atkinson-gpu/0010_live_carry_changes_indexes.c \
+    dither/bluenoise/0050_auto_strength_p256_cold.c \
+    dither/bluenoise/0057_auto_strength_p64_after_p256.c \
+    dither/bluenoise/0058_auto_strength_reserved65_after_p64.c \
+    dither/bluenoise/0059_auto_strength_p16_after_reserved65.c \
+    dither/bluenoise/0060_auto_strength_p2_after_p16.c \
+    dither/bluenoise/0061_auto_strength_p1_after_p2.c \
+    dither/bluenoise/0062_auto_strength_p256_after_p1.c \
+    dither/burkes-gpu/0001_accept_raster_soft.c \
+    dither/burkes-gpu/0002_accept_serpentine_hard.c \
+    dither/burkes-gpu/0003_reject_other_method.c \
+    dither/burkes-gpu/0004_reject_lso2_method.c \
+    dither/burkes-gpu/0005_reject_unbounded_clamp.c \
+    dither/burkes-gpu/0006_reject_perturbation.c \
+    dither/burkes-gpu/0007_reject_low_clamp.c \
+    dither/burkes-gpu/0008_reject_negative_deadzone.c \
+    dither/burkes-gpu/0009_deadzone_scan_parity.c \
+    dither/burkes-gpu/0010_live_carry_changes_indexes.c \
+    dither/fs-gpu/0001_accept_raster_soft.c \
+    dither/fs-gpu/0002_accept_serpentine_hard.c \
+    dither/fs-gpu/0003_reject_other_method.c \
+    dither/fs-gpu/0004_reject_lso2_method.c \
+    dither/fs-gpu/0005_reject_unbounded_clamp.c \
+    dither/fs-gpu/0006_reject_perturbation.c \
+    dither/fs-gpu/0007_reject_low_clamp.c \
+    dither/fs-gpu/0008_reject_negative_deadzone.c \
+    dither/fs-gpu/0009_deadzone_scan_parity.c \
+    dither/fs-gpu/0010_live_carry_changes_indexes.c \
+    dither/gpu-direct/0006_parity_fhedt_x_p256_r256_f1_d0.c \
+    dither/gpu-direct/0007_parity_fhedt_none_p256_r64_f0_d0.c \
+    dither/gpu-direct/0012_parity_fhedt_none_p256_r128_f1_d0.c \
+    dither/gpu-direct/0013_lso2_standard_run.c \
+    dither/gpu-direct/0014_fs_deadzone_raster.c \
+    dither/gpu-direct/0015_fhedt_r64_f0_d0_fs_deadzone.c \
+    dither/gpu-direct/0016_rgb_cell_5bit_fs_deadzone.c \
+    dither/gpu-direct/0021_parity_fhedt_a_p16_r64_f1_d1.c \
+    dither/gpu-direct/0022_lso2_standard_deferred.c \
+    dither/gpu-direct/0023_lso2_small_error_run.c \
+    dither/gpu-direct/0024_lso2_small_error_deferred.c \
+    dither/gpu-direct/0025_lso2_t0_run.c \
+    dither/gpu-direct/0026_lso2_t0_deferred.c \
+    dither/gpu-direct/0027_lso2_refresh_run.c \
+    dither/gpu-direct/0028_lso2_refresh_deferred.c \
+    dither/gpu-direct/0029_lso2_palette256.c \
+    dither/gpu-direct/0030_fs_deadzone_serpentine.c \
+    dither/gpu-direct/0031_fs_live_raster.c \
+    dither/gpu-direct/0032_fs_history_run.c \
+    dither/gpu-direct/0033_fs_history_deferred.c \
+    dither/gpu-direct/0034_atkinson_deadzone_raster.c \
+    dither/gpu-direct/0035_atkinson_deadzone_serpentine.c \
+    dither/gpu-direct/0036_atkinson_live_raster.c \
+    dither/gpu-direct/0037_atkinson_history_run.c \
+    dither/gpu-direct/0038_atkinson_history_deferred.c \
+    dither/gpu-direct/0039_jajuni_deadzone_raster.c \
+    dither/gpu-direct/0040_jajuni_deadzone_serpentine.c \
+    dither/gpu-direct/0041_jajuni_live_raster.c \
+    dither/gpu-direct/0042_jajuni_history_run.c \
+    dither/gpu-direct/0043_jajuni_history_deferred.c \
+    dither/gpu-direct/0044_stucki_deadzone_raster.c \
+    dither/gpu-direct/0045_stucki_deadzone_serpentine.c \
+    dither/gpu-direct/0046_stucki_live_raster.c \
+    dither/gpu-direct/0047_stucki_history_run.c \
+    dither/gpu-direct/0048_stucki_history_deferred.c \
+    dither/gpu-direct/0049_burkes_deadzone_raster.c \
+    dither/gpu-direct/0050_burkes_deadzone_serpentine.c \
+    dither/gpu-direct/0051_burkes_live_raster.c \
+    dither/gpu-direct/0052_burkes_history_run.c \
+    dither/gpu-direct/0053_burkes_history_deferred.c \
+    dither/gpu-direct/0054_sierra1_deadzone_raster.c \
+    dither/gpu-direct/0055_sierra1_deadzone_serpentine.c \
+    dither/gpu-direct/0056_sierra1_live_raster.c \
+    dither/gpu-direct/0057_sierra1_history_run.c \
+    dither/gpu-direct/0058_sierra1_history_deferred.c \
+    dither/gpu-direct/0059_sierra2_deadzone_raster.c \
+    dither/gpu-direct/0060_sierra2_deadzone_serpentine.c \
+    dither/gpu-direct/0061_sierra2_live_raster.c \
+    dither/gpu-direct/0062_sierra2_history_run.c \
+    dither/gpu-direct/0063_sierra2_history_deferred.c \
+    dither/gpu-direct/0064_sierra3_deadzone_raster.c \
+    dither/gpu-direct/0065_sierra3_deadzone_serpentine.c \
+    dither/gpu-direct/0066_sierra3_live_raster.c \
+    dither/gpu-direct/0067_sierra3_history_run.c \
+    dither/gpu-direct/0068_sierra3_history_deferred.c \
+    dither/gpu-direct/0069_fhedt_r64_f0_d0_fs_history_run.c \
+    dither/gpu-direct/0070_fhedt_r64_f0_d0_fs_history_deferred.c \
+    dither/gpu-direct/0071_fhedt_r64_f0_d0_lso2_history_run.c \
+    dither/gpu-direct/0072_fhedt_r64_f0_d0_lso2_history_deferred.c \
+    dither/gpu-direct/0073_fhedt_r64_f1_d1_fs_deadzone.c \
+    dither/gpu-direct/0074_fhedt_r64_f1_d1_fs_history_run.c \
+    dither/gpu-direct/0075_fhedt_r64_f1_d1_fs_history_deferred.c \
+    dither/gpu-direct/0076_fhedt_r64_f1_d1_lso2_history_run.c \
+    dither/gpu-direct/0077_fhedt_r64_f1_d1_lso2_history_deferred.c \
+    dither/gpu-direct/0078_fhedt_r128_f1_d0_fs_deadzone.c \
+    dither/gpu-direct/0079_fhedt_r128_f1_d0_fs_history_run.c \
+    dither/gpu-direct/0080_fhedt_r128_f1_d0_fs_history_deferred.c \
+    dither/gpu-direct/0081_fhedt_r128_f1_d0_lso2_history_run.c \
+    dither/gpu-direct/0082_fhedt_r128_f1_d0_lso2_history_deferred.c \
+    dither/gpu-direct/0083_fhedt_r256_f1_d0_fs_deadzone.c \
+    dither/gpu-direct/0084_fhedt_r256_f1_d0_fs_history_run.c \
+    dither/gpu-direct/0085_fhedt_r256_f1_d0_fs_history_deferred.c \
+    dither/gpu-direct/0086_fhedt_r256_f1_d0_lso2_history_run.c \
+    dither/gpu-direct/0087_fhedt_r256_f1_d0_lso2_history_deferred.c \
+    dither/gpu-direct/0088_fhedt_r256_f0_d0_fs_deadzone.c \
+    dither/gpu-direct/0089_fhedt_r256_f0_d0_fs_history_run.c \
+    dither/gpu-direct/0090_fhedt_r256_f0_d0_fs_history_deferred.c \
+    dither/gpu-direct/0091_fhedt_r256_f0_d0_lso2_history_run.c \
+    dither/gpu-direct/0092_fhedt_r256_f0_d0_lso2_history_deferred.c \
+    dither/gpu-direct/0093_rgb_cell_5bit_fs_history_run.c \
+    dither/gpu-direct/0094_rgb_cell_5bit_fs_history_deferred.c \
+    dither/gpu-direct/0095_rgb_cell_5bit_lso2_history_run.c \
+    dither/gpu-direct/0096_rgb_cell_5bit_lso2_history_deferred.c \
+    dither/gpu-direct/0097_rgb_cell_6bit_fs_deadzone.c \
+    dither/gpu-direct/0098_rgb_cell_6bit_fs_history_run.c \
+    dither/gpu-direct/0099_rgb_cell_6bit_fs_history_deferred.c \
+    dither/gpu-direct/0100_rgb_cell_6bit_lso2_history_run.c \
+    dither/gpu-direct/0101_rgb_cell_6bit_lso2_history_deferred.c \
+    dither/jajuni-gpu/0001_accept_raster_soft.c \
+    dither/jajuni-gpu/0002_accept_serpentine_hard.c \
+    dither/jajuni-gpu/0003_reject_other_method.c \
+    dither/jajuni-gpu/0004_reject_lso2_method.c \
+    dither/jajuni-gpu/0005_reject_unbounded_clamp.c \
+    dither/jajuni-gpu/0006_reject_perturbation.c \
+    dither/jajuni-gpu/0007_reject_low_clamp.c \
+    dither/jajuni-gpu/0008_reject_negative_deadzone.c \
+    dither/jajuni-gpu/0009_deadzone_scan_parity.c \
+    dither/jajuni-gpu/0010_live_carry_changes_indexes.c \
+    dither/sierra1-gpu/0001_accept_raster_soft.c \
+    dither/sierra1-gpu/0002_accept_serpentine_hard.c \
+    dither/sierra1-gpu/0003_reject_other_method.c \
+    dither/sierra1-gpu/0004_reject_lso2_method.c \
+    dither/sierra1-gpu/0005_reject_unbounded_clamp.c \
+    dither/sierra1-gpu/0006_reject_perturbation.c \
+    dither/sierra1-gpu/0007_reject_low_clamp.c \
+    dither/sierra1-gpu/0008_reject_negative_deadzone.c \
+    dither/sierra1-gpu/0009_deadzone_scan_parity.c \
+    dither/sierra1-gpu/0010_live_carry_changes_indexes.c \
+    dither/sierra2-gpu/0001_accept_raster_soft.c \
+    dither/sierra2-gpu/0002_accept_serpentine_hard.c \
+    dither/sierra2-gpu/0003_reject_other_method.c \
+    dither/sierra2-gpu/0004_reject_lso2_method.c \
+    dither/sierra2-gpu/0005_reject_unbounded_clamp.c \
+    dither/sierra2-gpu/0006_reject_perturbation.c \
+    dither/sierra2-gpu/0007_reject_low_clamp.c \
+    dither/sierra2-gpu/0008_reject_negative_deadzone.c \
+    dither/sierra2-gpu/0009_deadzone_scan_parity.c \
+    dither/sierra2-gpu/0010_live_carry_changes_indexes.c \
+    dither/sierra3-gpu/0001_accept_raster_soft.c \
+    dither/sierra3-gpu/0002_accept_serpentine_hard.c \
+    dither/sierra3-gpu/0003_reject_other_method.c \
+    dither/sierra3-gpu/0004_reject_lso2_method.c \
+    dither/sierra3-gpu/0005_reject_unbounded_clamp.c \
+    dither/sierra3-gpu/0006_reject_perturbation.c \
+    dither/sierra3-gpu/0007_reject_low_clamp.c \
+    dither/sierra3-gpu/0008_reject_negative_deadzone.c \
+    dither/sierra3-gpu/0009_deadzone_scan_parity.c \
+    dither/sierra3-gpu/0010_live_carry_changes_indexes.c \
+    dither/stucki-gpu/0001_accept_raster_soft.c \
+    dither/stucki-gpu/0002_accept_serpentine_hard.c \
+    dither/stucki-gpu/0003_reject_other_method.c \
+    dither/stucki-gpu/0004_reject_lso2_method.c \
+    dither/stucki-gpu/0005_reject_unbounded_clamp.c \
+    dither/stucki-gpu/0006_reject_perturbation.c \
+    dither/stucki-gpu/0007_reject_low_clamp.c \
+    dither/stucki-gpu/0008_reject_negative_deadzone.c \
+    dither/stucki-gpu/0009_deadzone_scan_parity.c \
+    dither/stucki-gpu/0010_live_carry_changes_indexes.c \
+    dither/x-dither/0045_wire_x_rgb_none.c \
+    dither/x-dither/0050_wire_x_rgb_eytzinger.c \
+    dither/x-dither/0051_wire_x_hls_none.c \
+    dither/x-dither/0052_wire_x_hls_eytzinger.c \
+    encoder/playback-palette/0001_b1_frame_inherit_session.c \
+    encoder/playback-palette/0002_b1_frame_frame_session.c \
+    encoder/playback-palette/0003_b1_frame_latest_session.c \
+    encoder/playback-palette/0004_b1_frame_auto_session.c \
+    encoder/playback-palette/0005_b1_latest_inherit_session.c \
+    encoder/playback-palette/0006_b1_latest_frame_session.c \
+    encoder/playback-palette/0007_b1_latest_latest_session.c \
+    encoder/playback-palette/0008_b1_latest_auto_session.c \
+    encoder/playback-palette/0009_b1_auto_inherit_session.c \
+    encoder/playback-palette/0010_b1_auto_frame_session.c \
+    encoder/playback-palette/0011_b1_auto_latest_session.c \
+    encoder/playback-palette/0012_b1_auto_auto_session.c \
+    encoder/playback-palette/0013_b4_frame_inherit_session.c \
+    encoder/playback-palette/0014_b4_frame_frame_session.c \
+    encoder/playback-palette/0015_b4_frame_latest_session.c \
+    encoder/playback-palette/0016_b4_frame_auto_session.c \
+    encoder/playback-palette/0017_b4_latest_inherit_session.c \
+    encoder/playback-palette/0018_b4_latest_frame_session.c \
+    encoder/playback-palette/0019_b4_latest_latest_session.c \
+    encoder/playback-palette/0020_b4_latest_auto_session.c \
+    encoder/playback-palette/0021_b4_auto_inherit_session.c \
+    encoder/playback-palette/0022_b4_auto_frame_session.c \
+    encoder/playback-palette/0023_b4_auto_latest_session.c \
+    encoder/playback-palette/0024_b4_auto_auto_session.c \
+    lookup/blockcull/0001_exact_none_p2_keep0.c \
+    lookup/blockcull/0050_exact_none_p2_keep1.c \
+    lookup/blockcull/0051_exact_none_p33_keep0.c \
+    lookup/blockcull/0052_exact_none_p33_keep1.c \
+    lookup/blockcull/0053_exact_none_p64_keep0.c \
+    lookup/blockcull/0054_exact_none_p64_keep1.c \
+    lookup/blockcull/0055_exact_none_p129_keep0.c \
+    lookup/blockcull/0056_exact_none_p129_keep1.c \
+    lookup/blockcull/0057_exact_none_p200_keep0.c \
+    lookup/blockcull/0058_exact_none_p200_keep1.c \
+    lookup/blockcull/0059_exact_none_p255_keep0.c \
+    lookup/blockcull/0060_exact_none_p255_keep1.c \
+    lookup/dispatch/0003_reserved_key_none_none.c \
+    lookup/dispatch/0006_exact_none_p2_keep0.c \
+    lookup/dispatch/0028_exact_none_p2_keep1.c \
+    lookup/dispatch/0029_exact_none_p7_keep0.c \
+    lookup/dispatch/0030_exact_none_p7_keep1.c \
+    lookup/dispatch/0031_exact_none_p8_keep0.c \
+    lookup/dispatch/0032_exact_none_p8_keep1.c \
+    lookup/dispatch/0033_exact_none_p9_keep0.c \
+    lookup/dispatch/0034_exact_none_p9_keep1.c \
+    lookup/dispatch/0035_exact_none_p33_keep0.c \
+    lookup/dispatch/0036_exact_none_p33_keep1.c \
+    lookup/dispatch/0037_exact_none_p64_keep0.c \
+    lookup/dispatch/0038_exact_none_p64_keep1.c \
+    lookup/dispatch/0039_exact_none_p200_keep0.c \
+    lookup/dispatch/0040_exact_none_p200_keep1.c \
+    lookup/dispatch/0041_exact_none_p255_keep0.c \
+    lookup/dispatch/0042_exact_none_p255_keep1.c \
+    lookup/dispatch/0043_reserved_key_none_bluenoise.c \
+    lookup/dispatch/0044_reserved_key_eytzinger_none.c \
+    lookup/dispatch/0045_reserved_key_eytzinger_bluenoise.c \
+    lookup/gridlut/0001_exact_none_p2_keep0.c \
+    lookup/gridlut/0045_exact_none_p2_keep1.c \
+    lookup/gridlut/0046_exact_none_p33_keep0.c \
+    lookup/gridlut/0047_exact_none_p33_keep1.c \
+    lookup/gridlut/0048_exact_none_p64_keep0.c \
+    lookup/gridlut/0049_exact_none_p64_keep1.c \
+    lookup/gridlut/0050_exact_none_p129_keep0.c \
+    lookup/gridlut/0051_exact_none_p129_keep1.c \
+    lookup/gridlut/0052_exact_none_p200_keep0.c \
+    lookup/gridlut/0053_exact_none_p200_keep1.c \
+    lookup/gridlut/0054_exact_none_p255_keep0.c \
+    lookup/gridlut/0055_exact_none_p255_keep1.c \
+    lookup/gridlut/0056_exact_bluenoise_p2_keep0.c \
+    lookup/gridlut/0057_exact_bluenoise_p2_keep1.c \
+    lookup/gridlut/0058_exact_bluenoise_p33_keep0.c \
+    lookup/gridlut/0059_exact_bluenoise_p33_keep1.c \
+    lookup/gridlut/0060_exact_bluenoise_p64_keep0.c \
+    lookup/gridlut/0061_exact_bluenoise_p64_keep1.c \
+    lookup/gridlut/0062_exact_bluenoise_p129_keep0.c \
+    lookup/gridlut/0063_exact_bluenoise_p129_keep1.c \
+    lookup/gridlut/0064_exact_bluenoise_p200_keep0.c \
+    lookup/gridlut/0065_exact_bluenoise_p200_keep1.c \
+    lookup/gridlut/0066_exact_bluenoise_p255_keep0.c \
+    lookup/gridlut/0067_exact_bluenoise_p255_keep1.c \
+    lookup/gridlut/0068_exact_x_p2_keep0.c \
+    lookup/gridlut/0069_exact_x_p2_keep1.c \
+    lookup/gridlut/0070_exact_x_p33_keep0.c \
+    lookup/gridlut/0071_exact_x_p33_keep1.c \
+    lookup/gridlut/0072_exact_x_p64_keep0.c \
+    lookup/gridlut/0073_exact_x_p64_keep1.c \
+    lookup/gridlut/0074_exact_x_p129_keep0.c \
+    lookup/gridlut/0075_exact_x_p129_keep1.c \
+    lookup/gridlut/0076_exact_x_p200_keep0.c \
+    lookup/gridlut/0077_exact_x_p200_keep1.c \
+    lookup/gridlut/0078_exact_x_p255_keep0.c \
+    lookup/gridlut/0079_exact_x_p255_keep1.c \
+    palette/kmeans/0068_snake_sse_k16_i4_s1.c \
+    palette/kmeans/0069_gradient_sse_k16_i4_s1.c \
+    palette/kmeans/0070_rare_sse_k16_i4_s1.c \
+    palette/kmeans/0091_snake_repeat_k16_i4_s1.c \
+    palette/kmeans/0092_snake_sse_k64_i12_s7.c \
+    palette/kmeans/0093_snake_repeat_k64_i12_s7.c \
+    palette/kmeans/0094_snake_sse_k256_i24_s42.c \
+    palette/kmeans/0095_snake_repeat_k256_i24_s42.c \
+    palette/kmeans/0096_gradient_repeat_k16_i4_s1.c \
+    palette/kmeans/0097_gradient_sse_k64_i12_s7.c \
+    palette/kmeans/0098_gradient_repeat_k64_i12_s7.c \
+    palette/kmeans/0099_gradient_sse_k256_i24_s42.c \
+    palette/kmeans/0100_gradient_repeat_k256_i24_s42.c \
+    palette/kmeans/0101_rare_repeat_k16_i4_s1.c \
+    palette/kmeans/0102_rare_sse_k64_i12_s7.c \
+    palette/kmeans/0103_rare_repeat_k64_i12_s7.c \
+    palette/kmeans/0104_rare_sse_k256_i24_s42.c \
+    palette/kmeans/0105_rare_repeat_k256_i24_s42.c \
     lookup/gridlut/0044_float_policy_identity.c \
     lookup/ordered/0089_float_policy_identity.c \
     lookup/none/0007_gpu_interleaved_consumers.c \
@@ -5681,7 +6272,7 @@ test_runner_SOURCES = test_runner.c \
     encoder/planning/0191_prepare_ahead_write_failure_drain.c \
     encoder/planning/0192_gpu_ahead_explicit_serial.c \
     encoder/planning/0193_latest_builtin_fallback.c \
-    encoder/planning/0194_latest_high_color_fallback.c \
+    encoder/planning/0026_latest_high_color_fallback.c \
     _support/planner/pipeline/latest_fallback.c \
     encoder/planning/0109_playback_serial_reservation.c \
     encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
@@ -6810,7 +7401,6 @@ test_runner_SOURCES = test_runner.c \
     encoder/planning/0020_playback_direct_equivalence.c \
     encoder/planning/0021_playback_admission.c \
     encoder/planning/0022_playback_cancel_failure.c \
-    encoder/planning/0026_playback_palette_policy.c \
     encoder/planning/0027_palette_request_ownership.c \
     encoder/planning/0028_palette_snapshot_bytes.c \
     encoder/planning/0029_palette_snapshot_float.c \
@@ -7454,16 +8044,11 @@ test_runner_SOURCES = test_runner.c \
     delta/refresh/0008_legacy_options.c \
     delta/refresh/0009_failed_output.c \
     delta/refresh/0010_latest_playback.c \
-    delta/refresh/0028_all_dithers.c \
     _support/processing/delta-refresh/refresh_test_common.c \
     _support/processing/delta-residual/gate_test_common.c \
     _support/processing/delta-residual/residual_test_common.c \
     lookup/dispatch/0002_gpu_palette_threshold_strtoul.c \
-    lookup/dispatch/0003_reserved_key.c \
     dither/bluenoise/0049_fade_history.c \
-    dither/bluenoise/0050_auto_strength.c \
-    dither/a-dither/0039_wire_a.c \
-    dither/x-dither/0045_wire_x.c \
     _support/processing/gpu-palette/arithmetic_test_common.c \
     dither/a-dither/0036_a_candidates.c \
     dither/x-dither/0042_x_candidates.c \
@@ -7478,17 +8063,10 @@ test_runner_SOURCES = test_runner.c \
     dither/gpu-direct/0003_parity_x.c \
     dither/gpu-direct/0004_parity_bluenoise.c \
     dither/gpu-direct/0005_parity_few_colors.c \
-    dither/gpu-direct/0006_wire_a.c \
-    dither/gpu-direct/0007_wire_x.c \
     dither/gpu-direct/0008_statistics.c \
     dither/gpu-direct/0009_playback_force.c \
     dither/gpu-direct/0010_parity_fhedt.c \
     dither/gpu-direct/0011_parity_fhedt_bluenoise.c \
-    dither/gpu-direct/0012_parity_fhedt_settings.c \
-    dither/gpu-direct/0013_diffuse_lso2_expected.c \
-    dither/gpu-direct/0014_diffuse_carry.c \
-    dither/gpu-direct/0015_diffuse_fhedt.c \
-    dither/gpu-direct/0016_diffuse_rgb_cell.c \
     lookup/none/0001_wire_rgb_none.c \
     dither/bluenoise/0051_wire_rgb_bluenoise.c \
     lookup/eytzinger/0001_wire_rgb_eytzinger.c \
@@ -7496,9 +8074,6 @@ test_runner_SOURCES = test_runner.c \
     dither/bluenoise/0052_wire_hls_bluenoise.c \
     lookup/dispatch/0004_comparison_default.c \
     lookup/dispatch/0005_comparison_short.c \
-    lookup/dispatch/0006_direct_exact.c \
-    lookup/blockcull/0001_blockcull_exact.c \
-    lookup/gridlut/0001_gridlut_exact.c \
     lookup/ordered/0001_ordered_exact.c \
     encoder/indexed/0080_injected_gpu_program.c \
     encoder/indexed/0082_vptree_force_no_cpu.c \
@@ -7586,14 +8161,6 @@ test_runner_SOURCES = test_runner.c \
     dither/lso2-gpu/0079_queue_sample_unavailable.c \
     dither/lso2-gpu/0080_queue_sample_live.c \
     dither/lso2-gpu/0081_queue_sample_tail.c \
-    dither/fs-gpu/0001_fs_gpu_carry.c \
-    dither/atkinson-gpu/0001_atkinson_gpu_carry.c \
-    dither/jajuni-gpu/0001_jajuni_gpu_carry.c \
-    dither/stucki-gpu/0001_stucki_gpu_carry.c \
-    dither/burkes-gpu/0001_burkes_gpu_carry.c \
-    dither/sierra1-gpu/0001_sierra1_gpu_carry.c \
-    dither/sierra2-gpu/0001_sierra2_gpu_carry.c \
-    dither/sierra3-gpu/0001_sierra3_gpu_carry.c \
     dither/lso2-gpu/0064_pipeline_sample_stale.c \
     dither/lso2-gpu/0065_pipeline_sample_short.c \
     dither/lso2-gpu/0066_pipeline_sample_tail.c \
@@ -9180,9 +9747,6 @@ test_runner_SOURCES = test_runner.c \
     palette/kmeans/0065_command_force_recovery.c \
     palette/kmeans/0066_mixed_restarts.c \
     palette/kmeans/0067_workload_boundary.c \
-    palette/kmeans/0068_snake_sse.c \
-    palette/kmeans/0069_gradient_sse.c \
-    palette/kmeans/0070_rare_sse.c \
     palette/kmeans/0082_numeric_auto_fallback.c \
     palette/kmeans/0083_numeric_force_rejection.c \
     palette/kmeans/0084_gpu_latest_frontier.c \

@@ -125,41 +125,27 @@ end:
 /* refresh=1 selects every pixel on every frame, so each early-keep gate
  * must then behave exactly as T0. Any application path that ignored the
  * refresh mask would keep T8 approximations and change the bytes. */
-static int
-refresh_all_dithers(void)
+int
+test_refresh_dither_equivalence(char const *method, char const *gpu)
 {
-    static char const *const methods[] = {
-        "none", "atkinson", "fs", "fs:scan=serpentine", "jajuni", "stucki",
-        "burkes", "sierra:variant=1", "sierra:variant=2", "sierra:variant=3",
-        "a_dither", "x_dither", "bluenoise", "lso2", "lso2:scan=raster",
-    };
-    static char const *const gpus[] = { "off", "auto" };
     static refresh_output_t refreshed[3], exact[3];
-    size_t m, g;
     int frame_no;
 
-    for (g = 0; g < sizeof(gpus) / sizeof(gpus[0]); ++g) {
-        for (m = 0; m < sizeof(methods) / sizeof(methods[0]); ++m) {
-            if (!refresh_encode_sequence(methods[m], gpus[g],
-                    "delta:T8:refresh=1", refreshed) ||
-                    !refresh_encode_sequence(methods[m], gpus[g],
-                        "delta:T0", exact)) {
-                return 0;
-            }
-            for (frame_no = 0; frame_no < 3; ++frame_no) {
-                if (refreshed[frame_no].size != exact[frame_no].size ||
-                        memcmp(refreshed[frame_no].bytes,
-                            exact[frame_no].bytes,
-                            exact[frame_no].size) != 0) {
-                    fprintf(stderr, "refresh dither %s/%s frame %d: "
-                        "refresh=1 differs from T0\n", methods[m], gpus[g],
-                        frame_no);
-                    return 0;
-                }
-            }
+    if (!refresh_encode_sequence(method, gpu,
+            "delta:T8:refresh=1", refreshed) ||
+            !refresh_encode_sequence(method, gpu, "delta:T0", exact)) {
+        return 1;
+    }
+    for (frame_no = 0; frame_no < 3; ++frame_no) {
+        if (refreshed[frame_no].size != exact[frame_no].size ||
+                memcmp(refreshed[frame_no].bytes, exact[frame_no].bytes,
+                    exact[frame_no].size) != 0) {
+            fprintf(stderr, "refresh %s/%s frame %d differs from T0\n",
+                method, gpu, frame_no);
+            return 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 int
@@ -191,10 +177,6 @@ test_delta_refresh(int mode)
     memset(&state, 0, sizeof(state));
     memset(&out, 0, sizeof(out));
     memset(seen, 0, sizeof(seen));
-    if (mode == 28) {
-        ok = refresh_all_dithers();
-        goto end;
-    }
     if (mode >= 2 && mode <= 5) {
         /* A restart without valid history selects nothing; frame zero. */
         sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 4, 0);

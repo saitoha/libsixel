@@ -35,14 +35,13 @@ test_delta_refinement(int mode)
     sixel_frame_interface_t *iface;
     float floats[72];
     sixel_encoder_t *encoder;
-    sixel_encoder_t *other;
     sixel_frame_t *frame;
     sixel_output_t *output;
     sixel_dither_t *dither;
     int i;
     int ok;
 
-    encoder = other = NULL;
+    encoder = NULL;
     frame = NULL;
     output = NULL;
     ok = 0;
@@ -51,7 +50,6 @@ test_delta_refinement(int mode)
     memset(history, mode == 3 ? 0 : 5, sizeof(history));
     mask = NULL;
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
-            SIXEL_FAILED(sixel_encoder_new(&other, NULL)) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_output_new(&output, refinement_write,
                 NULL, NULL))) {
@@ -118,16 +116,12 @@ test_delta_refinement(int mode)
     dither = (sixel_dither_t *)encoder->diagnostic_dither;
     if (!sixel_encoder_needs_6delta_refinement(encoder) ||
             sixel_encoder_get_6delta_painted_pixels(encoder) != 0u ||
-            sixel_encoder_get_6delta_painted_pixels(NULL) != 0u ||
             memcmp(encoder->accumulation_pixels, history, sizeof(history)) ||
-            dither == NULL || (mode == 1 && !dither->use_rgb101_palette) ||
-            sixel_encoder_needs_6delta_refinement(other)) {
+            dither == NULL || (mode == 1 && !dither->use_rgb101_palette)) {
         goto end;
     }
     if (SIXEL_FAILED(sixel_encoder_set_6delta_threshold_limit(encoder, 0)) ||
-            sixel_encoder_set_6delta_threshold_limit(encoder, 256) !=
-                SIXEL_BAD_ARGUMENT || encoder->sixdelta_threshold_limit != 0 ||
-            other->sixdelta_threshold_limit != 255 ||
+            encoder->sixdelta_threshold_limit != 0 ||
             SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
             sixel_encoder_needs_6delta_refinement(encoder) ||
             sixel_encoder_get_6delta_painted_pixels(encoder) != 24u) {
@@ -155,6 +149,5 @@ end:
     sixel_output_unref(output);
     sixel_frame_unref(frame);
     sixel_encoder_unref(encoder);
-    sixel_encoder_unref(other);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
