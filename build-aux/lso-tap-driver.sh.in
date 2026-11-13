@@ -740,14 +740,15 @@ LC_ALL=C "$AM_TAP_AWK" \
      if (match(line,/[ \t]+-[ \t]+/)) {
        desc=substr(line,RSTART+RLENGTH)
      }
-     # Strip directives from description
-     sub(/[ \t]*#[ \t]*(SKIP|TODO)\b.*/,"",desc)
+     # POSIX awk interprets \b as backspace, not a word boundary.
+     # A directive ends at whitespace or the end of the TAP record.
+     sub(/[ \t]*#[ \t]*(SKIP|TODO)([[:space:]]|$).*/,"",desc)
      desc=trim(desc)
      if (desc=="") desc=sprintf("test %d", n)
 
      # Directives
-     is_skip = (line ~ /#[ \t]*SKIP\b/)
-     is_todo = (line ~ /#[ \t]*TODO\b/)
+     is_skip = (line ~ /#[ \t]*SKIP([[:space:]]|$)/)
+     is_todo = (line ~ /#[ \t]*TODO([[:space:]]|$)/)
 
      if (is_skip) {
        skip++
@@ -872,6 +873,31 @@ done < "$trs_file"
         read -r col1 col2 col3 col4 <<__line__
 ${line}
 __line__
+        # Parse the directive token separately from its optional reason.
+        # This handles descriptions before # and rejects SKIPPED/TODOING.
+        directive=
+        directive_reason=
+        case "$line" in
+            *'#'*)
+                read -r directive directive_reason <<__tap_directive__
+${line#*#}
+__tap_directive__
+                ;;
+        esac
+        case "$col1:$col2:$directive" in
+            ok:*:SKIP|not:ok:SKIP)
+                saw_tap=1
+                skip=$((skip+1))
+                echo ":test-result: SKIP $directive_reason" >&2
+                continue
+                ;;
+            ok:*:TODO|not:ok:TODO)
+                saw_tap=1
+                xfail=$((xfail+1))
+                echo ":test-result: XFAIL ${line%%#*}" >&2
+                continue
+                ;;
+        esac
         case "$col1" in
             1..*)
                 saw_tap=1
@@ -884,46 +910,24 @@ __line__
                 ;;
             ok)
                 saw_tap=1
-                test "$col3" = '#' && test "$col4" = SKIP && {
-                    skip=$((skip+1))
-                    desc="${line#*SKIP}"
-                    echo ":test-result: SKIP $desc" >&2
-                    continue
-                }
-                case "$line" in
-                    *"# TODO"*)
-                        xfail=$((xfail+1))
-                        echo ":test-result: XFAIL ${line#*-}" >&2
-                        ;;
-                    *)
-                        if test "$expect_failure" = yes; then
-                            xpass=$((xpass+1))
-                            echo ":test-result: XPASS ${line#*-}" >&2
-                        else
-                            pass=$((pass+1))
-                            echo ":test-result: PASS ${line#*-}" >&2
-                        fi
-                        ;;
-                esac
+                if test "$expect_failure" = yes; then
+                    xpass=$((xpass+1))
+                    echo ":test-result: XPASS ${line#*-}" >&2
+                else
+                    pass=$((pass+1))
+                    echo ":test-result: PASS ${line#*-}" >&2
+                fi
                 ;;
             not)
                 test "$col2" = ok || continue
                 saw_tap=1
-                case "$line" in
-                    *"# TODO"*)
-                        xfail=$((xfail+1))
-                        echo ":test-result: XFAIL ${line#*-}" >&2
-                        ;;
-                    *)
-                        if test "$expect_failure" = yes; then
-                            xfail=$((xfail+1))
-                            echo ":test-result: XFAIL ${line#*-}" >&2
-                        else
-                            fail=$((fail+1))
-                            echo ":test-result: FAIL ${line#*-}" >&2
-                        fi
-                        ;;
-                esac
+                if test "$expect_failure" = yes; then
+                    xfail=$((xfail+1))
+                    echo ":test-result: XFAIL ${line#*-}" >&2
+                else
+                    fail=$((fail+1))
+                    echo ":test-result: FAIL ${line#*-}" >&2
+                fi
                 ;;
         esac
     done <<__tap_stdout__

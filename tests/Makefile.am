@@ -12941,3 +12941,25 @@ EXTRA_DIST += lookup/none/0007_gpu_interleaved_consumers.t \
 EXTRA_DIST += lookup/ordered/0089_float_policy_identity.t
 
 EXTRA_DIST += lookup/gridlut/0044_float_policy_identity.t
+
+EXTRA_DIST += tools/tap/0001_awk_skip_reason.t \
+    tools/tap/0002_awk_todo_reason.t \
+    tools/tap/0003_awk_skip_word_boundary.t \
+    tools/tap/0004_awk_todo_word_boundary.t \
+    tools/tap/0005_awk_skip_end.t \
+    tools/tap/0006_awk_todo_end.t \
+    tools/tap/0007_shell_skip_reason.t \
+    tools/tap/0008_shell_todo_reason.t \
+    tools/tap/0009_shell_skip_word_boundary.t \
+    tools/tap/0010_shell_todo_word_boundary.t \
+    tools/tap/0011_shell_skip_end.t \
+    tools/tap/0012_shell_todo_end.t
+
+EXTRA_DIST += tools/tap/data/skip_end.txt \
+    tools/tap/data/skip_reason.txt \
+    tools/tap/data/skip_word_boundary.txt \
+    tools/tap/data/todo_end.txt \
+    tools/tap/data/todo_reason.txt \
+    tools/tap/data/todo_word_boundary.txt
+
+EXTRA_DIST += _support/tools/tap-directive.sh
