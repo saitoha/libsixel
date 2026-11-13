@@ -374,7 +374,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-carry.h $(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
 	$(srcdir)/gpu-dequant.h $(srcdir)/delta-residual.c \
-	$(srcdir)/delta-residual.h $(srcdir)/dither-policy-gpu.c \
+	$(srcdir)/delta-residual.h $(srcdir)/refresh-spatial.c \
+	$(srcdir)/refresh-spatial.h $(srcdir)/dither-policy-gpu.c \
 	$(srcdir)/dither-policy-gpu.h \
 	$(srcdir)/dither-policy-none-gpu.c \
 	$(srcdir)/dither-policy-none-gpu.h \
@@ -685,6 +686,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-delta-residual.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-refresh-spatial.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-none-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-a-dither-gpu.lo \
@@ -1058,6 +1060,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-progressive-video.Plo \
 	./$(DEPDIR)/libsixel_la-progressive.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
+	./$(DEPDIR)/libsixel_la-refresh-spatial.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo \
@@ -1868,6 +1871,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/refresh-spatial.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/refresh-spatial.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none-gpu.c \
@@ -2608,6 +2613,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-video.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-refresh-spatial.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo@am__quote@ # am--include-marker
@@ -3380,6 +3386,13 @@ libsixel_la-delta-residual.lo: delta-residual.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta-residual.c' object='libsixel_la-delta-residual.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-delta-residual.lo `test -f 'delta-residual.c' || echo '$(srcdir)/'`delta-residual.c
+
+libsixel_la-refresh-spatial.lo: refresh-spatial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-refresh-spatial.lo -MD -MP -MF $(DEPDIR)/libsixel_la-refresh-spatial.Tpo -c -o libsixel_la-refresh-spatial.lo `test -f 'refresh-spatial.c' || echo '$(srcdir)/'`refresh-spatial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-refresh-spatial.Tpo $(DEPDIR)/libsixel_la-refresh-spatial.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='refresh-spatial.c' object='libsixel_la-refresh-spatial.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-refresh-spatial.lo `test -f 'refresh-spatial.c' || echo '$(srcdir)/'`refresh-spatial.c
 
 libsixel_la-dither-policy-gpu.lo: dither-policy-gpu.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-gpu.Tpo -c -o libsixel_la-dither-policy-gpu.lo `test -f 'dither-policy-gpu.c' || echo '$(srcdir)/'`dither-policy-gpu.c
@@ -4835,6 +4848,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-refresh-spatial.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo
@@ -5128,6 +5142,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-refresh-spatial.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo

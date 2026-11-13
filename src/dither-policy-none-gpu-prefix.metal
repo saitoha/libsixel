@@ -128,6 +128,20 @@ static bool prepare_query(
                     params.height) * params.residual_columns +
                     ((x + 1u) * params.residual_columns - 1u) /
                     params.width;
+            if (params.residual_tiled == 2u) {
+                uint level = (params.residual_levels[cell / 4u] >>
+                    ((cell % 4u) * 8u)) & 255u;
+                uint selected = level & 127u;
+                if ((level & 128u) != 0u) {
+                    uint spatial = (((y + 1u) * 64u - 1u) /
+                        params.height) * 64u +
+                        ((x + 1u) * 64u - 1u) / params.width;
+                    if ((params.residual_cells[spatial / 32u] &
+                            (1u << (spatial % 32u))) != 0u)
+                        selected = 8u;
+                }
+                local_threshold = min(local_threshold, selected);
+            } else
             if ((params.residual_cells[cell / 32u] &
                     (1u << (cell % 32u))) != 0u)
                 local_threshold = min(local_threshold,

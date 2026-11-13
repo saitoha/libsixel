@@ -1039,6 +1039,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      refresh=0..10000 (:Jvalue, frames, default 0/off)\n"
         "      refresh_floor=0..255 (:Lvalue, default 0)\n"
         "      refresh_curve=0|1|2 (:Avalue, default 0/uniform)\n"
+        "      refresh_spatial=0|1|2 (:Gvalue, needs J1:L4:A1)\n"
         "    Experimental J re-evaluates pixels with staggered deadlines.\n"
         "    L keeps errors <= L; A1/A2 slow small-error deadlines.\n"
         "    A1/A2 require none/a_dither/x_dither/bluenoise.\n"
@@ -1606,6 +1607,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_UPDATE_DELTA_REFRESH_CURVE",
         "set delta:refresh_curve (0 uniform, 1 inverse, 2 inverse square).\n"
         "Default 0; does not enable refresh or delta."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_REFRESH_SPATIAL",
+        "set delta:refresh_spatial (0 off, 1 16-frame, 2 32-frame).\n"
+        "Default 0; active refresh requires threads and J1:L4:A1."
     },
     {
         "SIXEL_UPDATE_DELTA_ERROR",

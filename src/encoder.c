@@ -93,6 +93,7 @@
 #include "lookup-policy.h"
 #include "tty.h"
 #include "encoder.h"
+#include "refresh-spatial.h"
 #include "encode-result.h"
 #include "encoder-palette.h"
 #include "encoder-palette-store.h"
@@ -3016,6 +3017,8 @@ sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
     encoder->refresh_floor_override = 0;
     encoder->refresh_curve = 0U;
     encoder->refresh_curve_override = 0;
+    encoder->refresh_spatial = 0U;
+    encoder->refresh_spatial_override = 0;
 }
 
 static int
@@ -3031,6 +3034,13 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
     int diffuse;
     int dither_limited;
 
+    if (encoder->refresh_spatial && encoder->refresh_frames &&
+            (!SIXEL_ENABLE_THREADS || encoder->refresh_frames != 1U ||
+             encoder->refresh_floor != 4U || encoder->refresh_curve != 1U)) {
+        sixel_helper_set_additional_message(
+            "refresh_spatial requires threads and J1:L4:A1.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder) &&
             sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
         return SIXEL_OK;
@@ -3161,7 +3171,8 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
         }
     }
     if (sixel_encoder_refresh_enabled(encoder)) {
-        /* Refresh needs no color analysis. Keep its clock local to the last
+        /* Base refresh needs no color analysis; optional spatial adaptation
+         * adds an independent producer. Keep the clock local to the last
          * successfully presented rectangle; switching regions reevaluates
          * the new region at T0 without erasing the rest of the retained plane.
          * This bounded state deliberately favors correctness over reusing
@@ -3181,6 +3192,13 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
         sixel_delta_refresh_adapt(&encoder->residual_state,
             origin_x, origin_y, encoder->refresh_frames,
             encoder->refresh_floor, encoder->refresh_curve);
+        if (encoder->refresh_spatial) {
+            status = sixel_refresh_spatial_prepare(
+                &encoder->refresh_spatial_state, encoder->allocator,
+                sixel_frame_get_pixels(frame), &encoder->residual_state,
+                encoder->refresh_spatial, NULL);
+            if (status != SIXEL_OK) return status;
+        }
         sixel_trace_topic_message("delta_refresh",
             "LSXREF1|frame=%llu|period=%u|selected=%lu|pixels=%lu",
             (unsigned long long)
@@ -12520,6 +12538,7 @@ sixel_encoder_new(
         goto end;
     }
 
+    (*ppencoder)->refresh_spatial_state = NULL;
     (*ppencoder)->option_staging = 0;
     (*ppencoder)->option_clear_cache = 0;
     (*ppencoder)->option_invalidate_history = 0;
@@ -13171,6 +13190,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
 
     if (encoder) {
         allocator = encoder->allocator;
+        sixel_refresh_spatial_free(encoder->refresh_spatial_state);
         sixel_cdef_free(encoder->output_icc);
         sixel_gamut_free(encoder->gamut_mapper);
         sixel_allocator_free(allocator, encoder->mapfile);
@@ -16251,6 +16271,7 @@ end:
                 encoder->refresh_frames != destination->refresh_frames ||
                 encoder->refresh_floor != destination->refresh_floor ||
                 encoder->refresh_curve != destination->refresh_curve ||
+                encoder->refresh_spatial != destination->refresh_spatial ||
                 encoder->residual_enabled != destination->residual_enabled ||
                 sixel_encoder_delta_metric(encoder) !=
                     sixel_encoder_delta_metric(destination) ||

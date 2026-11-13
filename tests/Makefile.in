@@ -141,6 +141,20 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	_support/processing/delta-refresh/spatial_test_common.c \
+	delta/refresh/0096_spatial_blue_cpu_keep.c \
+	delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
+	delta/refresh/0094_spatial_blue_gpu_fused_paint.c \
+	delta/refresh/0093_spatial_blue_gpu_fused_keep.c \
+	delta/refresh/0092_spatial_option_accepts_g2.c \
+	delta/refresh/0091_spatial_option_requires_l4.c \
+	delta/refresh/0090_spatial_async_stale_fallback.c \
+	delta/refresh/0089_spatial_async_latest_snapshot.c \
+	delta/refresh/0088_spatial_texture_map.c \
+	delta/refresh/0087_spatial_flat_map.c \
+	delta/refresh/0086_spatial_flat_original_period.c \
+	delta/refresh/0085_spatial_low_band_32_frames.c \
+	delta/refresh/0084_spatial_low_band_16_frames.c \
 	_support/lso2-gpu/atkinson_carry_common.c \
 	_support/lso2-gpu/burkes_carry_common.c \
 	_support/lso2-gpu/direct_carry_common.c \
@@ -5627,6 +5641,20 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/path.c
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0096_spatial_blue_cpu_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0092_spatial_option_accepts_g2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0091_spatial_option_requires_l4.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0090_spatial_async_stale_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0089_spatial_async_latest_snapshot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0088_spatial_texture_map.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0087_spatial_flat_map.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0086_spatial_flat_original_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0085_spatial_low_band_32_frames.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0084_spatial_low_band_16_frames.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-atkinson_carry_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-burkes_carry_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-direct_carry_common.$(OBJEXT) \
@@ -11470,6 +11498,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
 	_support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Po \
 	_support/processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po \
+	_support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Po \
 	_support/processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po \
 	_support/processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Po \
 	_support/processing/dither/$(DEPDIR)/test_runner-delta_compare_common.Po \
@@ -12501,6 +12530,19 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0084_spatial_low_band_16_frames.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0085_spatial_low_band_32_frames.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0086_spatial_flat_original_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0087_spatial_flat_map.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0088_spatial_texture_map.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0089_spatial_async_latest_snapshot.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0090_spatial_async_stale_fallback.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0091_spatial_option_requires_l4.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0092_spatial_option_accepts_g2.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0093_spatial_blue_gpu_fused_keep.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -17195,6 +17237,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SPATIAL_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_SPATIAL_LOW_BAND_16_FRAMES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_SPATIAL_LOW_BAND_32_FRAMES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_SPATIAL_FLAT_ORIGINAL_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0087_SPATIAL_FLAT_MAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0088_SPATIAL_TEXTURE_MAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0089_SPATIAL_ASYNC_LATEST_SNAPSHOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0090_SPATIAL_ASYNC_STALE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0091_SPATIAL_OPTION_REQUIRES_L4 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0092_SPATIAL_OPTION_ACCEPTS_G2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0093_SPATIAL_BLUE_GPU_FUSED_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0094_SPATIAL_BLUE_GPU_FUSED_PAINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ATKINSON_CARRY_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_AUTO_STRENGTH_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_BURKES_CARRY_COMMON \
@@ -22605,6 +22661,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/spatial_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0096_spatial_blue_cpu_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0094_spatial_blue_gpu_fused_paint.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0093_spatial_blue_gpu_fused_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0092_spatial_option_accepts_g2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0091_spatial_option_requires_l4.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0090_spatial_async_stale_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0089_spatial_async_latest_snapshot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0088_spatial_texture_map.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0087_spatial_flat_map.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0086_spatial_flat_original_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0085_spatial_low_band_32_frames.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0084_spatial_low_band_16_frames.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/atkinson_carry_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/burkes_carry_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/direct_carry_common.c \
@@ -28677,6 +28747,60 @@ lookup/delaunay/libfloatlookuptests_la-0012_delaunay_float_bulk.lo:  \
 
 libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
+_support/processing/delta-refresh/$(am__dirstamp):
+	@$(MKDIR_P) _support/processing/delta-refresh
+	@: >>_support/processing/delta-refresh/$(am__dirstamp)
+_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) _support/processing/delta-refresh/$(DEPDIR)
+	@: >>_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT):  \
+	_support/processing/delta-refresh/$(am__dirstamp) \
+	_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/$(am__dirstamp):
+	@$(MKDIR_P) delta/refresh
+	@: >>delta/refresh/$(am__dirstamp)
+delta/refresh/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) delta/refresh/$(DEPDIR)
+	@: >>delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0096_spatial_blue_cpu_keep.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0092_spatial_option_accepts_g2.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0091_spatial_option_requires_l4.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0090_spatial_async_stale_fallback.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0089_spatial_async_latest_snapshot.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0088_spatial_texture_map.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0087_spatial_flat_map.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0086_spatial_flat_original_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0085_spatial_low_band_32_frames.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0084_spatial_low_band_16_frames.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 _support/lso2-gpu/$(am__dirstamp):
 	@$(MKDIR_P) _support/lso2-gpu
 	@: >>_support/lso2-gpu/$(am__dirstamp)
@@ -28767,12 +28891,6 @@ delta/palette/test_runner-0128_threshold_limit_reject_256.$(OBJEXT):  \
 delta/palette/test_runner-0129_threshold_limit_instance_isolation.$(OBJEXT):  \
 	delta/palette/$(am__dirstamp) \
 	delta/palette/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/$(am__dirstamp):
-	@$(MKDIR_P) delta/refresh
-	@: >>delta/refresh/$(am__dirstamp)
-delta/refresh/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) delta/refresh/$(DEPDIR)
-	@: >>delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0028_none_gpu_off_refresh_t0.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
@@ -36485,12 +36603,6 @@ delta/gpu-rectangle/test_runner-0020_full_width_offset.$(OBJEXT):  \
 _support/processing/gpu-palette/test_runner-rectangle_common.$(OBJEXT):  \
 	_support/processing/gpu-palette/$(am__dirstamp) \
 	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
-_support/processing/delta-refresh/$(am__dirstamp):
-	@$(MKDIR_P) _support/processing/delta-refresh
-	@: >>_support/processing/delta-refresh/$(am__dirstamp)
-_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) _support/processing/delta-refresh/$(DEPDIR)
-	@: >>_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
 _support/processing/delta-refresh/test_runner-partial_test_common.$(OBJEXT):  \
 	_support/processing/delta-refresh/$(am__dirstamp) \
 	_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
@@ -46611,6 +46723,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/dither/$(DEPDIR)/test_runner-delta_compare_common.Po@am__quote@ # am--include-marker
@@ -47642,6 +47755,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0084_spatial_low_band_16_frames.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0085_spatial_low_band_32_frames.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0086_spatial_flat_original_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0087_spatial_flat_map.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0088_spatial_texture_map.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0089_spatial_async_latest_snapshot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0090_spatial_async_stale_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0091_spatial_option_requires_l4.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0092_spatial_option_accepts_g2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0093_spatial_blue_gpu_fused_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -51759,6 +51885,202 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+_support/processing/delta-refresh/test_runner-spatial_test_common.o: _support/processing/delta-refresh/spatial_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-spatial_test_common.o -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-spatial_test_common.o `test -f '_support/processing/delta-refresh/spatial_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/spatial_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Tpo _support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/delta-refresh/spatial_test_common.c' object='_support/processing/delta-refresh/test_runner-spatial_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/delta-refresh/test_runner-spatial_test_common.o `test -f '_support/processing/delta-refresh/spatial_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/spatial_test_common.c
+
+_support/processing/delta-refresh/test_runner-spatial_test_common.obj: _support/processing/delta-refresh/spatial_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-spatial_test_common.obj -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-spatial_test_common.obj `if test -f '_support/processing/delta-refresh/spatial_test_common.c'; then $(CYGPATH_W) '_support/processing/delta-refresh/spatial_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/delta-refresh/spatial_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Tpo _support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/delta-refresh/spatial_test_common.c' object='_support/processing/delta-refresh/test_runner-spatial_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/delta-refresh/test_runner-spatial_test_common.obj `if test -f '_support/processing/delta-refresh/spatial_test_common.c'; then $(CYGPATH_W) '_support/processing/delta-refresh/spatial_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/delta-refresh/spatial_test_common.c'; fi`
+
+delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o: delta/refresh/0096_spatial_blue_cpu_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Tpo -c -o delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o `test -f 'delta/refresh/0096_spatial_blue_cpu_keep.c' || echo '$(srcdir)/'`delta/refresh/0096_spatial_blue_cpu_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0096_spatial_blue_cpu_keep.c' object='delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o `test -f 'delta/refresh/0096_spatial_blue_cpu_keep.c' || echo '$(srcdir)/'`delta/refresh/0096_spatial_blue_cpu_keep.c
+
+delta/refresh/test_runner-0096_spatial_blue_cpu_keep.obj: delta/refresh/0096_spatial_blue_cpu_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0096_spatial_blue_cpu_keep.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Tpo -c -o delta/refresh/test_runner-0096_spatial_blue_cpu_keep.obj `if test -f 'delta/refresh/0096_spatial_blue_cpu_keep.c'; then $(CYGPATH_W) 'delta/refresh/0096_spatial_blue_cpu_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0096_spatial_blue_cpu_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0096_spatial_blue_cpu_keep.c' object='delta/refresh/test_runner-0096_spatial_blue_cpu_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0096_spatial_blue_cpu_keep.obj `if test -f 'delta/refresh/0096_spatial_blue_cpu_keep.c'; then $(CYGPATH_W) 'delta/refresh/0096_spatial_blue_cpu_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0096_spatial_blue_cpu_keep.c'; fi`
+
+delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.o: delta/refresh/0095_spatial_blue_gpu_legacy_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Tpo -c -o delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.o `test -f 'delta/refresh/0095_spatial_blue_gpu_legacy_keep.c' || echo '$(srcdir)/'`delta/refresh/0095_spatial_blue_gpu_legacy_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0095_spatial_blue_gpu_legacy_keep.c' object='delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.o `test -f 'delta/refresh/0095_spatial_blue_gpu_legacy_keep.c' || echo '$(srcdir)/'`delta/refresh/0095_spatial_blue_gpu_legacy_keep.c
+
+delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.obj: delta/refresh/0095_spatial_blue_gpu_legacy_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Tpo -c -o delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.obj `if test -f 'delta/refresh/0095_spatial_blue_gpu_legacy_keep.c'; then $(CYGPATH_W) 'delta/refresh/0095_spatial_blue_gpu_legacy_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0095_spatial_blue_gpu_legacy_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0095_spatial_blue_gpu_legacy_keep.c' object='delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.obj `if test -f 'delta/refresh/0095_spatial_blue_gpu_legacy_keep.c'; then $(CYGPATH_W) 'delta/refresh/0095_spatial_blue_gpu_legacy_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0095_spatial_blue_gpu_legacy_keep.c'; fi`
+
+delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.o: delta/refresh/0094_spatial_blue_gpu_fused_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Tpo -c -o delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.o `test -f 'delta/refresh/0094_spatial_blue_gpu_fused_paint.c' || echo '$(srcdir)/'`delta/refresh/0094_spatial_blue_gpu_fused_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Tpo delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0094_spatial_blue_gpu_fused_paint.c' object='delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.o `test -f 'delta/refresh/0094_spatial_blue_gpu_fused_paint.c' || echo '$(srcdir)/'`delta/refresh/0094_spatial_blue_gpu_fused_paint.c
+
+delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.obj: delta/refresh/0094_spatial_blue_gpu_fused_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Tpo -c -o delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.obj `if test -f 'delta/refresh/0094_spatial_blue_gpu_fused_paint.c'; then $(CYGPATH_W) 'delta/refresh/0094_spatial_blue_gpu_fused_paint.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0094_spatial_blue_gpu_fused_paint.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Tpo delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0094_spatial_blue_gpu_fused_paint.c' object='delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.obj `if test -f 'delta/refresh/0094_spatial_blue_gpu_fused_paint.c'; then $(CYGPATH_W) 'delta/refresh/0094_spatial_blue_gpu_fused_paint.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0094_spatial_blue_gpu_fused_paint.c'; fi`
+
+delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.o: delta/refresh/0093_spatial_blue_gpu_fused_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0093_spatial_blue_gpu_fused_keep.Tpo -c -o delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.o `test -f 'delta/refresh/0093_spatial_blue_gpu_fused_keep.c' || echo '$(srcdir)/'`delta/refresh/0093_spatial_blue_gpu_fused_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0093_spatial_blue_gpu_fused_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0093_spatial_blue_gpu_fused_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0093_spatial_blue_gpu_fused_keep.c' object='delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.o `test -f 'delta/refresh/0093_spatial_blue_gpu_fused_keep.c' || echo '$(srcdir)/'`delta/refresh/0093_spatial_blue_gpu_fused_keep.c
+
+delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.obj: delta/refresh/0093_spatial_blue_gpu_fused_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0093_spatial_blue_gpu_fused_keep.Tpo -c -o delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.obj `if test -f 'delta/refresh/0093_spatial_blue_gpu_fused_keep.c'; then $(CYGPATH_W) 'delta/refresh/0093_spatial_blue_gpu_fused_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0093_spatial_blue_gpu_fused_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0093_spatial_blue_gpu_fused_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0093_spatial_blue_gpu_fused_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0093_spatial_blue_gpu_fused_keep.c' object='delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0093_spatial_blue_gpu_fused_keep.obj `if test -f 'delta/refresh/0093_spatial_blue_gpu_fused_keep.c'; then $(CYGPATH_W) 'delta/refresh/0093_spatial_blue_gpu_fused_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0093_spatial_blue_gpu_fused_keep.c'; fi`
+
+delta/refresh/test_runner-0092_spatial_option_accepts_g2.o: delta/refresh/0092_spatial_option_accepts_g2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0092_spatial_option_accepts_g2.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0092_spatial_option_accepts_g2.Tpo -c -o delta/refresh/test_runner-0092_spatial_option_accepts_g2.o `test -f 'delta/refresh/0092_spatial_option_accepts_g2.c' || echo '$(srcdir)/'`delta/refresh/0092_spatial_option_accepts_g2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0092_spatial_option_accepts_g2.Tpo delta/refresh/$(DEPDIR)/test_runner-0092_spatial_option_accepts_g2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0092_spatial_option_accepts_g2.c' object='delta/refresh/test_runner-0092_spatial_option_accepts_g2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0092_spatial_option_accepts_g2.o `test -f 'delta/refresh/0092_spatial_option_accepts_g2.c' || echo '$(srcdir)/'`delta/refresh/0092_spatial_option_accepts_g2.c
+
+delta/refresh/test_runner-0092_spatial_option_accepts_g2.obj: delta/refresh/0092_spatial_option_accepts_g2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0092_spatial_option_accepts_g2.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0092_spatial_option_accepts_g2.Tpo -c -o delta/refresh/test_runner-0092_spatial_option_accepts_g2.obj `if test -f 'delta/refresh/0092_spatial_option_accepts_g2.c'; then $(CYGPATH_W) 'delta/refresh/0092_spatial_option_accepts_g2.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0092_spatial_option_accepts_g2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0092_spatial_option_accepts_g2.Tpo delta/refresh/$(DEPDIR)/test_runner-0092_spatial_option_accepts_g2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0092_spatial_option_accepts_g2.c' object='delta/refresh/test_runner-0092_spatial_option_accepts_g2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0092_spatial_option_accepts_g2.obj `if test -f 'delta/refresh/0092_spatial_option_accepts_g2.c'; then $(CYGPATH_W) 'delta/refresh/0092_spatial_option_accepts_g2.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0092_spatial_option_accepts_g2.c'; fi`
+
+delta/refresh/test_runner-0091_spatial_option_requires_l4.o: delta/refresh/0091_spatial_option_requires_l4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0091_spatial_option_requires_l4.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0091_spatial_option_requires_l4.Tpo -c -o delta/refresh/test_runner-0091_spatial_option_requires_l4.o `test -f 'delta/refresh/0091_spatial_option_requires_l4.c' || echo '$(srcdir)/'`delta/refresh/0091_spatial_option_requires_l4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0091_spatial_option_requires_l4.Tpo delta/refresh/$(DEPDIR)/test_runner-0091_spatial_option_requires_l4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0091_spatial_option_requires_l4.c' object='delta/refresh/test_runner-0091_spatial_option_requires_l4.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0091_spatial_option_requires_l4.o `test -f 'delta/refresh/0091_spatial_option_requires_l4.c' || echo '$(srcdir)/'`delta/refresh/0091_spatial_option_requires_l4.c
+
+delta/refresh/test_runner-0091_spatial_option_requires_l4.obj: delta/refresh/0091_spatial_option_requires_l4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0091_spatial_option_requires_l4.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0091_spatial_option_requires_l4.Tpo -c -o delta/refresh/test_runner-0091_spatial_option_requires_l4.obj `if test -f 'delta/refresh/0091_spatial_option_requires_l4.c'; then $(CYGPATH_W) 'delta/refresh/0091_spatial_option_requires_l4.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0091_spatial_option_requires_l4.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0091_spatial_option_requires_l4.Tpo delta/refresh/$(DEPDIR)/test_runner-0091_spatial_option_requires_l4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0091_spatial_option_requires_l4.c' object='delta/refresh/test_runner-0091_spatial_option_requires_l4.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0091_spatial_option_requires_l4.obj `if test -f 'delta/refresh/0091_spatial_option_requires_l4.c'; then $(CYGPATH_W) 'delta/refresh/0091_spatial_option_requires_l4.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0091_spatial_option_requires_l4.c'; fi`
+
+delta/refresh/test_runner-0090_spatial_async_stale_fallback.o: delta/refresh/0090_spatial_async_stale_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0090_spatial_async_stale_fallback.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0090_spatial_async_stale_fallback.Tpo -c -o delta/refresh/test_runner-0090_spatial_async_stale_fallback.o `test -f 'delta/refresh/0090_spatial_async_stale_fallback.c' || echo '$(srcdir)/'`delta/refresh/0090_spatial_async_stale_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0090_spatial_async_stale_fallback.Tpo delta/refresh/$(DEPDIR)/test_runner-0090_spatial_async_stale_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0090_spatial_async_stale_fallback.c' object='delta/refresh/test_runner-0090_spatial_async_stale_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0090_spatial_async_stale_fallback.o `test -f 'delta/refresh/0090_spatial_async_stale_fallback.c' || echo '$(srcdir)/'`delta/refresh/0090_spatial_async_stale_fallback.c
+
+delta/refresh/test_runner-0090_spatial_async_stale_fallback.obj: delta/refresh/0090_spatial_async_stale_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0090_spatial_async_stale_fallback.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0090_spatial_async_stale_fallback.Tpo -c -o delta/refresh/test_runner-0090_spatial_async_stale_fallback.obj `if test -f 'delta/refresh/0090_spatial_async_stale_fallback.c'; then $(CYGPATH_W) 'delta/refresh/0090_spatial_async_stale_fallback.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0090_spatial_async_stale_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0090_spatial_async_stale_fallback.Tpo delta/refresh/$(DEPDIR)/test_runner-0090_spatial_async_stale_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0090_spatial_async_stale_fallback.c' object='delta/refresh/test_runner-0090_spatial_async_stale_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0090_spatial_async_stale_fallback.obj `if test -f 'delta/refresh/0090_spatial_async_stale_fallback.c'; then $(CYGPATH_W) 'delta/refresh/0090_spatial_async_stale_fallback.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0090_spatial_async_stale_fallback.c'; fi`
+
+delta/refresh/test_runner-0089_spatial_async_latest_snapshot.o: delta/refresh/0089_spatial_async_latest_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0089_spatial_async_latest_snapshot.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0089_spatial_async_latest_snapshot.Tpo -c -o delta/refresh/test_runner-0089_spatial_async_latest_snapshot.o `test -f 'delta/refresh/0089_spatial_async_latest_snapshot.c' || echo '$(srcdir)/'`delta/refresh/0089_spatial_async_latest_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0089_spatial_async_latest_snapshot.Tpo delta/refresh/$(DEPDIR)/test_runner-0089_spatial_async_latest_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0089_spatial_async_latest_snapshot.c' object='delta/refresh/test_runner-0089_spatial_async_latest_snapshot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0089_spatial_async_latest_snapshot.o `test -f 'delta/refresh/0089_spatial_async_latest_snapshot.c' || echo '$(srcdir)/'`delta/refresh/0089_spatial_async_latest_snapshot.c
+
+delta/refresh/test_runner-0089_spatial_async_latest_snapshot.obj: delta/refresh/0089_spatial_async_latest_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0089_spatial_async_latest_snapshot.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0089_spatial_async_latest_snapshot.Tpo -c -o delta/refresh/test_runner-0089_spatial_async_latest_snapshot.obj `if test -f 'delta/refresh/0089_spatial_async_latest_snapshot.c'; then $(CYGPATH_W) 'delta/refresh/0089_spatial_async_latest_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0089_spatial_async_latest_snapshot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0089_spatial_async_latest_snapshot.Tpo delta/refresh/$(DEPDIR)/test_runner-0089_spatial_async_latest_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0089_spatial_async_latest_snapshot.c' object='delta/refresh/test_runner-0089_spatial_async_latest_snapshot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0089_spatial_async_latest_snapshot.obj `if test -f 'delta/refresh/0089_spatial_async_latest_snapshot.c'; then $(CYGPATH_W) 'delta/refresh/0089_spatial_async_latest_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0089_spatial_async_latest_snapshot.c'; fi`
+
+delta/refresh/test_runner-0088_spatial_texture_map.o: delta/refresh/0088_spatial_texture_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0088_spatial_texture_map.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0088_spatial_texture_map.Tpo -c -o delta/refresh/test_runner-0088_spatial_texture_map.o `test -f 'delta/refresh/0088_spatial_texture_map.c' || echo '$(srcdir)/'`delta/refresh/0088_spatial_texture_map.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0088_spatial_texture_map.Tpo delta/refresh/$(DEPDIR)/test_runner-0088_spatial_texture_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0088_spatial_texture_map.c' object='delta/refresh/test_runner-0088_spatial_texture_map.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0088_spatial_texture_map.o `test -f 'delta/refresh/0088_spatial_texture_map.c' || echo '$(srcdir)/'`delta/refresh/0088_spatial_texture_map.c
+
+delta/refresh/test_runner-0088_spatial_texture_map.obj: delta/refresh/0088_spatial_texture_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0088_spatial_texture_map.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0088_spatial_texture_map.Tpo -c -o delta/refresh/test_runner-0088_spatial_texture_map.obj `if test -f 'delta/refresh/0088_spatial_texture_map.c'; then $(CYGPATH_W) 'delta/refresh/0088_spatial_texture_map.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0088_spatial_texture_map.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0088_spatial_texture_map.Tpo delta/refresh/$(DEPDIR)/test_runner-0088_spatial_texture_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0088_spatial_texture_map.c' object='delta/refresh/test_runner-0088_spatial_texture_map.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0088_spatial_texture_map.obj `if test -f 'delta/refresh/0088_spatial_texture_map.c'; then $(CYGPATH_W) 'delta/refresh/0088_spatial_texture_map.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0088_spatial_texture_map.c'; fi`
+
+delta/refresh/test_runner-0087_spatial_flat_map.o: delta/refresh/0087_spatial_flat_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0087_spatial_flat_map.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0087_spatial_flat_map.Tpo -c -o delta/refresh/test_runner-0087_spatial_flat_map.o `test -f 'delta/refresh/0087_spatial_flat_map.c' || echo '$(srcdir)/'`delta/refresh/0087_spatial_flat_map.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0087_spatial_flat_map.Tpo delta/refresh/$(DEPDIR)/test_runner-0087_spatial_flat_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0087_spatial_flat_map.c' object='delta/refresh/test_runner-0087_spatial_flat_map.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0087_spatial_flat_map.o `test -f 'delta/refresh/0087_spatial_flat_map.c' || echo '$(srcdir)/'`delta/refresh/0087_spatial_flat_map.c
+
+delta/refresh/test_runner-0087_spatial_flat_map.obj: delta/refresh/0087_spatial_flat_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0087_spatial_flat_map.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0087_spatial_flat_map.Tpo -c -o delta/refresh/test_runner-0087_spatial_flat_map.obj `if test -f 'delta/refresh/0087_spatial_flat_map.c'; then $(CYGPATH_W) 'delta/refresh/0087_spatial_flat_map.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0087_spatial_flat_map.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0087_spatial_flat_map.Tpo delta/refresh/$(DEPDIR)/test_runner-0087_spatial_flat_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0087_spatial_flat_map.c' object='delta/refresh/test_runner-0087_spatial_flat_map.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0087_spatial_flat_map.obj `if test -f 'delta/refresh/0087_spatial_flat_map.c'; then $(CYGPATH_W) 'delta/refresh/0087_spatial_flat_map.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0087_spatial_flat_map.c'; fi`
+
+delta/refresh/test_runner-0086_spatial_flat_original_period.o: delta/refresh/0086_spatial_flat_original_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0086_spatial_flat_original_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0086_spatial_flat_original_period.Tpo -c -o delta/refresh/test_runner-0086_spatial_flat_original_period.o `test -f 'delta/refresh/0086_spatial_flat_original_period.c' || echo '$(srcdir)/'`delta/refresh/0086_spatial_flat_original_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0086_spatial_flat_original_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0086_spatial_flat_original_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0086_spatial_flat_original_period.c' object='delta/refresh/test_runner-0086_spatial_flat_original_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0086_spatial_flat_original_period.o `test -f 'delta/refresh/0086_spatial_flat_original_period.c' || echo '$(srcdir)/'`delta/refresh/0086_spatial_flat_original_period.c
+
+delta/refresh/test_runner-0086_spatial_flat_original_period.obj: delta/refresh/0086_spatial_flat_original_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0086_spatial_flat_original_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0086_spatial_flat_original_period.Tpo -c -o delta/refresh/test_runner-0086_spatial_flat_original_period.obj `if test -f 'delta/refresh/0086_spatial_flat_original_period.c'; then $(CYGPATH_W) 'delta/refresh/0086_spatial_flat_original_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0086_spatial_flat_original_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0086_spatial_flat_original_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0086_spatial_flat_original_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0086_spatial_flat_original_period.c' object='delta/refresh/test_runner-0086_spatial_flat_original_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0086_spatial_flat_original_period.obj `if test -f 'delta/refresh/0086_spatial_flat_original_period.c'; then $(CYGPATH_W) 'delta/refresh/0086_spatial_flat_original_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0086_spatial_flat_original_period.c'; fi`
+
+delta/refresh/test_runner-0085_spatial_low_band_32_frames.o: delta/refresh/0085_spatial_low_band_32_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0085_spatial_low_band_32_frames.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0085_spatial_low_band_32_frames.Tpo -c -o delta/refresh/test_runner-0085_spatial_low_band_32_frames.o `test -f 'delta/refresh/0085_spatial_low_band_32_frames.c' || echo '$(srcdir)/'`delta/refresh/0085_spatial_low_band_32_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0085_spatial_low_band_32_frames.Tpo delta/refresh/$(DEPDIR)/test_runner-0085_spatial_low_band_32_frames.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0085_spatial_low_band_32_frames.c' object='delta/refresh/test_runner-0085_spatial_low_band_32_frames.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0085_spatial_low_band_32_frames.o `test -f 'delta/refresh/0085_spatial_low_band_32_frames.c' || echo '$(srcdir)/'`delta/refresh/0085_spatial_low_band_32_frames.c
+
+delta/refresh/test_runner-0085_spatial_low_band_32_frames.obj: delta/refresh/0085_spatial_low_band_32_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0085_spatial_low_band_32_frames.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0085_spatial_low_band_32_frames.Tpo -c -o delta/refresh/test_runner-0085_spatial_low_band_32_frames.obj `if test -f 'delta/refresh/0085_spatial_low_band_32_frames.c'; then $(CYGPATH_W) 'delta/refresh/0085_spatial_low_band_32_frames.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0085_spatial_low_band_32_frames.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0085_spatial_low_band_32_frames.Tpo delta/refresh/$(DEPDIR)/test_runner-0085_spatial_low_band_32_frames.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0085_spatial_low_band_32_frames.c' object='delta/refresh/test_runner-0085_spatial_low_band_32_frames.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0085_spatial_low_band_32_frames.obj `if test -f 'delta/refresh/0085_spatial_low_band_32_frames.c'; then $(CYGPATH_W) 'delta/refresh/0085_spatial_low_band_32_frames.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0085_spatial_low_band_32_frames.c'; fi`
+
+delta/refresh/test_runner-0084_spatial_low_band_16_frames.o: delta/refresh/0084_spatial_low_band_16_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0084_spatial_low_band_16_frames.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0084_spatial_low_band_16_frames.Tpo -c -o delta/refresh/test_runner-0084_spatial_low_band_16_frames.o `test -f 'delta/refresh/0084_spatial_low_band_16_frames.c' || echo '$(srcdir)/'`delta/refresh/0084_spatial_low_band_16_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0084_spatial_low_band_16_frames.Tpo delta/refresh/$(DEPDIR)/test_runner-0084_spatial_low_band_16_frames.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0084_spatial_low_band_16_frames.c' object='delta/refresh/test_runner-0084_spatial_low_band_16_frames.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0084_spatial_low_band_16_frames.o `test -f 'delta/refresh/0084_spatial_low_band_16_frames.c' || echo '$(srcdir)/'`delta/refresh/0084_spatial_low_band_16_frames.c
+
+delta/refresh/test_runner-0084_spatial_low_band_16_frames.obj: delta/refresh/0084_spatial_low_band_16_frames.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0084_spatial_low_band_16_frames.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0084_spatial_low_band_16_frames.Tpo -c -o delta/refresh/test_runner-0084_spatial_low_band_16_frames.obj `if test -f 'delta/refresh/0084_spatial_low_band_16_frames.c'; then $(CYGPATH_W) 'delta/refresh/0084_spatial_low_band_16_frames.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0084_spatial_low_band_16_frames.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0084_spatial_low_band_16_frames.Tpo delta/refresh/$(DEPDIR)/test_runner-0084_spatial_low_band_16_frames.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0084_spatial_low_band_16_frames.c' object='delta/refresh/test_runner-0084_spatial_low_band_16_frames.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0084_spatial_low_band_16_frames.obj `if test -f 'delta/refresh/0084_spatial_low_band_16_frames.c'; then $(CYGPATH_W) 'delta/refresh/0084_spatial_low_band_16_frames.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0084_spatial_low_band_16_frames.c'; fi`
 
 _support/lso2-gpu/test_runner-atkinson_carry_common.o: _support/lso2-gpu/atkinson_carry_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/lso2-gpu/test_runner-atkinson_carry_common.o -MD -MP -MF _support/lso2-gpu/$(DEPDIR)/test_runner-atkinson_carry_common.Tpo -c -o _support/lso2-gpu/test_runner-atkinson_carry_common.o `test -f '_support/lso2-gpu/atkinson_carry_common.c' || echo '$(srcdir)/'`_support/lso2-gpu/atkinson_carry_common.c

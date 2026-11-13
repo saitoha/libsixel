@@ -146,6 +146,19 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
             mask->columns +
             ((size_t)(x + 1) * mask->columns - 1U) / mask->width;
     }
+    /* Spatial refresh reuses the fixed transfer footprint: low seven bits
+     * hold the A1 threshold; bit seven delays its low band in active cells.
+     * The bitset is then a scaled spatial map, not a tiled selection mask. */
+    if (mask->tiled == 2U) {
+        selected = mask->levels[cell] & 127U;
+        if (mask->levels[cell] & 128U) {
+            cell = (((size_t)(y + 1) * 64U - 1U) / mask->height)*64U +
+                ((size_t)(x + 1) * 64U - 1U) / mask->width;
+            if (mask->cells[cell/32U] & ((uint32_t)1 << (cell%32U)))
+                selected = 8U;
+        }
+        return selected < threshold ? selected : threshold;
+    }
     selected = mask->variable ? mask->levels[cell] : mask->threshold;
     if ((mask->cells[cell / 32U] & ((uint32_t)1 << (cell % 32U))) &&
             selected < threshold) return selected;

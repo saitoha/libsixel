@@ -243,6 +243,20 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_SPATIAL_TEST_COMMON \
+    -DBUILD_TEST_0084_SPATIAL_LOW_BAND_16_FRAMES \
+    -DBUILD_TEST_0085_SPATIAL_LOW_BAND_32_FRAMES \
+    -DBUILD_TEST_0086_SPATIAL_FLAT_ORIGINAL_PERIOD \
+    -DBUILD_TEST_0087_SPATIAL_FLAT_MAP \
+    -DBUILD_TEST_0088_SPATIAL_TEXTURE_MAP \
+    -DBUILD_TEST_0089_SPATIAL_ASYNC_LATEST_SNAPSHOT \
+    -DBUILD_TEST_0090_SPATIAL_ASYNC_STALE_FALLBACK \
+    -DBUILD_TEST_0091_SPATIAL_OPTION_REQUIRES_L4 \
+    -DBUILD_TEST_0092_SPATIAL_OPTION_ACCEPTS_G2 \
+    -DBUILD_TEST_0093_SPATIAL_BLUE_GPU_FUSED_KEEP \
+    -DBUILD_TEST_0094_SPATIAL_BLUE_GPU_FUSED_PAINT \
+    -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
+    -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
     -DBUILD_ATKINSON_CARRY_COMMON \
     -DBUILD_AUTO_STRENGTH_COMMON \
     -DBUILD_BURKES_CARRY_COMMON \
@@ -5621,6 +5635,20 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    _support/processing/delta-refresh/spatial_test_common.c \
+    delta/refresh/0096_spatial_blue_cpu_keep.c \
+    delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
+    delta/refresh/0094_spatial_blue_gpu_fused_paint.c \
+    delta/refresh/0093_spatial_blue_gpu_fused_keep.c \
+    delta/refresh/0092_spatial_option_accepts_g2.c \
+    delta/refresh/0091_spatial_option_requires_l4.c \
+    delta/refresh/0090_spatial_async_stale_fallback.c \
+    delta/refresh/0089_spatial_async_latest_snapshot.c \
+    delta/refresh/0088_spatial_texture_map.c \
+    delta/refresh/0087_spatial_flat_map.c \
+    delta/refresh/0086_spatial_flat_original_period.c \
+    delta/refresh/0085_spatial_low_band_32_frames.c \
+    delta/refresh/0084_spatial_low_band_16_frames.c \
     _support/lso2-gpu/atkinson_carry_common.c \
     _support/lso2-gpu/burkes_carry_common.c \
     _support/lso2-gpu/direct_carry_common.c \

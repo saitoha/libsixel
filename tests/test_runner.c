@@ -5627,7 +5627,46 @@ int test_palette_kmeans_0112(int, char **);
 int test_palette_kmeans_0113(int, char **);
 int test_palette_kmeans_0114(int, char **);
 
+int test_delta_refresh_0084(int, char **);
+
+int test_delta_refresh_0085(int, char **);
+
+int test_delta_refresh_0086(int, char **);
+
+int test_delta_refresh_0087(int, char **);
+
+int test_delta_refresh_0088(int, char **);
+
+int test_delta_refresh_0089(int, char **);
+
+int test_delta_refresh_0090(int, char **);
+
+int test_delta_refresh_0091(int, char **);
+
+int test_delta_refresh_0092(int, char **);
+
+int test_delta_refresh_0093(int, char **);
+
+int test_delta_refresh_0094(int, char **);
+
+int test_delta_refresh_0095(int, char **);
+
+int test_delta_refresh_0096(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "delta/refresh/0096_spatial_blue_cpu_keep", test_delta_refresh_0096 },
+    { "delta/refresh/0095_spatial_blue_gpu_legacy_keep", test_delta_refresh_0095 },
+    { "delta/refresh/0094_spatial_blue_gpu_fused_paint", test_delta_refresh_0094 },
+    { "delta/refresh/0093_spatial_blue_gpu_fused_keep", test_delta_refresh_0093 },
+    { "delta/refresh/0092_spatial_option_accepts_g2", test_delta_refresh_0092 },
+    { "delta/refresh/0091_spatial_option_requires_l4", test_delta_refresh_0091 },
+    { "delta/refresh/0090_spatial_async_stale_fallback", test_delta_refresh_0090 },
+    { "delta/refresh/0089_spatial_async_latest_snapshot", test_delta_refresh_0089 },
+    { "delta/refresh/0088_spatial_texture_map", test_delta_refresh_0088 },
+    { "delta/refresh/0087_spatial_flat_map", test_delta_refresh_0087 },
+    { "delta/refresh/0086_spatial_flat_original_period", test_delta_refresh_0086 },
+    { "delta/refresh/0085_spatial_low_band_32_frames", test_delta_refresh_0085 },
+    { "delta/refresh/0084_spatial_low_band_16_frames", test_delta_refresh_0084 },
     { "palette/kmeans/0112_snake_cpu_mse_k16_i4_s1",
       test_palette_kmeans_0112 },
     { "palette/kmeans/0113_snake_cpu_mse_k64_i12_s7",

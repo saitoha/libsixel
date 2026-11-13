@@ -46,6 +46,8 @@ typedef struct sixel_delta_mask {
     int width;
     int height;
     unsigned int threshold;
+    /* 0 scaled cells, 1 pixel tile, 2 spatially delayed A1/J1/L4 tile.
+     * Mode 2 uses scaled activity bits and level bit 7 to delay only 5..8. */
     unsigned int tiled;
     /* Optional byte thresholds at the same cell coordinates. A fixed tile
      * implements many error deadlines without examining source pixels. */
