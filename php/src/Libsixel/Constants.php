@@ -155,6 +155,7 @@ final class Constants
     public const SIXEL_PROGRESSIVE_BACKEND_NONE = 0;
     public const SIXEL_PROGRESSIVE_BACKEND_CPU = 1;
     public const SIXEL_PROGRESSIVE_BACKEND_METAL = 2;
+    public const SIXEL_PROGRESSIVE_BACKEND_VULKAN = 3;
     public const SIXEL_PROGRESSIVE_STAGE_NONE = 0;
     public const SIXEL_PROGRESSIVE_STAGE_AUDIT = 1;
     public const SIXEL_PROGRESSIVE_STAGE_SELECT = 2;
