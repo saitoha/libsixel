@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 
 /* The parent's Metal mutex guards this 6bit-only immutable table.
- * Unlike the CPU first-query memo, every cell has a deterministic representative. Publish
- * its identity only after the build and application command has completed. */
+ * Every cell has a deterministic representative, unlike CPU memoization.
+ * Publish identity only after the build and application command completes. */
 static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_lookup6 = { nil, 0U };
 static id<MTLComputePipelineState> g_sixel_gpu_lookup_6bit_build = nil;
 static unsigned char g_sixel_gpu_lookup6_palette[SIXEL_PALETTE_MAX * 3];
@@ -71,4 +71,75 @@ sixel_gpu_lookup6_encode(id<MTLCommandBuffer> command,
         1U, 1U) threadsPerThreadgroup:MTLSizeMake(width, 1U, 1U)];
     [encoder endEncoding];
     return SIXEL_OK;
+}
+
+static char const *const lookup6_chunks[] = {
+#include <generated-metal/lookup-policy-6bit-gpu-query-shader.inc.h>
+#include <generated-metal/lookup-policy-6bit-gpu-apply-shader.inc.h>
+NULL
+};
+
+static SIXELSTATUS
+lookup6_metal_prepare(gpu_metal_lookup_run_t *run,
+    sixel_gpu_palette_request_t const *request,
+    sixel_gpu_metal_params_t *params)
+{
+    SIXELSTATUS status;
+
+    (void)params;
+    if (!sixel_gpu_lookup6_prepare()) {
+        status = SIXEL_FEATURE_ERROR;
+        return status;
+    }
+    run->buffers[5] = sixel_gpu_metal_ensure_buffer(
+        &g_sixel_gpu_lookup6, 262144U);
+    run->rebuild =
+        g_sixel_gpu_lookup6_colors != request->ncolors ||
+        memcmp(g_sixel_gpu_lookup6_palette, request->palette,
+            (size_t)request->ncolors * 3U) != 0;
+    if (request->test_hooks != NULL) {
+        request->test_hooks->lookup_table_bytes = 262144U;
+    }
+    run->kernel = "6bit";
+    run->kernel_id = 8;
+    if (run->buffers[5] == nil)
+        return SIXEL_BAD_ALLOCATION;
+    if (sixel_trace_topic_is_enabled("gpu_contract"))
+        fprintf(stderr, "LSXGPU3|lookup=6bit|table=%s|shared=1\n",
+            run->rebuild ? "rebuild" : "reuse");
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+lookup6_metal_build(gpu_metal_lookup_run_t *run,
+    id<MTLCommandBuffer> command, id<MTLBuffer> palette, id<MTLBuffer> params,
+    sixel_gpu_palette_request_t const *request)
+{
+    (void)params;
+    return sixel_gpu_lookup6_encode(command, palette, run->buffers[5],
+        request->ncolors);
+}
+
+/* Identity publication follows successful GPU completion, including every
+ * consumer range. A failed rebuild must invalidate the overwritten table. */
+static void
+lookup6_metal_finish(gpu_metal_lookup_run_t *run,
+    sixel_gpu_palette_request_t const *request, SIXELSTATUS status)
+{
+    if (!run->rebuild) return;
+    g_sixel_gpu_lookup6_colors = status == SIXEL_OK ? request->ncolors : 0;
+    if (status != SIXEL_OK) return;
+    memcpy(g_sixel_gpu_lookup6_palette, request->palette,
+        (size_t)request->ncolors * 3U);
+}
+
+static gpu_metal_lookup_t const lookup6_metal = {
+    lookup6_chunks, "lookup_6bit_apply",
+    lookup6_metal_prepare, lookup6_metal_build, lookup6_metal_finish
+};
+
+gpu_metal_lookup_t const *
+sixel_lookup_6bit_gpu_metal(void)
+{
+    return &lookup6_metal;
 }

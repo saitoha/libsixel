@@ -418,19 +418,9 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
             request->pixel_count < request->auto_threshold) {
         return SIXEL_FALSE;
     }
-#if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
-    if (request->program == NULL &&
-            !sixel_gpu_lookup_has_program(request->lut_policy,
-                "vulkan.lookup-rgb8.v1")) {
-        if (sixel_gpu_palette_policy_is_force(request->policy)) {
-            sixel_helper_set_additional_message(
-                "gpu palette apply: this lookup policy has no Vulkan "
-                "program yet.");
-            return SIXEL_FEATURE_ERROR;
-        }
-        return SIXEL_FALSE;
-    }
-#endif
+    /* The compatibility root resolves AUTO and prepares the selected
+     * provider on either backend. Probing an unresolved kind here would
+     * reject a valid default before its owned program can be constructed. */
     effective = *request;
     effective.dither_program = sixel_gpu_dither_byte_program(
         request->method_for_diffuse);

@@ -74,7 +74,7 @@ For [GPU diffusion](../dithering/README.md), the policy builds the same conserva
 
 The common builder is [`lookup-delaunay-graph.c`](../../../../src/lookup-delaunay-graph.c). [`lookup-delaunay-8bit.c`](../../../../src/lookup-delaunay-8bit.c) and [`lookup-delaunay-float32.c`](../../../../src/lookup-delaunay-float32.c) own query arithmetic, SIMD and memoization. [`lookup-policy-delaunay.c`](../../../../src/lookup-policy-delaunay.c) owns preparation, representation conversion and reuse through `lookup/delaunay.8bit` and `lookup/delaunay.float32`.
 
-The legacy Metal byte implementation and its cache live in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m). The Vulkan builders and both query entries belong to [`lookup-policy-delaunay-gpu.glsl`](../../../../src/lookup-policy-delaunay-gpu.glsl), with storage and completion owned by the policy plan; admission is shared through [`gpu-palette.c`](../../../../src/gpu-palette.c) and [`palette-apply.c`](../../../../src/palette-apply.c).
+The Metal byte implementation and its cache live in [`lookup-policy-delaunay-gpu-metal.inc.h`](../../../../src/lookup-policy-delaunay-gpu-metal.inc.h). The Vulkan builders and both query entries belong to [`lookup-policy-delaunay-gpu.glsl`](../../../../src/lookup-policy-delaunay-gpu.glsl), with storage and completion owned by the policy plan; admission is shared through [`gpu-palette.c`](../../../../src/gpu-palette.c) and [`palette-apply.c`](../../../../src/palette-apply.c).
 
 ## Test coverage
 

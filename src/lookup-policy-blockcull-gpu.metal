@@ -1,3 +1,18 @@
+/*
+ * Block-culled exact lookup.  A simdgroup owns an 8x8 pixel block; lane
+ * L maps block positions L and L + 32 (column % 8, row / 8).  For color
+ * c, far(c) bounds the distance from c to every point of the queries'
+ * bounding box, so U = min far(c) bounds each query's nearest distance;
+ * a color whose box distance exceeds U is strictly farther than the
+ * color attaining U at every query.  Survivors keep palette order in
+ * threadgroup GEMM tiles of 32 floats (rows -2r, -2g, -2b, |c|^2); a load
+ * also reads the next tile's rows as rows 4..7, which meet the zero query
+ * columns.  The first minimum then returns the direct scan's index, ties
+ * included.  More than SIXEL_BLOCKCULL_CAP survivors use the full device
+ * tiles.
+ */
+#define SIXEL_BLOCKCULL_CAP 128u
+
 static uint blockcull_gid(constant Params& params, uint block, uint pos)
 {
     uint blocks_x;

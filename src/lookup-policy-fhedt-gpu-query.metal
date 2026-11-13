@@ -10,15 +10,15 @@ static uint fhedt_palette_lookup(constant uchar *palette,
     int3 d, color;
 
     q = uint3(query);
-    r = p.fhedt_resolution;
-    cell = q >> p.fhedt_shift;
+    r = p.lookup_parameters[0];
+    cell = q >> p.lookup_parameters[1];
     at = cell.x + cell.y * r + cell.z * r * r;
     bytes = (device const uchar *)storage;
-    if (!p.fhedt_refine) return uint(bytes[at]);
+    if (!p.lookup_parameters[2]) return uint(bytes[at]);
     table = (device const ushort *)storage;
     word = table[at];
     best = word & 255u;
-    if ((word & 256u) && !(p.fhedt_dist2 && (word & 512u))) {
+    if ((word & 256u) && !(p.lookup_parameters[3] && (word & 512u))) {
         minimum = UINT_MAX;
         for (z = 0u; z < 2u; ++z) {
             for (y = 0u; y < 2u; ++y) {
@@ -29,7 +29,7 @@ static uint fhedt_palette_lookup(constant uchar *palette,
                     color = int3(palette[candidate * 3u],
                         palette[candidate * 3u + 1u],
                         palette[candidate * 3u + 2u]);
-                    color = (color >> p.fhedt_shift) << p.fhedt_shift;
+                    color = (color >> p.lookup_parameters[1]) << p.lookup_parameters[1];
                     d = int3(q) - color;
                     distance = uint(d.x * d.x + d.y * d.y + d.z * d.z);
                     if (distance < minimum) {

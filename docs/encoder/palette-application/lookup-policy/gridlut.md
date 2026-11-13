@@ -30,7 +30,7 @@ Each channel's cell coordinate is `q >> 4`. Its closed integer bounds are `low =
 
 The byte CPU instance owns its palette and candidate table. Preparation reuses the table only when the palette size and every channel value match; a changed palette replaces it even when its size is unchanged. Queries are read-only and require no per-frame error buffer. Palettes above 256 colors are rejected.
 
-The fixed byte-domain grid does not cover arbitrary float working coordinates. `lookup/gridlut.float32` therefore delegates to the existing exact [`blockcull` float backend](blockcull.md#method), preserving its normalized metric, nonfinite handling and build arithmetic. It does not construct a byte grid or round float queries.
+The float component owns a 16x16x16 grid spanning its palette's native coordinate bounds. Stored cell edges drive both candidate construction and query addressing. Weighted double box bounds with relative slack preserve every possible winner; original float queries determine final distances. Queries outside the palette box, nonfinite inputs and overflowing lists use this policy's exhaustive scan. Float queries are never rounded to bytes.
 
 ## Metal palette application
 
@@ -44,19 +44,19 @@ Fractional GPU diffusion queries use an independent provider in [`lookup-policy-
 
 ## Guarantee
 
-Byte lookup is scan-index exact: it returns the same palette index as `none` for the same working palette and query, including the lowest index at a tie. Integer bounds preserve every possible winner, and overflow returns to an exhaustive scan. Float selection retains the exactness contract of its delegated backend.
+Byte lookup is scan-index exact: it returns the same palette index as `none` for the same working palette and query, including the lowest index at a tie. Integer bounds preserve every possible winner, and overflow returns to an exhaustive scan. Float selection retains normalized double-distance comparisons and lowest-index ties. Nonfinite distances never win, and an all-nonfinite scan returns index zero.
 
 This does not promise identical complete encodes to `none`: `none` also selects a different [Heckbert histogram resolution](README.md#precedence-and-interactions). `gridlut` uses the ordinary accelerated-policy histogram, like `blockcull`. Comparisons of lookup exactness must hold the palette fixed; comparisons of complete pipelines must also account for palette construction, encoded bytes and presentation timing.
 
 ## Cost
 
-For `K` colors and `C = 4096` cells, a changed palette costs `Theta(C K)` to prepare. Comparing an unchanged palette costs `Theta(K)`. A lookup costs `Theta(V)` for the cell's retained candidates, or `Theta(K)` on overflow. CPU storage is the fixed candidate table plus palette arrays; the float fallback has the existing blockcull costs.
+For `K` colors and `C = 4096` cells, a changed palette costs `Theta(C K)` to prepare. Comparing an unchanged palette costs `Theta(K)`. A lookup costs `Theta(V)` for the cell's retained candidates, or `Theta(K)` on overflow. CPU byte and float components each own a fixed candidate table and palette arrays; the float component also stores 51 double cell edges. Float preparation costs `Theta(C K)` on each preparation.
 
 The GPU construction cost is paid once per palette change, even if delta keeps most pixels. Candidate-list loads and divergent list lengths can outweigh saved distances. Small images, tiny palettes, frequently changing palettes or many overflow cells can favor another policy. A shorter lookup stage alone does not establish a playback improvement: measure the complete pipeline and output size as well.
 
 ## Implementation map
 
-[`lookup-policy-gridlut.c`](../../../../src/lookup-policy-gridlut.c) owns CPU preparation, exact byte lookup and float delegation. [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m) owns legacy Metal byte construction, cache identity, lookup and dispatch; [`lookup-policy-gridlut-gpu.c`](../../../../src/lookup-policy-gridlut-gpu.c) owns Metal fractional and Vulkan byte and fractional plans. [`options-registry.c`](../../../../src/options-registry.c) registers the unique `g` prefix.
+[`lookup-policy-gridlut.c`](../../../../src/lookup-policy-gridlut.c) owns CPU byte preparation and lookup, and [`lookup-policy-gridlut-float32.c`](../../../../src/lookup-policy-gridlut-float32.c) owns the native float grid. [`lookup-policy-gridlut-gpu-metal.inc.h`](../../../../src/lookup-policy-gridlut-gpu-metal.inc.h) owns Metal byte construction, cache identity, lookup and dispatch; [`lookup-policy-gridlut-gpu.c`](../../../../src/lookup-policy-gridlut-gpu.c) owns Metal fractional and Vulkan byte and fractional plans. [`options-registry.c`](../../../../src/options-registry.c) registers the unique `g` prefix.
 
 ## Test coverage
 
@@ -65,7 +65,8 @@ The GPU construction cost is paid once per palette change, even if delta keeps m
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | GL-01 | Byte queries equal an independent exhaustive scan at every grid-cell corner, on random and palette-hit queries, duplicate colors, overflow, reverse traversal and re-preparation with a changed palette of equal size. | [tests/lookup/gridlut/0005_gridlut_byte_exact.t](../../../../tests/lookup/gridlut/0005_gridlut_byte_exact.t), [tests/_support/processing/lookup/0037_gridlut_exact.c](../../../../tests/_support/processing/lookup/0037_gridlut_exact.c) |
-| GL-02 | Float delegation matches an independent double-distance scan, nonfinite handling and finite VP-tree metric results. | [tests/lookup/gridlut/0006_gridlut_float_exact.t](../../../../tests/lookup/gridlut/0006_gridlut_float_exact.t) |
+| GL-40 | The float factory returns its own policy kind. | [tests/lookup/gridlut/0044_float_policy_identity.t](../../../../tests/lookup/gridlut/0044_float_policy_identity.t) |
+| GL-02 | Native float lookup matches an independent double-distance scan, nonfinite handling and finite VP-tree metric results. | [tests/lookup/gridlut/0006_gridlut_float_exact.t](../../../../tests/lookup/gridlut/0006_gridlut_float_exact.t) |
 | GL-03 | GPU indexes and delta keep masks equal CPU exhaustive lookup with none, bluenoise and positional dithering, candidate overflow, repeated palettes and changed palettes of equal size; the gridlut kernel is selected. | [tests/lookup/gridlut/0001_gridlut_exact.t](../../../../tests/lookup/gridlut/0001_gridlut_exact.t), [tests/lookup/gridlut/0001_gridlut_exact.c](../../../../tests/lookup/gridlut/0001_gridlut_exact.c) |
 | GL-04 | gridlut allocation failure falls back and rebuilds. | [tests/lookup/gridlut/0002_gridlut_allocation_failure.t](../../../../tests/lookup/gridlut/0002_gridlut_allocation_failure.t) |
 | GL-05 | gridlut encoder failure falls back and rebuilds. | [tests/lookup/gridlut/0003_gridlut_encoder_failure.t](../../../../tests/lookup/gridlut/0003_gridlut_encoder_failure.t) |

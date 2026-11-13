@@ -5,6 +5,7 @@
 #include <string.h>
 #include "lookup-policy-gridlut-gpu.h"
 #include "threading.h"
+#include "gpu-lookup-metal.h"
 #include "sixel_atomic.h"
 /* Readable source: lookup-policy-gridlut-fractional-gpu.metal. */
 static char const * const gridlut_chunks[] = {
@@ -30,7 +31,8 @@ typedef struct gridlut_plan {
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
     uint32_t fractional;
-    sixel_lookup_policy_configuration_t legacy;
+    sixel_lookup_policy_configuration_t configuration;
+    gpu_metal_lookup_program_t metal;
     sixel_gpu_lookup_build_pass_t pass;
     int vulkan;
     int busy;
@@ -111,13 +113,13 @@ gridlut_describe(sixel_gpu_lookup_plan_interface_t const *self,
     /* Metal byte consumers keep the optimized executor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
-        view->program_format = "libsixel.legacy-palette.v1";
+        view->program_format = "metal.lookup-native-rgb8.v1";
         view->logical_name = "gridlut";
         view->palette = plan->palette;
         view->palette_size = plan->count * 3U;
         view->ncolors = plan->count;
-        view->constants = &plan->legacy;
-        view->constants_size = sizeof(plan->legacy);
+        view->constants = &plan->metal;
+        view->constants_size = sizeof(plan->metal);
         view->workspace_size = 1;
         return SIXEL_OK;
     }
@@ -347,8 +349,10 @@ gridlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
          * the C enum's storage. Metal keeps its existing builder ABI. */
         plan->fractional = request->query_kind ==
             SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL;
-        plan->legacy.kind = SIXEL_LUT_POLICY_GRIDLUT;
-        plan->legacy.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        plan->metal.configuration = &plan->configuration;
+        plan->metal.implementation = sixel_lookup_gridlut_gpu_metal();
+        plan->configuration.kind = SIXEL_LUT_POLICY_GRIDLUT;
+        plan->configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         plan->pass.entry_point = "gridlut_build";
         plan->pass.groups[0] = 128;

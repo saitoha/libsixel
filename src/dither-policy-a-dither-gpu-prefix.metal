@@ -7,8 +7,7 @@ struct Params {
     uint width;
     uint height;
     uint ncolors;
-    uint lookup_mode;
-    uint fhedt_resolution, fhedt_shift, fhedt_refine, fhedt_dist2;
+    uint lookup_parameters[4];
     uint reserved;
     uint has_transparent;
     uint transparent_size;

@@ -32,7 +32,6 @@
 #include <string.h>
 
 #include "lookup-policy-ordered.h"
-#include "lookup-policy-blockcull.h"
 #include "sixel_atomic.h"
 
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
@@ -55,7 +54,7 @@
  * sorted by distance from that seed. The triangle inequality excludes
  * colors farther than twice the query-to-seed distance. Both bounds and
  * final squared distances are exact integers; ties keep the first index.
- * Float queries retain the exact blockcull backend and native coordinates.
+ * Float queries own sorted rows in lookup-policy-ordered-float32.c.
  */
 
 enum {
@@ -424,17 +423,6 @@ sixel_lookup_policy_ordered_8bit_new(
 {
     return sixel_lookup_policy_ordered_new(
         allocator, &g_sixel_lookup_policy_ordered_8bit_vtbl, policy);
-}
-
-SIXELSTATUS
-sixel_lookup_policy_ordered_float32_new(
-    sixel_allocator_t *allocator,
-    void **policy)
-{
-    /* Byte sorted rows cannot bound arbitrary float working coordinates.
-     * Reuse the established exact backend without rounding queries or
-     * allocating byte rows. */
-    return sixel_lookup_policy_blockcull_float32_new(allocator, policy);
 }
 
 /* emacs Local Variables:      */

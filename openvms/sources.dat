@@ -27,6 +27,7 @@ lookup-policy-fhedt.c
 lookup-policy-vptree.c
 lookup-policy-delaunay.c
 lookup-policy-gridlut.c
+lookup-policy-ordered.c
 lookup-policy-blockcull.c
 lookup-policy-rbc.c
 lookup-policy-mahalanobis.c
@@ -40,6 +41,8 @@ lookup-delaunay-graph.c
 lookup-vptree-float32.c
 lookup-delaunay-float32.c
 lookup-blockcull-float32.c
+lookup-policy-ordered-float32.c
+lookup-policy-gridlut-float32.c
 dither.c
 dither-policy.c
 dither-policy-none.c

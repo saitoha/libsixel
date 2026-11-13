@@ -31,7 +31,6 @@
 #include <string.h>
 
 #include "lookup-policy-gridlut.h"
-#include "lookup-policy-blockcull.h"
 #include "sixel_atomic.h"
 
 
@@ -50,7 +49,7 @@
  * whose nearest box distance is no greater than the smallest farthest
  * corner distance. The query is never rounded: only candidates are culled.
  * Up to 64 candidates are stored in palette order; overflowing cells scan
- * the whole palette. Float queries retain the exact blockcull backend.
+ * the whole palette. The float component owns a native-coordinate grid.
  */
 
 enum {
@@ -389,16 +388,6 @@ sixel_lookup_policy_gridlut_8bit_new(
 {
     return sixel_lookup_policy_gridlut_new(
         allocator, &g_sixel_lookup_policy_gridlut_8bit_vtbl, policy);
-}
-
-SIXELSTATUS
-sixel_lookup_policy_gridlut_float32_new(
-    sixel_allocator_t *allocator,
-    void **policy)
-{
-    /* A byte-domain grid cannot bound arbitrary float working coordinates.
-     * Reuse the established exact backend without allocating a byte table. */
-    return sixel_lookup_policy_blockcull_float32_new(allocator, policy);
 }
 
 /* emacs Local Variables:      */

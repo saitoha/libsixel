@@ -1,10 +1,9 @@
 #!/bin/sh
 # TAP test covering forced GPU bluenoise with the default lookup policy.
 #
-# The Metal palette-apply kernel performs its own direct palette scan.  FORCE
-# mode must therefore bypass CPU lookup-policy choices such as the default
-# 5bit path; otherwise terminal clients that only set SIXEL_GPU_POLICY=force
-# fail before they can present the first frame.
+# The compatibility root resolves AUTO to the owned exhaustive GPU lookup.
+# Probe an explicit policy so a broken AUTO resolver fails this test rather
+# than being mistaken for unavailable hardware.
 
 set -eux
 
@@ -17,7 +16,7 @@ probe_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 input_image="${TOP_SRCDIR}/images/vimperator3.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_GPU_POLICY=force \
-        -d none -p 16 -o /dev/null "${probe_image}" || {
+        -~ none -d none -p 16 -o /dev/null "${probe_image}" || {
     printf "1..0 # SKIP forced GPU palette apply is unavailable\n";
     exit 0
 }

@@ -7,6 +7,7 @@
 #include "gpu-palette.h"
 #include "lookup-policy-fhedt-gpu.h"
 #include "threading.h"
+#include "gpu-lookup-metal.h"
 #include "sixel_atomic.h"
 #if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 #include <pthread.h>
@@ -35,7 +36,8 @@ typedef struct fhedt_plan {
     unsigned char palette[768];
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
-    sixel_lookup_policy_configuration_t legacy;
+    sixel_lookup_policy_configuration_t configuration;
+    gpu_metal_lookup_program_t metal;
     char specialization[80];
     char const *chunks[1+sizeof(fhedt_chunks)/sizeof(*fhedt_chunks)];
     size_t workspace_size;
@@ -85,7 +87,7 @@ static struct {
 } fhedt_idle;
 #endif
 
-/* Metal byte queries use the legacy executor and own no table here. */
+/* Metal byte tables belong to this policy's native implementation. */
 static int
 fhedt_owns_table(fhedt_plan_t const *plan)
 {
@@ -207,16 +209,16 @@ fhedt_describe(sixel_gpu_lookup_plan_interface_t const *self,
         return SIXEL_OK;
     }
 #endif
-    /* Byte consumers keep the existing optimized executor. Fractional
+    /* Byte consumers receive this policy's native descriptor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
-        view->program_format = "libsixel.legacy-palette.v1";
+        view->program_format = "metal.lookup-native-rgb8.v1";
         view->logical_name = "fhedt";
         view->palette = plan->palette;
         view->palette_size = plan->count * 3U;
         view->ncolors = plan->count;
-        view->constants = &plan->legacy;
-        view->constants_size = sizeof(plan->legacy);
+        view->constants = &plan->metal;
+        view->constants_size = sizeof(plan->metal);
         view->workspace_size = 1;
         return SIXEL_OK;
     }
@@ -406,13 +408,13 @@ fhedt_vulkan_layout(fhedt_plan_t *plan)
     size_t r, cells;
     int refine;
 
-    r = (size_t)plan->legacy.fhedt_resolution;
+    r = (size_t)plan->configuration.fhedt_resolution;
     cells = r * r * r;
-    refine = plan->legacy.fhedt_refine &&
+    refine = plan->configuration.fhedt_refine &&
         (plan->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE || r != 256);
     plan->vulkan_constants[0] = r == 64 ? 2 : r == 128 ? 1 : 0;
     plan->vulkan_constants[1] = (uint32_t)refine;
-    plan->vulkan_constants[2] = (uint32_t)plan->legacy.fhedt_use_dist2;
+    plan->vulkan_constants[2] = (uint32_t)plan->configuration.fhedt_use_dist2;
     plan->vulkan_constants[3] = (uint32_t)r;
     plan->vulkan_constants[4] = (uint32_t)(r * r + 256U +
         (refine ? cells : 0U));
@@ -503,12 +505,14 @@ fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         device->vtbl->ref(device);
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
-        plan->legacy = preparer->configuration;
-        r = (size_t)plan->legacy.fhedt_resolution;
+        plan->metal.configuration = &plan->configuration;
+        plan->metal.implementation = sixel_lookup_fhedt_gpu_metal();
+        plan->configuration = preparer->configuration;
+        r = (size_t)plan->configuration.fhedt_resolution;
         cells = r*r*r;
         plan->constants[0] = r == 64 ? 2 : r == 128 ? 1 : 0;
-        plan->constants[1] = (uint32_t)plan->legacy.fhedt_refine;
-        plan->constants[2] = (uint32_t)plan->legacy.fhedt_use_dist2;
+        plan->constants[1] = (uint32_t)plan->configuration.fhedt_refine;
+        plan->constants[2] = (uint32_t)plan->configuration.fhedt_use_dist2;
         /* Fractional R256 still needs refinement between lattice points. */
         (void)snprintf(plan->specialization, sizeof(plan->specialization),
             "#define R %u\n#define REFINE %u\n#define PACKED 1\n",

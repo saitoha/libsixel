@@ -5,8 +5,7 @@ struct Params {
     uint width;
     uint height;
     uint ncolors;
-    uint lookup_mode;
-    uint fhedt_resolution, fhedt_shift, fhedt_refine, fhedt_dist2;
+    uint lookup_parameters[4];
     uint reserved;
     uint has_transparent;
     uint transparent_size;
@@ -34,12 +33,4 @@ struct Params {
     uint gradient_width;
     uint gradient_height;
     uchar sixdelta_palette[768];
-};
-struct EytzingerEntry {
-    float key;
-    uint palette_index;
-};
-struct EytzingerParams {
-    uint count;
-    uint window;
 };

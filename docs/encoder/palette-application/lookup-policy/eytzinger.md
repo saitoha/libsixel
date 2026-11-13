@@ -113,7 +113,7 @@ The Eytzinger layout name is established terminology for this breadth-first impl
 
 libsixel applies that array layout to projected palette keys; the surrounding three-dimensional candidate strategy is libsixel-specific and should not be attributed to the array-layout paper. The policy entered libsixel in the [`1d-eytzinger` implementation commit](https://github.com/saitoha/libsixel/commit/acbde38716ecedaf8a1092386c6779a802504902) and was later renamed `eytzinger`.
 
-The CPU implementation is [`lookup-policy-eytzinger.c`](../../../../src/lookup-policy-eytzinger.c). A Metal palette-application path also supports an Eytzinger mode in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m).
+The CPU implementation is [`lookup-policy-eytzinger.c`](../../../../src/lookup-policy-eytzinger.c). A Metal palette-application path also uses the independent Eytzinger implementation in [`lookup-policy-eytzinger-gpu-metal.inc.h`](../../../../src/lookup-policy-eytzinger-gpu-metal.inc.h).
 
 ## Test coverage
 

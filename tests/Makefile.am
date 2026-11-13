@@ -240,6 +240,22 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0044_FLOAT_POLICY_IDENTITY \
+    -DBUILD_TEST_0089_FLOAT_POLICY_IDENTITY \
+    -DBUILD_INTERLEAVED_COMMON \
+    -DBUILD_TEST_0007_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0066_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0173_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0063_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0088_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0058_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0085_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0087_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0043_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0048_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0121_GPU_INTERLEAVED_CONSUMERS \
+    -DBUILD_TEST_0008_GPU_SCALAR_EQUIVALENCE \
+    -DBUILD_TEST_0049_GPU_SCALAR_EQUIVALENCE \
     -DBUILD_TEST_0056_GPU_BLUE_RECONFIGURE \
     -DBUILD_TEST_0049_GPU_X_RECONFIGURE \
     -DBUILD_TEST_0043_GPU_A_RECONFIGURE \
@@ -5321,6 +5337,24 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    lookup/gridlut/0044_float_policy_identity.c \
+    lookup/ordered/0089_float_policy_identity.c \
+    lookup/none/0007_gpu_interleaved_consumers.c \
+    lookup/5bit/0066_gpu_interleaved_consumers.c \
+    lookup/6bit/0066_gpu_interleaved_consumers.c \
+    lookup/fhedt/0173_gpu_interleaved_consumers.c \
+    lookup/eytzinger/0063_gpu_interleaved_consumers.c \
+    lookup/ordered/0088_gpu_interleaved_consumers.c \
+    lookup/vptree/0058_gpu_interleaved_consumers.c \
+    lookup/rbc/0085_gpu_interleaved_consumers.c \
+    lookup/mahalanobis/0085_gpu_interleaved_consumers.c \
+    lookup/certlut/0087_gpu_interleaved_consumers.c \
+    lookup/gridlut/0043_gpu_interleaved_consumers.c \
+    lookup/blockcull/0048_gpu_interleaved_consumers.c \
+    lookup/delaunay/0121_gpu_interleaved_consumers.c \
+    lookup/none/0008_gpu_scalar_equivalence.c \
+    lookup/blockcull/0049_gpu_scalar_equivalence.c \
+    _support/processing/gpu-palette/interleaved_common.c \
     dither/bluenoise/0056_gpu_blue_reconfigure.c \
     dither/x-dither/0049_gpu_x_reconfigure.c \
     dither/a-dither/0043_gpu_a_reconfigure.c \
@@ -12887,3 +12921,23 @@ EXTRA_DIST += dither/a-dither/0043_gpu_a_reconfigure.t
 EXTRA_DIST += dither/x-dither/0049_gpu_x_reconfigure.t
 
 EXTRA_DIST += dither/bluenoise/0056_gpu_blue_reconfigure.t
+
+EXTRA_DIST += lookup/none/0007_gpu_interleaved_consumers.t \
+    lookup/5bit/0066_gpu_interleaved_consumers.t \
+    lookup/6bit/0066_gpu_interleaved_consumers.t \
+    lookup/fhedt/0173_gpu_interleaved_consumers.t \
+    lookup/eytzinger/0063_gpu_interleaved_consumers.t \
+    lookup/ordered/0088_gpu_interleaved_consumers.t \
+    lookup/vptree/0058_gpu_interleaved_consumers.t \
+    lookup/rbc/0085_gpu_interleaved_consumers.t \
+    lookup/mahalanobis/0085_gpu_interleaved_consumers.t \
+    lookup/certlut/0087_gpu_interleaved_consumers.t \
+    lookup/gridlut/0043_gpu_interleaved_consumers.t \
+    lookup/blockcull/0048_gpu_interleaved_consumers.t \
+    lookup/delaunay/0121_gpu_interleaved_consumers.t \
+    lookup/none/0008_gpu_scalar_equivalence.t \
+    lookup/blockcull/0049_gpu_scalar_equivalence.t
+
+EXTRA_DIST += lookup/ordered/0089_float_policy_identity.t
+
+EXTRA_DIST += lookup/gridlut/0044_float_policy_identity.t

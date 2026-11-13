@@ -1,3 +1,12 @@
+struct EytzingerEntry {
+    float key;
+    uint palette_index;
+};
+struct EytzingerParams {
+    uint count;
+    uint window;
+};
+
 static uint eytzinger_palette_lookup(
     constant uchar *palette,
     constant EytzingerEntry *sorted,

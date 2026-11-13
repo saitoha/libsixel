@@ -44,7 +44,15 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-5bit-gpu-query.metal \
     $(srcdir)/lookup-policy-6bit-gpu-query.metal \
     $(srcdir)/gpu-palette-legacy-pixel.metal \
-    $(srcdir)/gpu-palette-legacy-apply.metal \
+    $(srcdir)/lookup-policy-none-gpu-apply.metal \
+    $(srcdir)/lookup-policy-5bit-gpu-apply.metal \
+    $(srcdir)/lookup-policy-6bit-gpu-apply.metal \
+    $(srcdir)/lookup-policy-fhedt-gpu-apply.metal \
+    $(srcdir)/lookup-policy-eytzinger-gpu-apply.metal \
+    $(srcdir)/lookup-policy-gridlut-gpu-apply.metal \
+    $(srcdir)/lookup-policy-delaunay-gpu-apply.metal \
+    $(srcdir)/lookup-policy-blockcull-gpu-apply.metal \
+    $(srcdir)/lookup-policy-blockcull-gpu-scan.metal \
     $(srcdir)/gpu-dequant-fast4.metal \
     $(srcdir)/lookup-policy-none-gpu.metal \
     $(srcdir)/lookup-policy-blockcull-gpu.metal \
@@ -293,7 +301,9 @@ else
 EXTRA_LTLIBRARIES = libfloatlookup.la
 libfloatlookup_la_SOURCES = $(srcdir)/lookup-vptree-float32.c \
     $(srcdir)/lookup-delaunay-float32.c \
-    $(srcdir)/lookup-blockcull-float32.c
+    $(srcdir)/lookup-blockcull-float32.c \
+    $(srcdir)/lookup-policy-ordered-float32.c \
+    $(srcdir)/lookup-policy-gridlut-float32.c
 libfloatlookup_la_CPPFLAGS = $(libsixel_la_CPPFLAGS)
 libfloatlookup_la_CFLAGS = $(libsixel_la_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 FLOAT_LOOKUP_LIB = $(libfloatlookup_la_OBJECTS)
@@ -530,7 +540,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-rbc-gpu.c \
                 $(srcdir)/lookup-policy-mahalanobis-gpu.c \
                 $(srcdir)/lookup-policy-certlut-gpu.c \
-                $(srcdir)/lookup-policy-gpu-legacy.c \
                 $(srcdir)/lookup-policy-gpu-registry.c \
                 $(srcdir)/lookup-policy-gpu-compat.c \
                 $(srcdir)/lookup-policy-gpu.h \
@@ -547,9 +556,17 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-rbc-gpu.h \
                 $(srcdir)/lookup-policy-mahalanobis-gpu.h \
                 $(srcdir)/lookup-policy-certlut-gpu.h \
-                $(srcdir)/lookup-policy-gpu-legacy.h \
                 $(srcdir)/gpu-program.h \
                 $(srcdir)/gpu-palette-program.inc.h \
+                $(srcdir)/lookup-policy-none-gpu-metal.inc.h \
+                $(srcdir)/lookup-policy-5bit-gpu-metal.inc.h \
+                $(srcdir)/lookup-policy-6bit-gpu-metal.inc.h \
+                $(srcdir)/lookup-policy-fhedt-gpu-metal.inc.h \
+                $(srcdir)/lookup-policy-eytzinger-gpu-metal.inc.h \
+                $(srcdir)/lookup-policy-gridlut-gpu-metal.inc.h \
+                $(srcdir)/lookup-policy-delaunay-gpu-metal.inc.h \
+                $(srcdir)/lookup-policy-blockcull-gpu-metal.inc.h \
+                $(srcdir)/gpu-lookup-metal.h \
                 $(srcdir)/dither-lookup-preparer.inc.h \
                 $(srcdir)/progressive-gpu.c \
                 $(srcdir)/progressive-gpu.h \
@@ -785,9 +802,6 @@ $(srcdir)/dither-policy-sierra2-gpu-metal.m \
 $(srcdir)/dither-policy-sierra3-gpu-metal.m \
 $(srcdir)/gpu-palette-metal.m \
 $(srcdir)/retained-plane-metal.m \
-$(srcdir)/lookup-policy-fhedt-gpu.inc.h \
-$(srcdir)/lookup-policy-5bit-gpu.inc.h \
-$(srcdir)/lookup-policy-6bit-gpu.inc.h \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/progressive-gpu-metal.m
 endif

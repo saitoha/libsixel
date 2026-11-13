@@ -179,6 +179,101 @@ sixel_gpu_fhedt_build(id<MTLCommandBuffer> command, id<MTLBuffer> palette,
     return SIXEL_OK;
 }
 
+static char const *const fhedt_chunks[] = {
+#include <generated-metal/lookup-policy-fhedt-gpu-query-shader.inc.h>
+#include <generated-metal/lookup-policy-fhedt-gpu-apply-shader.inc.h>
+NULL
+};
+
+static SIXELSTATUS
+fhedt_metal_prepare(gpu_metal_lookup_run_t *run,
+    sixel_gpu_palette_request_t const *request,
+    sixel_gpu_metal_params_t *params)
+{
+    SIXELSTATUS status;
+    NSUInteger fhedt_grid_size;
+
+    if (!sixel_gpu_fhedt_prepare(request->fhedt_resolution,
+            sixel_gpu_fhedt_needs_refine(request))) {
+        sixel_helper_set_additional_message(
+            "gpu palette apply: FHEDT pipelines unavailable.");
+        status = SIXEL_FEATURE_ERROR;
+        return status;
+    }
+    params->lookup_parameters[0] = request->fhedt_resolution;
+    params->lookup_parameters[1] = request->fhedt_resolution == 64 ? 2U :
+        request->fhedt_resolution == 128 ? 1U : 0U;
+    params->lookup_parameters[2] = sixel_gpu_fhedt_needs_refine(request);
+    params->lookup_parameters[3] = request->fhedt_use_dist2;
+    if (request->test_hooks != NULL) {
+        request->test_hooks->fhedt_table_entry_bytes =
+            params->lookup_parameters[2] ? 2U : 1U;
+    }
+    fhedt_grid_size = (NSUInteger)request->fhedt_resolution;
+    fhedt_grid_size *= fhedt_grid_size * fhedt_grid_size;
+    run->rebuild = g_sixel_gpu_fhedt_colors != request->ncolors ||
+        g_sixel_gpu_fhedt_resolution != request->fhedt_resolution ||
+        g_sixel_gpu_fhedt_refine != request->fhedt_refine ||
+        g_sixel_gpu_fhedt_dist2 != request->fhedt_use_dist2 ||
+        memcmp(g_sixel_gpu_fhedt_palette, request->palette,
+            (size_t)request->ncolors * 3U) != 0;
+    run->buffers[5] = sixel_gpu_fhedt_buffer(&g_sixel_gpu_fhedt_table,
+        fhedt_grid_size * (params->lookup_parameters[2] ? 2U : 1U));
+    if (run->rebuild &&
+            (sixel_gpu_fhedt_buffer(&g_sixel_gpu_fhedt_first,
+                fhedt_grid_size * 4U) == nil ||
+             sixel_gpu_fhedt_buffer(&g_sixel_gpu_fhedt_second,
+                fhedt_grid_size * 4U) == nil)) {
+        status = SIXEL_BAD_ALLOCATION;
+        return status;
+    }
+    run->kernel = "fhedt";
+    run->kernel_id = 7;
+    if (run->buffers[5] == nil)
+        return SIXEL_BAD_ALLOCATION;
+    if (sixel_trace_topic_is_enabled("gpu_contract"))
+        fprintf(stderr, "LSXGPU3|lookup=fhedt|table=%s|R=%d|F=%d|D=%d\n",
+            run->rebuild ? "rebuild" : "reuse", request->fhedt_resolution,
+            request->fhedt_refine, request->fhedt_use_dist2);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+fhedt_metal_build(gpu_metal_lookup_run_t *run,
+    id<MTLCommandBuffer> command, id<MTLBuffer> palette, id<MTLBuffer> params,
+    sixel_gpu_palette_request_t const *request)
+{
+    (void)params;
+    return sixel_gpu_fhedt_build(command, palette, run->buffers[5], request);
+}
+
+/* Identity publication follows successful GPU completion, including every
+ * consumer range. A failed rebuild must invalidate the overwritten table. */
+static void
+fhedt_metal_finish(gpu_metal_lookup_run_t *run,
+    sixel_gpu_palette_request_t const *request, SIXELSTATUS status)
+{
+    if (!run->rebuild) return;
+    g_sixel_gpu_fhedt_colors = status == SIXEL_OK ? request->ncolors : 0;
+    if (status != SIXEL_OK) return;
+    memcpy(g_sixel_gpu_fhedt_palette, request->palette,
+        (size_t)request->ncolors * 3U);
+    g_sixel_gpu_fhedt_resolution = request->fhedt_resolution;
+    g_sixel_gpu_fhedt_refine = request->fhedt_refine;
+    g_sixel_gpu_fhedt_dist2 = request->fhedt_use_dist2;
+}
+
+static gpu_metal_lookup_t const fhedt_metal = {
+    fhedt_chunks, "lookup_fhedt_apply",
+    fhedt_metal_prepare, fhedt_metal_build, fhedt_metal_finish
+};
+
+gpu_metal_lookup_t const *
+sixel_lookup_fhedt_gpu_metal(void)
+{
+    return &fhedt_metal;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

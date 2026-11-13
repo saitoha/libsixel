@@ -5,6 +5,7 @@
 #include <string.h>
 #include "lookup-policy-6bit-gpu.h"
 #include "threading.h"
+#include "gpu-lookup-metal.h"
 #include "sixel_atomic.h"
 #if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 #include <pthread.h>
@@ -32,7 +33,8 @@ typedef struct lookup6_plan {
     unsigned char palette[768];
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
-    sixel_lookup_policy_configuration_t legacy;
+    sixel_lookup_policy_configuration_t configuration;
+    gpu_metal_lookup_program_t metal;
     size_t workspace_size;
     /* Reserved program ABI words; grid geometry is fixed by this policy. */
     uint32_t constants[4];
@@ -75,7 +77,7 @@ static struct {
 } lookup6_idle;
 #endif
 
-/* Metal byte queries use the legacy executor and own no table here. */
+/* Metal byte tables belong to this policy's native implementation. */
 static int
 lookup6_owns_table(lookup6_plan_t const *plan)
 {
@@ -190,16 +192,16 @@ lookup6_describe(sixel_gpu_lookup_plan_interface_t const *self,
         return SIXEL_OK;
     }
 #endif
-    /* Byte consumers keep the existing optimized executor. Fractional
+    /* Byte consumers receive this policy's native descriptor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
-        view->program_format = "libsixel.legacy-palette.v1";
+        view->program_format = "metal.lookup-native-rgb8.v1";
         view->logical_name = "6bit";
         view->palette = plan->palette;
         view->palette_size = plan->count * 3U;
         view->ncolors = plan->count;
-        view->constants = &plan->legacy;
-        view->constants_size = sizeof(plan->legacy);
+        view->constants = &plan->metal;
+        view->constants_size = sizeof(plan->metal);
         view->workspace_size = 1;
         return SIXEL_OK;
     }
@@ -429,7 +431,9 @@ lookup6_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         device->vtbl->ref(device);
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
-        plan->legacy = preparer->configuration;
+        plan->metal.configuration = &plan->configuration;
+        plan->metal.implementation = sixel_lookup_6bit_gpu_metal();
+        plan->configuration = preparer->configuration;
         /* 64 cells per channel; no other policy can resize this table. */
         plan->workspace_size = 262144U;
         plan->pass_count = 1;

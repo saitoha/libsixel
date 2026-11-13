@@ -1576,6 +1576,23 @@ int test_bit5_gpu_table_bytes(int argc, char **argv);
 int test_bit5_gpu_reuse(int argc, char **argv);
 int test_bit5_gpu_palette_rebuild(int argc, char **argv);
 int test_bit5_gpu_count_rebuild(int argc, char **argv);
+int test_none_gpu_interleaved_consumers(int, char **);
+int test_bit5_gpu_interleaved_consumers(int, char **);
+int test_bit6_gpu_interleaved_consumers(int, char **);
+int test_fhedt_gpu_interleaved_consumers(int, char **);
+int test_eytzinger_gpu_interleaved_consumers(int, char **);
+int test_ordered_gpu_interleaved_consumers(int, char **);
+int test_vptree_gpu_interleaved_consumers(int, char **);
+int test_rbc_gpu_interleaved_consumers(int, char **);
+int test_mahalanobis_gpu_interleaved_consumers(int, char **);
+int test_certlut_gpu_interleaved_consumers(int, char **);
+int test_gridlut_gpu_interleaved_consumers(int, char **);
+int test_blockcull_gpu_interleaved_consumers(int, char **);
+int test_delaunay_gpu_interleaved_consumers(int, char **);
+int test_none_gpu_scalar_equivalence(int, char **);
+int test_blockcull_gpu_scalar_equivalence(int, char **);
+int test_ordered_float_policy_identity(int, char **);
+int test_gridlut_float_policy_identity(int, char **);
 int test_bit5_gpu_policy_isolation(int argc, char **argv);
 int test_bit5_gpu_allocation_recovery(int argc, char **argv);
 int test_bit5_gpu_encoder_recovery(int argc, char **argv);
@@ -6960,6 +6977,32 @@ static test_entry_t const test_entries[] = {
     { "5bit/gpu_reuse", test_bit5_gpu_reuse },
     { "5bit/gpu_palette_rebuild", test_bit5_gpu_palette_rebuild },
     { "5bit/gpu_count_rebuild", test_bit5_gpu_count_rebuild },
+    { "none/gpu_interleaved_consumers", test_none_gpu_interleaved_consumers },
+    { "5bit/gpu_interleaved_consumers", test_bit5_gpu_interleaved_consumers },
+    { "6bit/gpu_interleaved_consumers", test_bit6_gpu_interleaved_consumers },
+    { "fhedt/gpu_interleaved_consumers", test_fhedt_gpu_interleaved_consumers },
+    { "eytzinger/gpu_interleaved_consumers",
+        test_eytzinger_gpu_interleaved_consumers },
+    { "ordered/gpu_interleaved_consumers",
+        test_ordered_gpu_interleaved_consumers },
+    { "vptree/gpu_interleaved_consumers",
+        test_vptree_gpu_interleaved_consumers },
+    { "rbc/gpu_interleaved_consumers", test_rbc_gpu_interleaved_consumers },
+    { "mahalanobis/gpu_interleaved_consumers",
+        test_mahalanobis_gpu_interleaved_consumers },
+    { "certlut/gpu_interleaved_consumers",
+        test_certlut_gpu_interleaved_consumers },
+    { "gridlut/gpu_interleaved_consumers",
+        test_gridlut_gpu_interleaved_consumers },
+    { "blockcull/gpu_interleaved_consumers",
+        test_blockcull_gpu_interleaved_consumers },
+    { "delaunay/gpu_interleaved_consumers",
+        test_delaunay_gpu_interleaved_consumers },
+    { "none/gpu_scalar_equivalence", test_none_gpu_scalar_equivalence },
+    { "blockcull/gpu_scalar_equivalence",
+        test_blockcull_gpu_scalar_equivalence },
+    { "ordered/float_policy_identity", test_ordered_float_policy_identity },
+    { "gridlut/float_policy_identity", test_gridlut_float_policy_identity },
     { "5bit/gpu_policy_isolation", test_bit5_gpu_policy_isolation },
     { "5bit/gpu_allocation_recovery", test_bit5_gpu_allocation_recovery },
     { "5bit/gpu_encoder_recovery", test_bit5_gpu_encoder_recovery },

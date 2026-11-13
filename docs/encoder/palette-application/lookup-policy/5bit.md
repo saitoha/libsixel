@@ -73,7 +73,7 @@ Construction and application use the same command buffer with an encoder boundar
 
 RGB888 application supports `none`, arithmetic `a`/`x`, and `bluenoise` dithering, transparency, and eligible partial-rectangle delta comparison. Native float lookup remains CPU-only. The public feature macro `SIXEL_HAVE_GPU_PREBUILT_BIT_LOOKUP` lets clients admit this policy without relying on older libraries that could reinterpret forced unsupported lookup as direct scanning. GPU-only preparation needs the existing lookup kind and builds no CPU memo table; an automatic GPU rejection can still prepare the CPU policy before output.
 
-The Metal implementation is [lookup-policy-5bit-gpu.inc.h](../../../../src/lookup-policy-5bit-gpu.inc.h). The [execution map](../../execution-map/README.md) describes component ownership.
+The Metal implementation is [lookup-policy-5bit-gpu-metal.inc.h](../../../../src/lookup-policy-5bit-gpu-metal.inc.h). The [execution map](../../execution-map/README.md) describes component ownership.
 
 GPU diffusion uses an independent fractional program in [`lookup-policy-5bit-gpu.c`](../../../../src/lookup-policy-5bit-gpu.c) and [`lookup-policy-5bit-fractional-gpu.metal`](../../../../src/lookup-policy-5bit-fractional-gpu.metal). Vulkan byte and fractional queries use the policy-owned [`lookup-policy-5bit-gpu.glsl`](../../../../src/lookup-policy-5bit-gpu.glsl) program. The continuous query selects the rounded `5bit` address directly, without an intermediate RGB8 rounding. Representatives remain the centers of the integer byte intervals, preserving the declared approximation. The table is completely prebuilt; there is no first-query memoization.
 

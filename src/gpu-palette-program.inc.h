@@ -19,7 +19,7 @@ struct sixel_gpu_program {
     sixel_gpu_lookup_plan_interface_t *plan;
     sixel_gpu_lookup_program_view_t view;
     gpu_compiled_program_t *compiled;
-    int legacy;
+    int native_lookup;
 };
 
 static gpu_compiled_program_t *gpu_compiled_cache;
@@ -273,6 +273,7 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
     sixel_gpu_dither_program_t const *dither, sixel_gpu_program_t **result)
 {
     sixel_gpu_program_t *program;
+    gpu_metal_lookup_program_t const *native;
     SIXELSTATUS status;
 
     if (device == NULL || plan == NULL || dither == NULL || result == NULL) {
@@ -288,12 +289,24 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-    program->legacy = strcmp(program->view.program_format,
-        "libsixel.legacy-palette.v1") == 0;
+    program->native_lookup = strcmp(program->view.program_format,
+        "metal.lookup-native-rgb8.v1") == 0;
     (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
-    if (program->legacy) {
-        status = sixel_gpu_palette_metal_prepare_locked(dither)
-            ? SIXEL_OK : SIXEL_FEATURE_ERROR;
+    if (program->native_lookup) {
+        /* Native byte implementations are supplied by their own plans.
+         * Reject malformed views before dereferencing the descriptor. */
+        if (program->view.constants == NULL ||
+                program->view.constants_size !=
+                    sizeof(gpu_metal_lookup_program_t)) {
+            status = SIXEL_BAD_ARGUMENT;
+        } else {
+            native = program->view.constants;
+            status = native->implementation == NULL ||
+                native->configuration == NULL ? SIXEL_BAD_ARGUMENT :
+                gpu_metal_lookup_pipeline(native->implementation->chunks,
+                    dither, native->implementation->entry) != nil
+                    ? SIXEL_OK : SIXEL_FEATURE_ERROR;
+        }
     } else if (program->view.query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE) {
         status = SIXEL_FEATURE_ERROR;
     } else if (strcmp(program->view.program_format,

@@ -46,6 +46,8 @@ typedef struct sixel_gpu_palette_test_hooks {
     int fault;
     int entered;
     int matrix_supported;
+    /* Exercise a policy's non-matrix implementation on capable hardware. */
+    int disable_matrix;
     /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order, 6 graph,
      * 7 FHEDT, 8 bit LUT, 9 injected RGB8 program. */
     int kernel;
@@ -72,7 +74,7 @@ typedef struct sixel_gpu_palette_test_hooks {
  * program, and materializes indexed pixels and delta decisions. Lookup plans
  * own their shader, construction and workspace; this request carries only an
  * opaque prepared program. The enum/configuration fields remain for the
- * explicit legacy adapter and standalone compatibility entry point. Admission
+ * standalone compatibility entry point. Admission
  * rejects unsupported inputs before output; a prepared execution does not
  * retry a failed GPU frame on the CPU.
  */

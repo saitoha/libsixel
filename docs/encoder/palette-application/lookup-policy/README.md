@@ -76,8 +76,8 @@ The labels apply to one already-adjusted color candidate. They do not imply that
 | `fhedt`, 8-bit at `R = 256` | Nearest-distance exact | Every byte-valued RGB tuple has a grid coordinate |
 | `fhedt`, float32 | Approximate | Even `R = 256` discretizes a continuous working space |
 | `delaunay` | Scan-index exact | Closed Voronoi graph walk with lowest-index ties and exhaustive float fallback outside its box |
-| `gridlut` | Scan-index exact | Fixed RGB cells retain all possible winners; float32 delegates to blockcull |
-| `ordered` | Scan-index exact | Distance-sorted byte candidates with exact radius pruning; float32 delegates to blockcull |
+| `gridlut` | Scan-index exact | Fixed RGB cells or native float cells retain all possible winners |
+| `ordered` | Scan-index exact | Independent byte and float distance-sorted rows with conservative radius pruning |
 | `blockcull` | Scan-index exact | Colors that cannot be nearest anywhere in a run or pixel block are skipped before a palette-order scan |
 | `vptree` | Nearest-distance exact | Tree pruning and the default safe cache preserve the policy minimum |
 | `rbc`, float32 | Nearest-distance exact | Ball-radius lower bounds use the same normalized metric as final comparisons |

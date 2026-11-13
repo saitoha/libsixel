@@ -73,7 +73,7 @@ The CPU bulk path groups samples along a row only, which limits how small the bo
 
 ## Implementation map
 
-[`lookup-policy-blockcull.c`](../../../../src/lookup-policy-blockcull.c) owns preparation and the 8-bit class through `lookup/blockcull.8bit` and `lookup/blockcull.float32`. [`lookup-blockcull-float32.c`](../../../../src/lookup-blockcull-float32.c) owns the float bounds and scans inside the float lookup build gate. The Metal kernel `sixel_gpu_palette_apply_blockcull` and its dispatch are in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m).
+[`lookup-policy-blockcull.c`](../../../../src/lookup-policy-blockcull.c) owns preparation and the 8-bit class through `lookup/blockcull.8bit` and `lookup/blockcull.float32`. [`lookup-blockcull-float32.c`](../../../../src/lookup-blockcull-float32.c) owns the float bounds and scans inside the float lookup build gate. The Metal kernels belong to [`lookup-policy-blockcull-gpu.metal`](../../../../src/lookup-policy-blockcull-gpu.metal) and its scalar and short-palette companions; native preparation and dispatch are in [`lookup-policy-blockcull-gpu-metal.inc.h`](../../../../src/lookup-policy-blockcull-gpu-metal.inc.h).
 
 ## Test coverage
 

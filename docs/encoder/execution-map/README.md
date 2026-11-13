@@ -166,7 +166,7 @@ dither: generate corrected queries + activity
        -> dither: validate indexes and update residuals
 ```
 
-Each policy has its own preparation, query and cache implementation; only the composition registry knows concrete constructors. Providers can retain the legacy byte executor while exposing an independent fractional program. This preserves optimized byte paths without making dither depend on their internal search representation. `5bit`/`6bit` form one bit-cell component; its cache is separate from every other policy. There is no shared candidate-construction or search service.
+Each policy has its own preparation, query and cache implementation; only the composition registry knows concrete constructors. Metal byte plans supply a native implementation descriptor owning their builders, cache identity, query entry and dispatch shape. The runtime executes that descriptor without interpreting a lookup kind. `5bit` and `6bit` are separate components, each with its own construction, table and query implementation. There is no shared candidate-construction or search service.
 
 Concrete policy files share the `lookup-policy-<name>` stem. The following certlut paths show where to read each responsibility; the GPU source is embedded at build time and is never opened by the running library. [Metal embedding](../../build/support-scripts.md#embedded-metal-sources) owns generation and build dependencies.
 
@@ -177,7 +177,7 @@ Concrete policy files share the `lookup-policy-<name>` stem. The following certl
 | GPU construction and search arithmetic | [lookup-policy-certlut-gpu.metal](../../../src/lookup-policy-certlut-gpu.metal) |
 | Embedded literal fragments | Build-tree `src/generated-metal/lookup-policy-certlut-gpu-shader.inc.h` |
 
-Legacy shader extraction follows the same policy-first naming without changing component ownership. Its build-only includes remain in the legacy runtime: [FHEDT](../../../src/lookup-policy-fhedt-gpu.inc.h), [5bit](../../../src/lookup-policy-5bit-gpu.inc.h) and [6bit](../../../src/lookup-policy-6bit-gpu.inc.h) are host fragments, while their `.metal` files contain GPU code. Palette query preparation, retained-pixel handling and fused application stay in `gpu-palette-*.metal`; they do not become shared lookup algorithms.
+The optimized Metal byte implementations live in `lookup-policy-<name>-gpu-metal.inc.h`: [NONE](../../../src/lookup-policy-none-gpu-metal.inc.h), [5bit](../../../src/lookup-policy-5bit-gpu-metal.inc.h), [6bit](../../../src/lookup-policy-6bit-gpu-metal.inc.h), [FHEDT](../../../src/lookup-policy-fhedt-gpu-metal.inc.h), [Eytzinger](../../../src/lookup-policy-eytzinger-gpu-metal.inc.h), [GridLUT](../../../src/lookup-policy-gridlut-gpu-metal.inc.h), [Delaunay](../../../src/lookup-policy-delaunay-gpu-metal.inc.h) and [BlockCULL](../../../src/lookup-policy-blockcull-gpu-metal.inc.h). Their `.metal` files own the search and builder kernels, including each policy's internal fallback. Compiled consumers are keyed by lookup source, dither source and entry point. Shared Metal code owns device access, allocation, command submission and completion, with no lookup selector or candidate construction.
 
 ### The per-pixel loop belongs to the dither policy
 
@@ -325,6 +325,21 @@ These tests cover prepared configuration ownership at the dither-policy boundary
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
+| NATIVE-01 | `none` live palettes and positional consumers remain isolated. | [tests/lookup/none/0007_gpu_interleaved_consumers.t](../../../tests/lookup/none/0007_gpu_interleaved_consumers.t) |
+| NATIVE-02 | `5bit` live palettes and positional consumers remain isolated. | [tests/lookup/5bit/0066_gpu_interleaved_consumers.t](../../../tests/lookup/5bit/0066_gpu_interleaved_consumers.t) |
+| NATIVE-03 | `6bit` live palettes and positional consumers remain isolated. | [tests/lookup/6bit/0066_gpu_interleaved_consumers.t](../../../tests/lookup/6bit/0066_gpu_interleaved_consumers.t) |
+| NATIVE-04 | `fhedt` live palettes and positional consumers remain isolated. | [tests/lookup/fhedt/0173_gpu_interleaved_consumers.t](../../../tests/lookup/fhedt/0173_gpu_interleaved_consumers.t) |
+| NATIVE-05 | `eytzinger` live palettes and positional consumers remain isolated. | [tests/lookup/eytzinger/0063_gpu_interleaved_consumers.t](../../../tests/lookup/eytzinger/0063_gpu_interleaved_consumers.t) |
+| NATIVE-06 | `ordered` live palettes and positional consumers remain isolated. | [tests/lookup/ordered/0088_gpu_interleaved_consumers.t](../../../tests/lookup/ordered/0088_gpu_interleaved_consumers.t) |
+| NATIVE-07 | `vptree` live palettes and positional consumers remain isolated. | [tests/lookup/vptree/0058_gpu_interleaved_consumers.t](../../../tests/lookup/vptree/0058_gpu_interleaved_consumers.t) |
+| NATIVE-08 | `rbc` live palettes and positional consumers remain isolated. | [tests/lookup/rbc/0085_gpu_interleaved_consumers.t](../../../tests/lookup/rbc/0085_gpu_interleaved_consumers.t) |
+| NATIVE-09 | `mahalanobis` live palettes and positional consumers remain isolated. | [tests/lookup/mahalanobis/0085_gpu_interleaved_consumers.t](../../../tests/lookup/mahalanobis/0085_gpu_interleaved_consumers.t) |
+| NATIVE-10 | `certlut` live palettes and positional consumers remain isolated. | [tests/lookup/certlut/0087_gpu_interleaved_consumers.t](../../../tests/lookup/certlut/0087_gpu_interleaved_consumers.t) |
+| NATIVE-11 | `gridlut` live palettes and positional consumers remain isolated. | [tests/lookup/gridlut/0043_gpu_interleaved_consumers.t](../../../tests/lookup/gridlut/0043_gpu_interleaved_consumers.t) |
+| NATIVE-12 | `blockcull` live palettes and positional consumers remain isolated. | [tests/lookup/blockcull/0048_gpu_interleaved_consumers.t](../../../tests/lookup/blockcull/0048_gpu_interleaved_consumers.t) |
+| NATIVE-13 | `delaunay` live palettes and positional consumers remain isolated. | [tests/lookup/delaunay/0121_gpu_interleaved_consumers.t](../../../tests/lookup/delaunay/0121_gpu_interleaved_consumers.t) |
+| NATIVE-14 | `none` scalar and matrix consumers agree. | [tests/lookup/none/0008_gpu_scalar_equivalence.t](../../../tests/lookup/none/0008_gpu_scalar_equivalence.t) |
+| NATIVE-15 | `blockcull` scalar and matrix consumers agree. | [tests/lookup/blockcull/0049_gpu_scalar_equivalence.t](../../../tests/lookup/blockcull/0049_gpu_scalar_equivalence.t) |
 | IXGPU-01 | GPU `force` omits CPU lookup; the complete output agrees with CPU encoding. | [tests/encoder/indexed/0045_gpu_force_omits_cpu_lookup.t](../../../tests/encoder/indexed/0045_gpu_force_omits_cpu_lookup.t) |
 | IXGPU-02 | GPU `auto` omits CPU lookup; the complete output agrees with CPU encoding. | [tests/encoder/indexed/0046_gpu_auto_omits_cpu_lookup.t](../../../tests/encoder/indexed/0046_gpu_auto_omits_cpu_lookup.t) |
 | IXGPU-03 | Frames below the GPU threshold prepare CPU lookup and match CPU encoding. | [tests/encoder/indexed/0047_gpu_threshold_prepares_cpu_lookup.t](../../../tests/encoder/indexed/0047_gpu_threshold_prepares_cpu_lookup.t) |

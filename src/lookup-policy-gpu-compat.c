@@ -56,10 +56,16 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
         run.dither_program = sixel_gpu_dither_byte_program(
             run.method_for_diffuse);
     if (run.dither_program == NULL) return SIXEL_FEATURE_ERROR;
-    if (request->program != NULL ||
-            !sixel_gpu_lookup_registered(request->lut_policy)) {
+    if (request->program != NULL) {
         return gpu_compat_run(&run);
     }
+    /* The synchronous AUTO contract uses exhaustive lookup. Resolve it
+     * here so the native runtime always receives an owned program; no
+     * explicitly selected policy may fall through to a different search. */
+    if (run.lut_policy == SIXEL_LUT_POLICY_AUTO)
+        run.lut_policy = SIXEL_LUT_POLICY_NONE;
+    if (!sixel_gpu_lookup_registered(run.lut_policy))
+        return SIXEL_FEATURE_ERROR;
     allocator = NULL;
     palette = NULL;
     plan = NULL;
@@ -67,7 +73,7 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     program = NULL;
     object = NULL;
     memset(&configuration, 0, sizeof(configuration));
-    configuration.kind = request->lut_policy;
+    configuration.kind = run.lut_policy;
     configuration.pixelformat = request->pixelformat;
     configuration.fhedt_resolution = request->fhedt_resolution;
     configuration.fhedt_refine = request->fhedt_refine;
@@ -82,7 +88,7 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) goto end;
     cached = gpu_compat_providers;
-    while (cached != NULL && cached->kind != request->lut_policy) {
+    while (cached != NULL && cached->kind != configuration.kind) {
         cached = cached->next;
     }
     if (cached == NULL) {
@@ -97,7 +103,7 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
             free(cached);
             goto end;
         }
-        cached->kind = request->lut_policy;
+        cached->kind = configuration.kind;
         cached->configuration = configuration;
         cached->next = gpu_compat_providers;
         gpu_compat_providers = cached;

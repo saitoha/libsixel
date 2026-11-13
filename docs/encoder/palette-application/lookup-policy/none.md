@@ -72,7 +72,7 @@ For a SIXEL palette, `K` is bounded, but the factor remains important because th
 
 `none` is a libsixel descriptive name: no lookup acceleration. It is not the claim that palette application does no work.
 
-The implementation is [`lookup-policy-none.c`](../../../../src/lookup-policy-none.c), and selector-level monochrome handling is in [`lookup-policy.c`](../../../../src/lookup-policy.c). The Metal palette-application path, including its matrix-product direct lookup, is in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m).
+The implementation is [`lookup-policy-none.c`](../../../../src/lookup-policy-none.c), and selector-level monochrome handling is in [`lookup-policy.c`](../../../../src/lookup-policy.c). The Metal palette-application path, including its matrix-product direct lookup, is in [`lookup-policy-none-gpu-metal.inc.h`](../../../../src/lookup-policy-none-gpu-metal.inc.h).
 
 ## Test coverage
 

@@ -181,7 +181,7 @@ gpupal_cull_apply(sixel_allocator_t *allocator,
      * a silent direct fallback on a matrix-capable device must fail. */
     if (indexes != NULL && gpu_policy == SIXEL_GPU_POLICY_FORCE &&
             (!hooks.entered || (hooks.kernel != 9 && hooks.kernel !=
-                (hooks.matrix_supported ? (ncolors > 32 ? 3 : 2) : 1)))) {
+                (hooks.matrix_supported ? (ncolors > 32 ? 3 : 2) : 3)))) {
         fprintf(stderr, "GPU kernel mismatch: matrix=%d kernel=%d\n",
             hooks.matrix_supported, hooks.kernel);
         sixel_allocator_free(allocator, indexes);
