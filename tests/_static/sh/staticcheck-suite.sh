@@ -1318,6 +1318,42 @@ run_case_tap "staticcheck-test-thread-flags" \
     "$src_root/tests/_static/sh/staticcheck-test-thread-flags.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-image-size-0001_existing" \
+    "$src_root/tests/build/image-size/0001_existing.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-image-size-0002_new_caller" \
+    "$src_root/tests/build/image-size/0002_new_caller.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-image-size-0003_larger" \
+    "$src_root/tests/build/image-size/0003_larger.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-image-size-0004_duplicate" \
+    "$src_root/tests/build/image-size/0004_duplicate.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-image-size-0005_changed_operand" \
+    "$src_root/tests/build/image-size/0005_changed_operand.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-image-size-0006_small_header" \
+    "$src_root/tests/build/image-size/0006_small_header.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-image-size-0007_large_header" \
+    "$src_root/tests/build/image-size/0007_large_header.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-image-size-0008_misleading_name" \
+    "$src_root/tests/build/image-size/0008_misleading_name.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-image-size" \
+    "$src_root/tests/_static/sh/staticcheck-test-image-size.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-fixture-distribution" \
     "$src_root/tests/_static/sh/staticcheck-test-fixture-distribution.sh" \
     "$src_root" || fail_and_exit $?

@@ -1,0 +1,100 @@
+{
+  "description": "Frozen per-component RGB MSE regression references, scored in double on all 256 float32 input pixels. These are measured regression anchors, not optimality bounds. The ceiling is the recorded reference multiplied by 1.0025.",
+  "source_revision": "6fb449cee8e7071a12ca482bb426fbfdb71642df",
+  "hosts": [
+    "Apple M3 Max, Clang plain",
+    "NVIDIA RTX 5070 Ti, GCC -O2"
+  ],
+  "cases": [
+    {
+      "input": "tests/data/palette/kmeans/gradient-16.png",
+      "colors": 16,
+      "iterations": 4,
+      "seed": 1,
+      "cpu_mse": 0.0069894361135479114,
+      "gpu_mse": 0.0070598915727245705,
+      "gpu_test": "0069_gradient_gpu_mse_k16_i4_s1",
+      "cpu_test": "0106_gradient_cpu_mse_k16_i4_s1"
+    },
+    {
+      "input": "tests/data/palette/kmeans/rare-16.png",
+      "colors": 16,
+      "iterations": 4,
+      "seed": 1,
+      "cpu_mse": 0.0019921650221479247,
+      "gpu_mse": 0.001992165046459063,
+      "gpu_test": "0070_rare_gpu_mse_k16_i4_s1",
+      "cpu_test": "0107_rare_cpu_mse_k16_i4_s1"
+    },
+    {
+      "input": "tests/data/palette/kmeans/gradient-16.png",
+      "colors": 64,
+      "iterations": 12,
+      "seed": 7,
+      "cpu_mse": 0.001727444275919831,
+      "gpu_mse": 0.0016999558525813794,
+      "gpu_test": "0097_gradient_gpu_mse_k64_i12_s7",
+      "cpu_test": "0108_gradient_cpu_mse_k64_i12_s7"
+    },
+    {
+      "input": "tests/data/palette/kmeans/gradient-16.png",
+      "colors": 64,
+      "iterations": 24,
+      "seed": 42,
+      "cpu_mse": 0.0016953813333921992,
+      "gpu_mse": 0.0017017470790442314,
+      "gpu_test": "0099_gradient_gpu_mse_k64_i24_s42",
+      "cpu_test": "0109_gradient_cpu_mse_k64_i24_s42"
+    },
+    {
+      "input": "tests/data/palette/kmeans/rare-16.png",
+      "colors": 64,
+      "iterations": 12,
+      "seed": 7,
+      "cpu_mse": 0.0001166108515329942,
+      "gpu_mse": 0.00011661085153540157,
+      "gpu_test": "0102_rare_gpu_mse_k64_i12_s7",
+      "cpu_test": "0110_rare_cpu_mse_k64_i12_s7"
+    },
+    {
+      "input": "tests/data/palette/kmeans/rare-16.png",
+      "colors": 64,
+      "iterations": 24,
+      "seed": 42,
+      "cpu_mse": 8.915495965009282e-05,
+      "gpu_mse": 8.137979168672932e-05,
+      "gpu_test": "0104_rare_gpu_mse_k64_i24_s42",
+      "cpu_test": "0111_rare_cpu_mse_k64_i24_s42"
+    },
+    {
+      "input": "tests/data/inputs/snake_16.png",
+      "colors": 16,
+      "iterations": 4,
+      "seed": 1,
+      "cpu_mse": 0.0006896798399210405,
+      "gpu_mse": 0.0006896798639928316,
+      "gpu_test": "0068_snake_gpu_mse_k16_i4_s1",
+      "cpu_test": "0112_snake_cpu_mse_k16_i4_s1"
+    },
+    {
+      "input": "tests/data/inputs/snake_16.png",
+      "colors": 64,
+      "iterations": 12,
+      "seed": 7,
+      "cpu_mse": 9.652725112663008e-05,
+      "gpu_mse": 9.652725112695432e-05,
+      "gpu_test": "0092_snake_gpu_mse_k64_i12_s7",
+      "cpu_test": "0113_snake_cpu_mse_k64_i12_s7"
+    },
+    {
+      "input": "tests/data/inputs/snake_16.png",
+      "colors": 64,
+      "iterations": 24,
+      "seed": 42,
+      "cpu_mse": 0.0001267968450873112,
+      "gpu_mse": 0.00012679684508761275,
+      "gpu_test": "0094_snake_gpu_mse_k64_i24_s42",
+      "cpu_test": "0114_snake_cpu_mse_k64_i24_s42"
+    }
+  ]
+}

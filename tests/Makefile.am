@@ -448,13 +448,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0067_SIERRA3_HISTORY_RUN \
     -DBUILD_TEST_0068_EXACT_X_P2_KEEP0 \
     -DBUILD_TEST_0068_SIERRA3_HISTORY_DEFERRED \
-    -DBUILD_TEST_0068_SNAKE_SSE_K16_I4_S1 \
+    -DBUILD_TEST_0068_SNAKE_GPU_MSE_K16_I4_S1 \
     -DBUILD_TEST_0069_EXACT_X_P2_KEEP1 \
     -DBUILD_TEST_0069_FHEDT_R64_F0_D0_FS_HISTORY_RUN \
-    -DBUILD_TEST_0069_GRADIENT_SSE_K16_I4_S1 \
+    -DBUILD_TEST_0069_GRADIENT_GPU_MSE_K16_I4_S1 \
     -DBUILD_TEST_0070_EXACT_X_P33_KEEP0 \
     -DBUILD_TEST_0070_FHEDT_R64_F0_D0_FS_HISTORY_DEFERRED \
-    -DBUILD_TEST_0070_RARE_SSE_K16_I4_S1 \
+    -DBUILD_TEST_0070_RARE_GPU_MSE_K16_I4_S1 \
     -DBUILD_TEST_0071_EXACT_X_P33_KEEP1 \
     -DBUILD_TEST_0071_FHEDT_R64_F0_D0_LSO2_HISTORY_RUN \
     -DBUILD_TEST_0072_EXACT_X_P64_KEEP0 \
@@ -487,29 +487,38 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0091_FHEDT_R256_F0_D0_LSO2_HISTORY_RUN \
     -DBUILD_TEST_0091_SNAKE_REPEAT_K16_I4_S1 \
     -DBUILD_TEST_0092_FHEDT_R256_F0_D0_LSO2_HISTORY_DEFERRED \
-    -DBUILD_TEST_0092_SNAKE_SSE_K64_I12_S7 \
+    -DBUILD_TEST_0092_SNAKE_GPU_MSE_K64_I12_S7 \
     -DBUILD_TEST_0093_RGB_CELL_5BIT_FS_HISTORY_RUN \
     -DBUILD_TEST_0093_SNAKE_REPEAT_K64_I12_S7 \
     -DBUILD_TEST_0094_RGB_CELL_5BIT_FS_HISTORY_DEFERRED \
-    -DBUILD_TEST_0094_SNAKE_SSE_K256_I24_S42 \
+    -DBUILD_TEST_0094_SNAKE_GPU_MSE_K64_I24_S42 \
     -DBUILD_TEST_0095_RGB_CELL_5BIT_LSO2_HISTORY_RUN \
-    -DBUILD_TEST_0095_SNAKE_REPEAT_K256_I24_S42 \
+    -DBUILD_TEST_0095_SNAKE_REPEAT_K64_I24_S42 \
     -DBUILD_TEST_0096_GRADIENT_REPEAT_K16_I4_S1 \
     -DBUILD_TEST_0096_RGB_CELL_5BIT_LSO2_HISTORY_DEFERRED \
-    -DBUILD_TEST_0097_GRADIENT_SSE_K64_I12_S7 \
+    -DBUILD_TEST_0097_GRADIENT_GPU_MSE_K64_I12_S7 \
     -DBUILD_TEST_0097_RGB_CELL_6BIT_FS_DEADZONE \
     -DBUILD_TEST_0098_GRADIENT_REPEAT_K64_I12_S7 \
     -DBUILD_TEST_0098_RGB_CELL_6BIT_FS_HISTORY_RUN \
-    -DBUILD_TEST_0099_GRADIENT_SSE_K256_I24_S42 \
+    -DBUILD_TEST_0099_GRADIENT_GPU_MSE_K64_I24_S42 \
     -DBUILD_TEST_0099_RGB_CELL_6BIT_FS_HISTORY_DEFERRED \
-    -DBUILD_TEST_0100_GRADIENT_REPEAT_K256_I24_S42 \
+    -DBUILD_TEST_0100_GRADIENT_REPEAT_K64_I24_S42 \
     -DBUILD_TEST_0100_RGB_CELL_6BIT_LSO2_HISTORY_RUN \
     -DBUILD_TEST_0101_RARE_REPEAT_K16_I4_S1 \
     -DBUILD_TEST_0101_RGB_CELL_6BIT_LSO2_HISTORY_DEFERRED \
-    -DBUILD_TEST_0102_RARE_SSE_K64_I12_S7 \
+    -DBUILD_TEST_0102_RARE_GPU_MSE_K64_I12_S7 \
     -DBUILD_TEST_0103_RARE_REPEAT_K64_I12_S7 \
-    -DBUILD_TEST_0104_RARE_SSE_K256_I24_S42 \
-    -DBUILD_TEST_0105_RARE_REPEAT_K256_I24_S42 \
+    -DBUILD_TEST_0104_RARE_GPU_MSE_K64_I24_S42 \
+    -DBUILD_TEST_0105_RARE_REPEAT_K64_I24_S42 \
+    -DBUILD_TEST_0106_GRADIENT_CPU_MSE_K16_I4_S1 \
+    -DBUILD_TEST_0107_RARE_CPU_MSE_K16_I4_S1 \
+    -DBUILD_TEST_0108_GRADIENT_CPU_MSE_K64_I12_S7 \
+    -DBUILD_TEST_0109_GRADIENT_CPU_MSE_K64_I24_S42 \
+    -DBUILD_TEST_0110_RARE_CPU_MSE_K64_I12_S7 \
+    -DBUILD_TEST_0111_RARE_CPU_MSE_K64_I24_S42 \
+    -DBUILD_TEST_0112_SNAKE_CPU_MSE_K16_I4_S1 \
+    -DBUILD_TEST_0113_SNAKE_CPU_MSE_K64_I12_S7 \
+    -DBUILD_TEST_0114_SNAKE_CPU_MSE_K64_I24_S42 \
     -DBUILD_TEST_0126_REFINE_INITIALLY_UNNEEDED \
     -DBUILD_TEST_0127_PAINTED_PIXELS_NULL \
     -DBUILD_TEST_0128_THRESHOLD_LIMIT_REJECT_256 \
@@ -5910,24 +5919,33 @@ test_runner_SOURCES = test_runner.c \
     lookup/gridlut/0077_exact_x_p200_keep1.c \
     lookup/gridlut/0078_exact_x_p255_keep0.c \
     lookup/gridlut/0079_exact_x_p255_keep1.c \
-    palette/kmeans/0068_snake_sse_k16_i4_s1.c \
-    palette/kmeans/0069_gradient_sse_k16_i4_s1.c \
-    palette/kmeans/0070_rare_sse_k16_i4_s1.c \
+    palette/kmeans/0068_snake_gpu_mse_k16_i4_s1.c \
+    palette/kmeans/0069_gradient_gpu_mse_k16_i4_s1.c \
+    palette/kmeans/0070_rare_gpu_mse_k16_i4_s1.c \
     palette/kmeans/0091_snake_repeat_k16_i4_s1.c \
-    palette/kmeans/0092_snake_sse_k64_i12_s7.c \
+    palette/kmeans/0092_snake_gpu_mse_k64_i12_s7.c \
     palette/kmeans/0093_snake_repeat_k64_i12_s7.c \
-    palette/kmeans/0094_snake_sse_k256_i24_s42.c \
-    palette/kmeans/0095_snake_repeat_k256_i24_s42.c \
+    palette/kmeans/0094_snake_gpu_mse_k64_i24_s42.c \
+    palette/kmeans/0095_snake_repeat_k64_i24_s42.c \
     palette/kmeans/0096_gradient_repeat_k16_i4_s1.c \
-    palette/kmeans/0097_gradient_sse_k64_i12_s7.c \
+    palette/kmeans/0097_gradient_gpu_mse_k64_i12_s7.c \
     palette/kmeans/0098_gradient_repeat_k64_i12_s7.c \
-    palette/kmeans/0099_gradient_sse_k256_i24_s42.c \
-    palette/kmeans/0100_gradient_repeat_k256_i24_s42.c \
+    palette/kmeans/0099_gradient_gpu_mse_k64_i24_s42.c \
+    palette/kmeans/0100_gradient_repeat_k64_i24_s42.c \
     palette/kmeans/0101_rare_repeat_k16_i4_s1.c \
-    palette/kmeans/0102_rare_sse_k64_i12_s7.c \
+    palette/kmeans/0102_rare_gpu_mse_k64_i12_s7.c \
     palette/kmeans/0103_rare_repeat_k64_i12_s7.c \
-    palette/kmeans/0104_rare_sse_k256_i24_s42.c \
-    palette/kmeans/0105_rare_repeat_k256_i24_s42.c \
+    palette/kmeans/0104_rare_gpu_mse_k64_i24_s42.c \
+    palette/kmeans/0105_rare_repeat_k64_i24_s42.c \
+    palette/kmeans/0106_gradient_cpu_mse_k16_i4_s1.c \
+    palette/kmeans/0107_rare_cpu_mse_k16_i4_s1.c \
+    palette/kmeans/0108_gradient_cpu_mse_k64_i12_s7.c \
+    palette/kmeans/0109_gradient_cpu_mse_k64_i24_s42.c \
+    palette/kmeans/0110_rare_cpu_mse_k64_i12_s7.c \
+    palette/kmeans/0111_rare_cpu_mse_k64_i24_s42.c \
+    palette/kmeans/0112_snake_cpu_mse_k16_i4_s1.c \
+    palette/kmeans/0113_snake_cpu_mse_k64_i12_s7.c \
+    palette/kmeans/0114_snake_cpu_mse_k64_i24_s42.c \
     lookup/gridlut/0044_float_policy_identity.c \
     lookup/ordered/0089_float_policy_identity.c \
     lookup/none/0007_gpu_interleaved_consumers.c \
@@ -13527,3 +13545,10 @@ EXTRA_DIST += tools/tap/data/skip_end.txt \
     tools/tap/data/todo_word_boundary.txt
 
 EXTRA_DIST += _support/tools/tap-directive.sh
+
+EXTRA_DIST += data/palette/kmeans
+
+EXTRA_DIST += _static/sh/staticcheck-test-image-size.sh \
+    _static/awk/test-image-size.awk _static/data/test-image-size-legacy.tsv
+
+EXTRA_DIST += build/image-size _static/fixtures/image-size

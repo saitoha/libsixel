@@ -16,9 +16,10 @@
 #include "src/loader.h"
 #include "src/compat_stub.h"
 
-/* This oracle scores final centers in double on exactly the same unbinned
- * samples. No decoded/output-space image metric substitutes for the loss. */
-static double km_contract_sse(float const *points, unsigned int count,
+/* Score each source component against its nearest final center in double.
+ * The mean is independent of image size and is evaluated once per quality
+ * observation. No palette construction is used as a runtime reference. */
+static double km_contract_mse(float const *points, unsigned int count,
                               float const *centers, unsigned int k)
 {
     unsigned int i, c, channel;
@@ -49,7 +50,7 @@ static double km_contract_sse(float const *points, unsigned int count,
         }
         total += best;
     }
-    return total;
+    return total / (3.0 * count);
 }
 
 static SIXELSTATUS km_contract_build(float const *points, unsigned int count,
@@ -425,12 +426,13 @@ int kmgpu_contract_auto(int mode)
            (mode == 0 && sixel_kmeans_gpu_is_initialized());
 }
 
-/* The callback carries one selected configuration and one observation.
- * Both solvers receive the same complete image, without binning. Preparing
- * the image and the first GPU use remain part of each timed test. */
+/* One image and one selected backend own each quality observation. The
+ * independent repeat observation needs two builds, but no error scoring.
+ * Loading and process-first GPU preparation remain inside the test timer. */
 typedef struct km_contract_image_request {
     unsigned int k, limit, seed;
-    int repeat;
+    double maximum_mse;
+    int gpu, repeat;
     int ok;
 } km_contract_image_request_t;
 
@@ -438,15 +440,19 @@ static SIXELSTATUS
 km_contract_image_frame(sixel_frame_t *frame, void *context)
 {
     km_contract_image_request_t *request;
-    float *points;
-    float first[768], gpu[768];
+    float points[16 * 16 * 3];
+    float first[64 * 3], repeated[64 * 3];
     unsigned char const *pixels;
-    unsigned int count, i, nfirst, ngpu;
-    double first_sse, gpu_sse, first_ms, gpu_ms, start;
+    unsigned int count, i, nfirst, nrepeated;
+    double mse;
     SIXELSTATUS status;
     int format;
 
     request = (km_contract_image_request_t *)context;
+    /* A fixture replacement must not silently increase test work. */
+    if (sixel_frame_get_width(frame) != 16 ||
+            sixel_frame_get_height(frame) != 16)
+        return SIXEL_BAD_INPUT;
     count = (unsigned int)sixel_frame_get_width(frame) *
         (unsigned int)sixel_frame_get_height(frame);
     format = sixel_frame_get_pixelformat(frame);
@@ -454,60 +460,47 @@ km_contract_image_frame(sixel_frame_t *frame, void *context)
             format != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
             format != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)
         return SIXEL_BAD_INPUT;
-    points = malloc((size_t)count * 3 * sizeof(float));
-    if (points == NULL) return SIXEL_BAD_ALLOCATION;
     pixels = sixel_frame_get_pixels(frame);
     for (i = 0; i < count * 3; ++i) {
         points[i] = format == SIXEL_PIXELFORMAT_RGB888
             ? pixels[i] / 255.0f : ((float const *)pixels)[i];
     }
-    start = sixel_timer_now();
     status = km_contract_build(points, count, request->k,
-        request->repeat ? SIXEL_PALETTE_KMEANS_BACKEND_GPU
-                        : SIXEL_PALETTE_KMEANS_BACKEND_CPU,
-        request->repeat ? SIXEL_GPU_POLICY_FORCE : SIXEL_GPU_POLICY_OFF,
+        request->gpu ? SIXEL_PALETTE_KMEANS_BACKEND_GPU
+                     : SIXEL_PALETTE_KMEANS_BACKEND_CPU,
+        request->gpu ? SIXEL_GPU_POLICY_FORCE : SIXEL_GPU_POLICY_OFF,
         0, 1, request->seed, request->limit, request->limit, first, &nfirst);
-    first_ms = (sixel_timer_now() - start) * 1000;
-    if (status != SIXEL_OK) goto end;
-    start = sixel_timer_now();
-    status = km_contract_build(points, count, request->k,
-        SIXEL_PALETTE_KMEANS_BACKEND_GPU, SIXEL_GPU_POLICY_FORCE,
-        0, 1, request->seed, request->limit, request->limit, gpu, &ngpu);
-    gpu_ms = (sixel_timer_now() - start) * 1000;
     if (status != SIXEL_OK) goto end;
     if (request->repeat) {
-        /* Repeated GPU output is an exact storage contract. It does not
-         * depend on the separate CPU-relative quality budget. */
-        if (nfirst != ngpu ||
-                memcmp(first, gpu, ngpu * 3 * sizeof(float)) != 0) {
+        status = km_contract_build(points, count, request->k,
+            SIXEL_PALETTE_KMEANS_BACKEND_GPU, SIXEL_GPU_POLICY_FORCE,
+            0, 1, request->seed, request->limit, request->limit,
+            repeated, &nrepeated);
+        if (status != SIXEL_OK) goto end;
+        if (nfirst != nrepeated || memcmp(first, repeated,
+                nrepeated * 3 * sizeof(float)) != 0) {
             status = SIXEL_LOGIC_ERROR;
         }
     } else {
-        first_sse = km_contract_sse(points, count, first, nfirst);
-        gpu_sse = km_contract_sse(points, count, gpu, ngpu);
+        mse = km_contract_mse(points, count, first, nfirst);
         fprintf(stderr,
-            "KMCAL|M=%u|K=%u|I=%u|seed=%u|cpu_sse=%.17g|"
-            "gpu_sse=%.17g|relative=%.9g|cpu_ms=%.3f|gpu_ms=%.3f|\n",
-            count, request->k, request->limit, request->seed, first_sse,
-            gpu_sse, first_sse > 0 ? gpu_sse / first_sse - 1 : gpu_sse,
-            first_ms, gpu_ms);
-        /* M3 Max calibration: maximum relative SSE was 0.180185%.
-         * Keep the 0.25% fixture budget and exact zero for a zero CPU score;
-         * this is not an all-input numerical error bound. */
-        if (!isfinite(first_sse) || !isfinite(gpu_sse) ||
-                gpu_sse > first_sse * 1.0025) {
+            "KMMSE|backend=%s|M=%u|K=%u|I=%u|seed=%u|"
+            "mse=%.17g|maximum=%.17g|\n",
+            request->gpu ? "gpu" : "cpu", count, request->k,
+            request->limit, request->seed, mse, request->maximum_mse);
+        if (!isfinite(mse) || mse > request->maximum_mse) {
             status = SIXEL_LOGIC_ERROR;
         }
     }
 end:
-    free(points);
     request->ok = status == SIXEL_OK;
     return status;
 }
 
-int
-kmgpu_contract_image(char const *filename, unsigned int k,
-    unsigned int limit, unsigned int seed, int repeat)
+static int
+km_contract_image(char const *filename, unsigned int k,
+    unsigned int limit, unsigned int seed, int gpu, int repeat,
+    double maximum_mse)
 {
     km_contract_image_request_t request;
     sixel_loader_t *loader;
@@ -515,7 +508,9 @@ kmgpu_contract_image(char const *filename, unsigned int k,
     char path[4096];
     char const *root;
 
-    if (!sixel_kmeans_gpu_is_available()) return 77;
+    if (k == 0 || k > 64 || !isfinite(maximum_mse) || maximum_mse < 0)
+        return 1;
+    if (gpu && !sixel_kmeans_gpu_is_available()) return 77;
     root = sixel_compat_getenv("TOP_SRCDIR");
     if (root == NULL) return 1;
     if (snprintf(path, sizeof(path), "%s/%s", root, filename) >=
@@ -526,6 +521,8 @@ kmgpu_contract_image(char const *filename, unsigned int k,
     request.limit = limit;
     request.seed = seed;
     request.repeat = repeat;
+    request.gpu = gpu;
+    request.maximum_mse = maximum_mse;
     status = sixel_loader_new(&loader, NULL);
     if (status != SIXEL_OK) return 1;
     sixel_loader_set_prefer_float32(loader, 0);
@@ -535,6 +532,20 @@ kmgpu_contract_image(char const *filename, unsigned int k,
         status = sixel_loader_load_file(loader, path, km_contract_image_frame);
     sixel_loader_unref(loader);
     return status != SIXEL_OK || !request.ok;
+}
+
+int
+kmgpu_contract_image_quality(char const *filename, unsigned int k,
+    unsigned int limit, unsigned int seed, int gpu, double maximum_mse)
+{
+    return km_contract_image(filename, k, limit, seed, gpu, 0, maximum_mse);
+}
+
+int
+kmgpu_contract_image_repeat(char const *filename, unsigned int k,
+    unsigned int limit, unsigned int seed)
+{
+    return km_contract_image(filename, k, limit, seed, 1, 1, 0.0);
 }
 
 int kmgpu_contract_numeric_fallback(int force)

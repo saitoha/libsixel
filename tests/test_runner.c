@@ -5590,7 +5590,38 @@ int test_palette_kmeans_0103(int, char **);
 int test_palette_kmeans_0104(int, char **);
 int test_palette_kmeans_0105(int, char **);
 
+int test_palette_kmeans_0106(int, char **);
+int test_palette_kmeans_0107(int, char **);
+int test_palette_kmeans_0108(int, char **);
+int test_palette_kmeans_0109(int, char **);
+int test_palette_kmeans_0110(int, char **);
+int test_palette_kmeans_0111(int, char **);
+
+int test_palette_kmeans_0112(int, char **);
+int test_palette_kmeans_0113(int, char **);
+int test_palette_kmeans_0114(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "palette/kmeans/0112_snake_cpu_mse_k16_i4_s1",
+      test_palette_kmeans_0112 },
+    { "palette/kmeans/0113_snake_cpu_mse_k64_i12_s7",
+      test_palette_kmeans_0113 },
+    { "palette/kmeans/0114_snake_cpu_mse_k64_i24_s42",
+      test_palette_kmeans_0114 },
+
+    { "palette/kmeans/0106_gradient_cpu_mse_k16_i4_s1",
+      test_palette_kmeans_0106 },
+    { "palette/kmeans/0107_rare_cpu_mse_k16_i4_s1",
+      test_palette_kmeans_0107 },
+    { "palette/kmeans/0108_gradient_cpu_mse_k64_i12_s7",
+      test_palette_kmeans_0108 },
+    { "palette/kmeans/0109_gradient_cpu_mse_k64_i24_s42",
+      test_palette_kmeans_0109 },
+    { "palette/kmeans/0110_rare_cpu_mse_k64_i12_s7",
+      test_palette_kmeans_0110 },
+    { "palette/kmeans/0111_rare_cpu_mse_k64_i24_s42",
+      test_palette_kmeans_0111 },
+
     { "delta/palette/0126_refine_initially_unneeded",
       test_delta_palette_0126 },
     { "delta/palette/0127_painted_pixels_null",
@@ -6209,41 +6240,41 @@ static test_entry_t const test_entries[] = {
       test_lookup_gridlut_0078 },
     { "lookup/gridlut/0079_exact_x_p255_keep1",
       test_lookup_gridlut_0079 },
-    { "palette/kmeans/0068_snake_sse_k16_i4_s1",
+    { "palette/kmeans/0068_snake_gpu_mse_k16_i4_s1",
       test_palette_kmeans_0068 },
-    { "palette/kmeans/0069_gradient_sse_k16_i4_s1",
+    { "palette/kmeans/0069_gradient_gpu_mse_k16_i4_s1",
       test_palette_kmeans_0069 },
-    { "palette/kmeans/0070_rare_sse_k16_i4_s1",
+    { "palette/kmeans/0070_rare_gpu_mse_k16_i4_s1",
       test_palette_kmeans_0070 },
     { "palette/kmeans/0091_snake_repeat_k16_i4_s1",
       test_palette_kmeans_0091 },
-    { "palette/kmeans/0092_snake_sse_k64_i12_s7",
+    { "palette/kmeans/0092_snake_gpu_mse_k64_i12_s7",
       test_palette_kmeans_0092 },
     { "palette/kmeans/0093_snake_repeat_k64_i12_s7",
       test_palette_kmeans_0093 },
-    { "palette/kmeans/0094_snake_sse_k256_i24_s42",
+    { "palette/kmeans/0094_snake_gpu_mse_k64_i24_s42",
       test_palette_kmeans_0094 },
-    { "palette/kmeans/0095_snake_repeat_k256_i24_s42",
+    { "palette/kmeans/0095_snake_repeat_k64_i24_s42",
       test_palette_kmeans_0095 },
     { "palette/kmeans/0096_gradient_repeat_k16_i4_s1",
       test_palette_kmeans_0096 },
-    { "palette/kmeans/0097_gradient_sse_k64_i12_s7",
+    { "palette/kmeans/0097_gradient_gpu_mse_k64_i12_s7",
       test_palette_kmeans_0097 },
     { "palette/kmeans/0098_gradient_repeat_k64_i12_s7",
       test_palette_kmeans_0098 },
-    { "palette/kmeans/0099_gradient_sse_k256_i24_s42",
+    { "palette/kmeans/0099_gradient_gpu_mse_k64_i24_s42",
       test_palette_kmeans_0099 },
-    { "palette/kmeans/0100_gradient_repeat_k256_i24_s42",
+    { "palette/kmeans/0100_gradient_repeat_k64_i24_s42",
       test_palette_kmeans_0100 },
     { "palette/kmeans/0101_rare_repeat_k16_i4_s1",
       test_palette_kmeans_0101 },
-    { "palette/kmeans/0102_rare_sse_k64_i12_s7",
+    { "palette/kmeans/0102_rare_gpu_mse_k64_i12_s7",
       test_palette_kmeans_0102 },
     { "palette/kmeans/0103_rare_repeat_k64_i12_s7",
       test_palette_kmeans_0103 },
-    { "palette/kmeans/0104_rare_sse_k256_i24_s42",
+    { "palette/kmeans/0104_rare_gpu_mse_k64_i24_s42",
       test_palette_kmeans_0104 },
-    { "palette/kmeans/0105_rare_repeat_k256_i24_s42",
+    { "palette/kmeans/0105_rare_repeat_k64_i24_s42",
       test_palette_kmeans_0105 },
 
     { "lso2_gpu/playback_resolve_past_stalled_encode",

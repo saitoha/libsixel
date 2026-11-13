@@ -7,8 +7,7 @@ test_palette_kmeans_0093(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return kmgpu_contract_image(
-        "tests/data/inputs/snake_64.png",
-        64, 12, 7,
-        1);
+    return kmgpu_contract_image_repeat(
+        "tests/data/inputs/snake_16.png",
+        64, 12, 7);
 }

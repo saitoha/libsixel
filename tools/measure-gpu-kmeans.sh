@@ -68,7 +68,7 @@ summarize() {
         split("", subm); split("", invalid)
     }
     /^LSXKMTIME1\|/ { flush(); ++attempt }
-    /^(KMCAL|LSXKMTIME1|LSXKMPHASE1|LSXKMCALL1|LSXKMRESTART1)\|/ { print }
+    /^(KMMSE|LSXKMTIME1|LSXKMPHASE1|LSXKMMSEL1|LSXKMRESTART1)\|/ { print }
     /^LSXKMSTAGE1\|/ {
         split("", v)
         for (i=2; i<=NF; ++i) { n=split($i, a, "="); if (n==2) v[a[1]]=a[2] }
@@ -85,7 +85,7 @@ summarize() {
     echo "KMVERSION|revision=${KMEANS_MEASURE_REVISION:-$(git -C "$root" rev-parse HEAD)}|"
     sw_vers
     echo "KMRESULTS|path=$results|"
-    echo "Untraced KMCAL is the throughput measurement; stages mode adds submission overhead."
+    echo "Untraced TAP duration includes startup and one backend; stage tracing adds overhead."
 } | tee "$results/machine.txt"
 
 if test -n "$baseline"; then
@@ -126,20 +126,26 @@ for mode in untraced batch stages; do
     if test "$mode" = stages; then
         export SIXEL_KMEANS_GPU_PROFILE=stages
     fi
-    for test_name in 0068_snake_sse 0069_gradient_sse 0070_rare_sse; do
+    for test_path in "$root"/tests/palette/kmeans/*_mse_*.t; do
+        test_name=${test_path##*/}
+        test_name=${test_name%.t}
         echo "=== $test_name ($mode) ==="
         run_logged "$results/$mode-$test_name-make.log" \
             "$make_command" -C "$build/tests" -j1 check \
             "TESTS=palette/kmeans/$test_name.t"
         cp "$build/tests/palette/kmeans/$test_name.log" \
             "$results/$mode-$test_name.log"
+        cp "$build/tests/palette/kmeans/$test_name.trs" \
+            "$results/$mode-$test_name.trs"
+        awk '/^:duration-ms:/ { print "KMWALL|ms=" $2 "|" }' \
+            "$results/$mode-$test_name.trs"
         summarize "$results/$mode-$test_name.log"
         awk '/^ok [0-9]+.*# SKIP/ { print "KMSKIP|" $0 }' \
             "$results/$mode-$test_name.log"
         awk '/^# (TOTAL|PASS|SKIP|XFAIL|FAIL|XPASS|ERROR):/ { print }' \
             "$results/$mode-$test_name-make.log"
         if test "$mode" = untraced; then
-            calibrated=$((calibrated + $(awk '/^KMCAL\|/ { ++n } END { print n+0 }' \
+            calibrated=$((calibrated + $(awk '/^KMMSE\|/ { ++n } END { print n+0 }' \
                 "$results/$mode-$test_name.log")))
         fi
     done
@@ -170,7 +176,7 @@ if test "$full" -eq 1; then
     awk '/^# (TOTAL|PASS|SKIP|XFAIL|FAIL|XPASS|ERROR):/ { print }' "$results/check.log"
 fi
 printf 'Saved raw per-iteration timestamps and full logs: %s\n' "$results"
-test "$calibrated" -eq 9 || {
-    echo "Calibration unavailable: expected 9 KMCAL rows; got $calibrated. GPU skips are not measurements." >&2
+test "$calibrated" -eq 18 || {
+    echo "Calibration unavailable: expected 18 KMMSE rows; got $calibrated. GPU skips are not measurements." >&2
     exit 77
 }

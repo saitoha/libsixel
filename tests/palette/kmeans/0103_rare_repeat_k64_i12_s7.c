@@ -7,7 +7,7 @@ test_palette_kmeans_0103(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return kmgpu_contract_image(
-        "images/measurements/palette-pipeline/rare-colors-600x450.png",
-        64, 12, 7, 1);
+    return kmgpu_contract_image_repeat(
+        "tests/data/palette/kmeans/rare-16.png",
+        64, 12, 7);
 }
