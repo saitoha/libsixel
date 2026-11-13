@@ -5,7 +5,7 @@ set -eux
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/available || status=$?
 test "$status" -ne 77 || {
-    echo '1..0 # SKIP Metal device is unavailable'
+    echo '1..0 # SKIP GPU device is unavailable'
     exit 0
 }
 echo '1..1'

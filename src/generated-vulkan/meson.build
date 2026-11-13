@@ -47,8 +47,15 @@ vulkan_policies = [
   '../lookup-policy-blockcull-gpu.glsl',
   '../lookup-policy-delaunay-gpu.glsl',
 ]
+vulkan_stages = [
+  '../gpu-dequant-fast4.glsl',
+  '../palette-kmeans-gpu.glsl',
+  '../retained-plane-gpu.glsl',
+  '../progressive-gpu-scan.glsl',
+  '../progressive-gpu-lookup.glsl',
+]
 if have_vulkan
-  vulkan_chunks = [vulkan_builder_prefix] + vulkan_policies
+  vulkan_chunks = [vulkan_builder_prefix] + vulkan_policies + vulkan_stages
   foreach consumer : vulkan_consumers
     vulkan_chunks += consumer
   endforeach
@@ -74,7 +81,7 @@ if have_vulkan
                 '@OUTPUT@',
                 meson.current_source_dir() / vulkan_builder_prefix]
                + vulkan_matrix_args + ['--']
-               + files(vulkan_policies),
+               + files(vulkan_policies + vulkan_stages),
       build_by_default: true)
   endif
 endif

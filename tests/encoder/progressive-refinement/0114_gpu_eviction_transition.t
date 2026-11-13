@@ -8,7 +8,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0164_gpu_eviction_transitio
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu eviction transition # SKIP Metal device unavailable"
+    echo "ok 1 - gpu eviction transition # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

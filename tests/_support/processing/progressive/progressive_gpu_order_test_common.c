@@ -10,6 +10,13 @@
 #include "src/progressive.h"
 #include "src/sixel_decode_pixels.h"
 
+/* The public statistic must identify the backend this build executes. */
+#if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
+#define GPU_ORDER_TEST_BACKEND SIXEL_PROGRESSIVE_BACKEND_VULKAN
+#else
+#define GPU_ORDER_TEST_BACKEND SIXEL_PROGRESSIVE_BACKEND_METAL
+#endif
+
 #if SIXEL_ENABLE_THREADS
 typedef struct gpu_order_probe {
     sixel_encoder_t *encoder;
@@ -160,7 +167,7 @@ gpu_order_cancel(void *priv)
     probe = priv;
     if (probe->launched) return 0;
     /* These callbacks run at the first owner checkpoint after a synchronous
-     * Metal batch, or after packet preparation but before output admission. */
+     * GPU batch, or after packet preparation but before output admission. */
     if ((probe->mode == 192 && probe->context->selection != NULL &&
             probe->context->selection->gpu_used) ||
             ((probe->mode == 193 || probe->mode == 196) &&
@@ -317,7 +324,7 @@ test_progressive_gpu_order_case(int mode)
     GPU_ORDER_REQUIRE(status == SIXEL_OK && probe.status == SIXEL_OK &&
         probe.binding_alive && probe.emitting == after && probe.scanned &&
         probe.applied == (mode != 192) &&
-        stats.backend == SIXEL_PROGRESSIVE_BACKEND_METAL &&
+        stats.backend == GPU_ORDER_TEST_BACKEND &&
         stats.source_generation == 1);
     GPU_ORDER_REQUIRE(sixel_encoder_set_cancel_callback(encoder, NULL, NULL)
         == SIXEL_OK);
@@ -341,7 +348,7 @@ test_progressive_gpu_order_case(int mode)
         GPU_ORDER_REQUIRE(sixel_progressive_step(probe.context, &budget,
             output, &stats) == SIXEL_OK &&
             stats.outcome == SIXEL_PROGRESSIVE_FRAME_EMITTED &&
-            stats.backend == SIXEL_PROGRESSIVE_BACKEND_METAL &&
+            stats.backend == GPU_ORDER_TEST_BACKEND &&
             stats.source_generation == 2 && stats.painted_pixels == 4 &&
             probe.calls == 1);
     } else if (mode == 197) {

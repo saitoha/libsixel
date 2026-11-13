@@ -105,6 +105,11 @@ host_triplet = @host@
 
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_7 = \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-runtime-vulkan.c \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-compute-vulkan.c \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-dequant-vulkan.c \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-vulkan.c \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/retained-plane-vulkan.c \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/progressive-gpu-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/dither-policy-lso2-gpu-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/dither-policy-fs-gpu-vulkan.c \
@@ -222,7 +227,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/encode-result.h $(srcdir)/retained-plane.c \
 	$(srcdir)/retained-plane-gpu.c $(srcdir)/retained-plane-gpu.h \
 	$(srcdir)/gpu-runtime-metal.h $(srcdir)/gpu-runtime-vulkan.h \
-	$(srcdir)/gpu-palette-vulkan.h $(srcdir)/retained-plane-rows.c \
+	$(srcdir)/gpu-compute-vulkan.h $(srcdir)/gpu-palette-vulkan.h \
+	$(srcdir)/retained-plane-rows.c \
 	$(srcdir)/retained-plane-rows.h \
 	$(srcdir)/retained-plane-workers.c \
 	$(srcdir)/retained-plane-workers.h $(srcdir)/palette-apply.c \
@@ -520,7 +526,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
 	$(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/gpu-runtime-vulkan.c $(srcdir)/gpu-palette-vulkan.c \
+	$(srcdir)/gpu-runtime-vulkan.c $(srcdir)/gpu-compute-vulkan.c \
+	$(srcdir)/gpu-dequant-vulkan.c \
+	$(srcdir)/palette-kmeans-vulkan.c \
+	$(srcdir)/retained-plane-vulkan.c \
+	$(srcdir)/progressive-gpu-vulkan.c \
+	$(srcdir)/gpu-palette-vulkan.c \
 	$(srcdir)/dither-policy-lso2-gpu-vulkan.c \
 	$(srcdir)/dither-policy-fs-gpu-vulkan.c \
 	$(srcdir)/dither-policy-atkinson-gpu-vulkan.c \
@@ -545,6 +556,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-runtime-vulkan.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-compute-vulkan.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant-vulkan.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-vulkan.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-vulkan.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-lso2-gpu-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-fs-gpu-vulkan.lo \
@@ -936,6 +952,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-fromsixel.Plo \
 	./$(DEPDIR)/libsixel_la-fromtga.Plo \
 	./$(DEPDIR)/libsixel_la-gamut.Plo \
+	./$(DEPDIR)/libsixel_la-gpu-compute-vulkan.Plo \
+	./$(DEPDIR)/libsixel_la-gpu-dequant-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-dequant.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo \
@@ -1015,6 +1033,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo \
+	./$(DEPDIR)/libsixel_la-palette-kmeans-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo \
 	./$(DEPDIR)/libsixel_la-palette-plan.Plo \
@@ -1029,6 +1048,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-probe.Plo \
 	./$(DEPDIR)/libsixel_la-progressive-apply.Plo \
 	./$(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo \
+	./$(DEPDIR)/libsixel_la-progressive-gpu-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-progressive-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-progressive-ladder.Plo \
 	./$(DEPDIR)/libsixel_la-progressive-measure.Plo \
@@ -1041,6 +1061,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo \
+	./$(DEPDIR)/libsixel_la-retained-plane-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane.Plo \
 	./$(DEPDIR)/libsixel_la-sample-statistics.Plo \
@@ -1490,7 +1511,14 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(src
     $(srcdir)/dither-policy-sierra2-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra2-gpu.glsl \
     $(srcdir)/dither-policy-sierra3-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra3-gpu.glsl
 
-SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-lookup-builder-prefix.glsl \
+SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
+    $(srcdir)/palette-kmeans-gpu.glsl \
+    $(srcdir)/retained-plane-gpu.glsl \
+    $(srcdir)/progressive-gpu-scan.glsl \
+    $(srcdir)/progressive-gpu-lookup.glsl
+
+SIXEL_VULKAN_INPUTS = $(SIXEL_VULKAN_STAGES) \
+    $(srcdir)/gpu-lookup-builder-prefix.glsl \
     $(srcdir)/dither-policy-none-gpu-prefix.glsl \
     $(srcdir)/dither-policy-none-gpu.glsl \
     $(srcdir)/dither-policy-a-dither-gpu-prefix.glsl \
@@ -1543,6 +1571,10 @@ nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS) \
 # compile rule.
 SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
+    libsixel_la-gpu-dequant-vulkan.lo \
+    libsixel_la-palette-kmeans-vulkan.lo \
+    libsixel_la-retained-plane-vulkan.lo \
+    libsixel_la-progressive-gpu-vulkan.lo \
     libsixel_la-dither-policy-lso2-gpu-vulkan.lo \
     libsixel_la-dither-policy-none-gpu.lo \
     libsixel_la-dither-policy-a-dither-gpu.lo \
@@ -1638,6 +1670,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-metal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-vulkan.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-compute-vulkan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette-vulkan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-rows.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-rows.h \
@@ -2471,6 +2504,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromtga.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gamut.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-compute-vulkan.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-dequant-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-dequant.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo@am__quote@ # am--include-marker
@@ -2550,6 +2585,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-plan.Plo@am__quote@ # am--include-marker
@@ -2564,6 +2600,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-probe.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-apply.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-gpu-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-ladder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-measure.Plo@am__quote@ # am--include-marker
@@ -2576,6 +2613,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sample-statistics.Plo@am__quote@ # am--include-marker
@@ -4136,6 +4174,41 @@ libsixel_la-gpu-runtime-vulkan.lo: gpu-runtime-vulkan.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-runtime-vulkan.lo `test -f 'gpu-runtime-vulkan.c' || echo '$(srcdir)/'`gpu-runtime-vulkan.c
 
+libsixel_la-gpu-compute-vulkan.lo: gpu-compute-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-compute-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-compute-vulkan.Tpo -c -o libsixel_la-gpu-compute-vulkan.lo `test -f 'gpu-compute-vulkan.c' || echo '$(srcdir)/'`gpu-compute-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-compute-vulkan.Tpo $(DEPDIR)/libsixel_la-gpu-compute-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-compute-vulkan.c' object='libsixel_la-gpu-compute-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-compute-vulkan.lo `test -f 'gpu-compute-vulkan.c' || echo '$(srcdir)/'`gpu-compute-vulkan.c
+
+libsixel_la-gpu-dequant-vulkan.lo: gpu-dequant-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-dequant-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-dequant-vulkan.Tpo -c -o libsixel_la-gpu-dequant-vulkan.lo `test -f 'gpu-dequant-vulkan.c' || echo '$(srcdir)/'`gpu-dequant-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-dequant-vulkan.Tpo $(DEPDIR)/libsixel_la-gpu-dequant-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-dequant-vulkan.c' object='libsixel_la-gpu-dequant-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-dequant-vulkan.lo `test -f 'gpu-dequant-vulkan.c' || echo '$(srcdir)/'`gpu-dequant-vulkan.c
+
+libsixel_la-palette-kmeans-vulkan.lo: palette-kmeans-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmeans-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmeans-vulkan.Tpo -c -o libsixel_la-palette-kmeans-vulkan.lo `test -f 'palette-kmeans-vulkan.c' || echo '$(srcdir)/'`palette-kmeans-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-kmeans-vulkan.Tpo $(DEPDIR)/libsixel_la-palette-kmeans-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-kmeans-vulkan.c' object='libsixel_la-palette-kmeans-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-vulkan.lo `test -f 'palette-kmeans-vulkan.c' || echo '$(srcdir)/'`palette-kmeans-vulkan.c
+
+libsixel_la-retained-plane-vulkan.lo: retained-plane-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-retained-plane-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-retained-plane-vulkan.Tpo -c -o libsixel_la-retained-plane-vulkan.lo `test -f 'retained-plane-vulkan.c' || echo '$(srcdir)/'`retained-plane-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-retained-plane-vulkan.Tpo $(DEPDIR)/libsixel_la-retained-plane-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='retained-plane-vulkan.c' object='libsixel_la-retained-plane-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-retained-plane-vulkan.lo `test -f 'retained-plane-vulkan.c' || echo '$(srcdir)/'`retained-plane-vulkan.c
+
+libsixel_la-progressive-gpu-vulkan.lo: progressive-gpu-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-progressive-gpu-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-gpu-vulkan.Tpo -c -o libsixel_la-progressive-gpu-vulkan.lo `test -f 'progressive-gpu-vulkan.c' || echo '$(srcdir)/'`progressive-gpu-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-gpu-vulkan.Tpo $(DEPDIR)/libsixel_la-progressive-gpu-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='progressive-gpu-vulkan.c' object='libsixel_la-progressive-gpu-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-progressive-gpu-vulkan.lo `test -f 'progressive-gpu-vulkan.c' || echo '$(srcdir)/'`progressive-gpu-vulkan.c
+
 libsixel_la-gpu-palette-vulkan.lo: gpu-palette-vulkan.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette-vulkan.Tpo -c -o libsixel_la-gpu-palette-vulkan.lo `test -f 'gpu-palette-vulkan.c' || echo '$(srcdir)/'`gpu-palette-vulkan.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-palette-vulkan.Tpo $(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo
@@ -4658,6 +4731,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromtga.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gamut.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-compute-vulkan.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo
@@ -4737,6 +4812,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-plan.Plo
@@ -4751,6 +4827,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-ladder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-measure.Plo
@@ -4763,6 +4840,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-statistics.Plo
@@ -4946,6 +5024,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromtga.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gamut.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-compute-vulkan.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-gpu-palette-vulkan.Plo
@@ -5025,6 +5105,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-plan.Plo
@@ -5039,6 +5120,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-ladder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-measure.Plo
@@ -5051,6 +5133,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-statistics.Plo
@@ -5120,7 +5203,8 @@ generated-vulkan/lookup-programs-spirv.inc.h: $(SIXEL_VULKAN_INPUTS) \
         $(top_srcdir)/tools/gen-vulkan-programs.sh
 	$(AM_V_GEN)$(SHELL) $(top_srcdir)/tools/gen-vulkan-programs.sh \
 	    "$(GLSLC)" "$@" $(SIXEL_VULKAN_BUILDER_PREFIX) \
-	    $(SIXEL_VULKAN_CONSUMER_PAIRS) -- $(SIXEL_VULKAN_POLICIES)
+	    $(SIXEL_VULKAN_CONSUMER_PAIRS) -- $(SIXEL_VULKAN_POLICIES) \
+	    $(SIXEL_VULKAN_STAGES)
 $(SIXEL_VULKAN_CONSUMERS): $(SIXEL_VULKAN_FRAGMENTS)
 
 generated-metal/%-shader.inc.h: $(srcdir)/%.metal \

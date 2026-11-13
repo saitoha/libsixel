@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0214_gpu_oklab_gamma_rgb"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu oklab gamma rgb # SKIP Metal device unavailable"
+    echo "ok 1 - gpu oklab gamma rgb # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

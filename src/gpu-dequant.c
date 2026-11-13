@@ -40,6 +40,10 @@ sixel_gpu_dequant_metal_fast4_rgba(
 
 int
 sixel_gpu_dequant_metal_is_available(void);
+#elif defined(HAVE_VULKAN)
+SIXELSTATUS sixel_gpu_dequant_vulkan_fast4_rgba(
+    sixel_gpu_dequant_request_t const *request);
+int sixel_gpu_dequant_vulkan_is_available(void);
 #endif
 
 static int
@@ -69,6 +73,8 @@ sixel_gpu_dequant_has_engine(void)
 {
 #if defined(HAVE_METAL)
     return sixel_gpu_dequant_metal_is_available();
+#elif defined(HAVE_VULKAN)
+    return sixel_gpu_dequant_vulkan_is_available();
 #else
     return 0;
 #endif
@@ -146,6 +152,10 @@ sixel_gpu_dequant_fast4_rgba(sixel_gpu_dequant_request_t const *request)
 
 #if defined(HAVE_METAL)
     status = sixel_gpu_dequant_metal_fast4_rgba(request);
+#elif defined(HAVE_VULKAN)
+    status = sixel_gpu_dequant_vulkan_fast4_rgba(request);
+#endif
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     if (status == SIXEL_OK) {
         return SIXEL_OK;
     }

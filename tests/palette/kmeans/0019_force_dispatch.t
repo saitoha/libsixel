@@ -21,17 +21,17 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! -Gforce -Qkmeans:backend=gpu:seed=1 --lookup-policy=none -dnone \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 case "$trace" in
-    *LSXKMEANS1\|requested=gpu\|effective=metal\|*) backend_ok=1 ;;
+    *LSXKMEANS1\|requested=gpu\|effective=metal\|*|*LSXKMEANS1\|requested=gpu\|effective=vulkan\|*) backend_ok=1 ;;
     *) : ;;
 esac
 test "$conversion_status:$backend_ok" = 0:1 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/available || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo "ok 1 # SKIP Metal device is unavailable"
+    echo "ok 1 # SKIP GPU device is unavailable"
     exit 0
 }
 test "$probe_status" -eq 0 || {
-    echo "not ok 1 - Metal device probe failed"
+    echo "not ok 1 - GPU device probe failed"
     exit 0
 }
 test "$conversion_status" -eq 0 || {

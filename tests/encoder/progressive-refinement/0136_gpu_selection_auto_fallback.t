@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0188_gpu_selection_auto_fal
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu selection auto fallback # SKIP Metal device unavailable"
+    echo "ok 1 - gpu selection auto fallback # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

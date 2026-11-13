@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0190_gpu_scan_update_rebind
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu scan update rebind # SKIP Metal device unavailable"
+    echo "ok 1 - gpu scan update rebind # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

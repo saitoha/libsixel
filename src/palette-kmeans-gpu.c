@@ -19,13 +19,32 @@ int sixel_kmeans_metal_is_available(void);
 int sixel_kmeans_metal_is_initialized(void);
 SIXELSTATUS sixel_kmeans_metal_refine(
     sixel_kmeans_gpu_request_t const *request, unsigned int *iterations);
+#elif defined(HAVE_VULKAN)
+int sixel_kmeans_vulkan_is_available(void);
+int sixel_kmeans_vulkan_is_initialized(void);
+SIXELSTATUS sixel_kmeans_vulkan_refine(
+    sixel_kmeans_gpu_request_t const *request, unsigned int *iterations);
 #endif
+
+char const *
+sixel_kmeans_gpu_backend_name(void)
+{
+#if defined(HAVE_METAL)
+    return "metal";
+#elif defined(HAVE_VULKAN)
+    return "vulkan";
+#else
+    return "unavailable";
+#endif
+}
 
 int
 sixel_kmeans_gpu_is_available(void)
 {
 #if defined(HAVE_METAL)
     return sixel_kmeans_metal_is_available();
+#elif defined(HAVE_VULKAN)
+    return sixel_kmeans_vulkan_is_available();
 #else
     return 0;
 #endif
@@ -36,6 +55,8 @@ sixel_kmeans_gpu_is_initialized(void)
 {
 #if defined(HAVE_METAL)
     return sixel_kmeans_metal_is_initialized();
+#elif defined(HAVE_VULKAN)
+    return sixel_kmeans_vulkan_is_initialized();
 #else
     return 0;
 #endif
@@ -192,13 +213,15 @@ sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
 #endif
 #if defined(HAVE_METAL)
     status = sixel_kmeans_metal_refine(&attempt, iterations);
+#elif defined(HAVE_VULKAN)
+    status = sixel_kmeans_vulkan_refine(&attempt, iterations);
 #else
     (void)attempt;
     status = SIXEL_FALSE;
 #endif
     if (trace) {
         fprintf(stderr, "LSXKMCALL1|M=%u|K=%u|check_ms=%.6f|"
-            "metal_wall_ms=%.6f|status=0x%04x|\n",
+            "gpu_wall_ms=%.6f|status=0x%04x|\n",
             request->point_count, request->center_count,
             (checked - start) * 1000.0,
             (sixel_timer_now() - checked) * 1000.0, (unsigned int)status);

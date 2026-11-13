@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0199_gpu_gamma_gamma_hls"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu gamma gamma hls # SKIP Metal device unavailable"
+    echo "ok 1 - gpu gamma gamma hls # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0209_gpu_linear_linear_hls"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu linear linear hls # SKIP Metal device unavailable"
+    echo "ok 1 - gpu linear linear hls # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

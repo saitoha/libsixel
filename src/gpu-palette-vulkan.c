@@ -202,17 +202,23 @@ sixel_gpu_vulkan_buffer_size(sixel_gpu_buffer_interface_t const *self)
     return ((sixel_gpu_vulkan_native_buffer_t const *)self)->size;
 }
 
-/* Workspaces live in device-local memory the host never maps. */
+/* Lookup workspaces stay device-local unless a consumer explicitly asks
+ * for shared storage. Retained planes need directly coherent mappings. */
 static SIXELSTATUS
 sixel_gpu_vulkan_buffer_shared_memory(
     sixel_gpu_buffer_interface_t const *self, void **memory)
 {
-    (void)self;
-    if (memory == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
+    sixel_gpu_vulkan_native_buffer_t *buffer;
+    SIXELSTATUS status;
+
+    if (memory == NULL) return SIXEL_BAD_ARGUMENT;
     *memory = NULL;
-    return SIXEL_FEATURE_ERROR;
+    buffer = (sixel_gpu_vulkan_native_buffer_t *)self;
+    sixel_vk_lock();
+    status = sixel_vk_buffer_make_shared(buffer->runtime, &buffer->storage);
+    if (status == SIXEL_OK) *memory = buffer->storage.mapped;
+    sixel_vk_unlock();
+    return status;
 }
 
 static sixel_gpu_buffer_vtbl_t const g_sixel_vk_buffer_vtbl = {
@@ -500,6 +506,9 @@ sixel_gpu_vulkan_view_check(sixel_gpu_lookup_program_view_t const *view,
             view->query_kind != query_kind) {
         return SIXEL_FEATURE_ERROR;
     }
+    if (view->batch != NULL &&
+            (view->batch->tile[0] == 0 || view->batch->tile[1] == 0))
+        return SIXEL_BAD_ARGUMENT;
     /* Vulkan collective programs expose an inline entry; all lanes call
      * it once with two queries, including inactive lanes. Other shapes
      * require an executor of their own and must not become scalar scans. */
@@ -899,10 +908,12 @@ sixel_gpu_vulkan_fill_params(sixel_gpu_vulkan_params_t *params,
     sixel_gpu_palette_request_t const *request)
 {
     memset(params, 0, sizeof(*params));
-    /* Without native retained storage the frame rectangle is packed, so
-     * the retained plane is addressed with frame stride and no origin. */
-    params->accumulation_stride = (uint32_t)request->width;
-    params->accumulation_origin = 0;
+    /* Native history retains canvas stride; uploaded rectangles are packed. */
+    params->accumulation_stride = (uint32_t)(request->retained_rgb != NULL
+        ? request->accumulation_width : request->width);
+    params->accumulation_origin = request->retained_rgb != NULL
+        ? (uint32_t)((size_t)request->accumulation_origin_y *
+            request->accumulation_width + request->accumulation_origin_x) : 0;
     params->pixel_count = (uint32_t)request->pixel_count;
     params->width = (uint32_t)request->width;
     params->height = (uint32_t)request->height;
@@ -921,10 +932,14 @@ sixel_gpu_vulkan_fill_params(sixel_gpu_vulkan_params_t *params,
             request->accumulation_keycolor >= 0 &&
             request->accumulation_keycolor < SIXEL_PALETTE_MAX) {
         params->has_6delta = 1U;
-        params->accumulation_pixel_count = (uint32_t)request->pixel_count;
+        params->accumulation_pixel_count = request->retained_rgb != NULL
+            ? (uint32_t)(request->accumulation_pixels_size / 3U)
+            : (uint32_t)request->pixel_count;
         params->accumulation_valid_mask_size =
             request->accumulation_valid_mask != NULL
-                ? (uint32_t)request->pixel_count : 0U;
+                ? (request->retained_rgb != NULL
+                    ? (uint32_t)request->accumulation_valid_mask_size
+                    : (uint32_t)request->pixel_count) : 0U;
         params->accumulation_keycolor =
             (uint32_t)request->accumulation_keycolor;
         params->sixdelta_threshold = (uint32_t)request->sixdelta_threshold;
@@ -1053,7 +1068,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     program = request == NULL ? NULL : request->program;
     if (program != NULL && request->dither_program != program->dither)
         return SIXEL_BAD_ARGUMENT;
-    if (program == NULL || request->retained_rgb != NULL) {
+    if (program == NULL) {
         return SIXEL_FEATURE_ERROR;
     }
     view = &program->view;
@@ -1169,7 +1184,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         status = sixel_gpu_vulkan_upload(runtime, SIXEL_VK_PARAMS,
             &params, sizeof(params));
     }
-    if (SIXEL_SUCCEEDED(status) && has_accumulation) {
+    if (SIXEL_SUCCEEDED(status) && has_accumulation &&
+            request->retained_rgb == NULL) {
         status = sixel_vk_buffer_reserve(runtime,
             &state->buffers[SIXEL_VK_ACCUMULATION], pixel_count * 3U, 1);
         if (SIXEL_SUCCEEDED(status)) {
@@ -1179,7 +1195,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             state->upload[SIXEL_VK_ACCUMULATION] = pixel_count * 3U;
         }
     }
-    if (SIXEL_SUCCEEDED(status) && has_valid) {
+    if (SIXEL_SUCCEEDED(status) && has_valid &&
+            request->retained_rgb == NULL) {
         status = sixel_vk_buffer_reserve(runtime,
             &state->buffers[SIXEL_VK_ACCUMULATION_VALID], pixel_count, 1);
         if (SIXEL_SUCCEEDED(status)) {
@@ -1229,6 +1246,21 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     }
     if (request->accumulation_result_mask == NULL) {
         bound[SIXEL_VK_ACCUMULATION_RESULT] = &state->dummy;
+    }
+    if (has_accumulation && request->retained_rgb != NULL) {
+        bound[SIXEL_VK_ACCUMULATION] = sixel_gpu_vulkan_buffer(
+            request->retained_device, request->retained_rgb);
+        bound[SIXEL_VK_ACCUMULATION_VALID] = sixel_gpu_vulkan_buffer(
+            request->retained_device, request->retained_valid);
+        if (bound[SIXEL_VK_ACCUMULATION] == NULL ||
+                bound[SIXEL_VK_ACCUMULATION_VALID] == NULL ||
+                bound[SIXEL_VK_ACCUMULATION]->capacity <
+                    request->accumulation_pixels_size ||
+                bound[SIXEL_VK_ACCUMULATION_VALID]->capacity <
+                    request->accumulation_valid_mask_size) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
     }
     bound[SIXEL_VK_WORKSPACE] = workspace;
     builder_bound[0] = bound[SIXEL_VK_PALETTE];

@@ -11,14 +11,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 probe_status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/available || probe_status=$?
 test "$probe_status" -ne 0 || {
-    echo "1..0 # SKIP Metal device is available"
+    echo "1..0 # SKIP GPU device is available"
     exit 0
 }
 echo "1..1"
 set -v
 
 test "$probe_status" -eq 77 || {
-    echo "not ok 1 - Metal device probe failed"
+    echo "not ok 1 - GPU device probe failed"
     exit 0
 }
 

@@ -50,6 +50,8 @@ typedef struct sixel_vk_runtime {
     VkFence ring_fences[SIXEL_VK_RING];
     double ring_submitted_ms[SIXEL_VK_RING];
     int debug;
+    /* Optional for 64-bit progressive canvas positions and strata. */
+    int shader_int64;
 } sixel_vk_runtime_t;
 
 /* Storage buffer that grows on demand. mapped is always host-visible
@@ -81,6 +83,11 @@ SIXEL_INTERNAL_API sixel_vk_runtime_t *sixel_vk_runtime_get_locked(void);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     VkDeviceSize size, int host_written);
+/* Promote an existing allocation to directly shared coherent storage,
+ * preserving its bytes. Prefer host-visible VRAM; never expose a staging
+ * pointer as shared memory because host writes must reach future kernels. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_make_shared(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer);
 /* Device-local storage the host never maps (mapped stays NULL), for
  * intermediate tables that shaders both write and read. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_device(

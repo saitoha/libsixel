@@ -13,6 +13,13 @@
 #include "src/dither-policy-bluenoise.h"
 #include "src/sixel_decode_pixels.h"
 
+/* The public statistic must identify the backend this build executes. */
+#if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
+#define GPU_COLORS_TEST_BACKEND SIXEL_PROGRESSIVE_BACKEND_VULKAN
+#else
+#define GPU_COLORS_TEST_BACKEND SIXEL_PROGRESSIVE_BACKEND_METAL
+#endif
+
 typedef struct gpu_colors_sink {
     sixel_progressive_t *context;
     unsigned char bytes[4096];
@@ -322,7 +329,7 @@ test_progressive_gpu_colors_case(int workspace, int output_space, int hls)
             GPU_COLORS_REQUIRE(sixel_progressive_step(context, &budget,
                 output, &stats) == SIXEL_OK &&
                 stats.outcome == SIXEL_PROGRESSIVE_FRAME_EMITTED &&
-                stats.backend == (expected_gpu ? SIXEL_PROGRESSIVE_BACKEND_METAL
+                stats.backend == (expected_gpu ? GPU_COLORS_TEST_BACKEND
                                               : SIXEL_PROGRESSIVE_BACKEND_CPU));
             GPU_COLORS_REQUIRE(stats.working_colorspace == work_ids[workspace]
                 && stats.output_colorspace == output_ids[output_space] &&
@@ -410,7 +417,7 @@ end:
 #undef GPU_COLORS_REQUIRE
 
 /* Source preparation for repair must not relax ordinary P3 admission.
- * This rejection precedes GPU submission and needs no Metal device. */
+ * This rejection precedes GPU submission and needs no GPU device. */
 int
 test_progressive_gpu_p3_boundary(void)
 {

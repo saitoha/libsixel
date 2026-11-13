@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0212_gpu_linear_display_p3_
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu linear display p3 rgb # SKIP Metal device unavailable"
+    echo "ok 1 - gpu linear display p3 rgb # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

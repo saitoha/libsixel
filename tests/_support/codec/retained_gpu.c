@@ -308,12 +308,8 @@ retained_gpu_lookup_observe(int observation)
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
     if (status != SIXEL_OK) goto end;
-    /* Device-resident retained history is implemented only by the Metal
-     * palette application; another runtime refuses the resident buffers. */
     if (!sixel_gpu_lookup_has_program(SIXEL_LUT_POLICY_ORDERED,
-            device->vtbl->program_format(device)) ||
-            strcmp(device->vtbl->program_format(device),
-                "metal.lookup-rgb8.v1") != 0) {
+            device->vtbl->program_format(device))) {
         device->vtbl->unref(device);
         return 77;
     }

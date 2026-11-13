@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0186_gpu_selection_threshol
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu selection threshold guard # SKIP Metal device unavailable"
+    echo "ok 1 - gpu selection threshold guard # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

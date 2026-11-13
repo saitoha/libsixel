@@ -2185,7 +2185,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     gpu_reason = gpu_status == SIXEL_BAD_ALLOCATION
                         ? "buffer-allocation" :
                         gpu_status == SIXEL_FEATURE_ERROR
-                        ? "metal-init" : "command-or-numeric-failure";
+                        ? "gpu-init" : "command-or-numeric-failure";
                 }
             }
             gpu_completed = gpu_status == SIXEL_OK;
@@ -2195,7 +2195,9 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             }
             (void)snprintf(log_detail, sizeof(log_detail),
                 "backend=%s restart=%u iter=%u status=0x%04x",
-                gpu_completed ? "metal" : "cpu-fallback", restart_index + 1u,
+                gpu_completed ? sixel_kmeans_gpu_backend_name()
+                    : "cpu-fallback",
+                restart_index + 1u,
                 gpu_iterations, (unsigned int)gpu_status);
             sixel_debugf("k-means %s", log_detail);
             sixel_palette_kmeans_log_finish(logger, job_iteration,
@@ -2674,7 +2676,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                 sixel_get_kmeans_backend() == SIXEL_PALETTE_KMEANS_BACKEND_GPU
                     ? "gpu" : backend == SIXEL_PALETTE_KMEANS_BACKEND_AUTO
                     ? "auto" : "cpu",
-                gpu_completed ? "metal" : "cpu",
+                gpu_completed ? sixel_kmeans_gpu_backend_name() : "cpu",
                 gpu_completed ? gpu_iterations :
                     (iteration < max_iterations ? iteration + 1u : iteration),
                 (unsigned int)gpu_status, gpu_reason, work_sample_count, k,

@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0227_gpu_cielab_smptec_hls"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu cielab smptec hls # SKIP Metal device unavailable"
+    echo "ok 1 - gpu cielab smptec hls # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

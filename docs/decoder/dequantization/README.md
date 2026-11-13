@@ -129,7 +129,7 @@ Full undither defaults to `-e 0`, which disables the spatial-gradient gate and l
 
 The current active midpoint calculation ignores the `numerator` and `denominator` arguments stored in the neighbor-offset tables. They do **not** multiply the final mixing weights by direction. Full undither and Vlight differ in which neighbors they inspect; for the same cached palette pair, the active CPU weight rule itself is independent of neighbor position. A disabled alternative formula in the source must not be presented as current behavior.
 
-The CPU rules above apply to decoded byte RGB. Encoder working-color-space and precision options do not change this reconstruction space. The Metal Vlight implementation has its own dispatch and arithmetic path; this chapter does not claim exhaustive byte-for-byte GPU equivalence.
+The CPU rules above apply to decoded byte RGB. Encoder working-color-space and precision options do not change this reconstruction space. The Metal and Vulkan Vlight implementations have their own dispatch and arithmetic paths; this chapter does not claim exhaustive byte-for-byte GPU equivalence.
 
 ## Available methods and their neighborhoods
 
@@ -248,7 +248,7 @@ Initialize `sixel_decode_options_t` and `sixel_decode_result_t`, set the preferr
 
 Full undither without edge protection and Vlight have parallel CPU paths; setup or eligibility can select scalar execution. Vlight also has a fused CPU decode path. The full edge-protected method needs gradient work, and selective blur uses its own local filter. A thread count is not a promise that every reconstruction stage runs concurrently. See [decoder threading](../../threading/decoder.md).
 
-GPU policy defaults to `off` unless configured through the environment or decoder options. The optional GPU dequantizer currently supports Vlight only, through Metal. `--gpu=auto` permits CPU fallback, while `--gpu=force` requires supported execution and reports errors when the requested method or engine cannot run. For example, selective blur with `--gpu=force` is rejected even though its kernel is conceptually suitable for GPU implementation.
+GPU policy defaults to `off` unless configured through the environment or decoder options. The optional GPU dequantizer currently supports Vlight only, through Metal or Vulkan. `--gpu=auto` permits CPU fallback, while `--gpu=force` requires supported execution and reports errors when the requested method or engine cannot run. For example, selective blur with `--gpu=force` is rejected even though its kernel is conceptually suitable for GPU implementation.
 
 `--gpu=auto:dequant_threshold=262144` expresses the default automatic pixel-count cutoff; `SIXEL_GPU_DEQUANT_THRESHOLD` supplies its environment counterpart. The threshold controls when an attempt is eligible, not guaranteed speedup. GPU dispatch consumes already decoded RGBA plus a palette, writes a second RGBA buffer, and still examines palette colors for similarity. It does not parse SIXEL on the GPU or fuse reconstruction with resizing. The owning interfaces are [`src/gpu-dequant.h`](../../../src/gpu-dequant.h) and [`src/gpu-dequant.c`](../../../src/gpu-dequant.c).
 

@@ -29,6 +29,7 @@ srcs = [
   'retained-plane-gpu.h',
   'gpu-runtime-metal.h',
   'gpu-runtime-vulkan.h',
+  'gpu-compute-vulkan.h',
   'gpu-palette-vulkan.h',
   'retained-plane-rows.c',
   'retained-plane-rows.h',
@@ -74,6 +75,7 @@ srcs = [
   'palette-kmeans-assign.h',
   'palette-kmeans-build.h',
   'palette-kmeans-gpu.c',
+  'palette-kmeans-vulkan.c',
   'palette-kmeans-gpu.h',
   'palette-bin-histogram.c',
   'palette-bin-histogram.h',
@@ -452,6 +454,9 @@ endif
 
 if have_vulkan
   srcs += ['gpu-runtime-vulkan.c', 'gpu-palette-vulkan.c',
+           'gpu-compute-vulkan.c', 'gpu-dequant-vulkan.c',
+           'progressive-gpu-vulkan.c',
+           'retained-plane-vulkan.c',
            'dither-policy-lso2-gpu-vulkan.c',
            'dither-policy-fs-gpu-vulkan.c',
            'dither-policy-atkinson-gpu-vulkan.c',

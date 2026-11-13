@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0218_gpu_oklab_smptec_rgb"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu oklab smptec rgb # SKIP Metal device unavailable"
+    echo "ok 1 - gpu oklab smptec rgb # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

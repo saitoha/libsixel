@@ -6,7 +6,7 @@
  * fhedt_palette_lookup() and its fractional form.
  *
  * Constants (words): 0 quantization shift, 1 refine, 2 dist2 shortcut,
- * 3 resolution R, 4 word offset of the finished table.
+ * 3 resolution R, 4 word offset of the finished table, 5 compact byte labels.
  *
  * The workspace is uint words: column heads [0, R*R), one seed link per
  * palette entry at R*R + seed, then grids A and B of R^3 cells. Grid
@@ -14,13 +14,21 @@
  * Passes: clear heads, seed lists, X scan (heads -> A), Y (A -> B),
  * Z (B -> A) and, with refinement, pack (A -> B). The Z pass leaves
  * label | zero-distance << 9 words; pack adds the boundary bit 8. The
- * finished table is A without refinement and B with it.
+ * finished table is A without refinement and B with it. Byte R256 adds
+ * a final compaction pass from A words to B bytes.
  *
- * vulkan-builders: fhedt_clear fhedt_seed fhedt_x fhedt_y fhedt_z fhedt_pack
+ * vulkan-builders: fhedt_clear fhedt_seed fhedt_x fhedt_y fhedt_z fhedt_pack fhedt_compact
  */
 layout(std430, set = 0, binding = SIXEL_LOOKUP_WORKSPACE_BINDING)
     buffer FhedtWorkspace {
     uint fhedt_words[];
+};
+
+/* Byte R256 queries need only a label. The final pass writes one byte per
+ * cell in the inactive grid; fractional queries retain word metadata. */
+layout(std430, set = 0, binding = SIXEL_LOOKUP_WORKSPACE_BINDING)
+    buffer FhedtByteWorkspace {
+    uint8_t fhedt_bytes[];
 };
 
 const uint FHEDT_NONE = 0xffffffffu;
@@ -203,6 +211,15 @@ void fhedt_z()
     fhedt_edt(2u, fhedt_grid_b(), fhedt_grid_a());
 }
 
+void fhedt_compact()
+{
+    uint at = fhedt_index();
+    uint cells = fhedt_r() * fhedt_r() * fhedt_r();
+    if (at < cells)
+        fhedt_bytes[4u * fhedt_grid_b() + at] =
+            uint8_t(fhedt_words[fhedt_grid_a() + at] & 255u);
+}
+
 /* Boundary packing only consumes labels and the zero-distance flag. */
 void fhedt_pack()
 {
@@ -235,6 +252,8 @@ void fhedt_pack()
 
 uint fhedt_label(uint at)
 {
+    if (lookup_constants[5] != 0u)
+        return uint(fhedt_bytes[4u * lookup_constants[4] + at]);
     return fhedt_words[lookup_constants[4] + at];
 }
 

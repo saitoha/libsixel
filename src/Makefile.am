@@ -104,7 +104,13 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(src
     $(srcdir)/dither-policy-sierra1-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra1-gpu.glsl \
     $(srcdir)/dither-policy-sierra2-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra2-gpu.glsl \
     $(srcdir)/dither-policy-sierra3-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra3-gpu.glsl
-SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-lookup-builder-prefix.glsl \
+SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
+    $(srcdir)/palette-kmeans-gpu.glsl \
+    $(srcdir)/retained-plane-gpu.glsl \
+    $(srcdir)/progressive-gpu-scan.glsl \
+    $(srcdir)/progressive-gpu-lookup.glsl
+SIXEL_VULKAN_INPUTS = $(SIXEL_VULKAN_STAGES) \
+    $(srcdir)/gpu-lookup-builder-prefix.glsl \
     $(srcdir)/dither-policy-none-gpu-prefix.glsl \
     $(srcdir)/dither-policy-none-gpu.glsl \
     $(srcdir)/dither-policy-a-dither-gpu-prefix.glsl \
@@ -163,7 +169,8 @@ generated-vulkan/lookup-programs-spirv.inc.h: $(SIXEL_VULKAN_INPUTS) \
         $(top_srcdir)/tools/gen-vulkan-programs.sh
 	$(AM_V_GEN)$(SHELL) $(top_srcdir)/tools/gen-vulkan-programs.sh \
 	    "$(GLSLC)" "$@" $(SIXEL_VULKAN_BUILDER_PREFIX) \
-	    $(SIXEL_VULKAN_CONSUMER_PAIRS) -- $(SIXEL_VULKAN_POLICIES)
+	    $(SIXEL_VULKAN_CONSUMER_PAIRS) -- $(SIXEL_VULKAN_POLICIES) \
+	    $(SIXEL_VULKAN_STAGES)
 
 # Like the Metal consumers below, the phased build compiles objects
 # directly; name the consumers so their embedded shaders exist first. A
@@ -171,6 +178,10 @@ generated-vulkan/lookup-programs-spirv.inc.h: $(SIXEL_VULKAN_INPUTS) \
 # compile rule.
 SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
+    libsixel_la-gpu-dequant-vulkan.lo \
+    libsixel_la-palette-kmeans-vulkan.lo \
+    libsixel_la-retained-plane-vulkan.lo \
+    libsixel_la-progressive-gpu-vulkan.lo \
     libsixel_la-dither-policy-lso2-gpu-vulkan.lo \
     libsixel_la-dither-policy-none-gpu.lo \
     libsixel_la-dither-policy-a-dither-gpu.lo \
@@ -318,6 +329,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/retained-plane-gpu.h \
                 $(srcdir)/gpu-runtime-metal.h \
                 $(srcdir)/gpu-runtime-vulkan.h \
+                $(srcdir)/gpu-compute-vulkan.h \
                 $(srcdir)/gpu-palette-vulkan.h \
                 $(srcdir)/retained-plane-rows.c \
                 $(srcdir)/retained-plane-rows.h \
@@ -778,6 +790,11 @@ endif
 if HAVE_VULKAN
 libsixel_la_SOURCES += \
 $(srcdir)/gpu-runtime-vulkan.c \
+$(srcdir)/gpu-compute-vulkan.c \
+$(srcdir)/gpu-dequant-vulkan.c \
+$(srcdir)/palette-kmeans-vulkan.c \
+$(srcdir)/retained-plane-vulkan.c \
+$(srcdir)/progressive-gpu-vulkan.c \
 $(srcdir)/gpu-palette-vulkan.c \
 $(srcdir)/dither-policy-lso2-gpu-vulkan.c \
 $(srcdir)/dither-policy-fs-gpu-vulkan.c \

@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0175_gpu_application_canoni
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu application canonical guard # SKIP Metal device unavailable"
+    echo "ok 1 - gpu application canonical guard # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0172_gpu_application_none"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu application none # SKIP Metal device unavailable"
+    echo "ok 1 - gpu application none # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

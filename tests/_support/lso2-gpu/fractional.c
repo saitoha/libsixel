@@ -139,6 +139,13 @@ probe_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             p->view.chunks = p->chunks;
             p->view.chunk_count = 1;
             p->batch.entry_point = "bad_batch";
+            if (strcmp(p->view.program_format,
+                    "vulkan.lookup-rgb8.v1") == 0) {
+                p->chunks[0] = "#define SIXEL_LOOKUP_BATCH 1\n"
+                    "void lookup_rgb8_batch(vec4 q[2], uint n,"
+                    "out uvec2 indexes) { indexes=uvec2(n); }\n";
+                p->batch.entry_point = "lookup_rgb8_batch";
+            }
         }
         *result = &p->iface;
         return SIXEL_OK;
@@ -461,12 +468,13 @@ lso2_gpu_batch_fault_check(int fault)
     memset(&probe,0,sizeof(probe));
     outcome = lso2_gpu_fixture_open(&f,1);
     if (outcome != 0) goto end;
-    /* The probe wraps the subject in Metal source. */
-    if (strcmp(f.device->vtbl->program_format(f.device),
-            "metal.lookup-rgb8.v1") != 0) {
+#if !defined(HAVE_SHADERC)
+    if (fault == 3 && strcmp(f.device->vtbl->program_format(f.device),
+            "vulkan.lookup-rgb8.v1") == 0) {
         outcome = 77;
         goto end;
     }
+#endif
     outcome = 1;
     memset(&configuration,0,sizeof(configuration));
     configuration.kind = SIXEL_LUT_POLICY_BLOCKCULL;

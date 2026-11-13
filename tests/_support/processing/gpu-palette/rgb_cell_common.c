@@ -10,6 +10,7 @@
 #include "src/dither.h"
 #include "src/lookup-policy.h"
 #include "src/encoder-core-private.h"
+#include "component_common.h"
 
 /* Metal answers byte 5bit and 6bit queries with its legacy table executor
  * (kernel 8). A device without that executor runs the policy's injected
@@ -30,6 +31,32 @@ rgb_cell_expected_kernel(void)
         device->vtbl->unref(device);
     }
     return kernel;
+}
+
+/* Vulkan exposes its owned byte allocation through the prepared plan.
+ * Inspect that contract instead of a Metal executor's diagnostic hook. */
+static int
+rgb_cell_table_size(int bits)
+{
+    gpu_component_fixture_t fixture;
+    sixel_gpu_device_interface_t *device;
+    sixel_gpu_lookup_program_view_t view;
+    int ok;
+
+    device = NULL;
+    memset(&fixture, 0, sizeof(fixture));
+    ok = 0;
+    if (sixel_gpu_device_acquire(&device) != SIXEL_OK ||
+            !gpu_component_open(&fixture, bits == 5 ? 10 : 11)) goto end;
+    if (fixture.provider->vtbl->prepare(fixture.provider, &fixture.request,
+            device, &fixture.other) != SIXEL_OK ||
+            fixture.other->vtbl->describe(fixture.other, &view) != SIXEL_OK)
+        goto end;
+    ok = view.workspace_size == ((size_t)1U << (bits * 3));
+end:
+    gpu_component_close(&fixture);
+    if (device != NULL) device->vtbl->unref(device);
+    return ok ? 0 : 1;
 }
 
 /* Enumerate a channel's byte preimage rather than repeating the GPU's
@@ -226,7 +253,7 @@ test_rgb_cell_gpu(int bits, int observation)
     if (status != SIXEL_OK || hooks.kernel != rgb_cell_expected_kernel() ||
             !hooks.published) return 1;
     if (observation == 3) {
-        if (hooks.kernel != 8) return 77;
+        if (hooks.kernel == 9) return rgb_cell_table_size(bits);
         return hooks.lookup_table_bytes == ((size_t)1U << (bits * 3)) ? 0 : 1;
     }
     if (observation >= 4 && observation <= 11) {

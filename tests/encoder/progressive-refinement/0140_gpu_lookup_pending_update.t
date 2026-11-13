@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0193_gpu_lookup_pending_upd
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu lookup pending update # SKIP threads or Metal unavailable"
+    echo "ok 1 - gpu lookup pending update # SKIP threads or GPU unavailable"
     exit 0
 }
 test "$result" = 0 || {

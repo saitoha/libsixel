@@ -6,7 +6,7 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu/batch_thread_overflow || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP Metal device unavailable"
+    echo "ok 1 # SKIP GPU device unavailable"
     exit 0
 }
 test "$status" -eq 0 || {

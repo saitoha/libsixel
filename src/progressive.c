@@ -1430,9 +1430,15 @@ sixel_repair_stats_snapshot(sixel_repair_context_t const *context,
     stats->working_colorspace = context->encoder->working_colorspace;
     stats->output_colorspace = context->encoder->output_colorspace;
     stats->output_color_definition = context->encoder->output_color_definition;
-    stats->backend = (context->application.gpu_used ||
-        (context->selection != NULL && context->selection->gpu_used))
-        ? SIXEL_PROGRESSIVE_BACKEND_METAL : SIXEL_PROGRESSIVE_BACKEND_CPU;
+    stats->backend = SIXEL_PROGRESSIVE_BACKEND_CPU;
+    if (context->application.gpu_used ||
+            (context->selection != NULL && context->selection->gpu_used)) {
+#if defined(HAVE_METAL)
+        stats->backend = SIXEL_PROGRESSIVE_BACKEND_METAL;
+#elif defined(HAVE_VULKAN)
+        stats->backend = SIXEL_PROGRESSIVE_BACKEND_VULKAN;
+#endif
+    }
     stats->selection_round = context->selection_round;
     stats->full_selection = context->full_selection;
     stats->domain_count = audit->domain_count;

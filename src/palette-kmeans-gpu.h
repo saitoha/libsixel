@@ -27,6 +27,8 @@ typedef struct sixel_kmeans_gpu_request {
     int test_failure;
 } sixel_kmeans_gpu_request_t;
 
+SIXEL_INTERNAL_API char const *sixel_kmeans_gpu_backend_name(void);
+
 /* Availability probes the device, not shader compilation. Tests must fail,
  * rather than skip, when an available device cannot execute the kernels. */
 SIXEL_INTERNAL_API int

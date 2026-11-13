@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: MIT */
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
 #include "src/dither-policy-gpu.h"
 #include <string.h>
 #include "component_common.h"
@@ -26,6 +29,24 @@ static char const * const third_chunks[] = {
     "uint next = uint(d.x*d.x + d.y*d.y + d.z*d.z);"
     "if (next < distance) { distance = next; best = i; }}"
     "return best;}\n"
+};
+/* The same private builder token and invalid-index fault in Vulkan GLSL. */
+static char const *const third_vulkan_chunks[] = {
+    "layout(std430,binding=SIXEL_LOOKUP_WORKSPACE_BINDING) "
+    "buffer Third { uint token; };\n"
+    "#if defined(SIXEL_LOOKUP_BUILDER)\n"
+    "void third_build() { token = 0x12345678u; }\n"
+    "#endif\n"
+    "uint lookup_rgb8(uvec3 q, uint n) {"
+    "uint best=0u, distance=0xffffffffu;"
+    "if (lookup_constants[0]==1u ||"
+    "(lookup_constants[0]==2u && q.r>128u)) return n;"
+    "if (token!=0x12345678u) return 255u;"
+    "for(uint i=0u;i<n;++i) {"
+    "ivec3 d=ivec3(q)-ivec3(lookup_palette[3u*i],"
+    "lookup_palette[3u*i+1u],lookup_palette[3u*i+2u]);"
+    "uint next=uint(d.x*d.x+d.y*d.y+d.z*d.z);"
+    "if(next<distance) { distance=next; best=i; }} return best;}\n"
 };
 static sixel_gpu_lookup_build_pass_t const third_pass = {
     "third_build", {1, 1, 1}, {1, 1, 1}
@@ -60,7 +81,8 @@ third_describe(sixel_gpu_lookup_plan_interface_t const *self,
     status = program->lease_owner->vtbl->describe(program->lease_owner, view);
     if (status != SIXEL_OK) return status;
     view->logical_name = "third-test-program";
-    view->chunks = third_chunks;
+    view->chunks = strcmp(view->program_format,
+        "vulkan.lookup-rgb8.v1") == 0 ? third_vulkan_chunks : third_chunks;
     view->chunk_count = 1;
     view->workspace_size = sizeof(uint32_t);
     view->constants = &program->invalid;
@@ -117,12 +139,14 @@ injected_gpu_program_test(int invalid)
     memset(&request, 0, sizeof(request));
     status = sixel_gpu_device_acquire(&device);
     if (status == SIXEL_FEATURE_ERROR) return 77;
-    /* third_chunks is Metal source; other program formats cannot host it. */
+#if !defined(HAVE_SHADERC)
+    /* This deliberately unregistered program needs a runtime compiler. */
     if (status == SIXEL_OK && strcmp(device->vtbl->program_format(device),
-            "metal.lookup-rgb8.v1") != 0) {
+            "vulkan.lookup-rgb8.v1") == 0) {
         outcome = 77;
         goto end;
     }
+#endif
     if (status != SIXEL_OK || !gpu_component_open(&fixture, 0)) goto end;
     if (fixture.provider->vtbl->prepare(fixture.provider, &fixture.request,
             device, &fixture.other) != SIXEL_OK) goto end;

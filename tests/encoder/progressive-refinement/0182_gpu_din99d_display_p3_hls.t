@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0237_gpu_din99d_display_p3_
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu din99d display p3 hls # SKIP Metal device unavailable"
+    echo "ok 1 - gpu din99d display p3 hls # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

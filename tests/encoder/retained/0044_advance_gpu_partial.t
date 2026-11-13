@@ -6,7 +6,7 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/retained/0044_advance_gpu_partial" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP Metal unavailable'
+    echo 'ok 1 # SKIP GPU unavailable'
     exit 0
 }
 test "$status" -eq 0 || {

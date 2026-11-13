@@ -7,7 +7,7 @@ set -v
 run_status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "gpu-kmeans/0087_wide_tile_reduction" || run_status=$?
 test "$run_status" -ne 77 || {
-    echo "ok 1 # SKIP Metal device is unavailable"
+    echo "ok 1 # SKIP GPU device is unavailable"
     exit 0
 }
 test "$run_status" -eq 0 || {

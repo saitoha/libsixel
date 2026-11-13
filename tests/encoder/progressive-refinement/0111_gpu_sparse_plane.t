@@ -8,7 +8,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0161_gpu_sparse_plane"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu sparse plane # SKIP Metal device unavailable"
+    echo "ok 1 - gpu sparse plane # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

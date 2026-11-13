@@ -14,6 +14,13 @@
 #include "src/compat_stub.h"
 #include "src/stdio_stub.h"
 
+/* The public statistic must identify the backend this build executes. */
+#if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
+#define CONTEXT_TEST_BACKEND SIXEL_PROGRESSIVE_BACKEND_VULKAN
+#else
+#define CONTEXT_TEST_BACKEND SIXEL_PROGRESSIVE_BACKEND_METAL
+#endif
+
 static size_t context_test_live;
 static size_t context_test_fail;
 static size_t context_test_allocations;
@@ -1527,7 +1534,7 @@ test_progressive_gpu_context_case(int mode)
             mode == 176 || mode == 180 || mode == 190 ? 1 : 100000;
         expected_backend = (mode == 177 && pass) ||
             (mode == 178 && !pass) ? SIXEL_PROGRESSIVE_BACKEND_CPU
-            : SIXEL_PROGRESSIVE_BACKEND_METAL;
+            : CONTEXT_TEST_BACKEND;
         for (calls = 0; calls < 10000; ++calls) {
             status = sixel_progressive_step(context, &budget, output, &stats);
             if (mode == 179 && SIXEL_FAILED(status)) break;
@@ -1542,7 +1549,7 @@ test_progressive_gpu_context_case(int mode)
             if (mode == 190 && !pass && context->selection != NULL &&
                     context->selection->gpu_used) {
                 CONTEXT_REQUIRE(!context->application.gpu_used &&
-                    stats.backend == SIXEL_PROGRESSIVE_BACKEND_METAL);
+                    stats.backend == CONTEXT_TEST_BACKEND);
                 CONTEXT_REQUIRE(sixel_encoder_encode_frame(encoder,
                     update, ordinary) == SIXEL_OK);
                 CONTEXT_REQUIRE(sixel_progressive_step(context, &budget,
@@ -1552,7 +1559,7 @@ test_progressive_gpu_context_case(int mode)
                 break;
             }
             if (mode == 180 && stats.backend ==
-                    SIXEL_PROGRESSIVE_BACKEND_METAL &&
+                    CONTEXT_TEST_BACKEND &&
                     !(interrupted & (context->application.gpu_used
                         ? 2 : 1))) {
                 cancel = 1;

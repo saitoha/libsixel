@@ -8,7 +8,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0165_gpu_nonfinite_fallback
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu nonfinite fallback # SKIP Metal device unavailable"
+    echo "ok 1 - gpu nonfinite fallback # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

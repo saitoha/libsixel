@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0177_gpu_public_rebind_tran
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu public rebind transition # SKIP Metal device unavailable"
+    echo "ok 1 - gpu public rebind transition # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

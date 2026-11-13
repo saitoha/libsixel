@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0194_gpu_pending_before_adm
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu pending before admission # SKIP threads or Metal unavailable"
+    echo "ok 1 - gpu pending before admission # SKIP threads or GPU unavailable"
     exit 0
 }
 test "$result" = 0 || {

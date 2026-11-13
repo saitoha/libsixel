@@ -43,9 +43,9 @@ typedef struct fhedt_plan {
     size_t workspace_size;
     /* Metal reads constants; the Vulkan program reads vulkan_constants:
      * shift, refine, dist2, resolution and the finished table's word
-     * offset in the workspace. */
+     * offset in the workspace, followed by the byte-compaction flag. */
     uint32_t constants[4];
-    uint32_t vulkan_constants[5];
+    uint32_t vulkan_constants[6];
     sixel_gpu_lookup_build_pass_t passes[6];
     size_t pass_count;
     int vulkan;
@@ -82,7 +82,7 @@ static struct {
     unsigned char palette[768];
     unsigned int count;
     uint32_t constants[4];
-    uint32_t vulkan_constants[5];
+    uint32_t vulkan_constants[6];
     int valid;
 } fhedt_idle;
 #endif
@@ -406,26 +406,29 @@ static void
 fhedt_vulkan_layout(fhedt_plan_t *plan)
 {
     size_t r, cells;
-    int refine;
+    int refine, compact;
 
     r = (size_t)plan->configuration.fhedt_resolution;
     cells = r * r * r;
     refine = plan->configuration.fhedt_refine &&
         (plan->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE || r != 256);
+    compact = plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE && r == 256;
     plan->vulkan_constants[0] = r == 64 ? 2 : r == 128 ? 1 : 0;
     plan->vulkan_constants[1] = (uint32_t)refine;
     plan->vulkan_constants[2] = (uint32_t)plan->configuration.fhedt_use_dist2;
     plan->vulkan_constants[3] = (uint32_t)r;
     plan->vulkan_constants[4] = (uint32_t)(r * r + 256U +
-        (refine ? cells : 0U));
+        ((refine || compact) ? cells : 0U));
+    plan->vulkan_constants[5] = (uint32_t)compact;
     plan->workspace_size = (r * r + 256U + 2U * cells) * sizeof(uint32_t);
     fhedt_vulkan_pass(&plan->passes[0], "fhedt_clear", r * r);
     fhedt_vulkan_pass(&plan->passes[1], "fhedt_seed", plan->count);
     fhedt_vulkan_pass(&plan->passes[2], "fhedt_x", cells);
     fhedt_vulkan_pass(&plan->passes[3], "fhedt_y", r * r);
     fhedt_vulkan_pass(&plan->passes[4], "fhedt_z", r * r);
-    fhedt_vulkan_pass(&plan->passes[5], "fhedt_pack", cells);
-    plan->pass_count = refine ? 6 : 5;
+    fhedt_vulkan_pass(&plan->passes[5],
+        compact ? "fhedt_compact" : "fhedt_pack", cells);
+    plan->pass_count = (refine || compact) ? 6 : 5;
 }
 #endif
 

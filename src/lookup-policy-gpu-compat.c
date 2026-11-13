@@ -66,6 +66,10 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
         run.lut_policy = SIXEL_LUT_POLICY_NONE;
     if (!sixel_gpu_lookup_registered(run.lut_policy))
         return SIXEL_FEATURE_ERROR;
+    /* Legacy callers consume a whole synchronous result. Incremental row
+     * publication belongs to a caller-owned prepared program and its lease. */
+    run.rows_per_chunk = 0;
+    run.rows_ready = NULL;
     allocator = NULL;
     palette = NULL;
     plan = NULL;

@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0170_gpu_lookup_cache_isola
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu lookup cache isolation # SKIP Metal device unavailable"
+    echo "ok 1 - gpu lookup cache isolation # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0169_gpu_lookup_float_palet
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu lookup float palette # SKIP Metal device unavailable"
+    echo "ok 1 - gpu lookup float palette # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

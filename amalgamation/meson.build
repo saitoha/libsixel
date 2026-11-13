@@ -3,7 +3,7 @@ fs = import('fs')
 amalgamation_gen = find_program(join_paths(meson.project_source_root(),
   'tools', 'gen-amalgamation.sh'))
 
-amalgamation_header_depends = [completion_embed] + metal_headers
+amalgamation_header_depends = [completion_embed] + metal_headers + vulkan_headers
 
 # Mirror the generator's recursive default discovery so an incremental build
 # cannot reuse stale code from a source omitted by the explicit lists below.
@@ -75,6 +75,7 @@ amalgamation_units = files(
   '../src/palette-kmeans-assign.c',
   '../src/palette-kmeans-build.c',
   '../src/palette-kmeans-gpu.c',
+  '../src/palette-kmeans-vulkan.c',
   '../src/palette-kmeans-metal.m',
   '../src/palette-bin-histogram.c',
   '../src/palette-plan.c',

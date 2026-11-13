@@ -23,6 +23,17 @@ sixel_repair_gpu_metal_lookup(void **backend,
     sixel_repair_gpu_match_t *matches);
 void
 sixel_repair_gpu_metal_free(void *backend);
+#elif defined(HAVE_VULKAN)
+SIXELSTATUS
+sixel_repair_gpu_vulkan_scan(void **backend,
+    sixel_repair_gpu_request_t const *request,
+    sixel_repair_gpu_result_t *result);
+SIXELSTATUS
+sixel_repair_gpu_vulkan_lookup(void **backend,
+    sixel_repair_gpu_lookup_t const *request,
+    sixel_repair_gpu_match_t *matches);
+void
+sixel_repair_gpu_vulkan_free(void *backend);
 #endif
 
 SIXELSTATUS
@@ -54,6 +65,8 @@ sixel_repair_gpu_evict(sixel_repair_gpu_t *cache)
     if (cache == NULL) return;
 #if defined(HAVE_METAL)
     sixel_repair_gpu_metal_free(cache->backend);
+#elif defined(HAVE_VULKAN)
+    sixel_repair_gpu_vulkan_free(cache->backend);
 #endif
     cache->backend = NULL;
 }
@@ -143,6 +156,8 @@ sixel_repair_gpu_scan(sixel_repair_gpu_t *cache,
     status = SIXEL_FEATURE_ERROR;
 #if defined(HAVE_METAL)
     status = sixel_repair_gpu_metal_scan(&cache->backend, request, result);
+#elif defined(HAVE_VULKAN)
+    status = sixel_repair_gpu_vulkan_scan(&cache->backend, request, result);
 #endif
     if (status == SIXEL_OK) return status;
     /* A failed batch never publishes partial samples or reusable GPU state.
@@ -172,6 +187,8 @@ sixel_repair_gpu_lookup(sixel_repair_gpu_t *cache,
     status = SIXEL_FEATURE_ERROR;
 #if defined(HAVE_METAL)
     status = sixel_repair_gpu_metal_lookup(&cache->backend, request, matches);
+#elif defined(HAVE_VULKAN)
+    status = sixel_repair_gpu_vulkan_lookup(&cache->backend, request, matches);
 #endif
     if (status == SIXEL_OK) return status;
     sixel_repair_gpu_evict(cache);

@@ -4,7 +4,7 @@
 #endif
 #include "retained-plane-gpu.h"
 
-#if !defined(HAVE_METAL)
+#if !defined(HAVE_METAL) && !defined(HAVE_VULKAN)
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_retained_gpu_new(sixel_gpu_device_interface_t *device,
     sixel_retained_plane_description_t const *description,

@@ -27,11 +27,11 @@ esac
 test "$conversion_status:$backend_ok" = 0:1 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/available || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo "ok 1 # SKIP Metal device is unavailable"
+    echo "ok 1 # SKIP GPU device is unavailable"
     exit 0
 }
 test "$probe_status" -eq 0 || {
-    echo "not ok 1 - Metal device probe failed"
+    echo "not ok 1 - GPU device probe failed"
     exit 0
 }
 test "$conversion_status" -eq 0 || {

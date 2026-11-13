@@ -23,15 +23,15 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto -Qkmeans:backend=gpu:seed=1 \
     -Fnone -o "${ARTIFACT_LOCAL_DIR}/gpu.six" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" 2>&1) || conversion_status=$?
-case "$trace" in *LSXKMEANS1\|requested=gpu\|effective=metal\|*) backend_ok=1 ;; *) : ;; esac
+case "$trace" in *LSXKMEANS1\|requested=gpu\|effective=metal\|*|*LSXKMEANS1\|requested=gpu\|effective=vulkan\|*) backend_ok=1 ;; *) : ;; esac
 test "$conversion_status:$backend_ok" = 0:1 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/available || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo "ok 1 # SKIP Metal device is unavailable"
+    echo "ok 1 # SKIP GPU device is unavailable"
     exit 0
 }
 test "$probe_status" -eq 0 || {
-    echo "not ok 1 - Metal device probe failed"
+    echo "not ok 1 - GPU device probe failed"
     exit 0
 }
 test "$conversion_status" -eq 0 || {
@@ -39,7 +39,7 @@ test "$conversion_status" -eq 0 || {
     exit 0
 }
 test "$backend_ok" -eq 1 || {
-    echo "not ok 1 - GPU quality test did not execute Metal"
+    echo "not ok 1 - GPU quality test did not execute the selected GPU backend"
     printf '# %s\n' "$trace"
     exit 0
 }

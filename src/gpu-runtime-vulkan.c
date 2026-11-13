@@ -341,6 +341,10 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
     memset(&features, 0, sizeof(features));
     features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     features.pNext = &features12;
+    vkGetPhysicalDeviceFeatures(runtime->physical, &features.features);
+    runtime->shader_int64 = features.features.shaderInt64 != VK_FALSE;
+    memset(&features.features, 0, sizeof(features.features));
+    features.features.shaderInt64 = runtime->shader_int64 ? VK_TRUE : VK_FALSE;
     memset(&device_info, 0, sizeof(device_info));
     device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     device_info.pNext = &features;
@@ -617,7 +621,8 @@ sixel_vk_buffer_reserve_device(sixel_vk_runtime_t *runtime,
     }
     sixel_vk_buffer_release(runtime, buffer);
     status = sixel_vk_allocate(runtime, size,
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 0, &buffer->buffer,
         &buffer->memory, &flags);
     if (SIXEL_FAILED(status)) {
@@ -625,6 +630,55 @@ sixel_vk_buffer_reserve_device(sixel_vk_runtime_t *runtime,
     }
     buffer->capacity = size;
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_buffer_make_shared(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t *buffer)
+{
+    sixel_vk_buffer_t shared;
+    VkMemoryPropertyFlags flags;
+    VkBufferCopy copy;
+    VkCommandBuffer command;
+    SIXELSTATUS status;
+
+    if (buffer->mapped != NULL && buffer->staging == VK_NULL_HANDLE)
+        return SIXEL_OK;
+    memset(&shared, 0, sizeof(shared));
+    status = sixel_vk_allocate(runtime, buffer->capacity,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &shared.buffer,
+        &shared.memory, &flags);
+    if (status != SIXEL_OK) return status;
+    if (vkMapMemory(runtime->device, shared.memory, 0, VK_WHOLE_SIZE, 0,
+            &shared.mapped) != VK_SUCCESS) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    shared.capacity = buffer->capacity;
+    status = sixel_vk_command_begin(runtime, &command);
+    if (status != SIXEL_OK) goto end;
+    sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        VK_ACCESS_MEMORY_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_ACCESS_TRANSFER_READ_BIT);
+    copy.srcOffset = copy.dstOffset = 0;
+    copy.size = buffer->capacity;
+    vkCmdCopyBuffer(command, buffer->buffer, shared.buffer, 1, &copy);
+    sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_HOST_BIT,
+        VK_ACCESS_HOST_READ_BIT);
+    status = sixel_vk_submit_and_wait(runtime, command);
+    if (status == SIXEL_OK) {
+        sixel_vk_buffer_release(runtime, buffer);
+        *buffer = shared;
+        return status;
+    }
+end:
+    sixel_vk_buffer_release(runtime, &shared);
+    return status;
 }
 
 void

@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0197_gpu_pending_destroy"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu pending destroy # SKIP threads or Metal unavailable"
+    echo "ok 1 - gpu pending destroy # SKIP threads or GPU unavailable"
     exit 0
 }
 test "$result" = 0 || {

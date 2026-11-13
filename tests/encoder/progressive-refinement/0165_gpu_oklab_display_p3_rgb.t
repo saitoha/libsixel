@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0220_gpu_oklab_display_p3_r
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu oklab display p3 rgb # SKIP Metal device unavailable"
+    echo "ok 1 - gpu oklab display p3 rgb # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {

@@ -9,7 +9,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0230_gpu_din99d_gamma_rgb"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu din99d gamma rgb # SKIP Metal device unavailable"
+    echo "ok 1 - gpu din99d gamma rgb # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {
