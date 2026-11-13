@@ -359,7 +359,9 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     unsigned char *palette;
     unsigned char *source_pixel;
     unsigned char palette_value;
-    int32_t sample_scaled[SIXEL_MAX_CHANNELS];
+    /* Initialize once so both diffusion paths start with defined storage.
+     * Each pixel then overwrites its active channels before lookup. */
+    int32_t sample_scaled[SIXEL_MAX_CHANNELS] = { 0 };
     int32_t target_scaled;
     int32_t error_scaled;
     int serpentine;

@@ -156,6 +156,9 @@ ordered_float_hint(sixel_lookup_policy_interface_t const *self,
         if (bounded && lookup->radii[seed][i] > radius) break;
         index = bounded ? lookup->indexes[seed][i] : i;
         distance = ordered_float_distance(lookup, q, index);
+        /* The unbounded scan can produce NaN. PCC can treat an unordered
+         * distance as less than the minimum, so reject it explicitly. */
+        if (!bounded && !isfinite(distance)) continue;
         if (distance < minimum || (distance == minimum && index < best)) {
             minimum = distance;
             best = index;

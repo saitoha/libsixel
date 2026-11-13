@@ -189,6 +189,20 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Fetch GNU make for NetBSD/sparc64
+        if: matrix.buildtool == 'autotools'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Fetch on the host so the guest can install without mirror lookup.
+          mkdir -p .tmp/netbsd-sparc64
+          cd .tmp/netbsd-sparc64
+          curl --fail --location --retry 3 --connect-timeout 15 --max-time 60 \
+            https://ftp.netbsd.org/pub/pkgsrc/packages/NetBSD/sparc64/11.0_2026Q2/All/gmake-4.4.1.tgz \
+            --output gmake-4.4.1.tgz
+          echo 'd10d53aac64a9a5e75c9c19c24be211dce8177ebef6ffc5821d07e1d4d691d8e  gmake-4.4.1.tgz' |
+            sha256sum --check
+
       # Retry provisioning only; the build below is outside both attempts.
       - name: Prepare NetBSD/sparc64 (attempt 1)
         id: sparc_prepare_1
@@ -208,7 +222,7 @@ jobs:
           prepare: |
             set -eux
             if test '${{ matrix.buildtool }}' = autotools; then
-              /usr/sbin/pkg_add -u gmake
+              /usr/sbin/pkg_add -u "$GITHUB_WORKSPACE/.tmp/netbsd-sparc64/gmake-4.4.1.tgz"
             else
               /usr/sbin/pkg_add -u meson ninja-build
             fi
@@ -255,7 +269,7 @@ jobs:
           prepare: |
             set -eux
             if test '${{ matrix.buildtool }}' = autotools; then
-              /usr/sbin/pkg_add -u gmake
+              /usr/sbin/pkg_add -u "$GITHUB_WORKSPACE/.tmp/netbsd-sparc64/gmake-4.4.1.tgz"
             else
               /usr/sbin/pkg_add -u meson ninja-build
             fi
