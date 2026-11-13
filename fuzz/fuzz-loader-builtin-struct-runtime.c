@@ -11,6 +11,7 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <sixel.h>
@@ -23,7 +24,7 @@
 #include "fuzz-loader-builtin-struct-common.h"
 
 #ifndef FUZZ_LOADER_COMPONENT_NAME
-# define FUZZ_LOADER_COMPONENT_NAME "builtin"
+# define FUZZ_LOADER_COMPONENT_NAME "loader/builtin"
 #endif
 
 static char const *const g_loader_component_name = FUZZ_LOADER_COMPONENT_NAME;
@@ -162,7 +163,9 @@ int
 fuzz_loader_builtin_runtime_bootstrap(void)
 {
     if (!fuzz_loader_builtin_runtime_init()) {
-        return 0;
+        fprintf(stderr, "Cannot initialize %s: %s\n",
+                g_loader_component_name, sixel_helper_get_additional_message());
+        exit(EXIT_FAILURE);
     }
 
     if (!g_atexit_registered) {

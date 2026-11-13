@@ -3,10 +3,10 @@
  *
  * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
  *
- * libFuzzer target for the builtin loader component.
+ * libFuzzer target for the builtin and libwebp loader components.
  *
  * This harness intentionally goes through the loader factory/component API:
- *   factory -> create("builtin") -> setopt(...) -> load(...)
+ *   factory -> create(component) -> setopt(...) -> load(...)
  * so it exercises the same wiring used by the production loader pipeline.
  */
 
@@ -17,6 +17,7 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,6 +31,7 @@
 static sixel_allocator_t *g_allocator = NULL;
 static sixel_factory_t *g_factory = NULL;
 static sixel_loader_component_t *g_component = NULL;
+static char const *g_component_name = "loader/builtin";
 static int g_fuzz_ready = 0;
 static unsigned char g_empty_input[1];
 static unsigned char *g_forced_chunk_buffer = NULL;
@@ -148,14 +150,16 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         'G', 'I', 'F', '8', '9', 'a',
         0x01u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u, 0x00u
     };
-    static unsigned char const jpeg_header[4] = {
-        0xffu, 0xd8u, 0xffu, 0xd9u
+    /* Preserve the first marker of an existing JPEG after SOI. */
+    static unsigned char const jpeg_header[2] = {
+        0xffu, 0xd8u
     };
     static unsigned char const pnm_prefix[11] = {
         'P', '6', '\n', '1', ' ', '1', '\n', '2', '5', '5', '\n'
     };
-    static unsigned char const sixel_prefix[5] = {
-        0x1bu, 0x50u, 0x71u, 0x1bu, 0x5cu
+    /* Leave the DCS payload and its terminator available to the decoder. */
+    static unsigned char const sixel_prefix[3] = {
+        0x1bu, 0x50u, 0x71u
     };
     static unsigned char const hdr_template[] =
         "#?RADIANCE\n"
@@ -226,7 +230,17 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         return 0;
     }
 
-    if (g_force_format == FUZZ_FORCE_FORMAT_AUTO) {
+    /* Keep the canvas, palette and resource headers of matching seeds. */
+    if (g_force_format == FUZZ_FORCE_FORMAT_AUTO
+        || (g_force_format == FUZZ_FORCE_FORMAT_GIF && size >= 6u
+            && (memcmp(data, "GIF87a", 6u) == 0
+                || memcmp(data, "GIF89a", 6u) == 0))
+        || (g_force_format == FUZZ_FORCE_FORMAT_PSD && size >= 4u
+            && memcmp(data, psd_header, 4u) == 0)
+        || (g_force_format == FUZZ_FORCE_FORMAT_PNM && size >= 3u
+            && data[0] == 'P' && data[1] >= '1' && data[1] <= '7'
+            && data[2] != '\0'
+            && strchr(" \t\r\n\v\f", data[2]) != NULL)) {
         *out_data = (unsigned char const *)(uintptr_t)data;
         *out_size = size;
         return 1;
@@ -539,7 +553,7 @@ fuzz_builtin_loader_init(void)
     }
 
     status = g_factory->vtbl->create(g_factory,
-                                     "builtin",
+                                     g_component_name,
                                      g_allocator,
                                      (void **)&g_component);
     if (SIXEL_FAILED(status)) {
@@ -554,15 +568,25 @@ fuzz_builtin_loader_init(void)
 int
 LLVMFuzzerInitialize(int *argc, char ***argv)
 {
+    char const *format;
+
     (void)argc;
     (void)argv;
 
-    g_force_format = fuzz_parse_force_format(
-        getenv("FUZZ_BUILTIN_FORCE_FORMAT"));
-
-    if (fuzz_builtin_loader_init()) {
-        (void)atexit(fuzz_builtin_loader_dispose);
+    format = getenv("FUZZ_BUILTIN_FORCE_FORMAT");
+    /* The builtin component does not decode WebP. Give its dedicated job
+     * the libwebp component and keep the RIFF input intact. */
+    if (format != NULL && strcmp(format, "webp") == 0) {
+        g_component_name = "loader/libwebp";
     }
+    g_force_format = fuzz_parse_force_format(format);
+
+    if (!fuzz_builtin_loader_init()) {
+        fprintf(stderr, "Cannot initialize %s: %s\n",
+                g_component_name, sixel_helper_get_additional_message());
+        exit(EXIT_FAILURE);
+    }
+    (void)atexit(fuzz_builtin_loader_dispose);
 
     return 0;
 }

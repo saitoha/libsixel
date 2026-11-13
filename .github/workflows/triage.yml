@@ -395,7 +395,7 @@ jobs:
             entry
           end
 
-          def fuzzing_replay_entry(job_id, entry, source)
+          def fuzzing_replay_entry(job_id, job, entry, source)
             case job_id
             when 'fuzz_push_full', 'fuzz_push_encode_helpers'
               kind = job_id == 'fuzz_push_full' ? 'struct' : 'image_api'
@@ -410,7 +410,7 @@ jobs:
                 ),
                 target
               )
-              fuzzing_entry(kind, label, 'ubuntu-latest', buildtool, target, source)
+              fuzzing_entry(kind, label, job.fetch('runs-on'), buildtool, target, source)
             when 'fuzz_push_loader_formats'
               buildtool = entry.fetch('buildtool')
               target = entry.fetch('target')
@@ -423,7 +423,7 @@ jobs:
                 ),
                 target
               )
-              fuzzing_entry('loader_format', label, 'ubuntu-latest', buildtool, target, source)
+              fuzzing_entry('loader_format', label, job.fetch('runs-on'), buildtool, target, source)
             when 'fuzz_push_loader_autodetect'
               buildtool = entry.fetch('buildtool')
               label = format(
@@ -434,7 +434,7 @@ jobs:
                   'Meson-ubuntu-x86_64-gcc'
                 )
               )
-              fuzzing_entry('loader_autodetect', label, 'ubuntu-latest', buildtool, 'autodetect', source)
+              fuzzing_entry('loader_autodetect', label, job.fetch('runs-on'), buildtool, 'autodetect', source)
             when 'fuzz_push_cli_img2sixel'
               buildtool = entry.fetch('buildtool')
               target = entry.fetch('target')
@@ -523,7 +523,7 @@ jobs:
 
             if workflow_file == 'fuzzing.yml'
               matrix_entries(job).each do |entry|
-                replay_entry = fuzzing_replay_entry(job_id, entry, source)
+                replay_entry = fuzzing_replay_entry(job_id, job, entry, source)
                 next if replay_entry.nil?
                 next unless failed_jobs.include?(replay_entry.fetch('label'))
 
@@ -806,9 +806,15 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            clang meson ninja-build autoconf automake libtool pkg-config make
+          if test -f .github/scripts/build-linux-libfuzzer.sh; then
+            bash .github/scripts/install-ubuntu-packages.sh \
+              clang-21 llvm-21 libclang-rt-21-dev libwebp-dev \
+              meson ninja-build pkg-config make autoconf automake libtool
+          else
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              clang meson ninja-build autoconf automake libtool pkg-config make
+          fi
 
       - name: Install Ubuntu AFL dependencies
         if: ${{ matrix.kind == 'cli_img2sixel' }}
@@ -1013,18 +1019,53 @@ jobs:
             cp "$dict_common" "$dict_merged"
           fi
 
-          if test "$buildtool" = autotools; then
+          # Forensic replay also accepts revisions before the coverage gate.
+          coverage_check=.github/scripts/check-libfuzzer-coverage.sh
+          if test -f "$coverage_check"; then
+            sh .github/scripts/build-linux-libfuzzer.sh "$buildtool" "$harness_name"
+          elif test "$buildtool" = autotools; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
             make -j"$(nproc)"
-            harness="$PWD/fuzz/$harness_name"
           else
             CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
             meson compile -C builddir -v
+          fi
+          if test "$buildtool" = autotools; then
+            harness="$PWD/fuzz/$harness_name"
+          else
             harness="$PWD/builddir/fuzz/$harness_name"
           fi
           if test ! -x "$harness"; then
             echo "::error::missing fuzz harness: $harness"
             exit 1
+          fi
+
+          if test -f "$coverage_check"; then
+            case "$kind" in
+              struct)
+                sh "$coverage_check" "$buildtool" "$harness" "struct-$target" \
+                  "$artifact_dir/coverage.log"
+                ;;
+              loader_format)
+                FUZZ_BUILTIN_FORCE_FORMAT="$target" \
+                  sh "$coverage_check" "$buildtool" "$harness" "$target" \
+                    "$artifact_dir/coverage.log"
+                ;;
+              loader_autodetect)
+                sh "$coverage_check" "$buildtool" "$harness" autodetect \
+                  "$artifact_dir/coverage-png.log"
+                sh "$coverage_check" "$buildtool" "$harness" apng \
+                  "$artifact_dir/coverage-apng.log"
+                ;;
+              image_api)
+                case "$target" in
+                  encoder-encode-bytes) seed_prefix=encoder ;;
+                  helper-write-image-file) seed_prefix=helper ;;
+                esac
+                sh "$coverage_check" "$buildtool" "$harness" "$target" \
+                  "$artifact_dir/coverage.log" "$corpus"/"$seed_prefix"-*
+                ;;
+            esac
           fi
 
           if test "${semantic_min_features:-0}" -ne 0; then
@@ -1155,10 +1196,12 @@ jobs:
             echo "::error::libFuzzer did not report completion for ${{ matrix.label }}."
             exit 1
           fi
-          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
-          if test -z "$cov" || test "$cov" -lt "$min_cov"; then
-            echo "::error::${{ matrix.label }} coverage too low: cov=$cov (expected >= $min_cov)."
-            exit 1
+          if test ! -f "$coverage_check"; then
+            cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
+            if test -z "$cov" || test "$cov" -lt "$min_cov"; then
+              echo "::error::${{ matrix.label }} coverage too low: cov=$cov (expected >= $min_cov)."
+              exit 1
+            fi
           fi
 
       - name: Run img2sixel CLI AFL replay

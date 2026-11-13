@@ -1,0 +1,39 @@
+# Clang 21, Ubuntu 26.04, x86_64, -O1. Counts are from fixed corpus replay.
+# The PIC implementation is inlined into stbi__load_main at this optimization
+# level. Its format probe also requires a frame from the PIC fixture.
+# WebP counts edges in the libsixel wrapper around the system libwebp.
+# target	function_regex	source_regex	autotools	meson	fixture_under_tests/data/inputs
+png	^stbi__parse_png_file$	stb_image\.h	29	29	snake_64.png
+gif	^gif_process_raster$	fromgif\.c	32	32	formats/gif-anim-netscape-loop2.gif
+jpeg	^stbi__decode_jpeg_image$	stb_image\.h	33	33	snake_64.jpg
+pnm	^pnm_decode_rgb8_noalpha$	frompnm\.c	7	7	resampling-exact/nearest-upscale-input.ppm
+sixel	^sixel_decode_image$	fromsixel\.c	14	14	snake_64.six
+hdr	^sixel_builtin_hdr_decode_legacy_stream$	fromhdr\.c	7	7	formats/stbi_gradient16x16.hdr
+psd	^sixel_builtin_decode_psd_.*	frompsd\.c	16	16	formats/snake16_rgb8_zip.psd
+pic	^stbi__load_main$	stb_image\.h	29	29	formats/stbi_minimal.pic
+bmp	^sixel_bmp_decode_truecolor$	frombmp\.c	6	6	snake_64.bmp
+tga	^stbi__tga_load$	stb_image\.h	24	24	snake_64.tga
+webp	^webp_decode_and_emit_single_frame_buffer$	loader-libwebp\.c	11	11	snake_64.webp
+autodetect	^stbi__parse_png_file$	stb_image\.h	29	29	snake_64.png
+apng	^sixel_builtin_apng_flush_pending_frame$	loader-builtin\.c	16	16	formats/apng_8x8_rgb_loop2.png
+struct-png-chunk	^stbi__parse_png_file$	stb_image\.h	40	40
+struct-png-apng	^stbi__parse_png_file$	stb_image\.h	28	28
+struct-png-icc-gamma	^stbi__parse_png_file$	stb_image\.h	36	36
+struct-png-plte-trns	^stbi__parse_png_file$	stb_image\.h	44	44
+struct-jpeg-icc	^stbi__decode_jpeg_image$	stb_image\.h	32	32
+struct-pnm-ascii	^load_pnm$	frompnm\.c	33	33
+struct-psd-resource	^sixel_builtin_parse_psd_info$	frompsd-header\.c	7	7
+struct-gif-block	^load_gif_with_color$	fromgif\.c	46	46
+struct-gif-lzw-codes	^gif_process_raster$	fromgif\.c	9	9
+struct-sixel-stream	^sixel_decode_(raw_ordinary|segmented)$	fromsixel\.c	311	311
+struct-hdr-header	^sixel_builtin_load_hdr_frame$	fromhdr\.c	115	115
+struct-pic-structure	^stbi__load_main$	stb_image\.h	20	20
+struct-bmp-dib	^sixel_bmp_parse_header$	frombmp\.c	48	48
+struct-bmp-rle-bitfields	^sixel_bmp_decode_rle[48]_pal$	frombmp\.c	13	13
+struct-mapfile-spec	^sixel_encoder_apply_mapfile(_output)?_option$	encoder\.c	8	8
+struct-mapfile-palette	^sixel_palette_parse_.*	mapfile\.c	35	35
+struct-option-arglist	^sixel_option_parse_argument_list_with_suboptions$	options\.c	19	19
+struct-exif-orientation	^loader_exif_parse_orientation$	loader-common\.c	25	25
+struct-loader-order	^sixel_loader_order_parse_and_validate$	loader-order-schema\.c	5	5
+encoder-encode-bytes	^sixel_encoder_encode_bytes$	encoder\.c	11	11
+helper-write-image-file	^sixel_write_image_color$	writer\.c	17	17

@@ -41,7 +41,7 @@ jobs:
         || inputs.triage_job_labels != '||'
       }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -84,7 +84,8 @@ jobs:
         shell: bash
         run: |
           bash .github/scripts/install-ubuntu-packages.sh \
-            clang meson ninja-build autoconf automake libtool pkg-config make
+            clang-21 llvm-21 libclang-rt-21-dev libwebp-dev \
+            meson ninja-build pkg-config make autoconf automake libtool
 
       - name: Restore struct fuzz corpus cache
         if: ${{ steps.struct_scope.outputs.run_target == '1' }}
@@ -131,10 +132,6 @@ jobs:
           set -euxo pipefail
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           run_log="$FUZZ_STRUCT_ARTIFACT_DIR/run.log"
-          min_cov=60
-          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
-            min_cov=55
-          fi
           dict_common="$PWD/fuzz/loader-builtin.dict"
           dict_target="$PWD/fuzz/dicts/struct/${{ matrix.target }}.dict"
           dict_merged="$FUZZ_STRUCT_ARTIFACT_DIR/dict.merged"
@@ -234,63 +231,45 @@ jobs:
             fi
           }
 
+          sh .github/scripts/build-linux-libfuzzer.sh "${{ matrix.buildtool }}" \
+            "fuzz-loader-builtin-struct-${{ matrix.target }}-libfuzzer"
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
-            CC=clang CXX=clang++ ./configure --enable-fuzz
-            make -j"$(nproc)"
             harness="$PWD/fuzz/fuzz-loader-builtin-struct-${{ matrix.target }}-libfuzzer"
-            target_corpus="$FUZZ_STRUCT_CORPUS/${{ matrix.target }}"
-            if [ ! -x "$harness" ]; then
-              echo "::error::missing struct harness: $harness"
-              exit 1
-            fi
-            run_semantic_smoke
-            merge_seed="$FUZZ_STRUCT_ARTIFACT_DIR/corpus-premerge"
-            rm -rf "$merge_seed"
-            mkdir -p "$merge_seed"
-            if find "$target_corpus" -type f -print -quit | grep -q .; then
-              cp -a "$target_corpus"/. "$merge_seed"/
-              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
-                -dict="$dict_merged" "$target_corpus" "$merge_seed"
-            else
-              echo "struct-corpus: no files to merge for ${{ matrix.target }}"
-            fi
-            rm -rf "$merge_seed"
+          else
+            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-struct-${{ matrix.target }}-libfuzzer"
+          fi
+
+          target_corpus="$FUZZ_STRUCT_CORPUS/${{ matrix.target }}"
+          if [ ! -x "$harness" ]; then
+            echo "::error::missing struct harness: $harness"
+            exit 1
+          fi
+          sh .github/scripts/check-libfuzzer-coverage.sh "${{ matrix.buildtool }}" \
+            "$harness" "struct-${{ matrix.target }}" "$FUZZ_STRUCT_ARTIFACT_DIR/coverage.log"
+          run_semantic_smoke
+          merge_seed="$FUZZ_STRUCT_ARTIFACT_DIR/corpus-premerge"
+          rm -rf "$merge_seed"
+          mkdir -p "$merge_seed"
+          if find "$target_corpus" -type f -print -quit | grep -q .; then
+            cp -a "$target_corpus"/. "$merge_seed"/
+            "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+              -dict="$dict_merged" "$target_corpus" "$merge_seed"
+          else
+            echo "struct-corpus: no files to merge for ${{ matrix.target }}"
+          fi
+          rm -rf "$merge_seed"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             make "fuzz-run-struct-${{ matrix.target }}" \
               FUZZ_STRUCT_CORPUS="$FUZZ_STRUCT_CORPUS" \
               FUZZ_STRUCT_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
           else
-            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
-            meson compile -C builddir -v
-            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-struct-${{ matrix.target }}-libfuzzer"
-            target_corpus="$FUZZ_STRUCT_CORPUS/${{ matrix.target }}"
-            if [ ! -x "$harness" ]; then
-              echo "::error::missing struct harness: $harness"
-              exit 1
-            fi
-            run_semantic_smoke
-            merge_seed="$FUZZ_STRUCT_ARTIFACT_DIR/corpus-premerge"
-            rm -rf "$merge_seed"
-            mkdir -p "$merge_seed"
-            if find "$target_corpus" -type f -print -quit | grep -q .; then
-              cp -a "$target_corpus"/. "$merge_seed"/
-              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
-                -dict="$dict_merged" "$target_corpus" "$merge_seed"
-            else
-              echo "struct-corpus: no files to merge for ${{ matrix.target }}"
-            fi
-            rm -rf "$merge_seed"
             export FUZZ_STRUCT_ARGS="$fuzz_args"
             meson compile -C builddir "fuzz-run-struct-${{ matrix.target }}" 2>&1 | tee "$run_log"
           fi
 
           if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
             echo "::error::libFuzzer did not report completion for struct target '${{ matrix.target }}'."
-            exit 1
-          fi
-
-          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
-          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
-            echo "::error::struct target '${{ matrix.target }}' coverage too low: cov=$cov (expected >= $min_cov)."
             exit 1
           fi
 
@@ -312,7 +291,7 @@ jobs:
         || inputs.triage_job_labels != '||'
       }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -355,7 +334,8 @@ jobs:
         shell: bash
         run: |
           bash .github/scripts/install-ubuntu-packages.sh \
-            clang meson ninja-build autoconf automake libtool pkg-config make
+            clang-21 llvm-21 libclang-rt-21-dev libwebp-dev \
+            meson ninja-build pkg-config make autoconf automake libtool
 
       - name: Restore loader-format fuzz corpus cache
         if: ${{ steps.loader_scope.outputs.run_target == '1' }}
@@ -402,12 +382,6 @@ jobs:
           set -euxo pipefail
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           run_log="$FUZZ_BUILTIN_ARTIFACT_DIR/run.log"
-          min_cov=18
-          case "${{ matrix.target }}" in
-            webp)
-              min_cov=15
-              ;;
-          esac
           dict_common="$PWD/fuzz/loader-builtin.dict"
           dict_target="$PWD/fuzz/dicts/loader/${{ matrix.target }}.dict"
           dict_merged="$FUZZ_BUILTIN_ARTIFACT_DIR/dict.merged"
@@ -425,63 +399,46 @@ jobs:
           esac
           fuzz_args="$FUZZ_BUILTIN_ARGS_BASE -max_total_time=$loader_max_total_time -dict=$dict_merged"
 
+          sh .github/scripts/build-linux-libfuzzer.sh "${{ matrix.buildtool }}" \
+            fuzz-loader-builtin-libfuzzer
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
-            CC=clang CXX=clang++ ./configure --enable-fuzz
-            make -j"$(nproc)"
             harness="$PWD/fuzz/fuzz-loader-builtin-libfuzzer"
-            target_corpus="$FUZZ_BUILTIN_CORPUS/${{ matrix.target }}"
-            if [ ! -x "$harness" ]; then
-              echo "::error::missing loader harness: $harness"
-              exit 1
-            fi
-            merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
-            rm -rf "$merge_seed"
-            mkdir -p "$merge_seed"
-            if find "$target_corpus" -type f -print -quit | grep -q .; then
-              cp -a "$target_corpus"/. "$merge_seed"/
-              FUZZ_BUILTIN_FORCE_FORMAT="${{ matrix.target }}" \
-                "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
-                -dict="$dict_merged" "$target_corpus" "$merge_seed"
-            else
-              echo "loader-corpus: no files to merge for ${{ matrix.target }}"
-            fi
-            rm -rf "$merge_seed"
+          else
+            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-libfuzzer"
+          fi
+
+          target_corpus="$FUZZ_BUILTIN_CORPUS/${{ matrix.target }}"
+          if [ ! -x "$harness" ]; then
+            echo "::error::missing loader harness: $harness"
+            exit 1
+          fi
+          FUZZ_BUILTIN_FORCE_FORMAT="${{ matrix.target }}" \
+            sh .github/scripts/check-libfuzzer-coverage.sh "${{ matrix.buildtool }}" \
+              "$harness" "${{ matrix.target }}" "$FUZZ_BUILTIN_ARTIFACT_DIR/coverage.log"
+          merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
+          rm -rf "$merge_seed"
+          mkdir -p "$merge_seed"
+          if find "$target_corpus" -type f -print -quit | grep -q .; then
+            cp -a "$target_corpus"/. "$merge_seed"/
+            FUZZ_BUILTIN_FORCE_FORMAT="${{ matrix.target }}" \
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+              -dict="$dict_merged" "$target_corpus" "$merge_seed"
+          else
+            echo "loader-corpus: no files to merge for ${{ matrix.target }}"
+          fi
+          rm -rf "$merge_seed"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             make "fuzz-run-loader-builtin-${{ matrix.target }}" \
               FUZZ_BUILTIN_CORPUS="$FUZZ_BUILTIN_CORPUS" \
               FUZZ_BUILTIN_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
           else
-            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
-            meson compile -C builddir -v
-            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-libfuzzer"
-            target_corpus="$FUZZ_BUILTIN_CORPUS/${{ matrix.target }}"
-            if [ ! -x "$harness" ]; then
-              echo "::error::missing loader harness: $harness"
-              exit 1
-            fi
-            merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
-            rm -rf "$merge_seed"
-            mkdir -p "$merge_seed"
-            if find "$target_corpus" -type f -print -quit | grep -q .; then
-              cp -a "$target_corpus"/. "$merge_seed"/
-              FUZZ_BUILTIN_FORCE_FORMAT="${{ matrix.target }}" \
-                "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
-                -dict="$dict_merged" "$target_corpus" "$merge_seed"
-            else
-              echo "loader-corpus: no files to merge for ${{ matrix.target }}"
-            fi
-            rm -rf "$merge_seed"
             export FUZZ_BUILTIN_ARGS="$fuzz_args"
             meson compile -C builddir "fuzz-run-loader-builtin-${{ matrix.target }}" 2>&1 | tee "$run_log"
           fi
 
           if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
             echo "::error::libFuzzer did not report completion for loader-format target '${{ matrix.target }}'."
-            exit 1
-          fi
-
-          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
-          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
-            echo "::error::loader-format target '${{ matrix.target }}' coverage too low: cov=$cov (expected >= $min_cov)."
             exit 1
           fi
 
@@ -503,7 +460,7 @@ jobs:
         || inputs.triage_job_labels != '||'
       }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-autodetect
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -543,7 +500,8 @@ jobs:
         shell: bash
         run: |
           bash .github/scripts/install-ubuntu-packages.sh \
-            clang meson ninja-build autoconf automake libtool pkg-config make
+            clang-21 llvm-21 libclang-rt-21-dev libwebp-dev \
+            meson ninja-build pkg-config make autoconf automake libtool
 
       - name: Restore loader-autodetect fuzz corpus cache
         if: ${{ steps.autodetect_scope.outputs.run_target == '1' }}
@@ -589,63 +547,48 @@ jobs:
           set -euxo pipefail
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           run_log="$FUZZ_BUILTIN_ARTIFACT_DIR/run.log"
-          min_cov=15
           dict_common="$PWD/fuzz/loader-builtin.dict"
           fuzz_args="$FUZZ_BUILTIN_ARGS_BASE -max_total_time=600 -dict=$dict_common"
 
+          sh .github/scripts/build-linux-libfuzzer.sh "${{ matrix.buildtool }}" \
+            fuzz-loader-builtin-libfuzzer
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
-            CC=clang CXX=clang++ ./configure --enable-fuzz
-            make -j"$(nproc)"
             harness="$PWD/fuzz/fuzz-loader-builtin-libfuzzer"
-            if [ ! -x "$harness" ]; then
-              echo "::error::missing loader harness: $harness"
-              exit 1
-            fi
-            merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
-            rm -rf "$merge_seed"
-            mkdir -p "$merge_seed"
-            if find "$FUZZ_BUILTIN_CORPUS" -type f -print -quit | grep -q .; then
-              cp -a "$FUZZ_BUILTIN_CORPUS"/. "$merge_seed"/
-              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
-                -dict="$dict_common" "$FUZZ_BUILTIN_CORPUS" "$merge_seed"
-            else
-              echo "loader-autodetect corpus: no files to merge"
-            fi
-            rm -rf "$merge_seed"
+          else
+            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-libfuzzer"
+          fi
+
+          if [ ! -x "$harness" ]; then
+            echo "::error::missing loader harness: $harness"
+            exit 1
+          fi
+          sh .github/scripts/check-libfuzzer-coverage.sh "${{ matrix.buildtool }}" \
+            "$harness" autodetect "$FUZZ_BUILTIN_ARTIFACT_DIR/coverage-png.log"
+          sh .github/scripts/check-libfuzzer-coverage.sh "${{ matrix.buildtool }}" \
+            "$harness" apng "$FUZZ_BUILTIN_ARTIFACT_DIR/coverage-apng.log"
+          merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
+          rm -rf "$merge_seed"
+          mkdir -p "$merge_seed"
+          if find "$FUZZ_BUILTIN_CORPUS" -type f -print -quit | grep -q .; then
+            cp -a "$FUZZ_BUILTIN_CORPUS"/. "$merge_seed"/
+            "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+              -dict="$dict_common" "$FUZZ_BUILTIN_CORPUS" "$merge_seed"
+          else
+            echo "loader-autodetect corpus: no files to merge"
+          fi
+          rm -rf "$merge_seed"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             make fuzz-run-loader-builtin \
               FUZZ_BUILTIN_CORPUS="$FUZZ_BUILTIN_CORPUS" \
               FUZZ_BUILTIN_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
           else
-            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
-            meson compile -C builddir -v
-            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-libfuzzer"
-            if [ ! -x "$harness" ]; then
-              echo "::error::missing loader harness: $harness"
-              exit 1
-            fi
-            merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
-            rm -rf "$merge_seed"
-            mkdir -p "$merge_seed"
-            if find "$FUZZ_BUILTIN_CORPUS" -type f -print -quit | grep -q .; then
-              cp -a "$FUZZ_BUILTIN_CORPUS"/. "$merge_seed"/
-              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
-                -dict="$dict_common" "$FUZZ_BUILTIN_CORPUS" "$merge_seed"
-            else
-              echo "loader-autodetect corpus: no files to merge"
-            fi
-            rm -rf "$merge_seed"
             export FUZZ_BUILTIN_ARGS="$fuzz_args"
             meson compile -C builddir fuzz-run-loader-builtin 2>&1 | tee "$run_log"
           fi
 
           if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
             echo "::error::libFuzzer did not report completion for loader-autodetect target."
-            exit 1
-          fi
-
-          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
-          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
-            echo "::error::loader-autodetect coverage too low: cov=$cov (expected >= $min_cov)."
             exit 1
           fi
 
@@ -667,7 +610,7 @@ jobs:
         || inputs.triage_job_labels != '||'
       }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -708,7 +651,8 @@ jobs:
         shell: bash
         run: |
           bash .github/scripts/install-ubuntu-packages.sh \
-            clang meson ninja-build autoconf automake libtool pkg-config make
+            clang-21 llvm-21 libclang-rt-21-dev libwebp-dev \
+            meson ninja-build pkg-config make autoconf automake libtool
 
       - name: Restore image API fuzz corpus cache
         if: ${{ steps.image_api_scope.outputs.run_target == '1' }}
@@ -773,20 +717,17 @@ jobs:
           set -euxo pipefail
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           run_log="$FUZZ_IMAGE_API_ARTIFACT_DIR/run.log"
-          min_cov=10
           dict_common="$PWD/fuzz/loader-builtin.dict"
           fuzz_args="$FUZZ_IMAGE_API_ARGS_BASE -max_total_time=600 -dict=$dict_common"
           run_target="run-${{ matrix.target }}"
           meson_run_target="fuzz-run-${{ matrix.target }}"
           harness_name="fuzz-${{ matrix.target }}-libfuzzer"
 
+          sh .github/scripts/build-linux-libfuzzer.sh "${{ matrix.buildtool }}" \
+            "$harness_name"
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
-            CC=clang CXX=clang++ ./configure --enable-fuzz
-            make -j"$(nproc)"
             harness="$PWD/fuzz/$harness_name"
           else
-            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
-            meson compile -C builddir -v
             harness="$PWD/builddir/fuzz/$harness_name"
           fi
 
@@ -794,6 +735,14 @@ jobs:
             echo "::error::missing image API harness: $harness"
             exit 1
           fi
+
+          case "${{ matrix.target }}" in
+            encoder-encode-bytes) seed_prefix=encoder ;;
+            helper-write-image-file) seed_prefix=helper ;;
+          esac
+          sh .github/scripts/check-libfuzzer-coverage.sh "${{ matrix.buildtool }}" \
+            "$harness" "${{ matrix.target }}" "$FUZZ_IMAGE_API_ARTIFACT_DIR/coverage.log" \
+            "$FUZZ_IMAGE_API_CORPUS"/"$seed_prefix"-*
 
           merge_seed="$FUZZ_IMAGE_API_ARTIFACT_DIR/corpus-premerge"
           rm -rf "$merge_seed"
@@ -836,12 +785,6 @@ jobs:
 
           if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
             echo "::error::libFuzzer did not report completion for image API target '${{ matrix.target }}'."
-            exit 1
-          fi
-
-          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
-          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
-            echo "::error::image API target '${{ matrix.target }}' coverage too low: cov=$cov (expected >= $min_cov)."
             exit 1
           fi
 
