@@ -171,7 +171,7 @@ sixel_decoder_setopt(
 
     switch(arg) {
     case SIXEL_OPTFLAG_INPUT:  /* i */
-        free(decoder->input);
+        sixel_allocator_free(decoder->allocator, decoder->input);
         decoder->input = strdup_with_allocator(value, decoder->allocator);
         if (decoder->input == NULL) {
             sixel_helper_set_additional_message(
@@ -181,7 +181,7 @@ sixel_decoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_OUTPUT:  /* o */
-        free(decoder->output);
+        sixel_allocator_free(decoder->allocator, decoder->output);
         decoder->output = strdup_with_allocator(value, decoder->allocator);
         if (decoder->output == NULL) {
             sixel_helper_set_additional_message(
