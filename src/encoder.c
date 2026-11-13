@@ -3012,6 +3012,10 @@ sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
     encoder->residual_frames_override = 0;
     encoder->refresh_frames = 0U;
     encoder->refresh_frames_override = 0;
+    encoder->refresh_floor = 0U;
+    encoder->refresh_floor_override = 0;
+    encoder->refresh_curve = 0U;
+    encoder->refresh_curve_override = 0;
 }
 
 static int
@@ -3031,13 +3035,25 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
             sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
         return SIXEL_OK;
     }
-    /* Refresh only lowers the per-pixel early-keep threshold, which every
-     * dither consults. R1 and rgb241 keep their narrower application set.
+    /* Uniform refresh lowers the early-keep threshold for every dither.
+     * Adaptive curves need the per-cell map in positional GPU shaders.
+     * R1 and rgb241 keep their narrower application set.
      * The GPU policy can be admitted after this option. Accept requested
      * LSO2 here; the frame check rejects it if it resolves to the CPU. */
     dither_limited = encoder->residual_enabled ||
         sixel_encoder_delta_metric(encoder) == SIXEL_DELTA_METRIC_RGB241;
     diffuse = encoder->method_for_diffuse;
+    if (encoder->refresh_frames && encoder->refresh_curve &&
+            diffuse != SIXEL_DIFFUSE_AUTO &&
+            diffuse != SIXEL_DIFFUSE_NONE &&
+            diffuse != SIXEL_DIFFUSE_A_DITHER &&
+            diffuse != SIXEL_DIFFUSE_X_DITHER &&
+            diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+        sixel_helper_set_additional_message(
+            "adaptive refresh requires none, a_dither, x_dither or "
+            "bluenoise application.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (encoder->update_policy != SIXEL_UPDATE_POLICY_DELTA ||
             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
@@ -3120,6 +3136,15 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             "none, a_dither, x_dither, bluenoise or GPU lso2 application.");
         return SIXEL_BAD_ARGUMENT;
     }
+    if (encoder->refresh_frames && encoder->refresh_curve &&
+            dither->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
+            dither->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
+            dither->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
+            dither->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+        sixel_helper_set_additional_message(
+            "adaptive refresh requires a resolved positional dither.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder))
         return SIXEL_OK;
     status = sixel_encoder_frame_get_transparency(frame, &transparency);
@@ -3153,6 +3178,9 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
         sixel_delta_refresh_prepare(&encoder->residual_state,
             width, height, origin_x, origin_y, encoder->refresh_frames,
             history_valid);
+        sixel_delta_refresh_adapt(&encoder->residual_state,
+            origin_x, origin_y, encoder->refresh_frames,
+            encoder->refresh_floor, encoder->refresh_curve);
         sixel_trace_topic_message("delta_refresh",
             "LSXREF1|frame=%llu|period=%u|selected=%lu|pixels=%lu",
             (unsigned long long)
@@ -16221,6 +16249,8 @@ end:
         /* Reapplying the same effective policy preserves persistence. */
         if (encoder->sixdelta_compare != destination->sixdelta_compare ||
                 encoder->refresh_frames != destination->refresh_frames ||
+                encoder->refresh_floor != destination->refresh_floor ||
+                encoder->refresh_curve != destination->refresh_curve ||
                 encoder->residual_enabled != destination->residual_enabled ||
                 sixel_encoder_delta_metric(encoder) !=
                     sixel_encoder_delta_metric(destination) ||

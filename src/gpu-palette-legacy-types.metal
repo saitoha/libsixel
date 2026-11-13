@@ -22,6 +22,8 @@ struct Params {
     uint residual_columns, residual_rows;
     uint residual_tiled;
     uint residual_cells[128];
+    uint residual_variable;
+    uint residual_levels[1024];
     uint accumulation_result_mask_size;
     float positional_strength;
     float bluenoise_strength;

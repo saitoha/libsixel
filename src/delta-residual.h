@@ -47,6 +47,10 @@ typedef struct sixel_delta_mask {
     int height;
     unsigned int threshold;
     unsigned int tiled;
+    /* Optional byte thresholds at the same cell coordinates. A fixed tile
+     * implements many error deadlines without examining source pixels. */
+    unsigned int variable;
+    unsigned char levels[4096];
 } sixel_delta_mask_t;
 
 typedef struct sixel_delta_residual {
@@ -88,6 +92,18 @@ SIXEL_INTERNAL_API void
 sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
     int width, int height, int origin_x, int origin_y,
     unsigned int period, int history_valid);
+
+/* Curves 1 and 2 give successively longer periods below RGB distances
+ * 32, 16 and 8. Floor zero/curve zero preserves the original schedule. */
+SIXEL_INTERNAL_API void
+sixel_delta_refresh_adapt(sixel_delta_residual_t *state,
+    int origin_x, int origin_y, unsigned int period,
+    unsigned int floor, unsigned int curve);
+
+/* Pack bytes explicitly so GPU bit extraction is host-endian independent. */
+SIXEL_INTERNAL_API void
+sixel_delta_pack_levels(uint32_t *packed, unsigned char const *levels,
+    size_t count);
 
 SIXEL_INTERNAL_API unsigned int
 sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,

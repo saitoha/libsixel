@@ -332,6 +332,8 @@ burkes_gpu_validate(burkes_gpu_plan_t *plan,
                          (params.metric != SIXEL_DELTA_METRIC_MAX &&
                           params.metric != SIXEL_DELTA_METRIC_RGB241)))
         return SIXEL_BAD_ARGUMENT;
+    if (request->delta.selection.cell_thresholds != NULL)
+        return SIXEL_FEATURE_ERROR;
     cells = (size_t)request->delta.selection.columns *
             request->delta.selection.rows;
     if (request->delta.selection.columns > 64 ||

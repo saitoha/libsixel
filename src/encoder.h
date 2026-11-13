@@ -490,6 +490,10 @@ struct sixel_encoder {
     int residual_frames_override;
     unsigned int refresh_frames; /* encoded frames per refresh cycle */
     int refresh_frames_override;
+    unsigned int refresh_floor;
+    int refresh_floor_override;
+    unsigned int refresh_curve;
+    int refresh_curve_override;
     /* Tentative observations live here until the output owner commits. */
     sixel_delta_residual_t residual_state;
     /* Runtime ceiling does not mutate the configured maximum or history. */

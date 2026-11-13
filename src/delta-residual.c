@@ -133,6 +133,7 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
     int x, int y, unsigned int threshold)
 {
     size_t cell;
+    unsigned int selected;
 
     if (mask == NULL || mask->columns == 0 || mask->rows == 0 ||
             x < 0 || y < 0 || x >= mask->width || y >= mask->height) {
@@ -145,8 +146,9 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
             mask->columns +
             ((size_t)(x + 1) * mask->columns - 1U) / mask->width;
     }
+    selected = mask->variable ? mask->levels[cell] : mask->threshold;
     if ((mask->cells[cell / 32U] & ((uint32_t)1 << (cell % 32U))) &&
-            mask->threshold < threshold) return mask->threshold;
+            selected < threshold) return selected;
     return threshold;
 }
 
@@ -211,6 +213,80 @@ sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
             /* Count repetitions and clipped edges without scanning source
              * pixels. CPU and Metal consume this same 512-byte tile. */
             nx = (size_t)width / 64U + (gx < (unsigned int)width % 64U);
+            state->selected_pixels += nx * ny;
+        }
+    }
+}
+
+void
+sixel_delta_pack_levels(uint32_t *packed, unsigned char const *levels,
+    size_t count)
+{
+    size_t i;
+
+    memset(packed, 0, 1024U * sizeof(*packed));
+    if (levels == NULL) return;
+    for (i = 0; i < count && i < 4096U; ++i)
+        packed[i / 4U] |= (uint32_t)levels[i] << ((i % 4U) * 8U);
+}
+
+void
+sixel_delta_refresh_adapt(sixel_delta_residual_t *state,
+    int origin_x, int origin_y, unsigned int period,
+    unsigned int floor, unsigned int curve)
+{
+    static unsigned int const cuts[4] = {0U, 8U, 16U, 32U};
+    unsigned int phase, cycle, gx, gy, band, cutoff, selected;
+    unsigned int periods[4], multiples[4];
+    uint64_t current, previous, offset, base;
+    size_t cell, nx, ny;
+
+    if (floor == 0U && curve == 0U) return;
+    /* Restart reevaluates the complete submitted rectangle at T0, just as
+     * ordinary refresh does. Floors never weaken that recovery boundary. */
+    if (state->refresh_next_frame == 0U) return;
+    state->mask.threshold = floor;
+    if (curve == 0U) return;
+    current = state->refresh_next_frame;
+    previous = current - 1U;
+    state->mask.variable = 1U;
+    memset(state->mask.cells, 0, sizeof(state->mask.cells));
+    state->selected_pixels = 0U;
+    for (band = 0U; band < 4U; ++band) {
+        multiples[band] = 1U << ((3U - band) * curve);
+        periods[band] = period * multiples[band];
+    }
+    for (gy = 0U; gy < 64U; ++gy) {
+        ny = (size_t)state->mask.height / 64U +
+            (gy < (unsigned int)state->mask.height % 64U);
+        for (gx = 0U; gx < 64U; ++gx) {
+            phase = sixel_bn64[
+                ((gy + (unsigned int)origin_y + 17U) & 63U) * 64U +
+                ((gx + (unsigned int)origin_x + 37U) & 63U)] >> 2;
+            cycle = sixel_bn64[
+                ((gy + (unsigned int)origin_y + 43U) & 63U) * 64U +
+                ((gx + (unsigned int)origin_x + 11U) & 63U)] >> 2;
+            base = (((uint64_t)phase + 1U) * period + 63U) / 64U;
+            selected = 255U;
+            for (band = 0U; band < 4U; ++band) {
+                /* A shared within-J phase and nested cycle residues make
+                 * every slower deadline also a faster deadline. Scaling a
+                 * single phase by each period would add unintended refreshes
+                 * or synchronize high-error pixels when the ratios alias. */
+                offset = base + (uint64_t)period *
+                    (cycle & (multiples[band] - 1U));
+                if (current < offset || (previous >= offset &&
+                        (current - offset) / periods[band] ==
+                        (previous - offset) / periods[band])) continue;
+                cutoff = cuts[band] > floor ? cuts[band] : floor;
+                if (cutoff < selected) selected = cutoff;
+            }
+            cell = (size_t)gy * 64U + gx;
+            state->mask.levels[cell] = (unsigned char)selected;
+            if (selected == 255U) continue;
+            state->mask.cells[cell / 32U] |= (uint32_t)1 << (cell % 32U);
+            nx = (size_t)state->mask.width / 64U +
+                (gx < (unsigned int)state->mask.width % 64U);
             state->selected_pixels += nx * ny;
         }
     }

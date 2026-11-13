@@ -420,6 +420,32 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0057_EXACT_BLUENOISE_P2_KEEP1 \
     -DBUILD_TEST_0057_EXACT_NONE_P200_KEEP0 \
     -DBUILD_TEST_0057_LSO2_RASTER_GPU_AUTO_REFRESH_T0 \
+    -DBUILD_TEST_0058_CURVE1_ERROR8_PERIOD \
+    -DBUILD_TEST_0059_CURVE1_ERROR9_PERIOD \
+    -DBUILD_TEST_0060_CURVE1_ERROR16_PERIOD \
+    -DBUILD_TEST_0061_CURVE1_ERROR17_PERIOD \
+    -DBUILD_TEST_0062_CURVE1_ERROR32_PERIOD \
+    -DBUILD_TEST_0063_CURVE1_ERROR33_PERIOD \
+    -DBUILD_TEST_0064_CURVE2_ERROR8_PERIOD \
+    -DBUILD_TEST_0065_CURVE2_ERROR9_PERIOD \
+    -DBUILD_TEST_0066_CURVE2_ERROR17_PERIOD \
+    -DBUILD_TEST_0067_CURVE2_ERROR33_PERIOD \
+    -DBUILD_TEST_0068_FLOOR8_EQUAL_ERROR_KEPT \
+    -DBUILD_TEST_0069_ZERO_MODIFIERS_LEGACY \
+    -DBUILD_TEST_0070_FLOOR_RUNTIME_CAP \
+    -DBUILD_TEST_0071_FLOOR_RESTART_EXACT \
+    -DBUILD_TEST_0072_FLOOR_BOUNDS_ATOMIC \
+    -DBUILD_TEST_0073_CURVE_BOUNDS_ATOMIC \
+    -DBUILD_TEST_0074_FLOOR_CHANGE_RESTART \
+    -DBUILD_TEST_0075_CURVE_CHANGE_RESTART \
+    -DBUILD_TEST_0076_SAME_MODIFIERS_KEEP_AGE \
+    -DBUILD_TEST_0077_CURVE_DIFFUSION_REJECTED \
+    -DBUILD_TEST_0078_ADAPTIVE_OFF_GRAY_HISTORY \
+    -DBUILD_TEST_0079_ADAPTIVE_FORCE_GRAY_HISTORY \
+    -DBUILD_TEST_0080_ADAPTIVE_NONE_GPU_BYTES \
+    -DBUILD_TEST_0081_ADAPTIVE_A_DITHER_GPU_BYTES \
+    -DBUILD_TEST_0082_ADAPTIVE_X_DITHER_GPU_BYTES \
+    -DBUILD_TEST_0083_ADAPTIVE_BLUENOISE_GPU_BYTES \
     -DBUILD_TEST_0057_SIERRA1_HISTORY_RUN \
     -DBUILD_TEST_0058_AUTO_STRENGTH_RESERVED65_AFTER_P64 \
     -DBUILD_TEST_0058_EXACT_BLUENOISE_P33_KEEP0 \
@@ -5647,6 +5673,32 @@ test_runner_SOURCES = test_runner.c \
     delta/refresh/0055_lso2_gpu_auto_refresh_t0.c \
     delta/refresh/0056_lso2_raster_gpu_off_refresh_t0.c \
     delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0.c \
+    delta/refresh/0058_curve1_error8_period.c \
+    delta/refresh/0059_curve1_error9_period.c \
+    delta/refresh/0060_curve1_error16_period.c \
+    delta/refresh/0061_curve1_error17_period.c \
+    delta/refresh/0062_curve1_error32_period.c \
+    delta/refresh/0063_curve1_error33_period.c \
+    delta/refresh/0064_curve2_error8_period.c \
+    delta/refresh/0065_curve2_error9_period.c \
+    delta/refresh/0066_curve2_error17_period.c \
+    delta/refresh/0067_curve2_error33_period.c \
+    delta/refresh/0068_floor8_equal_error_kept.c \
+    delta/refresh/0069_zero_modifiers_legacy.c \
+    delta/refresh/0070_floor_runtime_cap.c \
+    delta/refresh/0071_floor_restart_exact.c \
+    delta/refresh/0072_floor_bounds_atomic.c \
+    delta/refresh/0073_curve_bounds_atomic.c \
+    delta/refresh/0074_floor_change_restart.c \
+    delta/refresh/0075_curve_change_restart.c \
+    delta/refresh/0076_same_modifiers_keep_age.c \
+    delta/refresh/0077_curve_diffusion_rejected.c \
+    delta/refresh/0078_adaptive_off_gray_history.c \
+    delta/refresh/0079_adaptive_force_gray_history.c \
+    delta/refresh/0080_adaptive_none_gpu_bytes.c \
+    delta/refresh/0081_adaptive_a_dither_gpu_bytes.c \
+    delta/refresh/0082_adaptive_x_dither_gpu_bytes.c \
+    delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c \
     dither/a-dither/0039_wire_a_rgb_none.c \
     dither/a-dither/0044_wire_a_rgb_eytzinger.c \
     dither/a-dither/0045_wire_a_hls_none.c \

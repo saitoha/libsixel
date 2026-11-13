@@ -72,7 +72,10 @@ static bool prepare_query(
             if ((params.residual_cells[cell / 32u] &
                     (1u << (cell % 32u))) != 0u)
                 local_threshold = min(local_threshold,
-                    params.residual_threshold);
+                    params.residual_variable != 0u
+                        ? ((params.residual_levels[cell / 4u] >>
+                            ((cell % 4u) * 8u)) & 255u)
+                        : params.residual_threshold);
         }
         within = uint(dr) <= local_threshold &&
             uint(dg) <= local_threshold && uint(db) <= local_threshold;

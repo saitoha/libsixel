@@ -69,6 +69,8 @@ typedef struct sixel_gpu_metal_params {
     uint32_t residual_columns, residual_rows;
     uint32_t residual_tiled;
     uint32_t residual_cells[128];
+    uint32_t residual_variable;
+    uint32_t residual_levels[1024];
     uint32_t accumulation_result_mask_size;
     float positional_strength;
     float bluenoise_strength;
@@ -543,6 +545,10 @@ sixel_gpu_palette_metal_fill_params(
             params->residual_rows = request->residual_mask->rows;
             params->residual_tiled = request->residual_mask->tiled;
             params->residual_threshold = request->residual_mask->threshold;
+            params->residual_variable = request->residual_mask->variable;
+            sixel_delta_pack_levels(params->residual_levels,
+                request->residual_mask->variable
+                    ? request->residual_mask->levels : NULL, 4096U);
             memcpy(params->residual_cells, request->residual_mask->cells,
                    sizeof(params->residual_cells));
         }

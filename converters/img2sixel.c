@@ -1037,8 +1037,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "      residual_keep_threshold=0..255 (:Kvalue, default 0)\n"
         "      residual_frames=1..255 (:Fvalue, default 3)\n"
         "      refresh=0..10000 (:Jvalue, frames, default 0/off)\n"
-        "    Experimental J re-evaluates every pixel at T0 once per J\n"
-        "    encoded frames, staggered with blue noise.\n"
+        "      refresh_floor=0..255 (:Lvalue, default 0)\n"
+        "      refresh_curve=0|1|2 (:Avalue, default 0/uniform)\n"
+        "    Experimental J re-evaluates pixels with staggered deadlines.\n"
+        "    L keeps errors <= L; A1/A2 slow small-error deadlines.\n"
+        "    A1/A2 require none/a_dither/x_dither/bluenoise.\n"
         "    It cannot combine with R1/P1 and does not force repainting.\n"
         "    delta:R1:T8 lowers T in persistent residual cells. Auto metric\n"
         "    selects rgb241 for R1, max otherwise. Requires opaque full-plane\n"
@@ -1593,6 +1596,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_UPDATE_DELTA_REFRESH",
         "set delta:refresh (0..10000 frames, default 0/off).\n"
         "Does not enable delta. Experimental staggered T0 re-evaluation."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_REFRESH_FLOOR",
+        "set delta:refresh_floor (0..255, default 0).\n"
+        "Small-error keep floor; does not enable refresh or delta."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_REFRESH_CURVE",
+        "set delta:refresh_curve (0 uniform, 1 inverse, 2 inverse square).\n"
+        "Default 0; does not enable refresh or delta."
     },
     {
         "SIXEL_UPDATE_DELTA_ERROR",

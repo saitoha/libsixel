@@ -143,6 +143,11 @@ sixel_dither_policy_capture_execution(sixel_dither_t const *dither,
     execution->band_height = dither->pipeline_band_height;
     execution->selection.words = dither->pipeline_residual_mask.cells;
     execution->selection.word_count = 128;
+    execution->selection.cell_thresholds =
+        dither->pipeline_residual_mask.variable
+        ? dither->pipeline_residual_mask.levels : NULL;
+    execution->selection.cell_threshold_count =
+        dither->pipeline_residual_mask.variable ? 4096U : 0U;
     execution->selection.columns = dither->pipeline_residual_mask.columns;
     execution->selection.rows = dither->pipeline_residual_mask.rows;
     execution->selection.width = dither->pipeline_residual_mask.width;
@@ -171,7 +176,9 @@ sixel_dither_policy_bind(sixel_dither_policy_object_t const *policy,
         return SIXEL_BAD_ARGUMENT;
     }
     cells = (size_t)execution->selection.columns * execution->selection.rows;
-    if (cells > 4096 || (cells != 0 &&
+    if ((execution->selection.cell_thresholds != NULL &&
+            execution->selection.cell_threshold_count < cells) ||
+            cells > 4096 || (cells != 0 &&
             (execution->selection.words == NULL ||
              execution->selection.word_count < (cells + 31) / 32))) {
         return SIXEL_BAD_ARGUMENT;
@@ -236,6 +243,11 @@ sixel_dither_policy_bind(sixel_dither_policy_object_t const *policy,
         memcpy(dither->pipeline_residual_mask.cells, execution->selection.words,
             ((cells + 31) / 32) * sizeof(uint32_t));
     }
+    dither->pipeline_residual_mask.variable =
+        execution->selection.cell_thresholds != NULL;
+    if (cells != 0 && dither->pipeline_residual_mask.variable)
+        memcpy(dither->pipeline_residual_mask.levels,
+            execution->selection.cell_thresholds, cells);
     dither->pipeline_residual_mask.columns = execution->selection.columns;
     dither->pipeline_residual_mask.rows = execution->selection.rows;
     dither->pipeline_residual_mask.width = execution->selection.width;

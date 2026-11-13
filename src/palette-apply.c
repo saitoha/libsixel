@@ -250,7 +250,9 @@ sixel_apply_solution_resolve(sixel_palette_apply_solution_interface_t *self,
         return SIXEL_BAD_ARGUMENT;
     cells = (size_t)request->delta.selection.columns *
         request->delta.selection.rows;
-    if (request->delta.threshold > 255 ||
+    if ((request->delta.selection.cell_thresholds != NULL &&
+            request->delta.selection.cell_threshold_count < cells) ||
+            request->delta.threshold > 255 ||
             (request->delta.enabled && request->baseline != NULL &&
              request->delta.metric != SIXEL_DELTA_METRIC_MAX &&
              request->delta.metric != SIXEL_DELTA_METRIC_RGB241) ||
@@ -761,7 +763,9 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
     }
     cells = (size_t)request->delta.selection.columns *
         request->delta.selection.rows;
-    if (request->delta.selection.columns > 64 ||
+    if ((request->delta.selection.cell_thresholds != NULL &&
+            request->delta.selection.cell_threshold_count < cells) ||
+            request->delta.selection.columns > 64 ||
             request->delta.selection.rows > 64 || cells > 4096 ||
             (cells != 0 &&
             (request->delta.selection.words == NULL ||

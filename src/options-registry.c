@@ -1883,6 +1883,18 @@ static sixel_suboption_key_t const g_suboptions[] = {
         0.0, 10000.0, 1,
         "refresh must be an integer in range 0..10000.",
         refresh_frames, refresh_frames_override),
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "refresh_floor", 'L', "SIXEL_UPDATE_DELTA_REFRESH_FLOOR", NULL, NULL,
+        0.0, 255.0, 1,
+        "refresh_floor must be an integer in range 0..255.",
+        refresh_floor, refresh_floor_override),
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "refresh_curve", 'A', "SIXEL_UPDATE_DELTA_REFRESH_CURVE", NULL, NULL,
+        0.0, 2.0, 1,
+        "refresh_curve must be 0 (uniform), 1 (inverse) or 2 (inverse square).",
+        refresh_curve, refresh_curve_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "progressive", 'P', "SIXEL_UPDATE_DELTA_PROGRESSIVE", NULL, NULL,

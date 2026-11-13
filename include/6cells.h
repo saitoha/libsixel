@@ -1595,8 +1595,10 @@ typedef struct sixel_dither_policy_select_request {
  * a 64x64 grid and repeats in frame-local pixel coordinates, matching the
  * current refresh mask. It is not shifted by the retained-plane origin.
  * Coordinates outside width/height and NULL words select no cells.
- * Selected cells use min(selected_threshold, frame threshold).
- * The caller owns this immutable map through run and all its workers. */
+ * Selected cells use min(selected_threshold, frame threshold), or the byte
+ * in cell_thresholds at that cell when the optional pointer is non-NULL.
+ * Non-NULL threshold storage must cover columns*rows cells. The caller owns
+ * this immutable map and its storage through run and all its workers. */
 typedef struct sixel_delta_threshold_map {
     uint32_t const *words;
     size_t word_count;
@@ -1606,6 +1608,8 @@ typedef struct sixel_delta_threshold_map {
     int height;
     int tiled;
     unsigned int selected_threshold;
+    unsigned char const *cell_thresholds;
+    size_t cell_threshold_count;
 } sixel_delta_threshold_map_t;
 
 /* Select the sample used by delta keep decisions. TARGET preserves each

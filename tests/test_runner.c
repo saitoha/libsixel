@@ -5296,6 +5296,32 @@ int test_delta_refresh_0054(int, char **);
 int test_delta_refresh_0055(int, char **);
 int test_delta_refresh_0056(int, char **);
 int test_delta_refresh_0057(int, char **);
+int test_delta_refresh_0058(int, char **);
+int test_delta_refresh_0059(int, char **);
+int test_delta_refresh_0060(int, char **);
+int test_delta_refresh_0061(int, char **);
+int test_delta_refresh_0062(int, char **);
+int test_delta_refresh_0063(int, char **);
+int test_delta_refresh_0064(int, char **);
+int test_delta_refresh_0065(int, char **);
+int test_delta_refresh_0066(int, char **);
+int test_delta_refresh_0067(int, char **);
+int test_delta_refresh_0068(int, char **);
+int test_delta_refresh_0069(int, char **);
+int test_delta_refresh_0070(int, char **);
+int test_delta_refresh_0071(int, char **);
+int test_delta_refresh_0072(int, char **);
+int test_delta_refresh_0073(int, char **);
+int test_delta_refresh_0074(int, char **);
+int test_delta_refresh_0075(int, char **);
+int test_delta_refresh_0076(int, char **);
+int test_delta_refresh_0077(int, char **);
+int test_delta_refresh_0078(int, char **);
+int test_delta_refresh_0079(int, char **);
+int test_delta_refresh_0080(int, char **);
+int test_delta_refresh_0081(int, char **);
+int test_delta_refresh_0082(int, char **);
+int test_delta_refresh_0083(int, char **);
 int test_dither_a_dither_0039(int, char **);
 int test_dither_a_dither_0044(int, char **);
 int test_dither_a_dither_0045(int, char **);
@@ -5690,6 +5716,58 @@ static test_entry_t const test_entries[] = {
       test_delta_refresh_0056 },
     { "delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0",
       test_delta_refresh_0057 },
+    { "delta/refresh/0058_curve1_error8_period",
+      test_delta_refresh_0058 },
+    { "delta/refresh/0059_curve1_error9_period",
+      test_delta_refresh_0059 },
+    { "delta/refresh/0060_curve1_error16_period",
+      test_delta_refresh_0060 },
+    { "delta/refresh/0061_curve1_error17_period",
+      test_delta_refresh_0061 },
+    { "delta/refresh/0062_curve1_error32_period",
+      test_delta_refresh_0062 },
+    { "delta/refresh/0063_curve1_error33_period",
+      test_delta_refresh_0063 },
+    { "delta/refresh/0064_curve2_error8_period",
+      test_delta_refresh_0064 },
+    { "delta/refresh/0065_curve2_error9_period",
+      test_delta_refresh_0065 },
+    { "delta/refresh/0066_curve2_error17_period",
+      test_delta_refresh_0066 },
+    { "delta/refresh/0067_curve2_error33_period",
+      test_delta_refresh_0067 },
+    { "delta/refresh/0068_floor8_equal_error_kept",
+      test_delta_refresh_0068 },
+    { "delta/refresh/0069_zero_modifiers_legacy",
+      test_delta_refresh_0069 },
+    { "delta/refresh/0070_floor_runtime_cap",
+      test_delta_refresh_0070 },
+    { "delta/refresh/0071_floor_restart_exact",
+      test_delta_refresh_0071 },
+    { "delta/refresh/0072_floor_bounds_atomic",
+      test_delta_refresh_0072 },
+    { "delta/refresh/0073_curve_bounds_atomic",
+      test_delta_refresh_0073 },
+    { "delta/refresh/0074_floor_change_restart",
+      test_delta_refresh_0074 },
+    { "delta/refresh/0075_curve_change_restart",
+      test_delta_refresh_0075 },
+    { "delta/refresh/0076_same_modifiers_keep_age",
+      test_delta_refresh_0076 },
+    { "delta/refresh/0077_curve_diffusion_rejected",
+      test_delta_refresh_0077 },
+    { "delta/refresh/0078_adaptive_off_gray_history",
+      test_delta_refresh_0078 },
+    { "delta/refresh/0079_adaptive_force_gray_history",
+      test_delta_refresh_0079 },
+    { "delta/refresh/0080_adaptive_none_gpu_bytes",
+      test_delta_refresh_0080 },
+    { "delta/refresh/0081_adaptive_a_dither_gpu_bytes",
+      test_delta_refresh_0081 },
+    { "delta/refresh/0082_adaptive_x_dither_gpu_bytes",
+      test_delta_refresh_0082 },
+    { "delta/refresh/0083_adaptive_bluenoise_gpu_bytes",
+      test_delta_refresh_0083 },
     { "dither/a-dither/0039_wire_a_rgb_none",
       test_dither_a_dither_0039 },
     { "dither/a-dither/0044_wire_a_rgb_eytzinger",

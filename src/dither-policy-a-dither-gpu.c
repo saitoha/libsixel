@@ -157,7 +157,9 @@ d_a_dither_execute(d_a_dither_plan_t *plan,
     memset(&request, 0, sizeof(request));
     memset(&selection, 0, sizeof(selection));
     cells = (size_t)run->delta.selection.columns * run->delta.selection.rows;
-    if (run->delta.selection.columns > 64 ||
+    if ((run->delta.selection.cell_thresholds != NULL &&
+            run->delta.selection.cell_threshold_count < cells) ||
+            run->delta.selection.columns > 64 ||
             run->delta.selection.rows > 64 || cells > 4096 ||
             (cells != 0 && (run->delta.selection.words == NULL ||
              run->delta.selection.word_count < (cells + 31) / 32)))
@@ -171,6 +173,10 @@ d_a_dither_execute(d_a_dither_plan_t *plan,
         selection.height = run->delta.selection.height;
         selection.tiled = run->delta.selection.tiled;
         selection.threshold = run->delta.selection.selected_threshold;
+        selection.variable = run->delta.selection.cell_thresholds != NULL;
+        if (selection.variable)
+            memcpy(selection.levels, run->delta.selection.cell_thresholds,
+                cells);
     }
     request.policy = SIXEL_GPU_POLICY_FORCE;
     request.program = plan->program;

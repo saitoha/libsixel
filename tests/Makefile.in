@@ -193,6 +193,32 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	delta/refresh/0055_lso2_gpu_auto_refresh_t0.c \
 	delta/refresh/0056_lso2_raster_gpu_off_refresh_t0.c \
 	delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0.c \
+	delta/refresh/0058_curve1_error8_period.c \
+	delta/refresh/0059_curve1_error9_period.c \
+	delta/refresh/0060_curve1_error16_period.c \
+	delta/refresh/0061_curve1_error17_period.c \
+	delta/refresh/0062_curve1_error32_period.c \
+	delta/refresh/0063_curve1_error33_period.c \
+	delta/refresh/0064_curve2_error8_period.c \
+	delta/refresh/0065_curve2_error9_period.c \
+	delta/refresh/0066_curve2_error17_period.c \
+	delta/refresh/0067_curve2_error33_period.c \
+	delta/refresh/0068_floor8_equal_error_kept.c \
+	delta/refresh/0069_zero_modifiers_legacy.c \
+	delta/refresh/0070_floor_runtime_cap.c \
+	delta/refresh/0071_floor_restart_exact.c \
+	delta/refresh/0072_floor_bounds_atomic.c \
+	delta/refresh/0073_curve_bounds_atomic.c \
+	delta/refresh/0074_floor_change_restart.c \
+	delta/refresh/0075_curve_change_restart.c \
+	delta/refresh/0076_same_modifiers_keep_age.c \
+	delta/refresh/0077_curve_diffusion_rejected.c \
+	delta/refresh/0078_adaptive_off_gray_history.c \
+	delta/refresh/0079_adaptive_force_gray_history.c \
+	delta/refresh/0080_adaptive_none_gpu_bytes.c \
+	delta/refresh/0081_adaptive_a_dither_gpu_bytes.c \
+	delta/refresh/0082_adaptive_x_dither_gpu_bytes.c \
+	delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c \
 	dither/a-dither/0039_wire_a_rgb_none.c \
 	dither/a-dither/0044_wire_a_rgb_eytzinger.c \
 	dither/a-dither/0045_wire_a_hls_none.c \
@@ -5653,6 +5679,32 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0055_lso2_gpu_auto_refresh_t0.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0056_lso2_raster_gpu_off_refresh_t0.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0057_lso2_raster_gpu_auto_refresh_t0.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0058_curve1_error8_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0059_curve1_error9_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0060_curve1_error16_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0061_curve1_error17_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0062_curve1_error32_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0063_curve1_error33_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0064_curve2_error8_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0065_curve2_error9_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0066_curve2_error17_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0067_curve2_error33_period.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0068_floor8_equal_error_kept.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0069_zero_modifiers_legacy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0070_floor_runtime_cap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0071_floor_restart_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0072_floor_bounds_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0073_curve_bounds_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0074_floor_change_restart.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0075_curve_change_restart.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0076_same_modifiers_keep_age.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0077_curve_diffusion_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0078_adaptive_off_gray_history.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0079_adaptive_force_gray_history.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/a-dither/test_runner-0039_wire_a_rgb_none.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/a-dither/test_runner-0044_wire_a_rgb_eytzinger.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/a-dither/test_runner-0045_wire_a_hls_none.$(OBJEXT) \
@@ -12423,6 +12475,32 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/refresh/$(DEPDIR)/test_runner-0055_lso2_gpu_auto_refresh_t0.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0056_lso2_raster_gpu_off_refresh_t0.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0057_lso2_raster_gpu_auto_refresh_t0.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0058_curve1_error8_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0059_curve1_error9_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0060_curve1_error16_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0061_curve1_error17_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0062_curve1_error32_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0063_curve1_error33_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0064_curve2_error8_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0065_curve2_error9_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0066_curve2_error17_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0067_curve2_error33_period.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0068_floor8_equal_error_kept.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0069_zero_modifiers_legacy.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0070_floor_runtime_cap.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0071_floor_restart_exact.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0072_floor_bounds_atomic.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0073_curve_bounds_atomic.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -17294,6 +17372,32 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_EXACT_BLUENOISE_P2_KEEP1 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_EXACT_NONE_P200_KEEP0 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_LSO2_RASTER_GPU_AUTO_REFRESH_T0 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_CURVE1_ERROR8_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_CURVE1_ERROR9_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_CURVE1_ERROR16_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_CURVE1_ERROR17_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_CURVE1_ERROR32_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_CURVE1_ERROR33_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_CURVE2_ERROR8_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_CURVE2_ERROR9_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_CURVE2_ERROR17_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_CURVE2_ERROR33_PERIOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_FLOOR8_EQUAL_ERROR_KEPT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_ZERO_MODIFIERS_LEGACY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_FLOOR_RUNTIME_CAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_FLOOR_RESTART_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_FLOOR_BOUNDS_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0073_CURVE_BOUNDS_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_FLOOR_CHANGE_RESTART \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_CURVE_CHANGE_RESTART \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0076_SAME_MODIFIERS_KEEP_AGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_CURVE_DIFFUSION_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0078_ADAPTIVE_OFF_GRAY_HISTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0079_ADAPTIVE_FORCE_GRAY_HISTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_ADAPTIVE_NONE_GPU_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0081_ADAPTIVE_A_DITHER_GPU_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_ADAPTIVE_X_DITHER_GPU_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_ADAPTIVE_BLUENOISE_GPU_BYTES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_SIERRA1_HISTORY_RUN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_AUTO_STRENGTH_RESERVED65_AFTER_P64 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_EXACT_BLUENOISE_P33_KEEP0 \
@@ -22553,6 +22657,32 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0055_lso2_gpu_auto_refresh_t0.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0056_lso2_raster_gpu_off_refresh_t0.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0058_curve1_error8_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0059_curve1_error9_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0060_curve1_error16_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0061_curve1_error17_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0062_curve1_error32_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0063_curve1_error33_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0064_curve2_error8_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0065_curve2_error9_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0066_curve2_error17_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0067_curve2_error33_period.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0068_floor8_equal_error_kept.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0069_zero_modifiers_legacy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0070_floor_runtime_cap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0071_floor_restart_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0072_floor_bounds_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0073_curve_bounds_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0074_floor_change_restart.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0075_curve_change_restart.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0076_same_modifiers_keep_age.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0077_curve_diffusion_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0078_adaptive_off_gray_history.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0079_adaptive_force_gray_history.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0080_adaptive_none_gpu_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0081_adaptive_a_dither_gpu_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0082_adaptive_x_dither_gpu_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/a-dither/0039_wire_a_rgb_none.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/a-dither/0044_wire_a_rgb_eytzinger.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/a-dither/0045_wire_a_hls_none.c \
@@ -28731,6 +28861,84 @@ delta/refresh/test_runner-0056_lso2_raster_gpu_off_refresh_t0.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0057_lso2_raster_gpu_auto_refresh_t0.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0058_curve1_error8_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0059_curve1_error9_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0060_curve1_error16_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0061_curve1_error17_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0062_curve1_error32_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0063_curve1_error33_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0064_curve2_error8_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0065_curve2_error9_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0066_curve2_error17_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0067_curve2_error33_period.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0068_floor8_equal_error_kept.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0069_zero_modifiers_legacy.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0070_floor_runtime_cap.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0071_floor_restart_exact.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0072_floor_bounds_atomic.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0073_curve_bounds_atomic.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0074_floor_change_restart.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0075_curve_change_restart.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0076_same_modifiers_keep_age.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0077_curve_diffusion_rejected.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0078_adaptive_off_gray_history.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0079_adaptive_force_gray_history.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 dither/a-dither/$(am__dirstamp):
@@ -47408,6 +47616,32 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0055_lso2_gpu_auto_refresh_t0.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0056_lso2_raster_gpu_off_refresh_t0.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0057_lso2_raster_gpu_auto_refresh_t0.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0058_curve1_error8_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0059_curve1_error9_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0060_curve1_error16_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0061_curve1_error17_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0062_curve1_error32_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0063_curve1_error33_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0064_curve2_error8_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0065_curve2_error9_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0066_curve2_error17_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0067_curve2_error33_period.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0068_floor8_equal_error_kept.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0069_zero_modifiers_legacy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0070_floor_runtime_cap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0071_floor_restart_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0072_floor_bounds_atomic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0073_curve_bounds_atomic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -52253,6 +52487,370 @@ delta/refresh/test_runner-0057_lso2_raster_gpu_auto_refresh_t0.obj: delta/refres
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0.c' object='delta/refresh/test_runner-0057_lso2_raster_gpu_auto_refresh_t0.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0057_lso2_raster_gpu_auto_refresh_t0.obj `if test -f 'delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0.c'; then $(CYGPATH_W) 'delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0057_lso2_raster_gpu_auto_refresh_t0.c'; fi`
+
+delta/refresh/test_runner-0058_curve1_error8_period.o: delta/refresh/0058_curve1_error8_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0058_curve1_error8_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0058_curve1_error8_period.Tpo -c -o delta/refresh/test_runner-0058_curve1_error8_period.o `test -f 'delta/refresh/0058_curve1_error8_period.c' || echo '$(srcdir)/'`delta/refresh/0058_curve1_error8_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0058_curve1_error8_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0058_curve1_error8_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0058_curve1_error8_period.c' object='delta/refresh/test_runner-0058_curve1_error8_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0058_curve1_error8_period.o `test -f 'delta/refresh/0058_curve1_error8_period.c' || echo '$(srcdir)/'`delta/refresh/0058_curve1_error8_period.c
+
+delta/refresh/test_runner-0058_curve1_error8_period.obj: delta/refresh/0058_curve1_error8_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0058_curve1_error8_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0058_curve1_error8_period.Tpo -c -o delta/refresh/test_runner-0058_curve1_error8_period.obj `if test -f 'delta/refresh/0058_curve1_error8_period.c'; then $(CYGPATH_W) 'delta/refresh/0058_curve1_error8_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0058_curve1_error8_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0058_curve1_error8_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0058_curve1_error8_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0058_curve1_error8_period.c' object='delta/refresh/test_runner-0058_curve1_error8_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0058_curve1_error8_period.obj `if test -f 'delta/refresh/0058_curve1_error8_period.c'; then $(CYGPATH_W) 'delta/refresh/0058_curve1_error8_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0058_curve1_error8_period.c'; fi`
+
+delta/refresh/test_runner-0059_curve1_error9_period.o: delta/refresh/0059_curve1_error9_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0059_curve1_error9_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0059_curve1_error9_period.Tpo -c -o delta/refresh/test_runner-0059_curve1_error9_period.o `test -f 'delta/refresh/0059_curve1_error9_period.c' || echo '$(srcdir)/'`delta/refresh/0059_curve1_error9_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0059_curve1_error9_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0059_curve1_error9_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0059_curve1_error9_period.c' object='delta/refresh/test_runner-0059_curve1_error9_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0059_curve1_error9_period.o `test -f 'delta/refresh/0059_curve1_error9_period.c' || echo '$(srcdir)/'`delta/refresh/0059_curve1_error9_period.c
+
+delta/refresh/test_runner-0059_curve1_error9_period.obj: delta/refresh/0059_curve1_error9_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0059_curve1_error9_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0059_curve1_error9_period.Tpo -c -o delta/refresh/test_runner-0059_curve1_error9_period.obj `if test -f 'delta/refresh/0059_curve1_error9_period.c'; then $(CYGPATH_W) 'delta/refresh/0059_curve1_error9_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0059_curve1_error9_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0059_curve1_error9_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0059_curve1_error9_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0059_curve1_error9_period.c' object='delta/refresh/test_runner-0059_curve1_error9_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0059_curve1_error9_period.obj `if test -f 'delta/refresh/0059_curve1_error9_period.c'; then $(CYGPATH_W) 'delta/refresh/0059_curve1_error9_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0059_curve1_error9_period.c'; fi`
+
+delta/refresh/test_runner-0060_curve1_error16_period.o: delta/refresh/0060_curve1_error16_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0060_curve1_error16_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0060_curve1_error16_period.Tpo -c -o delta/refresh/test_runner-0060_curve1_error16_period.o `test -f 'delta/refresh/0060_curve1_error16_period.c' || echo '$(srcdir)/'`delta/refresh/0060_curve1_error16_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0060_curve1_error16_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0060_curve1_error16_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0060_curve1_error16_period.c' object='delta/refresh/test_runner-0060_curve1_error16_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0060_curve1_error16_period.o `test -f 'delta/refresh/0060_curve1_error16_period.c' || echo '$(srcdir)/'`delta/refresh/0060_curve1_error16_period.c
+
+delta/refresh/test_runner-0060_curve1_error16_period.obj: delta/refresh/0060_curve1_error16_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0060_curve1_error16_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0060_curve1_error16_period.Tpo -c -o delta/refresh/test_runner-0060_curve1_error16_period.obj `if test -f 'delta/refresh/0060_curve1_error16_period.c'; then $(CYGPATH_W) 'delta/refresh/0060_curve1_error16_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0060_curve1_error16_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0060_curve1_error16_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0060_curve1_error16_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0060_curve1_error16_period.c' object='delta/refresh/test_runner-0060_curve1_error16_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0060_curve1_error16_period.obj `if test -f 'delta/refresh/0060_curve1_error16_period.c'; then $(CYGPATH_W) 'delta/refresh/0060_curve1_error16_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0060_curve1_error16_period.c'; fi`
+
+delta/refresh/test_runner-0061_curve1_error17_period.o: delta/refresh/0061_curve1_error17_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0061_curve1_error17_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0061_curve1_error17_period.Tpo -c -o delta/refresh/test_runner-0061_curve1_error17_period.o `test -f 'delta/refresh/0061_curve1_error17_period.c' || echo '$(srcdir)/'`delta/refresh/0061_curve1_error17_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0061_curve1_error17_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0061_curve1_error17_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0061_curve1_error17_period.c' object='delta/refresh/test_runner-0061_curve1_error17_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0061_curve1_error17_period.o `test -f 'delta/refresh/0061_curve1_error17_period.c' || echo '$(srcdir)/'`delta/refresh/0061_curve1_error17_period.c
+
+delta/refresh/test_runner-0061_curve1_error17_period.obj: delta/refresh/0061_curve1_error17_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0061_curve1_error17_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0061_curve1_error17_period.Tpo -c -o delta/refresh/test_runner-0061_curve1_error17_period.obj `if test -f 'delta/refresh/0061_curve1_error17_period.c'; then $(CYGPATH_W) 'delta/refresh/0061_curve1_error17_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0061_curve1_error17_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0061_curve1_error17_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0061_curve1_error17_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0061_curve1_error17_period.c' object='delta/refresh/test_runner-0061_curve1_error17_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0061_curve1_error17_period.obj `if test -f 'delta/refresh/0061_curve1_error17_period.c'; then $(CYGPATH_W) 'delta/refresh/0061_curve1_error17_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0061_curve1_error17_period.c'; fi`
+
+delta/refresh/test_runner-0062_curve1_error32_period.o: delta/refresh/0062_curve1_error32_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0062_curve1_error32_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0062_curve1_error32_period.Tpo -c -o delta/refresh/test_runner-0062_curve1_error32_period.o `test -f 'delta/refresh/0062_curve1_error32_period.c' || echo '$(srcdir)/'`delta/refresh/0062_curve1_error32_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0062_curve1_error32_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0062_curve1_error32_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0062_curve1_error32_period.c' object='delta/refresh/test_runner-0062_curve1_error32_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0062_curve1_error32_period.o `test -f 'delta/refresh/0062_curve1_error32_period.c' || echo '$(srcdir)/'`delta/refresh/0062_curve1_error32_period.c
+
+delta/refresh/test_runner-0062_curve1_error32_period.obj: delta/refresh/0062_curve1_error32_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0062_curve1_error32_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0062_curve1_error32_period.Tpo -c -o delta/refresh/test_runner-0062_curve1_error32_period.obj `if test -f 'delta/refresh/0062_curve1_error32_period.c'; then $(CYGPATH_W) 'delta/refresh/0062_curve1_error32_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0062_curve1_error32_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0062_curve1_error32_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0062_curve1_error32_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0062_curve1_error32_period.c' object='delta/refresh/test_runner-0062_curve1_error32_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0062_curve1_error32_period.obj `if test -f 'delta/refresh/0062_curve1_error32_period.c'; then $(CYGPATH_W) 'delta/refresh/0062_curve1_error32_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0062_curve1_error32_period.c'; fi`
+
+delta/refresh/test_runner-0063_curve1_error33_period.o: delta/refresh/0063_curve1_error33_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0063_curve1_error33_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0063_curve1_error33_period.Tpo -c -o delta/refresh/test_runner-0063_curve1_error33_period.o `test -f 'delta/refresh/0063_curve1_error33_period.c' || echo '$(srcdir)/'`delta/refresh/0063_curve1_error33_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0063_curve1_error33_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0063_curve1_error33_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0063_curve1_error33_period.c' object='delta/refresh/test_runner-0063_curve1_error33_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0063_curve1_error33_period.o `test -f 'delta/refresh/0063_curve1_error33_period.c' || echo '$(srcdir)/'`delta/refresh/0063_curve1_error33_period.c
+
+delta/refresh/test_runner-0063_curve1_error33_period.obj: delta/refresh/0063_curve1_error33_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0063_curve1_error33_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0063_curve1_error33_period.Tpo -c -o delta/refresh/test_runner-0063_curve1_error33_period.obj `if test -f 'delta/refresh/0063_curve1_error33_period.c'; then $(CYGPATH_W) 'delta/refresh/0063_curve1_error33_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0063_curve1_error33_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0063_curve1_error33_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0063_curve1_error33_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0063_curve1_error33_period.c' object='delta/refresh/test_runner-0063_curve1_error33_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0063_curve1_error33_period.obj `if test -f 'delta/refresh/0063_curve1_error33_period.c'; then $(CYGPATH_W) 'delta/refresh/0063_curve1_error33_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0063_curve1_error33_period.c'; fi`
+
+delta/refresh/test_runner-0064_curve2_error8_period.o: delta/refresh/0064_curve2_error8_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0064_curve2_error8_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0064_curve2_error8_period.Tpo -c -o delta/refresh/test_runner-0064_curve2_error8_period.o `test -f 'delta/refresh/0064_curve2_error8_period.c' || echo '$(srcdir)/'`delta/refresh/0064_curve2_error8_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0064_curve2_error8_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0064_curve2_error8_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0064_curve2_error8_period.c' object='delta/refresh/test_runner-0064_curve2_error8_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0064_curve2_error8_period.o `test -f 'delta/refresh/0064_curve2_error8_period.c' || echo '$(srcdir)/'`delta/refresh/0064_curve2_error8_period.c
+
+delta/refresh/test_runner-0064_curve2_error8_period.obj: delta/refresh/0064_curve2_error8_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0064_curve2_error8_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0064_curve2_error8_period.Tpo -c -o delta/refresh/test_runner-0064_curve2_error8_period.obj `if test -f 'delta/refresh/0064_curve2_error8_period.c'; then $(CYGPATH_W) 'delta/refresh/0064_curve2_error8_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0064_curve2_error8_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0064_curve2_error8_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0064_curve2_error8_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0064_curve2_error8_period.c' object='delta/refresh/test_runner-0064_curve2_error8_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0064_curve2_error8_period.obj `if test -f 'delta/refresh/0064_curve2_error8_period.c'; then $(CYGPATH_W) 'delta/refresh/0064_curve2_error8_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0064_curve2_error8_period.c'; fi`
+
+delta/refresh/test_runner-0065_curve2_error9_period.o: delta/refresh/0065_curve2_error9_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0065_curve2_error9_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0065_curve2_error9_period.Tpo -c -o delta/refresh/test_runner-0065_curve2_error9_period.o `test -f 'delta/refresh/0065_curve2_error9_period.c' || echo '$(srcdir)/'`delta/refresh/0065_curve2_error9_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0065_curve2_error9_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0065_curve2_error9_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0065_curve2_error9_period.c' object='delta/refresh/test_runner-0065_curve2_error9_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0065_curve2_error9_period.o `test -f 'delta/refresh/0065_curve2_error9_period.c' || echo '$(srcdir)/'`delta/refresh/0065_curve2_error9_period.c
+
+delta/refresh/test_runner-0065_curve2_error9_period.obj: delta/refresh/0065_curve2_error9_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0065_curve2_error9_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0065_curve2_error9_period.Tpo -c -o delta/refresh/test_runner-0065_curve2_error9_period.obj `if test -f 'delta/refresh/0065_curve2_error9_period.c'; then $(CYGPATH_W) 'delta/refresh/0065_curve2_error9_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0065_curve2_error9_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0065_curve2_error9_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0065_curve2_error9_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0065_curve2_error9_period.c' object='delta/refresh/test_runner-0065_curve2_error9_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0065_curve2_error9_period.obj `if test -f 'delta/refresh/0065_curve2_error9_period.c'; then $(CYGPATH_W) 'delta/refresh/0065_curve2_error9_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0065_curve2_error9_period.c'; fi`
+
+delta/refresh/test_runner-0066_curve2_error17_period.o: delta/refresh/0066_curve2_error17_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0066_curve2_error17_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0066_curve2_error17_period.Tpo -c -o delta/refresh/test_runner-0066_curve2_error17_period.o `test -f 'delta/refresh/0066_curve2_error17_period.c' || echo '$(srcdir)/'`delta/refresh/0066_curve2_error17_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0066_curve2_error17_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0066_curve2_error17_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0066_curve2_error17_period.c' object='delta/refresh/test_runner-0066_curve2_error17_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0066_curve2_error17_period.o `test -f 'delta/refresh/0066_curve2_error17_period.c' || echo '$(srcdir)/'`delta/refresh/0066_curve2_error17_period.c
+
+delta/refresh/test_runner-0066_curve2_error17_period.obj: delta/refresh/0066_curve2_error17_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0066_curve2_error17_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0066_curve2_error17_period.Tpo -c -o delta/refresh/test_runner-0066_curve2_error17_period.obj `if test -f 'delta/refresh/0066_curve2_error17_period.c'; then $(CYGPATH_W) 'delta/refresh/0066_curve2_error17_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0066_curve2_error17_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0066_curve2_error17_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0066_curve2_error17_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0066_curve2_error17_period.c' object='delta/refresh/test_runner-0066_curve2_error17_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0066_curve2_error17_period.obj `if test -f 'delta/refresh/0066_curve2_error17_period.c'; then $(CYGPATH_W) 'delta/refresh/0066_curve2_error17_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0066_curve2_error17_period.c'; fi`
+
+delta/refresh/test_runner-0067_curve2_error33_period.o: delta/refresh/0067_curve2_error33_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0067_curve2_error33_period.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0067_curve2_error33_period.Tpo -c -o delta/refresh/test_runner-0067_curve2_error33_period.o `test -f 'delta/refresh/0067_curve2_error33_period.c' || echo '$(srcdir)/'`delta/refresh/0067_curve2_error33_period.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0067_curve2_error33_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0067_curve2_error33_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0067_curve2_error33_period.c' object='delta/refresh/test_runner-0067_curve2_error33_period.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0067_curve2_error33_period.o `test -f 'delta/refresh/0067_curve2_error33_period.c' || echo '$(srcdir)/'`delta/refresh/0067_curve2_error33_period.c
+
+delta/refresh/test_runner-0067_curve2_error33_period.obj: delta/refresh/0067_curve2_error33_period.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0067_curve2_error33_period.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0067_curve2_error33_period.Tpo -c -o delta/refresh/test_runner-0067_curve2_error33_period.obj `if test -f 'delta/refresh/0067_curve2_error33_period.c'; then $(CYGPATH_W) 'delta/refresh/0067_curve2_error33_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0067_curve2_error33_period.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0067_curve2_error33_period.Tpo delta/refresh/$(DEPDIR)/test_runner-0067_curve2_error33_period.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0067_curve2_error33_period.c' object='delta/refresh/test_runner-0067_curve2_error33_period.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0067_curve2_error33_period.obj `if test -f 'delta/refresh/0067_curve2_error33_period.c'; then $(CYGPATH_W) 'delta/refresh/0067_curve2_error33_period.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0067_curve2_error33_period.c'; fi`
+
+delta/refresh/test_runner-0068_floor8_equal_error_kept.o: delta/refresh/0068_floor8_equal_error_kept.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0068_floor8_equal_error_kept.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0068_floor8_equal_error_kept.Tpo -c -o delta/refresh/test_runner-0068_floor8_equal_error_kept.o `test -f 'delta/refresh/0068_floor8_equal_error_kept.c' || echo '$(srcdir)/'`delta/refresh/0068_floor8_equal_error_kept.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0068_floor8_equal_error_kept.Tpo delta/refresh/$(DEPDIR)/test_runner-0068_floor8_equal_error_kept.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0068_floor8_equal_error_kept.c' object='delta/refresh/test_runner-0068_floor8_equal_error_kept.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0068_floor8_equal_error_kept.o `test -f 'delta/refresh/0068_floor8_equal_error_kept.c' || echo '$(srcdir)/'`delta/refresh/0068_floor8_equal_error_kept.c
+
+delta/refresh/test_runner-0068_floor8_equal_error_kept.obj: delta/refresh/0068_floor8_equal_error_kept.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0068_floor8_equal_error_kept.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0068_floor8_equal_error_kept.Tpo -c -o delta/refresh/test_runner-0068_floor8_equal_error_kept.obj `if test -f 'delta/refresh/0068_floor8_equal_error_kept.c'; then $(CYGPATH_W) 'delta/refresh/0068_floor8_equal_error_kept.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0068_floor8_equal_error_kept.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0068_floor8_equal_error_kept.Tpo delta/refresh/$(DEPDIR)/test_runner-0068_floor8_equal_error_kept.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0068_floor8_equal_error_kept.c' object='delta/refresh/test_runner-0068_floor8_equal_error_kept.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0068_floor8_equal_error_kept.obj `if test -f 'delta/refresh/0068_floor8_equal_error_kept.c'; then $(CYGPATH_W) 'delta/refresh/0068_floor8_equal_error_kept.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0068_floor8_equal_error_kept.c'; fi`
+
+delta/refresh/test_runner-0069_zero_modifiers_legacy.o: delta/refresh/0069_zero_modifiers_legacy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0069_zero_modifiers_legacy.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0069_zero_modifiers_legacy.Tpo -c -o delta/refresh/test_runner-0069_zero_modifiers_legacy.o `test -f 'delta/refresh/0069_zero_modifiers_legacy.c' || echo '$(srcdir)/'`delta/refresh/0069_zero_modifiers_legacy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0069_zero_modifiers_legacy.Tpo delta/refresh/$(DEPDIR)/test_runner-0069_zero_modifiers_legacy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0069_zero_modifiers_legacy.c' object='delta/refresh/test_runner-0069_zero_modifiers_legacy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0069_zero_modifiers_legacy.o `test -f 'delta/refresh/0069_zero_modifiers_legacy.c' || echo '$(srcdir)/'`delta/refresh/0069_zero_modifiers_legacy.c
+
+delta/refresh/test_runner-0069_zero_modifiers_legacy.obj: delta/refresh/0069_zero_modifiers_legacy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0069_zero_modifiers_legacy.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0069_zero_modifiers_legacy.Tpo -c -o delta/refresh/test_runner-0069_zero_modifiers_legacy.obj `if test -f 'delta/refresh/0069_zero_modifiers_legacy.c'; then $(CYGPATH_W) 'delta/refresh/0069_zero_modifiers_legacy.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0069_zero_modifiers_legacy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0069_zero_modifiers_legacy.Tpo delta/refresh/$(DEPDIR)/test_runner-0069_zero_modifiers_legacy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0069_zero_modifiers_legacy.c' object='delta/refresh/test_runner-0069_zero_modifiers_legacy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0069_zero_modifiers_legacy.obj `if test -f 'delta/refresh/0069_zero_modifiers_legacy.c'; then $(CYGPATH_W) 'delta/refresh/0069_zero_modifiers_legacy.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0069_zero_modifiers_legacy.c'; fi`
+
+delta/refresh/test_runner-0070_floor_runtime_cap.o: delta/refresh/0070_floor_runtime_cap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0070_floor_runtime_cap.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0070_floor_runtime_cap.Tpo -c -o delta/refresh/test_runner-0070_floor_runtime_cap.o `test -f 'delta/refresh/0070_floor_runtime_cap.c' || echo '$(srcdir)/'`delta/refresh/0070_floor_runtime_cap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0070_floor_runtime_cap.Tpo delta/refresh/$(DEPDIR)/test_runner-0070_floor_runtime_cap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0070_floor_runtime_cap.c' object='delta/refresh/test_runner-0070_floor_runtime_cap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0070_floor_runtime_cap.o `test -f 'delta/refresh/0070_floor_runtime_cap.c' || echo '$(srcdir)/'`delta/refresh/0070_floor_runtime_cap.c
+
+delta/refresh/test_runner-0070_floor_runtime_cap.obj: delta/refresh/0070_floor_runtime_cap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0070_floor_runtime_cap.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0070_floor_runtime_cap.Tpo -c -o delta/refresh/test_runner-0070_floor_runtime_cap.obj `if test -f 'delta/refresh/0070_floor_runtime_cap.c'; then $(CYGPATH_W) 'delta/refresh/0070_floor_runtime_cap.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0070_floor_runtime_cap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0070_floor_runtime_cap.Tpo delta/refresh/$(DEPDIR)/test_runner-0070_floor_runtime_cap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0070_floor_runtime_cap.c' object='delta/refresh/test_runner-0070_floor_runtime_cap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0070_floor_runtime_cap.obj `if test -f 'delta/refresh/0070_floor_runtime_cap.c'; then $(CYGPATH_W) 'delta/refresh/0070_floor_runtime_cap.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0070_floor_runtime_cap.c'; fi`
+
+delta/refresh/test_runner-0071_floor_restart_exact.o: delta/refresh/0071_floor_restart_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0071_floor_restart_exact.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0071_floor_restart_exact.Tpo -c -o delta/refresh/test_runner-0071_floor_restart_exact.o `test -f 'delta/refresh/0071_floor_restart_exact.c' || echo '$(srcdir)/'`delta/refresh/0071_floor_restart_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0071_floor_restart_exact.Tpo delta/refresh/$(DEPDIR)/test_runner-0071_floor_restart_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0071_floor_restart_exact.c' object='delta/refresh/test_runner-0071_floor_restart_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0071_floor_restart_exact.o `test -f 'delta/refresh/0071_floor_restart_exact.c' || echo '$(srcdir)/'`delta/refresh/0071_floor_restart_exact.c
+
+delta/refresh/test_runner-0071_floor_restart_exact.obj: delta/refresh/0071_floor_restart_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0071_floor_restart_exact.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0071_floor_restart_exact.Tpo -c -o delta/refresh/test_runner-0071_floor_restart_exact.obj `if test -f 'delta/refresh/0071_floor_restart_exact.c'; then $(CYGPATH_W) 'delta/refresh/0071_floor_restart_exact.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0071_floor_restart_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0071_floor_restart_exact.Tpo delta/refresh/$(DEPDIR)/test_runner-0071_floor_restart_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0071_floor_restart_exact.c' object='delta/refresh/test_runner-0071_floor_restart_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0071_floor_restart_exact.obj `if test -f 'delta/refresh/0071_floor_restart_exact.c'; then $(CYGPATH_W) 'delta/refresh/0071_floor_restart_exact.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0071_floor_restart_exact.c'; fi`
+
+delta/refresh/test_runner-0072_floor_bounds_atomic.o: delta/refresh/0072_floor_bounds_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0072_floor_bounds_atomic.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0072_floor_bounds_atomic.Tpo -c -o delta/refresh/test_runner-0072_floor_bounds_atomic.o `test -f 'delta/refresh/0072_floor_bounds_atomic.c' || echo '$(srcdir)/'`delta/refresh/0072_floor_bounds_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0072_floor_bounds_atomic.Tpo delta/refresh/$(DEPDIR)/test_runner-0072_floor_bounds_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0072_floor_bounds_atomic.c' object='delta/refresh/test_runner-0072_floor_bounds_atomic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0072_floor_bounds_atomic.o `test -f 'delta/refresh/0072_floor_bounds_atomic.c' || echo '$(srcdir)/'`delta/refresh/0072_floor_bounds_atomic.c
+
+delta/refresh/test_runner-0072_floor_bounds_atomic.obj: delta/refresh/0072_floor_bounds_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0072_floor_bounds_atomic.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0072_floor_bounds_atomic.Tpo -c -o delta/refresh/test_runner-0072_floor_bounds_atomic.obj `if test -f 'delta/refresh/0072_floor_bounds_atomic.c'; then $(CYGPATH_W) 'delta/refresh/0072_floor_bounds_atomic.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0072_floor_bounds_atomic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0072_floor_bounds_atomic.Tpo delta/refresh/$(DEPDIR)/test_runner-0072_floor_bounds_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0072_floor_bounds_atomic.c' object='delta/refresh/test_runner-0072_floor_bounds_atomic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0072_floor_bounds_atomic.obj `if test -f 'delta/refresh/0072_floor_bounds_atomic.c'; then $(CYGPATH_W) 'delta/refresh/0072_floor_bounds_atomic.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0072_floor_bounds_atomic.c'; fi`
+
+delta/refresh/test_runner-0073_curve_bounds_atomic.o: delta/refresh/0073_curve_bounds_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0073_curve_bounds_atomic.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0073_curve_bounds_atomic.Tpo -c -o delta/refresh/test_runner-0073_curve_bounds_atomic.o `test -f 'delta/refresh/0073_curve_bounds_atomic.c' || echo '$(srcdir)/'`delta/refresh/0073_curve_bounds_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0073_curve_bounds_atomic.Tpo delta/refresh/$(DEPDIR)/test_runner-0073_curve_bounds_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0073_curve_bounds_atomic.c' object='delta/refresh/test_runner-0073_curve_bounds_atomic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0073_curve_bounds_atomic.o `test -f 'delta/refresh/0073_curve_bounds_atomic.c' || echo '$(srcdir)/'`delta/refresh/0073_curve_bounds_atomic.c
+
+delta/refresh/test_runner-0073_curve_bounds_atomic.obj: delta/refresh/0073_curve_bounds_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0073_curve_bounds_atomic.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0073_curve_bounds_atomic.Tpo -c -o delta/refresh/test_runner-0073_curve_bounds_atomic.obj `if test -f 'delta/refresh/0073_curve_bounds_atomic.c'; then $(CYGPATH_W) 'delta/refresh/0073_curve_bounds_atomic.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0073_curve_bounds_atomic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0073_curve_bounds_atomic.Tpo delta/refresh/$(DEPDIR)/test_runner-0073_curve_bounds_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0073_curve_bounds_atomic.c' object='delta/refresh/test_runner-0073_curve_bounds_atomic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0073_curve_bounds_atomic.obj `if test -f 'delta/refresh/0073_curve_bounds_atomic.c'; then $(CYGPATH_W) 'delta/refresh/0073_curve_bounds_atomic.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0073_curve_bounds_atomic.c'; fi`
+
+delta/refresh/test_runner-0074_floor_change_restart.o: delta/refresh/0074_floor_change_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0074_floor_change_restart.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Tpo -c -o delta/refresh/test_runner-0074_floor_change_restart.o `test -f 'delta/refresh/0074_floor_change_restart.c' || echo '$(srcdir)/'`delta/refresh/0074_floor_change_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Tpo delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0074_floor_change_restart.c' object='delta/refresh/test_runner-0074_floor_change_restart.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0074_floor_change_restart.o `test -f 'delta/refresh/0074_floor_change_restart.c' || echo '$(srcdir)/'`delta/refresh/0074_floor_change_restart.c
+
+delta/refresh/test_runner-0074_floor_change_restart.obj: delta/refresh/0074_floor_change_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0074_floor_change_restart.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Tpo -c -o delta/refresh/test_runner-0074_floor_change_restart.obj `if test -f 'delta/refresh/0074_floor_change_restart.c'; then $(CYGPATH_W) 'delta/refresh/0074_floor_change_restart.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0074_floor_change_restart.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Tpo delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0074_floor_change_restart.c' object='delta/refresh/test_runner-0074_floor_change_restart.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0074_floor_change_restart.obj `if test -f 'delta/refresh/0074_floor_change_restart.c'; then $(CYGPATH_W) 'delta/refresh/0074_floor_change_restart.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0074_floor_change_restart.c'; fi`
+
+delta/refresh/test_runner-0075_curve_change_restart.o: delta/refresh/0075_curve_change_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0075_curve_change_restart.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Tpo -c -o delta/refresh/test_runner-0075_curve_change_restart.o `test -f 'delta/refresh/0075_curve_change_restart.c' || echo '$(srcdir)/'`delta/refresh/0075_curve_change_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Tpo delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0075_curve_change_restart.c' object='delta/refresh/test_runner-0075_curve_change_restart.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0075_curve_change_restart.o `test -f 'delta/refresh/0075_curve_change_restart.c' || echo '$(srcdir)/'`delta/refresh/0075_curve_change_restart.c
+
+delta/refresh/test_runner-0075_curve_change_restart.obj: delta/refresh/0075_curve_change_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0075_curve_change_restart.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Tpo -c -o delta/refresh/test_runner-0075_curve_change_restart.obj `if test -f 'delta/refresh/0075_curve_change_restart.c'; then $(CYGPATH_W) 'delta/refresh/0075_curve_change_restart.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0075_curve_change_restart.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Tpo delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0075_curve_change_restart.c' object='delta/refresh/test_runner-0075_curve_change_restart.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0075_curve_change_restart.obj `if test -f 'delta/refresh/0075_curve_change_restart.c'; then $(CYGPATH_W) 'delta/refresh/0075_curve_change_restart.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0075_curve_change_restart.c'; fi`
+
+delta/refresh/test_runner-0076_same_modifiers_keep_age.o: delta/refresh/0076_same_modifiers_keep_age.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0076_same_modifiers_keep_age.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Tpo -c -o delta/refresh/test_runner-0076_same_modifiers_keep_age.o `test -f 'delta/refresh/0076_same_modifiers_keep_age.c' || echo '$(srcdir)/'`delta/refresh/0076_same_modifiers_keep_age.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Tpo delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0076_same_modifiers_keep_age.c' object='delta/refresh/test_runner-0076_same_modifiers_keep_age.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0076_same_modifiers_keep_age.o `test -f 'delta/refresh/0076_same_modifiers_keep_age.c' || echo '$(srcdir)/'`delta/refresh/0076_same_modifiers_keep_age.c
+
+delta/refresh/test_runner-0076_same_modifiers_keep_age.obj: delta/refresh/0076_same_modifiers_keep_age.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0076_same_modifiers_keep_age.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Tpo -c -o delta/refresh/test_runner-0076_same_modifiers_keep_age.obj `if test -f 'delta/refresh/0076_same_modifiers_keep_age.c'; then $(CYGPATH_W) 'delta/refresh/0076_same_modifiers_keep_age.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0076_same_modifiers_keep_age.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Tpo delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0076_same_modifiers_keep_age.c' object='delta/refresh/test_runner-0076_same_modifiers_keep_age.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0076_same_modifiers_keep_age.obj `if test -f 'delta/refresh/0076_same_modifiers_keep_age.c'; then $(CYGPATH_W) 'delta/refresh/0076_same_modifiers_keep_age.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0076_same_modifiers_keep_age.c'; fi`
+
+delta/refresh/test_runner-0077_curve_diffusion_rejected.o: delta/refresh/0077_curve_diffusion_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0077_curve_diffusion_rejected.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Tpo -c -o delta/refresh/test_runner-0077_curve_diffusion_rejected.o `test -f 'delta/refresh/0077_curve_diffusion_rejected.c' || echo '$(srcdir)/'`delta/refresh/0077_curve_diffusion_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0077_curve_diffusion_rejected.c' object='delta/refresh/test_runner-0077_curve_diffusion_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0077_curve_diffusion_rejected.o `test -f 'delta/refresh/0077_curve_diffusion_rejected.c' || echo '$(srcdir)/'`delta/refresh/0077_curve_diffusion_rejected.c
+
+delta/refresh/test_runner-0077_curve_diffusion_rejected.obj: delta/refresh/0077_curve_diffusion_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0077_curve_diffusion_rejected.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Tpo -c -o delta/refresh/test_runner-0077_curve_diffusion_rejected.obj `if test -f 'delta/refresh/0077_curve_diffusion_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0077_curve_diffusion_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0077_curve_diffusion_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0077_curve_diffusion_rejected.c' object='delta/refresh/test_runner-0077_curve_diffusion_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0077_curve_diffusion_rejected.obj `if test -f 'delta/refresh/0077_curve_diffusion_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0077_curve_diffusion_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0077_curve_diffusion_rejected.c'; fi`
+
+delta/refresh/test_runner-0078_adaptive_off_gray_history.o: delta/refresh/0078_adaptive_off_gray_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0078_adaptive_off_gray_history.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Tpo -c -o delta/refresh/test_runner-0078_adaptive_off_gray_history.o `test -f 'delta/refresh/0078_adaptive_off_gray_history.c' || echo '$(srcdir)/'`delta/refresh/0078_adaptive_off_gray_history.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Tpo delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0078_adaptive_off_gray_history.c' object='delta/refresh/test_runner-0078_adaptive_off_gray_history.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0078_adaptive_off_gray_history.o `test -f 'delta/refresh/0078_adaptive_off_gray_history.c' || echo '$(srcdir)/'`delta/refresh/0078_adaptive_off_gray_history.c
+
+delta/refresh/test_runner-0078_adaptive_off_gray_history.obj: delta/refresh/0078_adaptive_off_gray_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0078_adaptive_off_gray_history.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Tpo -c -o delta/refresh/test_runner-0078_adaptive_off_gray_history.obj `if test -f 'delta/refresh/0078_adaptive_off_gray_history.c'; then $(CYGPATH_W) 'delta/refresh/0078_adaptive_off_gray_history.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0078_adaptive_off_gray_history.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Tpo delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0078_adaptive_off_gray_history.c' object='delta/refresh/test_runner-0078_adaptive_off_gray_history.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0078_adaptive_off_gray_history.obj `if test -f 'delta/refresh/0078_adaptive_off_gray_history.c'; then $(CYGPATH_W) 'delta/refresh/0078_adaptive_off_gray_history.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0078_adaptive_off_gray_history.c'; fi`
+
+delta/refresh/test_runner-0079_adaptive_force_gray_history.o: delta/refresh/0079_adaptive_force_gray_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0079_adaptive_force_gray_history.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Tpo -c -o delta/refresh/test_runner-0079_adaptive_force_gray_history.o `test -f 'delta/refresh/0079_adaptive_force_gray_history.c' || echo '$(srcdir)/'`delta/refresh/0079_adaptive_force_gray_history.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Tpo delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0079_adaptive_force_gray_history.c' object='delta/refresh/test_runner-0079_adaptive_force_gray_history.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0079_adaptive_force_gray_history.o `test -f 'delta/refresh/0079_adaptive_force_gray_history.c' || echo '$(srcdir)/'`delta/refresh/0079_adaptive_force_gray_history.c
+
+delta/refresh/test_runner-0079_adaptive_force_gray_history.obj: delta/refresh/0079_adaptive_force_gray_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0079_adaptive_force_gray_history.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Tpo -c -o delta/refresh/test_runner-0079_adaptive_force_gray_history.obj `if test -f 'delta/refresh/0079_adaptive_force_gray_history.c'; then $(CYGPATH_W) 'delta/refresh/0079_adaptive_force_gray_history.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0079_adaptive_force_gray_history.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Tpo delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0079_adaptive_force_gray_history.c' object='delta/refresh/test_runner-0079_adaptive_force_gray_history.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0079_adaptive_force_gray_history.obj `if test -f 'delta/refresh/0079_adaptive_force_gray_history.c'; then $(CYGPATH_W) 'delta/refresh/0079_adaptive_force_gray_history.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0079_adaptive_force_gray_history.c'; fi`
+
+delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.o: delta/refresh/0080_adaptive_none_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Tpo -c -o delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.o `test -f 'delta/refresh/0080_adaptive_none_gpu_bytes.c' || echo '$(srcdir)/'`delta/refresh/0080_adaptive_none_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Tpo delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0080_adaptive_none_gpu_bytes.c' object='delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.o `test -f 'delta/refresh/0080_adaptive_none_gpu_bytes.c' || echo '$(srcdir)/'`delta/refresh/0080_adaptive_none_gpu_bytes.c
+
+delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.obj: delta/refresh/0080_adaptive_none_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Tpo -c -o delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.obj `if test -f 'delta/refresh/0080_adaptive_none_gpu_bytes.c'; then $(CYGPATH_W) 'delta/refresh/0080_adaptive_none_gpu_bytes.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0080_adaptive_none_gpu_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Tpo delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0080_adaptive_none_gpu_bytes.c' object='delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.obj `if test -f 'delta/refresh/0080_adaptive_none_gpu_bytes.c'; then $(CYGPATH_W) 'delta/refresh/0080_adaptive_none_gpu_bytes.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0080_adaptive_none_gpu_bytes.c'; fi`
+
+delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.o: delta/refresh/0081_adaptive_a_dither_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Tpo -c -o delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.o `test -f 'delta/refresh/0081_adaptive_a_dither_gpu_bytes.c' || echo '$(srcdir)/'`delta/refresh/0081_adaptive_a_dither_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Tpo delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0081_adaptive_a_dither_gpu_bytes.c' object='delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.o `test -f 'delta/refresh/0081_adaptive_a_dither_gpu_bytes.c' || echo '$(srcdir)/'`delta/refresh/0081_adaptive_a_dither_gpu_bytes.c
+
+delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.obj: delta/refresh/0081_adaptive_a_dither_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Tpo -c -o delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.obj `if test -f 'delta/refresh/0081_adaptive_a_dither_gpu_bytes.c'; then $(CYGPATH_W) 'delta/refresh/0081_adaptive_a_dither_gpu_bytes.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0081_adaptive_a_dither_gpu_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Tpo delta/refresh/$(DEPDIR)/test_runner-0081_adaptive_a_dither_gpu_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0081_adaptive_a_dither_gpu_bytes.c' object='delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0081_adaptive_a_dither_gpu_bytes.obj `if test -f 'delta/refresh/0081_adaptive_a_dither_gpu_bytes.c'; then $(CYGPATH_W) 'delta/refresh/0081_adaptive_a_dither_gpu_bytes.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0081_adaptive_a_dither_gpu_bytes.c'; fi`
+
+delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.o: delta/refresh/0082_adaptive_x_dither_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Tpo -c -o delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.o `test -f 'delta/refresh/0082_adaptive_x_dither_gpu_bytes.c' || echo '$(srcdir)/'`delta/refresh/0082_adaptive_x_dither_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Tpo delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0082_adaptive_x_dither_gpu_bytes.c' object='delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.o `test -f 'delta/refresh/0082_adaptive_x_dither_gpu_bytes.c' || echo '$(srcdir)/'`delta/refresh/0082_adaptive_x_dither_gpu_bytes.c
+
+delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.obj: delta/refresh/0082_adaptive_x_dither_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Tpo -c -o delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.obj `if test -f 'delta/refresh/0082_adaptive_x_dither_gpu_bytes.c'; then $(CYGPATH_W) 'delta/refresh/0082_adaptive_x_dither_gpu_bytes.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0082_adaptive_x_dither_gpu_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Tpo delta/refresh/$(DEPDIR)/test_runner-0082_adaptive_x_dither_gpu_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0082_adaptive_x_dither_gpu_bytes.c' object='delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0082_adaptive_x_dither_gpu_bytes.obj `if test -f 'delta/refresh/0082_adaptive_x_dither_gpu_bytes.c'; then $(CYGPATH_W) 'delta/refresh/0082_adaptive_x_dither_gpu_bytes.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0082_adaptive_x_dither_gpu_bytes.c'; fi`
+
+delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.o: delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Tpo -c -o delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.o `test -f 'delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c' || echo '$(srcdir)/'`delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Tpo delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c' object='delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.o `test -f 'delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c' || echo '$(srcdir)/'`delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c
+
+delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.obj: delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Tpo -c -o delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.obj `if test -f 'delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c'; then $(CYGPATH_W) 'delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Tpo delta/refresh/$(DEPDIR)/test_runner-0083_adaptive_bluenoise_gpu_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c' object='delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0083_adaptive_bluenoise_gpu_bytes.obj `if test -f 'delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c'; then $(CYGPATH_W) 'delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0083_adaptive_bluenoise_gpu_bytes.c'; fi`
 
 dither/a-dither/test_runner-0039_wire_a_rgb_none.o: dither/a-dither/0039_wire_a_rgb_none.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0039_wire_a_rgb_none.o -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0039_wire_a_rgb_none.Tpo -c -o dither/a-dither/test_runner-0039_wire_a_rgb_none.o `test -f 'dither/a-dither/0039_wire_a_rgb_none.c' || echo '$(srcdir)/'`dither/a-dither/0039_wire_a_rgb_none.c

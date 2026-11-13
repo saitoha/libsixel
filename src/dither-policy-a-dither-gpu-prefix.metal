@@ -24,6 +24,8 @@ struct Params {
     uint residual_columns, residual_rows;
     uint residual_tiled;
     uint residual_cells[128];
+    uint residual_variable;
+    uint residual_levels[1024];
     uint accumulation_result_mask_size;
     float positional_strength;
     float bluenoise_strength;
@@ -141,7 +143,10 @@ static bool prepare_query(
             if ((params.residual_cells[cell / 32u] &
                     (1u << (cell % 32u))) != 0u)
                 local_threshold = min(local_threshold,
-                    params.residual_threshold);
+                    params.residual_variable != 0u
+                        ? ((params.residual_levels[cell / 4u] >>
+                            ((cell % 4u) * 8u)) & 255u)
+                        : params.residual_threshold);
         }
         within = uint(dr) <= local_threshold &&
             uint(dg) <= local_threshold && uint(db) <= local_threshold;
