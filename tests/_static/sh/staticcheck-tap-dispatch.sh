@@ -20,7 +20,7 @@ expected_fail=0
 
 # Literal independent streams include malformed protocol and shell diagnostics
 # that resemble TAP. Each is consumed by the same function used by the suite.
-while IFS='|' read -r sample_name expected child_status tap_input stderr_input; do
+while IFS='|' read -r sample_name expected child_status tap_input stderr_input skip_output; do
     # The quoted script is interpreted by the child shell.
     # shellcheck disable=SC2016
     if run_case_tap "$sample_name" sh -c \
@@ -34,7 +34,17 @@ while IFS='|' read -r sample_name expected child_status tap_input stderr_input; 
     control_output=$(cat "$tmpdir/control")
     case "$expected:$control_status:$control_output" in
         pass:0:*"PASS $sample_name"*) expected_pass=$((expected_pass + 1)) ;;
-        skip:0:*"SKIP $sample_name"*) expected_skip=$((expected_skip + 1)) ;;
+        skip:0:*)
+            expected_skip=$((expected_skip + 1))
+            expected_output=$(printf '==> [%02d/%02d] %s\nSKIP %s%b' \
+                "$index" "$total" "$sample_name" "$sample_name" "$skip_output")
+            test "$control_output" = "$expected_output" || {
+                echo 'not ok 1 - staticcheck skip output differs'
+                printf '# case %s\n' "$sample_name"
+                printf '%s\n' "$control_output" | sed 's/^/# /'
+                exit 0
+            }
+            ;;
         fail:1:*"FAIL $sample_name"*) expected_fail=$((expected_fail + 1)) ;;
         *)
             echo 'not ok 1 - staticcheck TAP classification'
@@ -45,7 +55,7 @@ while IFS='|' read -r sample_name expected child_status tap_input stderr_input; 
             ;;
     esac
     case "$sample_name:$control_output" in
-        failure-diagnostics:*"not ok 1 - broken"*"sentinel stderr"*) ;;
+        failure-diagnostics:*"1..1"*"not ok 1 - broken"*"sentinel stderr"*"TAP error at line 2"*) ;;
         failure-diagnostics:*)
             echo 'not ok 1 - staticcheck discarded failure diagnostics'
             exit 0
@@ -61,8 +71,10 @@ no-final-newline|pass|0|1..1\nok 1|
 comments|pass|0|# not ok 50\n1..1\n# Bail out! diagnostic\nok 1\n|
 stderr-tap|pass|0|1..1\nok 1\n|not ok 2\n1..500\nBail out! verbose source\n
 mixed-pass-skip|pass|0|1..2\nok 1 # SKIP absent\nok 2\n|
-all-skip|skip|0|1..2\nok 1 # skip absent\nok 2 # SKIP absent\n|
-empty-skip|skip|0|1..0 # SKIP unavailable\n|
+all-skip|skip|0|TAP version 13\n1..2\n# diagnostic\nok 1 # skip absent\n  ---\n  message: ok 3 # SKIP YAML\n  ...\nok 2 # SKIP: Missing PNG\n|ok 3 # SKIP stderr\n|\nSKIP: absent\nSKIP: Missing PNG
+empty-skip|skip|0|1..0 # SKIP unavailable\n||\nSKIP: unavailable
+reasonless-skip|skip|0|1..1\nok 1 # SKIP\n||
+reasonless-empty-skip|skip|0|1..0 # SKIP\n||
 failure|fail|0|1..1\nnot ok 1\n|
 failure-diagnostics|fail|0|1..1\nnot ok 1 - broken\n# expected value\n|sentinel stderr\n
 mixed-fail-skip|fail|0|1..2\nok 1 # SKIP absent\nnot ok 2\n|

@@ -10,6 +10,11 @@ function number(text) {
     # All supported awk implementations represent these integers exactly.
     return length(text) <= 10 && text + 0 <= 2147483647
 }
+function record_skip_reason(directive) {
+    directive = substr(directive, 5)
+    sub(/^[ \t]*:?[ \t]*/, "", directive)
+    if (directive != "") skip_reasons[++reason_count] = directive
+}
 {
     sub(/\r$/, "")
     if (yaml) {
@@ -60,10 +65,13 @@ function number(text) {
         trailing_plan = seen > 0
         directive = $0
         sub(/^[^#]*#?[ \t]*/, "", directive)
-        if (planned == 0 && tolower(directive) !~ /^skip([ \t:]|$)/) {
-            problem("empty plan without SKIP")
-        }
-        if (planned > 0 && directive != "") {
+        if (planned == 0) {
+            if (tolower(directive) ~ /^skip([ \t:]|$)/) {
+                record_skip_reason(directive)
+            } else {
+                problem("empty plan without SKIP")
+            }
+        } else if (directive != "") {
             problem("directive on nonempty plan")
         }
         after_test = 0
@@ -87,11 +95,11 @@ function number(text) {
         }
         directive = text
         sub(/^[^#]*#?[ \t]*/, "", directive)
-        directive = tolower(directive)
-        if (directive ~ /^todo([ \t]|$)/) {
+        if (tolower(directive) ~ /^todo([ \t]|$)/) {
             problem("TODO does not establish a static invariant")
-        } else if (directive ~ /^skip([ \t:]|$)/) {
+        } else if (tolower(directive) ~ /^skip([ \t:]|$)/) {
             skipped++
+            record_skip_reason(directive)
         } else if (negative) {
             problem("failed test " seen ": " $0)
         }
@@ -107,6 +115,10 @@ END {
     if (!saw_plan) problem("missing plan")
     if (saw_plan && seen != planned) problem("plan/result count mismatch")
     if (failed) exit 1
-    if (planned == 0 || seen == skipped) exit 77
+    if (planned == 0 || seen == skipped) {
+        # Report validated skip reasons without replaying the raw TAP stream.
+        for (i = 1; i <= reason_count; i++) print "SKIP: " skip_reasons[i]
+        exit 77
+    }
     exit 0
 }

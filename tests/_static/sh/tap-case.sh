@@ -34,7 +34,7 @@ run_case_tap() {
     if test "$case_rc" -eq 0 && test "$tap_rc" -eq 77; then
         skip_count=$((skip_count + 1))
         printf 'SKIP %s\n' "$case_name"
-        cat "$log_path"
+        cat "$verdict_log"
         return 0
     fi
 
