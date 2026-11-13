@@ -13496,6 +13496,7 @@ print_usage(char const *program)
         program);
     fprintf(stderr, "       %s --require-gpu-lookup <policy> <test>\n",
         program);
+    fprintf(stderr, "       %s --gpu-lookup-available <policy>\n", program);
     fprintf(stderr, "       %s --is-running-under-wine\n", program);
     fprintf(stderr,
             "       %s --win32-ctrl-break-run <delay-ms> <timeout-ms|0> "
@@ -14988,7 +14989,7 @@ test_runner_process_exit_status(int status)
     return status;
 }
 
-/* The lookup policy named by --require-gpu-lookup, or -1. */
+/* The lookup policy named by a GPU prerequisite or probe, or -1. */
 static int
 test_runner_lookup_kind(char const *name)
 {
@@ -15081,6 +15082,23 @@ main(int argc, char **argv)
         return test_runner_process_exit_status(
             test_runner_run_posix_sigint_until(argc - first_index,
                                                argv + first_index));
+    }
+
+    /* CLI tests use this probe only after failed execution. Unlike a forced
+     * conversion, it cannot mistake an encode error for missing hardware. */
+    if (strcmp(argv[first_index], "--gpu-lookup-available") == 0) {
+        if (argc != first_index + 2 ||
+                (require_lookup = test_runner_lookup_kind(
+                    argv[first_index + 1])) < 0) {
+            print_usage(argv[0]);
+            return test_runner_process_exit_status(EXIT_FAILURE);
+        }
+        return test_runner_process_exit_status(
+            sixel_gpu_palette_policy_claims_apply_stage(
+                SIXEL_GPU_POLICY_AUTO, 0U, SIXEL_LUT_POLICY_NONE,
+                SIXEL_DIFFUSE_NONE, SIXEL_SCAN_RASTER, 1U) &&
+            sixel_gpu_palette_lookup_available(require_lookup)
+                ? EXIT_SUCCESS : 77);
     }
 
     /* Probe in the test process so GPU initialization is measured once.

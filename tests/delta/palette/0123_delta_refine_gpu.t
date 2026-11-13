@@ -1,24 +1,20 @@
 #!/bin/sh
-# Verify refine gpu.
+# Verify GPU delta refinement.
 # Policy: docs/encoder/output/delta-encoding.md
 set -eux
-
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo "1..0 # SKIP img2sixel disabled"
-    exit 0
-}
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gforce -dnone -p16 \
-    -L 'builtin:cms_engine=none!' --precision-policy=8bit -Xgamma -Wgamma \
-    -aoff -Fnone '-~none' -o /dev/null \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" || {
-    echo "1..0 # SKIP GPU unavailable"
-    exit 0
-}
 
 echo "1..1"
 set -v
 
-SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" palette/delta_native/0236_delta_refine_gpu || {
+# Initialize the required lookup and run refinement in the same process.
+status=0
+SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    --require-gpu-lookup none palette/delta_native/0236_delta_refine_gpu || status=$?
+test "$status" -ne 77 || {
+    echo "ok 1 # SKIP GPU direct lookup is unavailable"
+    exit 0
+}
+test "$status" -eq 0 || {
     echo "not ok 1 - refine_gpu"
     exit 0
 }
