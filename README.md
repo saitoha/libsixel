@@ -16,11 +16,11 @@ Digital Equipment Corp. (DEC).
 Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
 
-On 80's real hardware terminals, it tooks unbearable long waiting times to display images.
+On 80's real hardware terminals, it took unbearable long waiting times to display images.
 
 [![vt330sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/vt330sixel.png)](https://youtu.be/0SasrQ7pnbA)
 
-But nowdays, with high-speed CPU and broadband network, we got the chance to develop a new scope of SIXELs.
+But nowadays, with high-speed CPU and broadband network, we got the chance to develop a new scope of SIXELs.
 
 ## SIXEL Animation
 
@@ -70,7 +70,7 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
   ([movie](https://www.youtube.com/watch?v=XubH2W39Xtc))
 
 
-### Langage Bindings
+### Language Bindings
 
 #### [libsixel-python](https://pypi.python.org/pypi/libsixel-python/0.4.0)
 
@@ -1052,7 +1052,7 @@ The MIT License (MIT)
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Contributers and Reviewers
+## Contributors and Reviewers
 
 - [@arakiken](https://github.com/arakiken/)
 - [@elfring](https://github.com/elfring/)
