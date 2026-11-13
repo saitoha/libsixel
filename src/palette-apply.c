@@ -7,6 +7,7 @@
 #include "encode-result.h"
 #include "dither-policy-private.h"
 #include "gpu-palette.h"
+#include "dither-policy-gpu.h"
 #include "threading.h"
 #include "pixelformat.h"
 #include "timeline-logger.h"
@@ -21,7 +22,6 @@ typedef struct sixel_palette_apply_storage {
     unsigned char *ready;
     unsigned char comparison[SIXEL_PALETTE_MAX * 3];
     sixel_lookup_policy_interface_t *lookup;
-    sixel_gpu_program_t *program;
     sixel_gpu_dither_plan_interface_t *gpu_dither;
     sixel_palette_apply_deferred_interface_t *deferred;
     int gpu;
@@ -75,8 +75,6 @@ sixel_palette_apply_clear_plan(sixel_palette_apply_storage_t *apply)
     if (apply->deferred != NULL)
         apply->deferred->vtbl->unref(apply->deferred);
     apply->deferred = NULL;
-    sixel_gpu_program_destroy(apply->program);
-    apply->program = NULL;
     apply->gpu_dither = NULL;
     apply->lookup = NULL;
     sixel_allocator_free(apply->allocator, apply->ready);
@@ -364,10 +362,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     sixel_wire_palette_view_t palette;
     sixel_lookup_execution_request_t execution;
     sixel_lookup_policy_interface_t *lookup;
-    sixel_gpu_lookup_plan_interface_t *gpu_plan;
     sixel_gpu_dither_prepare_request_t dither_request;
     sixel_dither_policy_prepare_request_t gpu_configuration;
-    sixel_gpu_program_t *program;
     sixel_gpu_dither_plan_interface_t *gpu_dither;
     sixel_palette_apply_deferred_interface_t *deferred;
     unsigned char *ready;
@@ -426,8 +422,6 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     execution.colorspace = request->colorspace;
     execution.parallel_dither_active = request->worker_threads > 1;
     lookup = NULL;
-    gpu_plan = NULL;
-    program = NULL;
     gpu_dither = NULL;
     gpu = request->gpu_policy != SIXEL_GPU_POLICY_OFF &&
         !(request->dither != NULL &&
@@ -455,7 +449,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         return SIXEL_BAD_ARGUMENT;
     }
     status = SIXEL_FEATURE_ERROR;
-    if (gpu && request->gpu_dither != NULL &&
+    if (gpu &&
             request->gpu_lookup != NULL && request->device != NULL) {
         memset(&dither_request, 0, sizeof(dither_request));
         dither_request.working_palette = request->working_palette;
@@ -465,28 +459,13 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         dither_request.pixelformat = request->pixelformat;
         dither_request.colorspace = request->colorspace;
         dither_request.scan = request->scan;
-        status = request->gpu_dither->vtbl->prepare(request->gpu_dither,
-            &dither_request, &gpu_dither);
+        status = request->gpu_dither != NULL
+            ? request->gpu_dither->vtbl->prepare(request->gpu_dither,
+                &dither_request, &gpu_dither)
+            : sixel_gpu_dither_compat_prepare(apply->allocator,
+                &configuration, &dither_request, &gpu_dither);
         if (status == SIXEL_OK && gpu_dither == NULL) {
             status = SIXEL_LOGIC_ERROR;
-        }
-    } else if (gpu && request->gpu_dither == NULL &&
-            request->gpu_lookup != NULL && request->device != NULL &&
-            (options.method_for_diffuse == SIXEL_DIFFUSE_NONE ||
-             options.method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
-             options.method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
-             options.method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
-        /* The byte executor accepts both point and collective programs. */
-        execution.allow_batch = 1;
-        status = request->gpu_lookup->vtbl->prepare(request->gpu_lookup,
-            &execution, request->device, &gpu_plan);
-        if (status == SIXEL_OK && gpu_plan == NULL) {
-            status = SIXEL_LOGIC_ERROR;
-        }
-        if (status == SIXEL_OK) {
-            status = sixel_gpu_program_prepare(request->device, gpu_plan,
-                &program);
-            gpu_plan->vtbl->unref(gpu_plan);
         }
     }
     if (status == SIXEL_FEATURE_ERROR &&
@@ -495,7 +474,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         status = request->cpu_lookup->vtbl->prepare(request->cpu_lookup,
             &execution, &lookup);
     }
-    if (status == SIXEL_OK && program == NULL && lookup == NULL &&
+    if (status == SIXEL_OK && lookup == NULL &&
             gpu_dither == NULL) {
         status = SIXEL_LOGIC_ERROR;
     }
@@ -508,7 +487,6 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     if (status != SIXEL_OK) {
         if (gpu_dither != NULL) gpu_dither->vtbl->unref(gpu_dither);
         if (lookup != NULL) lookup->vtbl->unref(lookup);
-        sixel_gpu_program_destroy(program);
         sixel_allocator_free(apply->allocator, ready);
         return status;
     }
@@ -523,11 +501,10 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     sixel_palette_apply_clear_plan(apply);
     apply->plan = *request;
     apply->lookup = lookup;
-    apply->program = program;
     apply->gpu_dither = gpu_dither;
     apply->deferred = deferred;
     apply->options = options;
-    apply->gpu = program != NULL || gpu_dither != NULL;
+    apply->gpu = gpu_dither != NULL;
     if (apply->gpu) request->device->vtbl->ref(request->device);
     apply->ready = ready;
     request->working_palette->vtbl->ref(request->working_palette);
@@ -720,114 +697,6 @@ sixel_palette_apply_gpu_rows(void *context, int rows)
 }
 
 static SIXELSTATUS
-sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
-{
-    sixel_gpu_palette_request_t request;
-    sixel_dither_execution_t const *execution;
-    sixel_delta_mask_t selection;
-    sixel_retained_gpu_read_view_t retained;
-    size_t cells;
-    SIXELSTATUS status;
-
-    execution = &apply->execution;
-    memset(&request, 0, sizeof(request));
-    memset(&selection, 0, sizeof(selection));
-    cells = (size_t)execution->selection.columns * execution->selection.rows;
-    if (cells != 0) {
-        memcpy(selection.cells, execution->selection.words,
-            ((cells + 31) / 32) * sizeof(uint32_t));
-        selection.columns = execution->selection.columns;
-        selection.rows = execution->selection.rows;
-        selection.width = execution->selection.width;
-        selection.height = execution->selection.height;
-        selection.tiled = execution->selection.tiled;
-        selection.threshold = execution->selection.selected_threshold;
-    }
-    request.policy = SIXEL_GPU_POLICY_FORCE;
-    request.dest = apply->run->result->indexes;
-    request.pixels = apply->pixels.pixels;
-    request.pixel_count = apply->run->result->pixels;
-    request.width = apply->pixels.width;
-    request.height = apply->pixels.height;
-    request.pixelformat = apply->pixels.pixelformat;
-    request.palette = apply->entries.entries;
-    request.palette_size = apply->entries.entries_size;
-    request.palette_depth = apply->entries.depth;
-    request.ncolors = apply->options.ncolors -
-        (apply->options.keycolor_reserved != 0);
-    request.program = apply->program;
-    request.cancel = apply->run->cancel;
-    request.cancel_context = apply->run->cancel_context;
-    if (apply->run->rows_ready != NULL) {
-        request.rows_per_chunk = sixel_gpu_palette_rows_per_chunk(
-            apply->pixels.width, apply->pixels.height);
-        request.rows_ready = sixel_palette_apply_gpu_rows;
-        request.rows_context = apply;
-    }
-    request.method_for_diffuse = apply->options.method_for_diffuse;
-    request.method_for_scan = apply->plan.scan;
-    request.transparent_mask = execution->transparent_mask;
-    request.transparent_mask_size = execution->transparent_size;
-    request.transparent_keycolor = execution->keycolor;
-    request.sixdelta_enabled = execution->delta_enabled;
-    request.has_6delta_accumulation = execution->delta_enabled;
-    request.accumulation_pixels = execution->retained_rgb;
-    request.accumulation_pixels_size = execution->retained_rgb_size;
-    request.accumulation_width = execution->plane_width;
-    request.accumulation_height = execution->plane_height;
-    request.accumulation_origin_x = execution->origin_x;
-    request.accumulation_origin_y = execution->origin_y;
-    request.accumulation_valid_mask = execution->retained_valid;
-    request.accumulation_valid_mask_size = execution->retained_valid_size;
-    if (execution->delta_enabled && apply->run->baseline != NULL) {
-        status = sixel_retained_read_get_gpu_view(apply->run->baseline,
-            apply->plan.device, &retained);
-        if (status == SIXEL_OK) {
-            request.retained_device = apply->plan.device;
-            request.retained_rgb = retained.rgb;
-            request.retained_valid = retained.valid;
-        } else if (status != SIXEL_FEATURE_ERROR) {
-            return status;
-        }
-    }
-    request.accumulation_keycolor = execution->delta_keycolor;
-    request.sixdelta_threshold = execution->delta_threshold;
-    request.sixdelta_metric = execution->delta_metric;
-    request.sixdelta_compare = execution->delta_compare;
-    request.residual_mask = &selection;
-    request.sixdelta_comparison_palette = apply->comparison;
-    request.sixdelta_comparison_palette_size = apply->entries.entry_count * 3;
-    request.accumulation_result_mask = execution->skip;
-    request.accumulation_result_mask_size = execution->skip_size;
-    request.positional_strength_override = 1;
-    request.positional_strength =
-        apply->options.method_for_diffuse == SIXEL_DIFFUSE_A_DITHER
-            ? apply->options.a_dither_strength
-            : apply->options.x_dither_strength;
-    request.bluenoise_strength_override = 1;
-    request.bluenoise_strength = apply->options.bluenoise_strength;
-    request.bluenoise_phase_override = 1;
-    request.bluenoise_phase_x = apply->options.bluenoise_phase_x;
-    request.bluenoise_phase_y = apply->options.bluenoise_phase_y;
-    request.bluenoise_channel_override = 1;
-    request.bluenoise_channel_rgb = apply->options.bluenoise_channel_rgb;
-    request.bluenoise_size_override = 1;
-    request.bluenoise_size = apply->options.bluenoise_size;
-    request.bluenoise_gradient_factor_override = 1;
-    request.bluenoise_gradient_factor = 0;
-    status = sixel_gpu_palette_apply_prepared(&request);
-    if (status != SIXEL_OK) {
-        return SIXEL_FAILED(status) ? status : SIXEL_RUNTIME_ERROR;
-    }
-    /* Legacy/small dispatches publish once. A streamed request has already
-     * published its full prefix; never rescan or rewrite consumed rows. */
-    if (apply->prefix < apply->pixels.height) {
-        status = sixel_palette_apply_gpu_rows(apply, apply->pixels.height);
-    }
-    return status;
-}
-
-static SIXELSTATUS
 sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
     sixel_palette_apply_run_request_t const *request)
 {
@@ -980,23 +849,26 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
         gpu_run.logger = request->logger;
         gpu_run.cancel = request->cancel;
         gpu_run.cancel_context = request->cancel_context;
+        if (request->rows_ready != NULL) {
+            gpu_run.rows_ready = sixel_palette_apply_gpu_rows;
+            gpu_run.rows_context = apply;
+        }
         status = apply->gpu_dither->vtbl->run(apply->gpu_dither, &gpu_run);
         if (status == SIXEL_OK && request->cancel != NULL &&
                 request->cancel(request->cancel_context)) {
             status = SIXEL_INTERRUPTED;
         }
-        /* An injected producer is validated before any row is published. */
-        if (status == SIXEL_OK) {
+        /* A streaming producer has already published its completed prefix.
+         * Other producers are validated and published once on completion. */
+        if (status == SIXEL_OK && apply->prefix < desc->height) {
             status = sixel_indexed_frame_publish_applied(request->result,
                 desc->height);
-        }
-        if (status == SIXEL_OK && request->rows_ready != NULL) {
-            status = request->rows_ready(request->result, desc->height,
-                request->rows_context);
+            if (status == SIXEL_OK && request->rows_ready != NULL)
+                status = request->rows_ready(request->result, desc->height,
+                    request->rows_context);
         }
     } else {
-        status = apply->gpu ? sixel_palette_apply_gpu(apply) :
-            sixel_palette_apply_cpu(apply);
+        status = sixel_palette_apply_cpu(apply);
     }
     if (status == SIXEL_OK) {
         status = apply->status;

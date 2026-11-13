@@ -47,10 +47,6 @@
 #include "loader-common.h"
 
 enum {
-    SIXEL_GPU_METAL_MODE_NONE = 0,
-    SIXEL_GPU_METAL_MODE_BLUENOISE = 1,
-    SIXEL_GPU_METAL_MODE_A_DITHER = 2,
-    SIXEL_GPU_METAL_MODE_X_DITHER = 3,
     SIXEL_GPU_METAL_LOOKUP_DIRECT = 0,
     SIXEL_GPU_METAL_LOOKUP_EYTZINGER = 1,
     SIXEL_GPU_METAL_LOOKUP_GRIDLUT = 2,
@@ -68,7 +64,7 @@ typedef struct sixel_gpu_metal_params {
     uint32_t ncolors;
     uint32_t lookup_mode;
     uint32_t fhedt_resolution, fhedt_shift, fhedt_refine, fhedt_dist2;
-    uint32_t mode;
+    uint32_t reserved;
     uint32_t has_transparent;
     uint32_t transparent_size;
     uint32_t transparent_keycolor;
@@ -131,13 +127,21 @@ typedef struct sixel_gpu_metal_cached_buffer {
     NSUInteger capacity;
 } sixel_gpu_metal_cached_buffer_t;
 
+/* Each supplied dither owns independent compiled consumers. Lookup table
+ * storage remains with the lookup policy, under the same dispatch lock. */
+typedef struct gpu_legacy_consumer {
+    sixel_gpu_dither_program_t const *dither;
+    id<MTLComputePipelineState> pipeline, gemm_pipeline, blockcull_pipeline;
+    int probe_done, gemm_probe_done, available;
+    struct gpu_legacy_consumer *next;
+} gpu_legacy_consumer_t;
+static gpu_legacy_consumer_t *gpu_legacy_consumers;
+static gpu_legacy_consumer_t *gpu_legacy_active;
+
 static pthread_mutex_t g_sixel_gpu_metal_lock = PTHREAD_MUTEX_INITIALIZER;
 static id<MTLDevice> g_sixel_gpu_metal_device = nil;
 static id<MTLCommandQueue> g_sixel_gpu_metal_queue = nil;
-static id<MTLComputePipelineState> g_sixel_gpu_metal_pipeline = nil;
 static id<MTLComputePipelineState> g_sixel_gpu_metal_dequant_pipeline = nil;
-static id<MTLComputePipelineState> g_sixel_gpu_metal_gemm_pipeline = nil;
-static id<MTLComputePipelineState> g_sixel_gpu_metal_blockcull_pipeline = nil;
 /* The grid cache is protected by the same lock as all Metal dispatches.
  * Its palette identity is independent of the ordinary upload cache. */
 static id<MTLComputePipelineState> g_sixel_gpu_metal_grid_build = nil;
@@ -153,7 +157,6 @@ static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_delaunay =
     { nil, 0U };
 static unsigned char g_sixel_gpu_metal_delaunay_palette[SIXEL_PALETTE_MAX * 3];
 static int g_sixel_gpu_metal_delaunay_colors = 0;
-static int g_sixel_gpu_metal_gemm_probe_done = 0;
 static id<MTLBuffer> g_sixel_gpu_metal_blue_noise_buffer = nil;
 static id<MTLBuffer> g_sixel_gpu_metal_dummy_buffer = nil;
 static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_result_buffer =
@@ -192,8 +195,6 @@ static unsigned char g_sixel_gpu_metal_palette_shadow[
     SIXEL_PALETTE_MAX * 3U];
 static NSUInteger g_sixel_gpu_metal_palette_shadow_length = 0U;
 static int g_sixel_gpu_metal_palette_shadow_valid = 0;
-static int g_sixel_gpu_metal_probe_done = 0;
-static int g_sixel_gpu_metal_available = 0;
 
 /*
  * Compiled on the first direct lookup, appended to the base source:
@@ -215,8 +216,15 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 #include <generated-metal/lookup-policy-fhedt-gpu-query-shader.inc.h>
 #include <generated-metal/lookup-policy-5bit-gpu-query-shader.inc.h>
 #include <generated-metal/lookup-policy-6bit-gpu-query-shader.inc.h>
+NULL
+};
+static char const *const gpu_legacy_suffix[] = {
 #include <generated-metal/gpu-palette-legacy-pixel-shader.inc.h>
 #include <generated-metal/gpu-palette-legacy-apply-shader.inc.h>
+NULL
+};
+static char const *const gpu_dequant_source[] = {
+#include <generated-metal/gpu-palette-legacy-types-shader.inc.h>
 #include <generated-metal/gpu-dequant-fast4-shader.inc.h>
 NULL
 };
@@ -330,38 +338,26 @@ sixel_gpu_palette_metal_append_chunks(NSMutableString *source,
 
 #include "lookup-policy-fhedt-gpu.inc.h"
 
-static NSString *
-sixel_gpu_palette_metal_create_source(void)
+static NSMutableString *
+sixel_gpu_palette_metal_create_source(
+    sixel_gpu_dither_program_t const *dither)
 {
     NSMutableString *source;
-    NSString *chunk;
-    size_t index;
+    size_t i;
 
-    source = nil;
-    chunk = nil;
-    index = 0U;
-
+    if (dither == NULL || dither->legacy_metal_count == 0) return nil;
     source = [[NSMutableString alloc] init];
-    if (source == nil) {
-        return nil;
-    }
-    for (index = 0U;
-            g_sixel_gpu_metal_source_chunks[index] != NULL;
-            ++index) {
-        chunk = [[NSString alloc]
-            initWithBytes:g_sixel_gpu_metal_source_chunks[index]
-                   length:strlen(g_sixel_gpu_metal_source_chunks[index])
-                 encoding:NSUTF8StringEncoding];
-        if (chunk == nil) {
-            [source release];
-            return nil;
-        }
-        [source appendString:chunk];
-        [chunk release];
-        chunk = nil;
-    }
-
+    if (source == nil) return nil;
+    if (!sixel_gpu_palette_metal_append_chunks(
+            source, g_sixel_gpu_metal_source_chunks)) goto fail;
+    for (i = 0; i < dither->legacy_metal_count; ++i)
+        [source appendString:@(dither->legacy_metal[i])];
+    if (!sixel_gpu_palette_metal_append_chunks(source, gpu_legacy_suffix))
+        goto fail;
     return source;
+fail:
+    [source release];
+    return nil;
 }
 
 static id<MTLBuffer>
@@ -549,27 +545,39 @@ sixel_gpu_palette_metal_prepare_device_locked(void)
 }
 
 static int
-sixel_gpu_palette_metal_prepare_locked(void)
+sixel_gpu_palette_metal_prepare_locked(
+    sixel_gpu_dither_program_t const *dither)
 {
     NSError *error;
     NSString *source;
     id<MTLLibrary> library;
     id<MTLFunction> function;
-    id<MTLFunction> dequant_function;
+    gpu_legacy_consumer_t *consumer;
 
     error = nil;
     source = nil;
     library = nil;
     function = nil;
-    dequant_function = nil;
-    if (g_sixel_gpu_metal_probe_done != 0) {
-        return g_sixel_gpu_metal_available;
+    if (dither == NULL) return 0;
+    for (consumer = gpu_legacy_consumers; consumer != NULL;
+            consumer = consumer->next)
+        if (consumer->dither == dither) break;
+    if (consumer == NULL) {
+        consumer = calloc(1, sizeof(*consumer));
+        if (consumer == NULL) return 0;
+        consumer->dither = dither;
+        consumer->next = gpu_legacy_consumers;
+        gpu_legacy_consumers = consumer;
+    }
+    gpu_legacy_active = consumer;
+    if (gpu_legacy_active->probe_done != 0) {
+        return gpu_legacy_active->available;
     }
 
-    g_sixel_gpu_metal_probe_done = 1;
+    gpu_legacy_active->probe_done = 1;
     if (!sixel_gpu_palette_metal_prepare_device_locked()) return 0;
 
-    source = sixel_gpu_palette_metal_create_source();
+    source = sixel_gpu_palette_metal_create_source(dither);
     if (source == nil) {
         return 0;
     }
@@ -582,55 +590,45 @@ sixel_gpu_palette_metal_prepare_locked(void)
         return 0;
     }
     function = [library newFunctionWithName:@"sixel_gpu_palette_apply"];
-    dequant_function =
-        [library newFunctionWithName:@"sixel_gpu_dequant_fast4_rgba"];
     if (function == nil) {
         [library release];
         return 0;
     }
-    if (dequant_function == nil) {
-        [function release];
-        [library release];
-        return 0;
-    }
-    g_sixel_gpu_metal_pipeline =
+    gpu_legacy_active->pipeline =
         [g_sixel_gpu_metal_device newComputePipelineStateWithFunction:function
                                                                  error:&error];
     [function release];
     function = nil;
-    if (g_sixel_gpu_metal_pipeline == nil) {
-        [dequant_function release];
+    if (gpu_legacy_active->pipeline == nil) {
         [library release];
         return 0;
     }
-    g_sixel_gpu_metal_dequant_pipeline =
-        [g_sixel_gpu_metal_device
-            newComputePipelineStateWithFunction:dequant_function
-                                          error:&error];
-    [dequant_function release];
-    dequant_function = nil;
-    function = [library newFunctionWithName:@"sixel_gpu_grid_build"];
+    function = g_sixel_gpu_metal_grid_build == nil
+        ? [library newFunctionWithName:@"sixel_gpu_grid_build"] : nil;
     if (function != nil) {
         g_sixel_gpu_metal_grid_build = [g_sixel_gpu_metal_device
             newComputePipelineStateWithFunction:function error:&error];
         [function release];
         function = nil;
     }
-    function = [library newFunctionWithName:@"sixel_gpu_delaunay_bounds"];
+    function = g_sixel_gpu_metal_delaunay_bounds == nil
+        ? [library newFunctionWithName:@"sixel_gpu_delaunay_bounds"] : nil;
     if (function != nil) {
         g_sixel_gpu_metal_delaunay_bounds = [g_sixel_gpu_metal_device
             newComputePipelineStateWithFunction:function error:&error];
         [function release];
         function = nil;
     }
-    function = [library newFunctionWithName:@"sixel_gpu_delaunay_sort"];
+    function = g_sixel_gpu_metal_delaunay_sort == nil
+        ? [library newFunctionWithName:@"sixel_gpu_delaunay_sort"] : nil;
     if (function != nil) {
         g_sixel_gpu_metal_delaunay_sort = [g_sixel_gpu_metal_device
             newComputePipelineStateWithFunction:function error:&error];
         [function release];
         function = nil;
     }
-    function = [library newFunctionWithName:@"sixel_gpu_delaunay_seeds"];
+    function = g_sixel_gpu_metal_delaunay_seeds == nil
+        ? [library newFunctionWithName:@"sixel_gpu_delaunay_seeds"] : nil;
     if (function != nil) {
         g_sixel_gpu_metal_delaunay_seeds = [g_sixel_gpu_metal_device
             newComputePipelineStateWithFunction:function error:&error];
@@ -639,11 +637,39 @@ sixel_gpu_palette_metal_prepare_locked(void)
     }
     [library release];
     library = nil;
-    if (g_sixel_gpu_metal_dequant_pipeline == nil) {
+    gpu_legacy_active->available = 1;
+    return 1;
+}
+
+static int
+sixel_gpu_dequant_metal_prepare_locked(void)
+{
+    NSMutableString *source;
+    id<MTLLibrary> library;
+    id<MTLFunction> function;
+    NSError *error;
+
+    if (g_sixel_gpu_metal_dequant_pipeline != nil) return 1;
+    if (!sixel_gpu_palette_metal_prepare_device_locked()) return 0;
+    error = nil;
+    source = [[NSMutableString alloc] init];
+    if (source == nil) return 0;
+    if (!sixel_gpu_palette_metal_append_chunks(source, gpu_dequant_source)) {
+        [source release];
         return 0;
     }
-    g_sixel_gpu_metal_available = 1;
-    return 1;
+    library = [g_sixel_gpu_metal_device newLibraryWithSource:source
+        options:nil error:&error];
+    [source release];
+    if (library == nil) return 0;
+    function = [library newFunctionWithName:@"sixel_gpu_dequant_fast4_rgba"];
+    if (function != nil) {
+        g_sixel_gpu_metal_dequant_pipeline = [g_sixel_gpu_metal_device
+            newComputePipelineStateWithFunction:function error:&error];
+        [function release];
+    }
+    [library release];
+    return g_sixel_gpu_metal_dequant_pipeline != nil;
 }
 
 /* The simdgroup kernels' lane layout assumes 32-wide simdgroups, and
@@ -687,22 +713,19 @@ sixel_gpu_palette_metal_prepare_gemm_locked(void)
 
     error = nil;
     library = nil;
-    if (g_sixel_gpu_metal_gemm_probe_done != 0) {
-        return g_sixel_gpu_metal_gemm_pipeline != nil;
+    if (gpu_legacy_active->gemm_probe_done != 0) {
+        return gpu_legacy_active->gemm_pipeline != nil;
     }
-    g_sixel_gpu_metal_gemm_probe_done = 1;
+    gpu_legacy_active->gemm_probe_done = 1;
     if (g_sixel_gpu_metal_device == nil ||
             ![g_sixel_gpu_metal_device supportsFamily:MTLGPUFamilyApple7]) {
         return 0;
     }
-    source = [[NSMutableString alloc] init];
-    if (source == nil) {
-        return 0;
-    }
+    source = sixel_gpu_palette_metal_create_source(
+        gpu_legacy_active->dither);
+    if (source == nil) return 0;
     if (!sixel_gpu_palette_metal_append_chunks(
-                source, g_sixel_gpu_metal_source_chunks) ||
-            !sixel_gpu_palette_metal_append_chunks(
-                source, g_sixel_gpu_metal_gemm_source_chunks)) {
+            source, g_sixel_gpu_metal_gemm_source_chunks)) {
         [source release];
         return 0;
     }
@@ -713,18 +736,18 @@ sixel_gpu_palette_metal_prepare_gemm_locked(void)
     if (library == nil) {
         return 0;
     }
-    g_sixel_gpu_metal_gemm_pipeline =
+    gpu_legacy_active->gemm_pipeline =
         sixel_gpu_palette_metal_simdgroup_pipeline(
             library, @"sixel_gpu_palette_apply_gemm");
     /* Block culling shares the library; without it, blockcull keeps the
      * exhaustive GEMM, which returns the same indexes. */
-    if (g_sixel_gpu_metal_gemm_pipeline != nil) {
-        g_sixel_gpu_metal_blockcull_pipeline =
+    if (gpu_legacy_active->gemm_pipeline != nil) {
+        gpu_legacy_active->blockcull_pipeline =
             sixel_gpu_palette_metal_simdgroup_pipeline(
                 library, @"sixel_gpu_palette_apply_blockcull");
     }
     [library release];
-    return g_sixel_gpu_metal_gemm_pipeline != nil;
+    return gpu_legacy_active->gemm_pipeline != nil;
 }
 
 /* Palette tiles for the GEMM kernel: tile t holds colors 8t .. 8t + 7 as
@@ -770,7 +793,7 @@ sixel_gpu_palette_metal_is_available(void)
 
     available = 0;
     (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
-    available = sixel_gpu_palette_metal_prepare_locked();
+    available = sixel_gpu_palette_metal_prepare_device_locked();
     (void)pthread_mutex_unlock(&g_sixel_gpu_metal_lock);
     return available;
 }
@@ -792,15 +815,6 @@ sixel_gpu_palette_metal_fill_params(
     params->ncolors = (uint32_t)request->ncolors;
     params->lookup_mode = request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER ?
         SIXEL_GPU_METAL_LOOKUP_EYTZINGER : SIXEL_GPU_METAL_LOOKUP_DIRECT;
-    params->mode =
-        request->method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER ?
-        SIXEL_GPU_METAL_MODE_BLUENOISE :
-        SIXEL_GPU_METAL_MODE_NONE;
-    if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER) {
-        params->mode = SIXEL_GPU_METAL_MODE_A_DITHER;
-    } else if (request->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER) {
-        params->mode = SIXEL_GPU_METAL_MODE_X_DITHER;
-    }
     params->positional_strength = request->positional_strength;
     if (request->transparent_mask != NULL &&
             request->transparent_keycolor >= 0 &&
@@ -854,8 +868,6 @@ sixel_gpu_palette_metal_fill_params(
     params->gradient_height = (uint32_t)request->bluenoise_gradient_height;
 }
 
-#include "gpu-palette-fused-prefix.inc.h"
-#include "gpu-palette-fused-suffix.inc.h"
 #include "gpu-palette-program.inc.h"
 
 /* Commands own their encoded resources. Keep a bounded window alive until
@@ -1142,6 +1154,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
     local = *input;
     request = &local;
     program = request->program;
+    if (program != NULL && request->dither_program != program->dither)
+        return SIXEL_BAD_ARGUMENT;
     binding = NULL;
     memset(&binding_view, 0, sizeof(binding_view));
     program_view = program == NULL ? NULL : &program->view;
@@ -1231,7 +1245,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
         (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
         locked = 1;
         if (!(generic ? sixel_gpu_palette_metal_prepare_device_locked()
-                : sixel_gpu_palette_metal_prepare_locked())) {
+                : sixel_gpu_palette_metal_prepare_locked(
+                    request->dither_program))) {
             sixel_helper_set_additional_message(
                 "gpu palette apply: Metal is not available.");
             status = SIXEL_FEATURE_ERROR;
@@ -1554,7 +1569,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
 
         /* Direct lookup runs as a matrix product where the device supports
          * simdgroup matrices; both kernels return the same indexes. */
-        pipeline = g_sixel_gpu_metal_pipeline;
+        pipeline = generic ? nil : gpu_legacy_active->pipeline;
         if (!generic && !use_5bit && !use_6bit && !use_grid &&
                 !use_delaunay &&
                 !use_fhedt &&
@@ -1567,7 +1582,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
                 gemm_tiles,
                 gemm_tiles_length);
             if (gemm_tiles_buffer != nil) {
-                pipeline = g_sixel_gpu_metal_gemm_pipeline;
+                pipeline = gpu_legacy_active->gemm_pipeline;
                 use_gemm = 1;
                 /* Culling keeps the full tiles for blocks that overflow
                  * its survivor capacity.  A palette of at most four tiles
@@ -1575,8 +1590,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
                  * indexes. */
                 if (request->lut_policy == SIXEL_LUT_POLICY_BLOCKCULL &&
                         request->ncolors > 32 &&
-                        g_sixel_gpu_metal_blockcull_pipeline != nil) {
-                    pipeline = g_sixel_gpu_metal_blockcull_pipeline;
+                        gpu_legacy_active->blockcull_pipeline != nil) {
+                    pipeline = gpu_legacy_active->blockcull_pipeline;
                     use_blockcull = 1;
                 }
             }
@@ -1863,7 +1878,7 @@ sixel_gpu_dequant_metal_is_available(void)
 
     available = 0;
     (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
-    available = sixel_gpu_palette_metal_prepare_locked();
+    available = sixel_gpu_dequant_metal_prepare_locked();
     (void)pthread_mutex_unlock(&g_sixel_gpu_metal_lock);
 
     return available;
@@ -1932,7 +1947,7 @@ sixel_gpu_dequant_metal_fast4_rgba(
     @autoreleasepool {
         (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
         locked = 1;
-        if (!sixel_gpu_palette_metal_prepare_locked()) {
+        if (!sixel_gpu_dequant_metal_prepare_locked()) {
             sixel_helper_set_additional_message(
                 "gpu dequant: Metal is not available.");
             status = SIXEL_FEATURE_ERROR;

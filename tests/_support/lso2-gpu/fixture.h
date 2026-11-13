@@ -73,4 +73,6 @@ SIXELSTATUS lso2_gpu_fixture_deferred(lso2_gpu_fixture_t *f);
 void lso2_gpu_fixture_close(lso2_gpu_fixture_t *f);
 SIXELSTATUS lso2_gpu_fixture_prepare(lso2_gpu_fixture_t *f);
 SIXELSTATUS lso2_gpu_fixture_run(lso2_gpu_fixture_t *f);
+int positional_gpu_component_check(int method, int observation);
+int positional_gpu_reconfigure_check(int method);
 #endif

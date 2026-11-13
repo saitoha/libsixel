@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_factory_classid_lookup --language=ANSI-C -m5 -t -H sixel_factory_classid_hash -W sixel_factory_classid_wordlist ../../src/classid-factory.gperf  */
+/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_factory_classid_lookup --language=ANSI-C -m5 -t -H sixel_factory_classid_hash -W sixel_factory_classid_wordlist src/classid-factory.gperf  */
 /* Computed positions: -k'1,8,11,14,20' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -48,6 +48,10 @@
 #include "lookup-policy-gridlut.h"
 #include "lookup-policy-ordered.h"
 #include "lookup-policy-blockcull.h"
+#include "dither-policy-none-gpu.h"
+#include "dither-policy-a-dither-gpu.h"
+#include "dither-policy-x-dither-gpu.h"
+#include "dither-policy-bluenoise-gpu.h"
 #include "dither-policy-none.h"
 #include "dither-policy-fs.h"
 #include "dither-policy-atkinson.h"
@@ -246,306 +250,326 @@ typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
 # define SIXEL_FACTORY_CLASSID_CREATE_30 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_31 sixel_dither_policy_none_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_31 sixel_dither_policy_none_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_31 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_32 sixel_dither_policy_none_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_32 sixel_dither_policy_a_dither_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_32 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_33 sixel_dither_policy_fs_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_33 sixel_dither_policy_x_dither_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_33 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_34 sixel_dither_policy_fs_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_34 sixel_dither_policy_bluenoise_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_34 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_35 sixel_dither_policy_atkinson_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_35 sixel_dither_policy_none_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_35 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_36 sixel_dither_policy_atkinson_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_36 sixel_dither_policy_none_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_36 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_37 sixel_dither_policy_jajuni_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_37 sixel_dither_policy_fs_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_37 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_38 sixel_dither_policy_jajuni_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_38 sixel_dither_policy_fs_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_38 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_39 sixel_dither_policy_stucki_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_39 sixel_dither_policy_atkinson_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_39 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_40 sixel_dither_policy_stucki_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_40 sixel_dither_policy_atkinson_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_40 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_41 sixel_dither_policy_burkes_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_41 sixel_dither_policy_jajuni_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_41 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_42 sixel_dither_policy_burkes_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_42 sixel_dither_policy_jajuni_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_42 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_43 sixel_dither_policy_sierra1_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_43 sixel_dither_policy_stucki_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_43 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_44 sixel_dither_policy_sierra1_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_44 sixel_dither_policy_stucki_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_44 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_45 sixel_dither_policy_sierra2_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_45 sixel_dither_policy_burkes_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_45 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_46 sixel_dither_policy_sierra2_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_46 sixel_dither_policy_burkes_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_46 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_47 sixel_dither_policy_sierra3_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_47 sixel_dither_policy_sierra1_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_47 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_48 sixel_dither_policy_sierra3_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_48 sixel_dither_policy_sierra1_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_48 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_49 sixel_dither_policy_lso2_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_49 sixel_dither_policy_sierra2_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_49 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_50 sixel_dither_policy_fs_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_50 sixel_dither_policy_sierra2_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_50 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_51 sixel_dither_policy_atkinson_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_51 sixel_dither_policy_sierra3_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_51 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_52 sixel_dither_policy_jajuni_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_52 sixel_dither_policy_sierra3_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_52 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_53 sixel_dither_policy_stucki_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_53 sixel_dither_policy_lso2_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_53 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_54 sixel_dither_policy_burkes_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_54 sixel_dither_policy_fs_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_54 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_55 sixel_dither_policy_sierra1_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_55 sixel_dither_policy_atkinson_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_55 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_56 sixel_dither_policy_sierra2_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_56 sixel_dither_policy_jajuni_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_56 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_57 sixel_dither_policy_sierra3_gpu_new
+# define SIXEL_FACTORY_CLASSID_CREATE_57 sixel_dither_policy_stucki_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_57 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_58 sixel_dither_policy_lso2_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_58 sixel_dither_policy_burkes_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_58 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_59 sixel_dither_policy_lso2_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_59 sixel_dither_policy_sierra1_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_59 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_60 sixel_dither_policy_a_dither_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_60 sixel_dither_policy_sierra2_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_60 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_61 sixel_dither_policy_a_dither_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_61 sixel_dither_policy_sierra3_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_61 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_62 sixel_dither_policy_x_dither_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_62 sixel_dither_policy_lso2_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_62 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_63 sixel_dither_policy_x_dither_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_63 sixel_dither_policy_lso2_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_63 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_64 sixel_dither_policy_bluenoise_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_64 sixel_dither_policy_a_dither_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_64 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_65 sixel_dither_policy_bluenoise_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_65 sixel_dither_policy_a_dither_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_65 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_66 sixel_loader_builtin_new
+# define SIXEL_FACTORY_CLASSID_CREATE_66 sixel_dither_policy_x_dither_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_66 0
 #endif
-#if HAVE_COREGRAPHICS
-# define SIXEL_FACTORY_CLASSID_CREATE_67 sixel_loader_coregraphics_new
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_67 sixel_dither_policy_x_dither_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_67 0
 #endif
-#if HAVE_GD
-# define SIXEL_FACTORY_CLASSID_CREATE_68 sixel_loader_gd_new
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_68 sixel_dither_policy_bluenoise_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_68 0
 #endif
-#if HAVE_GDK_PIXBUF2
-# define SIXEL_FACTORY_CLASSID_CREATE_69 sixel_loader_gdkpixbuf2_new
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_69 sixel_dither_policy_bluenoise_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_69 0
 #endif
-#if HAVE_FREEDESKTOP_THUMBNAILING
-# define SIXEL_FACTORY_CLASSID_CREATE_70 sixel_loader_gnome_thumbnailer_new
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_70 sixel_loader_builtin_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_70 0
 #endif
-#if HAVE_JPEG
-# define SIXEL_FACTORY_CLASSID_CREATE_71 sixel_loader_libjpeg_new
+#if HAVE_COREGRAPHICS
+# define SIXEL_FACTORY_CLASSID_CREATE_71 sixel_loader_coregraphics_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_71 0
 #endif
-#if HAVE_LIBPNG
-# define SIXEL_FACTORY_CLASSID_CREATE_72 sixel_loader_libpng_new
+#if HAVE_GD
+# define SIXEL_FACTORY_CLASSID_CREATE_72 sixel_loader_gd_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_72 0
 #endif
-#if HAVE_LIBRSVG
-# define SIXEL_FACTORY_CLASSID_CREATE_73 sixel_loader_librsvg_new
+#if HAVE_GDK_PIXBUF2
+# define SIXEL_FACTORY_CLASSID_CREATE_73 sixel_loader_gdkpixbuf2_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_73 0
 #endif
-#if HAVE_LIBTIFF
-# define SIXEL_FACTORY_CLASSID_CREATE_74 sixel_loader_libtiff_new
+#if HAVE_FREEDESKTOP_THUMBNAILING
+# define SIXEL_FACTORY_CLASSID_CREATE_74 sixel_loader_gnome_thumbnailer_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_74 0
 #endif
-#if HAVE_WEBP
-# define SIXEL_FACTORY_CLASSID_CREATE_75 sixel_loader_libwebp_new
+#if HAVE_JPEG
+# define SIXEL_FACTORY_CLASSID_CREATE_75 sixel_loader_libjpeg_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_75 0
 #endif
-#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-# define SIXEL_FACTORY_CLASSID_CREATE_76 sixel_loader_quicklook_new
+#if HAVE_LIBPNG
+# define SIXEL_FACTORY_CLASSID_CREATE_76 sixel_loader_libpng_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_76 0
 #endif
-#if HAVE_WIC
-# define SIXEL_FACTORY_CLASSID_CREATE_77 sixel_loader_wic_new
+#if HAVE_LIBRSVG
+# define SIXEL_FACTORY_CLASSID_CREATE_77 sixel_loader_librsvg_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_77 0
 #endif
-#if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_78 sixel_retained_plane_factory_new
+#if HAVE_LIBTIFF
+# define SIXEL_FACTORY_CLASSID_CREATE_78 sixel_loader_libtiff_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_78 0
 #endif
-#if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_79 sixel_palette_apply_factory_new
+#if HAVE_WEBP
+# define SIXEL_FACTORY_CLASSID_CREATE_79 sixel_loader_libwebp_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_79 0
 #endif
-#if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_80 sixel_writer_factory_new
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+# define SIXEL_FACTORY_CLASSID_CREATE_80 sixel_loader_quicklook_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_80 0
 #endif
-#if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_81 sixel_encoder_core_factory_new
+#if HAVE_WIC
+# define SIXEL_FACTORY_CLASSID_CREATE_81 sixel_loader_wic_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_81 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_82 sixel_encoder_core_normal_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_82 sixel_retained_plane_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_82 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_83 sixel_encoder_core_ormode_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_83 sixel_palette_apply_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_83 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_84 sixel_chunk_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_84 sixel_writer_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_84 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_85 sixel_frame_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_85 sixel_encoder_core_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_85 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_86 sixel_palette_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_86 sixel_encoder_core_normal_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_86 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_87 sixel_loader_manager_new
+# define SIXEL_FACTORY_CLASSID_CREATE_87 sixel_encoder_core_ormode_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_87 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_88 sixel_timeline_logger_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_88 sixel_chunk_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_88 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_89 sixel_frame_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_89 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_90 sixel_palette_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_90 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_91 sixel_loader_manager_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_91 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_92 sixel_timeline_logger_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_92 0
 #endif
 struct sixel_factory_classid_entry {
     char const *name;
     sixel_factory_class_new_fn create;
 };
 
-#define TOTAL_KEYWORDS 88
+#define TOTAL_KEYWORDS 92
 #define MIN_WORD_LENGTH 9
 #define MAX_WORD_LENGTH 27
-#define MIN_HASH_VALUE 28
-#define MAX_HASH_VALUE 128
-/* maximum key range = 101, duplicates = 0 */
+#define MIN_HASH_VALUE 20
+#define MAX_HASH_VALUE 125
+/* maximum key range = 106, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -559,32 +583,32 @@ sixel_factory_classid_hash (register const char *str, register unsigned int len)
 {
   static const unsigned char asso_values[] =
     {
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129,  11,  15,  39, 129,  32,
-       15,  17, 129,  74,  70, 129,  48, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129,   3,  11,  34,
-        3,   4,   6,   8,  40,   4,  31,  54,  11,   4,
-       15,   5,  29,  17,  35,  17,   3,  11,  29,  61,
-       65, 129,  20, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129, 129, 129, 129, 129,
-      129, 129, 129, 129, 129, 129
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126,  38,   3,   2, 126,  26,
+       14,   0, 126,  92,   1, 126,  25, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126,   0,   1,  36,
+       17,   1,  24,   5,   0,   0,  35,  75,   7,  18,
+        1,   6,  66,  20,  44,  15,   0,  31,  12,   3,
+       34, 126,  23, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
+      126, 126, 126, 126, 126, 126
     };
   register unsigned int hval = len;
 
@@ -628,102 +652,108 @@ static const struct sixel_factory_classid_entry sixel_factory_classid_wordlist[]
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-    {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-    {"", 0},
-    {"loader/gd", SIXEL_FACTORY_CLASSID_CREATE_68},
-    {"", 0},
-    {"dither/fs.gpu", SIXEL_FACTORY_CLASSID_CREATE_50},
+    {"", 0}, {"", 0},
+    {"loader/wic", SIXEL_FACTORY_CLASSID_CREATE_81},
+    {"loader/gd", SIXEL_FACTORY_CLASSID_CREATE_72},
     {"", 0}, {"", 0}, {"", 0},
-    {"dither/atkinson.gpu", SIXEL_FACTORY_CLASSID_CREATE_51},
-    {"dither/fs.float32", SIXEL_FACTORY_CLASSID_CREATE_34},
-    {"quant/palette", SIXEL_FACTORY_CLASSID_CREATE_86},
-    {"dither/a_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_60},
-    {"dither/atkinson.8bit", SIXEL_FACTORY_CLASSID_CREATE_35},
-    {"image/retained-plane", SIXEL_FACTORY_CLASSID_CREATE_78},
-    {"dither/a_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_61},
-    {"dither/atkinson.float32", SIXEL_FACTORY_CLASSID_CREATE_36},
-    {"lookup/ordered.8bit", SIXEL_FACTORY_CLASSID_CREATE_27},
-    {"lookup/delaunay.8bit", SIXEL_FACTORY_CLASSID_CREATE_23},
-    {"lookup/gridlut.8bit", SIXEL_FACTORY_CLASSID_CREATE_25},
-    {"loader/libtiff", SIXEL_FACTORY_CLASSID_CREATE_74},
-    {"lookup/delaunay.float32", SIXEL_FACTORY_CLASSID_CREATE_24},
-    {"dither/bluenoise.8bit", SIXEL_FACTORY_CLASSID_CREATE_64},
-    {"lookup/ordered.float32", SIXEL_FACTORY_CLASSID_CREATE_28},
-    {"dither/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_31},
-    {"lookup/gridlut.float32", SIXEL_FACTORY_CLASSID_CREATE_26},
-    {"dither/bluenoise.float32", SIXEL_FACTORY_CLASSID_CREATE_65},
-    {"dither/none.float32", SIXEL_FACTORY_CLASSID_CREATE_32},
-    {"loader/gnome-thumbnailer", SIXEL_FACTORY_CLASSID_CREATE_70},
-    {"image/frame", SIXEL_FACTORY_CLASSID_CREATE_85},
-    {"lookup/mono-darkbg.float32", SIXEL_FACTORY_CLASSID_CREATE_14},
-    {"dither/lso2.8bit", SIXEL_FACTORY_CLASSID_CREATE_58},
-    {"lookup/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_17},
-    {"diagnostics/timeline-logger", SIXEL_FACTORY_CLASSID_CREATE_88},
-    {"dither/lso2.float32", SIXEL_FACTORY_CLASSID_CREATE_59},
-    {"lookup/none.float32", SIXEL_FACTORY_CLASSID_CREATE_18},
-    {"lookup/fhedt.float32", SIXEL_FACTORY_CLASSID_CREATE_10},
-    {"loader/builtin", SIXEL_FACTORY_CLASSID_CREATE_66},
-    {"lookup/mono-lightbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_15},
-    {"loader/libpng", SIXEL_FACTORY_CLASSID_CREATE_72},
-    {"lookup/mahalanobis.float32", SIXEL_FACTORY_CLASSID_CREATE_12},
-    {"lookup/mono-lightbg.float32", SIXEL_FACTORY_CLASSID_CREATE_16},
-    {"loader/manager", SIXEL_FACTORY_CLASSID_CREATE_87},
-    {"lookup/eytzinger.8bit", SIXEL_FACTORY_CLASSID_CREATE_7},
-    {"io/sixel-writer", SIXEL_FACTORY_CLASSID_CREATE_80},
-    {"lookup/certlut.8bit", SIXEL_FACTORY_CLASSID_CREATE_5},
-    {"loader/coregraphics", SIXEL_FACTORY_CLASSID_CREATE_67},
-    {"lookup/eytzinger.float32", SIXEL_FACTORY_CLASSID_CREATE_8},
-    {"dither/lso2.gpu", SIXEL_FACTORY_CLASSID_CREATE_49},
-    {"dither/fs.8bit", SIXEL_FACTORY_CLASSID_CREATE_33},
-    {"loader/libjpeg", SIXEL_FACTORY_CLASSID_CREATE_71},
-    {"lookup/certlut.float32", SIXEL_FACTORY_CLASSID_CREATE_6},
-    {"dither/jajuni.gpu", SIXEL_FACTORY_CLASSID_CREATE_52},
-    {"dither/jajuni.8bit", SIXEL_FACTORY_CLASSID_CREATE_37},
-    {"loader/librsvg", SIXEL_FACTORY_CLASSID_CREATE_73},
-    {"lookup/rbc.8bit", SIXEL_FACTORY_CLASSID_CREATE_19},
-    {"codec/encoder-core", SIXEL_FACTORY_CLASSID_CREATE_81},
-    {"loader/wic", SIXEL_FACTORY_CLASSID_CREATE_77},
-    {"loader/quicklook", SIXEL_FACTORY_CLASSID_CREATE_76},
-    {"lookup/rbc.float32", SIXEL_FACTORY_CLASSID_CREATE_20},
-    {"lookup/fhedt.8bit", SIXEL_FACTORY_CLASSID_CREATE_9},
-    {"dither/stucki.gpu", SIXEL_FACTORY_CLASSID_CREATE_53},
-    {"dither/stucki.8bit", SIXEL_FACTORY_CLASSID_CREATE_39},
-    {"dither/sierra2.gpu", SIXEL_FACTORY_CLASSID_CREATE_56},
-    {"dither/sierra2.8bit", SIXEL_FACTORY_CLASSID_CREATE_45},
-    {"dither/sierra3.gpu", SIXEL_FACTORY_CLASSID_CREATE_57},
-    {"dither/sierra3.8bit", SIXEL_FACTORY_CLASSID_CREATE_47},
-    {"lookup/blockcull.8bit", SIXEL_FACTORY_CLASSID_CREATE_29},
-    {"codec/encoder-core.ormode", SIXEL_FACTORY_CLASSID_CREATE_83},
-    {"lookup/mono-darkbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_13},
-    {"dither/sierra2.float32", SIXEL_FACTORY_CLASSID_CREATE_46},
-    {"lookup/blockcull.float32", SIXEL_FACTORY_CLASSID_CREATE_30},
-    {"dither/sierra3.float32", SIXEL_FACTORY_CLASSID_CREATE_48},
-    {"dither/jajuni.float32", SIXEL_FACTORY_CLASSID_CREATE_38},
-    {"dither/x_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_62},
-    {"dither/burkes.gpu", SIXEL_FACTORY_CLASSID_CREATE_54},
-    {"dither/burkes.8bit", SIXEL_FACTORY_CLASSID_CREATE_41},
-    {"dither/x_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_63},
-    {"codec/encoder-core.normal", SIXEL_FACTORY_CLASSID_CREATE_82},
-    {"lookup/mahalanobis.8bit", SIXEL_FACTORY_CLASSID_CREATE_11},
-    {"dither/sierra1.gpu", SIXEL_FACTORY_CLASSID_CREATE_55},
-    {"dither/sierra1.8bit", SIXEL_FACTORY_CLASSID_CREATE_43},
-    {"dither/stucki.float32", SIXEL_FACTORY_CLASSID_CREATE_40},
-    {"lookup/vptree.8bit", SIXEL_FACTORY_CLASSID_CREATE_21},
-    {"image/chunk", SIXEL_FACTORY_CLASSID_CREATE_84},
-    {"processing/palette-apply", SIXEL_FACTORY_CLASSID_CREATE_79},
     {"lookup/6bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_3},
-    {"dither/sierra1.float32", SIXEL_FACTORY_CLASSID_CREATE_44},
-    {"loader/gdk-pixbuf2", SIXEL_FACTORY_CLASSID_CREATE_69},
+    {"lookup/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_17},
+    {"", 0}, {"", 0}, {"", 0},
+    {"loader/builtin", SIXEL_FACTORY_CLASSID_CREATE_70},
+    {"", 0}, {"", 0},
+    {"quant/palette", SIXEL_FACTORY_CLASSID_CREATE_90},
     {"lookup/6bit.float32", SIXEL_FACTORY_CLASSID_CREATE_4},
-    {"lookup/5bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_1},
-    {"", 0}, {"", 0},
-    {"lookup/5bit.float32", SIXEL_FACTORY_CLASSID_CREATE_2},
-    {"", 0}, {"", 0},
-    {"dither/burkes.float32", SIXEL_FACTORY_CLASSID_CREATE_42},
-    {"", 0}, {"", 0}, {"", 0}, {"", 0},
-    {"loader/libwebp", SIXEL_FACTORY_CLASSID_CREATE_75},
+    {"lookup/none.float32", SIXEL_FACTORY_CLASSID_CREATE_18},
+    {"dither/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_35},
+    {"dither/a_dither.gpu", SIXEL_FACTORY_CLASSID_CREATE_32},
+    {"dither/a_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_64},
+    {"image/retained-plane", SIXEL_FACTORY_CLASSID_CREATE_82},
+    {"dither/bluenoise.8bit", SIXEL_FACTORY_CLASSID_CREATE_68},
+    {"dither/a_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_65},
+    {"dither/atkinson.gpu", SIXEL_FACTORY_CLASSID_CREATE_55},
+    {"dither/atkinson.8bit", SIXEL_FACTORY_CLASSID_CREATE_39},
+    {"lookup/delaunay.8bit", SIXEL_FACTORY_CLASSID_CREATE_23},
+    {"dither/none.float32", SIXEL_FACTORY_CLASSID_CREATE_36},
+    {"dither/atkinson.float32", SIXEL_FACTORY_CLASSID_CREATE_40},
+    {"lookup/delaunay.float32", SIXEL_FACTORY_CLASSID_CREATE_24},
+    {"lookup/gridlut.8bit", SIXEL_FACTORY_CLASSID_CREATE_25},
+    {"dither/bluenoise.float32", SIXEL_FACTORY_CLASSID_CREATE_69},
+    {"lookup/ordered.8bit", SIXEL_FACTORY_CLASSID_CREATE_27},
+    {"lookup/gridlut.float32", SIXEL_FACTORY_CLASSID_CREATE_26},
+    {"loader/libtiff", SIXEL_FACTORY_CLASSID_CREATE_78},
+    {"lookup/ordered.float32", SIXEL_FACTORY_CLASSID_CREATE_28},
+    {"loader/gnome-thumbnailer", SIXEL_FACTORY_CLASSID_CREATE_74},
+    {"dither/lso2.8bit", SIXEL_FACTORY_CLASSID_CREATE_62},
+    {"image/frame", SIXEL_FACTORY_CLASSID_CREATE_89},
+    {"lookup/eytzinger.8bit", SIXEL_FACTORY_CLASSID_CREATE_7},
+    {"lookup/mono-lightbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_15},
+    {"dither/fs.gpu", SIXEL_FACTORY_CLASSID_CREATE_54},
+    {"diagnostics/timeline-logger", SIXEL_FACTORY_CLASSID_CREATE_92},
+    {"lookup/mono-lightbg.float32", SIXEL_FACTORY_CLASSID_CREATE_16},
+    {"lookup/certlut.8bit", SIXEL_FACTORY_CLASSID_CREATE_5},
+    {"loader/coregraphics", SIXEL_FACTORY_CLASSID_CREATE_71},
+    {"dither/lso2.float32", SIXEL_FACTORY_CLASSID_CREATE_63},
+    {"lookup/certlut.float32", SIXEL_FACTORY_CLASSID_CREATE_6},
+    {"lookup/eytzinger.float32", SIXEL_FACTORY_CLASSID_CREATE_8},
+    {"io/sixel-writer", SIXEL_FACTORY_CLASSID_CREATE_84},
+    {"loader/libjpeg", SIXEL_FACTORY_CLASSID_CREATE_75},
+    {"lookup/rbc.8bit", SIXEL_FACTORY_CLASSID_CREATE_19},
+    {"dither/bluenoise.gpu", SIXEL_FACTORY_CLASSID_CREATE_34},
+    {"dither/x_dither.gpu", SIXEL_FACTORY_CLASSID_CREATE_33},
+    {"dither/x_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_66},
     {"", 0},
-    {"lookup/vptree.float32", SIXEL_FACTORY_CLASSID_CREATE_22}
+    {"lookup/mahalanobis.8bit", SIXEL_FACTORY_CLASSID_CREATE_11},
+    {"dither/x_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_67},
+    {"lookup/mahalanobis.float32", SIXEL_FACTORY_CLASSID_CREATE_12},
+    {"loader/librsvg", SIXEL_FACTORY_CLASSID_CREATE_77},
+    {"lookup/rbc.float32", SIXEL_FACTORY_CLASSID_CREATE_20},
+    {"lookup/mono-darkbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_13},
+    {"dither/fs.8bit", SIXEL_FACTORY_CLASSID_CREATE_37},
+    {"lookup/mono-darkbg.float32", SIXEL_FACTORY_CLASSID_CREATE_14},
+    {"dither/fs.float32", SIXEL_FACTORY_CLASSID_CREATE_38},
+    {"loader/manager", SIXEL_FACTORY_CLASSID_CREATE_91},
+    {"lookup/vptree.8bit", SIXEL_FACTORY_CLASSID_CREATE_21},
+    {"loader/quicklook", SIXEL_FACTORY_CLASSID_CREATE_80},
+    {"image/chunk", SIXEL_FACTORY_CLASSID_CREATE_88},
+    {"lookup/vptree.float32", SIXEL_FACTORY_CLASSID_CREATE_22},
+    {"dither/stucki.gpu", SIXEL_FACTORY_CLASSID_CREATE_57},
+    {"dither/stucki.8bit", SIXEL_FACTORY_CLASSID_CREATE_43},
+    {"lookup/fhedt.8bit", SIXEL_FACTORY_CLASSID_CREATE_9},
+    {"", 0},
+    {"dither/stucki.float32", SIXEL_FACTORY_CLASSID_CREATE_44},
+    {"loader/libpng", SIXEL_FACTORY_CLASSID_CREATE_76},
+    {"dither/sierra3.gpu", SIXEL_FACTORY_CLASSID_CREATE_61},
+    {"dither/sierra3.8bit", SIXEL_FACTORY_CLASSID_CREATE_51},
+    {"lookup/blockcull.8bit", SIXEL_FACTORY_CLASSID_CREATE_29},
+    {"loader/libwebp", SIXEL_FACTORY_CLASSID_CREATE_79},
+    {"dither/sierra3.float32", SIXEL_FACTORY_CLASSID_CREATE_52},
+    {"processing/palette-apply", SIXEL_FACTORY_CLASSID_CREATE_83},
+    {"dither/none.gpu", SIXEL_FACTORY_CLASSID_CREATE_31},
+    {"", 0},
+    {"loader/gdk-pixbuf2", SIXEL_FACTORY_CLASSID_CREATE_73},
+    {"dither/jajuni.gpu", SIXEL_FACTORY_CLASSID_CREATE_56},
+    {"dither/jajuni.8bit", SIXEL_FACTORY_CLASSID_CREATE_41},
+    {"lookup/blockcull.float32", SIXEL_FACTORY_CLASSID_CREATE_30},
+    {"lookup/fhedt.float32", SIXEL_FACTORY_CLASSID_CREATE_10},
+    {"dither/jajuni.float32", SIXEL_FACTORY_CLASSID_CREATE_42},
+    {"dither/sierra2.gpu", SIXEL_FACTORY_CLASSID_CREATE_60},
+    {"dither/sierra2.8bit", SIXEL_FACTORY_CLASSID_CREATE_49},
+    {"codec/encoder-core", SIXEL_FACTORY_CLASSID_CREATE_85},
+    {"", 0},
+    {"dither/sierra2.float32", SIXEL_FACTORY_CLASSID_CREATE_50},
+    {"dither/burkes.gpu", SIXEL_FACTORY_CLASSID_CREATE_58},
+    {"dither/burkes.8bit", SIXEL_FACTORY_CLASSID_CREATE_45},
+    {"", 0},
+    {"lookup/5bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_1},
+    {"dither/burkes.float32", SIXEL_FACTORY_CLASSID_CREATE_46},
+    {"codec/encoder-core.normal", SIXEL_FACTORY_CLASSID_CREATE_86},
+    {"dither/lso2.gpu", SIXEL_FACTORY_CLASSID_CREATE_53},
+    {"dither/sierra1.gpu", SIXEL_FACTORY_CLASSID_CREATE_59},
+    {"dither/sierra1.8bit", SIXEL_FACTORY_CLASSID_CREATE_47},
+    {"", 0},
+    {"codec/encoder-core.ormode", SIXEL_FACTORY_CLASSID_CREATE_87},
+    {"dither/sierra1.float32", SIXEL_FACTORY_CLASSID_CREATE_48},
+    {"lookup/5bit.float32", SIXEL_FACTORY_CLASSID_CREATE_2}
   };
 
 const struct sixel_factory_classid_entry *

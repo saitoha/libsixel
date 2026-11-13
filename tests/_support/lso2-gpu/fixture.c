@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #include "fixture.h"
+#include "src/dither.h"
+#include "src/bluenoise_64x64.h"
 #include "src/gpu-palette.h"
 #include "src/lookup-policy-gpu.h"
 #include "src/dither-policy-fs-gpu.h"
@@ -301,4 +303,183 @@ end:
     if (solution != NULL) solution->vtbl->unref(solution);
     if (deferred != NULL) deferred->vtbl->unref(deferred);
     return status;
+}
+
+/* Independent scalar byte oracle: arithmetic phases are integer fractions,
+ * and triangular blue noise is the sum of two table entries minus 255. */
+static int
+positional_gpu_oracle(lso2_gpu_fixture_t const *f, int method)
+{
+    static int const colors[] = {0, 13, 26, 51};
+    int x, y, c, q[3], phase, value, u, v, best, index, distance, minimum;
+
+    for (y = 0; y < LSO2_GPU_HEIGHT; ++y) {
+        for (x = 0; x < LSO2_GPU_WIDTH; ++x) {
+            for (c = 0; c < 3; ++c) {
+                value = f->pixels[(y * LSO2_GPU_WIDTH + x) * 3 + c];
+                if (method == SIXEL_DIFFUSE_A_DITHER) {
+                    phase = ((x + c * 67 + y * 236) * 119) & 255;
+                    value += (int)((phase - 128) * 16.0 / 128.0);
+                } else if (method == SIXEL_DIFFUSE_X_DITHER) {
+                    phase = (((x + c * 29) ^ (y * 149)) * 1234) & 511;
+                    value += (int)((phase - 256) * 16.0 / 256.0);
+                } else if (method == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+                    u = sixel_bn64[(y & 63) * 64 + (x & 63)];
+                    v = sixel_bn64[((y + 29) & 63) * 64 + ((x + 13) & 63)];
+                    value += (int)((u + v - 255) * 16.0 / 255.0);
+                }
+                q[c] = value < 0 ? 0 : value > 255 ? 255 : value;
+            }
+            minimum = 3 * 256 * 256;
+            best = 0;
+            for (index = 0; index < 4; ++index) {
+                distance = 0;
+                for (c = 0; c < 3; ++c)
+                    distance += (q[c] - colors[index]) *
+                        (q[c] - colors[index]);
+                if (distance < minimum) {
+                    minimum = distance;
+                    best = index;
+                }
+            }
+            if (f->image->indexes[y * LSO2_GPU_WIDTH + x] != best) return 0;
+        }
+    }
+    return 1;
+}
+
+static int
+positional_gpu_open(lso2_gpu_fixture_t *f, int method, int direct)
+{
+    static char const *const classes[] = {
+        "dither/none.gpu", "dither/a_dither.gpu",
+        "dither/x_dither.gpu", "dither/bluenoise.gpu"
+    };
+    static int const methods[] = {SIXEL_DIFFUSE_NONE, SIXEL_DIFFUSE_A_DITHER,
+        SIXEL_DIFFUSE_X_DITHER, SIXEL_DIFFUSE_BLUENOISE_DITHER};
+    sixel_factory_t *factory;
+    sixel_lookup_policy_configuration_t lookup;
+    void *service;
+    int outcome, i;
+    SIXELSTATUS status;
+
+    outcome = lso2_gpu_fixture_open(f, 1);
+    if (outcome != 0) return outcome;
+    for (i = 0; i < 4 && methods[i] != method; ++i) {}
+    if (i == 4) return 1;
+    if (sixel_components_getservice("services/factory", &service) != SIXEL_OK)
+        return 1;
+    factory = service;
+    f->dither->vtbl->unref(f->dither);
+    f->dither = NULL;
+    status = factory->vtbl->create(factory, classes[i], f->allocator,
+        (void **)&f->dither);
+    factory->vtbl->unref(factory);
+    if (status != SIXEL_OK) return 1;
+    f->prepare.gpu_dither = f->dither;
+    f->configuration.options.method_for_diffuse = method;
+    f->configuration.options.a_dither_strength = 0.5;
+    f->configuration.options.x_dither_strength = 0.5;
+    f->configuration.options.bluenoise_strength = 0.5;
+    f->configuration.options.bluenoise_size = 64;
+    if (direct) {
+        memset(&lookup, 0, sizeof(lookup));
+        lookup.kind = SIXEL_LUT_POLICY_NONE;
+        lookup.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        f->lookup->vtbl->unref(f->lookup);
+        f->lookup = NULL;
+        if (sixel_gpu_lookup_select(f->allocator, &lookup, &f->lookup)
+                != SIXEL_OK) return 1;
+        f->prepare.gpu_lookup = f->lookup;
+    }
+    return 0;
+}
+
+/* Each wrapper reports one observation for one independently owned policy.
+ * Live plans must survive preparer mutation and intervening policy dispatch. */
+int
+positional_gpu_component_check(int method, int observation)
+{
+    lso2_gpu_fixture_t f, other;
+    sixel_dither_policy_prepare_request_t frozen;
+    int outcome;
+
+    memset(&other, 0, sizeof(other));
+    outcome = positional_gpu_open(&f, method, observation == 2);
+    if (outcome != 0) goto end;
+    outcome = 1;
+    LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
+    frozen = f.configuration;
+    if (observation == 0) {
+        f.configuration.options.a_dither_strength = 0;
+        f.configuration.options.x_dither_strength = 0;
+        f.configuration.options.bluenoise_strength = 0;
+        f.configuration.options.ncolors = 4;
+        LSO2_GPU_CHECK(f.dither->vtbl->configure(f.dither, &f.configuration)
+            == SIXEL_OK);
+    } else if (observation == 1) {
+        f.configuration.options.method_for_diffuse = SIXEL_DIFFUSE_FS;
+        LSO2_GPU_CHECK(f.dither->vtbl->configure(f.dither, &f.configuration)
+            == SIXEL_BAD_ARGUMENT);
+        LSO2_GPU_CHECK(f.dither->vtbl->get_configuration(f.dither,
+            &f.configuration) == SIXEL_OK);
+        LSO2_GPU_CHECK(!memcmp(&frozen, &f.configuration, sizeof(frozen)));
+    } else {
+        LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_OK);
+        LSO2_GPU_CHECK(positional_gpu_oracle(&f, method));
+        LSO2_GPU_CHECK(positional_gpu_open(&other,
+            method == SIXEL_DIFFUSE_A_DITHER ? SIXEL_DIFFUSE_X_DITHER
+                : SIXEL_DIFFUSE_A_DITHER, 1) == 0);
+        LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&other) == SIXEL_OK);
+        LSO2_GPU_CHECK(lso2_gpu_fixture_run(&other) == SIXEL_OK);
+    }
+    LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_OK);
+    LSO2_GPU_CHECK(positional_gpu_oracle(&f, method));
+    outcome = 0;
+end:
+    lso2_gpu_fixture_close(&other);
+    lso2_gpu_fixture_close(&f);
+    return outcome;
+}
+
+/* The context can return to the same diffusion kind after a positional
+ * component. Stale kind metadata must not configure the wrong preparer. */
+int
+positional_gpu_reconfigure_check(int method)
+{
+    sixel_dither_t *dither;
+    sixel_dither_policy_prepare_request_t configuration;
+    unsigned char palette[6] = {0, 0, 0, 255, 255, 255};
+    int outcome;
+
+    dither = NULL;
+    outcome = 1;
+    LSO2_GPU_CHECK(sixel_dither_new(&dither, 2, NULL) == SIXEL_OK);
+    sixel_dither_set_palette(dither, palette);
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGB888);
+    dither->gpu_policy = SIXEL_GPU_POLICY_FORCE;
+    dither->diffuse_on_gpu = 1;
+    sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_FS);
+    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0)
+        == SIXEL_OK);
+    dither->diffuse_on_gpu = 0;
+    sixel_dither_set_diffusion_type(dither, method);
+    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0)
+        == SIXEL_OK);
+    LSO2_GPU_CHECK(dither->gpu_dither != NULL);
+    LSO2_GPU_CHECK(dither->gpu_dither->vtbl->get_configuration(
+        dither->gpu_dither, &configuration) == SIXEL_OK);
+    LSO2_GPU_CHECK(configuration.options.method_for_diffuse == method);
+    dither->diffuse_on_gpu = 1;
+    sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_FS);
+    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0)
+        == SIXEL_OK);
+    LSO2_GPU_CHECK(dither->gpu_dither->vtbl->get_configuration(
+        dither->gpu_dither, &configuration) == SIXEL_OK);
+    LSO2_GPU_CHECK(configuration.options.method_for_diffuse ==
+        SIXEL_DIFFUSE_FS);
+    outcome = 0;
+end:
+    sixel_dither_unref(dither);
+    return outcome;
 }

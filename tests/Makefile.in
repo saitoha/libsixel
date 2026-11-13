@@ -141,6 +141,22 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	dither/bluenoise/0056_gpu_blue_reconfigure.c \
+	dither/x-dither/0049_gpu_x_reconfigure.c \
+	dither/a-dither/0043_gpu_a_reconfigure.c \
+	dither/gpu-direct/0020_gpu_none_reconfigure.c \
+	dither/gpu-direct/0017_gpu_none_snapshot.c \
+	dither/gpu-direct/0018_gpu_none_reject_method.c \
+	dither/gpu-direct/0019_gpu_none_isolation.c \
+	dither/a-dither/0040_gpu_a_snapshot.c \
+	dither/a-dither/0041_gpu_a_reject_method.c \
+	dither/a-dither/0042_gpu_a_isolation.c \
+	dither/x-dither/0046_gpu_x_snapshot.c \
+	dither/x-dither/0047_gpu_x_reject_method.c \
+	dither/x-dither/0048_gpu_x_isolation.c \
+	dither/bluenoise/0053_gpu_blue_snapshot.c \
+	dither/bluenoise/0054_gpu_blue_reject_method.c \
+	dither/bluenoise/0055_gpu_blue_isolation.c \
 	encoder/retained/0001_gpu_bind_rgb.c \
 	encoder/retained/0002_gpu_same_device.c \
 	encoder/retained/0003_gpu_live_read_device.c \
@@ -5239,6 +5255,22 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/path.c
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/x-dither/test_runner-0049_gpu_x_reconfigure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/a-dither/test_runner-0043_gpu_a_reconfigure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0017_gpu_none_snapshot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0018_gpu_none_reject_method.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/gpu-direct/test_runner-0019_gpu_none_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/a-dither/test_runner-0040_gpu_a_snapshot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/a-dither/test_runner-0041_gpu_a_reject_method.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/a-dither/test_runner-0042_gpu_a_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/x-dither/test_runner-0046_gpu_x_snapshot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/x-dither/test_runner-0047_gpu_x_reject_method.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/x-dither/test_runner-0048_gpu_x_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/bluenoise/test_runner-0053_gpu_blue_snapshot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/bluenoise/test_runner-0054_gpu_blue_reject_method.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/bluenoise/test_runner-0055_gpu_blue_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0001_gpu_bind_rgb.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0002_gpu_same_device.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0003_gpu_live_read_device.$(OBJEXT) \
@@ -11717,6 +11749,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/a-dither/$(DEPDIR)/test_runner-0037_a_auto_strength.Po \
 	dither/a-dither/$(DEPDIR)/test_runner-0038_a_strength_precedence.Po \
 	dither/a-dither/$(DEPDIR)/test_runner-0039_wire_a.Po \
+	dither/a-dither/$(DEPDIR)/test_runner-0040_gpu_a_snapshot.Po \
+	dither/a-dither/$(DEPDIR)/test_runner-0041_gpu_a_reject_method.Po \
+	dither/a-dither/$(DEPDIR)/test_runner-0042_gpu_a_isolation.Po \
+	dither/a-dither/$(DEPDIR)/test_runner-0043_gpu_a_reconfigure.Po \
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0001_atkinson_gpu_carry.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0008_positional_8bit_bluenoise_gpu_force_keep_offset.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0023_blue_zero_gamma.Po \
@@ -11748,6 +11784,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/bluenoise/$(DEPDIR)/test_runner-0050_auto_strength.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0051_wire_rgb_bluenoise.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0052_wire_hls_bluenoise.Po \
+	dither/bluenoise/$(DEPDIR)/test_runner-0053_gpu_blue_snapshot.Po \
+	dither/bluenoise/$(DEPDIR)/test_runner-0054_gpu_blue_reject_method.Po \
+	dither/bluenoise/$(DEPDIR)/test_runner-0055_gpu_blue_isolation.Po \
+	dither/bluenoise/$(DEPDIR)/test_runner-0056_gpu_blue_reconfigure.Po \
 	dither/burkes-gpu/$(DEPDIR)/test_runner-0001_burkes_gpu_carry.Po \
 	dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Po \
 	dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Po \
@@ -11869,6 +11909,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/gpu-direct/$(DEPDIR)/test_runner-0014_diffuse_carry.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0015_diffuse_fhedt.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0017_gpu_none_snapshot.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0018_gpu_none_reject_method.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0019_gpu_none_isolation.Po \
+	dither/gpu-direct/$(DEPDIR)/test_runner-0020_gpu_none_reconfigure.Po \
 	dither/jajuni-gpu/$(DEPDIR)/test_runner-0001_jajuni_gpu_carry.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0001_standard_indexes.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0002_small_error_indexes.Po \
@@ -11989,6 +12033,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/x-dither/$(DEPDIR)/test_runner-0043_x_auto_strength.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0044_x_strength_precedence.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0045_wire_x.Po \
+	dither/x-dither/$(DEPDIR)/test_runner-0046_gpu_x_snapshot.Po \
+	dither/x-dither/$(DEPDIR)/test_runner-0047_gpu_x_reject_method.Po \
+	dither/x-dither/$(DEPDIR)/test_runner-0048_gpu_x_isolation.Po \
+	dither/x-dither/$(DEPDIR)/test_runner-0049_gpu_x_reconfigure.Po \
 	encoder/allocation/$(DEPDIR)/test_runner-0001_allocation_slots.Po \
 	encoder/allocation/$(DEPDIR)/test_runner-0002_allocation_controls.Po \
 	encoder/allocation/$(DEPDIR)/test_runner-0003_allocation_gpu.Po \
@@ -16029,6 +16077,22 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_GPU_BLUE_RECONFIGURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_GPU_X_RECONFIGURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_GPU_A_RECONFIGURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_GPU_NONE_RECONFIGURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_GPU_BLUE_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_GPU_BLUE_REJECT_METHOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_GPU_BLUE_SNAPSHOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_GPU_X_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_GPU_X_REJECT_METHOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_GPU_X_SNAPSHOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_GPU_A_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_GPU_A_REJECT_METHOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_GPU_A_SNAPSHOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_GPU_NONE_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_GPU_NONE_REJECT_METHOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_GPU_NONE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_GPU_KMEANS_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_PLAIN_TIES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_HAMERLY_TIES \
@@ -21126,6 +21190,22 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/bluenoise/0056_gpu_blue_reconfigure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/x-dither/0049_gpu_x_reconfigure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/a-dither/0043_gpu_a_reconfigure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0020_gpu_none_reconfigure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0017_gpu_none_snapshot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0018_gpu_none_reject_method.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/gpu-direct/0019_gpu_none_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/a-dither/0040_gpu_a_snapshot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/a-dither/0041_gpu_a_reject_method.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/a-dither/0042_gpu_a_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/x-dither/0046_gpu_x_snapshot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/x-dither/0047_gpu_x_reject_method.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/x-dither/0048_gpu_x_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/bluenoise/0053_gpu_blue_snapshot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/bluenoise/0054_gpu_blue_reject_method.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/bluenoise/0055_gpu_blue_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0001_gpu_bind_rgb.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0002_gpu_same_device.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0003_gpu_live_read_device.c \
@@ -26662,7 +26742,23 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-colorspace-test-declarations.sh \
 	_static/sh/staticcheck-ci-vm-concurrency.sh \
 	_static/awk/ci-vm-concurrency.awk \
-	_static/sh/staticcheck-ci-tsan-shards.sh
+	_static/sh/staticcheck-ci-tsan-shards.sh \
+	dither/gpu-direct/0017_gpu_none_snapshot.t \
+	dither/gpu-direct/0018_gpu_none_reject_method.t \
+	dither/gpu-direct/0019_gpu_none_isolation.t \
+	dither/a-dither/0040_gpu_a_snapshot.t \
+	dither/a-dither/0041_gpu_a_reject_method.t \
+	dither/a-dither/0042_gpu_a_isolation.t \
+	dither/x-dither/0046_gpu_x_snapshot.t \
+	dither/x-dither/0047_gpu_x_reject_method.t \
+	dither/x-dither/0048_gpu_x_isolation.t \
+	dither/bluenoise/0053_gpu_blue_snapshot.t \
+	dither/bluenoise/0054_gpu_blue_reject_method.t \
+	dither/bluenoise/0055_gpu_blue_isolation.t \
+	dither/gpu-direct/0020_gpu_none_reconfigure.t \
+	dither/a-dither/0043_gpu_a_reconfigure.t \
+	dither/x-dither/0049_gpu_x_reconfigure.t \
+	dither/bluenoise/0056_gpu_blue_reconfigure.t
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -26755,6 +26851,78 @@ lookup/delaunay/libfloatlookuptests_la-0012_delaunay_float_bulk.lo:  \
 
 libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
+dither/bluenoise/$(am__dirstamp):
+	@$(MKDIR_P) dither/bluenoise
+	@: >>dither/bluenoise/$(am__dirstamp)
+dither/bluenoise/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/bluenoise/$(DEPDIR)
+	@: >>dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
+dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.$(OBJEXT):  \
+	dither/bluenoise/$(am__dirstamp) \
+	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
+dither/x-dither/$(am__dirstamp):
+	@$(MKDIR_P) dither/x-dither
+	@: >>dither/x-dither/$(am__dirstamp)
+dither/x-dither/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/x-dither/$(DEPDIR)
+	@: >>dither/x-dither/$(DEPDIR)/$(am__dirstamp)
+dither/x-dither/test_runner-0049_gpu_x_reconfigure.$(OBJEXT):  \
+	dither/x-dither/$(am__dirstamp) \
+	dither/x-dither/$(DEPDIR)/$(am__dirstamp)
+dither/a-dither/$(am__dirstamp):
+	@$(MKDIR_P) dither/a-dither
+	@: >>dither/a-dither/$(am__dirstamp)
+dither/a-dither/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/a-dither/$(DEPDIR)
+	@: >>dither/a-dither/$(DEPDIR)/$(am__dirstamp)
+dither/a-dither/test_runner-0043_gpu_a_reconfigure.$(OBJEXT):  \
+	dither/a-dither/$(am__dirstamp) \
+	dither/a-dither/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/$(am__dirstamp):
+	@$(MKDIR_P) dither/gpu-direct
+	@: >>dither/gpu-direct/$(am__dirstamp)
+dither/gpu-direct/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/gpu-direct/$(DEPDIR)
+	@: >>dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0017_gpu_none_snapshot.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0018_gpu_none_reject_method.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/gpu-direct/test_runner-0019_gpu_none_isolation.$(OBJEXT):  \
+	dither/gpu-direct/$(am__dirstamp) \
+	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
+dither/a-dither/test_runner-0040_gpu_a_snapshot.$(OBJEXT):  \
+	dither/a-dither/$(am__dirstamp) \
+	dither/a-dither/$(DEPDIR)/$(am__dirstamp)
+dither/a-dither/test_runner-0041_gpu_a_reject_method.$(OBJEXT):  \
+	dither/a-dither/$(am__dirstamp) \
+	dither/a-dither/$(DEPDIR)/$(am__dirstamp)
+dither/a-dither/test_runner-0042_gpu_a_isolation.$(OBJEXT):  \
+	dither/a-dither/$(am__dirstamp) \
+	dither/a-dither/$(DEPDIR)/$(am__dirstamp)
+dither/x-dither/test_runner-0046_gpu_x_snapshot.$(OBJEXT):  \
+	dither/x-dither/$(am__dirstamp) \
+	dither/x-dither/$(DEPDIR)/$(am__dirstamp)
+dither/x-dither/test_runner-0047_gpu_x_reject_method.$(OBJEXT):  \
+	dither/x-dither/$(am__dirstamp) \
+	dither/x-dither/$(DEPDIR)/$(am__dirstamp)
+dither/x-dither/test_runner-0048_gpu_x_isolation.$(OBJEXT):  \
+	dither/x-dither/$(am__dirstamp) \
+	dither/x-dither/$(DEPDIR)/$(am__dirstamp)
+dither/bluenoise/test_runner-0053_gpu_blue_snapshot.$(OBJEXT):  \
+	dither/bluenoise/$(am__dirstamp) \
+	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
+dither/bluenoise/test_runner-0054_gpu_blue_reject_method.$(OBJEXT):  \
+	dither/bluenoise/$(am__dirstamp) \
+	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
+dither/bluenoise/test_runner-0055_gpu_blue_isolation.$(OBJEXT):  \
+	dither/bluenoise/$(am__dirstamp) \
+	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
 encoder/retained/$(am__dirstamp):
 	@$(MKDIR_P) encoder/retained
 	@: >>encoder/retained/$(am__dirstamp)
@@ -32652,12 +32820,6 @@ _support/processing/filter/test_runner-0014_filter_sample_solid.$(OBJEXT):  \
 dither/dispatch/test_runner-0017_positional_8bit_no_diffuse_gpu_6delta.$(OBJEXT):  \
 	dither/dispatch/$(am__dirstamp) \
 	dither/dispatch/$(DEPDIR)/$(am__dirstamp)
-dither/bluenoise/$(am__dirstamp):
-	@$(MKDIR_P) dither/bluenoise
-	@: >>dither/bluenoise/$(am__dirstamp)
-dither/bluenoise/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/bluenoise/$(DEPDIR)
-	@: >>dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
 dither/bluenoise/test_runner-0008_positional_8bit_bluenoise_gpu_force_keep_offset.$(OBJEXT):  \
 	dither/bluenoise/$(am__dirstamp) \
 	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
@@ -33291,21 +33453,9 @@ dither/bluenoise/test_runner-0049_fade_history.$(OBJEXT):  \
 dither/bluenoise/test_runner-0050_auto_strength.$(OBJEXT):  \
 	dither/bluenoise/$(am__dirstamp) \
 	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
-dither/a-dither/$(am__dirstamp):
-	@$(MKDIR_P) dither/a-dither
-	@: >>dither/a-dither/$(am__dirstamp)
-dither/a-dither/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/a-dither/$(DEPDIR)
-	@: >>dither/a-dither/$(DEPDIR)/$(am__dirstamp)
 dither/a-dither/test_runner-0039_wire_a.$(OBJEXT):  \
 	dither/a-dither/$(am__dirstamp) \
 	dither/a-dither/$(DEPDIR)/$(am__dirstamp)
-dither/x-dither/$(am__dirstamp):
-	@$(MKDIR_P) dither/x-dither
-	@: >>dither/x-dither/$(am__dirstamp)
-dither/x-dither/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/x-dither/$(DEPDIR)
-	@: >>dither/x-dither/$(DEPDIR)/$(am__dirstamp)
 dither/x-dither/test_runner-0045_wire_x.$(OBJEXT):  \
 	dither/x-dither/$(am__dirstamp) \
 	dither/x-dither/$(DEPDIR)/$(am__dirstamp)
@@ -33336,12 +33486,6 @@ _support/processing/gpu-palette/test_runner-wire_common.$(OBJEXT):  \
 _support/processing/gpu-palette/test_runner-direct_parity_common.$(OBJEXT):  \
 	_support/processing/gpu-palette/$(am__dirstamp) \
 	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
-dither/gpu-direct/$(am__dirstamp):
-	@$(MKDIR_P) dither/gpu-direct
-	@: >>dither/gpu-direct/$(am__dirstamp)
-dither/gpu-direct/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/gpu-direct/$(DEPDIR)
-	@: >>dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
 dither/gpu-direct/test_runner-0001_parity_none.$(OBJEXT):  \
 	dither/gpu-direct/$(am__dirstamp) \
 	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
@@ -44543,6 +44687,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/a-dither/$(DEPDIR)/test_runner-0037_a_auto_strength.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/a-dither/$(DEPDIR)/test_runner-0038_a_strength_precedence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/a-dither/$(DEPDIR)/test_runner-0039_wire_a.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/a-dither/$(DEPDIR)/test_runner-0040_gpu_a_snapshot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/a-dither/$(DEPDIR)/test_runner-0041_gpu_a_reject_method.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/a-dither/$(DEPDIR)/test_runner-0042_gpu_a_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/a-dither/$(DEPDIR)/test_runner-0043_gpu_a_reconfigure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0001_atkinson_gpu_carry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0008_positional_8bit_bluenoise_gpu_force_keep_offset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0023_blue_zero_gamma.Po@am__quote@ # am--include-marker
@@ -44574,6 +44722,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0050_auto_strength.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0051_wire_rgb_bluenoise.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0052_wire_hls_bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0053_gpu_blue_snapshot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0054_gpu_blue_reject_method.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0055_gpu_blue_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0056_gpu_blue_reconfigure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0001_burkes_gpu_carry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Po@am__quote@ # am--include-marker
@@ -44695,6 +44847,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0014_diffuse_carry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0015_diffuse_fhedt.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0016_diffuse_rgb_cell.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0017_gpu_none_snapshot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0018_gpu_none_reject_method.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0019_gpu_none_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0020_gpu_none_reconfigure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0001_jajuni_gpu_carry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0001_standard_indexes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0002_small_error_indexes.Po@am__quote@ # am--include-marker
@@ -44815,6 +44971,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0043_x_auto_strength.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0044_x_strength_precedence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0045_wire_x.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0046_gpu_x_snapshot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0047_gpu_x_reject_method.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0048_gpu_x_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0049_gpu_x_reconfigure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/allocation/$(DEPDIR)/test_runner-0001_allocation_slots.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/allocation/$(DEPDIR)/test_runner-0002_allocation_controls.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/allocation/$(DEPDIR)/test_runner-0003_allocation_gpu.Po@am__quote@ # am--include-marker
@@ -48282,6 +48442,230 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.o: dither/bluenoise/0056_gpu_blue_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.o -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0056_gpu_blue_reconfigure.Tpo -c -o dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.o `test -f 'dither/bluenoise/0056_gpu_blue_reconfigure.c' || echo '$(srcdir)/'`dither/bluenoise/0056_gpu_blue_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0056_gpu_blue_reconfigure.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0056_gpu_blue_reconfigure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0056_gpu_blue_reconfigure.c' object='dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.o `test -f 'dither/bluenoise/0056_gpu_blue_reconfigure.c' || echo '$(srcdir)/'`dither/bluenoise/0056_gpu_blue_reconfigure.c
+
+dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.obj: dither/bluenoise/0056_gpu_blue_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.obj -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0056_gpu_blue_reconfigure.Tpo -c -o dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.obj `if test -f 'dither/bluenoise/0056_gpu_blue_reconfigure.c'; then $(CYGPATH_W) 'dither/bluenoise/0056_gpu_blue_reconfigure.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0056_gpu_blue_reconfigure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0056_gpu_blue_reconfigure.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0056_gpu_blue_reconfigure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0056_gpu_blue_reconfigure.c' object='dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0056_gpu_blue_reconfigure.obj `if test -f 'dither/bluenoise/0056_gpu_blue_reconfigure.c'; then $(CYGPATH_W) 'dither/bluenoise/0056_gpu_blue_reconfigure.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0056_gpu_blue_reconfigure.c'; fi`
+
+dither/x-dither/test_runner-0049_gpu_x_reconfigure.o: dither/x-dither/0049_gpu_x_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/x-dither/test_runner-0049_gpu_x_reconfigure.o -MD -MP -MF dither/x-dither/$(DEPDIR)/test_runner-0049_gpu_x_reconfigure.Tpo -c -o dither/x-dither/test_runner-0049_gpu_x_reconfigure.o `test -f 'dither/x-dither/0049_gpu_x_reconfigure.c' || echo '$(srcdir)/'`dither/x-dither/0049_gpu_x_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/x-dither/$(DEPDIR)/test_runner-0049_gpu_x_reconfigure.Tpo dither/x-dither/$(DEPDIR)/test_runner-0049_gpu_x_reconfigure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/x-dither/0049_gpu_x_reconfigure.c' object='dither/x-dither/test_runner-0049_gpu_x_reconfigure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/x-dither/test_runner-0049_gpu_x_reconfigure.o `test -f 'dither/x-dither/0049_gpu_x_reconfigure.c' || echo '$(srcdir)/'`dither/x-dither/0049_gpu_x_reconfigure.c
+
+dither/x-dither/test_runner-0049_gpu_x_reconfigure.obj: dither/x-dither/0049_gpu_x_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/x-dither/test_runner-0049_gpu_x_reconfigure.obj -MD -MP -MF dither/x-dither/$(DEPDIR)/test_runner-0049_gpu_x_reconfigure.Tpo -c -o dither/x-dither/test_runner-0049_gpu_x_reconfigure.obj `if test -f 'dither/x-dither/0049_gpu_x_reconfigure.c'; then $(CYGPATH_W) 'dither/x-dither/0049_gpu_x_reconfigure.c'; else $(CYGPATH_W) '$(srcdir)/dither/x-dither/0049_gpu_x_reconfigure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/x-dither/$(DEPDIR)/test_runner-0049_gpu_x_reconfigure.Tpo dither/x-dither/$(DEPDIR)/test_runner-0049_gpu_x_reconfigure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/x-dither/0049_gpu_x_reconfigure.c' object='dither/x-dither/test_runner-0049_gpu_x_reconfigure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/x-dither/test_runner-0049_gpu_x_reconfigure.obj `if test -f 'dither/x-dither/0049_gpu_x_reconfigure.c'; then $(CYGPATH_W) 'dither/x-dither/0049_gpu_x_reconfigure.c'; else $(CYGPATH_W) '$(srcdir)/dither/x-dither/0049_gpu_x_reconfigure.c'; fi`
+
+dither/a-dither/test_runner-0043_gpu_a_reconfigure.o: dither/a-dither/0043_gpu_a_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0043_gpu_a_reconfigure.o -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0043_gpu_a_reconfigure.Tpo -c -o dither/a-dither/test_runner-0043_gpu_a_reconfigure.o `test -f 'dither/a-dither/0043_gpu_a_reconfigure.c' || echo '$(srcdir)/'`dither/a-dither/0043_gpu_a_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/a-dither/$(DEPDIR)/test_runner-0043_gpu_a_reconfigure.Tpo dither/a-dither/$(DEPDIR)/test_runner-0043_gpu_a_reconfigure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/a-dither/0043_gpu_a_reconfigure.c' object='dither/a-dither/test_runner-0043_gpu_a_reconfigure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/a-dither/test_runner-0043_gpu_a_reconfigure.o `test -f 'dither/a-dither/0043_gpu_a_reconfigure.c' || echo '$(srcdir)/'`dither/a-dither/0043_gpu_a_reconfigure.c
+
+dither/a-dither/test_runner-0043_gpu_a_reconfigure.obj: dither/a-dither/0043_gpu_a_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0043_gpu_a_reconfigure.obj -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0043_gpu_a_reconfigure.Tpo -c -o dither/a-dither/test_runner-0043_gpu_a_reconfigure.obj `if test -f 'dither/a-dither/0043_gpu_a_reconfigure.c'; then $(CYGPATH_W) 'dither/a-dither/0043_gpu_a_reconfigure.c'; else $(CYGPATH_W) '$(srcdir)/dither/a-dither/0043_gpu_a_reconfigure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/a-dither/$(DEPDIR)/test_runner-0043_gpu_a_reconfigure.Tpo dither/a-dither/$(DEPDIR)/test_runner-0043_gpu_a_reconfigure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/a-dither/0043_gpu_a_reconfigure.c' object='dither/a-dither/test_runner-0043_gpu_a_reconfigure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/a-dither/test_runner-0043_gpu_a_reconfigure.obj `if test -f 'dither/a-dither/0043_gpu_a_reconfigure.c'; then $(CYGPATH_W) 'dither/a-dither/0043_gpu_a_reconfigure.c'; else $(CYGPATH_W) '$(srcdir)/dither/a-dither/0043_gpu_a_reconfigure.c'; fi`
+
+dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.o: dither/gpu-direct/0020_gpu_none_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0020_gpu_none_reconfigure.Tpo -c -o dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.o `test -f 'dither/gpu-direct/0020_gpu_none_reconfigure.c' || echo '$(srcdir)/'`dither/gpu-direct/0020_gpu_none_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0020_gpu_none_reconfigure.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0020_gpu_none_reconfigure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0020_gpu_none_reconfigure.c' object='dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.o `test -f 'dither/gpu-direct/0020_gpu_none_reconfigure.c' || echo '$(srcdir)/'`dither/gpu-direct/0020_gpu_none_reconfigure.c
+
+dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.obj: dither/gpu-direct/0020_gpu_none_reconfigure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0020_gpu_none_reconfigure.Tpo -c -o dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.obj `if test -f 'dither/gpu-direct/0020_gpu_none_reconfigure.c'; then $(CYGPATH_W) 'dither/gpu-direct/0020_gpu_none_reconfigure.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0020_gpu_none_reconfigure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0020_gpu_none_reconfigure.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0020_gpu_none_reconfigure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0020_gpu_none_reconfigure.c' object='dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0020_gpu_none_reconfigure.obj `if test -f 'dither/gpu-direct/0020_gpu_none_reconfigure.c'; then $(CYGPATH_W) 'dither/gpu-direct/0020_gpu_none_reconfigure.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0020_gpu_none_reconfigure.c'; fi`
+
+dither/gpu-direct/test_runner-0017_gpu_none_snapshot.o: dither/gpu-direct/0017_gpu_none_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0017_gpu_none_snapshot.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0017_gpu_none_snapshot.Tpo -c -o dither/gpu-direct/test_runner-0017_gpu_none_snapshot.o `test -f 'dither/gpu-direct/0017_gpu_none_snapshot.c' || echo '$(srcdir)/'`dither/gpu-direct/0017_gpu_none_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0017_gpu_none_snapshot.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0017_gpu_none_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0017_gpu_none_snapshot.c' object='dither/gpu-direct/test_runner-0017_gpu_none_snapshot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0017_gpu_none_snapshot.o `test -f 'dither/gpu-direct/0017_gpu_none_snapshot.c' || echo '$(srcdir)/'`dither/gpu-direct/0017_gpu_none_snapshot.c
+
+dither/gpu-direct/test_runner-0017_gpu_none_snapshot.obj: dither/gpu-direct/0017_gpu_none_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0017_gpu_none_snapshot.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0017_gpu_none_snapshot.Tpo -c -o dither/gpu-direct/test_runner-0017_gpu_none_snapshot.obj `if test -f 'dither/gpu-direct/0017_gpu_none_snapshot.c'; then $(CYGPATH_W) 'dither/gpu-direct/0017_gpu_none_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0017_gpu_none_snapshot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0017_gpu_none_snapshot.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0017_gpu_none_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0017_gpu_none_snapshot.c' object='dither/gpu-direct/test_runner-0017_gpu_none_snapshot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0017_gpu_none_snapshot.obj `if test -f 'dither/gpu-direct/0017_gpu_none_snapshot.c'; then $(CYGPATH_W) 'dither/gpu-direct/0017_gpu_none_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0017_gpu_none_snapshot.c'; fi`
+
+dither/gpu-direct/test_runner-0018_gpu_none_reject_method.o: dither/gpu-direct/0018_gpu_none_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0018_gpu_none_reject_method.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0018_gpu_none_reject_method.Tpo -c -o dither/gpu-direct/test_runner-0018_gpu_none_reject_method.o `test -f 'dither/gpu-direct/0018_gpu_none_reject_method.c' || echo '$(srcdir)/'`dither/gpu-direct/0018_gpu_none_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0018_gpu_none_reject_method.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0018_gpu_none_reject_method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0018_gpu_none_reject_method.c' object='dither/gpu-direct/test_runner-0018_gpu_none_reject_method.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0018_gpu_none_reject_method.o `test -f 'dither/gpu-direct/0018_gpu_none_reject_method.c' || echo '$(srcdir)/'`dither/gpu-direct/0018_gpu_none_reject_method.c
+
+dither/gpu-direct/test_runner-0018_gpu_none_reject_method.obj: dither/gpu-direct/0018_gpu_none_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0018_gpu_none_reject_method.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0018_gpu_none_reject_method.Tpo -c -o dither/gpu-direct/test_runner-0018_gpu_none_reject_method.obj `if test -f 'dither/gpu-direct/0018_gpu_none_reject_method.c'; then $(CYGPATH_W) 'dither/gpu-direct/0018_gpu_none_reject_method.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0018_gpu_none_reject_method.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0018_gpu_none_reject_method.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0018_gpu_none_reject_method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0018_gpu_none_reject_method.c' object='dither/gpu-direct/test_runner-0018_gpu_none_reject_method.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0018_gpu_none_reject_method.obj `if test -f 'dither/gpu-direct/0018_gpu_none_reject_method.c'; then $(CYGPATH_W) 'dither/gpu-direct/0018_gpu_none_reject_method.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0018_gpu_none_reject_method.c'; fi`
+
+dither/gpu-direct/test_runner-0019_gpu_none_isolation.o: dither/gpu-direct/0019_gpu_none_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0019_gpu_none_isolation.o -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0019_gpu_none_isolation.Tpo -c -o dither/gpu-direct/test_runner-0019_gpu_none_isolation.o `test -f 'dither/gpu-direct/0019_gpu_none_isolation.c' || echo '$(srcdir)/'`dither/gpu-direct/0019_gpu_none_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0019_gpu_none_isolation.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0019_gpu_none_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0019_gpu_none_isolation.c' object='dither/gpu-direct/test_runner-0019_gpu_none_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0019_gpu_none_isolation.o `test -f 'dither/gpu-direct/0019_gpu_none_isolation.c' || echo '$(srcdir)/'`dither/gpu-direct/0019_gpu_none_isolation.c
+
+dither/gpu-direct/test_runner-0019_gpu_none_isolation.obj: dither/gpu-direct/0019_gpu_none_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/gpu-direct/test_runner-0019_gpu_none_isolation.obj -MD -MP -MF dither/gpu-direct/$(DEPDIR)/test_runner-0019_gpu_none_isolation.Tpo -c -o dither/gpu-direct/test_runner-0019_gpu_none_isolation.obj `if test -f 'dither/gpu-direct/0019_gpu_none_isolation.c'; then $(CYGPATH_W) 'dither/gpu-direct/0019_gpu_none_isolation.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0019_gpu_none_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/gpu-direct/$(DEPDIR)/test_runner-0019_gpu_none_isolation.Tpo dither/gpu-direct/$(DEPDIR)/test_runner-0019_gpu_none_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/gpu-direct/0019_gpu_none_isolation.c' object='dither/gpu-direct/test_runner-0019_gpu_none_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/gpu-direct/test_runner-0019_gpu_none_isolation.obj `if test -f 'dither/gpu-direct/0019_gpu_none_isolation.c'; then $(CYGPATH_W) 'dither/gpu-direct/0019_gpu_none_isolation.c'; else $(CYGPATH_W) '$(srcdir)/dither/gpu-direct/0019_gpu_none_isolation.c'; fi`
+
+dither/a-dither/test_runner-0040_gpu_a_snapshot.o: dither/a-dither/0040_gpu_a_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0040_gpu_a_snapshot.o -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0040_gpu_a_snapshot.Tpo -c -o dither/a-dither/test_runner-0040_gpu_a_snapshot.o `test -f 'dither/a-dither/0040_gpu_a_snapshot.c' || echo '$(srcdir)/'`dither/a-dither/0040_gpu_a_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/a-dither/$(DEPDIR)/test_runner-0040_gpu_a_snapshot.Tpo dither/a-dither/$(DEPDIR)/test_runner-0040_gpu_a_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/a-dither/0040_gpu_a_snapshot.c' object='dither/a-dither/test_runner-0040_gpu_a_snapshot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/a-dither/test_runner-0040_gpu_a_snapshot.o `test -f 'dither/a-dither/0040_gpu_a_snapshot.c' || echo '$(srcdir)/'`dither/a-dither/0040_gpu_a_snapshot.c
+
+dither/a-dither/test_runner-0040_gpu_a_snapshot.obj: dither/a-dither/0040_gpu_a_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0040_gpu_a_snapshot.obj -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0040_gpu_a_snapshot.Tpo -c -o dither/a-dither/test_runner-0040_gpu_a_snapshot.obj `if test -f 'dither/a-dither/0040_gpu_a_snapshot.c'; then $(CYGPATH_W) 'dither/a-dither/0040_gpu_a_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/dither/a-dither/0040_gpu_a_snapshot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/a-dither/$(DEPDIR)/test_runner-0040_gpu_a_snapshot.Tpo dither/a-dither/$(DEPDIR)/test_runner-0040_gpu_a_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/a-dither/0040_gpu_a_snapshot.c' object='dither/a-dither/test_runner-0040_gpu_a_snapshot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/a-dither/test_runner-0040_gpu_a_snapshot.obj `if test -f 'dither/a-dither/0040_gpu_a_snapshot.c'; then $(CYGPATH_W) 'dither/a-dither/0040_gpu_a_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/dither/a-dither/0040_gpu_a_snapshot.c'; fi`
+
+dither/a-dither/test_runner-0041_gpu_a_reject_method.o: dither/a-dither/0041_gpu_a_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0041_gpu_a_reject_method.o -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0041_gpu_a_reject_method.Tpo -c -o dither/a-dither/test_runner-0041_gpu_a_reject_method.o `test -f 'dither/a-dither/0041_gpu_a_reject_method.c' || echo '$(srcdir)/'`dither/a-dither/0041_gpu_a_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/a-dither/$(DEPDIR)/test_runner-0041_gpu_a_reject_method.Tpo dither/a-dither/$(DEPDIR)/test_runner-0041_gpu_a_reject_method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/a-dither/0041_gpu_a_reject_method.c' object='dither/a-dither/test_runner-0041_gpu_a_reject_method.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/a-dither/test_runner-0041_gpu_a_reject_method.o `test -f 'dither/a-dither/0041_gpu_a_reject_method.c' || echo '$(srcdir)/'`dither/a-dither/0041_gpu_a_reject_method.c
+
+dither/a-dither/test_runner-0041_gpu_a_reject_method.obj: dither/a-dither/0041_gpu_a_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0041_gpu_a_reject_method.obj -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0041_gpu_a_reject_method.Tpo -c -o dither/a-dither/test_runner-0041_gpu_a_reject_method.obj `if test -f 'dither/a-dither/0041_gpu_a_reject_method.c'; then $(CYGPATH_W) 'dither/a-dither/0041_gpu_a_reject_method.c'; else $(CYGPATH_W) '$(srcdir)/dither/a-dither/0041_gpu_a_reject_method.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/a-dither/$(DEPDIR)/test_runner-0041_gpu_a_reject_method.Tpo dither/a-dither/$(DEPDIR)/test_runner-0041_gpu_a_reject_method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/a-dither/0041_gpu_a_reject_method.c' object='dither/a-dither/test_runner-0041_gpu_a_reject_method.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/a-dither/test_runner-0041_gpu_a_reject_method.obj `if test -f 'dither/a-dither/0041_gpu_a_reject_method.c'; then $(CYGPATH_W) 'dither/a-dither/0041_gpu_a_reject_method.c'; else $(CYGPATH_W) '$(srcdir)/dither/a-dither/0041_gpu_a_reject_method.c'; fi`
+
+dither/a-dither/test_runner-0042_gpu_a_isolation.o: dither/a-dither/0042_gpu_a_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0042_gpu_a_isolation.o -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0042_gpu_a_isolation.Tpo -c -o dither/a-dither/test_runner-0042_gpu_a_isolation.o `test -f 'dither/a-dither/0042_gpu_a_isolation.c' || echo '$(srcdir)/'`dither/a-dither/0042_gpu_a_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/a-dither/$(DEPDIR)/test_runner-0042_gpu_a_isolation.Tpo dither/a-dither/$(DEPDIR)/test_runner-0042_gpu_a_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/a-dither/0042_gpu_a_isolation.c' object='dither/a-dither/test_runner-0042_gpu_a_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/a-dither/test_runner-0042_gpu_a_isolation.o `test -f 'dither/a-dither/0042_gpu_a_isolation.c' || echo '$(srcdir)/'`dither/a-dither/0042_gpu_a_isolation.c
+
+dither/a-dither/test_runner-0042_gpu_a_isolation.obj: dither/a-dither/0042_gpu_a_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/a-dither/test_runner-0042_gpu_a_isolation.obj -MD -MP -MF dither/a-dither/$(DEPDIR)/test_runner-0042_gpu_a_isolation.Tpo -c -o dither/a-dither/test_runner-0042_gpu_a_isolation.obj `if test -f 'dither/a-dither/0042_gpu_a_isolation.c'; then $(CYGPATH_W) 'dither/a-dither/0042_gpu_a_isolation.c'; else $(CYGPATH_W) '$(srcdir)/dither/a-dither/0042_gpu_a_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/a-dither/$(DEPDIR)/test_runner-0042_gpu_a_isolation.Tpo dither/a-dither/$(DEPDIR)/test_runner-0042_gpu_a_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/a-dither/0042_gpu_a_isolation.c' object='dither/a-dither/test_runner-0042_gpu_a_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/a-dither/test_runner-0042_gpu_a_isolation.obj `if test -f 'dither/a-dither/0042_gpu_a_isolation.c'; then $(CYGPATH_W) 'dither/a-dither/0042_gpu_a_isolation.c'; else $(CYGPATH_W) '$(srcdir)/dither/a-dither/0042_gpu_a_isolation.c'; fi`
+
+dither/x-dither/test_runner-0046_gpu_x_snapshot.o: dither/x-dither/0046_gpu_x_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/x-dither/test_runner-0046_gpu_x_snapshot.o -MD -MP -MF dither/x-dither/$(DEPDIR)/test_runner-0046_gpu_x_snapshot.Tpo -c -o dither/x-dither/test_runner-0046_gpu_x_snapshot.o `test -f 'dither/x-dither/0046_gpu_x_snapshot.c' || echo '$(srcdir)/'`dither/x-dither/0046_gpu_x_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/x-dither/$(DEPDIR)/test_runner-0046_gpu_x_snapshot.Tpo dither/x-dither/$(DEPDIR)/test_runner-0046_gpu_x_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/x-dither/0046_gpu_x_snapshot.c' object='dither/x-dither/test_runner-0046_gpu_x_snapshot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/x-dither/test_runner-0046_gpu_x_snapshot.o `test -f 'dither/x-dither/0046_gpu_x_snapshot.c' || echo '$(srcdir)/'`dither/x-dither/0046_gpu_x_snapshot.c
+
+dither/x-dither/test_runner-0046_gpu_x_snapshot.obj: dither/x-dither/0046_gpu_x_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/x-dither/test_runner-0046_gpu_x_snapshot.obj -MD -MP -MF dither/x-dither/$(DEPDIR)/test_runner-0046_gpu_x_snapshot.Tpo -c -o dither/x-dither/test_runner-0046_gpu_x_snapshot.obj `if test -f 'dither/x-dither/0046_gpu_x_snapshot.c'; then $(CYGPATH_W) 'dither/x-dither/0046_gpu_x_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/dither/x-dither/0046_gpu_x_snapshot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/x-dither/$(DEPDIR)/test_runner-0046_gpu_x_snapshot.Tpo dither/x-dither/$(DEPDIR)/test_runner-0046_gpu_x_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/x-dither/0046_gpu_x_snapshot.c' object='dither/x-dither/test_runner-0046_gpu_x_snapshot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/x-dither/test_runner-0046_gpu_x_snapshot.obj `if test -f 'dither/x-dither/0046_gpu_x_snapshot.c'; then $(CYGPATH_W) 'dither/x-dither/0046_gpu_x_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/dither/x-dither/0046_gpu_x_snapshot.c'; fi`
+
+dither/x-dither/test_runner-0047_gpu_x_reject_method.o: dither/x-dither/0047_gpu_x_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/x-dither/test_runner-0047_gpu_x_reject_method.o -MD -MP -MF dither/x-dither/$(DEPDIR)/test_runner-0047_gpu_x_reject_method.Tpo -c -o dither/x-dither/test_runner-0047_gpu_x_reject_method.o `test -f 'dither/x-dither/0047_gpu_x_reject_method.c' || echo '$(srcdir)/'`dither/x-dither/0047_gpu_x_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/x-dither/$(DEPDIR)/test_runner-0047_gpu_x_reject_method.Tpo dither/x-dither/$(DEPDIR)/test_runner-0047_gpu_x_reject_method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/x-dither/0047_gpu_x_reject_method.c' object='dither/x-dither/test_runner-0047_gpu_x_reject_method.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/x-dither/test_runner-0047_gpu_x_reject_method.o `test -f 'dither/x-dither/0047_gpu_x_reject_method.c' || echo '$(srcdir)/'`dither/x-dither/0047_gpu_x_reject_method.c
+
+dither/x-dither/test_runner-0047_gpu_x_reject_method.obj: dither/x-dither/0047_gpu_x_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/x-dither/test_runner-0047_gpu_x_reject_method.obj -MD -MP -MF dither/x-dither/$(DEPDIR)/test_runner-0047_gpu_x_reject_method.Tpo -c -o dither/x-dither/test_runner-0047_gpu_x_reject_method.obj `if test -f 'dither/x-dither/0047_gpu_x_reject_method.c'; then $(CYGPATH_W) 'dither/x-dither/0047_gpu_x_reject_method.c'; else $(CYGPATH_W) '$(srcdir)/dither/x-dither/0047_gpu_x_reject_method.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/x-dither/$(DEPDIR)/test_runner-0047_gpu_x_reject_method.Tpo dither/x-dither/$(DEPDIR)/test_runner-0047_gpu_x_reject_method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/x-dither/0047_gpu_x_reject_method.c' object='dither/x-dither/test_runner-0047_gpu_x_reject_method.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/x-dither/test_runner-0047_gpu_x_reject_method.obj `if test -f 'dither/x-dither/0047_gpu_x_reject_method.c'; then $(CYGPATH_W) 'dither/x-dither/0047_gpu_x_reject_method.c'; else $(CYGPATH_W) '$(srcdir)/dither/x-dither/0047_gpu_x_reject_method.c'; fi`
+
+dither/x-dither/test_runner-0048_gpu_x_isolation.o: dither/x-dither/0048_gpu_x_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/x-dither/test_runner-0048_gpu_x_isolation.o -MD -MP -MF dither/x-dither/$(DEPDIR)/test_runner-0048_gpu_x_isolation.Tpo -c -o dither/x-dither/test_runner-0048_gpu_x_isolation.o `test -f 'dither/x-dither/0048_gpu_x_isolation.c' || echo '$(srcdir)/'`dither/x-dither/0048_gpu_x_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/x-dither/$(DEPDIR)/test_runner-0048_gpu_x_isolation.Tpo dither/x-dither/$(DEPDIR)/test_runner-0048_gpu_x_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/x-dither/0048_gpu_x_isolation.c' object='dither/x-dither/test_runner-0048_gpu_x_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/x-dither/test_runner-0048_gpu_x_isolation.o `test -f 'dither/x-dither/0048_gpu_x_isolation.c' || echo '$(srcdir)/'`dither/x-dither/0048_gpu_x_isolation.c
+
+dither/x-dither/test_runner-0048_gpu_x_isolation.obj: dither/x-dither/0048_gpu_x_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/x-dither/test_runner-0048_gpu_x_isolation.obj -MD -MP -MF dither/x-dither/$(DEPDIR)/test_runner-0048_gpu_x_isolation.Tpo -c -o dither/x-dither/test_runner-0048_gpu_x_isolation.obj `if test -f 'dither/x-dither/0048_gpu_x_isolation.c'; then $(CYGPATH_W) 'dither/x-dither/0048_gpu_x_isolation.c'; else $(CYGPATH_W) '$(srcdir)/dither/x-dither/0048_gpu_x_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/x-dither/$(DEPDIR)/test_runner-0048_gpu_x_isolation.Tpo dither/x-dither/$(DEPDIR)/test_runner-0048_gpu_x_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/x-dither/0048_gpu_x_isolation.c' object='dither/x-dither/test_runner-0048_gpu_x_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/x-dither/test_runner-0048_gpu_x_isolation.obj `if test -f 'dither/x-dither/0048_gpu_x_isolation.c'; then $(CYGPATH_W) 'dither/x-dither/0048_gpu_x_isolation.c'; else $(CYGPATH_W) '$(srcdir)/dither/x-dither/0048_gpu_x_isolation.c'; fi`
+
+dither/bluenoise/test_runner-0053_gpu_blue_snapshot.o: dither/bluenoise/0053_gpu_blue_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0053_gpu_blue_snapshot.o -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0053_gpu_blue_snapshot.Tpo -c -o dither/bluenoise/test_runner-0053_gpu_blue_snapshot.o `test -f 'dither/bluenoise/0053_gpu_blue_snapshot.c' || echo '$(srcdir)/'`dither/bluenoise/0053_gpu_blue_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0053_gpu_blue_snapshot.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0053_gpu_blue_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0053_gpu_blue_snapshot.c' object='dither/bluenoise/test_runner-0053_gpu_blue_snapshot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0053_gpu_blue_snapshot.o `test -f 'dither/bluenoise/0053_gpu_blue_snapshot.c' || echo '$(srcdir)/'`dither/bluenoise/0053_gpu_blue_snapshot.c
+
+dither/bluenoise/test_runner-0053_gpu_blue_snapshot.obj: dither/bluenoise/0053_gpu_blue_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0053_gpu_blue_snapshot.obj -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0053_gpu_blue_snapshot.Tpo -c -o dither/bluenoise/test_runner-0053_gpu_blue_snapshot.obj `if test -f 'dither/bluenoise/0053_gpu_blue_snapshot.c'; then $(CYGPATH_W) 'dither/bluenoise/0053_gpu_blue_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0053_gpu_blue_snapshot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0053_gpu_blue_snapshot.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0053_gpu_blue_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0053_gpu_blue_snapshot.c' object='dither/bluenoise/test_runner-0053_gpu_blue_snapshot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0053_gpu_blue_snapshot.obj `if test -f 'dither/bluenoise/0053_gpu_blue_snapshot.c'; then $(CYGPATH_W) 'dither/bluenoise/0053_gpu_blue_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0053_gpu_blue_snapshot.c'; fi`
+
+dither/bluenoise/test_runner-0054_gpu_blue_reject_method.o: dither/bluenoise/0054_gpu_blue_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0054_gpu_blue_reject_method.o -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0054_gpu_blue_reject_method.Tpo -c -o dither/bluenoise/test_runner-0054_gpu_blue_reject_method.o `test -f 'dither/bluenoise/0054_gpu_blue_reject_method.c' || echo '$(srcdir)/'`dither/bluenoise/0054_gpu_blue_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0054_gpu_blue_reject_method.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0054_gpu_blue_reject_method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0054_gpu_blue_reject_method.c' object='dither/bluenoise/test_runner-0054_gpu_blue_reject_method.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0054_gpu_blue_reject_method.o `test -f 'dither/bluenoise/0054_gpu_blue_reject_method.c' || echo '$(srcdir)/'`dither/bluenoise/0054_gpu_blue_reject_method.c
+
+dither/bluenoise/test_runner-0054_gpu_blue_reject_method.obj: dither/bluenoise/0054_gpu_blue_reject_method.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0054_gpu_blue_reject_method.obj -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0054_gpu_blue_reject_method.Tpo -c -o dither/bluenoise/test_runner-0054_gpu_blue_reject_method.obj `if test -f 'dither/bluenoise/0054_gpu_blue_reject_method.c'; then $(CYGPATH_W) 'dither/bluenoise/0054_gpu_blue_reject_method.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0054_gpu_blue_reject_method.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0054_gpu_blue_reject_method.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0054_gpu_blue_reject_method.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0054_gpu_blue_reject_method.c' object='dither/bluenoise/test_runner-0054_gpu_blue_reject_method.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0054_gpu_blue_reject_method.obj `if test -f 'dither/bluenoise/0054_gpu_blue_reject_method.c'; then $(CYGPATH_W) 'dither/bluenoise/0054_gpu_blue_reject_method.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0054_gpu_blue_reject_method.c'; fi`
+
+dither/bluenoise/test_runner-0055_gpu_blue_isolation.o: dither/bluenoise/0055_gpu_blue_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0055_gpu_blue_isolation.o -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0055_gpu_blue_isolation.Tpo -c -o dither/bluenoise/test_runner-0055_gpu_blue_isolation.o `test -f 'dither/bluenoise/0055_gpu_blue_isolation.c' || echo '$(srcdir)/'`dither/bluenoise/0055_gpu_blue_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0055_gpu_blue_isolation.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0055_gpu_blue_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0055_gpu_blue_isolation.c' object='dither/bluenoise/test_runner-0055_gpu_blue_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0055_gpu_blue_isolation.o `test -f 'dither/bluenoise/0055_gpu_blue_isolation.c' || echo '$(srcdir)/'`dither/bluenoise/0055_gpu_blue_isolation.c
+
+dither/bluenoise/test_runner-0055_gpu_blue_isolation.obj: dither/bluenoise/0055_gpu_blue_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0055_gpu_blue_isolation.obj -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0055_gpu_blue_isolation.Tpo -c -o dither/bluenoise/test_runner-0055_gpu_blue_isolation.obj `if test -f 'dither/bluenoise/0055_gpu_blue_isolation.c'; then $(CYGPATH_W) 'dither/bluenoise/0055_gpu_blue_isolation.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0055_gpu_blue_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0055_gpu_blue_isolation.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0055_gpu_blue_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0055_gpu_blue_isolation.c' object='dither/bluenoise/test_runner-0055_gpu_blue_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0055_gpu_blue_isolation.obj `if test -f 'dither/bluenoise/0055_gpu_blue_isolation.c'; then $(CYGPATH_W) 'dither/bluenoise/0055_gpu_blue_isolation.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0055_gpu_blue_isolation.c'; fi`
 
 encoder/retained/test_runner-0001_gpu_bind_rgb.o: encoder/retained/0001_gpu_bind_rgb.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0001_gpu_bind_rgb.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Tpo -c -o encoder/retained/test_runner-0001_gpu_bind_rgb.o `test -f 'encoder/retained/0001_gpu_bind_rgb.c' || echo '$(srcdir)/'`encoder/retained/0001_gpu_bind_rgb.c

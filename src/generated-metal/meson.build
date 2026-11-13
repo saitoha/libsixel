@@ -1,6 +1,18 @@
 # Embed source at build time; no shader files are loaded at runtime.
 metal_headers = []
 metal_sources = files(
+  '../dither-policy-none-gpu-prefix.metal',
+  '../dither-policy-none-gpu.metal',
+  '../dither-policy-none-gpu-query.metal',
+  '../dither-policy-a-dither-gpu-prefix.metal',
+  '../dither-policy-a-dither-gpu.metal',
+  '../dither-policy-a-dither-gpu-query.metal',
+  '../dither-policy-x-dither-gpu-prefix.metal',
+  '../dither-policy-x-dither-gpu.metal',
+  '../dither-policy-x-dither-gpu-query.metal',
+  '../dither-policy-bluenoise-gpu-prefix.metal',
+  '../dither-policy-bluenoise-gpu.metal',
+  '../dither-policy-bluenoise-gpu-query.metal',
   '../retained-plane-gpu.metal',
   '../dither-policy-lso2-gpu.metal',
   '../dither-policy-fs-gpu.metal',
@@ -40,8 +52,6 @@ metal_sources = files(
   '../lookup-policy-fhedt-gpu.metal',
   '../lookup-policy-5bit-gpu.metal',
   '../lookup-policy-6bit-gpu.metal',
-  '../gpu-palette-fused-prefix.metal',
-  '../gpu-palette-fused-suffix.metal',
 )
 metal_embed = files('../../tools/embed-metal.sh')
 metal_encoder = files('../../tools/embed-metal.awk')

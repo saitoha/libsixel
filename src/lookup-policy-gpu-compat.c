@@ -8,6 +8,7 @@
 #include <string.h>
 #include "lookup-policy-gpu.h"
 #include "gpu-palette.h"
+#include "dither-policy-gpu.h"
 #include "palette.h"
 
 /* This compatibility composition root translates the old request into
@@ -50,9 +51,14 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     void *object;
     SIXELSTATUS status;
 
+    run = *request;
+    if (run.dither_program == NULL)
+        run.dither_program = sixel_gpu_dither_byte_program(
+            run.method_for_diffuse);
+    if (run.dither_program == NULL) return SIXEL_FEATURE_ERROR;
     if (request->program != NULL ||
             !sixel_gpu_lookup_registered(request->lut_policy)) {
-        return gpu_compat_run(request);
+        return gpu_compat_run(&run);
     }
     allocator = NULL;
     palette = NULL;
@@ -122,9 +128,9 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     status = cached->provider->vtbl->prepare(cached->provider, &execution,
         device, &plan);
     if (SIXEL_FAILED(status)) goto end;
-    status = sixel_gpu_program_prepare(device, plan, &program);
+    status = sixel_gpu_program_prepare(device, plan,
+        run.dither_program, &program);
     if (SIXEL_FAILED(status)) goto end;
-    run = *request;
     run.program = program;
     status = gpu_compat_run(&run);
 end:

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+#include "src/dither-policy-gpu.h"
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -216,7 +217,8 @@ delta_compare_pixel_test(int method, int native, int gpu, int gate)
             lookup.colorspace = SIXEL_COLORSPACE_GAMMA;
             DC_CHECK(provider->vtbl->prepare(provider, &lookup, device,
                 &plan) == SIXEL_OK);
-            DC_CHECK(sixel_gpu_program_prepare(device, plan, &program)
+            DC_CHECK(sixel_gpu_program_prepare(device, plan,
+                sixel_gpu_dither_byte_program(methods[method]), &program)
                 == SIXEL_OK);
             request.program = program;
             DC_CHECK(sixel_gpu_palette_apply_prepared(&request) == SIXEL_OK);

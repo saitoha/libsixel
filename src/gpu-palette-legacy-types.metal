@@ -7,7 +7,7 @@ struct Params {
     uint ncolors;
     uint lookup_mode;
     uint fhedt_resolution, fhedt_shift, fhedt_refine, fhedt_dist2;
-    uint mode;
+    uint reserved;
     uint has_transparent;
     uint transparent_size;
     uint transparent_keycolor;

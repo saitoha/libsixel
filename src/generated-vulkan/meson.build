@@ -6,7 +6,14 @@
 # SPIR-V here; libshaderc compiles any other composition at runtime.
 vulkan_headers = []
 vulkan_consumers = [
-  ['../gpu-palette-fused-prefix.glsl', '../gpu-palette-fused-suffix.glsl'],
+  ['../dither-policy-none-gpu-prefix.glsl',
+   '../dither-policy-none-gpu.glsl'],
+  ['../dither-policy-a-dither-gpu-prefix.glsl',
+   '../dither-policy-a-dither-gpu.glsl'],
+  ['../dither-policy-x-dither-gpu-prefix.glsl',
+   '../dither-policy-x-dither-gpu.glsl'],
+  ['../dither-policy-bluenoise-gpu-prefix.glsl',
+   '../dither-policy-bluenoise-gpu.glsl'],
   ['../dither-policy-lso2-gpu-prefix.glsl', '../dither-policy-lso2-gpu.glsl'],
   ['../dither-policy-fs-gpu-prefix.glsl', '../dither-policy-fs-gpu.glsl'],
   ['../dither-policy-atkinson-gpu-prefix.glsl',

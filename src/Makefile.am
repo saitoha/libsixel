@@ -51,8 +51,18 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-fhedt-gpu.metal \
     $(srcdir)/lookup-policy-5bit-gpu.metal \
     $(srcdir)/lookup-policy-6bit-gpu.metal \
-    $(srcdir)/gpu-palette-fused-prefix.metal \
-    $(srcdir)/gpu-palette-fused-suffix.metal
+    $(srcdir)/dither-policy-none-gpu-prefix.metal \
+    $(srcdir)/dither-policy-none-gpu.metal \
+    $(srcdir)/dither-policy-none-gpu-query.metal \
+    $(srcdir)/dither-policy-a-dither-gpu-prefix.metal \
+    $(srcdir)/dither-policy-a-dither-gpu.metal \
+    $(srcdir)/dither-policy-a-dither-gpu-query.metal \
+    $(srcdir)/dither-policy-x-dither-gpu-prefix.metal \
+    $(srcdir)/dither-policy-x-dither-gpu.metal \
+    $(srcdir)/dither-policy-x-dither-gpu-query.metal \
+    $(srcdir)/dither-policy-bluenoise-gpu-prefix.metal \
+    $(srcdir)/dither-policy-bluenoise-gpu.metal \
+    $(srcdir)/dither-policy-bluenoise-gpu-query.metal
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
 # The "vulkan.lookup-rgb8.v1" programs. Every GLSL chunk is embedded as
 # text: the runtime composes consumer prefix, lookup policy and consumer
@@ -73,7 +83,10 @@ SIXEL_VULKAN_POLICIES = $(srcdir)/lookup-policy-none-gpu.glsl \
     $(srcdir)/lookup-policy-gridlut-gpu.glsl \
     $(srcdir)/lookup-policy-blockcull-gpu.glsl \
     $(srcdir)/lookup-policy-delaunay-gpu.glsl
-SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/gpu-palette-fused-prefix.glsl:$(srcdir)/gpu-palette-fused-suffix.glsl \
+SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(srcdir)/dither-policy-none-gpu.glsl \
+    $(srcdir)/dither-policy-a-dither-gpu-prefix.glsl:$(srcdir)/dither-policy-a-dither-gpu.glsl \
+    $(srcdir)/dither-policy-x-dither-gpu-prefix.glsl:$(srcdir)/dither-policy-x-dither-gpu.glsl \
+    $(srcdir)/dither-policy-bluenoise-gpu-prefix.glsl:$(srcdir)/dither-policy-bluenoise-gpu.glsl \
     $(srcdir)/dither-policy-lso2-gpu-prefix.glsl:$(srcdir)/dither-policy-lso2-gpu.glsl \
     $(srcdir)/dither-policy-fs-gpu-prefix.glsl:$(srcdir)/dither-policy-fs-gpu.glsl \
     $(srcdir)/dither-policy-atkinson-gpu-prefix.glsl:$(srcdir)/dither-policy-atkinson-gpu.glsl \
@@ -84,8 +97,14 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/gpu-palette-fused-prefix.glsl:$(srcdir)/
     $(srcdir)/dither-policy-sierra2-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra2-gpu.glsl \
     $(srcdir)/dither-policy-sierra3-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra3-gpu.glsl
 SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-lookup-builder-prefix.glsl \
-    $(srcdir)/gpu-palette-fused-prefix.glsl \
-    $(srcdir)/gpu-palette-fused-suffix.glsl \
+    $(srcdir)/dither-policy-none-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-none-gpu.glsl \
+    $(srcdir)/dither-policy-a-dither-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-a-dither-gpu.glsl \
+    $(srcdir)/dither-policy-x-dither-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-x-dither-gpu.glsl \
+    $(srcdir)/dither-policy-bluenoise-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-bluenoise-gpu.glsl \
     $(srcdir)/dither-policy-lso2-gpu-prefix.glsl \
     $(srcdir)/dither-policy-lso2-gpu.glsl \
     $(srcdir)/dither-policy-fs-gpu-prefix.glsl \
@@ -145,6 +164,10 @@ generated-vulkan/lookup-programs-spirv.inc.h: $(SIXEL_VULKAN_INPUTS) \
 SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
     libsixel_la-dither-policy-lso2-gpu-vulkan.lo \
+    libsixel_la-dither-policy-none-gpu.lo \
+    libsixel_la-dither-policy-a-dither-gpu.lo \
+    libsixel_la-dither-policy-x-dither-gpu.lo \
+    libsixel_la-dither-policy-bluenoise-gpu.lo \
     libsixel_la-dither-policy-fs-gpu-vulkan.lo \
     libsixel_la-dither-policy-atkinson-gpu-vulkan.lo \
     libsixel_la-dither-policy-jajuni-gpu-vulkan.lo \
@@ -176,6 +199,10 @@ generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
     libsixel_la-dither-policy-lso2-gpu-metal.lo \
+    libsixel_la-dither-policy-none-gpu.lo \
+    libsixel_la-dither-policy-a-dither-gpu.lo \
+    libsixel_la-dither-policy-x-dither-gpu.lo \
+    libsixel_la-dither-policy-bluenoise-gpu.lo \
     libsixel_la-dither-policy-fs-gpu-metal.lo \
     libsixel_la-dither-policy-atkinson-gpu-metal.lo \
     libsixel_la-dither-policy-jajuni-gpu-metal.lo \
@@ -478,6 +505,16 @@ libsixel_la_SOURCES = \
                 $(srcdir)/gpu-dequant.h \
                 $(srcdir)/delta-residual.c \
                 $(srcdir)/delta-residual.h \
+                $(srcdir)/dither-policy-gpu.c \
+                $(srcdir)/dither-policy-gpu.h \
+                $(srcdir)/dither-policy-none-gpu.c \
+                $(srcdir)/dither-policy-none-gpu.h \
+                $(srcdir)/dither-policy-a-dither-gpu.c \
+                $(srcdir)/dither-policy-a-dither-gpu.h \
+                $(srcdir)/dither-policy-x-dither-gpu.c \
+                $(srcdir)/dither-policy-x-dither-gpu.h \
+                $(srcdir)/dither-policy-bluenoise-gpu.c \
+                $(srcdir)/dither-policy-bluenoise-gpu.h \
                 $(srcdir)/gpu-palette.c \
                 $(srcdir)/gpu-statistics.c \
                 $(srcdir)/lookup-policy-ordered-gpu.c \
@@ -513,8 +550,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-gpu-legacy.h \
                 $(srcdir)/gpu-program.h \
                 $(srcdir)/gpu-palette-program.inc.h \
-                $(srcdir)/gpu-palette-fused-prefix.inc.h \
-                $(srcdir)/gpu-palette-fused-suffix.inc.h \
                 $(srcdir)/dither-lookup-preparer.inc.h \
                 $(srcdir)/progressive-gpu.c \
                 $(srcdir)/progressive-gpu.h \
@@ -892,6 +927,10 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-blockcull.h
 
 DITHER_POLICY_CLASSID_INPUTS = \
+    $(srcdir)/dither-policy-none-gpu.h \
+    $(srcdir)/dither-policy-a-dither-gpu.h \
+    $(srcdir)/dither-policy-x-dither-gpu.h \
+    $(srcdir)/dither-policy-bluenoise-gpu.h \
     $(srcdir)/dither-policy-none.h \
     $(srcdir)/dither-policy-fs.h \
     $(srcdir)/dither-policy-atkinson.h \

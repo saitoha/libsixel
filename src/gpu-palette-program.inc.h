@@ -15,6 +15,7 @@ typedef struct gpu_compiled_program {
 } gpu_compiled_program_t;
 
 struct sixel_gpu_program {
+    sixel_gpu_dither_program_t const *dither;
     sixel_gpu_lookup_plan_interface_t *plan;
     sixel_gpu_lookup_program_view_t view;
     gpu_compiled_program_t *compiled;
@@ -156,6 +157,7 @@ gpu_compiled_unref(gpu_compiled_program_t *compiled)
 
 static SIXELSTATUS
 gpu_compile(sixel_gpu_lookup_program_view_t const *view,
+    sixel_gpu_dither_program_t const *dither,
     gpu_compiled_program_t **result)
 {
     NSMutableString *source;
@@ -178,15 +180,15 @@ gpu_compile(sixel_gpu_lookup_program_view_t const *view,
     pipelines = [[NSMutableArray alloc] init];
     library = nil;
     status = SIXEL_FEATURE_ERROR;
-    for (i = 0; i < sizeof(fused_prefix) / sizeof(*fused_prefix); ++i) {
-        [source appendString:@(fused_prefix[i])];
+    for (i = 0; i < dither->prefix_count; ++i) {
+        [source appendString:@(dither->prefix[i])];
     }
     for (i = 0; i < view->chunk_count; ++i) {
         if (view->chunks[i] == NULL) goto end;
         [source appendString:@(view->chunks[i])];
     }
-    for (i = 0; i < sizeof(fused_suffix) / sizeof(*fused_suffix); ++i) {
-        [source appendString:@(fused_suffix[i])];
+    for (i = 0; i < dither->suffix_count; ++i) {
+        [source appendString:@(dither->suffix[i])];
     }
     /* Full source and builder entry order, not a policy name, identify code.
      * Geometry is validated for every plan, even on a compiled cache hit. */
@@ -267,12 +269,13 @@ end:
 
 SIXELSTATUS
 sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
-    sixel_gpu_lookup_plan_interface_t *plan, sixel_gpu_program_t **result)
+    sixel_gpu_lookup_plan_interface_t *plan,
+    sixel_gpu_dither_program_t const *dither, sixel_gpu_program_t **result)
 {
     sixel_gpu_program_t *program;
     SIXELSTATUS status;
 
-    if (device == NULL || plan == NULL || result == NULL) {
+    if (device == NULL || plan == NULL || dither == NULL || result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *result = NULL;
@@ -289,7 +292,7 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
         "libsixel.legacy-palette.v1") == 0;
     (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
     if (program->legacy) {
-        status = sixel_gpu_palette_metal_prepare_locked()
+        status = sixel_gpu_palette_metal_prepare_locked(dither)
             ? SIXEL_OK : SIXEL_FEATURE_ERROR;
     } else if (program->view.query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE) {
         status = SIXEL_FEATURE_ERROR;
@@ -310,7 +313,7 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
              program->view.build_passes == NULL)) {
         status = SIXEL_BAD_ARGUMENT;
     } else {
-        status = gpu_compile(&program->view, &program->compiled);
+        status = gpu_compile(&program->view, dither, &program->compiled);
     }
     (void)pthread_mutex_unlock(&g_sixel_gpu_metal_lock);
 end:
@@ -318,6 +321,7 @@ end:
         free(program);
         return status;
     }
+    program->dither = dither;
     program->plan = plan;
     plan->vtbl->ref(plan);
     *result = program;

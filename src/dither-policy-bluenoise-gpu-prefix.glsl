@@ -1,9 +1,10 @@
+/* bluenoise owns this byte-query construction and pixel execution. */
 #version 450
 /* SPDX-License-Identifier: MIT */
 /*
  * Palette-apply consumer of the "vulkan.lookup-rgb8.v1" program ABI: the
  * prefix of the fused per-pixel kernel. prepare_query()/finish_pixel()
- * mirror gpu-palette-fused-prefix.metal so that positional dither,
+ * mirror dither-policy-bluenoise-gpu-prefix.metal so that positional dither,
  * transparency and 6delta keeps produce the same indexes as the Metal and
  * CPU paths. A lookup policy's own GLSL follows this prefix and supplies
  * lookup_rgb8() or a tile collective; the suffix closes the kernel. This
@@ -42,7 +43,7 @@ layout(std430, set = 0, binding = 6) readonly buffer Params {
     uint width;
     uint height;
     uint ncolors;
-    uint mode;
+    uint reserved;
     uint has_transparent;
     uint transparent_size;
     uint transparent_keycolor;
@@ -178,31 +179,15 @@ uvec3 load_accumulation(uint index)
 uvec3 positional_query(uvec3 source, uint x, uint y, uint gid)
 {
     int q[3] = int[3](int(source.x), int(source.y), int(source.z));
-    if (params.mode == 1u) {
-        float weight = gradient_weight(x, y, gid);
-        for (int d = 0; d < 3; ++d) {
-            precise float delta = tri_noise(int(x), int(y), d) * weight
-                * 32.0;
-            int val = q[d] + int(delta);
-            q[d] = clamp(val, 0, 255);
-        }
-    }
-    /* Match CPU unsigned phases and truncate the bias before addition. */
-    if (params.mode == 2u || params.mode == 3u) {
-        for (uint d = 0u; d < 3u; ++d) {
-            uint phase;
-            precise float noise;
-            precise float bias;
-            if (params.mode == 2u) {
-                phase = (x + d * 67u + y * 236u) * 119u;
-                noise = float(phase & 255u) / 128.0 - 1.0;
-            } else {
-                phase = ((x + d * 29u) ^ (y * 149u)) * 1234u;
-                noise = float(phase & 511u) / 256.0 - 1.0;
-            }
-            bias = (noise * params.positional_strength) * 32.0;
-            q[int(d)] = clamp(q[int(d)] + int(bias), 0, 255);
-        }
+    int d, value;
+    float weight;
+    precise float delta;
+
+    weight = gradient_weight(x, y, gid);
+    for (d = 0; d < 3; ++d) {
+        delta = tri_noise(int(x), int(y), d) * weight * 32.0;
+        value = q[d] + int(delta);
+        q[d] = clamp(value, 0, 255);
     }
     return uvec3(uint(q[0]), uint(q[1]), uint(q[2]));
 }

@@ -1696,6 +1696,22 @@ int test_schedule_0032_ready_slot_release(int, char **);
 int test_lso2_gpu_standard_indexes(int, char **);
 int test_lso2_gpu_small_error_indexes(int, char **);
 int test_lso2_gpu_scratch_reset(int, char **);
+int test_positional_gpu_none_snapshot(int, char **);
+int test_positional_gpu_none_reject_method(int, char **);
+int test_positional_gpu_none_isolation(int, char **);
+int test_positional_gpu_a_snapshot(int, char **);
+int test_positional_gpu_a_reject_method(int, char **);
+int test_positional_gpu_a_isolation(int, char **);
+int test_positional_gpu_x_snapshot(int, char **);
+int test_positional_gpu_x_reject_method(int, char **);
+int test_positional_gpu_x_isolation(int, char **);
+int test_positional_gpu_blue_snapshot(int, char **);
+int test_positional_gpu_blue_reject_method(int, char **);
+int test_positional_gpu_blue_isolation(int, char **);
+int test_positional_gpu_none_reconfigure(int, char **);
+int test_positional_gpu_a_reconfigure(int, char **);
+int test_positional_gpu_x_reconfigure(int, char **);
+int test_positional_gpu_blue_reconfigure(int, char **);
 int test_lso2_gpu_configuration_snapshot(int, char **);
 int test_lso2_gpu_gpu_off_rejected(int, char **);
 int test_lso2_gpu_byte_lookup_rejected(int, char **);
@@ -7111,6 +7127,24 @@ static test_entry_t const test_entries[] = {
     { "lso2_gpu/standard_indexes", test_lso2_gpu_standard_indexes },
     { "lso2_gpu/small_error_indexes", test_lso2_gpu_small_error_indexes },
     { "lso2_gpu/scratch_reset", test_lso2_gpu_scratch_reset },
+    { "positional_gpu_none_snapshot", test_positional_gpu_none_snapshot },
+    { "positional_gpu_none_reject_method",
+        test_positional_gpu_none_reject_method },
+    { "positional_gpu_none_isolation", test_positional_gpu_none_isolation },
+    { "positional_gpu_a_snapshot", test_positional_gpu_a_snapshot },
+    { "positional_gpu_a_reject_method", test_positional_gpu_a_reject_method },
+    { "positional_gpu_a_isolation", test_positional_gpu_a_isolation },
+    { "positional_gpu_x_snapshot", test_positional_gpu_x_snapshot },
+    { "positional_gpu_x_reject_method", test_positional_gpu_x_reject_method },
+    { "positional_gpu_x_isolation", test_positional_gpu_x_isolation },
+    { "positional_gpu_blue_snapshot", test_positional_gpu_blue_snapshot },
+    { "positional_gpu_blue_reject_method",
+        test_positional_gpu_blue_reject_method },
+    { "positional_gpu_blue_isolation", test_positional_gpu_blue_isolation },
+    { "positional_gpu_none_reconfigure", test_positional_gpu_none_reconfigure },
+    { "positional_gpu_a_reconfigure", test_positional_gpu_a_reconfigure },
+    { "positional_gpu_x_reconfigure", test_positional_gpu_x_reconfigure },
+    { "positional_gpu_blue_reconfigure", test_positional_gpu_blue_reconfigure },
     { "lso2_gpu/configuration_snapshot", test_lso2_gpu_configuration_snapshot },
     { "lso2_gpu/gpu_off_rejected", test_lso2_gpu_gpu_off_rejected },
     { "lso2_gpu/byte_lookup_rejected", test_lso2_gpu_byte_lookup_rejected },

@@ -279,7 +279,7 @@ sixel_dither_lookup_preparers(sixel_dither_t *dither,
     status = sixel_dither_get_lookup_configuration(dither,
         request->pixelformat, &configuration);
     if (SIXEL_FAILED(status)) return status;
-    if (dither->gpu_dither != NULL &&
+    if (dither->diffuse_on_gpu &&
             dither->lut_policy == SIXEL_LUT_POLICY_AUTO) {
         configuration.kind = SIXEL_LUT_POLICY_ORDERED;
     }

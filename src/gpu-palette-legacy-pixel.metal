@@ -4,44 +4,6 @@
  * 6delta), after writing any result.  Otherwise it yields the search query
  * (after dither noise) and the selected delta comparison sample.
  */
-/* Build exactly the byte query consumed by lookup, including truncation
- * and clipping. The default target gate can skip this work entirely. */
-static uchar3 positional_query(uchar3 source,
-    device const uchar *blue_noise, device const uchar *gradient,
-    constant Params& params, uint x, uint y, uint gid)
-{
-    uchar q[3] = { source.x, source.y, source.z };
-    if (params.mode == 1u) {
-        float weight = gradient_weight(gradient, params, x, y, gid);
-        for (uint d = 0u; d < 3u; ++d) {
-            int val = int(q[d]) + int(tri_noise(blue_noise,
-                                                params,
-                                                int(x),
-                                                int(y),
-                                                int(d)) * weight * 32.0f);
-            val = val < 0 ? 0 : (val > 255 ? 255 : val);
-            q[d] = uchar(val);
-        }
-    }
-    // Match CPU unsigned phases and truncate the bias before addition.
-    if (params.mode == 2u || params.mode == 3u) {
-        for (uint d = 0u; d < 3u; ++d) {
-            uint phase;
-            float noise;
-            if (params.mode == 2u) {
-                phase = (x + d * 67u + y * 236u) * 119u;
-                noise = float(phase & 255u) / 128.0f - 1.0f;
-            } else {
-                phase = ((x + d * 29u) ^ (y * 149u)) * 1234u;
-                noise = float(phase & 511u) / 256.0f - 1.0f;
-            }
-            int val = int(q[d]) +
-                int((noise * params.positional_strength) * 32.0f);
-            q[d] = uchar(clamp(val, 0, 255));
-        }
-    }
-    return uchar3(q[0], q[1], q[2]);
-}
 static bool prepare_query(
     device uchar *result,
     device const uchar *pixels,

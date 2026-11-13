@@ -240,6 +240,22 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0056_GPU_BLUE_RECONFIGURE \
+    -DBUILD_TEST_0049_GPU_X_RECONFIGURE \
+    -DBUILD_TEST_0043_GPU_A_RECONFIGURE \
+    -DBUILD_TEST_0020_GPU_NONE_RECONFIGURE \
+    -DBUILD_TEST_0055_GPU_BLUE_ISOLATION \
+    -DBUILD_TEST_0054_GPU_BLUE_REJECT_METHOD \
+    -DBUILD_TEST_0053_GPU_BLUE_SNAPSHOT \
+    -DBUILD_TEST_0048_GPU_X_ISOLATION \
+    -DBUILD_TEST_0047_GPU_X_REJECT_METHOD \
+    -DBUILD_TEST_0046_GPU_X_SNAPSHOT \
+    -DBUILD_TEST_0042_GPU_A_ISOLATION \
+    -DBUILD_TEST_0041_GPU_A_REJECT_METHOD \
+    -DBUILD_TEST_0040_GPU_A_SNAPSHOT \
+    -DBUILD_TEST_0019_GPU_NONE_ISOLATION \
+    -DBUILD_TEST_0018_GPU_NONE_REJECT_METHOD \
+    -DBUILD_TEST_0017_GPU_NONE_SNAPSHOT \
     -DBUILD_GPU_KMEANS_CONTRACT \
     -DBUILD_TEST_0047_PLAIN_TIES \
     -DBUILD_TEST_0048_HAMERLY_TIES \
@@ -5305,6 +5321,22 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    dither/bluenoise/0056_gpu_blue_reconfigure.c \
+    dither/x-dither/0049_gpu_x_reconfigure.c \
+    dither/a-dither/0043_gpu_a_reconfigure.c \
+    dither/gpu-direct/0020_gpu_none_reconfigure.c \
+    dither/gpu-direct/0017_gpu_none_snapshot.c \
+    dither/gpu-direct/0018_gpu_none_reject_method.c \
+    dither/gpu-direct/0019_gpu_none_isolation.c \
+    dither/a-dither/0040_gpu_a_snapshot.c \
+    dither/a-dither/0041_gpu_a_reject_method.c \
+    dither/a-dither/0042_gpu_a_isolation.c \
+    dither/x-dither/0046_gpu_x_snapshot.c \
+    dither/x-dither/0047_gpu_x_reject_method.c \
+    dither/x-dither/0048_gpu_x_isolation.c \
+    dither/bluenoise/0053_gpu_blue_snapshot.c \
+    dither/bluenoise/0054_gpu_blue_reject_method.c \
+    dither/bluenoise/0055_gpu_blue_isolation.c \
     encoder/retained/0001_gpu_bind_rgb.c \
     encoder/retained/0002_gpu_same_device.c \
     encoder/retained/0003_gpu_live_read_device.c \
@@ -12823,3 +12855,35 @@ EXTRA_DIST += _static/sh/staticcheck-compiler-link-boundary.sh \
     _static/sh/staticcheck-ci-vm-concurrency.sh \
     _static/awk/ci-vm-concurrency.awk \
     _static/sh/staticcheck-ci-tsan-shards.sh
+
+EXTRA_DIST += dither/gpu-direct/0017_gpu_none_snapshot.t
+
+EXTRA_DIST += dither/gpu-direct/0018_gpu_none_reject_method.t
+
+EXTRA_DIST += dither/gpu-direct/0019_gpu_none_isolation.t
+
+EXTRA_DIST += dither/a-dither/0040_gpu_a_snapshot.t
+
+EXTRA_DIST += dither/a-dither/0041_gpu_a_reject_method.t
+
+EXTRA_DIST += dither/a-dither/0042_gpu_a_isolation.t
+
+EXTRA_DIST += dither/x-dither/0046_gpu_x_snapshot.t
+
+EXTRA_DIST += dither/x-dither/0047_gpu_x_reject_method.t
+
+EXTRA_DIST += dither/x-dither/0048_gpu_x_isolation.t
+
+EXTRA_DIST += dither/bluenoise/0053_gpu_blue_snapshot.t
+
+EXTRA_DIST += dither/bluenoise/0054_gpu_blue_reject_method.t
+
+EXTRA_DIST += dither/bluenoise/0055_gpu_blue_isolation.t
+
+EXTRA_DIST += dither/gpu-direct/0020_gpu_none_reconfigure.t
+
+EXTRA_DIST += dither/a-dither/0043_gpu_a_reconfigure.t
+
+EXTRA_DIST += dither/x-dither/0049_gpu_x_reconfigure.t
+
+EXTRA_DIST += dither/bluenoise/0056_gpu_blue_reconfigure.t

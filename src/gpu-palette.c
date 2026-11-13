@@ -34,22 +34,13 @@
 #include "compat_stub.h"
 #include "gpu-palette.h"
 #include "lookup-policy-gpu.h"
-#include "bluenoise_64x64.h"
+#include "dither-policy-gpu.h"
 #include "options.h"
 #include "dither-common-pipeline.h"
 #if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
 #include "gpu-palette-vulkan.h"
 #define SIXEL_GPU_PALETTE_USE_VULKAN 1
 #endif
-
-typedef struct sixel_gpu_bluenoise_conf {
-    float strength;
-    float gradient_factor;
-    int phase_x;
-    int phase_y;
-    int channel_rgb;
-    int size;
-} sixel_gpu_bluenoise_conf_t;
 
 #if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN)
 SIXELSTATUS
@@ -136,10 +127,7 @@ sixel_gpu_palette_lut_policy_is_supported(
 static int
 sixel_gpu_palette_method_is_supported(int method)
 {
-    return method == SIXEL_DIFFUSE_NONE ||
-        method == SIXEL_DIFFUSE_A_DITHER ||
-        method == SIXEL_DIFFUSE_X_DITHER ||
-        method == SIXEL_DIFFUSE_BLUENOISE_DITHER;
+    return sixel_gpu_dither_byte_program(method) != NULL;
 }
 
 static int
@@ -237,140 +225,6 @@ sixel_gpu_palette_accumulation_is_supported(
     return 1;
 }
 
-static unsigned int
-sixel_gpu_palette_hash32(unsigned int value)
-{
-    value ^= value >> 16;
-    value = (unsigned int)((unsigned long long)value * 0x7feb352dU);
-    value ^= value >> 15;
-    value = (unsigned int)((unsigned long long)value * 0x846ca68bU);
-    value ^= value >> 16;
-    return value;
-}
-
-static void
-sixel_gpu_palette_bluenoise_conf_init(sixel_gpu_bluenoise_conf_t *conf,
-                                     int ncolors)
-{
-    int seed;
-    unsigned int hash;
-
-    seed = 0;
-    hash = 0U;
-    if (conf == NULL) {
-        return;
-    }
-
-    conf->strength = sixel_dither_positional_auto_strength(
-        SIXEL_DIFFUSE_BLUENOISE_DITHER, ncolors);
-    conf->gradient_factor = 0.0f;
-    conf->phase_x = 0;
-    conf->phase_y = 0;
-    conf->channel_rgb = 0;
-    conf->size = SIXEL_BN_W;
-
-    (void)sixel_option_resolve_registered_float_binding(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        "bluenoise",
-        SIXEL_SUBOPTION_BINDING_ID_2(
-            bluenoise_strength,
-            bluenoise_strength_override),
-        &conf->strength);
-
-    if (sixel_option_resolve_registered_float_binding(
-            SIXEL_OPTION_SCHEMA_DIFFUSION,
-            "bluenoise",
-            SIXEL_SUBOPTION_BINDING_ID_2(
-                bluenoise_gradient_factor,
-                bluenoise_gradient_factor_override),
-            &conf->gradient_factor)) {
-        if (conf->gradient_factor < 0.0f) {
-            conf->gradient_factor = 0.0f;
-        }
-    }
-
-    (void)sixel_option_resolve_registered_int_binding(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        "bluenoise",
-        SIXEL_SUBOPTION_BINDING_ID_2(
-            bluenoise_channel_rgb,
-            bluenoise_channel_override),
-        &conf->channel_rgb);
-
-    (void)sixel_option_resolve_registered_int_binding(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        "bluenoise",
-        SIXEL_SUBOPTION_BINDING_ID_2(
-            bluenoise_size,
-            bluenoise_size_override),
-        &conf->size);
-
-    if (sixel_option_resolve_registered_int_pair_binding(
-            SIXEL_OPTION_SCHEMA_DIFFUSION,
-            "bluenoise",
-            SIXEL_SUBOPTION_BINDING_ID_3(
-                bluenoise_phase_x,
-                bluenoise_phase_y,
-                bluenoise_phase_override),
-            &conf->phase_x,
-            &conf->phase_y)) {
-        return;
-    }
-
-    if (sixel_option_resolve_registered_int_binding(
-            SIXEL_OPTION_SCHEMA_DIFFUSION,
-            "bluenoise",
-            SIXEL_SUBOPTION_BINDING_ID_2(
-                bluenoise_seed,
-                bluenoise_seed_override),
-            &seed)) {
-        hash = sixel_gpu_palette_hash32((unsigned int)seed);
-        conf->phase_x = (int)(hash & 63U);
-        conf->phase_y = (int)((hash >> 8) & 63U);
-    }
-}
-
-static void
-sixel_gpu_palette_apply_bluenoise_overrides(
-    sixel_gpu_bluenoise_conf_t *conf,
-    sixel_gpu_palette_request_t const *request)
-{
-    unsigned int hash;
-
-    hash = 0U;
-    if (conf == NULL || request == NULL) {
-        return;
-    }
-
-    if (request->bluenoise_strength_override != 0) {
-        conf->strength = request->bluenoise_strength;
-    }
-    if (request->bluenoise_gradient_factor_override != 0) {
-        conf->gradient_factor = request->bluenoise_gradient_factor;
-        if (conf->gradient_factor < 0.0f) {
-            conf->gradient_factor = 0.0f;
-        }
-    }
-    if (request->bluenoise_channel_override != 0) {
-        conf->channel_rgb =
-            request->bluenoise_channel_rgb != 0 ? 1 : 0;
-    }
-    if (request->bluenoise_size_override != 0 &&
-            request->bluenoise_size == SIXEL_BN_W) {
-        conf->size = request->bluenoise_size;
-    }
-
-    if (request->bluenoise_phase_override != 0) {
-        conf->phase_x = request->bluenoise_phase_x;
-        conf->phase_y = request->bluenoise_phase_y;
-    } else if (request->bluenoise_seed_override != 0) {
-        hash = sixel_gpu_palette_hash32(
-            (unsigned int)request->bluenoise_seed);
-        conf->phase_x = (int)(hash & 63U);
-        conf->phase_y = (int)((hash >> 8) & 63U);
-    }
-}
-
 SIXEL_INTERNAL_API size_t
 sixel_gpu_palette_auto_threshold(void)
 {
@@ -444,54 +298,6 @@ sixel_gpu_palette_request_is_supported(
     }
 
     return 1;
-}
-
-static void
-sixel_gpu_palette_prepare_effective_request(
-    sixel_gpu_palette_request_t *effective,
-    sixel_gpu_palette_request_t const *request)
-{
-    sixel_gpu_bluenoise_conf_t bluenoise_conf;
-
-    if (effective == NULL || request == NULL) {
-        return;
-    }
-
-    *effective = *request;
-    /* Match CPU precedence: paintable-count amplitude, registry environment,
-     * then the encoder-bound numeric override. Never reuse blue-noise knobs
-     * for the arithmetic patterns. */
-    if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
-            request->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER) {
-        effective->positional_strength = sixel_dither_positional_auto_strength(
-            request->method_for_diffuse, request->ncolors);
-        if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER) {
-            (void)sixel_option_resolve_registered_float_binding(
-                SIXEL_OPTION_SCHEMA_DIFFUSION, "a_dither",
-                SIXEL_SUBOPTION_BINDING_ID_2(
-                    a_dither_strength, a_dither_strength_override),
-                &effective->positional_strength);
-        } else {
-            (void)sixel_option_resolve_registered_float_binding(
-                SIXEL_OPTION_SCHEMA_DIFFUSION, "x_dither",
-                SIXEL_SUBOPTION_BINDING_ID_2(
-                    x_dither_strength, x_dither_strength_override),
-                &effective->positional_strength);
-        }
-        if (request->positional_strength_override) {
-            effective->positional_strength = request->positional_strength;
-        }
-        return;
-    }
-    memset(&bluenoise_conf, 0, sizeof(bluenoise_conf));
-    sixel_gpu_palette_bluenoise_conf_init(&bluenoise_conf, request->ncolors);
-    sixel_gpu_palette_apply_bluenoise_overrides(&bluenoise_conf, request);
-    effective->bluenoise_strength = bluenoise_conf.strength;
-    effective->bluenoise_gradient_factor = bluenoise_conf.gradient_factor;
-    effective->bluenoise_phase_x = bluenoise_conf.phase_x;
-    effective->bluenoise_phase_y = bluenoise_conf.phase_y;
-    effective->bluenoise_channel_rgb = bluenoise_conf.channel_rgb;
-    effective->bluenoise_size = bluenoise_conf.size;
 }
 
 static int
@@ -625,22 +431,16 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
         return SIXEL_FALSE;
     }
 #endif
-    if (request->method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        sixel_gpu_palette_prepare_effective_request(&effective, request);
-        if (effective.bluenoise_size != SIXEL_BN_W) {
-            if (sixel_gpu_palette_policy_is_force(request->policy)) {
-                sixel_helper_set_additional_message(
-                    "gpu palette apply: blue-noise size is not supported.");
-                return SIXEL_BAD_ARGUMENT;
-            }
-            return SIXEL_FALSE;
-        }
-    } else if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
-            request->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER) {
-        sixel_gpu_palette_prepare_effective_request(&effective, request);
-    } else {
-        effective = *request;
+    effective = *request;
+    effective.dither_program = sixel_gpu_dither_byte_program(
+        request->method_for_diffuse);
+    status = effective.dither_program->resolve(&effective, request);
+    if (status != SIXEL_OK) {
+        return sixel_gpu_palette_policy_is_force(request->policy)
+            ? status : SIXEL_FALSE;
     }
+    effective.dither_program = sixel_gpu_dither_byte_program(
+        request->method_for_diffuse);
 
     if (!sixel_gpu_palette_has_engine()) {
         if (sixel_gpu_palette_policy_is_force(request->policy)) {
@@ -733,10 +533,12 @@ sixel_gpu_device_acquire(sixel_gpu_device_interface_t **device)
 
 SIXELSTATUS
 sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
-    sixel_gpu_lookup_plan_interface_t *plan, sixel_gpu_program_t **program)
+    sixel_gpu_lookup_plan_interface_t *plan,
+    sixel_gpu_dither_program_t const *dither, sixel_gpu_program_t **program)
 {
     (void)device;
     (void)plan;
+    (void)dither;
     if (program == NULL) return SIXEL_BAD_ARGUMENT;
     *program = NULL;
     return SIXEL_FEATURE_ERROR;

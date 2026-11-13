@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+#include "src/dither-policy-gpu.h"
 #include <string.h>
 #include "component_common.h"
 #include "src/gpu-palette.h"
@@ -129,7 +130,8 @@ injected_gpu_program_test(int invalid)
     third.invalid = (uint32_t)invalid;
     third.lease_owner = fixture.other;
     if (third_describe(&third.iface, &view) != SIXEL_OK ||
-            sixel_gpu_program_prepare(device, &third.iface, &program)
+            sixel_gpu_program_prepare(device, &third.iface,
+                sixel_gpu_dither_byte_program(SIXEL_DIFFUSE_NONE), &program)
                 != SIXEL_OK) goto end;
     request.program = program;
     request.policy = SIXEL_GPU_POLICY_FORCE;

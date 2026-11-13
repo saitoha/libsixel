@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 /*
  * Closes the fused palette-apply kernel begun by
- * gpu-palette-fused-prefix.glsl around the lookup policy's lookup_rgb8(),
- * as gpu-palette-fused-suffix.metal does. An index outside the palette
+ * dither-policy-none-gpu-prefix.glsl around the lookup policy's lookup_rgb8(),
+ * as dither-policy-none-gpu.metal does. An index outside the palette
  * marks the run invalid instead of being written.
  */
 /* Batch programs consume two spatial queries per lane. Point programs

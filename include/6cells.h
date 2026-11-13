@@ -2270,6 +2270,12 @@ typedef struct sixel_gpu_dither_prepare_request {
  * are immutable. Only result indexes/final skip/RGB may be written; this
  * component does not publish rows, seal result, or commit retained history.
  * PaletteApply owns publication, cancellation outcome and final sealing. */
+/* A producer reports a completed prefix; PaletteApply remains the owner
+ * of publication. A failing callback stops submission and drains work. */
+typedef SIXELSTATUS (*sixel_gpu_rows_ready_function_t)(
+    void *context,
+    int rows);
+
 typedef struct sixel_gpu_dither_run_request {
     sixel_frame_interface_t *source;
     sixel_retained_read_t *baseline;
@@ -2278,6 +2284,8 @@ typedef struct sixel_gpu_dither_run_request {
     sixel_timeline_logger_t *logger;
     sixel_cancel_function cancel;
     void *cancel_context;
+    sixel_gpu_rows_ready_function_t rows_ready;
+    void *rows_context;
 } sixel_gpu_dither_run_request_t;
 
 /* Optional deferred execution separates a history-independent solve from
@@ -2546,6 +2554,38 @@ typedef struct sixel_gpu_dither_preparer_vtbl {
 struct sixel_gpu_dither_preparer_interface {
     sixel_gpu_dither_preparer_vtbl_t const *vtbl;
 };
+
+/*
+ * IDL coclass:
+ * [classid("dither/none.gpu")]
+ * coclass dither_policy_none_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/a_dither.gpu")]
+ * coclass dither_policy_a_dither_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/x_dither.gpu")]
+ * coclass dither_policy_x_dither_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("dither/bluenoise.gpu")]
+ * coclass dither_policy_bluenoise_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
 
 /*
  * IDL coclass:

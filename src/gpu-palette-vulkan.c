@@ -22,19 +22,10 @@
  */
 
 /*
- * Vulkan palette apply: the legacy whole-frame kernel with the direct
- * (lookup NONE) scan or a byte FHEDT table built on the device in the same
- * submission. Other lookup policies stay on the CPU until their GLSL
- * programs exist; see sixel_gpu_palette_vulkan_supports_lut().
- */
-/*
- * Vulkan program runtime and palette-apply consumer. This is the Vulkan
- * counterpart of gpu-palette-metal.m with gpu-palette-program.inc.h: the
- * runtime exposes a gpu_device whose program format is
- * "vulkan.lookup-rgb8.v1", turns a lookup plan's frozen program view into
- * pipelines and runs the fused per-pixel kernel around the policy's own
- * lookup_rgb8(). It never interprets a lookup policy, its constants or its
- * workspace; each policy owns those in its lookup-policy-<name>-gpu files.
+ * Vulkan buffer and dispatch transport for frozen GPU dither programs.
+ * Each dither supplies its consumer prefix and body. The lookup plan owns
+ * lookup_rgb8(), builders, constants and workspace. Compilation is keyed
+ * by their complete composition; this runtime never selects a dither.
  */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
@@ -56,25 +47,17 @@
 #include "sixel_atomic.h"
 #include "bluenoise_64x64.h"
 
-/* Readable sources: gpu-palette-fused-prefix.glsl,
- * gpu-palette-fused-suffix.glsl and gpu-lookup-builder-prefix.glsl. */
-static char const * const g_sixel_vk_fused_prefix[] = {
-#include <generated-vulkan/gpu-palette-fused-prefix-shader.inc.h>
-};
-static char const * const g_sixel_vk_fused_suffix[] = {
-#include <generated-vulkan/gpu-palette-fused-suffix-shader.inc.h>
-};
 static char const * const g_sixel_vk_builder_prefix[] = {
 #include <generated-vulkan/gpu-lookup-builder-prefix-shader.inc.h>
 };
 
-/* Must match the Params block in gpu-palette-fused-prefix.glsl (std430). */
+/* Must match the Params block in the dither-owned GLSL prefix (std430). */
 typedef struct sixel_gpu_vulkan_params {
     uint32_t pixel_count;
     uint32_t width;
     uint32_t height;
     uint32_t ncolors;
-    uint32_t mode;
+    uint32_t reserved;
     uint32_t has_transparent;
     uint32_t transparent_size;
     uint32_t transparent_keycolor;
@@ -139,12 +122,6 @@ enum {
     SIXEL_VK_INVALID = 12
 };
 
-enum {
-    SIXEL_VK_MODE_NONE = 0,
-    SIXEL_VK_MODE_BLUENOISE = 1,
-    SIXEL_VK_MODE_A_DITHER = 2,
-    SIXEL_VK_MODE_X_DITHER = 3
-};
 
 /* Only the runtime knows the native allocation behind a gpu_buffer. */
 typedef struct sixel_gpu_vulkan_native_buffer {
@@ -166,6 +143,7 @@ typedef struct sixel_gpu_vulkan_compiled {
 } sixel_gpu_vulkan_compiled_t;
 
 struct sixel_gpu_program {
+    sixel_gpu_dither_program_t const *dither;
     sixel_gpu_lookup_plan_interface_t *plan;
     sixel_gpu_lookup_program_view_t view;
     sixel_gpu_vulkan_compiled_t *compiled;
@@ -686,7 +664,8 @@ sixel_gpu_vulkan_compiled_unref(sixel_vk_runtime_t *runtime,
 /* The full composed text plus the builder entries and dimensions name the
  * compiled code, never a policy name. */
 static char *
-sixel_gpu_vulkan_program_key(sixel_gpu_lookup_program_view_t const *view)
+sixel_gpu_vulkan_program_key(sixel_gpu_lookup_program_view_t const *view,
+    sixel_gpu_dither_program_t const *dither)
 {
     sixel_gpu_lookup_build_pass_t const *pass;
     char *key;
@@ -694,6 +673,10 @@ sixel_gpu_vulkan_program_key(sixel_gpu_lookup_program_view_t const *view)
     size_t index;
 
     length = 1;
+    for (index = 0; index < dither->prefix_count; ++index)
+        length += strlen(dither->prefix[index]);
+    for (index = 0; index < dither->suffix_count; ++index)
+        length += strlen(dither->suffix[index]);
     for (index = 0; index < view->chunk_count; ++index) {
         length += strlen(view->chunks[index]);
     }
@@ -705,6 +688,14 @@ sixel_gpu_vulkan_program_key(sixel_gpu_lookup_program_view_t const *view)
         return NULL;
     }
     length = 0;
+    for (index = 0; index < dither->prefix_count; ++index) {
+        strcpy(key + length, dither->prefix[index]);
+        length += strlen(dither->prefix[index]);
+    }
+    for (index = 0; index < dither->suffix_count; ++index) {
+        strcpy(key + length, dither->suffix[index]);
+        length += strlen(dither->suffix[index]);
+    }
     for (index = 0; index < view->chunk_count; ++index) {
         strcpy(key + length, view->chunks[index]);
         length += strlen(view->chunks[index]);
@@ -723,6 +714,7 @@ sixel_gpu_vulkan_program_key(sixel_gpu_lookup_program_view_t const *view)
 static SIXELSTATUS
 sixel_gpu_vulkan_compile_locked(sixel_vk_runtime_t *runtime,
     sixel_gpu_lookup_program_view_t const *view,
+    sixel_gpu_dither_program_t const *dither,
     sixel_gpu_vulkan_compiled_t **result)
 {
     sixel_gpu_vulkan_palette_state_t *state;
@@ -737,7 +729,7 @@ sixel_gpu_vulkan_compile_locked(sixel_vk_runtime_t *runtime,
 
     *result = NULL;
     state = &g_sixel_vk_palette;
-    key = sixel_gpu_vulkan_program_key(view);
+    key = sixel_gpu_vulkan_program_key(view, dither);
     if (key == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -757,14 +749,12 @@ sixel_gpu_vulkan_compile_locked(sixel_vk_runtime_t *runtime,
     }
     compiled->key = key;
     compiled->refs = 1;
-    parts[0].chunks = g_sixel_vk_fused_prefix;
-    parts[0].count = sizeof(g_sixel_vk_fused_prefix) /
-        sizeof(g_sixel_vk_fused_prefix[0]);
+    parts[0].chunks = dither->prefix;
+    parts[0].count = dither->prefix_count;
     parts[1].chunks = view->chunks;
     parts[1].count = view->chunk_count;
-    parts[2].chunks = g_sixel_vk_fused_suffix;
-    parts[2].count = sizeof(g_sixel_vk_fused_suffix) /
-        sizeof(g_sixel_vk_fused_suffix[0]);
+    parts[2].chunks = dither->suffix;
+    parts[2].count = dither->suffix_count;
     status = sixel_vk_shader_module_compose(runtime,
         view->logical_name != NULL ? view->logical_name : "lookup",
         parts, 3, &module);
@@ -813,13 +803,14 @@ sixel_gpu_vulkan_compile_locked(sixel_vk_runtime_t *runtime,
 
 SIXELSTATUS
 sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
-    sixel_gpu_lookup_plan_interface_t *plan, sixel_gpu_program_t **result)
+    sixel_gpu_lookup_plan_interface_t *plan,
+    sixel_gpu_dither_program_t const *dither, sixel_gpu_program_t **result)
 {
     sixel_gpu_program_t *program;
     sixel_vk_runtime_t *runtime;
     SIXELSTATUS status;
 
-    if (device == NULL || plan == NULL || result == NULL) {
+    if (device == NULL || plan == NULL || dither == NULL || result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *result = NULL;
@@ -842,13 +833,14 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
             !sixel_gpu_vulkan_palette_prepare_locked(runtime)
             ? SIXEL_FEATURE_ERROR
             : sixel_gpu_vulkan_compile_locked(runtime, &program->view,
-                &program->compiled);
+                dither, &program->compiled);
         sixel_vk_unlock();
     }
     if (SIXEL_FAILED(status)) {
         free(program);
         return status;
     }
+    program->dither = dither;
     program->plan = plan;
     plan->vtbl->ref(plan);
     *result = program;
@@ -915,14 +907,6 @@ sixel_gpu_vulkan_fill_params(sixel_gpu_vulkan_params_t *params,
     params->width = (uint32_t)request->width;
     params->height = (uint32_t)request->height;
     params->ncolors = (uint32_t)request->ncolors;
-    params->mode = SIXEL_VK_MODE_NONE;
-    if (request->method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        params->mode = SIXEL_VK_MODE_BLUENOISE;
-    } else if (request->method_for_diffuse == SIXEL_DIFFUSE_A_DITHER) {
-        params->mode = SIXEL_VK_MODE_A_DITHER;
-    } else if (request->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER) {
-        params->mode = SIXEL_VK_MODE_X_DITHER;
-    }
     params->positional_strength = request->positional_strength;
     if (request->transparent_mask != NULL &&
             request->transparent_keycolor >= 0 &&
@@ -1067,6 +1051,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     SIXELSTATUS status;
 
     program = request == NULL ? NULL : request->program;
+    if (program != NULL && request->dither_program != program->dither)
+        return SIXEL_BAD_ARGUMENT;
     if (program == NULL || request->retained_rgb != NULL) {
         return SIXEL_FEATURE_ERROR;
     }

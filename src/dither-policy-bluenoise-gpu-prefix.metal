@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* bluenoise owns this byte-query construction and pixel execution. */
 #include <metal_stdlib>
 using namespace metal;
 struct Params {
@@ -7,7 +9,7 @@ struct Params {
     uint ncolors;
     uint lookup_mode;
     uint fhedt_resolution, fhedt_shift, fhedt_refine, fhedt_dist2;
-    uint mode;
+    uint reserved;
     uint has_transparent;
     uint transparent_size;
     uint transparent_keycolor;
@@ -118,34 +120,15 @@ static uchar3 positional_query(uchar3 source,
     constant Params& params, uint x, uint y, uint gid)
 {
     uchar q[3] = { source.x, source.y, source.z };
-    if (params.mode == 1u) {
-        float weight = gradient_weight(gradient, params, x, y, gid);
-        for (uint d = 0u; d < 3u; ++d) {
-            int val = int(q[d]) + int(tri_noise(blue_noise,
-                                                params,
-                                                int(x),
-                                                int(y),
-                                                int(d)) * weight * 32.0f);
-            val = val < 0 ? 0 : (val > 255 ? 255 : val);
-            q[d] = uchar(val);
-        }
-    }
-    // Match CPU unsigned phases and truncate the bias before addition.
-    if (params.mode == 2u || params.mode == 3u) {
-        for (uint d = 0u; d < 3u; ++d) {
-            uint phase;
-            float noise;
-            if (params.mode == 2u) {
-                phase = (x + d * 67u + y * 236u) * 119u;
-                noise = float(phase & 255u) / 128.0f - 1.0f;
-            } else {
-                phase = ((x + d * 29u) ^ (y * 149u)) * 1234u;
-                noise = float(phase & 511u) / 256.0f - 1.0f;
-            }
-            int val = int(q[d]) +
-                int((noise * params.positional_strength) * 32.0f);
-            q[d] = uchar(clamp(val, 0, 255));
-        }
+    uint d;
+    int value;
+    float weight;
+
+    weight = gradient_weight(gradient, params, x, y, gid);
+    for (d = 0u; d < 3u; ++d) {
+        value = int(q[d]) + int(tri_noise(blue_noise, params,
+            int(x), int(y), int(d)) * weight * 32.0f);
+        q[d] = uchar(clamp(value, 0, 255));
     }
     return uchar3(q[0], q[1], q[2]);
 }

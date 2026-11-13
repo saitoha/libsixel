@@ -48,6 +48,10 @@ if ! awk -f "$generator" \
     "$src_root"/src/lookup-policy-gridlut.h \
     "$src_root"/src/lookup-policy-ordered.h \
     "$src_root"/src/lookup-policy-blockcull.h \
+    "$src_root"/src/dither-policy-none-gpu.h \
+    "$src_root"/src/dither-policy-a-dither-gpu.h \
+    "$src_root"/src/dither-policy-x-dither-gpu.h \
+    "$src_root"/src/dither-policy-bluenoise-gpu.h \
     "$src_root"/src/dither-policy-none.h \
     "$src_root"/src/dither-policy-fs.h \
     "$src_root"/src/dither-policy-atkinson.h \

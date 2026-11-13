@@ -2,6 +2,7 @@
 /* Row grouping preserves global blue-noise coordinates.
  * Policy: docs/threading/encoder.md
  */
+#include "src/dither-policy-gpu.h"
 #include "tests/_support/processing/gpu-palette/gpu_rows_common.h"
 
 int
@@ -23,6 +24,13 @@ test_gpu_rows_bluenoise_equivalence(int argc, char **argv)
     for (i = 0; i < GPU_ROWS_PIXELS * 3; ++i) {
         f.pixels[i] = (unsigned char)((i * 31 + i / 17) % 251);
     }
+    /* Dither code is frozen with the lookup program at preparation. */
+    sixel_gpu_program_destroy(f.program);
+    f.program = NULL;
+    ROWS_CHECK(sixel_gpu_program_prepare(f.device, f.component.other,
+        sixel_gpu_dither_byte_program(SIXEL_DIFFUSE_BLUENOISE_DITHER),
+        &f.program) == SIXEL_OK);
+    f.request.program = f.program;
     f.request.method_for_diffuse = SIXEL_DIFFUSE_BLUENOISE_DITHER;
     f.request.bluenoise_size_override = 1;
     f.request.bluenoise_size = 64;

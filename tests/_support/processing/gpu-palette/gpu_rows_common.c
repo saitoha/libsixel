@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+#include "src/dither-policy-gpu.h"
 #include "gpu_rows_common.h"
 #include "src/lookup-policy-gpu.h"
 
@@ -64,7 +65,7 @@ gpu_rows_open(gpu_rows_fixture_t *f, int kind)
     status = f->component.other->vtbl->describe(f->component.other, &view);
     if (status != SIXEL_OK) return 1;
     status = sixel_gpu_program_prepare(f->device, f->component.other,
-        &f->program);
+        sixel_gpu_dither_byte_program(SIXEL_DIFFUSE_NONE), &f->program);
     if (status != SIXEL_OK) return 1;
     for (i = 0; i < GPU_ROWS_PIXELS; ++i) {
         /* Two exact palette choices give an independent index oracle. */

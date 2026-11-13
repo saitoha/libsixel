@@ -8,8 +8,7 @@ A finite palette cannot represent every input color. Dithering controls how the 
 pixels + palette -> dither adjustment -> palette lookup -> indexed pixels
 ```
 
-It answers **how should representation error be shaped**. It does not build the
-palette, and it does not define the data structure used to search that palette.
+It answers **how should representation error be shaped**. It does not build the palette, and it does not define the data structure used to search that palette.
 
 ## CLI surface
 
@@ -31,6 +30,8 @@ kernels. The current base methods are:
 - each of those error-diffusion methods also has its own GPU component that solves it in four spatial phases when the GPU policy admits an RGB8 gamma image: [`lso2`](lso2-gpu.md), [`fs`](fs-gpu.md), [`atkinson`](atkinson-gpu.md), [`jajuni`](jajuni-gpu.md), [`stucki`](stucki-gpu.md), [`burkes`](burkes-gpu.md) and the `sierra` variants [1](sierra1-gpu.md), [2](sierra2-gpu.md) and [3](sierra3-gpu.md);
 - `a_dither`, `x_dither`, and `bluenoise` use positionally stable
   perturbations.
+
+The `none`, `a_dither`, `x_dither` and `bluenoise` GPU implementations each have a `dither-policy-<name>-gpu` component, with their own Metal and GLSL query code, configuration and prepared-plan lifetime. Their factory IDs are `dither/none.gpu`, `dither/a_dither.gpu`, `dither/x_dither.gpu` and `dither/bluenoise.gpu`. Like the GPU error-diffusion components, they implement `IGPUDitherPreparer` and `IGPUDitherPlan`; PaletteApply owns output validation and row publication. Native runtime code composes and executes supplied dither and lookup programs without a dither-mode branch. Compiled-code identity includes both programs, while lookup tables retain their lookup-specific ownership. Reconfiguring a preparer or dispatching another dither does not change an existing plan. Gradient-modulated blue noise continues through the synchronous source-map adapter.
 
 The [dither clamp policy](../clamp-policy.md) controls signed error-feedback headroom independently of the selected kernel.
 
@@ -1145,6 +1146,22 @@ The positional migration is covered by the following focused value and dispatch 
 | AX-16 | CPU/Metal a strength precedence matches independent coordinate and palette-distance oracles. | [tests/dither/a-dither/0038_a_strength_precedence.t](../../../../tests/dither/a-dither/0038_a_strength_precedence.t) |
 | AX-17 | CPU/Metal x strength precedence matches independent coordinate and palette-distance oracles. | [tests/dither/x-dither/0044_x_strength_precedence.t](../../../../tests/dither/x-dither/0044_x_strength_precedence.t) |
 | POS-74 | GPU auto strength matches independently specified CPU amplitudes across palette reuse and a reserved omission entry | [tests/dither/bluenoise/0050_auto_strength.t](../../../../tests/dither/bluenoise/0050_auto_strength.t) |
+| POS-75 | GPU none: prepared settings remain frozen and match a scalar byte oracle | [tests/dither/gpu-direct/0017_gpu_none_snapshot.t](../../../../tests/dither/gpu-direct/0017_gpu_none_snapshot.t) |
+| POS-76 | GPU none: wrong-method configuration preserves the prior settings | [tests/dither/gpu-direct/0018_gpu_none_reject_method.t](../../../../tests/dither/gpu-direct/0018_gpu_none_reject_method.t) |
+| POS-77 | GPU none: intervening policy dispatch preserves a live plan and byte indexes | [tests/dither/gpu-direct/0019_gpu_none_isolation.t](../../../../tests/dither/gpu-direct/0019_gpu_none_isolation.t) |
+| POS-78 | GPU a: prepared settings remain frozen and match a scalar byte oracle | [tests/dither/a-dither/0040_gpu_a_snapshot.t](../../../../tests/dither/a-dither/0040_gpu_a_snapshot.t) |
+| POS-79 | GPU a: wrong-method configuration preserves the prior settings | [tests/dither/a-dither/0041_gpu_a_reject_method.t](../../../../tests/dither/a-dither/0041_gpu_a_reject_method.t) |
+| POS-80 | GPU a: intervening policy dispatch preserves a live plan and byte indexes | [tests/dither/a-dither/0042_gpu_a_isolation.t](../../../../tests/dither/a-dither/0042_gpu_a_isolation.t) |
+| POS-81 | GPU x: prepared settings remain frozen and match a scalar byte oracle | [tests/dither/x-dither/0046_gpu_x_snapshot.t](../../../../tests/dither/x-dither/0046_gpu_x_snapshot.t) |
+| POS-82 | GPU x: wrong-method configuration preserves the prior settings | [tests/dither/x-dither/0047_gpu_x_reject_method.t](../../../../tests/dither/x-dither/0047_gpu_x_reject_method.t) |
+| POS-83 | GPU x: intervening policy dispatch preserves a live plan and byte indexes | [tests/dither/x-dither/0048_gpu_x_isolation.t](../../../../tests/dither/x-dither/0048_gpu_x_isolation.t) |
+| POS-84 | GPU blue: prepared settings remain frozen and match a scalar byte oracle | [tests/dither/bluenoise/0053_gpu_blue_snapshot.t](../../../../tests/dither/bluenoise/0053_gpu_blue_snapshot.t) |
+| POS-85 | GPU blue: wrong-method configuration preserves the prior settings | [tests/dither/bluenoise/0054_gpu_blue_reject_method.t](../../../../tests/dither/bluenoise/0054_gpu_blue_reject_method.t) |
+| POS-86 | GPU blue: intervening policy dispatch preserves a live plan and byte indexes | [tests/dither/bluenoise/0055_gpu_blue_isolation.t](../../../../tests/dither/bluenoise/0055_gpu_blue_isolation.t) |
+| POS-87 | GPU none: a reused context can return to FS after the positional component | [tests/dither/gpu-direct/0020_gpu_none_reconfigure.t](../../../../tests/dither/gpu-direct/0020_gpu_none_reconfigure.t) |
+| POS-88 | GPU a: a reused context can return to FS after the positional component | [tests/dither/a-dither/0043_gpu_a_reconfigure.t](../../../../tests/dither/a-dither/0043_gpu_a_reconfigure.t) |
+| POS-89 | GPU x: a reused context can return to FS after the positional component | [tests/dither/x-dither/0049_gpu_x_reconfigure.t](../../../../tests/dither/x-dither/0049_gpu_x_reconfigure.t) |
+| POS-90 | GPU blue: a reused context can return to FS after the positional component | [tests/dither/bluenoise/0056_gpu_blue_reconfigure.t](../../../../tests/dither/bluenoise/0056_gpu_blue_reconfigure.t) |
 
 ### Option routing
 

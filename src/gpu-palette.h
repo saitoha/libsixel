@@ -79,6 +79,7 @@ typedef struct sixel_gpu_palette_test_hooks {
 typedef struct sixel_gpu_palette_request {
     int policy;
     sixel_gpu_program_t *program;
+    sixel_gpu_dither_program_t const *dither_program;
     sixel_gpu_palette_test_hooks_t *test_hooks;
     size_t auto_threshold;
     sixel_index_t *dest;

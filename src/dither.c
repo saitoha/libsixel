@@ -55,6 +55,7 @@
 
 #include "factory.h"
 #include "gpu-palette.h"
+#include "dither-policy-gpu.h"
 #include "lookup-policy-gpu.h"
 #include "loader-common.h"
 #include "lookup-policy.h"
@@ -812,6 +813,25 @@ sixel_dither_prepare_dither_policy(
     sixel_dither_policy_capture_options(dither, &request.options);
     request.method_for_scan = method_for_scan;
     request.pixelformat = pixelformat;
+
+    /* Positional components coexist with the CPU fallback. Error diffusion
+     * still chooses its GPU-only working palette in the branch above. */
+    if (dither->gpu_policy != SIXEL_GPU_POLICY_OFF) {
+        status = sixel_gpu_dither_byte_create(dither->allocator,
+            dither->method_for_diffuse, &dither->gpu_dither);
+        if (status == SIXEL_OK) {
+            /* A later return to a diffusion component must replace this
+             * positional component even when that old kind was cached. */
+            dither->gpu_dither_method = dither->method_for_diffuse;
+            status = dither->gpu_dither->vtbl->configure(dither->gpu_dither,
+                &request);
+            if (status != SIXEL_OK) {
+                dither->gpu_dither->vtbl->unref(dither->gpu_dither);
+                dither->gpu_dither = NULL;
+            }
+        }
+        if (status != SIXEL_OK && status != SIXEL_FEATURE_ERROR) return status;
+    }
 
     if (dither->dither_policy != NULL
             && dither->dither_policy_class_name != NULL
@@ -4232,7 +4252,7 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     status = sixel_dither_prepare_dither_policy(dither, scan,
         SIXEL_PIXELFORMAT_RGB888);
     if (SIXEL_FAILED(status)) return status;
-    if (dither->gpu_dither != NULL) {
+    if (dither->diffuse_on_gpu) {
         if (prepare_lookup) return SIXEL_FEATURE_ERROR;
         return SIXEL_OK;
     }

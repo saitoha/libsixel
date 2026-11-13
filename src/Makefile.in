@@ -367,8 +367,17 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-carry.h $(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
 	$(srcdir)/gpu-dequant.h $(srcdir)/delta-residual.c \
-	$(srcdir)/delta-residual.h $(srcdir)/gpu-palette.c \
-	$(srcdir)/gpu-statistics.c \
+	$(srcdir)/delta-residual.h $(srcdir)/dither-policy-gpu.c \
+	$(srcdir)/dither-policy-gpu.h \
+	$(srcdir)/dither-policy-none-gpu.c \
+	$(srcdir)/dither-policy-none-gpu.h \
+	$(srcdir)/dither-policy-a-dither-gpu.c \
+	$(srcdir)/dither-policy-a-dither-gpu.h \
+	$(srcdir)/dither-policy-x-dither-gpu.c \
+	$(srcdir)/dither-policy-x-dither-gpu.h \
+	$(srcdir)/dither-policy-bluenoise-gpu.c \
+	$(srcdir)/dither-policy-bluenoise-gpu.h \
+	$(srcdir)/gpu-palette.c $(srcdir)/gpu-statistics.c \
 	$(srcdir)/lookup-policy-ordered-gpu.c \
 	$(srcdir)/lookup-policy-none-gpu.c \
 	$(srcdir)/lookup-policy-eytzinger-gpu.c \
@@ -401,8 +410,6 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-policy-certlut-gpu.h \
 	$(srcdir)/lookup-policy-gpu-legacy.h $(srcdir)/gpu-program.h \
 	$(srcdir)/gpu-palette-program.inc.h \
-	$(srcdir)/gpu-palette-fused-prefix.inc.h \
-	$(srcdir)/gpu-palette-fused-suffix.inc.h \
 	$(srcdir)/dither-lookup-preparer.inc.h \
 	$(srcdir)/progressive-gpu.c $(srcdir)/progressive-gpu.h \
 	$(srcdir)/gpu-palette.h $(srcdir)/gpu-statistics.h \
@@ -657,6 +664,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-delta-residual.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-gpu.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-none-gpu.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-a-dither-gpu.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-x-dither-gpu.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-bluenoise-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-statistics.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-ordered-gpu.lo \
@@ -823,11 +835,13 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-carry.Plo \
 	./$(DEPDIR)/libsixel_la-dither-clamp.Plo \
 	./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-metal.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-bluenoise-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-burkes-gpu-metal.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-burkes-gpu-vulkan.Plo \
@@ -838,6 +852,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-policy-fs-gpu-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-fs-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu-metal.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu.Plo \
@@ -846,6 +861,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-policy-lso2-gpu-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-lso2-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-none-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-none.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-sierra1-gpu-metal.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-sierra1-gpu-vulkan.Plo \
@@ -863,6 +879,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-policy-stucki-gpu-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-stucki-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-stucki.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-x-dither-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
@@ -1412,8 +1429,18 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-fhedt-gpu.metal \
     $(srcdir)/lookup-policy-5bit-gpu.metal \
     $(srcdir)/lookup-policy-6bit-gpu.metal \
-    $(srcdir)/gpu-palette-fused-prefix.metal \
-    $(srcdir)/gpu-palette-fused-suffix.metal
+    $(srcdir)/dither-policy-none-gpu-prefix.metal \
+    $(srcdir)/dither-policy-none-gpu.metal \
+    $(srcdir)/dither-policy-none-gpu-query.metal \
+    $(srcdir)/dither-policy-a-dither-gpu-prefix.metal \
+    $(srcdir)/dither-policy-a-dither-gpu.metal \
+    $(srcdir)/dither-policy-a-dither-gpu-query.metal \
+    $(srcdir)/dither-policy-x-dither-gpu-prefix.metal \
+    $(srcdir)/dither-policy-x-dither-gpu.metal \
+    $(srcdir)/dither-policy-x-dither-gpu-query.metal \
+    $(srcdir)/dither-policy-bluenoise-gpu-prefix.metal \
+    $(srcdir)/dither-policy-bluenoise-gpu.metal \
+    $(srcdir)/dither-policy-bluenoise-gpu-query.metal
 
 SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
 # The "vulkan.lookup-rgb8.v1" programs. Every GLSL chunk is embedded as
@@ -1436,7 +1463,10 @@ SIXEL_VULKAN_POLICIES = $(srcdir)/lookup-policy-none-gpu.glsl \
     $(srcdir)/lookup-policy-blockcull-gpu.glsl \
     $(srcdir)/lookup-policy-delaunay-gpu.glsl
 
-SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/gpu-palette-fused-prefix.glsl:$(srcdir)/gpu-palette-fused-suffix.glsl \
+SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(srcdir)/dither-policy-none-gpu.glsl \
+    $(srcdir)/dither-policy-a-dither-gpu-prefix.glsl:$(srcdir)/dither-policy-a-dither-gpu.glsl \
+    $(srcdir)/dither-policy-x-dither-gpu-prefix.glsl:$(srcdir)/dither-policy-x-dither-gpu.glsl \
+    $(srcdir)/dither-policy-bluenoise-gpu-prefix.glsl:$(srcdir)/dither-policy-bluenoise-gpu.glsl \
     $(srcdir)/dither-policy-lso2-gpu-prefix.glsl:$(srcdir)/dither-policy-lso2-gpu.glsl \
     $(srcdir)/dither-policy-fs-gpu-prefix.glsl:$(srcdir)/dither-policy-fs-gpu.glsl \
     $(srcdir)/dither-policy-atkinson-gpu-prefix.glsl:$(srcdir)/dither-policy-atkinson-gpu.glsl \
@@ -1448,8 +1478,14 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/gpu-palette-fused-prefix.glsl:$(srcdir)/
     $(srcdir)/dither-policy-sierra3-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra3-gpu.glsl
 
 SIXEL_VULKAN_INPUTS = $(srcdir)/gpu-lookup-builder-prefix.glsl \
-    $(srcdir)/gpu-palette-fused-prefix.glsl \
-    $(srcdir)/gpu-palette-fused-suffix.glsl \
+    $(srcdir)/dither-policy-none-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-none-gpu.glsl \
+    $(srcdir)/dither-policy-a-dither-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-a-dither-gpu.glsl \
+    $(srcdir)/dither-policy-x-dither-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-x-dither-gpu.glsl \
+    $(srcdir)/dither-policy-bluenoise-gpu-prefix.glsl \
+    $(srcdir)/dither-policy-bluenoise-gpu.glsl \
     $(srcdir)/dither-policy-lso2-gpu-prefix.glsl \
     $(srcdir)/dither-policy-lso2-gpu.glsl \
     $(srcdir)/dither-policy-fs-gpu-prefix.glsl \
@@ -1495,6 +1531,10 @@ nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS) \
 SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
     libsixel_la-dither-policy-lso2-gpu-vulkan.lo \
+    libsixel_la-dither-policy-none-gpu.lo \
+    libsixel_la-dither-policy-a-dither-gpu.lo \
+    libsixel_la-dither-policy-x-dither-gpu.lo \
+    libsixel_la-dither-policy-bluenoise-gpu.lo \
     libsixel_la-dither-policy-fs-gpu-vulkan.lo \
     libsixel_la-dither-policy-atkinson-gpu-vulkan.lo \
     libsixel_la-dither-policy-jajuni-gpu-vulkan.lo \
@@ -1522,6 +1562,10 @@ SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
     libsixel_la-dither-policy-lso2-gpu-metal.lo \
+    libsixel_la-dither-policy-none-gpu.lo \
+    libsixel_la-dither-policy-a-dither-gpu.lo \
+    libsixel_la-dither-policy-x-dither-gpu.lo \
+    libsixel_la-dither-policy-bluenoise-gpu.lo \
     libsixel_la-dither-policy-fs-gpu-metal.lo \
     libsixel_la-dither-policy-atkinson-gpu-metal.lo \
     libsixel_la-dither-policy-jajuni-gpu-metal.lo \
@@ -1778,6 +1822,16 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-a-dither-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-a-dither-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-x-dither-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-x-dither-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-bluenoise-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-bluenoise-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-statistics.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-ordered-gpu.c \
@@ -1813,8 +1867,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-gpu-legacy.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-program.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette-program.inc.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette-fused-prefix.inc.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette-fused-suffix.inc.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-lookup-preparer.inc.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/progressive-gpu.h \
@@ -2125,6 +2177,10 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-blockcull.h
 
 DITHER_POLICY_CLASSID_INPUTS = \
+    $(srcdir)/dither-policy-none-gpu.h \
+    $(srcdir)/dither-policy-a-dither-gpu.h \
+    $(srcdir)/dither-policy-x-dither-gpu.h \
+    $(srcdir)/dither-policy-bluenoise-gpu.h \
     $(srcdir)/dither-policy-none.h \
     $(srcdir)/dither-policy-fs.h \
     $(srcdir)/dither-policy-atkinson.h \
@@ -2296,11 +2352,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-carry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-clamp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-bluenoise-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-burkes-gpu-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-burkes-gpu-vulkan.Plo@am__quote@ # am--include-marker
@@ -2311,6 +2369,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-fs-gpu-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-fs-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu.Plo@am__quote@ # am--include-marker
@@ -2319,6 +2378,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-lso2-gpu-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-lso2-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-none-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-none.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-sierra1-gpu-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-sierra1-gpu-vulkan.Plo@am__quote@ # am--include-marker
@@ -2336,6 +2396,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-stucki-gpu-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-stucki-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-stucki.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-x-dither-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
@@ -3246,6 +3307,41 @@ libsixel_la-delta-residual.lo: delta-residual.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta-residual.c' object='libsixel_la-delta-residual.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-delta-residual.lo `test -f 'delta-residual.c' || echo '$(srcdir)/'`delta-residual.c
+
+libsixel_la-dither-policy-gpu.lo: dither-policy-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-gpu.Tpo -c -o libsixel_la-dither-policy-gpu.lo `test -f 'dither-policy-gpu.c' || echo '$(srcdir)/'`dither-policy-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-gpu.Tpo $(DEPDIR)/libsixel_la-dither-policy-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-gpu.c' object='libsixel_la-dither-policy-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-gpu.lo `test -f 'dither-policy-gpu.c' || echo '$(srcdir)/'`dither-policy-gpu.c
+
+libsixel_la-dither-policy-none-gpu.lo: dither-policy-none-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-none-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-none-gpu.Tpo -c -o libsixel_la-dither-policy-none-gpu.lo `test -f 'dither-policy-none-gpu.c' || echo '$(srcdir)/'`dither-policy-none-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-none-gpu.Tpo $(DEPDIR)/libsixel_la-dither-policy-none-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-none-gpu.c' object='libsixel_la-dither-policy-none-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-none-gpu.lo `test -f 'dither-policy-none-gpu.c' || echo '$(srcdir)/'`dither-policy-none-gpu.c
+
+libsixel_la-dither-policy-a-dither-gpu.lo: dither-policy-a-dither-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-a-dither-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Tpo -c -o libsixel_la-dither-policy-a-dither-gpu.lo `test -f 'dither-policy-a-dither-gpu.c' || echo '$(srcdir)/'`dither-policy-a-dither-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Tpo $(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-a-dither-gpu.c' object='libsixel_la-dither-policy-a-dither-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-a-dither-gpu.lo `test -f 'dither-policy-a-dither-gpu.c' || echo '$(srcdir)/'`dither-policy-a-dither-gpu.c
+
+libsixel_la-dither-policy-x-dither-gpu.lo: dither-policy-x-dither-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-x-dither-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-x-dither-gpu.Tpo -c -o libsixel_la-dither-policy-x-dither-gpu.lo `test -f 'dither-policy-x-dither-gpu.c' || echo '$(srcdir)/'`dither-policy-x-dither-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-x-dither-gpu.Tpo $(DEPDIR)/libsixel_la-dither-policy-x-dither-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-x-dither-gpu.c' object='libsixel_la-dither-policy-x-dither-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-x-dither-gpu.lo `test -f 'dither-policy-x-dither-gpu.c' || echo '$(srcdir)/'`dither-policy-x-dither-gpu.c
+
+libsixel_la-dither-policy-bluenoise-gpu.lo: dither-policy-bluenoise-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-bluenoise-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-bluenoise-gpu.Tpo -c -o libsixel_la-dither-policy-bluenoise-gpu.lo `test -f 'dither-policy-bluenoise-gpu.c' || echo '$(srcdir)/'`dither-policy-bluenoise-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-bluenoise-gpu.Tpo $(DEPDIR)/libsixel_la-dither-policy-bluenoise-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-bluenoise-gpu.c' object='libsixel_la-dither-policy-bluenoise-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-bluenoise-gpu.lo `test -f 'dither-policy-bluenoise-gpu.c' || echo '$(srcdir)/'`dither-policy-bluenoise-gpu.c
 
 libsixel_la-gpu-palette.lo: gpu-palette.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette.Tpo -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
@@ -4435,11 +4531,13 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-carry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes-gpu-vulkan.Plo
@@ -4450,6 +4548,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu.Plo
@@ -4458,6 +4557,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-none-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-none.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra1-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra1-gpu-vulkan.Plo
@@ -4475,6 +4575,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-stucki-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-stucki-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-stucki.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-x-dither-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
@@ -4717,11 +4818,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-carry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes-gpu-vulkan.Plo
@@ -4732,6 +4835,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni-gpu.Plo
@@ -4740,6 +4844,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-none-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-none.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra1-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra1-gpu-vulkan.Plo
@@ -4757,6 +4862,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-stucki-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-stucki-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-stucki.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-x-dither-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
