@@ -1,35 +1,34 @@
 /* SPDX-License-Identifier: MIT */
 /* Send a real terminal interrupt after img2sixel consumes an input line. */
 #ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200809L
+#define _POSIX_C_SOURCE 200809L
 #endif
 #ifndef _XOPEN_SOURCE
-# define _XOPEN_SOURCE 700
+#define _XOPEN_SOURCE 700
 #endif
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
-# define _DARWIN_C_SOURCE 1
+#define _DARWIN_C_SOURCE 1
 #endif
 #if defined(HAVE_CONFIG_H)
-# include "config.h"
+#include "config.h"
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_CLI_COLOR_PTY
-# include <errno.h>
-# include <fcntl.h>
-# include <signal.h>
-# include <sys/ioctl.h>
-# include <sys/select.h>
-# include <sys/wait.h>
-# include <termios.h>
-# include <time.h>
-# include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
+#include <sys/wait.h>
+#include <termios.h>
+#include <time.h>
+#include <unistd.h>
 #endif
 
 #if HAVE_CLI_COLOR_PTY && defined(FIONREAD)
-static double
-stdin_interrupt_now(void)
+static double stdin_interrupt_now(void)
 {
     struct timespec now;
 
@@ -37,8 +36,7 @@ stdin_interrupt_now(void)
     return (double)now.tv_sec + (double)now.tv_nsec / 1e9;
 }
 
-int
-test_cli_stdin_interrupt(int argc, char **argv)
+int test_cli_stdin_interrupt(int argc, char **argv)
 {
     int master;
     int slave;
@@ -66,6 +64,10 @@ test_cli_stdin_interrupt(int argc, char **argv)
     output[1] = -1;
     child = -1;
     result = 1;
+    /* musl leaves c_cc slots beyond the kernel ABI untouched. Initialize
+     * both snapshots while retaining exact comparison of the active slots. */
+    memset(&original, 0, sizeof(original));
+    memset(&current, 0, sizeof(current));
     if (argc != 2) {
         return 1;
     }
@@ -83,7 +85,7 @@ test_cli_stdin_interrupt(int argc, char **argv)
         goto end;
     }
     original.c_lflag |= ICANON | ISIG;
-    original.c_lflag &= (tcflag_t)~(ECHO | ECHONL);
+    original.c_lflag &= (tcflag_t) ~(ECHO | ECHONL);
     original.c_cc[VINTR] = 3;
     if (tcsetattr(slave, TCSANOW, &original) < 0 ||
         (flags = fcntl(slave, F_GETFL)) < 0) {
@@ -108,8 +110,7 @@ test_cli_stdin_interrupt(int argc, char **argv)
         close(master);
         close(output[0]);
         if (setsid() < 0 || ioctl(slave, TIOCSCTTY, 0) < 0 ||
-            tcsetpgrp(slave, getpgrp()) < 0 ||
-            dup2(slave, STDIN_FILENO) < 0 ||
+            tcsetpgrp(slave, getpgrp()) < 0 || dup2(slave, STDIN_FILENO) < 0 ||
             dup2(null_fd, STDOUT_FILENO) < 0 ||
             dup2(null_fd, STDERR_FILENO) < 0) {
             _exit(120);
@@ -173,8 +174,7 @@ test_cli_stdin_interrupt(int argc, char **argv)
         goto end;
     }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0 ||
-        fcntl(slave, F_GETFL) != flags ||
-        tcgetattr(slave, &current) < 0 ||
+        fcntl(slave, F_GETFL) != flags || tcgetattr(slave, &current) < 0 ||
         current.c_iflag != original.c_iflag ||
         current.c_oflag != original.c_oflag ||
         current.c_cflag != original.c_cflag ||
@@ -182,8 +182,8 @@ test_cli_stdin_interrupt(int argc, char **argv)
         memcmp(current.c_cc, original.c_cc, sizeof(original.c_cc)) != 0) {
         fprintf(stderr,
                 "stdin interrupt: exit or terminal state mismatch "
-                "(status=%d flags=%d/%d)\n", status,
-                fcntl(slave, F_GETFL), flags);
+                "(status=%d flags=%d/%d)\n",
+                status, fcntl(slave, F_GETFL), flags);
         goto end;
     }
     result = 0;
@@ -216,8 +216,7 @@ end:
     return result;
 }
 #else
-int
-test_cli_stdin_interrupt(int argc, char **argv)
+int test_cli_stdin_interrupt(int argc, char **argv)
 {
     (void)argc;
     (void)argv;

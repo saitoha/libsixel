@@ -59,6 +59,8 @@ Meson writes its own logs under `meson-logs/`. It does not execute the custom Au
 
 The float lookup case archive explicitly disables unity. Its cases embed differently configured copies of production code, whose private types and static helpers cannot share a C translation unit. The [test harness](test-harness.md) owns this boundary and its source check.
 
+The colorspace fault-injection source can share a unity unit when it reads ordinary API declarations before introducing aliases for its private implementation copy. The [declaration-order check](../../tests/_static/sh/staticcheck-colorspace-test-declarations.sh) prevents an include guard from hiding those declarations from later cases; the [test harness](test-harness.md) owns the contract.
+
 ## Discovery and regeneration
 
 Both runtime script discovery and C test-source discovery run during Meson setup. A new or renamed file may not appear in an existing configured graph until Meson is reconfigured:

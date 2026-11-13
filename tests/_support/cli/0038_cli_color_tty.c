@@ -10,25 +10,25 @@
  * state. Strict POSIX/XSI hides PENDIN, which this test must observe. */
 #if defined(__DragonFly__) || defined(__OpenBSD__)
 /* Meson supplies _POSIX_C_SOURCE on the compiler command line as well. */
-# undef _POSIX_C_SOURCE
-# undef _XOPEN_SOURCE
+#undef _POSIX_C_SOURCE
+#undef _XOPEN_SOURCE
 #else
-# ifndef _POSIX_C_SOURCE
-#  define _POSIX_C_SOURCE 200809L
-# endif
-# ifndef _XOPEN_SOURCE
-#  define _XOPEN_SOURCE 700
-# endif
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 700
+#endif
 #endif
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
-# define _DARWIN_C_SOURCE 1
+#define _DARWIN_C_SOURCE 1
 #endif
 /* NetBSD exposes the kernel-maintained PENDIN state with this feature set. */
 #if defined(__NetBSD__) && !defined(_NETBSD_SOURCE)
-# define _NETBSD_SOURCE 1
+#define _NETBSD_SOURCE 1
 #endif
 #if defined(HAVE_CONFIG_H)
-# include "config.h"
+#include "config.h"
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,10 +48,10 @@
 #include <time.h>
 #include <unistd.h>
 #if defined(__CYGWIN__) || defined(__MSYS__)
-# include "converters/terminal-color-winpipe.inc.h"
+#include "converters/terminal-color-winpipe.inc.h"
 #endif
 #if defined(__COSMOPOLITAN__)
-# include <cosmo.h>
+#include <cosmo.h>
 #endif
 
 #define COLOR_TTY_QUERY "\033[?1./r"
@@ -66,16 +66,14 @@
 static volatile sig_atomic_t color_tty_cancelled;
 static volatile sig_atomic_t color_tty_inject_signal;
 
-static void
-color_tty_signal(int number)
+static void color_tty_signal(int number)
 {
     if (number == SIGINT || number == SIGTERM) {
         color_tty_cancelled = 1;
     }
 }
 
-static int
-color_tty_cancel(void *context)
+static int color_tty_cancel(void *context)
 {
     int number;
 
@@ -92,15 +90,13 @@ color_tty_cancel(void *context)
     return color_tty_cancelled != 0;
 }
 
-static int
-color_tty_error(char const *message)
+static int color_tty_error(char const *message)
 {
     fprintf(stderr, "CLI color TTY: %s (errno=%d)\n", message, errno);
     return 1;
 }
 
-static double
-color_tty_now(void)
+static double color_tty_now(void)
 {
     struct timespec now;
 
@@ -111,8 +107,7 @@ color_tty_now(void)
 }
 
 /* The script's independent watchdog also bounds a broken production wait. */
-static int
-color_tty_ready(int fd, int writing, int timeout_seconds)
+static int color_tty_ready(int fd, int writing, int timeout_seconds)
 {
     struct timeval timeout;
     fd_set ready;
@@ -136,8 +131,7 @@ color_tty_ready(int fd, int writing, int timeout_seconds)
     return result > 0;
 }
 
-static int
-color_tty_send(int fd, char const *bytes, size_t size)
+static int color_tty_send(int fd, char const *bytes, size_t size)
 {
     ssize_t count;
     size_t sent;
@@ -150,16 +144,15 @@ color_tty_send(int fd, char const *bytes, size_t size)
         count = write(fd, bytes + sent, size - sent);
         if (count > 0) {
             sent += (size_t)count;
-        } else if (count == 0 ||
-                   (errno != EINTR && errno != EAGAIN)) {
+        } else if (count == 0 || (errno != EINTR && errno != EAGAIN)) {
             return 0;
         }
     }
     return 1;
 }
 
-static int
-color_tty_expect_timeout(int fd, char const *expected, int timeout_seconds)
+static int color_tty_expect_timeout(int fd, char const *expected,
+                                    int timeout_seconds)
 {
     char bytes[64];
     size_t received;
@@ -178,77 +171,76 @@ color_tty_expect_timeout(int fd, char const *expected, int timeout_seconds)
         count = read(fd, bytes + received, size - received);
         if (count > 0) {
             received += (size_t)count;
-        } else if (count == 0 ||
-                   (errno != EINTR && errno != EAGAIN)) {
+        } else if (count == 0 || (errno != EINTR && errno != EAGAIN)) {
             return 0;
         }
     }
     return memcmp(bytes, expected, size) == 0;
 }
 
-static int
-color_tty_expect(int fd, char const *expected)
+static int color_tty_expect(int fd, char const *expected)
 {
     return color_tty_expect_timeout(fd, expected, 2);
 }
 
 /* Compare actual fields, not uninitialized padding in libc structures. */
-static int
-color_tty_mode_equal(struct termios const *a, struct termios const *b,
-                      int canonical_restored)
+static int color_tty_mode_equal(struct termios const *a,
+                                struct termios const *b, int canonical_restored)
 {
     tcflag_t expected_lflag;
 
     expected_lflag = a->c_lflag;
-#if defined(PENDIN) && (defined(__COSMOPOLITAN__) || \
-    defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
-    (defined(__APPLE__) && defined(__MACH__)))
+#if defined(PENDIN) && (defined(__COSMOPOLITAN__) || defined(__DragonFly__) || \
+                        defined(__NetBSD__) || defined(__OpenBSD__) ||         \
+                        (defined(__APPLE__) && defined(__MACH__)))
     /* These BSD kernels set kernel-maintained PENDIN when ICANON
      * returns, even with an empty input queue. Their tty.c TIOCSETA paths
      * OR that state with the requested flags. Do not flush/read input just
      * to clear it: pending bytes belong to the caller. Only the canonical
      * transition changes this expectation; all other flags remain exact. */
     if (canonical_restored && (a->c_lflag & ICANON) != 0) {
-# if defined(__COSMOPOLITAN__)
+#if defined(__COSMOPOLITAN__)
         /* APE uses the runtime kernel's termios state, not the build host. */
         if (IsXnu()) {
             expected_lflag |= PENDIN;
         }
-# elif defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#elif defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__)
         /* ttyinput() can reprocess pending input before tcgetattr(), even
          * without a user read. Accept either state of this kernel bit. */
-        expected_lflag = (expected_lflag & ~(tcflag_t)PENDIN) |
-            (b->c_lflag & PENDIN);
-# else
+        expected_lflag =
+            (expected_lflag & ~(tcflag_t)PENDIN) | (b->c_lflag & PENDIN);
+#else
         expected_lflag |= PENDIN;
-# endif
+#endif
     }
 #else
     (void)canonical_restored;
 #endif
     return a->c_iflag == b->c_iflag && a->c_oflag == b->c_oflag &&
-        a->c_cflag == b->c_cflag && expected_lflag == b->c_lflag &&
-        memcmp(a->c_cc, b->c_cc, sizeof(a->c_cc)) == 0 &&
-        cfgetispeed(a) == cfgetispeed(b) && cfgetospeed(a) == cfgetospeed(b);
+           a->c_cflag == b->c_cflag && expected_lflag == b->c_lflag &&
+           memcmp(a->c_cc, b->c_cc, sizeof(a->c_cc)) == 0 &&
+           cfgetispeed(a) == cfgetispeed(b) && cfgetospeed(a) == cfgetospeed(b);
 }
 
-static int
-color_tty_restored(struct termios const *mode, sigset_t const *mask,
-                    int flags, int canonical_restored)
+static int color_tty_restored(struct termios const *mode, sigset_t const *mask,
+                              int flags, int canonical_restored)
 {
     struct termios current;
     sigset_t current_mask;
     int number;
 
+    /* musl copies only the kernel control-character slots. Zero unused libc
+     * slots so the exact c_cc comparison does not inspect stack garbage. */
+    memset(&current, 0, sizeof(current));
     if (tcgetattr(STDOUT_FILENO, &current) != 0) {
         return 0;
     }
     if (!color_tty_mode_equal(mode, &current, canonical_restored)) {
         fprintf(stderr, "termios changed: %lu/%lu %lu/%lu %lu/%lu %lu/%lu\n",
-            (unsigned long)mode->c_iflag, (unsigned long)current.c_iflag,
-            (unsigned long)mode->c_oflag, (unsigned long)current.c_oflag,
-            (unsigned long)mode->c_cflag, (unsigned long)current.c_cflag,
-            (unsigned long)mode->c_lflag, (unsigned long)current.c_lflag);
+                (unsigned long)mode->c_iflag, (unsigned long)current.c_iflag,
+                (unsigned long)mode->c_oflag, (unsigned long)current.c_oflag,
+                (unsigned long)mode->c_cflag, (unsigned long)current.c_cflag,
+                (unsigned long)mode->c_lflag, (unsigned long)current.c_lflag);
         return 0;
     }
     if (fcntl(STDOUT_FILENO, F_GETFL) != flags ||
@@ -265,8 +257,7 @@ color_tty_restored(struct termios const *mode, sigset_t const *mask,
     return 1;
 }
 
-static int
-color_tty_background(img2sixel_color_tty_t *tty)
+static int color_tty_background(img2sixel_color_tty_t *tty)
 {
     int ready[2];
     int result;
@@ -313,8 +304,7 @@ color_tty_background(img2sixel_color_tty_t *tty)
     return result;
 }
 
-static int
-color_tty_child(char const *name, int command, int report)
+static int color_tty_child(char const *name, int command, int report)
 {
     img2sixel_color_tty_t *tty;
     img2sixel_color_exchange_t exchange;
@@ -357,6 +347,7 @@ color_tty_child(char const *name, int command, int report)
     /* A broken blocking-write implementation cannot hang the test suite. */
     alarm(2);
     flags = fcntl(STDOUT_FILENO, F_GETFL);
+    memset(&original, 0, sizeof(original));
     if (tcgetattr(STDOUT_FILENO, &original) != 0 ||
         sigprocmask(SIG_BLOCK, NULL, &original_mask) != 0) {
         return color_tty_error("cannot snapshot terminal");
@@ -370,10 +361,10 @@ color_tty_child(char const *name, int command, int report)
         close(pipes[0]);
         close(pipes[1]);
         return result != IMG2SIXEL_COLOR_IO_UNAVAILABLE || tty != NULL ||
-            (flags & O_NONBLOCK) != 0;
+               (flags & O_NONBLOCK) != 0;
     }
-    result = img2sixel_color_tty_open(&tty, STDOUT_FILENO,
-                                     color_tty_cancel, NULL);
+    result =
+        img2sixel_color_tty_open(&tty, STDOUT_FILENO, color_tty_cancel, NULL);
     if (strcmp(name, "unrelated") == 0) {
         return result != IMG2SIXEL_COLOR_IO_UNAVAILABLE || tty != NULL;
     }
@@ -408,15 +399,16 @@ color_tty_child(char const *name, int command, int report)
         goto finish;
     }
     if (strcmp(name, "inactive") == 0) {
-        if (img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_CAPABILITY,
-                                     20, &exchange) !=
-                IMG2SIXEL_COLOR_IO_ERROR ||
+        if (img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_CAPABILITY, 20,
+                                      &exchange) != IMG2SIXEL_COLOR_IO_ERROR ||
             img2sixel_color_tty_write(tty, "x", 1u, 20, 0, &written) !=
-                IMG2SIXEL_COLOR_IO_ERROR || written != 0u) {
+                IMG2SIXEL_COLOR_IO_ERROR ||
+            written != 0u) {
             return color_tty_error("inactive phase performed I/O");
         }
         goto finish;
     }
+    memset(&active, 0, sizeof(active));
     if (img2sixel_color_tty_begin(tty) != IMG2SIXEL_COLOR_IO_OK ||
         tcgetattr(STDOUT_FILENO, &active) != 0 ||
         (active.c_lflag & (ICANON | ECHO)) != 0 ||
@@ -433,8 +425,8 @@ color_tty_child(char const *name, int command, int report)
             !color_tty_expect(command, "s")) {
             return 1;
         }
-        result = img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_CAPABILITY,
-                                          20, &exchange);
+        result = img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_CAPABILITY, 20,
+                                           &exchange);
         if (result != IMG2SIXEL_COLOR_IO_ERROR ||
             exchange.request_written != 0u ||
             read(STDOUT_FILENO, &byte, 1u) != 1 || byte != '\033') {
@@ -442,8 +434,7 @@ color_tty_child(char const *name, int command, int report)
         }
         goto finish;
     }
-    if (strcmp(name, "backpressure") == 0 ||
-        strcmp(name, "sigint-race") == 0 ||
+    if (strcmp(name, "backpressure") == 0 || strcmp(name, "sigint-race") == 0 ||
         strcmp(name, "sigterm-race") == 0) {
         large = (char *)malloc(1024u * 1024u);
         if (large == NULL) {
@@ -451,19 +442,18 @@ color_tty_child(char const *name, int command, int report)
         }
         memset(large, 'x', 1024u * 1024u);
         started = color_tty_now();
-        result = img2sixel_color_tty_write(tty, large, 1024u * 1024u,
-                                          15, 0, &written);
+        result = img2sixel_color_tty_write(tty, large, 1024u * 1024u, 15, 0,
+                                           &written);
         free(large);
         if (result != IMG2SIXEL_COLOR_IO_TIMEOUT || written == 0u ||
-            written >= 1024u * 1024u ||
-            color_tty_now() - started > 0.25) {
+            written >= 1024u * 1024u || color_tty_now() - started > 0.25) {
             return color_tty_error("write was not bounded and partial");
         }
         /* A slow PTY can reach the deadline before filling its queue.
          * Finish filling it before checking a blocked request/recovery.
          * The parent never drains until the child reports completion. */
-        output_copy = open(ttyname(STDOUT_FILENO),
-                           O_WRONLY | O_NOCTTY | O_NONBLOCK);
+        output_copy =
+            open(ttyname(STDOUT_FILENO), O_WRONLY | O_NOCTTY | O_NONBLOCK);
         if (output_copy < 0 || output_copy >= FD_SETSIZE) {
             return color_tty_error("cannot open output filler");
         }
@@ -483,8 +473,8 @@ color_tty_child(char const *name, int command, int report)
         fill_ready = 1;
         for (written = 0u; written < 1024u * 1024u;) {
 #if defined(__CYGWIN__) || defined(__MSYS__)
-            if (!img2sixel_color_winpipe_space(
-                    GetStdHandle(STD_OUTPUT_HANDLE), &available)) {
+            if (!img2sixel_color_winpipe_space(GetStdHandle(STD_OUTPUT_HANDLE),
+                                               &available)) {
                 close(output_copy);
                 return color_tty_error("cannot query output pipe quota");
             }
@@ -492,15 +482,14 @@ color_tty_child(char const *name, int command, int report)
                 fill_ready = 0;
                 break;
             }
-            fill_size = available < sizeof(filler)
-                ? available : sizeof(filler);
+            fill_size = available < sizeof(filler) ? available : sizeof(filler);
 #else
             immediate.tv_sec = 0;
             immediate.tv_usec = 0;
             FD_ZERO(&writable);
             FD_SET(output_copy, &writable);
-            fill_ready = select(output_copy + 1, NULL, &writable,
-                                NULL, &immediate);
+            fill_ready =
+                select(output_copy + 1, NULL, &writable, NULL, &immediate);
             if (fill_ready <= 0) {
                 break;
             }
@@ -532,38 +521,37 @@ color_tty_child(char const *name, int command, int report)
         /* The filling write abandoned its phase on timeout. Reopen before
          * testing a new blocked operation, with cancellation still active. */
         if (img2sixel_color_tty_close(tty) != IMG2SIXEL_COLOR_IO_OK ||
-            img2sixel_color_tty_open(&tty, STDOUT_FILENO,
-                                     color_tty_cancel, NULL) !=
-                IMG2SIXEL_COLOR_IO_OK ||
+            img2sixel_color_tty_open(&tty, STDOUT_FILENO, color_tty_cancel,
+                                     NULL) != IMG2SIXEL_COLOR_IO_OK ||
             img2sixel_color_tty_begin(tty) != IMG2SIXEL_COLOR_IO_OK) {
             return 1;
         }
         if (strcmp(name, "backpressure") != 0) {
-            color_tty_inject_signal = strcmp(name, "sigint-race") == 0
-                ? SIGINT : SIGTERM;
+            color_tty_inject_signal =
+                strcmp(name, "sigint-race") == 0 ? SIGINT : SIGTERM;
             started = color_tty_now();
-            result = img2sixel_color_tty_write(tty, "x", 1u,
-                COLOR_TTY_REPLY_TIMEOUT_MS, 0, &written);
+            result = img2sixel_color_tty_write(
+                tty, "x", 1u, COLOR_TTY_REPLY_TIMEOUT_MS, 0, &written);
             if (result != IMG2SIXEL_COLOR_IO_CANCELLED ||
                 !color_tty_cancelled || written != 0u ||
                 color_tty_now() - started > 0.25) {
                 fprintf(stderr,
-                    "signal wait: result=%d cancelled=%d written=%lu "
-                    "elapsed=%.6f\n", (int)result,
-                    (int)color_tty_cancelled, (unsigned long)written,
-                    color_tty_now() - started);
+                        "signal wait: result=%d cancelled=%d written=%lu "
+                        "elapsed=%.6f\n",
+                        (int)result, (int)color_tty_cancelled,
+                        (unsigned long)written, color_tty_now() - started);
                 return color_tty_error("signal was lost before I/O wait");
             }
             goto finish;
         }
         started = color_tty_now();
-        result = img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_CAPABILITY,
-                                          15, &exchange);
+        result = img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_CAPABILITY, 15,
+                                           &exchange);
         /* Queue movement may admit the complete short query. Only that
          * case can report a silent peer rather than a blocked send. */
-        if (result != (exchange.request_written ==
-                sizeof(COLOR_TTY_QUERY) - 1u ? IMG2SIXEL_COLOR_IO_SILENT
-                                           : IMG2SIXEL_COLOR_IO_TIMEOUT) ||
+        if (result != (exchange.request_written == sizeof(COLOR_TTY_QUERY) - 1u
+                           ? IMG2SIXEL_COLOR_IO_SILENT
+                           : IMG2SIXEL_COLOR_IO_TIMEOUT) ||
             exchange.request_written > sizeof(COLOR_TTY_QUERY) - 1u ||
             exchange.received || color_tty_now() - started > 0.25) {
             return color_tty_error("backpressured query classification");
@@ -578,11 +566,10 @@ color_tty_child(char const *name, int command, int report)
         }
         memset(large, 'x', 1024u * 1024u);
         started = color_tty_now();
-        result = img2sixel_color_tty_write(tty, large, 1024u * 1024u,
-                                          15, 1, &written);
+        result = img2sixel_color_tty_write(tty, large, 1024u * 1024u, 15, 1,
+                                           &written);
         free(large);
-        if (result != IMG2SIXEL_COLOR_IO_TIMEOUT ||
-            written >= 1024u * 1024u ||
+        if (result != IMG2SIXEL_COLOR_IO_TIMEOUT || written >= 1024u * 1024u ||
             color_tty_now() - started > 0.25) {
             return color_tty_error("blocked restore reported success");
         }
@@ -590,9 +577,10 @@ color_tty_child(char const *name, int command, int report)
     }
     started = color_tty_now();
     result = img2sixel_color_tty_query(tty,
-        strcmp(name, "policy-failure") == 0 ? IMG2SIXEL_COLOR_POLICY
-                                            : IMG2SIXEL_COLOR_CAPABILITY,
-        COLOR_TTY_REPLY_TIMEOUT_MS, &exchange);
+                                       strcmp(name, "policy-failure") == 0
+                                           ? IMG2SIXEL_COLOR_POLICY
+                                           : IMG2SIXEL_COLOR_CAPABILITY,
+                                       COLOR_TTY_REPLY_TIMEOUT_MS, &exchange);
     if (color_tty_now() - started >
         COLOR_TTY_REPLY_TIMEOUT_MS / 1000.0 + 0.25) {
         return color_tty_error("reply exceeded absolute deadline");
@@ -617,8 +605,7 @@ color_tty_child(char const *name, int command, int report)
             return color_tty_error("SUB was lost before parser cancellation");
         }
     } else if (strcmp(name, "sigint") == 0 || strcmp(name, "sigterm") == 0) {
-        if (result != IMG2SIXEL_COLOR_IO_CANCELLED ||
-            !color_tty_cancelled) {
+        if (result != IMG2SIXEL_COLOR_IO_CANCELLED || !color_tty_cancelled) {
             return color_tty_error("cancellation was swallowed");
         }
     } else if (strcmp(name, "invalid") == 0) {
@@ -656,8 +643,8 @@ color_tty_child(char const *name, int command, int report)
         if (strcmp(name, "roundtrip") == 0) {
             if (img2sixel_color_tty_begin(tty) != IMG2SIXEL_COLOR_IO_OK ||
                 img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_POLICY,
-                    COLOR_TTY_REPLY_TIMEOUT_MS, &exchange) !=
-                    IMG2SIXEL_COLOR_IO_OK ||
+                                          COLOR_TTY_REPLY_TIMEOUT_MS,
+                                          &exchange) != IMG2SIXEL_COLOR_IO_OK ||
                 exchange.parser.result != IMG2SIXEL_COLOR_SAVED_POLICY ||
                 exchange.parser.policy != 0ul) {
                 return color_tty_error("second phase policy query");
@@ -679,22 +666,20 @@ color_tty_child(char const *name, int command, int report)
         goto finish;
     }
     if (strcmp(name, "late") == 0 &&
-        (!color_tty_send(report, "l", 1u) ||
-         !color_tty_expect(command, "l"))) {
+        (!color_tty_send(report, "l", 1u) || !color_tty_expect(command, "l"))) {
         return 1;
     }
     /* A delayed reply must not create permission to query again. The only
      * output allowed after failure is the caller's bounded restore write. */
-    if (img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_POLICY,
-                                 20, &exchange) != IMG2SIXEL_COLOR_IO_ERROR ||
+    if (img2sixel_color_tty_query(tty, IMG2SIXEL_COLOR_POLICY, 20, &exchange) !=
+            IMG2SIXEL_COLOR_IO_ERROR ||
         exchange.request_written != 0u) {
         return color_tty_error("query retried after correlation loss");
     }
     /* Recovery also crosses the VM scheduler and Hurd's terminal RPCs. */
-    if (img2sixel_color_tty_write(tty, COLOR_TTY_RECOVER,
-        sizeof(COLOR_TTY_RECOVER) - 1u, COLOR_TTY_REPLY_TIMEOUT_MS, 1,
-        &written) !=
-            IMG2SIXEL_COLOR_IO_OK ||
+    if (img2sixel_color_tty_write(
+            tty, COLOR_TTY_RECOVER, sizeof(COLOR_TTY_RECOVER) - 1u,
+            COLOR_TTY_REPLY_TIMEOUT_MS, 1, &written) != IMG2SIXEL_COLOR_IO_OK ||
         written != sizeof(COLOR_TTY_RECOVER) - 1u) {
         return color_tty_error("bounded write-only recovery");
     }
@@ -706,9 +691,8 @@ finish:
     return 0;
 }
 
-static int
-color_tty_script(char const *name, int master, int command, int report,
-                  pid_t child)
+static int color_tty_script(char const *name, int master, int command,
+                            int report, pid_t child)
 {
     char bytes[sizeof(((img2sixel_color_parser_t *)0)->header) + 1u];
     fd_set reads;
@@ -718,8 +702,7 @@ color_tty_script(char const *name, int master, int command, int report,
     int result;
     int done;
 
-    if (strcmp(name, "backpressure") == 0 ||
-        strcmp(name, "sigint-race") == 0 ||
+    if (strcmp(name, "backpressure") == 0 || strcmp(name, "sigint-race") == 0 ||
         strcmp(name, "sigterm-race") == 0) {
         /* The child allows ten seconds for byte-wise queue preparation;
          * its actual transport operations still use the short deadlines. */
@@ -735,13 +718,13 @@ color_tty_script(char const *name, int master, int command, int report,
                 if (bytes[result] == 'x') {
                     /* Recovery filler may follow a partial query, but a
                      * query must never resume after that recovery starts. */
-                    if (done > 0) done = -1;
+                    if (done > 0)
+                        done = -1;
                     continue;
                 }
                 /* Queue movement can admit part or all of the short query
                  * after EAGAIN. The child checks the matching status. */
-                if (strcmp(name, "backpressure") != 0 ||
-                    done < 0 ||
+                if (strcmp(name, "backpressure") != 0 || done < 0 ||
                     done >= (int)sizeof(COLOR_TTY_QUERY) - 1 ||
                     bytes[result] != COLOR_TTY_QUERY[done++]) {
                     return 0;
@@ -750,8 +733,9 @@ color_tty_script(char const *name, int master, int command, int report,
         }
         /* Completion was reported before the drain. BSD may revoke the
          * slave at child exit, producing EOF instead of an empty queue. */
-        return count == 0 || (count == -1 &&
-            (errno == EAGAIN || errno == EWOULDBLOCK || errno == EIO));
+        return count == 0 ||
+               (count == -1 &&
+                (errno == EAGAIN || errno == EWOULDBLOCK || errno == EIO));
     }
     if (strcmp(name, "non-tty") == 0 || strcmp(name, "unrelated") == 0 ||
         strcmp(name, "identity") == 0 || strcmp(name, "foreground") == 0 ||
@@ -760,12 +744,14 @@ color_tty_script(char const *name, int master, int command, int report,
     }
     if (strcmp(name, "stale") == 0) {
         return color_tty_expect(report, "s") &&
-            color_tty_send(master, COLOR_TTY_REPLY,
-                            sizeof(COLOR_TTY_REPLY) - 1u) &&
-            color_tty_send(command, "s", 1u) && color_tty_expect(report, "d");
+               color_tty_send(master, COLOR_TTY_REPLY,
+                              sizeof(COLOR_TTY_REPLY) - 1u) &&
+               color_tty_send(command, "s", 1u) &&
+               color_tty_expect(report, "d");
     }
     if (!color_tty_expect(master, strcmp(name, "policy-failure") == 0
-                          ? COLOR_TTY_POLICY : COLOR_TTY_QUERY)) {
+                                      ? COLOR_TTY_POLICY
+                                      : COLOR_TTY_QUERY)) {
         color_tty_error("request bytes");
         return 0;
     }
@@ -838,13 +824,13 @@ color_tty_script(char const *name, int master, int command, int report,
         }
         if (strcmp(name, "sub-recovery") == 0) {
             if (!color_tty_send(master, "\033P1;1\032" COLOR_TTY_REPLY,
-                sizeof("\033P1;1\032" COLOR_TTY_REPLY) - 1u)) {
+                                sizeof("\033P1;1\032" COLOR_TTY_REPLY) - 1u)) {
                 return 0;
             }
         } else if (strcmp(name, "pending-input") == 0) {
-            if (!color_tty_send(master,
-                COLOR_TTY_REPLY "pending-after-reply",
-                sizeof(COLOR_TTY_REPLY "pending-after-reply") - 1u) ||
+            if (!color_tty_send(master, COLOR_TTY_REPLY "pending-after-reply",
+                                sizeof(COLOR_TTY_REPLY "pending-after-reply") -
+                                    1u) ||
                 !color_tty_send(command, "q", 1u) ||
                 !color_tty_expect(report, "p") ||
                 !color_tty_send(master, "\n", 1u)) {
@@ -862,19 +848,21 @@ color_tty_script(char const *name, int master, int command, int report,
         }
         if (strcmp(name, "roundtrip") == 0) {
             if (!color_tty_expect(master, COLOR_TTY_POLICY) ||
-                !color_tty_send(master, "\220" "1$r1;0./p\234", 11u)) {
+                !color_tty_send(master,
+                                "\220"
+                                "1$r1;0./p\234",
+                                11u)) {
                 return 0;
             }
         }
         return color_tty_expect(report, "d");
     }
     return color_tty_expect(master, COLOR_TTY_RECOVER) &&
-        color_tty_expect(report, "d");
+           color_tty_expect(report, "d");
 }
 #endif /* HAVE_CLI_COLOR_PTY && HAVE_CLI_COLOR_TTY */
 
-int
-test_cli_0038_color_tty(int argc, char **argv)
+int test_cli_0038_color_tty(int argc, char **argv)
 {
 #if HAVE_CLI_COLOR_PTY && HAVE_CLI_COLOR_TTY
     int master;
@@ -902,8 +890,9 @@ test_cli_0038_color_tty(int argc, char **argv)
     }
     path = ptsname(master);
     slave = path == NULL ? -1 : open(path, O_RDWR | O_NOCTTY);
-    if (slave < 0 || tcgetattr(slave, &mode) != 0 ||
-        pipe(command) != 0 || pipe(report) != 0) {
+    memset(&mode, 0, sizeof(mode));
+    if (slave < 0 || tcgetattr(slave, &mode) != 0 || pipe(command) != 0 ||
+        pipe(report) != 0) {
         close(master);
         return color_tty_error("cannot prepare PTY");
     }
@@ -945,8 +934,8 @@ test_cli_0038_color_tty(int argc, char **argv)
                 _exit(1);
             }
             path = ptsname(controlling_master);
-            controlling_slave = path == NULL ? -1 :
-                open(path, O_RDWR | O_NOCTTY);
+            controlling_slave =
+                path == NULL ? -1 : open(path, O_RDWR | O_NOCTTY);
         }
         if (controlling_slave < 0 ||
             ioctl(controlling_slave, TIOCSCTTY, 0) != 0 ||
@@ -978,8 +967,7 @@ test_cli_0038_color_tty(int argc, char **argv)
      * Inspect the queue before allowing the session leader to exit. */
     extra = master < 0 ? -1 : (int)read(master, &byte, 1u);
     if (extra > 0 && strcmp(argv[1], "backpressure") != 0 &&
-        strcmp(argv[1], "flood") != 0 &&
-        strcmp(argv[1], "sigint-race") != 0 &&
+        strcmp(argv[1], "flood") != 0 && strcmp(argv[1], "sigint-race") != 0 &&
         strcmp(argv[1], "sigterm-race") != 0) {
         fprintf(stderr, "CLI color TTY: unexpected trailing byte 0x%02x\n",
                 (unsigned int)(unsigned char)byte);

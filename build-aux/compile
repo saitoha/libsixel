@@ -146,12 +146,23 @@ func_cl_wrapper ()
   lib_path=
   shared=:
   linker_opts=
+  msvc_linker=no
   for arg
   do
     if test -n "$eat"; then
       eat=
+    elif test "$msvc_linker" = yes; then
+      # After /link, all arguments belong to the native linker. In particular,
+      # -link must never reach the GNU -l conversion and become ink.lib.
+      set x "$@" "$1"
+      shift
     else
       case $1 in
+	-link | /link)
+	  msvc_linker=yes
+	  set x "$@" "$1"
+	  shift
+	  ;;
 	-o)
 	  # configure might choose to run compile as 'compile cc -o foo foo.c'.
 	  eat=1
@@ -235,7 +246,7 @@ func_cl_wrapper ()
     fi
     shift
   done
-  if test -n "$linker_opts"; then
+  if test -n "$linker_opts" && test "$msvc_linker" != yes; then
     linker_opts="-link$linker_opts"
   fi
   exec "$@" $linker_opts

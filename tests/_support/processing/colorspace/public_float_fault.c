@@ -7,20 +7,22 @@
 #include <stdlib.h>
 #include <sixel.h>
 #include <6cells.h>
+#include "src/colorspace.h"
 #include "src/options.h"
 #include "src/threading.h"
 
 #if SIXEL_ENABLE_THREADS
 static SIXELSTATUS float_fault_service(char const *name, void **out);
-/* Only the private converter copy sees these allocation probes. The pool
+/* Read public declarations before aliases below can set the header guard.
+ * Later unity sources still need the ordinary, unrenamed API declarations.
+ * Only the private converter copy sees these allocation probes. The pool
  * below dispatches synchronously, so no shared counters enter production. */
 static int float_fault_mode;
 static int float_fault_memo_attempts;
 static int float_fault_memo_frees;
 static void *float_fault_memos[64];
 
-static void *
-float_fault_calloc(size_t count, size_t size)
+static void *float_fault_calloc(size_t count, size_t size)
 {
     void *memory;
 
@@ -32,14 +34,13 @@ float_fault_calloc(size_t count, size_t size)
     }
     memory = calloc(count, size);
     if (float_fault_mode >= 4 && count == 16384U &&
-            float_fault_memo_attempts <= 64) {
+        float_fault_memo_attempts <= 64) {
         float_fault_memos[float_fault_memo_attempts - 1] = memory;
     }
     return memory;
 }
 
-static void
-float_fault_free(void *memory)
+static void float_fault_free(void *memory)
 {
     int i;
 
@@ -173,17 +174,15 @@ float_fault_free(void *memory)
 #define sixel_components_getservice float_fault_service
 /* The ordinary header can already be guarded in an amalgamated build.
  * Keep its DLL attribute on these renamed declarations as well. */
-SIXEL_INTERNAL_API double
-sixel_color_decode_srgb(double value);
-SIXEL_INTERNAL_API int
-sixel_color_convert(double out[3], double const in[3],
-    int source, int target);
-SIXEL_INTERNAL_API int
-sixel_color_convert_output(double out[3], double const in[3],
-    int source, int target);
-SIXEL_INTERNAL_API int
-sixel_color_from_output(double out[3], double const in[3],
-    int source, int target);
+SIXEL_INTERNAL_API double sixel_color_decode_srgb(double value);
+SIXEL_INTERNAL_API int sixel_color_convert(double out[3], double const in[3],
+                                           int source, int target);
+SIXEL_INTERNAL_API int sixel_color_convert_output(double out[3],
+                                                  double const in[3],
+                                                  int source, int target);
+SIXEL_INTERNAL_API int sixel_color_from_output(double out[3],
+                                               double const in[3], int source,
+                                               int target);
 #define calloc float_fault_calloc
 #define free float_fault_free
 #include "src/colorspace.c"
@@ -313,9 +312,7 @@ static int float_fault_next;
 static int float_fault_grows;
 static int float_fault_used;
 
-
-static void
-float_fault_unref(sixel_thread_pool_t *self)
+static void float_fault_unref(sixel_thread_pool_t *self)
 {
     int i;
     cff_memo_7 *state;
@@ -326,7 +323,7 @@ float_fault_unref(sixel_thread_pool_t *self)
             state = (cff_memo_7 *)float_fault_workspaces[i];
             float_fault_used += state != NULL && state->initialized;
             if (state != NULL &&
-                    float_fault_request.workspace_cleanup != NULL) {
+                float_fault_request.workspace_cleanup != NULL) {
                 float_fault_request.workspace_cleanup(state);
             }
             free(state);
@@ -335,14 +332,9 @@ float_fault_unref(sixel_thread_pool_t *self)
     }
 }
 
-static void
-float_fault_finish(sixel_thread_pool_t *self)
-{
-    (void)self;
-}
+static void float_fault_finish(sixel_thread_pool_t *self) { (void)self; }
 
-static int
-float_fault_grow(sixel_thread_pool_t *self, int additional)
+static int float_fault_grow(sixel_thread_pool_t *self, int additional)
 {
     int i;
 
@@ -355,8 +347,8 @@ float_fault_grow(sixel_thread_pool_t *self, int additional)
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-float_fault_push(sixel_thread_pool_t *self, sixel_thread_pool_job_t job)
+static SIXELSTATUS float_fault_push(sixel_thread_pool_t *self,
+                                    sixel_thread_pool_job_t job)
 {
     (void)self;
     ++float_fault_pushes;
@@ -365,30 +357,34 @@ float_fault_push(sixel_thread_pool_t *self, sixel_thread_pool_job_t job)
     }
     if (float_fault_mode >= 4) {
         float_fault_next %= float_fault_workers;
-        return float_fault_request.worker(job, float_fault_request.userdata,
+        return float_fault_request.worker(
+            job, float_fault_request.userdata,
             float_fault_workspaces[float_fault_next++]);
     }
-    return float_fault_request.worker(job, float_fault_request.userdata,
-        NULL);
+    return float_fault_request.worker(job, float_fault_request.userdata, NULL);
 }
 
-static int
-float_fault_error(sixel_thread_pool_t *self)
+static int float_fault_error(sixel_thread_pool_t *self)
 {
     (void)self;
     return float_fault_mode == 3 ? SIXEL_RUNTIME_ERROR : SIXEL_OK;
 }
 
-static sixel_thread_pool_vtbl_t const float_fault_vtbl = {
-    NULL, float_fault_unref, NULL, float_fault_push, float_fault_finish,
-    float_fault_error, float_fault_grow, NULL, NULL
-};
+static sixel_thread_pool_vtbl_t const float_fault_vtbl = {NULL,
+                                                          float_fault_unref,
+                                                          NULL,
+                                                          float_fault_push,
+                                                          float_fault_finish,
+                                                          float_fault_error,
+                                                          float_fault_grow,
+                                                          NULL,
+                                                          NULL};
 static sixel_thread_pool_t float_fault_pool = {&float_fault_vtbl};
 
 static SIXELSTATUS
 float_fault_create(sixel_threadpool_service_t *self,
-    sixel_thread_pool_create_request_t const *request,
-    sixel_thread_pool_t **out)
+                   sixel_thread_pool_create_request_t const *request,
+                   sixel_thread_pool_t **out)
 {
     (void)self;
     ++float_fault_created;
@@ -399,7 +395,7 @@ float_fault_create(sixel_threadpool_service_t *self,
     float_fault_request = *request;
     if (float_fault_mode >= 4) {
         if (request->workspace_size != sizeof(cff_memo_7) ||
-                request->workspace_cleanup == NULL) {
+            request->workspace_cleanup == NULL) {
             *out = NULL;
             return SIXEL_BAD_ALLOCATION;
         }
@@ -410,12 +406,10 @@ float_fault_create(sixel_threadpool_service_t *self,
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-float_fault_service(char const *name, void **out)
+static SIXELSTATUS float_fault_service(char const *name, void **out)
 {
-    static sixel_threadpool_service_vtbl_t const vtbl = {
-        NULL, NULL, NULL, float_fault_create
-    };
+    static sixel_threadpool_service_vtbl_t const vtbl = {NULL, NULL, NULL,
+                                                         float_fault_create};
     static sixel_threadpool_service_t service = {&vtbl};
 
     (void)name;
@@ -424,8 +418,7 @@ float_fault_service(char const *name, void **out)
 }
 #endif
 
-int
-test_color_public_float_fault(int argc, char **argv)
+int test_color_public_float_fault(int argc, char **argv)
 {
 #if SIXEL_ENABLE_THREADS
     float pixels[9];
@@ -447,21 +440,21 @@ test_color_public_float_fault(int argc, char **argv)
     for (i = 0; i < 9; ++i) {
         pixels[i] = .25f;
     }
-    status = fault_convert_colorspace((unsigned char *)pixels,
-        sizeof(pixels), SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_GAMMA);
-    if (float_fault_created != 1 || float_fault_pushes !=
-            (float_fault_mode == 2 ? 0 : 2) ||
-            status != (float_fault_mode == 3 ? SIXEL_RUNTIME_ERROR :
-                SIXEL_OK)) {
+    status = fault_convert_colorspace((unsigned char *)pixels, sizeof(pixels),
+                                      SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                                      SIXEL_COLORSPACE_LINEAR,
+                                      SIXEL_COLORSPACE_GAMMA);
+    if (float_fault_created != 1 ||
+        float_fault_pushes != (float_fault_mode == 2 ? 0 : 2) ||
+        status != (float_fault_mode == 3 ? SIXEL_RUNTIME_ERROR : SIXEL_OK)) {
         return EXIT_FAILURE;
     }
     /* Queue/create fallback converts once; pool errors publish nothing.
      * Double conversion would give about .759 instead of .537. */
     for (i = 0; i < 9; ++i) {
         if (!isfinite(pixels[i]) ||
-                fabs(pixels[i] - (float_fault_mode == 3 ? .25 :
-                    .53709873048319425)) > 2e-7) {
+            fabs(pixels[i] -
+                 (float_fault_mode == 3 ? .25 : .53709873048319425)) > 2e-7) {
             return EXIT_FAILURE;
         }
     }
@@ -474,8 +467,7 @@ test_color_public_float_fault(int argc, char **argv)
 }
 
 #if SIXEL_ENABLE_THREADS
-static int
-float_fault_donate(void *context)
+static int float_fault_donate(void *context)
 {
     int *polls;
 
@@ -487,8 +479,7 @@ float_fault_donate(void *context)
 /* Assert bounded allocation and cleanup with deterministic worker reuse,
  * then repeat with every optional memo allocation rejected. The real-pool
  * numerical and growth path is owned by parallel/0012_worker_memo_exact. */
-int
-test_color_worker_memo_lifetime(int argc, char **argv)
+int test_color_worker_memo_lifetime(int argc, char **argv)
 {
 #if SIXEL_ENABLE_THREADS
     float *pixels;
@@ -519,15 +510,15 @@ test_color_worker_memo_lifetime(int argc, char **argv)
     ok = 1;
     for (float_fault_mode = 4; float_fault_mode <= 5; ++float_fault_mode) {
         for (target = SIXEL_COLORSPACE_LINEAR;
-                target <= SIXEL_COLORSPACE_CIELAB; target += 3) {
+             target <= SIXEL_COLORSPACE_CIELAB; target += 3) {
             for (i = 0U; i < count * 3U; ++i) {
                 pixels[i] = .25f;
             }
             for (channel = 0; channel < 3; ++channel) {
                 input[channel] = .25;
             }
-            ok &= fault_color_convert(output, input,
-                SIXEL_COLORSPACE_GAMMA, target);
+            ok &= fault_color_convert(output, input, SIXEL_COLORSPACE_GAMMA,
+                                      target);
             for (channel = 0; channel < 3; ++channel) {
                 expected[channel] = (float)output[channel];
             }
@@ -540,18 +531,16 @@ test_color_worker_memo_lifetime(int argc, char **argv)
             polls = 0;
             sixel_set_encoder_threads(8);
             sixel_thread_budget_enter(&scope, 4);
-            sixel_thread_budget_set_reclaim(&scope, 8,
-                float_fault_donate, &polls);
-            status = fault_color_convert_frame_rgbf32(pixels, count,
-                SIXEL_COLORSPACE_GAMMA, target);
+            sixel_thread_budget_set_reclaim(&scope, 8, float_fault_donate,
+                                            &polls);
+            status = fault_color_convert_frame_rgbf32(
+                pixels, count, SIXEL_COLORSPACE_GAMMA, target);
             sixel_thread_budget_leave(&scope);
-            ok &= status == SIXEL_OK && polls == 2 &&
-                float_fault_grows == 1 && float_fault_used == 7 &&
-                float_fault_memo_attempts == 8 &&
-                float_fault_memo_frees == (float_fault_mode == 4 ? 8 : 0);
+            ok &= status == SIXEL_OK && polls == 2 && float_fault_grows == 1 &&
+                  float_fault_used == 7 && float_fault_memo_attempts == 8 &&
+                  float_fault_memo_frees == (float_fault_mode == 4 ? 8 : 0);
             for (i = 0U; i < count && ok; ++i) {
-                ok &= memcmp(pixels + i * 3U, expected,
-                    sizeof(expected)) == 0;
+                ok &= memcmp(pixels + i * 3U, expected, sizeof(expected)) == 0;
             }
         }
     }

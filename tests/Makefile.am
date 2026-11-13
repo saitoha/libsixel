@@ -30,7 +30,7 @@ if !OPENVMS_GNV
 # builds.  Preserve command-line TESTS selections, including an empty list.
 # The raw override is emitted after srcdir and before the custom log target;
 # no inventory passes through configure or recursive make arguments.
-override TESTS := $(if $(filter file,$(origin TESTS)),$(shell $(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" tests "$(srcdir)" include newline || echo __SIXEL_TEST_DISCOVERY_FAILED__),$(TESTS))
+override TESTS := $(if $(filter file,$(origin TESTS)),$(shell $(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" tests "$(srcdir)" include newline "$(SIXEL_TEST_SHARD)" || echo __SIXEL_TEST_DISCOVERY_FAILED__),$(TESTS))
 endif
 # Keep the installed-command selection inside make, including caller-supplied
 # TESTS. Passing the filtered inventory to recursive make exceeds argv limits.
@@ -1070,6 +1070,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0003_PARITY_X \
     -DBUILD_TEST_0004_PARITY_BLUENOISE \
     -DBUILD_TEST_0005_PARITY_FEW_COLORS \
+    -DBUILD_TEST_0010_PARITY_FHEDT \
+    -DBUILD_TEST_0011_PARITY_FHEDT_BLUENOISE \
+    -DBUILD_TEST_0012_PARITY_FHEDT_SETTINGS \
     -DBUILD_TEST_0006_WIRE_A \
     -DBUILD_TEST_0007_WIRE_X \
     -DBUILD_TEST_0008_STATISTICS \
@@ -12794,3 +12797,9 @@ EXTRA_DIST += decoder/aspect/0047_differential.py
 
 EXTRA_DIST += _static/sh/staticcheck-clangcl-object-output.sh \
     _static/sh/staticcheck-thread-backend-disabled.sh
+
+EXTRA_DIST += _static/sh/staticcheck-compiler-link-boundary.sh \
+    _static/sh/staticcheck-colorspace-test-declarations.sh \
+    _static/sh/staticcheck-ci-vm-concurrency.sh \
+    _static/awk/ci-vm-concurrency.awk \
+    _static/sh/staticcheck-ci-tsan-shards.sh

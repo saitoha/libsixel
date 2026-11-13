@@ -176,6 +176,10 @@ evidence that the synchronized inputs actually work.
 
 ## Dependency and infrastructure policy
 
+Virtual-machine jobs in the normal and experimental workflows use the repository-wide `libsixel-vm` concurrency group. `queue: max` retains pending jobs instead of replacing the previous waiter, and `cancel-in-progress: false` preserves the running guest. This serializes VM provisioning and execution across workflow and matrix boundaries; `max-parallel: 1` alone serializes only one matrix. GitHub limits a concurrency queue to 100 pending jobs, so excess submissions can still be rejected. The [VM concurrency check](../../tests/_static/sh/staticcheck-ci-vm-concurrency.sh) discovers VM consumers and requires the shared queue.
+
+GitHub-hosted runners impose a [six-hour job limit](https://docs.github.com/en/actions/reference/limits) that cannot be extended with `timeout-minutes`. The macOS Autotools TSan configuration therefore has three jobs with explicit 360-minute budgets. Each builds the same instrumented programs and runs one disjoint third of the sorted test inventory, preserving every test. The [test harness](../build/test-harness.md) owns the shard selector; its [CI check](../../tests/_static/sh/staticcheck-ci-tsan-shards.sh) verifies wiring and complete, non-overlapping membership. Meson and Linux TSan retain their existing test selections.
+
 - Pin external bootstrap inputs that are not safe to float.
 - Update a shared pin coherently across every workflow that consumes it.
 - Bound package-manager and network retries with clear timeouts.
@@ -297,3 +301,5 @@ change and directly required source, test, or generated-file updates.
 | CI-12 | SPARC retries only bounded VM preparation, resets the failed guest, and runs the source build once with failure propagation. | [tests/_static/sh/staticcheck-sparc-vm-retry.sh](../../tests/_static/sh/staticcheck-sparc-vm-retry.sh) |
 | CI-13 | Explicit VM data directories stay under host `$HOME/.cache`, outside the source-transfer tree, without parent-directory traversal. | [tests/_static/sh/staticcheck-vm-data-sync.sh](../../tests/_static/sh/staticcheck-vm-data-sync.sh) |
 | CI-14 | vcpkg bootstrap retries are bounded, remove partial executables and propagate failure before the single dependency installation. | [tests/_static/sh/staticcheck-vcpkg-bootstrap.sh](../../tests/_static/sh/staticcheck-vcpkg-bootstrap.sh) |
+| CI-15 | Normal and experimental VM consumers share a serial queue without replacing waiting or running jobs. | [tests/_static/sh/staticcheck-ci-vm-concurrency.sh](../../tests/_static/sh/staticcheck-ci-vm-concurrency.sh) |
+| CI-16 | Three bounded macOS Autotools TSan jobs select all runtime cases exactly once. | [tests/_static/sh/staticcheck-ci-tsan-shards.sh](../../tests/_static/sh/staticcheck-ci-tsan-shards.sh) |

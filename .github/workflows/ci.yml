@@ -4033,6 +4033,7 @@ jobs:
     needs: [asan-ubsan-lsan-ubuntu, asan-ubsan-lsan-macos, asan-ubsan-lsan-msys2-clang64]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
     strategy:
       matrix:
         include:
@@ -4068,7 +4069,36 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-TSan
+          # Hosted runners cap each job at six hours. Partition the complete
+          # sorted test inventory, keeping each case in exactly one shard.
+          - label: Autotools-macos-aarch64-TSan-1-of-3
+            test_shard: 1/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-2-of-3
+            test_shard: 2/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-3-of-3
+            test_shard: 3/3
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -5168,6 +5198,10 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   solaris:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
 #    needs: [openbsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -5239,6 +5273,10 @@ jobs:
 
 
   omnios:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
     needs: [freebsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -5437,6 +5475,10 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   haiku:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
     needs: [netbsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -5506,6 +5548,10 @@ jobs:
 
 
   openbsd:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
     needs: [freebsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -5572,6 +5618,10 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   freebsd:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
     needs: [netbsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -5686,6 +5736,10 @@ jobs:
 
 
   netbsd:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
     needs: [dragonflybsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -5751,6 +5805,10 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   dragonflybsd:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90

@@ -16834,6 +16834,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PARITY_X \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_PARITY_BLUENOISE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_PARITY_FEW_COLORS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_PARITY_FHEDT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_PARITY_FHEDT_BLUENOISE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_PARITY_FHEDT_SETTINGS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_WIRE_A \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_WIRE_X \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_STATISTICS \
@@ -26609,7 +26612,12 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	decoder/sequence/0001_differential.py \
 	decoder/aspect/0047_differential.py \
 	_static/sh/staticcheck-clangcl-object-output.sh \
-	_static/sh/staticcheck-thread-backend-disabled.sh
+	_static/sh/staticcheck-thread-backend-disabled.sh \
+	_static/sh/staticcheck-compiler-link-boundary.sh \
+	_static/sh/staticcheck-colorspace-test-declarations.sh \
+	_static/sh/staticcheck-ci-vm-concurrency.sh \
+	_static/awk/ci-vm-concurrency.awk \
+	_static/sh/staticcheck-ci-tsan-shards.sh
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -119292,7 +119300,7 @@ uninstall-am:
 # builds.  Preserve command-line TESTS selections, including an empty list.
 # The raw override is emitted after srcdir and before the custom log target;
 # no inventory passes through configure or recursive make arguments.
-@OPENVMS_GNV_FALSE@override TESTS := $(if $(filter file,$(origin TESTS)),$(shell $(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" tests "$(srcdir)" include newline || echo __SIXEL_TEST_DISCOVERY_FAILED__),$(TESTS))
+@OPENVMS_GNV_FALSE@override TESTS := $(if $(filter file,$(origin TESTS)),$(shell $(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" tests "$(srcdir)" include newline "$(SIXEL_TEST_SHARD)" || echo __SIXEL_TEST_DISCOVERY_FAILED__),$(TESTS))
 # Keep the installed-command selection inside make, including caller-supplied
 # TESTS. Passing the filtered inventory to recursive make exceeds argv limits.
 # GNU make 3.81 has no .SHELLSTATUS; an explicit marker propagates scan

@@ -1234,6 +1234,22 @@ run_case_tap "staticcheck-ci-install-path" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-install-path.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-compiler-link-boundary" \
+    sh "$src_root/tests/_static/sh/staticcheck-compiler-link-boundary.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-colorspace-test-declarations" \
+    sh "$src_root/tests/_static/sh/staticcheck-colorspace-test-declarations.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-ci-vm-concurrency" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-vm-concurrency.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-ci-tsan-shards" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-tsan-shards.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-cosmocc-cache-digest" \
     sh "$src_root/tests/_static/sh/staticcheck-cosmocc-cache-digest.sh" \
     "$src_root" || fail_and_exit $?

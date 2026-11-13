@@ -5,8 +5,8 @@
 
 set -eu
 
-if [ "$#" -lt 2 ] || [ "$#" -gt 4 ]; then
-    echo "Usage: $0 <tests> <tests-dir> [include|skip] [space|newline|make]" >&2
+if [ "$#" -lt 2 ] || [ "$#" -gt 5 ]; then
+    echo "Usage: $0 <tests> <tests-dir> [include|skip] [space|newline|make] [index/count]" >&2
     exit 1
 fi
 
@@ -14,6 +14,7 @@ mode=$1
 tests_dir=$2
 ruby_tests_mode=${3:-include}
 output_mode=${4:-space}
+shard=${5:-1/1}
 
 case "$ruby_tests_mode" in
     include|skip)
@@ -88,7 +89,7 @@ esac
     LC_ALL=C sort || printf '%s\n' __SIXEL_TEST_DISCOVERY_FAILED__
 } |
     awk -v ruby_tests_mode="$ruby_tests_mode" \
-        -v output_mode="$output_mode" '
+        -v output_mode="$output_mode" -v shard="$shard" '
         function emit_make_path(path) {
             prefix = "TESTS +="
             extra = length(path) + 1
@@ -104,6 +105,12 @@ esac
             }
         }
         BEGIN {
+            if (shard !~ /^[1-9][0-9]*\/[1-9][0-9]*$/ ||
+                split(shard, parts, "/") != 2 || parts[1] + 0 > parts[2] + 0) {
+                print "Invalid test shard: " shard
+                failed = 1
+                exit 1
+            }
             if (output_mode == "make") {
                 printf "TESTS =\n"
             }
@@ -122,6 +129,10 @@ esac
             }
             if (ruby_tests_mode == "skip" &&
                 path ~ /^bindings\/ruby\/[0-9][0-9][0-9][0-9]_.+\.rb$/) {
+                next
+            }
+            # Partition the sorted inventory without placing it in argv.
+            if (count++ % parts[2] != parts[1] - 1) {
                 next
             }
             if (output_mode == "make") {

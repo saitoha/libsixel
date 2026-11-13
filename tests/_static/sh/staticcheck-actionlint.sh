@@ -17,9 +17,10 @@ if test ! -x "$actionlint_bin" && ! command -v "$actionlint_bin" >/dev/null 2>&1
     exit 0
 fi
 
-tmpfile=`mktemp "${TMPDIR:-/tmp}/libsixel-actionlint-files-XXXXXX"`
+tmpfile=$(mktemp "${TMPDIR:-/tmp}/libsixel-actionlint-files-XXXXXX")
 cleanup() {
     rm -f "$tmpfile"
+    rm -f "$tmpfile.workflow"
 }
 trap cleanup EXIT HUP INT TERM
 
@@ -27,7 +28,7 @@ cd "$src_root"
 
 sh "$source_files_helper" .github/workflows --name '*.yml' --name '*.yaml'| LC_ALL=C sort > "$tmpfile" || true
 
-total=`wc -l < "$tmpfile" | awk '{print $1}'`
+total=$(wc -l < "$tmpfile" | awk '{print $1}')
 
 echo "1..1"
 
@@ -43,7 +44,18 @@ while IFS= read -r workflow; do
     test -n "$workflow" || continue
     index=$((index + 1))
     echo "# [actionlint ${index}/${total}] ${workflow#./}"
-    if ! "$actionlint_bin" "$workflow"; then
+    # GitHub supports concurrency.queue before actionlint 1.7.12 does. Validate
+    # the shared VM queue separately, then blank only that validated property.
+    # Keep line numbers and the source filename for all other diagnostics.
+    if ! awk -v normalize=1 \
+        -f "$src_root/tests/_static/awk/ci-vm-concurrency.awk" \
+        "$workflow" > "$tmpfile.workflow"; then
+        cat "$tmpfile.workflow"
+        failed=1
+        continue
+    fi
+    if ! "$actionlint_bin" -stdin-filename "$workflow" - \
+        < "$tmpfile.workflow"; then
         failed=1
     fi
 done < "$tmpfile"

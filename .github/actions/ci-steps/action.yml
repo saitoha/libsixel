@@ -663,6 +663,7 @@ runs:
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
+          SIXEL_TEST_SHARD=${{ fromJSON(inputs.matrix_json).test_shard || '' }} \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Build and test (Meson, bash)

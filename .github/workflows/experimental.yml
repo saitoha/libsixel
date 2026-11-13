@@ -169,6 +169,10 @@ jobs:
             '
 
   sparc64-netbsd:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
     name: ${{ matrix.label }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
