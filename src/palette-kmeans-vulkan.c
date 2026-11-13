@@ -234,4 +234,7 @@ cleanup:
     sixel_vk_unlock();
     return status;
 }
+#else
+/* Meson compiles this file when Vulkan support is disabled. */
+typedef int palette_kmeans_vulkan_disabled;
 #endif

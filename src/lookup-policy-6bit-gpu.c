@@ -75,7 +75,6 @@ static struct {
     unsigned int count;
     int valid;
 } lookup6_idle;
-#endif
 
 /* Metal byte tables belong to this policy's native implementation. */
 static int
@@ -83,6 +82,7 @@ lookup6_owns_table(lookup6_plan_t const *plan)
 {
     return plan->vulkan || plan->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE;
 }
+#endif
 
 static void
 lookup6_borrow(lookup6_plan_t *plan)

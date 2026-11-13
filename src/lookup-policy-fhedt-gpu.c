@@ -85,7 +85,6 @@ static struct {
     uint32_t vulkan_constants[6];
     int valid;
 } fhedt_idle;
-#endif
 
 /* Metal byte tables belong to this policy's native implementation. */
 static int
@@ -93,6 +92,7 @@ fhedt_owns_table(fhedt_plan_t const *plan)
 {
     return plan->vulkan || plan->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE;
 }
+#endif
 
 static void
 fhedt_borrow(fhedt_plan_t *plan)

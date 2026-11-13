@@ -152,4 +152,7 @@ end:
     (void)pthread_mutex_unlock(&gpu_compat_gate);
     return status;
 }
+#else
+/* Both build systems compile this file when GPU backends are disabled. */
+typedef int lookup_policy_gpu_compat_disabled;
 #endif
