@@ -6,7 +6,7 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu/fhedt_fractional_r128_f1_d0 || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP Metal device unavailable"
+    echo "ok 1 # SKIP GPU fractional probe unavailable"
     exit 0
 }
 test "$status" -eq 0 || {

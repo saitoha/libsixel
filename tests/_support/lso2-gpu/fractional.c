@@ -178,8 +178,8 @@ static sixel_gpu_lookup_preparer_vtbl_t const probe_provider_vtbl = {
 };
 
 /* Quarter coordinates have exact float squared distances: multiplying by
- * sixteen yields integers below 3*1020^2 < 2^24. Double enumeration is an
- * independent nearest-color oracle including exact lowest-index ties. */
+ * sixteen yields integers below 3*1020^2 < 2^24. Independent double
+ * references follow each policy's exact or approximate query rule. */
 int
 lso2_gpu_fractional_config_check(
     sixel_lookup_policy_configuration_t const *configuration, int ties)
@@ -195,18 +195,17 @@ lso2_gpu_fractional_config_check(
     size_t used;
     double q[3];
     unsigned int i, c, count, seed, expected, value;
-    int outcome, written, vulkan, delaunay;
+    int outcome, written, vulkan;
 
     memset(&probe, 0, sizeof(probe));
     outcome = lso2_gpu_fixture_open(&f, 1);
     if (outcome != 0) goto end;
     format = f.device->vtbl->program_format(f.device);
     vulkan = strcmp(format, "vulkan.lookup-rgb8.v1") == 0;
-    delaunay = configuration->kind == SIXEL_LUT_POLICY_DELAUNAY;
-    /* Only Delaunay's scalar probes currently supply both shader ABIs.
-     * Other precision and batch-fault fixtures retain their own scope. */
+    /* Both scalar shader ABIs wrap the selected policy itself; admitting
+     * a different available lookup would invalidate its oracle comparison. */
     if ((!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0) ||
-            (vulkan && !delaunay)) {
+            !lso2_gpu_fixture_serves(&f, configuration->kind)) {
         outcome = 77;
         goto end;
     }
@@ -294,24 +293,17 @@ lso2_gpu_fractional_config_check(
           " device const uchar *w) {");
     LSO2_GPU_CHECK(written > 0 && (size_t)written < sizeof(suffix)-used);
     used += (size_t)written;
-    if (delaunay) {
-        /* Check every witness independently of the dither's query values.
-         * Flipping only the last expected index proves the loop reaches
-         * its end and that the consumer rejects a failed probe. */
-        written = snprintf(suffix+used, sizeof(suffix)-used,
-            "for (uint i=0u;i<128u;++i) {\n"
-            "%s probe=probes[i];\n"
-            "uint expected=uint(probe.w) ^ "
-            "(i==127u ? SIXEL_TEST_PROBE_FAULT : 0u);\n"
-            "if (subject_fractional(probe.xyz,%s) != expected) return n;\n"
-            "}\nreturn subject_fractional(q,%s);\n}\n",
-            vector, arguments, arguments);
-    } else {
-        written = snprintf(suffix+used, sizeof(suffix)-used,
-            "float4 probe = probes[uint(q.x) %% 128u];\n"
-            "if (subject_fractional(probe.xyz,p,n,c,w) != uint(probe.w)) "
-            "return n;\nreturn subject_fractional(q,p,n,c,w);\n}\n");
-    }
+    /* Check every witness independently of the dither's query values.
+     * Flipping only the last expected index proves the loop reaches
+     * its end and that the consumer rejects a failed probe. */
+    written = snprintf(suffix+used, sizeof(suffix)-used,
+        "for (uint i=0u;i<128u;++i) {\n"
+        "%s probe=probes[i];\n"
+        "uint expected=uint(probe.w) ^ "
+        "(i==127u ? SIXEL_TEST_PROBE_FAULT : 0u);\n"
+        "if (subject_fractional(probe.xyz,%s) != expected) return n;\n"
+        "}\nreturn subject_fractional(q,%s);\n}\n",
+        vector, arguments, arguments);
     LSO2_GPU_CHECK(written > 0 && (size_t)written < sizeof(suffix)-used);
     LSO2_GPU_CHECK(sixel_gpu_lookup_select(f.allocator, configuration,
         &probe.subject) == SIXEL_OK);
@@ -320,18 +312,16 @@ lso2_gpu_fractional_config_check(
     f.prepare.gpu_lookup = &probe.iface;
     LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
     LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_OK);
-    if (delaunay) {
-        /* A different decorated source must not reuse an uninstrumented
-         * prebuilt program or the successful probe's cached pipeline. */
-        probe.fractional_fault = 1;
-        LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
-        LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_BAD_ARGUMENT);
-        LSO2_GPU_CHECK(sixel_indexed_frame_get_state(f.image) !=
-            SIXEL_INDEXED_COMPLETE);
-        probe.fractional_fault = 0;
-        LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
-        LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_OK);
-    }
+    /* A different decorated source must not reuse an uninstrumented
+     * prebuilt program or the successful probe's cached pipeline. */
+    probe.fractional_fault = 1;
+    LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
+    LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_BAD_ARGUMENT);
+    LSO2_GPU_CHECK(sixel_indexed_frame_get_state(f.image) !=
+        SIXEL_INDEXED_COMPLETE);
+    probe.fractional_fault = 0;
+    LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
+    LSO2_GPU_CHECK(lso2_gpu_fixture_run(&f) == SIXEL_OK);
     outcome = 0;
 end:
     lso2_gpu_fixture_close(&f);
@@ -365,10 +355,9 @@ lso2_gpu_fractional_reuse_check(int kind)
     memset(&probe, 0, sizeof(probe));
     outcome = lso2_gpu_fixture_open(&f, 1);
     if (outcome != 0) goto end;
-    /* Reuse coverage remains Metal-only; its admission is independent of
-     * the scalar precision probes above. This probe only counts builds. */
-    if (strcmp(f.device->vtbl->program_format(f.device),
-            "metal.lookup-rgb8.v1") != 0) {
+    /* Counting builds uses only the binding ABI, so it needs neither a
+     * backend-specific shader nor a runtime compiler. */
+    if (!lso2_gpu_fixture_serves(&f, kind)) {
         outcome = 77;
         goto end;
     }

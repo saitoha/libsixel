@@ -128,7 +128,7 @@ The bounded byte-ramp oracle independently enumerates each channel's bucket prei
 | GPU-26 | GPU table reuse ignores CPU packing overrides. | [tests/lookup/6bit/0059_6bit_gpu_packing_override.t](../../../../tests/lookup/6bit/0059_6bit_gpu_packing_override.t) |
 | GPU-27 | Declined GPU planning constructs the CPU memo. | [tests/lookup/6bit/0060_6bit_gpu_cpu_fallback.t](../../../../tests/lookup/6bit/0060_6bit_gpu_cpu_fallback.t) |
 
-The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without a Metal or Vulkan backend. These checks do not rank perceived quality or establish throughput.
+The fractional cases use bounded fixtures at fixed settings and the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification). These checks do not rank perceived quality or establish throughput.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

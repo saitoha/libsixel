@@ -218,7 +218,7 @@ The finite GPU references scan palette sites only at queried voxels and refineme
 | FHO-11 | GPU dense column collision and tie labels. | [tests/lookup/fhedt/0157_gpu_dense_column_r64.t](../../../../tests/lookup/fhedt/0157_gpu_dense_column_r64.t) |
 | FHO-12 | CPU weighted R256 refined exact labels. | [tests/lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.t](../../../../tests/lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.t) |
 
-The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+The fractional cases use bounded fixtures at fixed settings and the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification). These checks do not rank perceived quality or establish throughput.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

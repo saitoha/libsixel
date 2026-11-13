@@ -108,7 +108,7 @@ GL-03 through GL-06 require a GPU device that carries the gridlut program, Metal
 
 The native-float matrix covers five colorspaces, fractional and extended coordinates, palette sizes and instance isolation. GPU failure cases inject allocation, encoder-creation and post-completion errors around real backend execution, then require AUTO CPU fallback, cache rebuilding and later reuse. They do not simulate a device reset or an operating-system allocation failure.
 
-The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without Metal. These checks do not rank perceived quality or establish throughput.
+The fractional cases use bounded fixtures at fixed settings and the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification). These checks do not rank perceived quality or establish throughput.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

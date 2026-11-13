@@ -223,7 +223,7 @@ Lifecycle and admission tests use a fake device and run without GPU hardware. By
 
 ### Fractional GPU queries
 
-The fractional precision probes require Metal. These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification).
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

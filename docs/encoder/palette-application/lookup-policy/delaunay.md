@@ -223,7 +223,7 @@ Float tests sample native coordinates and arithmetic boundaries; they do not enu
 
 ### Fractional GPU queries
 
-These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification). The two shader-injection precision probes run on Metal and Vulkan; Vulkan requires libshaderc to compile the decorated program. Each checks all 128 queries independently of the dither input, then flips only the last expected index and requires rejection without publishing a complete frame. Restoring the correct expectations must succeed again, exercising the source-keyed pipeline cache as well as the lookup. The diffusion and palette-change fixtures also exercise the Vulkan fractional program.
+These cases use the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification). The diffusion and palette-change fixtures also exercise the Vulkan fractional program.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |

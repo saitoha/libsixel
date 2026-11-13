@@ -119,7 +119,7 @@ The CPU implementation is [`lookup-policy-eytzinger.c`](../../../../src/lookup-p
 
 <!-- test-coverage: enforced -->
 
-The fractional cases use bounded fixtures at fixed settings. Approximate-policy references check their documented rule rather than exhaustive-nearest equivalence. Device-dependent cases skip without a Metal or Vulkan backend. These checks do not rank perceived quality or establish throughput.
+The fractional cases use bounded fixtures at fixed settings and the [fractional GPU oracle and verification limits](README.md#fractional-gpu-lookup-verification). These checks do not rank perceived quality or establish throughput.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
