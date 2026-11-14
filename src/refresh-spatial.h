@@ -30,8 +30,9 @@ sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **state,
     sixel_delta_residual_t *schedule, unsigned int period, unsigned int strength,
     sixel_refresh_spatial_hooks_t const *hooks);
 
-/* Extend the A1 low band to 16J or 32J only for active pixels with errors
- * 5..8. PERIOD is the same base J used to build the A1 threshold tile. */
+/* Extend the low band to 16J (G1/G3/G4) or 32J (G2) in active cells.
+ * G3/G4 also extend the middle band to 8J, with a luma gate for G4.
+ * PERIOD is the same base J used to build the A1 threshold tile. */
 SIXEL_INTERNAL_API void
 sixel_refresh_spatial_apply(sixel_delta_residual_t *schedule,
     uint32_t const activity[128], unsigned int period, unsigned int strength);

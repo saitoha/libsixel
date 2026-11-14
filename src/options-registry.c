@@ -1898,8 +1898,8 @@ static sixel_suboption_key_t const g_suboptions[] = {
     SIXEL_REGISTRY_ENCODER_UINT(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "refresh_spatial", 'G', "SIXEL_UPDATE_DELTA_REFRESH_SPATIAL", NULL, NULL,
-        0.0, 2.0, 1,
-        "refresh_spatial must be 0 (off), 1 (16J) or 2 (32J).",
+        0.0, 4.0, 1,
+        "refresh_spatial must be 0..4 (3/4 test the middle error band).",
         refresh_spatial, refresh_spatial_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,

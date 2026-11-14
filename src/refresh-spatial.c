@@ -124,29 +124,39 @@ void
 sixel_refresh_spatial_apply(sixel_delta_residual_t *schedule,
     uint32_t const activity[128], unsigned int period, unsigned int strength)
 {
-    unsigned int x, y, cycle, cycles, phase;
+    unsigned int x, y, cycle, cycles, phase, level, flags;
+    int extend_middle;
     size_t cell;
     uint64_t frame;
 
     frame = schedule->refresh_next_frame;
-    if (!frame || !period || !strength || strength > 2) return;
-    cycles = 8U << strength;
+    if (!frame || !period || !strength || strength > 4) return;
+    extend_middle = strength >= 3;
+    cycles = strength == 2 ? 32U : 16U;
     /* A1 deadlines are on frames base + n*J, with base in 1..J.
      * Test the coarse cycle n to preserve the within-J blue-noise phase. */
     phase = (unsigned int)(((frame - 1U) / period) & (cycles - 1U));
-    schedule->mask.tiled = 2U;
+    schedule->mask.tiled = strength == 4 ? 3U : 2U;
     memcpy(schedule->mask.cells, activity, sizeof(schedule->mask.cells));
     for (y = 0; y < 64; ++y) {
         for (x = 0; x < 64; ++x) {
             cell = (size_t)y * 64 + x;
-            if (schedule->mask.levels[cell] != 4U) continue;
+            level = schedule->mask.levels[cell];
+            if (level != 4U && (!extend_middle || level != 8U)) continue;
             cycle = sixel_bn64[
                 ((y + (unsigned)schedule->refresh_next_origin_y + 43U)
                     & 63U)*64U +
                 ((x + (unsigned)schedule->refresh_next_origin_x + 11U)
                     & 63U)] >> 2;
-            if (phase != (cycle & (cycles - 1U)))
-                schedule->mask.levels[cell] |= 128U;
+            flags = 0;
+            if (level == 4U && phase != (cycle & (cycles - 1U)))
+                flags = 128U;
+            /* A due 5..8 deadline must stay at 4. Otherwise the 9..16
+             * deadline can be deferred on alternate A1 middle-band cycles. */
+            if (extend_middle && (level == 8U || flags != 0U) &&
+                    (phase & 7U) != (cycle & 7U))
+                flags |= 64U;
+            schedule->mask.levels[cell] = (unsigned char)(level | flags);
         }
     }
 }

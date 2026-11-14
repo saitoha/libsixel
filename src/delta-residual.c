@@ -129,11 +129,13 @@ sixel_delta_residual_prepare(sixel_delta_residual_t *state,
 }
 
 unsigned int
-sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
-    int x, int y, unsigned int threshold)
+sixel_delta_mask_threshold_rgb888(sixel_delta_mask_t const *mask,
+    int x, int y, unsigned int threshold, unsigned char const *rgb,
+    unsigned char const *retained)
 {
     size_t cell;
-    unsigned int selected;
+    unsigned int selected, flags;
+    int luma;
 
     if (mask == NULL || mask->columns == 0 || mask->rows == 0 ||
             x < 0 || y < 0 || x >= mask->width || y >= mask->height) {
@@ -146,19 +148,30 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
             mask->columns +
             ((size_t)(x + 1) * mask->columns - 1U) / mask->width;
     }
-    /* Spatial refresh reuses the fixed transfer footprint: low seven bits
-     * hold the A1 threshold; bit seven delays its low band in active cells.
-     * The bitset then holds scaled activity. A byte of 255 marks pixels
-     * with no A1 deadline on this frame, so they keep the ordinary T. */
-    if (mask->tiled == 2U) {
+    /* Spatial modes use the bitset for activity. The upper two bits
+     * request a delay, and 255 leaves the ordinary threshold in effect. */
+    if (mask->tiled == 2U || mask->tiled == 3U) {
         selected = mask->levels[cell];
         if (selected == 255U) return threshold;
-        if (selected & 128U) {
-            selected &= 127U;
+        flags = selected & 192U;
+        selected &= 63U;
+        if (flags != 0U) {
             cell = (((size_t)(y + 1) * 64U - 1U) / mask->height)*64U +
                 ((size_t)(x + 1) * 64U - 1U) / mask->width;
-            if (mask->cells[cell/32U] & ((uint32_t)1 << (cell%32U)))
-                selected = 8U;
+            if (mask->cells[cell / 32U] & ((uint32_t)1 << (cell % 32U))) {
+                if (flags & 128U) selected = 8U;
+                if (flags & 64U) {
+                    if (mask->tiled == 2U) {
+                        selected = 16U;
+                    } else if (rgb != NULL && retained != NULL) {
+                        /* Signed channel differences allow chroma to cancel. */
+                        luma = 54 * (rgb[0] - retained[0]) +
+                            183 * (rgb[1] - retained[1]) +
+                            19 * (rgb[2] - retained[2]);
+                        if (luma >= -1024 && luma <= 1024) selected = 16U;
+                    }
+                }
+            }
         }
         return selected < threshold ? selected : threshold;
     }
@@ -166,6 +179,14 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
     if ((mask->cells[cell / 32U] & ((uint32_t)1 << (cell % 32U))) &&
             selected < threshold) return selected;
     return threshold;
+}
+
+unsigned int
+sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
+    int x, int y, unsigned int threshold)
+{
+    return sixel_delta_mask_threshold_rgb888(mask, x, y, threshold,
+        NULL, NULL);
 }
 
 void

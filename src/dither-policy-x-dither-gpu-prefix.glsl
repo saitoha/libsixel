@@ -192,19 +192,32 @@ bool prepare_query(uint gid, out uvec3 query, out uvec3 comparison)
                     params.height) * params.residual_columns +
                     ((x + 1u) * params.residual_columns - 1u) /
                     params.width;
-            if (params.residual_tiled == 2u) {
+            if (params.residual_tiled == 2u ||
+                    params.residual_tiled == 3u) {
                 uint level = (params.residual_levels[cell / 4u] >>
                     ((cell % 4u) * 8u)) & 255u;
                 // A level of 255 keeps the ordinary frame threshold.
                 uint selected = level;
-                if (level != 255u && (level & 128u) != 0u) {
+                if (level != 255u && (level & 192u) != 0u) {
                     uint spatial = (((y + 1u) * 64u - 1u) /
                         params.height) * 64u +
                         ((x + 1u) * 64u - 1u) / params.width;
-                    selected = level & 127u;
+                    selected = level & 63u;
                     if ((params.residual_cells[spatial / 32u] &
-                            (1u << (spatial % 32u))) != 0u)
-                        selected = 8u;
+                            (1u << (spatial % 32u))) != 0u) {
+                        if ((level & 128u) != 0u) selected = 8u;
+                        if ((level & 64u) != 0u) {
+                            // Rec.709 Y' difference in Q8 code values.
+                            int luma = 0;
+                            if (params.residual_tiled == 3u) {
+                                ivec3 delta = ivec3(comparison) -
+                                    ivec3(retained);
+                                luma = 54 * delta.x + 183 * delta.y +
+                                    19 * delta.z;
+                            }
+                            if (abs(luma) <= 1024) selected = 16u;
+                        }
+                    }
                 }
                 local_threshold = min(local_threshold, selected);
             } else

@@ -46,8 +46,9 @@ typedef struct sixel_delta_mask {
     int width;
     int height;
     unsigned int threshold;
-    /* 0 scaled cells, 1 pixel tile, 2 spatially delayed A1/L4 tile.
-     * Mode 2 uses scaled activity bits and level bit 7 to delay only 5..8. */
+    /* 0 scaled cells, 1 pixel tile, 2 spatial A1/L4, 3 with luma gate.
+     * Spatial modes use activity bits and flags in bits 7 (low) and 6
+     * (middle) of each threshold byte. 255 marks no deadline. */
     unsigned int tiled;
     /* Optional byte thresholds at the same cell coordinates. A fixed tile
      * implements many error deadlines without examining source pixels. */
@@ -106,6 +107,11 @@ sixel_delta_refresh_adapt(sixel_delta_residual_t *state,
 SIXEL_INTERNAL_API void
 sixel_delta_pack_levels(uint32_t *packed, unsigned char const *levels,
     size_t count);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_delta_mask_threshold_rgb888(sixel_delta_mask_t const *mask,
+    int x, int y, unsigned int threshold, unsigned char const *rgb,
+    unsigned char const *retained);
 
 SIXEL_INTERNAL_API unsigned int
 sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,

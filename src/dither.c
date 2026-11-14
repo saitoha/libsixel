@@ -1610,8 +1610,8 @@ sixel_dither_6delta_row_try_keep_rgb888(
         return 0;
     }
     threshold = row->threshold_uniform ? row->threshold
-        : sixel_delta_mask_threshold(&dither->pipeline_residual_mask,
-                                     x, row->y, row->threshold);
+        : sixel_delta_mask_threshold_rgb888(&dither->pipeline_residual_mask,
+            x, row->y, row->threshold, rgb, accumulation_pixel);
     if (!(dither->pipeline_6delta_metric == SIXEL_DELTA_METRIC_RGB241
             ? sixel_delta_rgb241_within(rgb, accumulation_pixel, threshold)
             : sixel_dither_rgb888_delta_within(rgb, accumulation_pixel,
