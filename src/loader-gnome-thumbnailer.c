@@ -162,6 +162,7 @@ thumbnailer_resolve_path(char const *path)
 }
 
 struct thumbnailer_string_list {
+    /* Leave room for a NULL terminator so the list can become argv. */
     char **items;
     size_t length;
     size_t capacity;
@@ -310,25 +311,28 @@ thumbnailer_string_list_append(struct thumbnailer_string_list *list,
         return 0;
     }
 
-    copy = thumbnailer_strdup(value);
-    if (copy == NULL) {
-        return 0;
-    }
-
-    if (list->length == list->capacity) {
+    if (list->capacity == 0 || list->length == list->capacity - 1u) {
+        if (list->capacity > SIZE_MAX / 2u / sizeof(*list->items)) {
+            return 0;
+        }
         new_capacity = (list->capacity == 0) ? 4 : list->capacity * 2;
         new_items = realloc(list->items,
                             new_capacity * sizeof(*list->items));
         if (new_items == NULL) {
-            free(copy);
             return 0;
         }
+        new_items[list->length] = NULL;
         list->items = new_items;
         list->capacity = new_capacity;
     }
 
+    copy = thumbnailer_strdup(value);
+    if (copy == NULL) {
+        return 0;
+    }
     list->items[list->length] = copy;
     list->length += 1;
+    list->items[list->length] = NULL;
 
     return 1;
 }
@@ -1211,7 +1215,6 @@ thumbnailer_build_command(char const *template_command,
     int in_double_quote;
     int escape_next;
     char const *replacement;
-    size_t index;
     int written;
 
     builder.buffer = NULL;
@@ -1225,7 +1228,6 @@ thumbnailer_build_command(char const *template_command,
     in_double_quote = 0;
     escape_next = 0;
     replacement = NULL;
-    index = 0;
 
     if (template_command == NULL) {
         return NULL;
@@ -1344,40 +1346,26 @@ thumbnailer_build_command(char const *template_command,
         }
     }
 
+    if (tokens->length == 0) {
+        goto error;
+    }
+
     command = malloc(sizeof(*command));
     if (command == NULL) {
         goto error;
     }
 
+    /* Transfer the complete argv and its strings before formatting it. */
     command->argc = tokens->length;
-    command->argv = NULL;
-    command->display = NULL;
-
-    if (tokens->length == 0) {
-        goto error;
-    }
-
-    command->argv = malloc(sizeof(char *) * (tokens->length + 1));
-    if (command->argv == NULL) {
-        goto error;
-    }
-
-    for (index = 0; index < tokens->length; ++index) {
-        command->argv[index] = thumbnailer_strdup(tokens->items[index]);
-        if (command->argv[index] == NULL) {
-            goto error;
-        }
-    }
-    command->argv[tokens->length] = NULL;
-
+    command->argv = tokens->items;
+    free(tokens);
+    tokens = NULL;
     command->display = thumbnailer_command_format(command->argv,
                                                   command->argc);
     if (command->display == NULL) {
         goto error;
     }
 
-    thumbnailer_string_list_free(tokens);
-    tokens = NULL;
     if (builder.buffer != NULL) {
         free(builder.buffer);
         builder.buffer = NULL;
