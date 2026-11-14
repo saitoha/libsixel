@@ -13,7 +13,8 @@ sed 's/^@OPENVMS_GNV_TRUE@/#/' \
 
 # Both outputs are observations: metadata must classify exactly one point,
 # and the diagnostic log must preserve the specimen's original TAP point.
-awk -v expected="$3" '
+# shellcheck disable=SC2016
+"${AM_TAP_AWK:-awk}" -v expected="$3" '
     FNR == NR && FNR == 2 { point=$0; next }
     /^:test-result:/ { count++; valid += $2 == expected }
     /^:global-test-result:/ { global += $2 == expected }

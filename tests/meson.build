@@ -212,6 +212,9 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 endif
 
 env = environment()
+# The TAP directive tests launch the driver directly from its template.
+# Pass the selected awk explicitly so they do not pick another one from PATH.
+env.set('AM_TAP_AWK', awk_prog.full_path())
 env.prepend('PATH', meson.project_source_root() / 'build-aux/compare')
 if have_test_compare
   env.prepend('PATH', meson.project_build_root() / 'tools/compare')
