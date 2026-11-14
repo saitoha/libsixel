@@ -13057,6 +13057,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin tools/compa
     _static/sh/staticcheck-c-conditional-operand.sh \
     _static/awk/c-octal-escape-boundary.awk \
     _static/sh/staticcheck-c-octal-escape-boundary.sh \
+    _static/awk/c-size-format.awk \
+    _static/sh/staticcheck-c-size-format.sh \
     _static/awk/c-test-skip-branches.awk \
     _static/sh/staticcheck-c-test-skip-branches.sh \
     _static/sh/staticcheck-command-dependencies.sh \

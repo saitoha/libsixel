@@ -678,10 +678,12 @@ sixel_presentation_pair(sixel_presentation_t *presentation, int delay)
     presentation->async_submission = 0;
     if (presentation->verbose) {
         fprintf(stderr, "progressive: pair=%" PRIu64
-            " outcome=%d pixels=%zu bytes=%zu visits=%" PRIu64
+            " outcome=%d pixels=%" SIXEL_PRI_SIZE
+            " bytes=%" SIXEL_PRI_SIZE " visits=%" PRIu64
             " distances=%" PRIu64 " elapsed_ms=%.3f\n",
             presentation->generation, stats.outcome,
-            stats.painted_pixels, stats.packet_bytes,
+            SIXEL_PRINTF_SIZE(stats.painted_pixels),
+            SIXEL_PRINTF_SIZE(stats.packet_bytes),
             presentation->repair->total_pixel_visits,
             presentation->repair->total_distance_evaluations,
             1000 * (sixel_presentation_clock(presentation) - now));

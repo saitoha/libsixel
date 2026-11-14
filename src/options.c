@@ -3183,7 +3183,8 @@ sixel_option_emit_suboption_value(
         }
         break;
     case SIXEL_SUBOPTION_VALUE_SIZE:
-        fprintf(stderr, "%zu", value->size_value);
+        fprintf(stderr, "%" SIXEL_PRI_SIZE,
+        SIXEL_PRINTF_SIZE(value->size_value));
         break;
     case SIXEL_SUBOPTION_VALUE_FLOAT:
         fprintf(stderr, "%.9g", (double)value->float_value);

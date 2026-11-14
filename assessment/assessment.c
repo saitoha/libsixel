@@ -80,6 +80,7 @@
 #include <sixel.h>
 
 #include "assessment.h"
+#include "compat_stub.h"
 #include "environment.h"
 #include "color.h"
 #include "scielab.h"
@@ -4099,7 +4100,7 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         "    \"sciede2000_parameters\": {\"kL\": 1, \"kC\": 1, \"kH\": 1},\n"
         "    \"scielab_boundary\": \"edge-repeating reflection\",\n"
         "    \"region_window\": %d,\n"
-        "    \"region_count\": %zu,\n"
+        "    \"region_count\": %" SIXEL_PRI_SIZE ",\n"
         "    \"region_layout\": \"top-left fixed tiles, partial edges\",\n"
         "    \"region_mean_weighting\": \"pixel area\",\n",
         escaped, assessment->direct ? "direct" : "indexed",
@@ -4113,7 +4114,7 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         assessment->signal_bytes ? "0..1" : "extended, nominal 0..1",
         assessment->grayscale ? "true" : "false",
         assessment->ppd,
-        assessment->region_window, assessment->region_count);
+        assessment->region_window, SIXEL_PRINTF_SIZE(assessment->region_count));
     if (n < 0 || (size_t)n >= sizeof(line)) {
         return SIXEL_RUNTIME_ERROR;
     }
@@ -4123,13 +4124,17 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         n = snprintf(line, sizeof(line),
             "    \"pixel_delta_e00\": {\n"
             "      \"maximum_xy\": [%d, %d],\n"
-            "      \"strictly_above\": {\"1\": %zu, \"5\": %zu, "
-            "\"10\": %zu, \"20\": %zu, \"50\": %zu}\n"
+            "      \"strictly_above\": {\"1\": %" SIXEL_PRI_SIZE
+            ", \"5\": %" SIXEL_PRI_SIZE ", "
+            "\"10\": %" SIXEL_PRI_SIZE ", \"20\": %" SIXEL_PRI_SIZE
+            ", \"50\": %" SIXEL_PRI_SIZE "}\n"
             "    },\n",
             assessment->delta_e00_max_x, assessment->delta_e00_max_y,
-            assessment->delta_e00_above[0], assessment->delta_e00_above[1],
-            assessment->delta_e00_above[2], assessment->delta_e00_above[3],
-            assessment->delta_e00_above[4]);
+            SIXEL_PRINTF_SIZE(assessment->delta_e00_above[0]),
+            SIXEL_PRINTF_SIZE(assessment->delta_e00_above[1]),
+            SIXEL_PRINTF_SIZE(assessment->delta_e00_above[2]),
+            SIXEL_PRINTF_SIZE(assessment->delta_e00_above[3]),
+            SIXEL_PRINTF_SIZE(assessment->delta_e00_above[4]));
     } else {
         n = snprintf(line, sizeof(line),
                      "    \"pixel_delta_e00\": null,\n");
@@ -4289,8 +4294,8 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
 
         written = snprintf(line,
                            sizeof(line),
-                           "    \"input_bytes\": %zu,\n",
-                           assessment->input_bytes);
+                           "    \"input_bytes\": %" SIXEL_PRI_SIZE ",\n",
+                           SIXEL_PRINTF_SIZE(assessment->input_bytes));
         if (written < 0 || (size_t)written >= sizeof(line)) {
             return SIXEL_RUNTIME_ERROR;
         }
@@ -4318,8 +4323,9 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
 
         written = snprintf(line,
                            sizeof(line),
-                           "    \"source_pixels_bytes\": %zu,\n",
-                           assessment->source_pixels_bytes);
+                           "    \"source_pixels_bytes\": %" SIXEL_PRI_SIZE
+                           ",\n",
+                           SIXEL_PRINTF_SIZE(assessment->source_pixels_bytes));
         if (written < 0 || (size_t)written >= sizeof(line)) {
             return SIXEL_RUNTIME_ERROR;
         }
@@ -4327,8 +4333,10 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
 
         written = snprintf(line,
                            sizeof(line),
-                           "    \"quantized_pixels_bytes\": %zu,\n",
-                           assessment->quantized_pixels_bytes);
+                           "    \"quantized_pixels_bytes\": %" SIXEL_PRI_SIZE
+                           ",\n",
+                           SIXEL_PRINTF_SIZE(
+                               assessment->quantized_pixels_bytes));
         if (written < 0 || (size_t)written >= sizeof(line)) {
             return SIXEL_RUNTIME_ERROR;
         }
@@ -4345,8 +4353,8 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
 
         written = snprintf(line,
                            sizeof(line),
-                           "    \"palette_bytes\": %zu\n",
-                           assessment->palette_bytes);
+                           "    \"palette_bytes\": %" SIXEL_PRI_SIZE "\n",
+                           SIXEL_PRINTF_SIZE(assessment->palette_bytes));
         if (written < 0 || (size_t)written >= sizeof(line)) {
             return SIXEL_RUNTIME_ERROR;
         }
@@ -4428,10 +4436,10 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
             written = snprintf(
                 line,
                 sizeof(line),
-                "        \"bytes_processed\": %zu,\n"
+                "        \"bytes_processed\": %" SIXEL_PRI_SIZE ",\n"
                 "        \"throughput_bytes_per_second\": %.6f\n"
                 "      }%s\n",
-                bytes,
+                SIXEL_PRINTF_SIZE(bytes),
                 throughput,
                 is_last_stage ? "" : ",");
             if (written < 0 || (size_t)written >= sizeof(line)) {
@@ -4482,8 +4490,8 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
 
         written = snprintf(line,
                            sizeof(line),
-                           "    \"output_bytes\": %zu,\n",
-                           assessment->output_bytes);
+                           "    \"output_bytes\": %" SIXEL_PRI_SIZE ",\n",
+                           SIXEL_PRINTF_SIZE(assessment->output_bytes));
         if (written < 0 || (size_t)written >= sizeof(line)) {
             return SIXEL_RUNTIME_ERROR;
         }

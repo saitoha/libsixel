@@ -31,9 +31,6 @@
 #include "config.h"
 #endif
 
-#if defined(SIXEL_SNPRINTF_NEEDS_PRIUMAX)
-# include <inttypes.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,6 +54,7 @@
 
 #include "cpu.h"
 #include "allocator.h"
+#include "compat_stub.h"
 #include "loader-common.h"
 #include "lookup-fhedt-float32.h"
 #include "lookup-policy-fhedt.h"
@@ -666,13 +664,8 @@ sixel_lookup_fhedt_prefetch_line_float32(double *distances,
             return;
         }
 
-#if defined(SIXEL_SNPRINTF_NEEDS_PRIUMAX)
-        /* Preserve the full offset when the build rejects %zu. */
-        (void)snprintf(message, sizeof(message),
-                       "prefetch@%" PRIuMAX, (uintmax_t)offset);
-#else
-        (void)snprintf(message, sizeof(message), "prefetch@%zu", offset);
-#endif
+        (void)snprintf(message, sizeof(message), "prefetch@%" SIXEL_PRI_SIZE,
+                       SIXEL_PRINTF_SIZE(offset));
         sixel_lookup_fhedt_timeline_log_float32(timeline,
                                        worker,
                                        "prefetch",

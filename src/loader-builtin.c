@@ -2269,15 +2269,16 @@ sixel_builtin_apng_trace_chunk_state(
 
     sixel_trace_topic_message(
         "apng",
-        "chunk=%s len=%u remain=%zu expected_seq=%u has_frame=%d "
-        "chunk_size=%zu shared_size=%zu",
+        "chunk=%s len=%u remain=%" SIXEL_PRI_SIZE
+        " expected_seq=%u has_frame=%d "
+        "chunk_size=%" SIXEL_PRI_SIZE " shared_size=%" SIXEL_PRI_SIZE,
         chunk_type,
         (unsigned int)length,
-        remain,
+        SIXEL_PRINTF_SIZE(remain),
         expected_sequence,
         has_frame,
-        chunk_size,
-        shared_size);
+        SIXEL_PRINTF_SIZE(chunk_size),
+        SIXEL_PRINTF_SIZE(shared_size));
 }
 
 static int
@@ -2878,7 +2879,8 @@ sixel_builtin_apng_emit_frame(
     sixel_trace_topic_message(
         "apng",
         "emit begin frame=%d loop=%d control=%ux%u+%u+%u "
-        "dispose=%u blend=%u delay_cs=%u chunk=%zu shared=%zu "
+        "dispose=%u blend=%u delay_cs=%u chunk=%" SIXEL_PRI_SIZE
+        " shared=%" SIXEL_PRI_SIZE " "
         "canvas=%dx%d alpha0=%d callback=%d",
         frame_no,
         loop_no,
@@ -2889,8 +2891,8 @@ sixel_builtin_apng_emit_frame(
         control->dispose_op,
         control->blend_op,
         control->delay_cs,
-        state->chunk_size,
-        state->shared_chunks_size,
+        SIXEL_PRINTF_SIZE(state->chunk_size),
+        SIXEL_PRINTF_SIZE(state->shared_chunks_size),
         canvas->width,
         canvas->height,
         alpha_zero_is_transparent,
@@ -2916,10 +2918,11 @@ sixel_builtin_apng_emit_frame(
         stbi_reason = stbi_failure_reason();
         sixel_trace_topic_message(
             "apng",
-            "emit decode failed frame=%d loop=%d png_size=%zu reason=%s",
+            "emit decode failed frame=%d loop=%d png_size=%" SIXEL_PRI_SIZE
+            " reason=%s",
             frame_no,
             loop_no,
-            png_size,
+            SIXEL_PRINTF_SIZE(png_size),
             stbi_reason != NULL ? stbi_reason : "(null)");
         sixel_helper_set_additional_message(stbi_reason);
         status = stbi_allocation_failed != 0
@@ -3240,9 +3243,9 @@ sixel_builtin_apng_begin_loop_iteration(
     }
     sixel_trace_topic_message(
         "apng",
-        "loop begin loop=%d remain=%zu trns_mode=%d",
+        "loop begin loop=%d remain=%" SIXEL_PRI_SIZE " trns_mode=%d",
         runtime->loop_no,
-        runtime->remain,
+        SIXEL_PRINTF_SIZE(runtime->remain),
         runtime->trns_keycolor_mode);
 }
 
@@ -3735,9 +3738,10 @@ sixel_builtin_load_apng_frames(
     sixel_builtin_apng_init_runtime(&runtime, trns_keycolor_mode);
     sixel_trace_topic_message(
         "apng",
-        "decode start size=%zu static=%d cms=%d loop_control=%d "
+        "decode start size=%" SIXEL_PRI_SIZE
+        " static=%d cms=%d loop_control=%d "
         "start_frame=%d trns_mode=%d",
-        pchunk != NULL ? sixel_chunk_get_size(pchunk) : 0u,
+        SIXEL_PRINTF_SIZE(pchunk != NULL ? sixel_chunk_get_size(pchunk) : 0u),
         fstatic,
         enable_cms,
         loop_control,

@@ -1651,8 +1651,9 @@ webp_extract_icc_profile(WebPDemuxer const *demux,
     if (chunk_iter.chunk.size > WEBP_MAX_ICC_PROFILE_BYTES) {
         sixel_trace_topic_message(
             "webp_decode",
-            "embedded ICC profile too large (%zu bytes); skip CMS conversion",
-            chunk_iter.chunk.size);
+            "embedded ICC profile too large (%" SIXEL_PRI_SIZE
+            " bytes); skip CMS conversion",
+            SIXEL_PRINTF_SIZE(chunk_iter.chunk.size));
         goto cleanup;
     }
 

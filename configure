@@ -20337,10 +20337,10 @@ fi
 fi
 fi
 
-# Check the active snprintf format dialect without running target code.
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether snprintf accepts %zu" >&5
-printf %s "checking whether snprintf accepts %zu... " >&6; }
-if test ${sixel_cv_snprintf_size_t_format+y}
+# Check the active printf format dialect without running target code.
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether snprintf and fprintf accept %zu" >&5
+printf %s "checking whether snprintf and fprintf accept %zu... " >&6; }
+if test ${sixel_cv_printf_size_t_format+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
@@ -20357,16 +20357,17 @@ int
 main (void)
 {
 char buffer[64];
-          return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer));
+          return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer)) +
+                 fprintf(stderr, "%zu", sizeof(buffer));
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  sixel_cv_snprintf_size_t_format=yes
+  sixel_cv_printf_size_t_format=yes
 else case e in #(
-  e) sixel_cv_snprintf_size_t_format=no ;;
+  e) sixel_cv_printf_size_t_format=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
@@ -20375,9 +20376,9 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
    ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_snprintf_size_t_format" >&5
-printf "%s\n" "$sixel_cv_snprintf_size_t_format" >&6; }
-if test "$sixel_cv_snprintf_size_t_format" = no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_printf_size_t_format" >&5
+printf "%s\n" "$sixel_cv_printf_size_t_format" >&6; }
+if test "$sixel_cv_printf_size_t_format" = no
 then :
 
 

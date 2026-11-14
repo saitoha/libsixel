@@ -406,6 +406,10 @@ run_case_tap "staticcheck-c-octal-escape-boundary" \
     sh "$src_root/tests/_static/sh/staticcheck-c-octal-escape-boundary.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-c-size-format" \
+    sh "$src_root/tests/_static/sh/staticcheck-c-size-format.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-output-buffer-storage" \
     sh "$src_root/tests/_static/sh/staticcheck-output-buffer-storage.sh" \
     "$src_root" || fail_and_exit $?

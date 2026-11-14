@@ -1782,8 +1782,8 @@ sixel_colorspace_parallel_min_pixels(void)
     initialized = 1;
     sixel_trace_topic_message(
         "runtime_contract",
-        "LSXRT1|colorspace_min=%zu",
-        threshold);
+        "LSXRT1|colorspace_min=%" SIXEL_PRI_SIZE,
+        SIXEL_PRINTF_SIZE(threshold));
     return threshold;
 }
 
@@ -1901,7 +1901,8 @@ sixel_colorspace_parallel_worker_bytes(sixel_thread_pool_job_t job,
                           end_row,
                           start_row,
                           end_row,
-                          "chunk=%zu", remaining);
+                          "chunk=%" SIXEL_PRI_SIZE,
+                          SIXEL_PRINTF_SIZE(remaining));
     }
 
     status = sixel_convert_pixels_via_linear_chunk(
@@ -2046,7 +2047,8 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                           sixel_colorspace_log_clamp(pixel_total),
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
-                          "pixels=%zu", pixel_total);
+                          "pixels=%" SIXEL_PRI_SIZE,
+                          SIXEL_PRINTF_SIZE(pixel_total));
     }
 
 #if SIXEL_ENABLE_THREADS
@@ -2087,10 +2089,11 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                                   sixel_colorspace_log_clamp(pixel_total),
                                   0,
                                   sixel_colorspace_log_clamp(pixel_total),
-                                  "threads=%d chunk=%zu jobs=%zu",
+                                  "threads=%d chunk=%" SIXEL_PRI_SIZE
+                                  " jobs=%" SIXEL_PRI_SIZE,
                                   threads,
-                                  chunk_pixels,
-                                  job_count);
+                                  SIXEL_PRINTF_SIZE(chunk_pixels),
+                                  SIXEL_PRINTF_SIZE(job_count));
             }
 
             rc = sixel_colorspace_create_pool(
@@ -2171,8 +2174,9 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                           sixel_colorspace_log_clamp(pixel_total),
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
-                          "below threshold=%zu",
-                          sixel_colorspace_parallel_min_pixels_cached());
+                          "below threshold=%" SIXEL_PRI_SIZE,
+                          SIXEL_PRINTF_SIZE(
+                              sixel_colorspace_parallel_min_pixels_cached()));
     }
 #endif
 
@@ -2187,7 +2191,8 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                           sixel_colorspace_log_clamp(pixel_total),
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
-                          "serial chunk size=%zu", pixel_total);
+                          "serial chunk size=%" SIXEL_PRI_SIZE,
+                          SIXEL_PRINTF_SIZE(pixel_total));
         sixel_timeline_logger_logf(logger_ref,
                           "worker",
                           "colorspace",
@@ -2198,7 +2203,8 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                           sixel_colorspace_log_clamp(pixel_total),
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
-                          "serial chunk size=%zu", pixel_total);
+                          "serial chunk size=%" SIXEL_PRI_SIZE,
+                          SIXEL_PRINTF_SIZE(pixel_total));
     }
 
     status = sixel_convert_pixels_via_linear_chunk(pixels,
@@ -2489,7 +2495,8 @@ sixel_colorspace_parallel_worker(sixel_thread_pool_job_t job,
                           end_row,
                           start_row,
                           end_row,
-                          "chunk=%zu", remaining);
+                          "chunk=%" SIXEL_PRI_SIZE,
+                          SIXEL_PRINTF_SIZE(remaining));
     }
 
     state = (sixel_float_memo_workspace_t *)workspace;
@@ -2570,8 +2577,8 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     (void)sixel_timeline_logger_prepare_env(NULL, &logger);
     sixel_timeline_logger_logf(logger, "controller", "colorspace",
         "configure", -1, -1, 0, sixel_colorspace_log_clamp(pixel_total),
-        0, sixel_colorspace_log_clamp(pixel_total), "pixels=%zu",
-        pixel_total);
+        0, sixel_colorspace_log_clamp(pixel_total), "pixels=%" SIXEL_PRI_SIZE,
+        SIXEL_PRINTF_SIZE(pixel_total));
 
 #if SIXEL_ENABLE_THREADS
     threads = sixel_threads_resolve_fanout();
@@ -2622,8 +2629,10 @@ sixel_convert_pixels_via_linear_float(float *pixels,
             sixel_timeline_logger_logf(logger, "controller", "colorspace",
                 "start", -1, -1, 0, sixel_colorspace_log_clamp(pixel_total),
                 0, sixel_colorspace_log_clamp(pixel_total),
-                "threads=%d chunk=%zu jobs=%zu", threads,
-                ctx.chunk_pixels, job_count);
+                "threads=%d chunk=%" SIXEL_PRI_SIZE
+                " jobs=%" SIXEL_PRI_SIZE, threads,
+                SIXEL_PRINTF_SIZE(ctx.chunk_pixels),
+                SIXEL_PRINTF_SIZE(job_count));
             job_index = 0U;
             if (adaptive) {
                 /* Keep a bounded queue and make the controller compute one

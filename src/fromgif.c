@@ -2654,12 +2654,12 @@ gif_prepare_decoder_state(unsigned char *buffer,
     history_bytes = gif_history_required_bytes(pcount);
     sixel_trace_topic_message(
         GIF_TRACE_TOPIC,
-        "gif_prepare_decoder_state: canvas=%dx%d rgb_bytes=%zu "
-        "history_bytes=%zu multiframe_buffers=%d",
+        "gif_prepare_decoder_state: canvas=%dx%d rgb_bytes=%" SIXEL_PRI_SIZE " "
+        "history_bytes=%" SIXEL_PRI_SIZE " multiframe_buffers=%d",
         g->w,
         g->h,
-        bcount,
-        history_bytes,
+        SIXEL_PRINTF_SIZE(bcount),
+        SIXEL_PRINTF_SIZE(history_bytes),
         need_multiframe_buffers);
 
     gif_init_decoder_buffers(g);
@@ -2676,13 +2676,15 @@ gif_prepare_decoder_state(unsigned char *buffer,
     if (!gif_has_required_decoder_buffers(g, need_multiframe_buffers)) {
         sixel_trace_topic_message(
             GIF_TRACE_TOPIC,
-            "gif_prepare_decoder_state: allocation failed pcount=%zu",
-            pcount);
+            "gif_prepare_decoder_state: allocation failed "
+            "pcount=%" SIXEL_PRI_SIZE,
+            SIXEL_PRINTF_SIZE(pcount));
         sixel_compat_snprintf(
             message,
             sizeof(message),
-            "load_gif: sixel_allocator_malloc() failed. size=%zu.",
-            pcount);
+            "load_gif: sixel_allocator_malloc() failed. size=%" SIXEL_PRI_SIZE
+            ".",
+            SIXEL_PRINTF_SIZE(pcount));
         sixel_helper_set_additional_message(message);
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -2946,10 +2948,11 @@ gif_decode_animation_loops(gif_context_t *s,
             replay_cache != NULL ? replay_cache->frame_count : 0u;
         sixel_trace_topic_message(
             GIF_TRACE_TOPIC,
-            "gif_decode_animation_loops: loop=%d replay=%d cache_frames=%zu",
+            "gif_decode_animation_loops: loop=%d replay=%d "
+            "cache_frames=%" SIXEL_PRI_SIZE,
             current_loop_no,
             replay_active,
-            replay_frame_count);
+            SIXEL_PRINTF_SIZE(replay_frame_count));
 
         if (replay_active != 0) {
             g->loop_count = stream_loop_count;
@@ -2976,10 +2979,10 @@ gif_decode_animation_loops(gif_context_t *s,
                     sixel_trace_topic_message(
                         GIF_TRACE_TOPIC,
                         "gif_decode_animation_loops: replay callback failed "
-                        "status=%d loop=%d replay_index=%zu",
+                        "status=%d loop=%d replay_index=%" SIXEL_PRI_SIZE,
                         status,
                         current_loop_no,
-                        replay_index);
+                        SIXEL_PRINTF_SIZE(replay_index));
                     return status;
                 }
                 progress.emitted_frame_no += 1;

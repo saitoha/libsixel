@@ -537,28 +537,36 @@ lsqa_video_measure(sixel_frame_t *reference, lsqa_video_state_t *v,
         }
         memcpy(v->scratch, v->errors, v->pixels * sizeof(double));
         percentile = lsqa_video_percentile(v->scratch, v->pixels);
-        fprintf(v->report, "{\"type\":\"%s\",\"frame\":%zu,",
-            v->options->clock_alignment ? "segment" : "frame", v->frame);
+        fprintf(v->report, "{\"type\":\"%s\",\"frame\":%" SIXEL_PRI_SIZE ",",
+            v->options->clock_alignment ? "segment" : "frame",
+            SIXEL_PRINTF_SIZE(v->frame));
         if (v->options->clock_alignment) {
-            fprintf(v->report, "\"segment\":%zu,", v->samples);
+            fprintf(v->report, "\"segment\":%" SIXEL_PRI_SIZE ",",
+                SIXEL_PRINTF_SIZE(v->samples));
         }
         fprintf(v->report,
             "\"pts\":%.17g,\"duration\":%.17g,\"width\":%d,\"height\":%d,"
-            "\"byte_start\":%zu,\"byte_end\":%zu,\"bytes\":%zu,"
-            "\"cumulative_bytes\":%zu,\"packets\":%zu,"
-            "\"cumulative_packets\":%zu,\"quality\":",
-            pts, duration, v->width, v->height, v->reported_end, v->byte_end,
-            v->byte_end - v->reported_end, v->byte_end,
-            v->packets - v->reported_packets, v->packets);
+            "\"byte_start\":%" SIXEL_PRI_SIZE ",\"byte_end\":%" SIXEL_PRI_SIZE
+            ",\"bytes\":%" SIXEL_PRI_SIZE ","
+            "\"cumulative_bytes\":%" SIXEL_PRI_SIZE
+            ",\"packets\":%" SIXEL_PRI_SIZE ","
+            "\"cumulative_packets\":%" SIXEL_PRI_SIZE ",\"quality\":",
+            pts, duration, v->width, v->height,
+            SIXEL_PRINTF_SIZE(v->reported_end), SIXEL_PRINTF_SIZE(v->byte_end),
+            SIXEL_PRINTF_SIZE(v->byte_end - v->reported_end),
+            SIXEL_PRINTF_SIZE(v->byte_end),
+            SIXEL_PRINTF_SIZE(v->packets - v->reported_packets),
+            SIXEL_PRINTF_SIZE(v->packets));
         lsqa_video_metrics(v->report, qa->results, qa->results_valid_mask);
         fprintf(v->report, ",\"scielab\":{\"mean\":%.17g,\"max\":%.17g,"
-            "\"p95\":%.17g,\"threshold\":%.17g,\"above_count\":%zu,"
+            "\"p95\":%.17g,\"threshold\":%.17g,"
+            "\"above_count\":%" SIXEL_PRI_SIZE ","
             "\"above_fraction\":%.17g}",
             qa->results[SIXEL_ASSESSMENT_INDEX(
                 SIXEL_ASSESSMENT_METRIC_SCIELAB)],
             qa->results[SIXEL_ASSESSMENT_INDEX(
                 SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX)],
-            percentile, v->options->threshold, above,
+            percentile, v->options->threshold, SIXEL_PRINTF_SIZE(above),
             (double)above / (double)v->pixels);
         lsqa_persistence_step(v->errors, v->ages, v->pixels,
             duration, v->options->threshold, v->options->persistence_time,
@@ -740,23 +748,31 @@ lsqa_video_summary(FILE *file, lsqa_video_state_t const *v,
     double const *means)
 {
     fprintf(file, "{\"type\":\"summary\",\"complete\":true,"
-        "\"alignment\":\"%s\",\"frames\":%zu,\"duration\":%.17g,"
-        "\"bytes\":%zu,\"frame_bytes\":%zu,\"trailing_bytes\":%zu,"
-        "\"packets\":%zu,\"bytes_per_second\":%.17g,"
+        "\"alignment\":\"%s\",\"frames\":%" SIXEL_PRI_SIZE
+        ",\"duration\":%.17g,"
+        "\"bytes\":%" SIXEL_PRI_SIZE ",\"frame_bytes\":%" SIXEL_PRI_SIZE
+        ",\"trailing_bytes\":%" SIXEL_PRI_SIZE ","
+        "\"packets\":%" SIXEL_PRI_SIZE ",\"bytes_per_second\":%.17g,"
         "\"aggregation\":\"duration-weighted mean\",\"quality\":",
         v->options->clock_alignment ? "clock" : "frame",
-        v->frame, v->pts, v->input_size, v->reported_end,
-        v->input_size - v->byte_end, v->packets, v->input_size / v->pts);
+        SIXEL_PRINTF_SIZE(v->frame), v->pts, SIXEL_PRINTF_SIZE(v->input_size),
+        SIXEL_PRINTF_SIZE(v->reported_end),
+        SIXEL_PRINTF_SIZE(v->input_size - v->byte_end),
+        SIXEL_PRINTF_SIZE(v->packets), v->input_size / v->pts);
     lsqa_video_metrics(file, means, v->valid_mask);
     fputs(",\"temporal_min\":", file);
     lsqa_video_metrics(file, v->minima, v->valid_mask & v->finite_mask);
     fputs(",\"temporal_max\":", file);
     lsqa_video_metrics(file, v->maxima, v->valid_mask & v->finite_mask);
     if (v->options->clock_alignment) {
-        fprintf(file, ",\"segments\":%zu,\"late_updates\":%zu,"
-            "\"late_bytes\":%zu,\"initial_blank_duration\":%.17g,"
-            "\"evaluation_end\":%.17g", v->samples, v->late_updates,
-            v->byte_end - v->reported_end, v->blank_duration, v->pts);
+        fprintf(file, ",\"segments\":%" SIXEL_PRI_SIZE
+            ",\"late_updates\":%" SIXEL_PRI_SIZE ","
+            "\"late_bytes\":%" SIXEL_PRI_SIZE
+            ",\"initial_blank_duration\":%.17g,"
+            "\"evaluation_end\":%.17g", SIXEL_PRINTF_SIZE(v->samples),
+            SIXEL_PRINTF_SIZE(v->late_updates),
+            SIXEL_PRINTF_SIZE(v->byte_end - v->reported_end),
+            v->blank_duration, v->pts);
     }
     if (v->report != NULL) {
         fprintf(file, ",\"persistence\":{\"weighted_excess\":%.17g,"

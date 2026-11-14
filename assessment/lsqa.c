@@ -3769,8 +3769,9 @@ main(int argc, char **argv)
     }
 
     if (opts.verbose && opts.progressive_input) {
-        fprintf(stderr, "input-mode: 6delta-progressive, passes: %zu\n",
-                input_passes);
+        fprintf(stderr, "input-mode: 6delta-progressive, passes: "
+        "%" SIXEL_PRI_SIZE "\n",
+                SIXEL_PRINTF_SIZE(input_passes));
     }
     reference_colorspace = sixel_frame_get_colorspace(ref_frame);
     reference_precision = lsqa_precision_from_pixelformat(

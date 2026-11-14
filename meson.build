@@ -625,17 +625,18 @@ endif
 flags = cc.get_supported_arguments(base_flags)
 add_project_arguments(flags, language: 'c')
 
-# Check the active snprintf format dialect without running target code.
-snprintf_check_args = cc.get_supported_arguments(['-Wformat=2',
+# Check the active printf format dialect without running target code.
+printf_check_args = cc.get_supported_arguments(['-Wformat=2',
   cc.get_argument_syntax() == 'msvc' ? '/WX' : '-Werror'])
 if not cc.compiles('''
     #include <stdio.h>
     int main(void)
     {
       char buffer[64];
-      return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer));
+      return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer)) +
+             fprintf(stderr, "%zu", sizeof(buffer));
     }
-  ''', args: snprintf_check_args, name: 'snprintf accepts %zu')
+  ''', args: printf_check_args, name: 'snprintf and fprintf accept %zu')
   conf.set('SIXEL_SNPRINTF_NEEDS_PRIUMAX', 1)
 endif
 

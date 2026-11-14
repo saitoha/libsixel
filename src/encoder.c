@@ -1106,7 +1106,7 @@ sixel_encoder_trace_palette_plan(
         "LSXBPS1|quantizer_requested=%d|quantizer_effective=%d|"
         "quantizer_origin=%s|quantizer_phase=%s|quantizer_reason=%s|"
         "binning_requested=%s|binning_effective=%s|binning_origin=%s|"
-        "binning_phase=%s|binning_reason=%s|points=%zu|"
+        "binning_phase=%s|binning_reason=%s|points=%" SIXEL_PRI_SIZE "|"
         "quantizer_retries=%u",
         quantizer->requested,
         quantizer->effective,
@@ -1118,7 +1118,7 @@ sixel_encoder_trace_palette_plan(
         sixel_palette_policy_origin_name(binning->origin),
         sixel_palette_policy_phase_name(binning->phase),
         sixel_palette_resolution_reason_name(binning->reason),
-        state->binning.source_point_count,
+        SIXEL_PRINTF_SIZE(state->binning.source_point_count),
         state->quantizer_retry_count);
 }
 
@@ -1502,7 +1502,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "band_overwrap=%u|band_overwrap_override=%d|"
             "band_width=%u|band_width_override=%d|dither_threads=%d|"
             "encode_threads=%d|threads_max=%u|threads_max_override=%d|"
-            "pin_threads=%d|pin_threads_override=%d|gpu_threshold=%zu|"
+            "pin_threads=%d|pin_threads_override=%d|"
+            "gpu_threshold=%" SIXEL_PRI_SIZE "|"
             "gpu_threshold_override=%d|perturb=%.9g|perturb_override=%d|"
             "perturb_seed=%d|perturb_seed_override=%d|"
             "deadzone=%.9g|deadzone_override=%d|"
@@ -1532,7 +1533,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             threads_max_set,
             dither->pipeline_pin_threads,
             threading.pin_override,
-            dither->gpu_palette_threshold,
+            SIXEL_PRINTF_SIZE(dither->gpu_palette_threshold),
             encoder->gpu_palette_threshold_override,
             (double)dither->diffusion_perturb,
             dither->diffusion_perturb_override,

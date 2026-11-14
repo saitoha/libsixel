@@ -729,7 +729,7 @@
 /* file(1) option used to obtain MIME type in thumbnailer loader. */
 #undef SIXEL_FILE_MIME_OPTION
 
-/* Define if snprintf needs PRIuMAX for size_t formatting. */
+/* Define if printf-family functions need PRIuMAX for size_t formatting. */
 #undef SIXEL_SNPRINTF_NEEDS_PRIUMAX
 
 /* Define to 1 if all of the C89 standard headers exist (not just the ones

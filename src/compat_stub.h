@@ -30,6 +30,16 @@
 #include <stdarg.h>
 #include <time.h>
 
+/* Keep the size_t format and its argument type paired on legacy CRTs. */
+#if defined(SIXEL_SNPRINTF_NEEDS_PRIUMAX)
+# include <inttypes.h>
+# define SIXEL_PRI_SIZE PRIuMAX
+# define SIXEL_PRINTF_SIZE(value) ((uintmax_t)(value))
+#else
+# define SIXEL_PRI_SIZE "zu"
+# define SIXEL_PRINTF_SIZE(value) (value)
+#endif
+
 #if HAVE_SYS_TIME_H || HAVE_GETTIMEOFDAY
 # include <sys/time.h>
 #endif

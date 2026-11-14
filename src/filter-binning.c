@@ -35,6 +35,7 @@
 #include <sixel.h>
 
 #include "filter-binning.h"
+#include "compat_stub.h"
 #include "loader-common.h"
 #include "palette-bin-histogram.h"
 #include "pixelformat.h"
@@ -1269,10 +1270,11 @@ progress:
      */
     sixel_trace_topic_message(
         "palette_contract",
-        "LSXBSTAT1|bits=%u|source_points=%zu|effective_points=%zu",
+        "LSXBSTAT1|bits=%u|source_points=%" SIXEL_PRI_SIZE
+        "|effective_points=%" SIXEL_PRI_SIZE,
         binning->bits_per_axis,
-        source_point_count,
-        output->point_count);
+        SIXEL_PRINTF_SIZE(source_point_count),
+        SIXEL_PRINTF_SIZE(output->point_count));
     completed = source_point_count > (size_t)INT_MAX
         ? INT_MAX : (int)source_point_count;
     filter->progress.total_units = completed;

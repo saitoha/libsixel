@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include "gpu-dequant.h"
+#include "compat_stub.h"
 #include "loader-common.h"
 #include "options.h"
 
@@ -122,9 +123,10 @@ sixel_gpu_dequant_fast4_rgba(sixel_gpu_dequant_request_t const *request)
     }
     if (sixel_trace_topic_is_enabled("gpu_contract")) {
         fprintf(stderr,
-                "LSXGPU1|consumer=decoder|policy=%d|threshold=%zu\n",
+                "LSXGPU1|consumer=decoder|policy=%d|threshold=%" SIXEL_PRI_SIZE
+                "\n",
                 request->policy,
-                request->auto_threshold);
+                SIXEL_PRINTF_SIZE(request->auto_threshold));
     }
     if (request->policy == SIXEL_GPU_POLICY_OFF) {
         return SIXEL_FALSE;

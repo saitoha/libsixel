@@ -34,6 +34,7 @@
 #include <sixel.h>
 
 #include "filter-sample.h"
+#include "compat_stub.h"
 #include "filter.h"
 #include "frame-factory.h"
 #include "frame.h"
@@ -124,10 +125,11 @@ sixel_filter_sample_select_stride(
     }
     sixel_trace_topic_message(
         "palette_contract",
-        "LSXSMP1|override=%d|target=%zu|stride=%zu",
+        "LSXSMP1|override=%d|target=%" SIXEL_PRI_SIZE
+        "|stride=%" SIXEL_PRI_SIZE,
         config != NULL ? config->palette_sample_override : 0,
-        target,
-        stride);
+        SIXEL_PRINTF_SIZE(target),
+        SIXEL_PRINTF_SIZE(stride));
 
     return stride;
 }
@@ -476,7 +478,7 @@ sixel_filter_sample_threads(int width, int height, int rows)
      * the clipped source area, which dominates the solid-region scan. */
     threshold = sixel_runtime_policy_sample_min_pixels(524288u);
     sixel_trace_topic_message("runtime_contract",
-        "LSXRT1|sample_min=%zu", threshold);
+        "LSXRT1|sample_min=%" SIXEL_PRI_SIZE, SIXEL_PRINTF_SIZE(threshold));
     if ((size_t)width * (size_t)height >= threshold) {
         threads = sixel_threads_resolve_fanout();
         if (threads > rows) {
