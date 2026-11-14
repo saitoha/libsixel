@@ -31,6 +31,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc
@@ -108,6 +109,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-tcc-shared
@@ -230,6 +232,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-staticcheck
@@ -395,6 +398,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-clang-pgo
@@ -504,6 +508,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-python
@@ -617,6 +622,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-python-coverage
@@ -717,6 +723,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-ruby
@@ -818,6 +825,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-ruby-coverage
@@ -902,6 +910,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-perl
@@ -1009,6 +1018,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-perl-coverage
@@ -1098,6 +1108,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-php
@@ -1202,6 +1213,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-php-coverage
@@ -1290,6 +1302,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-gcc-vpath_build
@@ -1348,6 +1361,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-clang-lto-no
@@ -1458,6 +1472,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-static-coverage
@@ -1852,6 +1867,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Meson-ubuntu-x86_64-static-coverage
@@ -3352,6 +3368,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-24.04-aarch64-distcheck
@@ -3470,6 +3487,7 @@ jobs:
     env:
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope
@@ -3766,6 +3784,7 @@ jobs:
     env:
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2
@@ -3883,6 +3902,7 @@ jobs:
     env:
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-msys2-clang64-ASan-UBSan-use-after-scope
@@ -3959,6 +3979,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-clang-MSan
@@ -4688,6 +4709,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-aarch64-cosmopolitan-static
@@ -5022,6 +5044,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-pcc-static
@@ -5203,6 +5226,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-mingw-w64-x86_64-win32-wine64-static
@@ -5518,6 +5542,7 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-alpine-3.20-x86_64
