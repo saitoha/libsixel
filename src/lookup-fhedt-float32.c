@@ -31,7 +31,9 @@
 #include "config.h"
 #endif
 
-#include <inttypes.h>
+#if defined(__MINGW32__)
+# include <inttypes.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -664,9 +666,13 @@ sixel_lookup_fhedt_prefetch_line_float32(double *distances,
             return;
         }
 
-        /* Use the CRT's integer format for the full size_t range. */
+#if defined(__MINGW32__)
+        /* MinGW GCC can reject %zu under MSVCRT format checking. */
         (void)snprintf(message, sizeof(message),
                        "prefetch@%" PRIuMAX, (uintmax_t)offset);
+#else
+        (void)snprintf(message, sizeof(message), "prefetch@%zu", offset);
+#endif
         sixel_lookup_fhedt_timeline_log_float32(timeline,
                                        worker,
                                        "prefetch",
