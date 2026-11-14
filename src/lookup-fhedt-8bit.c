@@ -32,6 +32,7 @@
 #include "config.h"
 #endif
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -622,8 +623,9 @@ sixel_lookup_fhedt_prefetch_line_8bit(double *distances,
             return;
         }
 
+        /* Use the CRT's integer format for the full size_t range. */
         (void)snprintf(message, sizeof(message),
-                       "prefetch@%zu", offset);
+                       "prefetch@%" PRIuMAX, (uintmax_t)offset);
         sixel_lookup_fhedt_timeline_log_8bit(timeline,
                                        worker,
                                        "prefetch",
