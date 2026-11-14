@@ -86,6 +86,8 @@ typedef struct lso2_gpu_vk_params {
     uint32_t keycolor, delta, threshold, metric;
     uint32_t columns, rows, tiled, selected_threshold;
     uint32_t selection[128];
+    uint32_t variable;
+    uint32_t levels[1024];
 } lso2_gpu_vk_params_t;
 
 typedef struct lso2_gpu_vk_push {
@@ -652,11 +654,11 @@ lso2_gpu_vk_validate(lso2_gpu_vk_plan_t *plan,
              params.metric != SIXEL_DELTA_METRIC_RGB241))) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (request->delta.selection.cell_thresholds != NULL)
-        return SIXEL_FEATURE_ERROR;
     cells = (size_t)request->delta.selection.columns *
         request->delta.selection.rows;
-    if (request->delta.selection.columns > 64 ||
+    if ((request->delta.selection.cell_thresholds != NULL &&
+            request->delta.selection.cell_threshold_count < cells) ||
+        request->delta.selection.columns > 64 ||
             request->delta.selection.rows > 64 ||
             ((request->delta.selection.columns == 0) !=
              (request->delta.selection.rows == 0)) ||
@@ -672,6 +674,10 @@ lso2_gpu_vk_validate(lso2_gpu_vk_plan_t *plan,
             request->delta.selection.selected_threshold;
         memcpy(params.selection, request->delta.selection.words,
             ((cells + 31) / 32) * sizeof(uint32_t));
+        params.variable = request->delta.selection.cell_thresholds != NULL;
+        if (params.variable)
+            sixel_delta_pack_levels(params.levels,
+                request->delta.selection.cell_thresholds, cells);
     }
     if ((params.columns == 0) != (params.rows == 0) ||
             (params.tiled && (params.columns != 64 || params.rows != 64))) {

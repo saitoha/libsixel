@@ -5655,7 +5655,15 @@ int test_delta_refresh_0096(int, char **);
 
 int test_delta_refresh_0097(int, char **);
 
+int test_delta_refresh_0099(int, char **);
+
+int test_delta_refresh_0098(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "delta/refresh/0099_spatial_fs_gpu_resolve",
+      test_delta_refresh_0099 },
+    { "delta/refresh/0098_spatial_fs_gpu_finish",
+      test_delta_refresh_0098 },
     { "delta/refresh/0097_spatial_blue_gpu_unscheduled_keep",
       test_delta_refresh_0097 },
     { "delta/refresh/0096_spatial_blue_cpu_keep", test_delta_refresh_0096 },
@@ -5797,7 +5805,7 @@ static test_entry_t const test_entries[] = {
       test_delta_refresh_0075 },
     { "delta/refresh/0076_same_modifiers_keep_age",
       test_delta_refresh_0076 },
-    { "delta/refresh/0077_curve_diffusion_rejected",
+    { "delta/refresh/0077_curve_diffusion_accepted",
       test_delta_refresh_0077 },
     { "delta/refresh/0078_adaptive_off_gray_history",
       test_delta_refresh_0078 },

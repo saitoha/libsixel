@@ -91,3 +91,82 @@ test_fs_gpu_carry_observation(int live)
     return live ? memcmp(actual, baseline, LSO2_GPU_PIXELS) == 0
                 : memcmp(actual, baseline, LSO2_GPU_PIXELS) != 0;
 }
+
+/* The source and retained colors have RGB gaps of 13. Both use
+ * palette entries exactly, yielding zero carry. The chromatic difference
+ * (0, 0, 13) is below the Y' cutoff while the gray difference is above it. */
+int
+test_fs_gpu_spatial_threshold(int deferred)
+{
+    static unsigned char const gray[3] = {26, 26, 26};
+    static unsigned char const tint[3] = {13, 13, 26};
+    lso2_gpu_fixture_t f;
+    sixel_palette_entries_request_t entries;
+    sixel_wire_palette_request_t wire;
+    sixel_wire_color_definition_t definitions[5] = {
+        {0, 2, {0, 0, 0}}, {1, 2, {5, 5, 5}}, {2, 2, {10, 10, 10}},
+        {3, 2, {5, 5, 10}}, {4, 2, {0, 0, 0}}
+    };
+    uint32_t activity[128];
+    unsigned char levels[4096], *rgb, *valid;
+    unsigned char colors[15] = {
+        0, 0, 0, 13, 13, 13, 26, 26, 26, 13, 13, 26, 0, 0, 0
+    };
+    size_t i;
+    int outcome;
+
+    outcome = lso2_gpu_fixture_open_direct(&f, SIXEL_DIFFUSE_FS);
+    if (outcome != 0) goto end;
+    outcome = 1;
+    for (i = 0; i < LSO2_GPU_PIXELS; ++i)
+        memcpy(f.pixels + i * 3, i % 2 ? tint : gray, 3);
+    entries.entries = colors;
+    entries.colors = 5;
+    entries.depth = 3;
+    LSO2_GPU_CHECK(f.palette->vtbl->init_entries(f.palette, &entries)
+        == SIXEL_OK);
+    /* The GPU lookup palette is bound through the wire description. */
+    memset(&wire, 0, sizeof(wire));
+    wire.definitions = definitions;
+    wire.count = 5;
+    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_wire_palette_unref(f.wire);
+    f.wire = NULL;
+    LSO2_GPU_CHECK(sixel_wire_palette_new(&f.wire, &wire, f.allocator)
+        == SIXEL_OK);
+    f.prepare.output.palette = f.wire;
+    LSO2_GPU_CHECK(lso2_gpu_fixture_baseline(&f, 0) == SIXEL_OK);
+    sixel_retained_read_unref(f.read);
+    f.read = NULL;
+    LSO2_GPU_CHECK(sixel_retained_plane_legacy_map(f.plane, &rgb, &valid)
+        == SIXEL_OK);
+    memset(rgb, 13, LSO2_GPU_PIXELS * 3);
+    sixel_retained_plane_legacy_unmap(f.plane);
+    LSO2_GPU_CHECK(f.plane->vtbl->acquire_read(f.plane, &f.read) == SIXEL_OK);
+    f.run.baseline = f.read;
+    f.run.delta.threshold = 48;
+    memset(activity, 255, sizeof(activity));
+    /* 8 plus the middle-band flag. Only chroma-dominant pixels get T16. */
+    memset(levels, 72, sizeof(levels));
+    f.run.delta.selection.words = activity;
+    f.run.delta.selection.word_count = 128;
+    f.run.delta.selection.columns = 64;
+    f.run.delta.selection.rows = 64;
+    f.run.delta.selection.width = LSO2_GPU_WIDTH;
+    f.run.delta.selection.height = LSO2_GPU_HEIGHT;
+    f.run.delta.selection.tiled = 3;
+    f.run.delta.selection.cell_thresholds = levels;
+    f.run.delta.selection.cell_threshold_count = 4096;
+    LSO2_GPU_CHECK(lso2_gpu_fixture_prepare(&f) == SIXEL_OK);
+    LSO2_GPU_CHECK((deferred ? lso2_gpu_fixture_deferred(&f) :
+        lso2_gpu_fixture_run(&f)) == SIXEL_OK);
+    for (i = 0; i < LSO2_GPU_PIXELS; ++i) {
+        LSO2_GPU_CHECK(f.image->indexes[i] == (i % 2 ? 4 : 2));
+        LSO2_GPU_CHECK(f.image->skip[i] == (i % 2
+            ? SIXEL_INDEXED_KEEP_APPROXIMATE : SIXEL_INDEXED_PAINT));
+    }
+    outcome = 0;
+end:
+    lso2_gpu_fixture_close(&f);
+    return outcome;
+}

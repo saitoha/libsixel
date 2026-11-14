@@ -3045,25 +3045,13 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
             sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
         return SIXEL_OK;
     }
-    /* Uniform refresh lowers the early-keep threshold for every dither.
-     * Adaptive curves need the per-cell map in positional GPU shaders.
+    /* Refresh thresholds are supported by all RGB8 dither routes.
      * R1 and rgb241 keep their narrower application set.
      * The GPU policy can be admitted after this option. Accept requested
      * LSO2 here; the frame check rejects it if it resolves to the CPU. */
     dither_limited = encoder->residual_enabled ||
         sixel_encoder_delta_metric(encoder) == SIXEL_DELTA_METRIC_RGB241;
     diffuse = encoder->method_for_diffuse;
-    if (encoder->refresh_frames && encoder->refresh_curve &&
-            diffuse != SIXEL_DIFFUSE_AUTO &&
-            diffuse != SIXEL_DIFFUSE_NONE &&
-            diffuse != SIXEL_DIFFUSE_A_DITHER &&
-            diffuse != SIXEL_DIFFUSE_X_DITHER &&
-            diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        sixel_helper_set_additional_message(
-            "adaptive refresh requires none, a_dither, x_dither or "
-            "bluenoise application.");
-        return SIXEL_BAD_ARGUMENT;
-    }
     if (encoder->update_policy != SIXEL_UPDATE_POLICY_DELTA ||
             encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
@@ -3144,15 +3132,6 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
         sixel_helper_set_additional_message(
             "delta residual/rgb241 needs an RGB8 target and "
             "none, a_dither, x_dither, bluenoise or GPU lso2 application.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (encoder->refresh_frames && encoder->refresh_curve &&
-            dither->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
-            dither->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
-            dither->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
-            dither->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        sixel_helper_set_additional_message(
-            "adaptive refresh requires a resolved positional dither.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder))

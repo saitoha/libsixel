@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify curve diffusion rejected. */
+/* Verify curve diffusion accepted. */
 int test_refresh_adaptive_boundary(int);
 
 int

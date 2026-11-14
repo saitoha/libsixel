@@ -7,6 +7,7 @@ struct Lso2GpuParams {
     uint metric, columns, rows, tiled, selected_threshold;
     uint selection[128];
     uint batch_stage;
+    uint variable;
 };
 
 static float3 lso2_gpu_color(constant uchar *palette, uint index)
@@ -159,6 +160,43 @@ kernel void lso2_gpu_iterate(device const uchar *source [[buffer(0)]],
     else a[i] = updated;
 }
 
+/* The delta gate compares the same corrected query as ordinary refresh. */
+static uint lso2_gpu_threshold(uint i, float3 delta,
+    constant Lso2GpuParams &p, constant uint *levels)
+{
+    uint x, y, cell, selected, flags, spatial;
+
+    if (p.columns == 0u) return p.threshold;
+    x = i % p.width;
+    y = i / p.width;
+    cell = p.tiled != 0u ? (y & 63u) * 64u + (x & 63u)
+        : (((y + 1u) * p.rows - 1u) / p.height) * p.columns
+            + ((x + 1u) * p.columns - 1u) / p.width;
+    if (p.variable != 0u && (p.tiled == 2u || p.tiled == 3u)) {
+        selected = (levels[cell / 4u] >> (8u * (cell % 4u))) & 255u;
+        if (selected == 255u) return p.threshold;
+        flags = selected & 192u;
+        selected &= 63u;
+        if (flags != 0u) {
+            spatial = (((y + 1u) * 64u - 1u) / p.height) * 64u
+                + ((x + 1u) * 64u - 1u) / p.width;
+            if ((p.selection[spatial / 32u] & (1u << (spatial % 32u))) != 0u) {
+                if ((flags & 128u) != 0u) selected = 8u;
+                if ((flags & 64u) != 0u && (p.tiled == 2u ||
+                        abs(dot(delta, float3(54.0, 183.0, 19.0))) <= 1024.0))
+                    selected = 16u;
+            }
+        }
+        return min(p.threshold, selected);
+    }
+    if ((p.selection[cell / 32u] & (1u << (cell % 32u))) == 0u)
+        return p.threshold;
+    selected = p.variable != 0u
+        ? (levels[cell / 4u] >> (8u * (cell % 4u))) & 255u
+        : p.selected_threshold;
+    return min(p.threshold, selected);
+}
+
 kernel void lso2_gpu_finish(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     constant Lso2GpuParams &p [[buffer(4)]],
@@ -170,10 +208,11 @@ kernel void lso2_gpu_finish(constant uchar *palette [[buffer(1)]],
     device const uchar *workspace [[buffer(13)]],
     device atomic_uint *invalid [[buffer(14)]],
     device uchar *skip [[buffer(15)]],
+    constant uint *levels [[buffer(18)]],
     LSO2_GPU_QUERY_BUFFERS
     uint i [[thread_position_in_grid]])
 {
-    uint best, code, threshold, x, y, cell;
+    uint best, code, threshold;
     float3 query, old, gap, fresh;
     float old_distance, new_distance;
     bool within;
@@ -203,15 +242,7 @@ kernel void lso2_gpu_finish(constant uchar *palette [[buffer(1)]],
         fresh = lso2_gpu_color(palette,best);
         old = float3(retained[3*i],retained[3*i+1],retained[3*i+2]);
         gap = abs(query-old);
-        threshold = p.threshold;
-        if (p.columns) {
-            x = i % p.width; y = i / p.width;
-            cell = p.tiled ? (y & 63)*64 + (x & 63)
-                : (((y+1)*p.rows-1)/p.height)*p.columns
-                    + ((x+1)*p.columns-1)/p.width;
-            if (p.selection[cell/32] & (1u << (cell%32)))
-                threshold = min(threshold,p.selected_threshold);
-        }
+        threshold = lso2_gpu_threshold(i, query - old, p, levels);
         within = all(gap <= float(threshold));
         if (p.metric == 2)
             within = dot(gap*gap,float3(2.f,4.f,1.f))
@@ -269,9 +300,10 @@ kernel void lso2_gpu_resolve(constant uchar *palette [[buffer(1)]],
     device const uchar *valid [[buffer(10)]],
     device uchar *result [[buffer(11)]],
     device uchar *skip [[buffer(15)]],
+    constant uint *levels [[buffer(18)]],
     uint i [[thread_position_in_grid]])
 {
-    uint best, code, threshold, x, y, cell;
+    uint best, code, threshold;
     float3 query, old, gap, fresh;
     float old_distance, new_distance;
     bool within;
@@ -288,15 +320,7 @@ kernel void lso2_gpu_resolve(constant uchar *palette [[buffer(1)]],
         fresh = lso2_gpu_color(palette,best);
         old = float3(retained[3*i],retained[3*i+1],retained[3*i+2]);
         gap = abs(query-old);
-        threshold = p.threshold;
-        if (p.columns) {
-            x = i % p.width; y = i / p.width;
-            cell = p.tiled ? (y & 63)*64 + (x & 63)
-                : (((y+1)*p.rows-1)/p.height)*p.columns
-                    + ((x+1)*p.columns-1)/p.width;
-            if (p.selection[cell/32] & (1u << (cell%32)))
-                threshold = min(threshold,p.selected_threshold);
-        }
+        threshold = lso2_gpu_threshold(i, query - old, p, levels);
         within = all(gap <= float(threshold));
         if (p.metric == 2)
             within = dot(gap*gap,float3(2.f,4.f,1.f))

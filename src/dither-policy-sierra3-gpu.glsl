@@ -51,6 +51,8 @@ layout(std430, set = 0, binding = 4) readonly buffer Params {
     uint selection[128];
     uint serpentine, clamp_hard;
     float deadzone, clamp_lower, clamp_upper;
+    uint variable;
+    uint levels[1024];
 } p;
 layout(std430, set = 0, binding = 5) readonly buffer Phase {
     uint8_t phase[];
@@ -192,9 +194,45 @@ vec3 sierra3_gpu_solved_query(vec4 state)
     return clamp(state.xyz + sierra3_gpu_color(uint(state.w)), 0.0, 255.0);
 }
 
+/* The delta gate compares the same corrected query as ordinary refresh. */
+uint sierra3_gpu_threshold(uint i, vec3 delta)
+{
+    uint x, y, cell, selected, flags, spatial;
+
+    if (p.columns == 0u) return p.threshold;
+    x = i % p.width;
+    y = i / p.width;
+    cell = p.tiled != 0u ? (y & 63u) * 64u + (x & 63u)
+        : (((y + 1u) * p.rows - 1u) / p.height) * p.columns
+            + ((x + 1u) * p.columns - 1u) / p.width;
+    if (p.variable != 0u && (p.tiled == 2u || p.tiled == 3u)) {
+        selected = (p.levels[cell / 4u] >> (8u * (cell % 4u))) & 255u;
+        if (selected == 255u) return p.threshold;
+        flags = selected & 192u;
+        selected &= 63u;
+        if (flags != 0u) {
+            spatial = (((y + 1u) * 64u - 1u) / p.height) * 64u
+                + ((x + 1u) * 64u - 1u) / p.width;
+            if ((p.selection[spatial / 32u] & (1u << (spatial % 32u))) != 0u) {
+                if ((flags & 128u) != 0u) selected = 8u;
+                if ((flags & 64u) != 0u && (p.tiled == 2u ||
+                        abs(dot(delta, vec3(54.0, 183.0, 19.0))) <= 1024.0))
+                    selected = 16u;
+            }
+        }
+        return min(p.threshold, selected);
+    }
+    if ((p.selection[cell / 32u] & (1u << (cell % 32u))) == 0u)
+        return p.threshold;
+    selected = p.variable != 0u
+        ? (p.levels[cell / 4u] >> (8u * (cell % 4u))) & 255u
+        : p.selected_threshold;
+    return min(p.threshold, selected);
+}
+
 uint sierra3_gpu_classify(uint i, vec3 query, uint best)
 {
-    uint code, threshold, x, y, cell;
+    uint code, threshold;
     vec3 old, gap, fresh;
     float old_distance, new_distance;
     bool within;
@@ -205,17 +243,7 @@ uint sierra3_gpu_classify(uint i, vec3 query, uint best)
         float(uint(retained[3u * i + 1u])),
         float(uint(retained[3u * i + 2u])));
     gap = abs(query - old);
-    threshold = p.threshold;
-    if (p.columns != 0u) {
-        x = i % p.width;
-        y = i / p.width;
-        cell = p.tiled != 0u ? (y & 63u) * 64u + (x & 63u)
-            : (((y + 1u) * p.rows - 1u) / p.height) * p.columns
-                + ((x + 1u) * p.columns - 1u) / p.width;
-        if ((p.selection[cell / 32u] & (1u << (cell % 32u))) != 0u) {
-            threshold = min(threshold, p.selected_threshold);
-        }
-    }
+    threshold = sierra3_gpu_threshold(i, query - old);
     within = all(lessThanEqual(gap, vec3(float(threshold))));
     if (p.metric == 2u) {
         within = dot(gap * gap, vec3(2.0, 4.0, 1.0))

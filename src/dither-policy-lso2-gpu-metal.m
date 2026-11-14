@@ -28,6 +28,7 @@ typedef struct lso2_gpu_params {
     uint32_t metric, columns, rows, tiled, selected_threshold;
     uint32_t selection[128];
     uint32_t batch_stage;
+    uint32_t variable;
 } lso2_gpu_params_t;
 
 typedef struct lso2_gpu_plan {
@@ -45,7 +46,7 @@ typedef struct lso2_gpu_plan {
     sixel_indexed_frame_description_t output;
     id<MTLCommandQueue> queue;
     NSArray *pipelines;
-    id<MTLBuffer> buffers[18];
+    id<MTLBuffer> buffers[19];
     lso2_gpu_params_t params;
 } lso2_gpu_plan_t;
 
@@ -55,7 +56,7 @@ typedef struct lso2_gpu_plan {
  * rewrites every readable state value before use; no error crosses images. */
 typedef struct lso2_gpu_idle {
     id<MTLCommandQueue> queue;
-    id<MTLBuffer> buffers[18];
+    id<MTLBuffer> buffers[19];
 } lso2_gpu_idle_t;
 
 static pthread_mutex_t lso2_gpu_scratch_gate = PTHREAD_MUTEX_INITIALIZER;
@@ -70,19 +71,19 @@ lso2_gpu_recycle(lso2_gpu_plan_t *plan)
     unsigned int slot;
 
     bytes = 0;
-    for (i = 0; i < 18; ++i) bytes += [plan->buffers[i] length];
+    for (i = 0; i < 19; ++i) bytes += [plan->buffers[i] length];
     if (plan->queue == nil || bytes > 128U*1024U*1024U) return;
     (void)pthread_mutex_lock(&lso2_gpu_scratch_gate);
     slot = lso2_gpu_idle_next++ % 2;
     old = lso2_gpu_idle[slot];
     lso2_gpu_idle[slot].queue = plan->queue;
     plan->queue = nil;
-    for (i = 0; i < 18; ++i) {
+    for (i = 0; i < 19; ++i) {
         lso2_gpu_idle[slot].buffers[i] = plan->buffers[i];
         plan->buffers[i] = nil;
     }
     (void)pthread_mutex_unlock(&lso2_gpu_scratch_gate);
-    for (i = 0; i < 18; ++i) [old.buffers[i] release];
+    for (i = 0; i < 19; ++i) [old.buffers[i] release];
     [old.queue release];
 }
 
@@ -97,12 +98,12 @@ lso2_gpu_borrow(lso2_gpu_plan_t *plan, id<MTLDevice> device,
     for (slot = 0; slot < 2; ++slot) {
         fits = lso2_gpu_idle[slot].queue != nil &&
             [lso2_gpu_idle[slot].queue device] == device;
-        for (i = 0; fits && i < 18; ++i)
+        for (i = 0; fits && i < 19; ++i)
             fits = [lso2_gpu_idle[slot].buffers[i] length] >= lengths[i];
         if (!fits) continue;
         plan->queue = lso2_gpu_idle[slot].queue;
         lso2_gpu_idle[slot].queue = nil;
-        for (i = 0; i < 18; ++i) {
+        for (i = 0; i < 19; ++i) {
             plan->buffers[i] = lso2_gpu_idle[slot].buffers[i];
             lso2_gpu_idle[slot].buffers[i] = nil;
         }
@@ -265,7 +266,7 @@ lso2_gpu_plan_unref(sixel_gpu_dither_plan_interface_t *self)
     if (plan->output.palette != NULL)
         sixel_wire_palette_unref(plan->output.palette);
     lso2_gpu_recycle(plan);
-    for (i = 0; i < 18; ++i) [plan->buffers[i] release];
+    for (i = 0; i < 19; ++i) [plan->buffers[i] release];
     [plan->pipelines release];
     [plan->queue release];
     sixel_allocator_free(allocator, plan);
@@ -324,11 +325,11 @@ lso2_gpu_validate(lso2_gpu_plan_t *plan,
             (params.metric != SIXEL_DELTA_METRIC_MAX &&
              params.metric != SIXEL_DELTA_METRIC_RGB241)))
         return SIXEL_BAD_ARGUMENT;
-    if (request->delta.selection.cell_thresholds != NULL)
-        return SIXEL_FEATURE_ERROR;
     cells = (size_t)request->delta.selection.columns*
         request->delta.selection.rows;
-    if (request->delta.selection.columns > 64 ||
+    if ((request->delta.selection.cell_thresholds != NULL &&
+            request->delta.selection.cell_threshold_count < cells) ||
+        request->delta.selection.columns > 64 ||
             request->delta.selection.rows > 64 ||
             ((request->delta.selection.columns == 0) !=
              (request->delta.selection.rows == 0)) ||
@@ -342,6 +343,7 @@ lso2_gpu_validate(lso2_gpu_plan_t *plan,
         params.selected_threshold = request->delta.selection.selected_threshold;
         memcpy(params.selection, request->delta.selection.words,
             ((cells+31)/32)*sizeof(uint32_t));
+        params.variable = request->delta.selection.cell_thresholds != NULL;
     }
     if ((params.columns == 0) != (params.rows == 0) ||
             (params.tiled && (params.columns != 64 || params.rows != 64)))
@@ -434,6 +436,12 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
     }
     if (request->cancel != NULL && request->cancel(request->cancel_context))
         return SIXEL_INTERRUPTED;
+    /* Only finish and resolve read the threshold tile. Both complete
+     * before this plan's scratch storage can be reused. */
+    if (params.variable)
+        sixel_delta_pack_levels([plan->buffers[18] contents],
+            request->delta.selection.cell_thresholds,
+            (size_t)params.columns * params.rows);
     pixels = (size_t)params.width*params.height;
     if (mode != 2) {
         status = request->source->vtbl->get_pixels(request->source, &source);
@@ -521,9 +529,10 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
             encoder = [commands computeCommandEncoder];
             if (encoder == nil) { status = SIXEL_BAD_ALLOCATION; goto end; }
             [encoder setComputePipelineState:pipeline];
-            for (y = 0; y < 18; ++y) {
+            for (y = 0; y < 19; ++y) {
                 if (y == 4) {
-                    [encoder setBytes:&params length:sizeof(params) atIndex:y];
+                    [encoder setBytes:&params length:sizeof(params)
+                               atIndex:4];
                 } else if (y == 13) {
                     [encoder setBuffer:workspace offset:0 atIndex:y];
                 } else {
@@ -745,7 +754,7 @@ lso2_gpu_prepare_impl(sixel_allocator_t *allocator,
     uint32_t positions[4096], counts[4];
     float weights[256*8], ratio;
     double gain;
-    size_t lengths[18], pixels, i, j, k, x, y, bucket;
+    size_t lengths[19], pixels, i, j, k, x, y, bucket;
     SIXELSTATUS status;
 
     if (request->device == NULL || request->lookup == NULL ||
@@ -841,6 +850,7 @@ lso2_gpu_prepare_impl(sixel_allocator_t *allocator,
     memset(lengths, 0, sizeof(lengths));
     lengths[0] = pixels*3; lengths[1] = plan->view.palette_size;
     lengths[2] = lengths[3] = pixels*16;
+    lengths[18] = 1024 * sizeof(uint32_t);
     lengths[5] = sizeof(phase); lengths[6] = sizeof(positions);
     lengths[7] = sizeof(weights); lengths[8] = pixels;
     lengths[9] = pixels*3; lengths[10] = lengths[11] = pixels;
@@ -852,7 +862,7 @@ lso2_gpu_prepare_impl(sixel_allocator_t *allocator,
     }
     lso2_gpu_borrow(plan, device, lengths);
     if (plan->queue == nil) plan->queue = [device newCommandQueue];
-    for (i = 0; i < 18; ++i) {
+    for (i = 0; i < 19; ++i) {
         if (lengths[i] == 0 || plan->buffers[i] != nil) continue;
         plan->buffers[i] = [device newBufferWithLength:lengths[i]
             options:MTLResourceStorageModeShared];

@@ -442,8 +442,8 @@ test_refresh_adaptive_boundary(int mode)
             DR_REQUIRE(encoder->residual_state.refresh_valid);
         } else {
             DR_REQUIRE(sixel_encoder_setopt(encoder,
-                SIXEL_OPTFLAG_DIFFUSION, "fs") != SIXEL_OK);
-            DR_REQUIRE(encoder->method_for_diffuse == SIXEL_DIFFUSE_NONE);
+                SIXEL_OPTFLAG_DIFFUSION, "fs") == SIXEL_OK);
+            DR_REQUIRE(encoder->method_for_diffuse == SIXEL_DIFFUSE_FS);
         }
     }
     ok = 1;

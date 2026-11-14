@@ -258,6 +258,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
     -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
     -DBUILD_TEST_0097_SPATIAL_BLUE_GPU_UNSCHEDULED_KEEP \
+    -DBUILD_TEST_0099_SPATIAL_FS_GPU_RESOLVE \
+    -DBUILD_TEST_0098_SPATIAL_FS_GPU_FINISH \
     -DBUILD_ATKINSON_CARRY_COMMON \
     -DBUILD_AUTO_STRENGTH_COMMON \
     -DBUILD_BURKES_CARRY_COMMON \
@@ -454,7 +456,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0074_FLOOR_CHANGE_RESTART \
     -DBUILD_TEST_0075_CURVE_CHANGE_RESTART \
     -DBUILD_TEST_0076_SAME_MODIFIERS_KEEP_AGE \
-    -DBUILD_TEST_0077_CURVE_DIFFUSION_REJECTED \
+    -DBUILD_TEST_0077_CURVE_DIFFUSION_ACCEPTED \
     -DBUILD_TEST_0078_ADAPTIVE_OFF_GRAY_HISTORY \
     -DBUILD_TEST_0079_ADAPTIVE_FORCE_GRAY_HISTORY \
     -DBUILD_TEST_0080_ADAPTIVE_NONE_GPU_BYTES \
@@ -5638,6 +5640,8 @@ libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 test_runner_SOURCES = test_runner.c \
     _support/processing/delta-refresh/spatial_test_common.c \
     delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
+    delta/refresh/0099_spatial_fs_gpu_resolve.c \
+    delta/refresh/0098_spatial_fs_gpu_finish.c \
     delta/refresh/0096_spatial_blue_cpu_keep.c \
     delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
     delta/refresh/0094_spatial_blue_gpu_fused_paint.c \
@@ -5722,7 +5726,7 @@ test_runner_SOURCES = test_runner.c \
     delta/refresh/0074_floor_change_restart.c \
     delta/refresh/0075_curve_change_restart.c \
     delta/refresh/0076_same_modifiers_keep_age.c \
-    delta/refresh/0077_curve_diffusion_rejected.c \
+    delta/refresh/0077_curve_diffusion_accepted.c \
     delta/refresh/0078_adaptive_off_gray_history.c \
     delta/refresh/0079_adaptive_force_gray_history.c \
     delta/refresh/0080_adaptive_none_gpu_bytes.c \

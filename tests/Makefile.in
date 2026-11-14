@@ -143,6 +143,8 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/processing/delta-refresh/spatial_test_common.c \
 	delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
+	delta/refresh/0099_spatial_fs_gpu_resolve.c \
+	delta/refresh/0098_spatial_fs_gpu_finish.c \
 	delta/refresh/0096_spatial_blue_cpu_keep.c \
 	delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
 	delta/refresh/0094_spatial_blue_gpu_fused_paint.c \
@@ -227,7 +229,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	delta/refresh/0074_floor_change_restart.c \
 	delta/refresh/0075_curve_change_restart.c \
 	delta/refresh/0076_same_modifiers_keep_age.c \
-	delta/refresh/0077_curve_diffusion_rejected.c \
+	delta/refresh/0077_curve_diffusion_accepted.c \
 	delta/refresh/0078_adaptive_off_gray_history.c \
 	delta/refresh/0079_adaptive_force_gray_history.c \
 	delta/refresh/0080_adaptive_none_gpu_bytes.c \
@@ -5644,6 +5646,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0098_spatial_fs_gpu_finish.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0096_spatial_blue_cpu_keep.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.$(OBJEXT) \
@@ -5728,7 +5732,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0074_floor_change_restart.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0075_curve_change_restart.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0076_same_modifiers_keep_age.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0077_curve_diffusion_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0077_curve_diffusion_accepted.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0078_adaptive_off_gray_history.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0079_adaptive_force_gray_history.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0080_adaptive_none_gpu_bytes.$(OBJEXT) \
@@ -12525,7 +12529,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Po \
-	delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_accepted.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Po \
@@ -12546,6 +12550,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -17255,6 +17261,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_SPATIAL_BLUE_GPU_UNSCHEDULED_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_SPATIAL_FS_GPU_RESOLVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_SPATIAL_FS_GPU_FINISH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ATKINSON_CARRY_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_AUTO_STRENGTH_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_BURKES_CARRY_COMMON \
@@ -17451,7 +17459,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_FLOOR_CHANGE_RESTART \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_CURVE_CHANGE_RESTART \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0076_SAME_MODIFIERS_KEEP_AGE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_CURVE_DIFFUSION_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_CURVE_DIFFUSION_ACCEPTED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0078_ADAPTIVE_OFF_GRAY_HISTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0079_ADAPTIVE_FORCE_GRAY_HISTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_ADAPTIVE_NONE_GPU_BYTES \
@@ -22667,6 +22675,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/spatial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0099_spatial_fs_gpu_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0098_spatial_fs_gpu_finish.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0096_spatial_blue_cpu_keep.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0094_spatial_blue_gpu_fused_paint.c \
@@ -22751,7 +22761,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0074_floor_change_restart.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0075_curve_change_restart.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0076_same_modifiers_keep_age.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0077_curve_diffusion_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0077_curve_diffusion_accepted.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0078_adaptive_off_gray_history.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0079_adaptive_force_gray_history.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0080_adaptive_none_gpu_bytes.c \
@@ -28770,6 +28780,12 @@ delta/refresh/$(DEPDIR)/$(am__dirstamp):
 delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0098_spatial_fs_gpu_finish.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0096_spatial_blue_cpu_keep.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
@@ -29046,7 +29062,7 @@ delta/refresh/test_runner-0075_curve_change_restart.$(OBJEXT):  \
 delta/refresh/test_runner-0076_same_modifiers_keep_age.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/test_runner-0077_curve_diffusion_rejected.$(OBJEXT):  \
+delta/refresh/test_runner-0077_curve_diffusion_accepted.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0078_adaptive_off_gray_history.$(OBJEXT):  \
@@ -47756,7 +47772,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0074_floor_change_restart.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0075_curve_change_restart.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0076_same_modifiers_keep_age.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_accepted.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0079_adaptive_force_gray_history.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0080_adaptive_none_gpu_bytes.Po@am__quote@ # am--include-marker
@@ -47777,6 +47793,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -51923,6 +51941,34 @@ delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj: delta/refr
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj `if test -f 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; then $(CYGPATH_W) 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; fi`
 
+delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.o: delta/refresh/0099_spatial_fs_gpu_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Tpo -c -o delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.o `test -f 'delta/refresh/0099_spatial_fs_gpu_resolve.c' || echo '$(srcdir)/'`delta/refresh/0099_spatial_fs_gpu_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Tpo delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0099_spatial_fs_gpu_resolve.c' object='delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.o `test -f 'delta/refresh/0099_spatial_fs_gpu_resolve.c' || echo '$(srcdir)/'`delta/refresh/0099_spatial_fs_gpu_resolve.c
+
+delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.obj: delta/refresh/0099_spatial_fs_gpu_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Tpo -c -o delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.obj `if test -f 'delta/refresh/0099_spatial_fs_gpu_resolve.c'; then $(CYGPATH_W) 'delta/refresh/0099_spatial_fs_gpu_resolve.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0099_spatial_fs_gpu_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Tpo delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0099_spatial_fs_gpu_resolve.c' object='delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.obj `if test -f 'delta/refresh/0099_spatial_fs_gpu_resolve.c'; then $(CYGPATH_W) 'delta/refresh/0099_spatial_fs_gpu_resolve.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0099_spatial_fs_gpu_resolve.c'; fi`
+
+delta/refresh/test_runner-0098_spatial_fs_gpu_finish.o: delta/refresh/0098_spatial_fs_gpu_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0098_spatial_fs_gpu_finish.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Tpo -c -o delta/refresh/test_runner-0098_spatial_fs_gpu_finish.o `test -f 'delta/refresh/0098_spatial_fs_gpu_finish.c' || echo '$(srcdir)/'`delta/refresh/0098_spatial_fs_gpu_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Tpo delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0098_spatial_fs_gpu_finish.c' object='delta/refresh/test_runner-0098_spatial_fs_gpu_finish.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0098_spatial_fs_gpu_finish.o `test -f 'delta/refresh/0098_spatial_fs_gpu_finish.c' || echo '$(srcdir)/'`delta/refresh/0098_spatial_fs_gpu_finish.c
+
+delta/refresh/test_runner-0098_spatial_fs_gpu_finish.obj: delta/refresh/0098_spatial_fs_gpu_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0098_spatial_fs_gpu_finish.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Tpo -c -o delta/refresh/test_runner-0098_spatial_fs_gpu_finish.obj `if test -f 'delta/refresh/0098_spatial_fs_gpu_finish.c'; then $(CYGPATH_W) 'delta/refresh/0098_spatial_fs_gpu_finish.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0098_spatial_fs_gpu_finish.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Tpo delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0098_spatial_fs_gpu_finish.c' object='delta/refresh/test_runner-0098_spatial_fs_gpu_finish.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0098_spatial_fs_gpu_finish.obj `if test -f 'delta/refresh/0098_spatial_fs_gpu_finish.c'; then $(CYGPATH_W) 'delta/refresh/0098_spatial_fs_gpu_finish.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0098_spatial_fs_gpu_finish.c'; fi`
+
 delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o: delta/refresh/0096_spatial_blue_cpu_keep.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Tpo -c -o delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o `test -f 'delta/refresh/0096_spatial_blue_cpu_keep.c' || echo '$(srcdir)/'`delta/refresh/0096_spatial_blue_cpu_keep.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po
@@ -53099,19 +53145,19 @@ delta/refresh/test_runner-0076_same_modifiers_keep_age.obj: delta/refresh/0076_s
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0076_same_modifiers_keep_age.obj `if test -f 'delta/refresh/0076_same_modifiers_keep_age.c'; then $(CYGPATH_W) 'delta/refresh/0076_same_modifiers_keep_age.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0076_same_modifiers_keep_age.c'; fi`
 
-delta/refresh/test_runner-0077_curve_diffusion_rejected.o: delta/refresh/0077_curve_diffusion_rejected.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0077_curve_diffusion_rejected.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Tpo -c -o delta/refresh/test_runner-0077_curve_diffusion_rejected.o `test -f 'delta/refresh/0077_curve_diffusion_rejected.c' || echo '$(srcdir)/'`delta/refresh/0077_curve_diffusion_rejected.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0077_curve_diffusion_rejected.c' object='delta/refresh/test_runner-0077_curve_diffusion_rejected.o' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0077_curve_diffusion_accepted.o: delta/refresh/0077_curve_diffusion_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0077_curve_diffusion_accepted.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_accepted.Tpo -c -o delta/refresh/test_runner-0077_curve_diffusion_accepted.o `test -f 'delta/refresh/0077_curve_diffusion_accepted.c' || echo '$(srcdir)/'`delta/refresh/0077_curve_diffusion_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_accepted.Tpo delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_accepted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0077_curve_diffusion_accepted.c' object='delta/refresh/test_runner-0077_curve_diffusion_accepted.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0077_curve_diffusion_rejected.o `test -f 'delta/refresh/0077_curve_diffusion_rejected.c' || echo '$(srcdir)/'`delta/refresh/0077_curve_diffusion_rejected.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0077_curve_diffusion_accepted.o `test -f 'delta/refresh/0077_curve_diffusion_accepted.c' || echo '$(srcdir)/'`delta/refresh/0077_curve_diffusion_accepted.c
 
-delta/refresh/test_runner-0077_curve_diffusion_rejected.obj: delta/refresh/0077_curve_diffusion_rejected.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0077_curve_diffusion_rejected.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Tpo -c -o delta/refresh/test_runner-0077_curve_diffusion_rejected.obj `if test -f 'delta/refresh/0077_curve_diffusion_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0077_curve_diffusion_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0077_curve_diffusion_rejected.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_rejected.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0077_curve_diffusion_rejected.c' object='delta/refresh/test_runner-0077_curve_diffusion_rejected.obj' libtool=no @AMDEPBACKSLASH@
+delta/refresh/test_runner-0077_curve_diffusion_accepted.obj: delta/refresh/0077_curve_diffusion_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0077_curve_diffusion_accepted.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_accepted.Tpo -c -o delta/refresh/test_runner-0077_curve_diffusion_accepted.obj `if test -f 'delta/refresh/0077_curve_diffusion_accepted.c'; then $(CYGPATH_W) 'delta/refresh/0077_curve_diffusion_accepted.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0077_curve_diffusion_accepted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_accepted.Tpo delta/refresh/$(DEPDIR)/test_runner-0077_curve_diffusion_accepted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0077_curve_diffusion_accepted.c' object='delta/refresh/test_runner-0077_curve_diffusion_accepted.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0077_curve_diffusion_rejected.obj `if test -f 'delta/refresh/0077_curve_diffusion_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0077_curve_diffusion_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0077_curve_diffusion_rejected.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0077_curve_diffusion_accepted.obj `if test -f 'delta/refresh/0077_curve_diffusion_accepted.c'; then $(CYGPATH_W) 'delta/refresh/0077_curve_diffusion_accepted.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0077_curve_diffusion_accepted.c'; fi`
 
 delta/refresh/test_runner-0078_adaptive_off_gray_history.o: delta/refresh/0078_adaptive_off_gray_history.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0078_adaptive_off_gray_history.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0078_adaptive_off_gray_history.Tpo -c -o delta/refresh/test_runner-0078_adaptive_off_gray_history.o `test -f 'delta/refresh/0078_adaptive_off_gray_history.c' || echo '$(srcdir)/'`delta/refresh/0078_adaptive_off_gray_history.c

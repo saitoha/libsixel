@@ -1039,10 +1039,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "      refresh=0..10000 (:Jvalue, frames, default 0/off)\n"
         "      refresh_floor=0..255 (:Lvalue, default 0)\n"
         "      refresh_curve=0|1|2 (:Avalue, default 0/uniform)\n"
-        "      refresh_spatial=0|1|2 (:Gvalue, needs L4:A1)\n"
+        "      refresh_spatial=0..4 (:Gvalue, needs L4:A1)\n"
         "    Experimental J re-evaluates pixels with staggered deadlines.\n"
         "    L keeps errors <= L; A1/A2 slow small-error deadlines.\n"
-        "    A1/A2 require none/a_dither/x_dither/bluenoise.\n"
+        "    A1/A2 and spatial refresh support all RGB8 dithers.\n"
         "    It cannot combine with R1/P1 and does not force repainting.\n"
         "    delta:R1:T8 lowers T in persistent residual cells. Auto metric\n"
         "    selects rgb241 for R1, max otherwise. Requires opaque full-plane\n"
@@ -1610,7 +1610,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_UPDATE_DELTA_REFRESH_SPATIAL",
-        "set delta:refresh_spatial (0 off, 1 16J, 2 32J).\n"
+        "set delta:refresh_spatial (0 off, 1/2 low band, 3/4 low and middle).\n"
         "Default 0. Active refresh requires threads and L4:A1."
     },
     {
