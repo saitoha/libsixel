@@ -53,7 +53,7 @@ The compiler adapter preserves `-link` and `/link` as native linker boundaries. 
 
 The current [tests/Makefile.am](../../tests/Makefile.am) overrides Automake's `check-TESTS` recipe. Its work can be read as five stages:
 
-1. Build `test_runner`, prepare enabled binding packages, and prepare packaged large fixtures.
+1. Build `test_runner`, prepare enabled binding packages and packaged large fixtures, and finish relinking the test tools.
 2. Remove old runtime `.log` and `.trs` outputs without expanding the complete test list into one command.
 3. Resolve tool paths, export configured feature macros once, prepare binding environments, and detect the relevant runtime.
 4. Invoke the short `sixel-check-test-logs` target, which requests the individual test logs through make dependencies on ordinary platforms.
@@ -63,9 +63,10 @@ On ordinary platforms, the essential dependency relationship is:
 
 ```make
 check-TESTS:
+	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-tools
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs
 
-sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
+sixel-check-test-logs: $(TEST_LOGS)
 	@:
 ```
 

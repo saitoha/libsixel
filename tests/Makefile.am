@@ -12217,7 +12217,7 @@ sixel-check-test-list:
 	@$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
 	    tests "$(srcdir)" include newline > "$(OPENVMS_CHECK_TESTS_LIST)"
 
-sixel-check-test-logs: sixel-check-test-tools sixel-check-test-list
+sixel-check-test-logs: sixel-check-test-list
 	@set -eu; \
 	jobs='$(OPENVMS_TEST_JOBS)'; \
 	case "$$jobs" in \
@@ -12359,7 +12359,7 @@ sixel-check-test-openvms-shard:
 	        $(AM_TESTS_FD_REDIRECT); \
 	done < "$(OPENVMS_TEST_WORKER_LIST)"
 else
-sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
+sixel-check-test-logs: $(TEST_LOGS)
 	@:
 endif
 
@@ -12454,7 +12454,9 @@ installcheck-local:
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
+# Finish relinking test tools before resolving their paths or running TAP.
 check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
+	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-tools
 	@$(SHELL) "$(top_srcdir)/build-aux/clean-test-logs.sh" \
 	    "$(builddir)" "@build_os@"
 	@file="$(TEST_SUITE_LOG)"; while test -e "$$file"; do rm -f "$$file" || exit $$?; done
