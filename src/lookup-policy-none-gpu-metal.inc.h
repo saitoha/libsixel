@@ -39,7 +39,7 @@ none_metal_tiles(unsigned char const *palette,
 }
 
 static sixel_gpu_metal_cached_buffer_t none_tiles = { nil, 0U };
-static char const *const none_chunks[] = {
+static char const *const none_metal_chunks[] = {
 #include <generated-metal/lookup-policy-none-gpu-apply-shader.inc.h>
 NULL
 };
@@ -81,7 +81,7 @@ none_metal_prepare(gpu_metal_lookup_run_t *run,
 }
 
 static gpu_metal_lookup_t const none_metal = {
-    none_chunks, "lookup_none_apply",
+    none_metal_chunks, "lookup_none_apply",
     none_metal_prepare, NULL, NULL
 };
 

@@ -179,7 +179,7 @@ sixel_gpu_fhedt_build(id<MTLCommandBuffer> command, id<MTLBuffer> palette,
     return SIXEL_OK;
 }
 
-static char const *const fhedt_chunks[] = {
+static char const *const fhedt_metal_chunks[] = {
 #include <generated-metal/lookup-policy-fhedt-gpu-query-shader.inc.h>
 #include <generated-metal/lookup-policy-fhedt-gpu-apply-shader.inc.h>
 NULL
@@ -264,7 +264,7 @@ fhedt_metal_finish(gpu_metal_lookup_run_t *run,
 }
 
 static gpu_metal_lookup_t const fhedt_metal = {
-    fhedt_chunks, "lookup_fhedt_apply",
+    fhedt_metal_chunks, "lookup_fhedt_apply",
     fhedt_metal_prepare, fhedt_metal_build, fhedt_metal_finish
 };
 

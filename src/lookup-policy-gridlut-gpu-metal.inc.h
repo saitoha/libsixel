@@ -7,7 +7,7 @@ static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_grid = { nil, 0U };
 static unsigned char g_sixel_gpu_metal_grid_palette[SIXEL_PALETTE_MAX * 3];
 static int g_sixel_gpu_metal_grid_colors = 0;
 
-static char const *const gridlut_chunks[] = {
+static char const *const gridlut_metal_chunks[] = {
 #include <generated-metal/lookup-policy-gridlut-gpu-shader.inc.h>
 #include <generated-metal/lookup-policy-gridlut-gpu-apply-shader.inc.h>
 NULL
@@ -21,8 +21,8 @@ gridlut_metal_prepare(gpu_metal_lookup_run_t *run,
     SIXELSTATUS status;
 
     (void)params;
-    g_sixel_gpu_metal_grid_build = gpu_metal_lookup_pipeline(gridlut_chunks,
-        run->dither, "sixel_gpu_grid_build");
+    g_sixel_gpu_metal_grid_build = gpu_metal_lookup_pipeline(
+        gridlut_metal_chunks, run->dither, "sixel_gpu_grid_build");
     if (g_sixel_gpu_metal_grid_build == nil) {
         sixel_helper_set_additional_message(
             "gpu palette apply: gridlut pipeline is unavailable.");
@@ -93,7 +93,7 @@ gridlut_metal_finish(gpu_metal_lookup_run_t *run,
 }
 
 static gpu_metal_lookup_t const gridlut_metal = {
-    gridlut_chunks, "lookup_gridlut_apply",
+    gridlut_metal_chunks, "lookup_gridlut_apply",
     gridlut_metal_prepare, gridlut_metal_build, gridlut_metal_finish
 };
 

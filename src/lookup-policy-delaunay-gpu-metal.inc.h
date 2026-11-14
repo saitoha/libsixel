@@ -10,7 +10,7 @@ static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_delaunay =
 static unsigned char g_sixel_gpu_metal_delaunay_palette[SIXEL_PALETTE_MAX * 3];
 static int g_sixel_gpu_metal_delaunay_colors = 0;
 
-static char const *const delaunay_chunks[] = {
+static char const *const delaunay_metal_chunks[] = {
 #include <generated-metal/lookup-policy-delaunay-gpu-shader.inc.h>
 #include <generated-metal/lookup-policy-delaunay-gpu-apply-shader.inc.h>
 NULL
@@ -27,11 +27,11 @@ delaunay_metal_prepare(gpu_metal_lookup_run_t *run,
 
     (void)params;
     g_sixel_gpu_metal_delaunay_bounds = gpu_metal_lookup_pipeline(
-        delaunay_chunks, run->dither, "sixel_gpu_delaunay_bounds");
+        delaunay_metal_chunks, run->dither, "sixel_gpu_delaunay_bounds");
     g_sixel_gpu_metal_delaunay_sort = gpu_metal_lookup_pipeline(
-        delaunay_chunks, run->dither, "sixel_gpu_delaunay_sort");
+        delaunay_metal_chunks, run->dither, "sixel_gpu_delaunay_sort");
     g_sixel_gpu_metal_delaunay_seeds = gpu_metal_lookup_pipeline(
-        delaunay_chunks, run->dither, "sixel_gpu_delaunay_seeds");
+        delaunay_metal_chunks, run->dither, "sixel_gpu_delaunay_seeds");
     builders[0] = g_sixel_gpu_metal_delaunay_bounds;
     builders[1] = g_sixel_gpu_metal_delaunay_sort;
     builders[2] = g_sixel_gpu_metal_delaunay_seeds;
@@ -133,7 +133,7 @@ delaunay_metal_finish(gpu_metal_lookup_run_t *run,
 }
 
 static gpu_metal_lookup_t const delaunay_metal = {
-    delaunay_chunks, "lookup_delaunay_apply",
+    delaunay_metal_chunks, "lookup_delaunay_apply",
     delaunay_metal_prepare, delaunay_metal_build, delaunay_metal_finish
 };
 

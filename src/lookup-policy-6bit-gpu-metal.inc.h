@@ -73,7 +73,7 @@ sixel_gpu_lookup6_encode(id<MTLCommandBuffer> command,
     return SIXEL_OK;
 }
 
-static char const *const lookup6_chunks[] = {
+static char const *const lookup6_metal_chunks[] = {
 #include <generated-metal/lookup-policy-6bit-gpu-query-shader.inc.h>
 #include <generated-metal/lookup-policy-6bit-gpu-apply-shader.inc.h>
 NULL
@@ -134,7 +134,7 @@ lookup6_metal_finish(gpu_metal_lookup_run_t *run,
 }
 
 static gpu_metal_lookup_t const lookup6_metal = {
-    lookup6_chunks, "lookup_6bit_apply",
+    lookup6_metal_chunks, "lookup_6bit_apply",
     lookup6_metal_prepare, lookup6_metal_build, lookup6_metal_finish
 };
 

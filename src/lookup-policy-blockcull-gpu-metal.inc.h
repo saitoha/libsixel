@@ -39,7 +39,7 @@ blockcull_metal_tiles(unsigned char const *palette,
 }
 
 static sixel_gpu_metal_cached_buffer_t blockcull_tiles = { nil, 0U };
-static char const *const blockcull_chunks[] = {
+static char const *const blockcull_metal_chunks[] = {
 #include <generated-metal/lookup-policy-blockcull-gpu-apply-shader.inc.h>
 NULL
 };
@@ -92,7 +92,7 @@ blockcull_metal_prepare(gpu_metal_lookup_run_t *run,
 }
 
 static gpu_metal_lookup_t const blockcull_metal = {
-    blockcull_chunks, "lookup_blockcull_scalar",
+    blockcull_metal_chunks, "lookup_blockcull_scalar",
     blockcull_metal_prepare, NULL, NULL
 };
 

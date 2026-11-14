@@ -121,14 +121,14 @@ eytzinger_metal_prepare(gpu_metal_lookup_run_t *run,
     run->kernel_id = 1;
     return SIXEL_OK;
 }
-static char const *const eytzinger_chunks[] = {
+static char const *const eytzinger_metal_chunks[] = {
 #include <generated-metal/lookup-policy-eytzinger-gpu-shader.inc.h>
 #include <generated-metal/lookup-policy-eytzinger-gpu-apply-shader.inc.h>
 NULL
 };
 
 static gpu_metal_lookup_t const eytzinger_metal = {
-    eytzinger_chunks, "lookup_eytzinger_apply",
+    eytzinger_metal_chunks, "lookup_eytzinger_apply",
     eytzinger_metal_prepare, NULL, NULL
 };
 
