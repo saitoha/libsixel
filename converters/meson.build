@@ -121,6 +121,10 @@ if img2sixel_opt.enabled()
   endif
 
   if img2sixel_cli_fuzz_supported
+    # The TAP dependency build checks that these harnesses compile, but the
+    # production PGO training does not run them. Their untrained main symbols
+    # otherwise match unrelated main records in Clang's merged profile.
+    img2sixel_afl_options = ['b_pgo=off']
     img2sixel_fuzz_harness = executable('fuzz-img2sixel-afl-persistent',
       ['../fuzz/fuzz-img2sixel-afl-persistent.c'],
       link_depends: emscripten_link_depends,
@@ -129,6 +133,7 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep],
       include_directories: [project_inc],
       build_rpath: src_build_dir,
+      override_options: img2sixel_afl_options,
       build_by_default: false,
       install: false)
 
@@ -144,6 +149,7 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: [project_inc, local_inc],
       build_rpath: src_build_dir,
+      override_options: img2sixel_afl_options,
       build_by_default: false,
       install: false)
 
@@ -159,6 +165,7 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: [project_inc, local_inc],
       build_rpath: src_build_dir,
+      override_options: img2sixel_afl_options,
       build_by_default: false,
       install: false)
 
@@ -174,6 +181,7 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: [project_inc, local_inc],
       build_rpath: src_build_dir,
+      override_options: img2sixel_afl_options,
       build_by_default: false,
       install: false)
 
@@ -189,6 +197,7 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: [project_inc, local_inc],
       build_rpath: src_build_dir,
+      override_options: img2sixel_afl_options,
       build_by_default: false,
       install: false)
 
