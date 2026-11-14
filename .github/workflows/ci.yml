@@ -1817,12 +1817,14 @@ jobs:
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
             setup_options: >-
               --enable-gcov
             extra_packages: >-
               make
               gcc
               lcov
+              pkgconf
             exec_type: msys2
 
           - label: Autotools-cygwin64-clangcl-msvc_abi-coverage

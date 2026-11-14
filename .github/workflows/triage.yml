@@ -108,7 +108,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CHECKOUT_REF: ${{ inputs.checkout_ref || (github.event_name == 'push' && github.ref) || '' }}
           CHECKOUT_SHA: ${{ inputs.checkout_sha || (github.event_name == 'push' && github.sha) || '' }}
-          MAX_JOBS: ${{ inputs.max_jobs || '8' }}
+          MAX_JOBS: ${{ inputs.max_jobs || (github.event_name == 'push' && '32') || '8' }}
           SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch || inputs.source_branch || 'develop' }}
           SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id || '' }}
           SOURCE_WORKFLOW_NAME: ${{ github.event.workflow_run.name || '' }}
@@ -243,10 +243,15 @@ jobs:
             exit 1
           fi
 
-          # Matrix reconstruction stays pinned to the failed run commit, while
-          # normal replay checkout can follow the current branch head.
-          git fetch --depth=1 origin "$source_head_sha"
-          git checkout --detach "$source_head_sha"
+          # Branch pushes can repair matrix inputs as well as source files.
+          # Other replay modes reconstruct the original matrix.
+          matrix_sha="$source_head_sha"
+          if test "$TRIAGE_EVENT_NAME" = push &&
+             [[ "$TRIAGE_REF_NAME" == triage/* ]]; then
+            matrix_sha="$checkout_sha"
+          fi
+          git fetch --depth=1 origin "$matrix_sha"
+          git checkout --detach "$matrix_sha"
 
           failed_jobs_json="$(
             gh api \
