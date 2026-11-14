@@ -31,7 +31,7 @@ env_output="${artifact_dir}/0028_update_delta_refresh_spatial_image_regression-e
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! \
-    -dnone "-Zdelta:T48:J1:L4:A1:G1" "${input_image}" 2>&1 >"${short_output}") || {
+    -dnone "-Zdelta:T48:J5:L4:A1:G1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok 1 - delta:refresh_spatial short conversion failed"
     exit 0
 }
@@ -41,7 +41,7 @@ case "${short_trace}" in *LSXSUB1\|*key=refresh_spatial\|stored=1\|binding=refre
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! \
-    --env "SIXEL_UPDATE_DELTA_REFRESH_SPATIAL=1" -dnone -Z delta:T48:J1:L4:A1 \
+    --env "SIXEL_UPDATE_DELTA_REFRESH_SPATIAL=1" -dnone -Z delta:T48:J5:L4:A1 \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok 1 - delta:refresh_spatial environment conversion failed"
     exit 0

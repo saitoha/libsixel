@@ -2,6 +2,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "refresh-spatial.h"
@@ -121,15 +122,18 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
 
 void
 sixel_refresh_spatial_apply(sixel_delta_residual_t *schedule,
-    uint32_t const activity[128], unsigned int strength)
+    uint32_t const activity[128], unsigned int period, unsigned int strength)
 {
-    unsigned int x, y, cycle, period;
+    unsigned int x, y, cycle, cycles, phase;
     size_t cell;
     uint64_t frame;
 
     frame = schedule->refresh_next_frame;
-    if (!frame || !strength || strength > 2) return;
-    period = 8U << strength;
+    if (!frame || !period || !strength || strength > 2) return;
+    cycles = 8U << strength;
+    /* A1 deadlines are on frames base + n*J, with base in 1..J.
+     * Test the coarse cycle n to preserve the within-J blue-noise phase. */
+    phase = (unsigned int)(((frame - 1U) / period) & (cycles - 1U));
     schedule->mask.tiled = 2U;
     memcpy(schedule->mask.cells, activity, sizeof(schedule->mask.cells));
     for (y = 0; y < 64; ++y) {
@@ -141,9 +145,7 @@ sixel_refresh_spatial_apply(sixel_delta_residual_t *schedule,
                     & 63U)*64U +
                 ((x + (unsigned)schedule->refresh_next_origin_x + 11U)
                     & 63U)] >> 2;
-            /* J1 gives base=1. Longer cycles contain every slower deadline
-             * in the A1 low-band deadlines, preserving the spatial phases. */
-            if ((frame - 1U) % period != (cycle & (period - 1U)))
+            if (phase != (cycle & (cycles - 1U)))
                 schedule->mask.levels[cell] |= 128U;
         }
     }
@@ -254,7 +256,7 @@ fail_state:
 SIXELSTATUS
 sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **owner,
     sixel_allocator_t *allocator, unsigned char const *rgb,
-    sixel_delta_residual_t *schedule, unsigned int strength,
+    sixel_delta_residual_t *schedule, unsigned int period, unsigned int strength,
     sixel_refresh_spatial_hooks_t const *hooks)
 {
     sixel_refresh_spatial_t *state;
@@ -299,7 +301,8 @@ sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **owner,
     }
     used = frame && state->cached && frame > state->cached_frame &&
         frame - state->cached_frame <= 8U;
-    if (used) sixel_refresh_spatial_apply(schedule, state->snapshot, strength);
+    if (used)
+        sixel_refresh_spatial_apply(schedule, state->snapshot, period, strength);
     sixel_trace_topic_message("delta_refresh",
         "LSXGRAD1|frame=%llu|map=%llu|used=%d|queued=%d|strength=%u",
         (unsigned long long)frame,

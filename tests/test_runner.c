@@ -5653,7 +5653,11 @@ int test_delta_refresh_0095(int, char **);
 
 int test_delta_refresh_0096(int, char **);
 
+int test_delta_refresh_0097(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "delta/refresh/0097_spatial_blue_gpu_unscheduled_keep",
+      test_delta_refresh_0097 },
     { "delta/refresh/0096_spatial_blue_cpu_keep", test_delta_refresh_0096 },
     { "delta/refresh/0095_spatial_blue_gpu_legacy_keep", test_delta_refresh_0095 },
     { "delta/refresh/0094_spatial_blue_gpu_fused_paint", test_delta_refresh_0094 },

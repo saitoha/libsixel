@@ -54,7 +54,8 @@ dc_hint(sixel_lookup_policy_interface_t const *self,
  * gate: 0 bypass original-source early keep, 1 post-lookup replacement,
  * 2 query early keep, 3 query post-lookup tie, 4 positive-T query keep,
  * 5 refresh-selected T0, 6 invalid execution enum,
- * 7 spatial delay keep, 8 spatial flat-cell refresh paint. */
+ * 7 spatial delay keep, 8 spatial flat-cell refresh paint,
+ * 9 spatial pixel without a deadline keeps under ordinary T. */
 int
 delta_compare_pixel_test(int method, int native, int gpu, int gate)
 {
@@ -118,6 +119,7 @@ delta_compare_pixel_test(int method, int native, int gpu, int gate)
     memcpy(colors + 3, queries[method], 3);
     memcpy(retained, gate == 0 ? pixel : queries[method], 3);
     if (gate == 7 || gate == 8) memset(retained, 126, 3);
+    if (gate == 9) memset(retained, 90, 3);
     if (gate == 1) memset(retained, method == 2 ? 126 : 130, 3);
     if (gate == 3) {
         retained[0] += 2;
@@ -125,10 +127,13 @@ delta_compare_pixel_test(int method, int native, int gpu, int gate)
     }
     if (gate == 4 || gate == 5) retained[0] += 2;
     threshold = gate == 4 || gate == 5 ? 3U : 0U;
-    if (gate == 7 || gate == 8) threshold = 48;
-    expected_index = gate == 7 || gate == 2 || gate == 3 || gate == 4 ? 2 : 1;
-    expected_mask = gate == 7 || gate == 4 ? 3 : expected_index == 2 ? 1 : 0;
-    expected_calls = gate == 7 || gate == 2 || gate == 4 || gate == 6 ? 0 : 1;
+    if (gate >= 7) threshold = 48;
+    expected_index = gate == 7 || gate == 9 ||
+        gate == 2 || gate == 3 || gate == 4 ? 2 : 1;
+    expected_mask = gate == 7 || gate == 9 || gate == 4 ? 3 :
+        expected_index == 2 ? 1 : 0;
+    expected_calls = gate == 7 || gate == 9 ||
+        gate == 2 || gate == 4 || gate == 6 ? 0 : 1;
     for (i = 0; i < 3; ++i) source[i] = 128.0f / 255.0f;
     DC_CHECK(sixel_dither_new(&dither, 3, NULL) == SIXEL_OK);
     sixel_dither_set_palette(dither, colors);
@@ -178,13 +183,14 @@ delta_compare_pixel_test(int method, int native, int gpu, int gate)
         execution.selection.columns = execution.selection.rows = 1;
         execution.selection.width = execution.selection.height = 1;
     }
-    if (gate == 7 || gate == 8) {
+    if (gate >= 7) {
         selection.columns = selection.rows = 64;
         selection.width = selection.height = 1;
         selection.tiled = 2;
         selection.variable = 1;
-        memset(selection.levels, 132, sizeof(selection.levels));
-        memset(selection.cells, gate == 7 ? 255 : 0, sizeof(selection.cells));
+        memset(selection.levels, gate == 9 ? 255 : 132,
+            sizeof(selection.levels));
+        memset(selection.cells, gate == 8 ? 0 : 255, sizeof(selection.cells));
         execution.selection.words = selection.cells;
         execution.selection.word_count = 128;
         execution.selection.columns = execution.selection.rows = 64;

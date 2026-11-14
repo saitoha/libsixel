@@ -27,14 +27,14 @@ typedef struct sixel_refresh_spatial_hooks {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **state,
     sixel_allocator_t *allocator, unsigned char const *rgb,
-    sixel_delta_residual_t *schedule, unsigned int strength,
+    sixel_delta_residual_t *schedule, unsigned int period, unsigned int strength,
     sixel_refresh_spatial_hooks_t const *hooks);
 
-/* Pure scheduling seam: packed spatial bits select a finite 16/32-frame
- * period only for errors 5..8. All other A1/J1/L4 deadlines remain intact. */
+/* Extend the A1 low band to 16J or 32J only for active pixels with errors
+ * 5..8. PERIOD is the same base J used to build the A1 threshold tile. */
 SIXEL_INTERNAL_API void
 sixel_refresh_spatial_apply(sixel_delta_residual_t *schedule,
-    uint32_t const activity[128], unsigned int strength);
+    uint32_t const activity[128], unsigned int period, unsigned int strength);
 
 /* Pure map builder, also used by fixtures. Scratch covers 2*w*h plus two
  * ceil(w/4)*ceil(h/4) byte planes. The caller checks dimensions/allocation. */

@@ -142,6 +142,7 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/processing/delta-refresh/spatial_test_common.c \
+	delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
 	delta/refresh/0096_spatial_blue_cpu_keep.c \
 	delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
 	delta/refresh/0094_spatial_blue_gpu_fused_paint.c \
@@ -5642,6 +5643,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0096_spatial_blue_cpu_keep.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0095_spatial_blue_gpu_legacy_keep.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0094_spatial_blue_gpu_fused_paint.$(OBJEXT) \
@@ -12543,6 +12545,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -17251,6 +17254,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0094_SPATIAL_BLUE_GPU_FUSED_PAINT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_SPATIAL_BLUE_GPU_UNSCHEDULED_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ATKINSON_CARRY_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_AUTO_STRENGTH_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_BURKES_CARRY_COMMON \
@@ -22662,6 +22666,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/spatial_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0096_spatial_blue_cpu_keep.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0094_spatial_blue_gpu_fused_paint.c \
@@ -28762,6 +28767,9 @@ delta/refresh/$(am__dirstamp):
 delta/refresh/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) delta/refresh/$(DEPDIR)
 	@: >>delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0096_spatial_blue_cpu_keep.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
@@ -47768,6 +47776,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0094_spatial_blue_gpu_fused_paint.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0095_spatial_blue_gpu_legacy_keep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -51899,6 +51908,20 @@ _support/processing/delta-refresh/test_runner-spatial_test_common.obj: _support/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/delta-refresh/spatial_test_common.c' object='_support/processing/delta-refresh/test_runner-spatial_test_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/delta-refresh/test_runner-spatial_test_common.obj `if test -f '_support/processing/delta-refresh/spatial_test_common.c'; then $(CYGPATH_W) '_support/processing/delta-refresh/spatial_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/delta-refresh/spatial_test_common.c'; fi`
+
+delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.o: delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Tpo -c -o delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.o `test -f 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c' || echo '$(srcdir)/'`delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c' object='delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.o `test -f 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c' || echo '$(srcdir)/'`delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c
+
+delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj: delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Tpo -c -o delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj `if test -f 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; then $(CYGPATH_W) 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Tpo delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c' object='delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj `if test -f 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; then $(CYGPATH_W) 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; fi`
 
 delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o: delta/refresh/0096_spatial_blue_cpu_keep.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0096_spatial_blue_cpu_keep.Tpo -c -o delta/refresh/test_runner-0096_spatial_blue_cpu_keep.o `test -f 'delta/refresh/0096_spatial_blue_cpu_keep.c' || echo '$(srcdir)/'`delta/refresh/0096_spatial_blue_cpu_keep.c

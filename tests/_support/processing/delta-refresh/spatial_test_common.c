@@ -13,43 +13,56 @@
     fprintf(stderr, "spatial line %d: %s\n", __LINE__, #x); \
     return 1; } } while (0)
 
-int
-test_refresh_spatial_cadence(int active, unsigned int strength)
+static int
+spatial_cadence_for_period(int active, unsigned int strength,
+    unsigned int period)
 {
     sixel_delta_residual_t s, baseline;
     uint32_t bits[128];
-    unsigned int counts[64 * 64], f, x, y, t, original, expected;
+    unsigned int last[64 * 64], f, x, y, t, original, span, step;
+    size_t cell;
 
     memset(&s, 0, sizeof(s));
-    memset(counts, 0, sizeof(counts));
+    memset(last, 0, sizeof(last));
     memset(bits, active ? 255 : 0, sizeof(bits));
+    step = period * (active ? 8U << strength : 8U);
+    span = step * 2U;
     s.width = s.height = 64;
     s.refresh_valid = 1;
     s.refresh_origin_x = 9;
     s.refresh_origin_y = 11;
-    for (f = 1; f <= 64; ++f) {
+    for (f = 1; f <= span; ++f) {
         s.refresh_frame = f - 1;
-        sixel_delta_refresh_prepare(&s, 64, 64, 9, 11, 1, 1);
-        sixel_delta_refresh_adapt(&s, 9, 11, 1, 4, 1);
+        sixel_delta_refresh_prepare(&s, 64, 64, 9, 11, period, 1);
+        sixel_delta_refresh_adapt(&s, 9, 11, period, 4, 1);
         baseline = s;
-        sixel_refresh_spatial_apply(&s, bits, strength);
+        sixel_refresh_spatial_apply(&s, bits, period, strength);
         for (y = 0; y < 64; ++y) {
             for (x = 0; x < 64; ++x) {
-                t = sixel_delta_mask_threshold(&s.mask, x, y, 48);
+                t = sixel_delta_mask_threshold(&s.mask, x, y, 255);
                 original = sixel_delta_mask_threshold(&baseline.mask,
-                    x, y, 48);
-                RS_CHECK(t >= 4 && t <= 32);
-                RS_CHECK((t < 9) == (original < 9));
-                RS_CHECK((t < 17) == (original < 17));
-                RS_CHECK((t < 33) == (original < 33));
-                RS_CHECK((t < 5) == (t < 8));
-                counts[y * 64 + x] += t < 8;
+                    x, y, 255);
+                /* All thresholds except a due low-band cutoff are exact,
+                 * including the ordinary T when no deadline is due. */
+                RS_CHECK(t == original || (active && original == 4 && t == 8));
+                if (t == 4) {
+                    cell = (size_t)y * 64 + x;
+                    RS_CHECK(last[cell] ? f - last[cell] == step : f <= step);
+                    last[cell] = f;
+                }
                 RS_CHECK(sixel_delta_mask_threshold(&s.mask, x, y, 2) == 2);
             }
         }
     }
-    expected = 64U / (active ? 8U << strength : 8U);
-    for (x = 0; x < 4096; ++x) RS_CHECK(counts[x] == expected);
+    for (cell = 0; cell < 4096; ++cell) RS_CHECK(last[cell] > step);
+    return 0;
+}
+
+int
+test_refresh_spatial_cadence(int active, unsigned int strength)
+{
+    RS_CHECK(spatial_cadence_for_period(active, strength, 1U) == 0);
+    RS_CHECK(spatial_cadence_for_period(active, strength, 5U) == 0);
     return 0;
 }
 
@@ -139,16 +152,16 @@ test_refresh_spatial_async(int stale)
     RS_CHECK(sixel_cond_init(&gate.cond) == SIXEL_OK);
     initialized = 1;
     s.mask.width = s.mask.height = 64;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, &hooks)
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
             != SIXEL_OK) { failed = 1; goto end; }
     sixel_mutex_lock(&gate.mutex);
     while (!gate.entered) sixel_cond_wait(&gate.cond, &gate.mutex);
     sixel_mutex_unlock(&gate.mutex);
     s.refresh_next_frame = 4;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, &hooks)
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
             != SIXEL_OK || s.mask.tiled == 2) failed = 1;
     s.refresh_next_frame = 8;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, &hooks)
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
             != SIXEL_OK || s.mask.tiled == 2) failed = 1;
     sixel_mutex_lock(&gate.mutex);
     gate.release = 1;
@@ -157,7 +170,7 @@ test_refresh_spatial_async(int stale)
         sixel_cond_wait(&gate.cond, &gate.mutex);
     sixel_mutex_unlock(&gate.mutex);
     s.refresh_next_frame = stale ? 17 : 9;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, &hooks)
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
             != SIXEL_OK || (s.mask.tiled == 2) == stale) failed = 1;
     sixel_mutex_lock(&gate.mutex);
     gate.snapshot = 1;
@@ -167,7 +180,7 @@ test_refresh_spatial_async(int stale)
     s.refresh_next_frame = 0;
     s.mask.tiled = 1;
     s.mask.width = 32;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, &hooks)
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
             != SIXEL_OK || s.mask.tiled != 1) failed = 1;
 end:
     sixel_refresh_spatial_free(state);

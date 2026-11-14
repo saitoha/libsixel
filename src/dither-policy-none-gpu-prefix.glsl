@@ -183,11 +183,13 @@ bool prepare_query(uint gid, out uvec3 query, out uvec3 comparison)
             if (params.residual_tiled == 2u) {
                 uint level = (params.residual_levels[cell / 4u] >>
                     ((cell % 4u) * 8u)) & 255u;
-                uint selected = level & 127u;
-                if ((level & 128u) != 0u) {
+                // A level of 255 keeps the ordinary frame threshold.
+                uint selected = level;
+                if (level != 255u && (level & 128u) != 0u) {
                     uint spatial = (((y + 1u) * 64u - 1u) /
                         params.height) * 64u +
                         ((x + 1u) * 64u - 1u) / params.width;
+                    selected = level & 127u;
                     if ((params.residual_cells[spatial / 32u] &
                             (1u << (spatial % 32u))) != 0u)
                         selected = 8u;

@@ -257,6 +257,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0094_SPATIAL_BLUE_GPU_FUSED_PAINT \
     -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
     -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
+    -DBUILD_TEST_0097_SPATIAL_BLUE_GPU_UNSCHEDULED_KEEP \
     -DBUILD_ATKINSON_CARRY_COMMON \
     -DBUILD_AUTO_STRENGTH_COMMON \
     -DBUILD_BURKES_CARRY_COMMON \
@@ -5636,6 +5637,7 @@ libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
     _support/processing/delta-refresh/spatial_test_common.c \
+    delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
     delta/refresh/0096_spatial_blue_cpu_keep.c \
     delta/refresh/0095_spatial_blue_gpu_legacy_keep.c \
     delta/refresh/0094_spatial_blue_gpu_fused_paint.c \

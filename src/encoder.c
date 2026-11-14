@@ -3035,10 +3035,10 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
     int dither_limited;
 
     if (encoder->refresh_spatial && encoder->refresh_frames &&
-            (!SIXEL_ENABLE_THREADS || encoder->refresh_frames != 1U ||
-             encoder->refresh_floor != 4U || encoder->refresh_curve != 1U)) {
+            (!SIXEL_ENABLE_THREADS || encoder->refresh_floor != 4U ||
+             encoder->refresh_curve != 1U)) {
         sixel_helper_set_additional_message(
-            "refresh_spatial requires threads and J1:L4:A1.");
+            "refresh_spatial requires threads and L4:A1.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder) &&
@@ -3196,7 +3196,7 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             status = sixel_refresh_spatial_prepare(
                 &encoder->refresh_spatial_state, encoder->allocator,
                 sixel_frame_get_pixels(frame), &encoder->residual_state,
-                encoder->refresh_spatial, NULL);
+                encoder->refresh_frames, encoder->refresh_spatial, NULL);
             if (status != SIXEL_OK) return status;
         }
         sixel_trace_topic_message("delta_refresh",

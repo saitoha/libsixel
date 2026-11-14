@@ -1599,10 +1599,10 @@ typedef struct sixel_dither_policy_select_request {
  * in cell_thresholds at that cell when the optional pointer is non-NULL.
  * Non-NULL threshold storage must cover columns*rows cells. The caller owns
  * this immutable map and its storage through run and all its workers.
- * Experimental tiled=2 requires a 64x64 byte tile and A1/J1/L4 thresholds.
+ * Experimental tiled=2 requires a 64x64 byte tile and A1/L4 thresholds.
  * Low seven byte bits are the normal threshold. Bit seven requests raising
  * it to 8 only where a scaled 64x64 spatial activity word bit is set.
- * This mode always applies the tile; words no longer select tile entries. */
+ * A byte of 255 uses the frame threshold. Words hold spatial activity. */
 typedef struct sixel_delta_threshold_map {
     uint32_t const *words;
     size_t word_count;
