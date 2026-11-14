@@ -4531,7 +4531,7 @@ jobs:
             # This job runs many short Emscripten TAP scripts on macOS, where
             # the hosted runner can hit the per-user process limit even at
             # -j2 before the jobserver finishes draining skipped tests.
-            make: make MAKEFLAGS=-j1
+            make_jobs: 1
             exec_type: bash
 
           - label: Meson-macos-aarch64-emscripten-static
@@ -4639,7 +4639,7 @@ jobs:
             # On macOS Emscripten tests spawn node through the shebang, and
             # the hosted runner can hit the per-user process limit even at
             # modest parallelism.
-            make: make MAKEFLAGS=-j1
+            make_jobs: 1
 
           - label: Meson-macos-aarch64-emscripten-ubsan-static
             buildtool: meson
@@ -4706,7 +4706,7 @@ jobs:
         include:
           - label: Autotools-ubuntu-aarch64-emscripten-coverage
             buildtool: autotools
-            make: make MAKEFLAGS=-j2
+            make_jobs: 2
             runner: ubuntu-24.04-arm
             setup_prefix: >-
               CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
@@ -4745,7 +4745,7 @@ jobs:
 
           - label: Autotools-ubuntu-aarch64-emscripten-coverage-png-jpeg
             buildtool: autotools
-            make: make MAKEFLAGS=-j2
+            make_jobs: 2
             runner: ubuntu-24.04-arm
             setup_prefix: >-
               CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
@@ -4788,7 +4788,7 @@ jobs:
 
           - label: Autotools-ubuntu-aarch64-emscripten-coverage-libfetch
             buildtool: autotools
-            make: make MAKEFLAGS=-j2
+            make_jobs: 2
             runner: ubuntu-24.04-arm
             setup_prefix: >-
               CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
@@ -4844,7 +4844,7 @@ jobs:
               gcovr
             exec_type: bash
             # Bound concurrent coverage-instrumented Node processes to two.
-            make: make MAKEFLAGS=-j2
+            make_jobs: 2
 
           - label: Autotools-macos-aarch64-emscripten-coverage-2-of-2
             test_shard: 2/2
@@ -4863,7 +4863,7 @@ jobs:
               gcovr
             exec_type: bash
             # Bound concurrent coverage-instrumented Node processes to two.
-            make: make MAKEFLAGS=-j2
+            make_jobs: 2
 
           - label: Meson-macos-aarch64-emscripten-coverage-1-of-2
             test_shard: 1/2

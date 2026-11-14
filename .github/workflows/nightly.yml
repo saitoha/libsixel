@@ -287,7 +287,7 @@ jobs:
             --disable-python \
             --disable-dependency-tracking
         make -j"${nproc}"
-        make check
+        make -j"${nproc}" check
         mkdir -p libsixel
         make install DESTDIR="${destdir}"
         cp README.md LICENSE* libsixel/
@@ -305,8 +305,9 @@ jobs:
             --without-zshcompletiondir \
             --disable-python \
             --disable-dependency-tracking
-        make -j$(getconf _NPROCESSORS_ONLN)
-        make check
+        nproc="$(getconf _NPROCESSORS_ONLN)"
+        make -j"${nproc}"
+        make -j"${nproc}" check
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/
@@ -343,8 +344,9 @@ jobs:
             --without-zshcompletiondir \
             --disable-python \
             --disable-dependency-tracking
-        make
-        make check V=1
+        nproc="$(getconf _NPROCESSORS_ONLN)"
+        make -j"${nproc}"
+        make -j"${nproc}" check V=1
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/

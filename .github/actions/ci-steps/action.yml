@@ -653,6 +653,24 @@ runs:
         ini-values: ffi.enable=1
         coverage: none
 
+    - name: Select Autotools make parallelism
+      id: autotools_jobs
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && contains(fromJSON('["bash","msys2","cygwin","cygwin-msvc-codecoverage"]'),
+                        fromJSON(inputs.matrix_json).exec_type) }}
+      shell: bash
+      env:
+        MAKE_JOBS: ${{ fromJSON(inputs.matrix_json).make_jobs || '' }}
+      run: |
+        # Pass the limit via -j so recursive checks share make's jobserver.
+        jobs="${MAKE_JOBS:-${NUMBER_OF_PROCESSORS:-$(getconf _NPROCESSORS_ONLN)}}"
+        if ! [[ "$jobs" =~ ^[1-9][0-9]*$ ]]; then
+          printf 'Invalid Autotools make job count: %s\n' "$jobs" >&2
+          exit 1
+        fi
+        echo "count=$jobs" >> "$GITHUB_OUTPUT"
+
     - name: Build and test (Autotools, bash)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
       shell: bash
@@ -661,8 +679,8 @@ runs:
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         mkdir -p "$PWD/pgo"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" V=1
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" \
           SIXEL_TEST_SHARD=${{ fromJSON(inputs.matrix_json).test_shard || '' }} \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -691,8 +709,8 @@ runs:
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
         PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" V=1
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" \
           SIXEL_TEST_SHARD=${{ fromJSON(inputs.matrix_json).test_shard || '' }} \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -860,11 +878,11 @@ runs:
         set -exv
         PATH="$PWD/build-aux:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" V=1
         if test "${{ fromJSON(inputs.matrix_json).debug_temp || '' }}" = "1"; then
           export _SIXEL_DEBUG_TEMP=1
         fi
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Build only (Autotools, Cygwin, MSVC CodeCoverage)
       if: >-
@@ -875,7 +893,7 @@ runs:
         set -exv
         PATH="$PWD/build-aux:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" V=1
 
     - name: Run tests with Microsoft CodeCoverage (Autotools, Cygwin)
       if: >-
@@ -944,7 +962,7 @@ runs:
         $rest = $workspace.Substring(2).Replace('\', '/')
         $workspaceCygwin = "/cygdrive/$drive$rest"
 
-        $makeCmd = "${{ fromJSON(inputs.matrix_json).make || 'make' }}"
+        $makeCmd = "${{ fromJSON(inputs.matrix_json).make || 'make' }} -j${{ steps.autotools_jobs.outputs.count }}"
         $checkTarget = "${{ fromJSON(inputs.matrix_json).check_target || 'check' }}"
         $testShard = "${{ fromJSON(inputs.matrix_json).test_shard || '' }}"
         $debugTemp = "${{ fromJSON(inputs.matrix_json).debug_temp || '' }}"
@@ -1102,7 +1120,7 @@ runs:
           "$srcdir"/configure \
           ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
         if test "$PGO_REUSE_BUILDDIR" = true; then
-          ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1 2>&1 |
+          ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" V=1 2>&1 |
             tee "$top/pgo/use-build.log"
           if grep -E 'libsixel_la-encoder\.gcda.*\[-Wmissing-profile\]' \
               "$top/pgo/use-build.log"; then
@@ -1110,9 +1128,9 @@ runs:
             exit 1
           fi
         else
-          ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+          ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" V=1
         fi
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Rebuild and retest (PGO use, Meson, bash)
