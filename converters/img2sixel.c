@@ -1036,14 +1036,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "      residual_threshold=0..255 (:Hvalue, default 1.5)\n"
         "      residual_keep_threshold=0..255 (:Kvalue, default 0)\n"
         "      residual_frames=1..255 (:Fvalue, default 3)\n"
-        "      refresh=0..10000 (:Jvalue, frames, default 0/off)\n"
-        "      refresh_floor=0..255 (:Lvalue, default 0)\n"
-        "      refresh_curve=0|1|2 (:Avalue, default 0/uniform)\n"
-        "      refresh_spatial=0..4 (:Gvalue, needs L4:A1)\n"
-        "    Experimental J re-evaluates pixels with staggered deadlines.\n"
-        "    L keeps errors <= L; A1/A2 slow small-error deadlines.\n"
-        "    A1/A2 and spatial refresh support all RGB8 dithers.\n"
-        "    It cannot combine with R1/P1 and does not force repainting.\n"
+        "    Frame-based refresh (delta only, off by default):\n"
+        "      -Zdelta:T48:G1    spatial refresh, defaults to J1:L4:A1\n"
+        "      refresh=0..10000 (:Jvalue, encoded frames, 0 disables)\n"
+        "      refresh_floor=0..255 (:Lvalue, small-error keep floor)\n"
+        "      refresh_curve=0|1|2 (:Avalue, uniform/inverse/inverse square)\n"
+        "      refresh_spatial=0..4 (:Gvalue, 0 disables spatial adjustment)\n"
+        "    Spatial refresh uses threads, L4 and A1. All RGB8 dithers work.\n"
+        "    Refresh is incompatible with residual=1 and progressive=1.\n"
         "    delta:R1:T8 lowers T in persistent residual cells. Auto metric\n"
         "    selects rgb241 for R1, max otherwise. Requires opaque full-plane\n"
         "    gamma RGB8, RGB output, none/a_dither/x_dither/bluenoise; no P1.\n"
@@ -1611,7 +1611,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_UPDATE_DELTA_REFRESH_SPATIAL",
         "set delta:refresh_spatial (0 off, 1/2 low band, 3/4 low and middle).\n"
-        "Default 0. Active refresh requires threads and L4:A1."
+        "Default 0. A nonzero value supplies omitted J1:L4:A1. "
+        "J0 disables refresh."
     },
     {
         "SIXEL_UPDATE_DELTA_ERROR",

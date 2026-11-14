@@ -143,6 +143,8 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/processing/delta-refresh/spatial_test_common.c \
 	delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
+	delta/refresh/0101_spatial_defaults.c \
+	delta/refresh/0102_spatial_explicit_disable.c \
 	delta/refresh/0100_custom_band_periods.c \
 	delta/refresh/0099_spatial_fs_gpu_resolve.c \
 	delta/refresh/0098_spatial_fs_gpu_finish.c \
@@ -5647,6 +5649,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0101_spatial_defaults.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0102_spatial_explicit_disable.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0100_custom_band_periods.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0098_spatial_fs_gpu_finish.$(OBJEXT) \
@@ -12555,6 +12559,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0101_spatial_defaults.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0102_spatial_explicit_disable.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -17264,6 +17270,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_SPATIAL_BLUE_GPU_UNSCHEDULED_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0101_SPATIAL_DEFAULTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_SPATIAL_EXPLICIT_DISABLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0100_CUSTOM_BAND_PERIODS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_SPATIAL_FS_GPU_RESOLVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_SPATIAL_FS_GPU_FINISH \
@@ -22679,6 +22687,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/spatial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0101_spatial_defaults.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0102_spatial_explicit_disable.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0100_custom_band_periods.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0099_spatial_fs_gpu_resolve.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0098_spatial_fs_gpu_finish.c \
@@ -28783,6 +28793,12 @@ delta/refresh/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) delta/refresh/$(DEPDIR)
 	@: >>delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0101_spatial_defaults.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0102_spatial_explicit_disable.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0100_custom_band_periods.$(OBJEXT):  \
@@ -47804,6 +47820,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0101_spatial_defaults.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0102_spatial_explicit_disable.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -51949,6 +51967,34 @@ delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj: delta/refr
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c' object='delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj `if test -f 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; then $(CYGPATH_W) 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; fi`
+
+delta/refresh/test_runner-0101_spatial_defaults.o: delta/refresh/0101_spatial_defaults.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0101_spatial_defaults.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0101_spatial_defaults.Tpo -c -o delta/refresh/test_runner-0101_spatial_defaults.o `test -f 'delta/refresh/0101_spatial_defaults.c' || echo '$(srcdir)/'`delta/refresh/0101_spatial_defaults.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0101_spatial_defaults.Tpo delta/refresh/$(DEPDIR)/test_runner-0101_spatial_defaults.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0101_spatial_defaults.c' object='delta/refresh/test_runner-0101_spatial_defaults.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0101_spatial_defaults.o `test -f 'delta/refresh/0101_spatial_defaults.c' || echo '$(srcdir)/'`delta/refresh/0101_spatial_defaults.c
+
+delta/refresh/test_runner-0101_spatial_defaults.obj: delta/refresh/0101_spatial_defaults.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0101_spatial_defaults.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0101_spatial_defaults.Tpo -c -o delta/refresh/test_runner-0101_spatial_defaults.obj `if test -f 'delta/refresh/0101_spatial_defaults.c'; then $(CYGPATH_W) 'delta/refresh/0101_spatial_defaults.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0101_spatial_defaults.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0101_spatial_defaults.Tpo delta/refresh/$(DEPDIR)/test_runner-0101_spatial_defaults.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0101_spatial_defaults.c' object='delta/refresh/test_runner-0101_spatial_defaults.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0101_spatial_defaults.obj `if test -f 'delta/refresh/0101_spatial_defaults.c'; then $(CYGPATH_W) 'delta/refresh/0101_spatial_defaults.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0101_spatial_defaults.c'; fi`
+
+delta/refresh/test_runner-0102_spatial_explicit_disable.o: delta/refresh/0102_spatial_explicit_disable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0102_spatial_explicit_disable.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0102_spatial_explicit_disable.Tpo -c -o delta/refresh/test_runner-0102_spatial_explicit_disable.o `test -f 'delta/refresh/0102_spatial_explicit_disable.c' || echo '$(srcdir)/'`delta/refresh/0102_spatial_explicit_disable.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0102_spatial_explicit_disable.Tpo delta/refresh/$(DEPDIR)/test_runner-0102_spatial_explicit_disable.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0102_spatial_explicit_disable.c' object='delta/refresh/test_runner-0102_spatial_explicit_disable.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0102_spatial_explicit_disable.o `test -f 'delta/refresh/0102_spatial_explicit_disable.c' || echo '$(srcdir)/'`delta/refresh/0102_spatial_explicit_disable.c
+
+delta/refresh/test_runner-0102_spatial_explicit_disable.obj: delta/refresh/0102_spatial_explicit_disable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0102_spatial_explicit_disable.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0102_spatial_explicit_disable.Tpo -c -o delta/refresh/test_runner-0102_spatial_explicit_disable.obj `if test -f 'delta/refresh/0102_spatial_explicit_disable.c'; then $(CYGPATH_W) 'delta/refresh/0102_spatial_explicit_disable.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0102_spatial_explicit_disable.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0102_spatial_explicit_disable.Tpo delta/refresh/$(DEPDIR)/test_runner-0102_spatial_explicit_disable.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0102_spatial_explicit_disable.c' object='delta/refresh/test_runner-0102_spatial_explicit_disable.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0102_spatial_explicit_disable.obj `if test -f 'delta/refresh/0102_spatial_explicit_disable.c'; then $(CYGPATH_W) 'delta/refresh/0102_spatial_explicit_disable.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0102_spatial_explicit_disable.c'; fi`
 
 delta/refresh/test_runner-0100_custom_band_periods.o: delta/refresh/0100_custom_band_periods.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0100_custom_band_periods.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Tpo -c -o delta/refresh/test_runner-0100_custom_band_periods.o `test -f 'delta/refresh/0100_custom_band_periods.c' || echo '$(srcdir)/'`delta/refresh/0100_custom_band_periods.c

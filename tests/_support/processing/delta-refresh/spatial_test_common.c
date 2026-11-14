@@ -205,4 +205,24 @@ test_refresh_spatial_option(char const *value, int accepted)
     RS_CHECK((status == SIXEL_OK) == accepted);
     return 0;
 }
+int
+test_refresh_spatial_defaults(int disable)
+{
+    sixel_encoder_t *encoder;
+    SIXELSTATUS status;
+    unsigned int frames, floor, curve, spatial;
+
+    RS_CHECK(sixel_encoder_new(&encoder, NULL) == SIXEL_OK);
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+        disable ? "delta:T48:G1:J0" : "delta:T48:G1");
+    frames = encoder->refresh_frames;
+    floor = encoder->refresh_floor;
+    curve = encoder->refresh_curve;
+    spatial = encoder->refresh_spatial;
+    sixel_encoder_unref(encoder);
+    RS_CHECK(status == SIXEL_OK);
+    RS_CHECK(frames == (disable ? 0U : 1U));
+    RS_CHECK(floor == 4U && curve == 1U && spatial == 1U);
+    return 0;
+}
 #undef RS_CHECK

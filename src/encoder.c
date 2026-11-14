@@ -3040,8 +3040,8 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
              (encoder->refresh_curve != 1U &&
               encoder->refresh_periods[3] == 0U))) {
         sixel_helper_set_additional_message(
-            "refresh_spatial requires threads and L4 with an adaptive "
-            "refresh schedule.");
+            "spatial refresh requires threads and refresh_floor=4. "
+            "Use refresh_curve=1 for a fixed frame period.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder) &&
@@ -14654,6 +14654,17 @@ sixel_encoder_apply_update_policy_option(
     status = sixel_encoder_apply_bound_suboptions(encoder, schema, &resolution);
     if (SIXEL_SUCCEEDED(status)) {
         encoder->update_policy = resolution.resolved_base_value;
+        if (encoder->refresh_spatial != 0U) {
+            /* Spatial refresh is a complete frame-based policy. Supply its
+             * defaults only for fields absent from the environment and
+             * argument. In particular, J0 still explicitly disables it. */
+            if (!encoder->refresh_frames_override)
+                encoder->refresh_frames = 1U;
+            if (!encoder->refresh_floor_override)
+                encoder->refresh_floor = 4U;
+            if (!encoder->refresh_curve_override)
+                encoder->refresh_curve = 1U;
+        }
         if (encoder->update_policy == SIXEL_UPDATE_POLICY_PROGRESSIVE) {
             encoder->progressive_enabled = 1;
         }
