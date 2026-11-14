@@ -669,13 +669,19 @@ runs:
     - name: Build and test (Meson, bash)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
       shell: bash
+      env:
+        SIXEL_TEST_SHARD: ${{ fromJSON(inputs.matrix_json).test_shard || '' }}
       run: |
         set -exv
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         mkdir -p "$PWD/pgo"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
-        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        if test -n "$SIXEL_TEST_SHARD"; then
+          meson test -C builddir --slice "$SIXEL_TEST_SHARD" --print-errorlogs
+        else
+          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        fi
 
     - name: Build and test (Autotools, msys2)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}

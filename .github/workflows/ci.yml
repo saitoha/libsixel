@@ -4035,6 +4035,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 360
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-clang-TSan
@@ -4110,7 +4111,104 @@ jobs:
               --without-tiff
             exec_type: bash
 
-          - label: Meson-macos-aarch64-TSan
+          # Allow time for both the instrumented build and uneven test costs.
+          - label: Meson-macos-aarch64-TSan-1-of-6
+            test_shard: 1/6
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-2-of-6
+            test_shard: 2/6
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-3-of-6
+            test_shard: 3/6
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-4-of-6
+            test_shard: 4/6
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-5-of-6
+            test_shard: 5/6
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-6-of-6
+            test_shard: 6/6
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
