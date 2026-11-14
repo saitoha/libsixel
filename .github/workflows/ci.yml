@@ -436,6 +436,7 @@ jobs:
           - label: Autotools-ubuntu-x86_64-gcc-pgo
             buildtool: autotools
             runner: ubuntu-latest
+            pgo_reuse_builddir: true
             setup_options: >-
               --enable-pgo=generate --with-pgo-data=${GITHUB_WORKSPACE}/pgo
             pgo_use_options: >-

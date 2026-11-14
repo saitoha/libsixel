@@ -1073,22 +1073,45 @@ runs:
             && endsWith(fromJSON(inputs.matrix_json).label, '-pgo')
             && fromJSON(inputs.matrix_json).pgo_use_options != '' }}
       shell: bash
+      env:
+        PGO_REUSE_BUILDDIR: ${{ fromJSON(inputs.matrix_json).pgo_reuse_builddir || 'false' }}
       run: |
         set -exv
+        set -o pipefail
         top="$PWD"
         srcdir="$top/${rel-.}"
-        builddir="$top/builddir-pgo-use"
         export PATH="$top/build-aux:$top/bin:$PATH"
         if test -f "$top/Makefile"; then
           ${{ fromJSON(inputs.matrix_json).make || 'make' }} distclean
         fi
-        rm -rf "$builddir"
-        mkdir -p "$builddir"
-        cd "$builddir"
+        if test "$PGO_REUSE_BUILDDIR" = true; then
+          # GCC includes the absolute object path in its .gcda lookup key.
+          # distclean removes the instrumented objects; profiles live in pgo/.
+          encoder_profile="$top/pgo/${top//\//#}#src#.libs#libsixel_la-encoder.gcda"
+          if ! test -s "$encoder_profile"; then
+            echo "Missing GCC training profile: $encoder_profile" >&2
+            exit 1
+          fi
+        else
+          builddir="$top/builddir-pgo-use"
+          rm -rf "$builddir"
+          mkdir -p "$builddir"
+          cd "$builddir"
+        fi
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} \
           "$srcdir"/configure \
           ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        if test "$PGO_REUSE_BUILDDIR" = true; then
+          ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1 2>&1 |
+            tee "$top/pgo/use-build.log"
+          if grep -E 'libsixel_la-encoder\.gcda.*\[-Wmissing-profile\]' \
+              "$top/pgo/use-build.log"; then
+            echo 'GCC did not read the trained encoder profile' >&2
+            exit 1
+          fi
+        else
+          ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        fi
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 

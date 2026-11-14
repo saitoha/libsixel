@@ -14369,17 +14369,14 @@ sixel_encoder_set_cell_probe_error(
         return;
     }
 
-    prefix_length = strlen(prefix_message);
-    detail_length = sixel_encoder_bounded_strlen(detail, sizeof(message));
-    if (prefix_length + detail_length >= sizeof(message)) {
-        detail_length = sizeof(message) - prefix_length - 1U;
-    }
-    (void)snprintf(message,
-                   sizeof(message),
-                   "%s%.*s",
-                   prefix_message,
-                   (int)detail_length,
-                   detail);
+    /* Reserve the terminator before measuring either copy. */
+    prefix_length = sixel_encoder_bounded_strlen(prefix_message,
+                                                sizeof(message) - 1U);
+    detail_length = sixel_encoder_bounded_strlen(
+        detail, sizeof(message) - 1U - prefix_length);
+    memcpy(message, prefix_message, prefix_length);
+    memcpy(message + prefix_length, detail, detail_length);
+    message[prefix_length + detail_length] = '\0';
     sixel_helper_set_additional_message(message);
 }
 
