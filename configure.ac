@@ -931,13 +931,14 @@ AS_IF([test "x$using_clangcl" = xyes &&
 # Libtool records the final library_names entry as the link library.
 # LINK defaults to the versioned DLL basename, so give it that entry's path
 # explicitly while preserving the DLL name and the object response file.
+# Quote the shell argument without passing literal quotes to clang-cl.
 AS_IF([test "x$using_clangcl" = xyes &&
        test "x$enable_shared" = xyes &&
        test "x$libext" = xlib], [
   AS_CASE([$host_os], [cygwin* | mingw* | windows*], [
     AS_CASE([$library_names_spec:$archive_cmds],
       [*' $libname.lib:'*' -link -dll~linknames='], [
-      archive_cmds=${archive_cmds%'~linknames='}' -implib:\"$tool_output_objdir$libname.lib\"~linknames='
+      archive_cmds=${archive_cmds%'~linknames='}' -implib:'"'"'$tool_output_objdir$libname.lib'"'"'~linknames='
     ])
   ])
 ])
