@@ -258,6 +258,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
     -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
     -DBUILD_TEST_0097_SPATIAL_BLUE_GPU_UNSCHEDULED_KEEP \
+    -DBUILD_TEST_0100_CUSTOM_BAND_PERIODS \
     -DBUILD_TEST_0099_SPATIAL_FS_GPU_RESOLVE \
     -DBUILD_TEST_0098_SPATIAL_FS_GPU_FINISH \
     -DBUILD_ATKINSON_CARRY_COMMON \
@@ -5640,6 +5641,7 @@ libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 test_runner_SOURCES = test_runner.c \
     _support/processing/delta-refresh/spatial_test_common.c \
     delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
+    delta/refresh/0100_custom_band_periods.c \
     delta/refresh/0099_spatial_fs_gpu_resolve.c \
     delta/refresh/0098_spatial_fs_gpu_finish.c \
     delta/refresh/0096_spatial_blue_cpu_keep.c \

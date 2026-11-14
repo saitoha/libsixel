@@ -34,9 +34,9 @@ spatial_cadence_for_period(int active, unsigned int strength,
     for (f = 1; f <= span; ++f) {
         s.refresh_frame = f - 1;
         sixel_delta_refresh_prepare(&s, 64, 64, 9, 11, period, 1);
-        sixel_delta_refresh_adapt(&s, 9, 11, period, 4, 1);
+        sixel_delta_refresh_adapt(&s, 9, 11, period, 4, 1, NULL);
         baseline = s;
-        sixel_refresh_spatial_apply(&s, bits, period, strength);
+        sixel_refresh_spatial_apply(&s, bits, period, strength, NULL);
         for (y = 0; y < 64; ++y) {
             for (x = 0; x < 64; ++x) {
                 t = sixel_delta_mask_threshold(&s.mask, x, y, 255);
@@ -152,17 +152,17 @@ test_refresh_spatial_async(int stale)
     RS_CHECK(sixel_cond_init(&gate.cond) == SIXEL_OK);
     initialized = 1;
     s.mask.width = s.mask.height = 64;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
-            != SIXEL_OK) { failed = 1; goto end; }
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
+            NULL, &hooks) != SIXEL_OK) { failed = 1; goto end; }
     sixel_mutex_lock(&gate.mutex);
     while (!gate.entered) sixel_cond_wait(&gate.cond, &gate.mutex);
     sixel_mutex_unlock(&gate.mutex);
     s.refresh_next_frame = 4;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
-            != SIXEL_OK || s.mask.tiled == 2) failed = 1;
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
+            NULL, &hooks) != SIXEL_OK || s.mask.tiled == 2) failed = 1;
     s.refresh_next_frame = 8;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
-            != SIXEL_OK || s.mask.tiled == 2) failed = 1;
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
+            NULL, &hooks) != SIXEL_OK || s.mask.tiled == 2) failed = 1;
     sixel_mutex_lock(&gate.mutex);
     gate.release = 1;
     sixel_cond_broadcast(&gate.cond);
@@ -170,8 +170,9 @@ test_refresh_spatial_async(int stale)
         sixel_cond_wait(&gate.cond, &gate.mutex);
     sixel_mutex_unlock(&gate.mutex);
     s.refresh_next_frame = stale ? 17 : 9;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
-            != SIXEL_OK || (s.mask.tiled == 2) == stale) failed = 1;
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
+            NULL, &hooks) != SIXEL_OK ||
+            (s.mask.tiled == 2) == stale) failed = 1;
     sixel_mutex_lock(&gate.mutex);
     gate.snapshot = 1;
     sixel_cond_broadcast(&gate.cond);
@@ -180,8 +181,8 @@ test_refresh_spatial_async(int stale)
     s.refresh_next_frame = 0;
     s.mask.tiled = 1;
     s.mask.width = 32;
-    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1, &hooks)
-            != SIXEL_OK || s.mask.tiled != 1) failed = 1;
+    if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
+            NULL, &hooks) != SIXEL_OK || s.mask.tiled != 1) failed = 1;
 end:
     sixel_refresh_spatial_free(state);
     if (initialized) {

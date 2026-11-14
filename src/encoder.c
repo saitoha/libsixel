@@ -3013,6 +3013,7 @@ sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
     encoder->residual_frames_override = 0;
     encoder->refresh_frames = 0U;
     encoder->refresh_frames_override = 0;
+    memset(encoder->refresh_periods, 0, sizeof(encoder->refresh_periods));
     encoder->refresh_floor = 0U;
     encoder->refresh_floor_override = 0;
     encoder->refresh_curve = 0U;
@@ -3024,7 +3025,7 @@ sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
 static int
 sixel_encoder_refresh_enabled(sixel_encoder_t const *encoder)
 {
-    return encoder->refresh_frames != 0U;
+    return encoder->refresh_frames != 0U || encoder->refresh_periods[3] != 0U;
 }
 
 static SIXELSTATUS
@@ -3034,11 +3035,13 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
     int diffuse;
     int dither_limited;
 
-    if (encoder->refresh_spatial && encoder->refresh_frames &&
+    if (encoder->refresh_spatial && sixel_encoder_refresh_enabled(encoder) &&
             (!SIXEL_ENABLE_THREADS || encoder->refresh_floor != 4U ||
-             encoder->refresh_curve != 1U)) {
+             (encoder->refresh_curve != 1U &&
+              encoder->refresh_periods[3] == 0U))) {
         sixel_helper_set_additional_message(
-            "refresh_spatial requires threads and L4:A1.");
+            "refresh_spatial requires threads and L4 with an adaptive "
+            "refresh schedule.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!encoder->residual_enabled && !sixel_encoder_refresh_enabled(encoder) &&
@@ -3102,7 +3105,8 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
     unsigned char const *target;
     unsigned char const *acc;
     unsigned char const *valid;
-    unsigned int threshold;
+    unsigned int threshold, period;
+    unsigned int const *periods;
     size_t i, count;
     int width, height, plane_width, plane_height, origin_x, origin_y;
     int history_valid;
@@ -3165,25 +3169,26 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
         history_valid = sixel_encoder_6delta_accumulation_active(encoder) &&
             encoder->accumulation_width == plane_width &&
             encoder->accumulation_height == plane_height;
+        periods = encoder->refresh_periods[3] ?
+            encoder->refresh_periods : NULL;
+        period = periods != NULL ? periods[3] : encoder->refresh_frames;
         sixel_delta_refresh_prepare(&encoder->residual_state,
-            width, height, origin_x, origin_y, encoder->refresh_frames,
-            history_valid);
+            width, height, origin_x, origin_y, period, history_valid);
         sixel_delta_refresh_adapt(&encoder->residual_state,
-            origin_x, origin_y, encoder->refresh_frames,
-            encoder->refresh_floor, encoder->refresh_curve);
+            origin_x, origin_y, period, encoder->refresh_floor,
+            encoder->refresh_curve, periods);
         if (encoder->refresh_spatial) {
             status = sixel_refresh_spatial_prepare(
                 &encoder->refresh_spatial_state, encoder->allocator,
                 sixel_frame_get_pixels(frame), &encoder->residual_state,
-                encoder->refresh_frames, encoder->refresh_spatial, NULL);
+                period, encoder->refresh_spatial, periods, NULL);
             if (status != SIXEL_OK) return status;
         }
         sixel_trace_topic_message("delta_refresh",
             "LSXREF1|frame=%llu|period=%u|selected=%lu|pixels=%lu",
             (unsigned long long)
                 encoder->residual_state.refresh_next_frame,
-            encoder->refresh_frames,
-            (unsigned long)encoder->residual_state.selected_pixels,
+            period, (unsigned long)encoder->residual_state.selected_pixels,
             (unsigned long)count);
         return SIXEL_OK;
     }
@@ -16248,6 +16253,8 @@ end:
         /* Reapplying the same effective policy preserves persistence. */
         if (encoder->sixdelta_compare != destination->sixdelta_compare ||
                 encoder->refresh_frames != destination->refresh_frames ||
+                memcmp(encoder->refresh_periods, destination->refresh_periods,
+                    sizeof(encoder->refresh_periods)) != 0 ||
                 encoder->refresh_floor != destination->refresh_floor ||
                 encoder->refresh_curve != destination->refresh_curve ||
                 encoder->refresh_spatial != destination->refresh_spatial ||
@@ -20416,6 +20423,52 @@ sixel_encoder_set_6delta_threshold_limit(sixel_encoder_t *encoder,
         return status;
     }
     status = sixel_encoder_set_6delta_threshold_limit_owned(encoder, threshold);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_refresh_periods(sixel_encoder_t *encoder,
+                                        unsigned int const periods[4])
+{
+    SIXELSTATUS status;
+    unsigned int i, proposed[4], previous[4];
+
+    memset(proposed, 0, sizeof(proposed));
+    if (periods != NULL) {
+        for (i = 0; i < 4; ++i) {
+            if (periods[i] == 0U || periods[i] > 10000U ||
+                    (i != 0U && periods[i - 1U] % periods[i] != 0U)) {
+                sixel_helper_set_additional_message(
+                    "delta refresh periods must be nested in 1..10000.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+            proposed[i] = periods[i];
+        }
+    }
+
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) return status;
+    if (periods != NULL &&
+            (encoder->refresh_frames != 0U || encoder->refresh_curve != 0U)) {
+        sixel_helper_set_additional_message(
+            "caller-selected delta refresh periods require J0:A0.");
+        status = SIXEL_BAD_ARGUMENT;
+    } else if (memcmp(encoder->refresh_periods, proposed,
+                     sizeof(proposed)) != 0) {
+        memcpy(previous, encoder->refresh_periods, sizeof(previous));
+        memcpy(encoder->refresh_periods, proposed, sizeof(proposed));
+        status = sixel_encoder_validate_residual(encoder,
+            encoder->progressive_context != NULL);
+        if (status == SIXEL_OK) {
+            memset(&encoder->residual_state, 0,
+                sizeof(encoder->residual_state));
+            sixel_encoder_revision_advance(encoder,
+                                           &encoder->configuration_revision);
+        } else {
+            memcpy(encoder->refresh_periods, previous, sizeof(previous));
+        }
+    }
     sixel_encoder_operation_leave(encoder);
     return status;
 }

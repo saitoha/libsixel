@@ -270,28 +270,43 @@ sixel_delta_pack_levels(uint32_t *packed, unsigned char const *levels,
 void
 sixel_delta_refresh_adapt(sixel_delta_residual_t *state,
     int origin_x, int origin_y, unsigned int period,
-    unsigned int floor, unsigned int curve)
+    unsigned int floor, unsigned int curve, unsigned int const *band_periods)
 {
     static unsigned int const cuts[4] = {0U, 8U, 16U, 32U};
-    unsigned int phase, cycle, gx, gy, band, cutoff, selected;
-    unsigned int periods[4], multiples[4];
-    uint64_t current, previous, offset, base;
+    unsigned int phase, cycle, gx, gy, band, selected, within;
+    unsigned int multiples[4], residues[4];
+    unsigned char cutoffs[64], due[64];
+    uint64_t previous;
     size_t cell, nx, ny;
 
-    if (floor == 0U && curve == 0U) return;
+    if (floor == 0U && curve == 0U && band_periods == NULL) return;
     /* Restart reevaluates the complete submitted rectangle at T0, just as
      * ordinary refresh does. Floors never weaken that recovery boundary. */
     if (state->refresh_next_frame == 0U) return;
     state->mask.threshold = floor;
-    if (curve == 0U) return;
-    current = state->refresh_next_frame;
-    previous = current - 1U;
+    if (curve == 0U && band_periods == NULL) return;
+    previous = state->refresh_next_frame - 1U;
+    within = (unsigned int)(previous % period) + 1U;
     state->mask.variable = 1U;
     memset(state->mask.cells, 0, sizeof(state->mask.cells));
     state->selected_pixels = 0U;
     for (band = 0U; band < 4U; ++band) {
-        multiples[band] = 1U << ((3U - band) * curve);
-        periods[band] = period * multiples[band];
+        multiples[band] = band_periods != NULL ?
+            band_periods[band] / period : 1U << ((3U - band) * curve);
+        residues[band] = (unsigned int)((previous / period) % multiples[band]);
+    }
+    /* Compute each of the two blue-noise phase tables once. The nested
+     * residues make every slower deadline coincide with faster deadlines. */
+    for (phase = 0U; phase < 64U; ++phase) {
+        due[phase] = ((phase + 1U) * period + 63U) / 64U == within;
+    }
+    for (cycle = 0U; cycle < 64U; ++cycle) {
+        /* The highest-error band always runs when the base phase is due. */
+        for (band = 0U; band < 3U; ++band) {
+            if (cycle % multiples[band] == residues[band]) break;
+        }
+        cutoffs[cycle] = (unsigned char)(cuts[band] > floor ?
+            cuts[band] : floor);
     }
     for (gy = 0U; gy < 64U; ++gy) {
         ny = (size_t)state->mask.height / 64U +
@@ -303,21 +318,7 @@ sixel_delta_refresh_adapt(sixel_delta_residual_t *state,
             cycle = sixel_bn64[
                 ((gy + (unsigned int)origin_y + 43U) & 63U) * 64U +
                 ((gx + (unsigned int)origin_x + 11U) & 63U)] >> 2;
-            base = (((uint64_t)phase + 1U) * period + 63U) / 64U;
-            selected = 255U;
-            for (band = 0U; band < 4U; ++band) {
-                /* A shared within-J phase and nested cycle residues make
-                 * every slower deadline also a faster deadline. Scaling a
-                 * single phase by each period would add unintended refreshes
-                 * or synchronize high-error pixels when the ratios alias. */
-                offset = base + (uint64_t)period *
-                    (cycle & (multiples[band] - 1U));
-                if (current < offset || (previous >= offset &&
-                        (current - offset) / periods[band] ==
-                        (previous - offset) / periods[band])) continue;
-                cutoff = cuts[band] > floor ? cuts[band] : floor;
-                if (cutoff < selected) selected = cutoff;
-            }
+            selected = due[phase] ? cutoffs[cycle] : 255U;
             cell = (size_t)gy * 64U + gx;
             state->mask.levels[cell] = (unsigned char)selected;
             if (selected == 255U) continue;

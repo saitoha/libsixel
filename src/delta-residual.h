@@ -101,7 +101,7 @@ sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
 SIXEL_INTERNAL_API void
 sixel_delta_refresh_adapt(sixel_delta_residual_t *state,
     int origin_x, int origin_y, unsigned int period,
-    unsigned int floor, unsigned int curve);
+    unsigned int floor, unsigned int curve, unsigned int const *periods);
 
 /* Pack bytes explicitly so GPU bit extraction is host-endian independent. */
 SIXEL_INTERNAL_API void

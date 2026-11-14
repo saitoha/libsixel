@@ -339,6 +339,80 @@ end:
     return ok ? 0 : 1;
 }
 
+/* Test unequal ratios and actual RGB8 output using the public setter.
+ * Each threshold keeps the original color until its staggered deadline. */
+int
+test_delta_refresh_periods(void)
+{
+    static unsigned int const periods[4] = {12U, 6U, 2U, 1U};
+    static unsigned int const invalid[4] = {10U, 6U, 2U, 1U};
+    static unsigned char const target[4] = {108U, 117U, 122U, 138U};
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    refresh_output_t out;
+    unsigned char pixels[64 * 64 * 3];
+    size_t painted[4];
+    unsigned int band, i, tick;
+    int mode, ok;
+
+    mode = 100;
+    ok = 0;
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    memset(&out, 0, sizeof(out));
+    DR_REQUIRE(sixel_encoder_new(&encoder, NULL) == SIXEL_OK);
+    DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
+        "none") == SIXEL_OK);
+    DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
+        "off") == SIXEL_OK);
+    DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+        "delta:T48:L4:J1") == SIXEL_OK);
+    DR_REQUIRE(sixel_encoder_set_6delta_refresh_periods(encoder, periods)
+        == SIXEL_BAD_ARGUMENT);
+    DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+        "delta:T48:L4:J0:A0") == SIXEL_OK);
+    DR_REQUIRE(sixel_encoder_set_6delta_refresh_periods(encoder, periods)
+        == SIXEL_OK);
+    DR_REQUIRE(sixel_encoder_set_6delta_refresh_periods(encoder, invalid)
+        == SIXEL_BAD_ARGUMENT);
+    DR_REQUIRE(sixel_output_new(&output, refresh_write, &out, NULL)
+        == SIXEL_OK);
+    DR_REQUIRE(sixel_frame_new(&frame, NULL) == SIXEL_OK);
+    for (band = 0U; band < 4U; ++band) {
+        DR_REQUIRE(sixel_encoder_invalidate_6delta_plane(encoder) == SIXEL_OK);
+        painted[band] = 0;
+        for (tick = 0U; tick <= periods[band]; ++tick) {
+            memset(pixels, tick == 0U ? 102 : target[band], sizeof(pixels));
+            out.size = 0;
+            DR_REQUIRE(sixel_frame_init_borrowed(frame, pixels, 64, 64,
+                SIXEL_PIXELFORMAT_RGB888, NULL, 0) == SIXEL_OK);
+            DR_REQUIRE(sixel_encoder_encode_frame(encoder, frame, output)
+                == SIXEL_OK);
+            if (tick == 0U) continue;
+            if (tick == 1U && band < 2U)
+                DR_REQUIRE(sixel_encoder_get_6delta_painted_pixels(encoder)
+                    == (band == 0U ? 384U : 704U));
+            painted[band] += sixel_encoder_get_6delta_painted_pixels(encoder);
+            for (i = 0; i < 4096U; ++i) {
+                if (tick == periods[band])
+                    DR_REQUIRE(encoder->accumulation_pixels[i * 3U] != 102U);
+            }
+        }
+        DR_REQUIRE(painted[band] == 4096U);
+    }
+    DR_REQUIRE(sixel_encoder_set_6delta_refresh_periods(encoder, NULL)
+        == SIXEL_OK);
+    DR_REQUIRE(encoder->refresh_periods[3] == 0U);
+    ok = 1;
+end:
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? 0 : 1;
+}
+
 /* A constant error above the floor must have exactly the advertised period.
  * Literal periods supplied by separate cases are the oracle; the test never
  * derives expectations from scheduler phases or its multiplier table. */
@@ -360,7 +434,7 @@ test_refresh_adaptive_cadence(unsigned int curve, unsigned int error,
     refresh_commit(&state);
     for (tick = 1; tick <= 640; ++tick) {
         sixel_delta_refresh_prepare(&state, 16, 16, 7, 11, 5, 1);
-        sixel_delta_refresh_adapt(&state, 7, 11, 5, floor, curve);
+        sixel_delta_refresh_adapt(&state, 7, 11, 5, floor, curve, NULL);
         for (y = 0; y < 16; ++y) {
             for (x = 0; x < 16; ++x) {
                 pos = y * 16 + x;
@@ -399,18 +473,18 @@ test_refresh_adaptive_boundary(int mode)
     if (mode == 0) {
         /* The legacy path is bit-identical with explicit zero modifiers. */
         original = state.mask;
-        sixel_delta_refresh_adapt(&state, 0, 0, 1, 0, 0);
+        sixel_delta_refresh_adapt(&state, 0, 0, 1, 0, 0, NULL);
         DR_REQUIRE(memcmp(&original, &state.mask, sizeof(original)) == 0);
     } else if (mode == 1) {
         /* A floor cannot raise the runtime cap or the configured T. */
-        sixel_delta_refresh_adapt(&state, 0, 0, 1, 8, 0);
+        sixel_delta_refresh_adapt(&state, 0, 0, 1, 8, 0, NULL);
         DR_REQUIRE(sixel_delta_mask_threshold(&state.mask, 0, 0, 4) == 4);
         DR_REQUIRE(sixel_delta_mask_threshold(&state.mask, 0, 0, 48) == 8);
     } else if (mode == 2) {
         /* Geometry recovery must reevaluate even errors below the floor. */
         refresh_commit(&state);
         sixel_delta_refresh_prepare(&state, 16, 16, 1, 0, 1, 1);
-        sixel_delta_refresh_adapt(&state, 1, 0, 1, 8, 2);
+        sixel_delta_refresh_adapt(&state, 1, 0, 1, 8, 2, NULL);
         DR_REQUIRE(sixel_delta_mask_threshold(&state.mask, 0, 0, 48) == 0);
     } else {
         DR_REQUIRE(sixel_encoder_new(&encoder, NULL) == SIXEL_OK);

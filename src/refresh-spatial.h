@@ -27,7 +27,8 @@ typedef struct sixel_refresh_spatial_hooks {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **state,
     sixel_allocator_t *allocator, unsigned char const *rgb,
-    sixel_delta_residual_t *schedule, unsigned int period, unsigned int strength,
+    sixel_delta_residual_t *schedule, unsigned int period,
+    unsigned int strength, unsigned int const *band_periods,
     sixel_refresh_spatial_hooks_t const *hooks);
 
 /* Extend the low band to 16J (G1/G3/G4) or 32J (G2) in active cells.
@@ -35,7 +36,8 @@ sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **state,
  * PERIOD is the same base J used to build the A1 threshold tile. */
 SIXEL_INTERNAL_API void
 sixel_refresh_spatial_apply(sixel_delta_residual_t *schedule,
-    uint32_t const activity[128], unsigned int period, unsigned int strength);
+    uint32_t const activity[128], unsigned int period, unsigned int strength,
+    unsigned int const *band_periods);
 
 /* Pure map builder, also used by fixtures. Scratch covers 2*w*h plus two
  * ceil(w/4)*ceil(h/4) byte planes. The caller checks dimensions/allocation. */

@@ -2131,8 +2131,20 @@ sixel_encoder_invalidate_6delta_plane(
 
 /* UPDATE_POLICY delta:R1 enables persistent residual threshold control. */
 #define SIXEL_HAVE_ENCODER_6DELTA_RESIDUAL 1
-/* Periodic refresh accepts opaque rectangles in a retained plane. */
-#define SIXEL_HAVE_ENCODER_6DELTA_REFRESH 1
+/* Periodic refresh accepts opaque rectangles in a retained plane.
+ * Version 2 adds caller-selected error-band periods. */
+#define SIXEL_HAVE_ENCODER_6DELTA_REFRESH 2
+
+/* Select refresh periods in encoded frames for error bands <=8, 9..16,
+ * 17..32, and >32, in that order. Each value is in 1..10000 and must be
+ * a multiple of the next. The floor and spatial settings still apply.
+ * Requires delta and zero frame-period/curve options (J0:A0).
+ * NULL restores the option-selected schedule. Setting UPDATE_POLICY
+ * discards this override. Configure before attaching playback. */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_refresh_periods(
+    sixel_encoder_t *encoder,
+    unsigned int const periods[4]);
 
 /* Limit the effective delta threshold without changing its configured maximum
  * or the retained plane. 0 requests exact-threshold refinement; 255 removes

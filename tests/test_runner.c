@@ -5657,9 +5657,12 @@ int test_delta_refresh_0097(int, char **);
 
 int test_delta_refresh_0099(int, char **);
 
+int test_delta_refresh_0100(int, char **);
+
 int test_delta_refresh_0098(int, char **);
 
 static test_entry_t const test_entries[] = {
+    { "delta/refresh/0100_custom_band_periods", test_delta_refresh_0100 },
     { "delta/refresh/0099_spatial_fs_gpu_resolve",
       test_delta_refresh_0099 },
     { "delta/refresh/0098_spatial_fs_gpu_finish",

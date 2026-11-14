@@ -122,20 +122,27 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
 
 void
 sixel_refresh_spatial_apply(sixel_delta_residual_t *schedule,
-    uint32_t const activity[128], unsigned int period, unsigned int strength)
+    uint32_t const activity[128], unsigned int period, unsigned int strength,
+    unsigned int const *band_periods)
 {
-    unsigned int x, y, cycle, cycles, phase, level, flags;
+    unsigned int x, y, cycle, low_cycles, mid_cycles, level, flags;
+    unsigned int low_due, mid_due;
     int extend_middle;
     size_t cell;
-    uint64_t frame;
+    uint64_t frame, cycle_index;
 
     frame = schedule->refresh_next_frame;
     if (!frame || !period || !strength || strength > 4) return;
     extend_middle = strength >= 3;
-    cycles = strength == 2 ? 32U : 16U;
-    /* A1 deadlines are on frames base + n*J, with base in 1..J.
-     * Test the coarse cycle n to preserve the within-J blue-noise phase. */
-    phase = (unsigned int)(((frame - 1U) / period) & (cycles - 1U));
+    low_cycles = band_periods != NULL ? band_periods[0] / period : 8U;
+    mid_cycles = band_periods != NULL ? band_periods[1] / period : 4U;
+    low_cycles *= strength == 2 ? 4U : 2U;
+    mid_cycles *= 2U;
+    /* Deadlines share their phase within the shortest band period.
+     * Extend the coarse cycle without moving that spatial phase. */
+    cycle_index = (frame - 1U) / period;
+    low_due = (unsigned int)(cycle_index % low_cycles);
+    mid_due = (unsigned int)(cycle_index % mid_cycles);
     schedule->mask.tiled = strength == 4 ? 3U : 2U;
     memcpy(schedule->mask.cells, activity, sizeof(schedule->mask.cells));
     for (y = 0; y < 64; ++y) {
@@ -149,12 +156,12 @@ sixel_refresh_spatial_apply(sixel_delta_residual_t *schedule,
                 ((x + (unsigned)schedule->refresh_next_origin_x + 11U)
                     & 63U)] >> 2;
             flags = 0;
-            if (level == 4U && phase != (cycle & (cycles - 1U)))
+            if (level == 4U && low_due != cycle % low_cycles)
                 flags = 128U;
             /* A due 5..8 deadline must stay at 4. Otherwise the 9..16
-             * deadline can be deferred on alternate A1 middle-band cycles. */
+             * deadline can be deferred on alternate middle-band cycles. */
             if (extend_middle && (level == 8U || flags != 0U) &&
-                    (phase & 7U) != (cycle & 7U))
+                    mid_due != cycle % mid_cycles)
                 flags |= 64U;
             schedule->mask.levels[cell] = (unsigned char)(level | flags);
         }
@@ -266,7 +273,8 @@ fail_state:
 SIXELSTATUS
 sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **owner,
     sixel_allocator_t *allocator, unsigned char const *rgb,
-    sixel_delta_residual_t *schedule, unsigned int period, unsigned int strength,
+    sixel_delta_residual_t *schedule, unsigned int period,
+    unsigned int strength, unsigned int const *band_periods,
     sixel_refresh_spatial_hooks_t const *hooks)
 {
     sixel_refresh_spatial_t *state;
@@ -312,7 +320,8 @@ sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **owner,
     used = frame && state->cached && frame > state->cached_frame &&
         frame - state->cached_frame <= 8U;
     if (used)
-        sixel_refresh_spatial_apply(schedule, state->snapshot, period, strength);
+        sixel_refresh_spatial_apply(schedule, state->snapshot, period,
+            strength, band_periods);
     sixel_trace_topic_message("delta_refresh",
         "LSXGRAD1|frame=%llu|map=%llu|used=%d|queued=%d|strength=%u",
         (unsigned long long)frame,

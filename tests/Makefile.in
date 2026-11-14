@@ -143,6 +143,7 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/processing/delta-refresh/spatial_test_common.c \
 	delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
+	delta/refresh/0100_custom_band_periods.c \
 	delta/refresh/0099_spatial_fs_gpu_resolve.c \
 	delta/refresh/0098_spatial_fs_gpu_finish.c \
 	delta/refresh/0096_spatial_blue_cpu_keep.c \
@@ -5646,6 +5647,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0100_custom_band_periods.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0098_spatial_fs_gpu_finish.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0096_spatial_blue_cpu_keep.$(OBJEXT) \
@@ -12552,6 +12554,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -17261,6 +17264,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_SPATIAL_BLUE_GPU_LEGACY_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_SPATIAL_BLUE_CPU_KEEP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_SPATIAL_BLUE_GPU_UNSCHEDULED_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0100_CUSTOM_BAND_PERIODS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_SPATIAL_FS_GPU_RESOLVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_SPATIAL_FS_GPU_FINISH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ATKINSON_CARRY_COMMON \
@@ -22675,6 +22679,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/spatial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0100_custom_band_periods.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0099_spatial_fs_gpu_resolve.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0098_spatial_fs_gpu_finish.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0096_spatial_blue_cpu_keep.c \
@@ -28778,6 +28783,9 @@ delta/refresh/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) delta/refresh/$(DEPDIR)
 	@: >>delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0100_custom_band_periods.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.$(OBJEXT):  \
@@ -47795,6 +47803,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0097_spatial_blue_gpu_unscheduled_keep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0098_spatial_fs_gpu_finish.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -51940,6 +51949,20 @@ delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj: delta/refr
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c' object='delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.obj `if test -f 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; then $(CYGPATH_W) 'delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c'; fi`
+
+delta/refresh/test_runner-0100_custom_band_periods.o: delta/refresh/0100_custom_band_periods.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0100_custom_band_periods.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Tpo -c -o delta/refresh/test_runner-0100_custom_band_periods.o `test -f 'delta/refresh/0100_custom_band_periods.c' || echo '$(srcdir)/'`delta/refresh/0100_custom_band_periods.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Tpo delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0100_custom_band_periods.c' object='delta/refresh/test_runner-0100_custom_band_periods.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0100_custom_band_periods.o `test -f 'delta/refresh/0100_custom_band_periods.c' || echo '$(srcdir)/'`delta/refresh/0100_custom_band_periods.c
+
+delta/refresh/test_runner-0100_custom_band_periods.obj: delta/refresh/0100_custom_band_periods.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0100_custom_band_periods.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Tpo -c -o delta/refresh/test_runner-0100_custom_band_periods.obj `if test -f 'delta/refresh/0100_custom_band_periods.c'; then $(CYGPATH_W) 'delta/refresh/0100_custom_band_periods.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0100_custom_band_periods.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Tpo delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0100_custom_band_periods.c' object='delta/refresh/test_runner-0100_custom_band_periods.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0100_custom_band_periods.obj `if test -f 'delta/refresh/0100_custom_band_periods.c'; then $(CYGPATH_W) 'delta/refresh/0100_custom_band_periods.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0100_custom_band_periods.c'; fi`
 
 delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.o: delta/refresh/0099_spatial_fs_gpu_resolve.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0099_spatial_fs_gpu_resolve.Tpo -c -o delta/refresh/test_runner-0099_spatial_fs_gpu_resolve.o `test -f 'delta/refresh/0099_spatial_fs_gpu_resolve.c' || echo '$(srcdir)/'`delta/refresh/0099_spatial_fs_gpu_resolve.c
