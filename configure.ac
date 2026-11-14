@@ -917,6 +917,17 @@ AM_SUBST_NOTMAKE([SIXEL_TEST_RUNNER_USE_RESPONSE_FILE])
 AC_SUBST([SIXEL_TEST_RUNNER_RESPONSE_FLAG])
 AM_SUBST_NOTMAKE([SIXEL_TEST_RUNNER_RESPONSE_FLAG])
 
+# The MSVC linker cannot combine batches into reloadable objects. Give
+# Libtool the probed response syntax so long DLL links use the input list.
+AS_IF([test "x$using_clangcl" = xyes &&
+       test "x$enable_shared" = xyes], [
+  AS_CASE([$host_os], [cygwin* | mingw* | windows*], [
+    AS_IF([test "x$sixel_cv_cc_object_response_flag" != xno], [
+      file_list_spec=$sixel_cv_cc_object_response_flag
+    ])
+  ])
+])
+
 # Expose libtool runtime metadata to test environments so shell tests can
 # execute the real binaries directly without probing stale build artifacts.
 AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])
