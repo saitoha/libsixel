@@ -928,6 +928,20 @@ AS_IF([test "x$using_clangcl" = xyes &&
   ])
 ])
 
+# Libtool records the final library_names entry as the link library.
+# LINK defaults to the versioned DLL basename, so give it that entry's path
+# explicitly while preserving the DLL name and the object response file.
+AS_IF([test "x$using_clangcl" = xyes &&
+       test "x$enable_shared" = xyes &&
+       test "x$libext" = xlib], [
+  AS_CASE([$host_os], [cygwin* | mingw* | windows*], [
+    AS_CASE([$library_names_spec:$archive_cmds],
+      [*' $libname.lib:'*' -link -dll~linknames='], [
+      archive_cmds=${archive_cmds%'~linknames='}' -implib:\"$tool_output_objdir$libname.lib\"~linknames='
+    ])
+  ])
+])
+
 # Expose libtool runtime metadata to test environments so shell tests can
 # execute the real binaries directly without probing stale build artifacts.
 AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])

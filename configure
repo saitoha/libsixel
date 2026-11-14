@@ -16197,6 +16197,32 @@ esac
 
 fi
 
+# Libtool records the final library_names entry as the link library.
+# LINK defaults to the versioned DLL basename, so give it that entry's path
+# explicitly while preserving the DLL name and the object response file.
+if test "x$using_clangcl" = xyes &&
+       test "x$enable_shared" = xyes &&
+       test "x$libext" = xlib
+then :
+
+  case $host_os in #(
+  cygwin* | mingw* | windows*) :
+
+    case $library_names_spec:$archive_cmds in #(
+  *' $libname.lib:'*' -link -dll~linknames=') :
+
+      archive_cmds=${archive_cmds%'~linknames='}' -implib:\"$tool_output_objdir$libname.lib\"~linknames='
+     ;; #(
+  *) :
+     ;;
+esac
+   ;; #(
+  *) :
+     ;;
+esac
+
+fi
+
 # Expose libtool runtime metadata to test environments so shell tests can
 # execute the real binaries directly without probing stale build artifacts.
 SIXEL_LIBTOOL_OBJDIR=$objdir
