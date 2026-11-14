@@ -1012,6 +1012,13 @@ runs:
       shell: bash
       run: |
         set -exv
+        if test "${{ fromJSON(inputs.matrix_json).buildtool }}" = meson; then
+          # The regular tests do not run this default-built executable.
+          # Collect its main profile before merging profiles from other tools.
+          LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw" \
+            builddir/tools/progressive-study tests/data/inputs/small.ppm \
+              builddir/pgo-study.six 1 0.01 0.01 4096 linear
+        fi
         LLVM_PROFDATA="$(command -v llvm-profdata || true)"
         if test -z "$LLVM_PROFDATA"; then
           LLVM_PROFDATA="$(clang --print-prog-name=llvm-profdata 2>/dev/null || true)"
