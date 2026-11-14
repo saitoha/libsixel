@@ -106,6 +106,8 @@ Usage:
     [--ignore-exit] [--comments] [--timeout SECONDS]
     [--stream-output {yes|no|auto}]
     [--] TEST-SCRIPT [ARGS...]
+
+  Use --timeout 0 when an outer harness owns the timeout.
 EOF
   exit 2
 }
@@ -418,11 +420,6 @@ can_run_shell_timeout() {
 }
 
 run_with_shell_timeout() {
-  if [ "$timeout_budget" -eq 0 ]; then
-    "$@"
-    return $?
-  fi
-
   shell_timeout_marker=${trs_file}.timeout
   rm -f "$shell_timeout_marker" >/dev/null 2>&1 || true
 
@@ -600,6 +597,16 @@ run_with_timeout() {
   esac
 
   echo "# lso-tap-driver: ${run_desc}"
+
+  # A zero budget delegates the deadline to the caller, regardless of which
+  # timeout helpers are installed.
+  case "$timeout_budget" in
+    *[!0]*) ;;
+    *)
+      "$@"
+      return $?
+      ;;
+  esac
 
   helper_bin=$(select_timeout_bin)
   if timeout_helper_available "$helper_bin"; then
