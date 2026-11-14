@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - 'ci/triage/**'
+      - 'triage/**'
   workflow_dispatch:
     inputs:
       triage_job_labels:

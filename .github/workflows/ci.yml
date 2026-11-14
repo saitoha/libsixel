@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - 'ci/triage/**'
+      - 'triage/**'
   pull_request:
     branches: ['**']
   schedule:

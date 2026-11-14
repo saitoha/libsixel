@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/compat_stub.h"
 #include "src/dither.h"
 #include "src/encoder.h"
 #include "src/output.h"
@@ -102,8 +103,8 @@ test_delta_byte_method(int method)
     }
     for (i = 0; i < size; ++i) {
         if (mask[i] != 1) {
-            fprintf(stderr, "byte method=%d pixel=%zu keep=%u\n",
-                method, i, mask[i]);
+            fprintf(stderr, "byte method=%d pixel=%" SIXEL_PRI_SIZE
+                " keep=%u\n", method, SIXEL_PRINTF_SIZE(i), mask[i]);
             goto end;
         }
     }

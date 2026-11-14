@@ -17,6 +17,25 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Select Autotools make parallelism
+      id: autotools_jobs
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && contains(fromJSON('["bash","msys2","cygwin","cygwin-msvc-codecoverage"]'),
+                        fromJSON(inputs.matrix_json).exec_type) }}
+      shell: bash
+      env:
+        MAKE_JOBS: ${{ fromJSON(inputs.matrix_json).make_jobs || '' }}
+      run: |
+        # Run before Cygwin is added to PATH so Windows uses Git Bash.
+        # Pass the limit via -j so recursive checks share make's jobserver.
+        jobs="${MAKE_JOBS:-${NUMBER_OF_PROCESSORS:-$(getconf _NPROCESSORS_ONLN)}}"
+        if ! [[ "$jobs" =~ ^[1-9][0-9]*$ ]]; then
+          printf 'Invalid Autotools make job count: %s\n' "$jobs" >&2
+          exit 1
+        fi
+        echo "count=$jobs" >> "$GITHUB_OUTPUT"
+
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
       shell: bash
@@ -653,24 +672,6 @@ runs:
         ini-values: ffi.enable=1
         coverage: none
 
-    - name: Select Autotools make parallelism
-      id: autotools_jobs
-      if: >-
-        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
-            && contains(fromJSON('["bash","msys2","cygwin","cygwin-msvc-codecoverage"]'),
-                        fromJSON(inputs.matrix_json).exec_type) }}
-      shell: bash
-      env:
-        MAKE_JOBS: ${{ fromJSON(inputs.matrix_json).make_jobs || '' }}
-      run: |
-        # Pass the limit via -j so recursive checks share make's jobserver.
-        jobs="${MAKE_JOBS:-${NUMBER_OF_PROCESSORS:-$(getconf _NPROCESSORS_ONLN)}}"
-        if ! [[ "$jobs" =~ ^[1-9][0-9]*$ ]]; then
-          printf 'Invalid Autotools make job count: %s\n' "$jobs" >&2
-          exit 1
-        fi
-        echo "count=$jobs" >> "$GITHUB_OUTPUT"
-
     - name: Build and test (Autotools, bash)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
       shell: bash
@@ -1037,6 +1038,19 @@ runs:
         builddir\tools\progressive-study.exe tests\data\inputs\small.ppm builddir\pgo-study.six 1 0.01 0.01 4096 linear
         if errorlevel 1 exit /b %errorlevel%
 
+    - name: Train progressive study (Meson PGO, bash)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'bash'
+            && endsWith(fromJSON(inputs.matrix_json).label, '-pgo') }}
+      shell: bash
+      run: |
+        set -exv
+        # The regular tests do not run this default-built executable.
+        LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw" \
+          builddir/tools/progressive-study tests/data/inputs/small.ppm \
+            builddir/pgo-study.six 1 0.01 0.01 4096 linear
+
     - name: Merge Clang PGO raw profiles
       if: >-
         ${{ fromJSON(inputs.matrix_json).exec_type == 'bash'
@@ -1045,13 +1059,6 @@ runs:
       shell: bash
       run: |
         set -exv
-        if test "${{ fromJSON(inputs.matrix_json).buildtool }}" = meson; then
-          # The regular tests do not run this default-built executable.
-          # Collect its main profile before merging profiles from other tools.
-          LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw" \
-            builddir/tools/progressive-study tests/data/inputs/small.ppm \
-              builddir/pgo-study.six 1 0.01 0.01 4096 linear
-        fi
         LLVM_PROFDATA="$(command -v llvm-profdata || true)"
         if test -z "$LLVM_PROFDATA"; then
           LLVM_PROFDATA="$(clang --print-prog-name=llvm-profdata 2>/dev/null || true)"

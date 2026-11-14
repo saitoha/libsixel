@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'ci/triage/**'
+      - 'triage/**'
   workflow_run:
     # workflow_run starts only from workflow definitions on the default
     # branch. Reconstruct the matrix from the failed run commit below, then
@@ -105,15 +106,16 @@ jobs:
         id: collect
         env:
           GH_TOKEN: ${{ github.token }}
-          CHECKOUT_REF: ${{ inputs.checkout_ref || '' }}
-          CHECKOUT_SHA: ${{ inputs.checkout_sha || '' }}
+          CHECKOUT_REF: ${{ inputs.checkout_ref || (github.event_name == 'push' && github.ref) || '' }}
+          CHECKOUT_SHA: ${{ inputs.checkout_sha || (github.event_name == 'push' && github.sha) || '' }}
           MAX_JOBS: ${{ inputs.max_jobs || '8' }}
           SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch || inputs.source_branch || 'develop' }}
           SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id || '' }}
           SOURCE_WORKFLOW_NAME: ${{ github.event.workflow_run.name || '' }}
           TRIAGE_MODE: ${{ inputs.triage_mode || 'normal' }}
           TRIAGE_EVENT_NAME: ${{ github.event_name }}
-          WORKFLOW_FILE: ${{ inputs.workflow_file || 'experimental.yml' }}
+          TRIAGE_REF_NAME: ${{ github.ref_name }}
+          WORKFLOW_FILE: ${{ inputs.workflow_file || (github.event_name == 'push' && 'ci.yml') || 'experimental.yml' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -156,6 +158,13 @@ jobs:
               exit 1
               ;;
           esac
+
+          # triage/<run-id>-<topic> also supports replaying failures from an
+          # active run while unrelated jobs from that run are still running.
+          if test "$TRIAGE_EVENT_NAME" = push &&
+             [[ "$TRIAGE_REF_NAME" =~ ^triage/([0-9]+)(-|$) ]]; then
+            SOURCE_RUN_ID="${BASH_REMATCH[1]}"
+          fi
 
           if test -n "$SOURCE_RUN_ID"; then
             run_id="$SOURCE_RUN_ID"
