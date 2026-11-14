@@ -692,11 +692,15 @@ runs:
         PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
-        ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
+          SIXEL_TEST_SHARD=${{ fromJSON(inputs.matrix_json).test_shard || '' }} \
+          ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Build and test (Meson, msys2)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}
       shell: msys2 {0}
+      env:
+        SIXEL_TEST_SHARD: ${{ fromJSON(inputs.matrix_json).test_shard || '' }}
       run: |
         set -exv
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
@@ -843,7 +847,11 @@ runs:
         fi
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
-        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        if test -n "$SIXEL_TEST_SHARD"; then
+          meson test -C builddir --slice "$SIXEL_TEST_SHARD" --print-errorlogs
+        else
+          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        fi
 
     - name: Build and test (Autotools, Cygwin)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
@@ -938,8 +946,9 @@ runs:
 
         $makeCmd = "${{ fromJSON(inputs.matrix_json).make || 'make' }}"
         $checkTarget = "${{ fromJSON(inputs.matrix_json).check_target || 'check' }}"
+        $testShard = "${{ fromJSON(inputs.matrix_json).test_shard || '' }}"
         $debugTemp = "${{ fromJSON(inputs.matrix_json).debug_temp || '' }}"
-        $bashScript = "unset MSVC_PATH __VSCMD_PREINIT_PATH; cd '$workspaceCygwin'; export LDFLAGS='-Xlinker /PROFILE'; if test '$debugTemp' = '1'; then export _SIXEL_DEBUG_TEMP=1; fi; $makeCmd $checkTarget"
+        $bashScript = "unset MSVC_PATH __VSCMD_PREINIT_PATH; cd '$workspaceCygwin'; export LDFLAGS='-Xlinker /PROFILE'; if test '$debugTemp' = '1'; then export _SIXEL_DEBUG_TEMP=1; fi; $makeCmd SIXEL_TEST_SHARD='$testShard' $checkTarget"
 
         if ($coverageTool.ToLower().EndsWith('.dll')) {
           & dotnet $coverageTool collect -- $cygwinBash '-o' 'igncr' '-lc' $bashScript

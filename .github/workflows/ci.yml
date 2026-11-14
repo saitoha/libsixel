@@ -1397,7 +1397,28 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Autotools-msys2-msys-msvc-lto-full
+          - label: Autotools-msys2-msys-msvc-lto-full-1-of-2
+            test_shard: 1/2
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-lto=full
+            extra_packages: >-
+              make
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-msvc-lto-full-2-of-2
+            test_shard: 2/2
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
@@ -2099,7 +2120,24 @@ jobs:
               mingw-w64-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-mingw64-no-threads-coverage
+          - label: Meson-msys2-mingw64-no-threads-coverage-1-of-2
+            test_shard: 1/2
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dthreads=disabled
+              -Db_coverage=true
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-threads-coverage-2-of-2
+            test_shard: 2/2
             buildtool: meson
             runner: windows-latest
             msystem: MINGW64
@@ -2129,7 +2167,24 @@ jobs:
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-1-of-2
+            test_shard: 1/2
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-2-of-2
+            test_shard: 2/2
             buildtool: meson
             runner: windows-latest
             msystem: UCRT64
@@ -2158,7 +2213,23 @@ jobs:
               mingw-w64-clang-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage
+          - label: Meson-msys2-msys-gcc-coverage-1-of-2
+            test_shard: 1/2
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-2-of-2
+            test_shard: 2/2
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -2221,7 +2292,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-cygwin64-msvc-coverage
+          - label: Autotools-cygwin64-msvc-coverage-1-of-2
+            test_shard: 1/2
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin-msvc-codecoverage
+
+          - label: Autotools-cygwin64-msvc-coverage-2-of-2
+            test_shard: 2/2
             buildtool: autotools
             runner: windows-latest
             setup_prefix: >-
@@ -2555,7 +2645,8 @@ jobs:
       max-parallel: 2
       matrix:
         include:
-          - label: Autotools-msys2-mingw64-no-tools
+          - label: Autotools-msys2-mingw64-no-tools-1-of-2
+            test_shard: 1/2
             buildtool: autotools
             runner: windows-latest
             msystem: MINGW64
@@ -2567,7 +2658,34 @@ jobs:
               mingw-w64-x86_64-toolchain
             exec_type: msys2
 
-          - label: Autotools-msys2-ucrt64-amalgamated_lib
+          - label: Autotools-msys2-mingw64-no-tools-2-of-2
+            test_shard: 2/2
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-img2sixel
+              --disable-sixel2png
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-amalgamated_lib-1-of-2
+            test_shard: 1/2
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-amalgamated-lib
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-amalgamated_lib-2-of-2
+            test_shard: 2/2
             buildtool: autotools
             runner: windows-latest
             msystem: UCRT64
@@ -3400,7 +3518,35 @@ jobs:
               meson
             exec_type: bash
 
-          - label: Autotools-msys2-clang64-distcheck
+          # Both check and installcheck inside distcheck use this shard.
+          - label: Autotools-msys2-clang64-distcheck-1-of-3
+            test_shard: 1/3
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            check_target: distcheck
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-distcheck-2-of-3
+            test_shard: 2/3
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            check_target: distcheck
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-distcheck-3-of-3
+            test_shard: 3/3
             buildtool: autotools
             runner: windows-latest
             msystem: CLANG64
@@ -3787,7 +3933,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2
+          - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2-1-of-2
+            test_shard: 1/2
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=address,undefined
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              gdk-pixbuf
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2-2-of-2
+            test_shard: 2/2
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -3821,7 +3984,24 @@ jobs:
               gdk-pixbuf
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-GD
+          - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-GD-1-of-2
+            test_shard: 1/2
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=address,undefined
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --with-gd
+            extra_packages: >-
+              gd
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-GD-2-of-2
+            test_shard: 2/2
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -3905,7 +4085,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-msys2-clang64-ASan-UBSan-use-after-scope
+          - label: Autotools-msys2-clang64-ASan-UBSan-use-after-scope-1-of-2
+            test_shard: 1/2
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=address,undefined
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-ASan-UBSan-use-after-scope-2-of-2
+            test_shard: 2/2
             buildtool: autotools
             runner: windows-latest
             msystem: CLANG64
@@ -4631,7 +4826,8 @@ jobs:
               llvm
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-emscripten-coverage
+          - label: Autotools-macos-aarch64-emscripten-coverage-1-of-2
+            test_shard: 1/2
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -4649,7 +4845,44 @@ jobs:
             # Bound concurrent coverage-instrumented Node processes to two.
             make: make MAKEFLAGS=-j2
 
-          - label: Meson-macos-aarch64-emscripten-coverage
+          - label: Autotools-macos-aarch64-emscripten-coverage-2-of-2
+            test_shard: 2/2
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              node
+              gcovr
+            exec_type: bash
+            # Bound concurrent coverage-instrumented Node processes to two.
+            make: make MAKEFLAGS=-j2
+
+          - label: Meson-macos-aarch64-emscripten-coverage-1-of-2
+            test_shard: 1/2
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              node
+              gcovr
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-emscripten-coverage-2-of-2
+            test_shard: 2/2
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
