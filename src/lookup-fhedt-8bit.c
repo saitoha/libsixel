@@ -32,7 +32,7 @@
 #include "config.h"
 #endif
 
-#if defined(__MINGW32__)
+#if defined(SIXEL_SNPRINTF_NEEDS_PRIUMAX)
 # include <inttypes.h>
 #endif
 #include <stdio.h>
@@ -625,8 +625,8 @@ sixel_lookup_fhedt_prefetch_line_8bit(double *distances,
             return;
         }
 
-#if defined(__MINGW32__)
-        /* MinGW GCC can reject %zu under MSVCRT format checking. */
+#if defined(SIXEL_SNPRINTF_NEEDS_PRIUMAX)
+        /* Preserve the full offset when the build rejects %zu. */
         (void)snprintf(message, sizeof(message),
                        "prefetch@%" PRIuMAX, (uintmax_t)offset);
 #else

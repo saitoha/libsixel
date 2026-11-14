@@ -652,6 +652,7 @@ ac_includes_default="\
 #endif"
 
 ac_header_c_list=
+ac_c_werror_flag=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
@@ -20312,6 +20313,55 @@ esac
 fi
 
 fi
+fi
+
+# Check the active snprintf format dialect without running target code.
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether snprintf accepts %zu" >&5
+printf %s "checking whether snprintf accepts %zu... " >&6; }
+if test ${sixel_cv_snprintf_size_t_format+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    sixel_saved_cflags="$CFLAGS"
+    sixel_saved_c_werror_flag="$ac_c_werror_flag"
+    CFLAGS="$AM_CFLAGS $CFLAGS"
+
+ac_c_werror_flag=yes
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main (void)
+{
+char buffer[64];
+          return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer));
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  sixel_cv_snprintf_size_t_format=yes
+else case e in #(
+  e) sixel_cv_snprintf_size_t_format=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    CFLAGS="$sixel_saved_cflags"
+    ac_c_werror_flag="$sixel_saved_c_werror_flag"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_snprintf_size_t_format" >&5
+printf "%s\n" "$sixel_cv_snprintf_size_t_format" >&6; }
+if test "$sixel_cv_snprintf_size_t_format" = no
+then :
+
+
+printf "%s\n" "#define SIXEL_SNPRINTF_NEEDS_PRIUMAX 1" >>confdefs.h
+
+
 fi
 
 # In CI, CFLAGS includes -Werror. Keep emcc post-link optimization warnings

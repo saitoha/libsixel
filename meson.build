@@ -625,6 +625,20 @@ endif
 flags = cc.get_supported_arguments(base_flags)
 add_project_arguments(flags, language: 'c')
 
+# Check the active snprintf format dialect without running target code.
+snprintf_check_args = cc.get_supported_arguments(['-Wformat=2',
+  cc.get_argument_syntax() == 'msvc' ? '/WX' : '-Werror'])
+if not cc.compiles('''
+    #include <stdio.h>
+    int main(void)
+    {
+      char buffer[64];
+      return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer));
+    }
+  ''', args: snprintf_check_args, name: 'snprintf accepts %zu')
+  conf.set('SIXEL_SNPRINTF_NEEDS_PRIUMAX', 1)
+endif
+
 if host_system != 'openbsd'
   # Use a linker-style option here. Passing raw "-Bsymbolic" as a compile
   # option can be misparsed by some compilers (for example, tcc treats it as

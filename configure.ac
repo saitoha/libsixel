@@ -2783,6 +2783,27 @@ else
         [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 fi
 
+# Check the active snprintf format dialect without running target code.
+AC_CACHE_CHECK([whether snprintf accepts %zu],
+  [sixel_cv_snprintf_size_t_format], [
+    sixel_saved_cflags="$CFLAGS"
+    sixel_saved_c_werror_flag="$ac_c_werror_flag"
+    CFLAGS="$AM_CFLAGS $CFLAGS"
+    AC_LANG_WERROR
+    AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([[#include <stdio.h>]],
+        [[char buffer[64];
+          return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer));]])],
+      [sixel_cv_snprintf_size_t_format=yes],
+      [sixel_cv_snprintf_size_t_format=no])
+    CFLAGS="$sixel_saved_cflags"
+    ac_c_werror_flag="$sixel_saved_c_werror_flag"
+  ])
+AS_IF([test "$sixel_cv_snprintf_size_t_format" = no], [
+  AC_DEFINE([SIXEL_SNPRINTF_NEEDS_PRIUMAX], [1],
+    [Define if snprintf needs PRIuMAX for size_t formatting.])
+])
+
 # In CI, CFLAGS includes -Werror. Keep emcc post-link optimization warnings
 # non-fatal in normal build compilation as well as feature checks.
 AS_IF([test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT" -a -n "$CI"],
