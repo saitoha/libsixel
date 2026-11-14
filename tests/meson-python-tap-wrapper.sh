@@ -115,7 +115,7 @@ case "${test_script##*.}" in
   py|rb|pl|php)
     ;;
   *)
-    exec sh "$test_script" "$@"
+    exec "${SIXEL_TEST_CONFIG_SHELL:?}" "$test_script" "$@"
     ;;
 esac
 

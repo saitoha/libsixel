@@ -16977,7 +16977,8 @@ SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null 
 # Keep executable suffix in sync with the configured target so TAP
 # wrappers can resolve cross-built Windows binaries under Wine.
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
-	ARTIFACT_ROOT; CKSUM='$(CKSUM)'; export CKSUM; \
+	ARTIFACT_ROOT; CKSUM='$(CKSUM)'; export CKSUM; AWK='$(AWK)'; \
+	export AWK; SED='$(SED)'; export SED; \
 	SIXEL_TEST_PKG_CONFIG='$(PKG_CONFIG)'; export \
 	SIXEL_TEST_PKG_CONFIG; SIXEL_TEST_CONFIG_SHELL='$(SHELL)'; \
 	export SIXEL_TEST_CONFIG_SHELL; \

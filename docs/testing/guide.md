@@ -138,6 +138,7 @@ Tests run on Windows and other process-expensive environments. Treat every fork 
 - Avoid subshells and multi-stage pipelines.
 - Do not use Python in shell tests.
 - Current static policy rejects `grep`, `awk`, and `sed` in `tests/**/*.t`; use shell operations or a focused compiled helper.
+- TAP directive cases and their shared helper use the shell, awk, and sed selected by the build setup. The utility check also scans this entry path for direct invocations and literal command fallbacks.
 - Do not use `cp` or `rm` unless the test specifically observes that file operation and no cheaper design exists. Do not create arbitrary directories.
 - Do not create a log file only to inspect stderr.
 - Capture only output that is part of the assertion.
@@ -359,7 +360,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | --- | --- | --- |
 | TG-01 | TAP-producing test sources declare one observation, or a whole-file skip. | [tests/_static/sh/staticcheck-test-plan-single.sh](../../tests/_static/sh/staticcheck-test-plan-single.sh) |
 | TG-02 | Every shell TAP test passes ShellCheck, and global checks reject top-level `if` and shell function definitions. | [tests/_static/sh/staticcheck-shellcheck.sh](../../tests/_static/sh/staticcheck-shellcheck.sh) |
-| TG-03 | Shell TAP tests do not invoke `grep`, `awk`, or `sed`. | [tests/_static/sh/staticcheck-test-no-grep-awk.sh](../../tests/_static/sh/staticcheck-test-no-grep-awk.sh) |
+| TG-03 | Shell TAP tests do not invoke `grep`, `awk`, or `sed` by name. TAP directive tests and their helper use configured shell and utility commands. | [tests/_static/sh/staticcheck-test-no-grep-awk.sh](../../tests/_static/sh/staticcheck-test-no-grep-awk.sh) |
 | TG-04 | Test-owned artifact directories are created lazily after TAP setup and early feature skips, while the harness does not create them. | [tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh](../../tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh) |
 | TG-05 | Numbered test-runner C sources, shared test support and registered external support retain synchronized amalgamation build defines; include fragments and always-included production units require no standalone test guard. | [tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh](../../tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh) |
 | TG-06 | Enforced policy documents and their listed tests carry reciprocal repository-relative links, and every coverage row has an owning test. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |

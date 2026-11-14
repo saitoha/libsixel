@@ -4,7 +4,7 @@ set -eux
 echo '1..1'
 set -v
 
-sh "$TOP_SRCDIR/tests/_support/tools/tap-directive.sh" \
+"${SIXEL_TEST_CONFIG_SHELL}" "$TOP_SRCDIR/tests/_support/tools/tap-directive.sh" \
     yes todo_reason XFAIL || {
     echo 'not ok 1 - shell todo reason classification'
     exit 0

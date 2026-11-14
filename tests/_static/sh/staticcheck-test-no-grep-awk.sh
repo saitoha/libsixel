@@ -1,5 +1,5 @@
 #!/bin/sh
-# Emit TAP for enforcing grep/awk/sed ban in shell TAP test scripts.
+# Emit TAP for enforcing shell test utility rules.
 # Policy: docs/testing/guide.md
 
 set -eu
@@ -11,7 +11,7 @@ tests_root=$src_root/tests
 echo "1..1"
 
 if test ! -d "$tests_root"; then
-    echo "not ok 1 - shell TAP tests avoid grep/awk/sed"
+    echo "not ok 1 - shell TAP tests use utilities according to policy"
     echo "# tests directory not found: $tests_root"
     exit 1
 fi
@@ -25,10 +25,21 @@ else
         '(^|[^[:alnum:]_])(grep|awk|sed)($|[^[:alnum:]_])' || :)
 fi
 
-if test -n "$matches"; then
-    echo "not ok 1 - shell TAP tests avoid grep/awk/sed"
-    printf '%s\n' "$matches" | sed 's/^/# /'
+# The directive tests exercise the driver through a shared shell helper.
+# Check that entry path as well, including literal shell invocations.
+directive_matches=$(cd "$tests_root" &&
+    awk '
+        /^[ \t]*#/ { next }
+        /(^|[ \t=\/])(sh|grep|awk|sed)([ \t]|$)/ ||
+        /\$\{[A-Za-z0-9_]+:?-(sh|grep|awk|sed)\}/ {
+            print FILENAME ":" FNR ":" $0
+        }
+    ' _support/tools/tap-directive.sh tools/tap/*.t)
+
+if test -n "$matches$directive_matches"; then
+    echo "not ok 1 - shell TAP tests use utilities according to policy"
+    printf '%s\n' "$matches" "$directive_matches" | sed '/^$/d; s/^/# /'
     exit 1
 fi
 
-echo "ok 1 - shell TAP tests avoid grep/awk/sed"
+echo "ok 1 - shell TAP tests use utilities according to policy"
