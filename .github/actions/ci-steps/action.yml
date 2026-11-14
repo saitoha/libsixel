@@ -1213,8 +1213,10 @@ runs:
           set -xv
           export MAKE="${{ fromJSON(inputs.matrix_json).make || 'make' }}"
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
-          ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
-          ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+          # These guests run serially. In particular, the Meson Haiku and
+          # OpenBSD jobs deliberately use a single test worker.
+          "$MAKE" -j1 V=1
+          "$MAKE" -j1 ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Build and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'cross-platform-vms' }}
