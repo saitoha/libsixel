@@ -323,7 +323,7 @@ test_runner_deps = [libsixel_dep] + gdk_pixbuf_loader_deps + abort_trace_deps
 
 # Unity reads system headers before later sources can select XSI declarations.
 # Set the namespace on every test compilation, preserving DragonFly defaults.
-test_feature_c_args = libsixel_posix_defs
+test_feature_c_args = libsixel_posix_defs + test_printf_args
 if host_system != 'dragonfly'
   test_feature_c_args += cc.get_supported_arguments('-D_XOPEN_SOURCE=700')
 endif

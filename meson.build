@@ -628,7 +628,7 @@ add_project_arguments(flags, language: 'c')
 # Check the active printf format dialect without running target code.
 printf_check_args = cc.get_supported_arguments(['-Wformat=2',
   cc.get_argument_syntax() == 'msvc' ? '/WX' : '-Werror'])
-if not cc.compiles('''
+printf_size_probe = '''
     #include <stdio.h>
     int main(void)
     {
@@ -636,8 +636,20 @@ if not cc.compiles('''
       return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer)) +
              fprintf(stderr, "%zu", sizeof(buffer));
     }
-  ''', args: printf_check_args, name: 'snprintf and fprintf accept %zu')
+  '''
+test_printf_args = []
+if not cc.compiles(printf_size_probe, args: printf_check_args,
+                   name: 'snprintf and fprintf accept %zu')
   conf.set('SIXEL_SNPRINTF_NEEDS_PRIUMAX', 1)
+  if host_system == 'windows' and cc.get_argument_syntax() == 'gcc'
+    # Keep the ANSI stdio declarations' format checks for test code.
+    mingw_test_stdio = ['-D__USE_MINGW_ANSI_STDIO=1', '-fno-builtin-printf',
+      '-fno-builtin-fprintf', '-fno-builtin-sprintf', '-fno-builtin-snprintf']
+    if cc.compiles(printf_size_probe, args: printf_check_args + mingw_test_stdio,
+                   name: 'MinGW ANSI stdio accepts %zu')
+      test_printf_args = mingw_test_stdio
+    endif
+  endif
 endif
 
 if host_system != 'openbsd'

@@ -2826,10 +2826,36 @@ AC_CACHE_CHECK([whether snprintf and fprintf accept %zu],
     CFLAGS="$sixel_saved_cflags"
     ac_c_werror_flag="$sixel_saved_c_werror_flag"
   ])
+SIXEL_TEST_PRINTF_CFLAGS=
 AS_IF([test "$sixel_cv_printf_size_t_format" = no], [
   AC_DEFINE([SIXEL_SNPRINTF_NEEDS_PRIUMAX], [1],
     [Define if printf-family functions need PRIuMAX for size_t formatting.])
+  AS_CASE([$host_os], [mingw*], [
+    # Use MinGW's ANSI stdio declarations for the test runner. The compiler's
+    # MSVCRT builtins would otherwise override their GNU format attributes.
+    sixel_mingw_test_stdio="-D__USE_MINGW_ANSI_STDIO=1 -fno-builtin-printf -fno-builtin-fprintf -fno-builtin-sprintf -fno-builtin-snprintf"
+    AC_CACHE_CHECK([whether MinGW ANSI stdio accepts %zu],
+      [sixel_cv_mingw_test_stdio], [
+        sixel_saved_cflags="$CFLAGS"
+        sixel_saved_c_werror_flag="$ac_c_werror_flag"
+        CFLAGS="$AM_CFLAGS $CFLAGS $sixel_mingw_test_stdio"
+        AC_LANG_WERROR
+        AC_COMPILE_IFELSE(
+          [AC_LANG_PROGRAM([[#include <stdio.h>]],
+            [[char buffer[64];
+              return snprintf(buffer, sizeof(buffer), "%zu", sizeof(buffer)) +
+                     fprintf(stderr, "%zu", sizeof(buffer));]])],
+          [sixel_cv_mingw_test_stdio=yes],
+          [sixel_cv_mingw_test_stdio=no])
+        CFLAGS="$sixel_saved_cflags"
+        ac_c_werror_flag="$sixel_saved_c_werror_flag"
+      ])
+    AS_IF([test "$sixel_cv_mingw_test_stdio" = yes], [
+      SIXEL_TEST_PRINTF_CFLAGS="$sixel_mingw_test_stdio"
+    ])
+  ])
 ])
+AC_SUBST([SIXEL_TEST_PRINTF_CFLAGS])
 
 # In CI, CFLAGS includes -Werror. Keep emcc post-link optimization warnings
 # non-fatal in normal build compilation as well as feature checks.

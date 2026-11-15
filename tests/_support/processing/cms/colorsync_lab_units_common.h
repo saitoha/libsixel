@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/compat_stub.h"
 #include "tests/data/color-numeric/colorsync-lab.h"
 
 static int
@@ -68,8 +69,10 @@ colorsync_lab_units(int gamma, int alias)
             if (!isfinite(result[pixel * 3u + channel]) ||
                 result[pixel * 3u + channel] < bounds[0][channel] ||
                 result[pixel * 3u + channel] > bounds[1][channel]) {
-                fprintf(stderr, "ColorSync Lab units pixel=%zu channel=%zu "
-                    "value=%.9g interval=[%.9g,%.9g]\n", pixel, channel,
+                fprintf(stderr, "ColorSync Lab units pixel=%" SIXEL_PRI_SIZE
+                    " channel=%" SIXEL_PRI_SIZE
+                    " value=%.9g interval=[%.9g,%.9g]\n",
+                    SIXEL_PRINTF_SIZE(pixel), SIXEL_PRINTF_SIZE(channel),
                     result[pixel * 3u + channel], bounds[0][channel],
                     bounds[1][channel]);
                 ok = 0;
@@ -82,13 +85,14 @@ colorsync_lab_units(int gamma, int alias)
         if ((!alias || i < 4u || i >= 4u + 521u * 3u) &&
             memcmp(input + i, original + i, sizeof(float)) != 0) {
             fprintf(stderr, "ColorSync Lab input or alias-tail modified: "
-                "%zu\n", i);
+                "%" SIXEL_PRI_SIZE "\n", SIXEL_PRINTF_SIZE(i));
             ok = 0;
         }
     }
     for (i = 0u; i < 4u; ++i) {
         if (output[i] != -99.0f || output[4u + 521u * 3u + i] != -99.0f) {
-            fprintf(stderr, "ColorSync Lab output guard modified: %zu\n", i);
+            fprintf(stderr, "ColorSync Lab output guard modified: %"
+                SIXEL_PRI_SIZE "\n", SIXEL_PRINTF_SIZE(i));
             ok = 0;
         }
     }

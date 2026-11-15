@@ -46,8 +46,9 @@ tiff_icc_check_float(float const *actual, double const expected[][3],
             if (!isfinite(actual[pixel * 3 + channel]) ||
                 fabs(actual[pixel * 3 + channel] - expected[pixel][channel])
                     > tolerance) {
-                fprintf(stderr, "TIFF ICC float pixel=%zu channel=%zu\n",
-                    pixel, channel);
+                fprintf(stderr, "TIFF ICC float pixel=%" SIXEL_PRI_SIZE
+                    " channel=%" SIXEL_PRI_SIZE "\n",
+                    SIXEL_PRINTF_SIZE(pixel), SIXEL_PRINTF_SIZE(channel));
                 return 0;
             }
         }
@@ -85,8 +86,9 @@ tiff_icc_capture_lab(sixel_frame_t *frame, void *context)
             if (!isfinite(pixels[pixel * 3 + channel]) ||
                 fabs(pixels[pixel * 3 + channel] - expected[channel])
                     > tolerance) {
-                fprintf(stderr, "TIFF Lab frame pixel=%zu channel=%zu\n",
-                    pixel, channel);
+                fprintf(stderr, "TIFF Lab frame pixel=%" SIXEL_PRI_SIZE
+                    " channel=%" SIXEL_PRI_SIZE "\n",
+                    SIXEL_PRINTF_SIZE(pixel), SIXEL_PRINTF_SIZE(channel));
                 return SIXEL_BAD_INPUT;
             }
         }
@@ -203,7 +205,8 @@ test_cms_0231(int argc, char **argv)
                 if (!isfinite(value) ||
                     fabs(value - tiff_icc_curves[pixel].expected)
                         > tolerance) {
-                    fprintf(stderr, "TIFF ICC curve case=%zu\n", pixel);
+                    fprintf(stderr, "TIFF ICC curve case=%" SIXEL_PRI_SIZE
+                        "\n", SIXEL_PRINTF_SIZE(pixel));
                     goto end;
                 }
             }
@@ -221,7 +224,8 @@ test_cms_0231(int argc, char **argv)
                     if (!isfinite(xyz[channel]) ||
                         fabs(xyz[channel] - tiff_icc_lab_pcs[pixel][channel])
                             > tolerance) {
-                        fprintf(stderr, "TIFF ICC PCS pixel=%zu\n", pixel);
+                        fprintf(stderr, "TIFF ICC PCS pixel=%" SIXEL_PRI_SIZE
+                            "\n", SIXEL_PRINTF_SIZE(pixel));
                         goto end;
                     }
                 }
