@@ -7,10 +7,12 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC='' ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "cms/0017_builtin_byte_to_float" 2>&1) || {
+    printf '%s\n' "$trace" >&2
     echo "not ok 1 - actual builtin float transform failed"
     exit 0
 }
 test -z "$trace" || {
+    printf '%s\n' "$trace" >&2
     echo "not ok 1 - disabled CMS apply trace emitted output"
     exit 0
 }
