@@ -4,9 +4,11 @@ set -eu
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 # The outer harness bounds this parser test. DragonFlyBSD timeout can sleep
 # until its alarm if cat exits before timeout starts waiting for SIGCHLD.
+# The inner driver runs host cat. Keep the target runtime in the outer driver.
 "${SED}" 's/^@OPENVMS_GNV_TRUE@/#/' \
     "$TOP_SRCDIR/build-aux/lso-tap-driver.sh.in" |
-    AM_TAP_AWK="${AWK}" SIXEL_TEST_SHELL="${SIXEL_TEST_CONFIG_SHELL}" \
+    SIXEL_RUNTIME='' AM_TAP_AWK="${AWK}" \
+    SIXEL_TEST_SHELL="${SIXEL_TEST_CONFIG_SHELL}" \
     reduce_fork=$1 "${SIXEL_TEST_CONFIG_SHELL}" -s -- \
         --test-name directive --log-file "$ARTIFACT_LOCAL_DIR/driver.log" \
         --trs-file "$ARTIFACT_LOCAL_DIR/driver.trs" --timeout 0 \
