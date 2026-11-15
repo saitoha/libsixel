@@ -2345,6 +2345,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0018_MFT1_B2A_XYZ_MATRIX \
     -DBUILD_TEST_0019_MFT2_B2A_XYZ_MATRIX \
     -DBUILD_TEST_0020_MFT2_B2D_XYZ_MATRIX \
+    -DBUILD_TEST_0021_ABSOLUTE_MATRIX_XYZ \
+    -DBUILD_TEST_0022_ABSOLUTE_LUT_XYZ \
+    -DBUILD_TEST_0023_ABSOLUTE_DEFINITION_XYZ \
+    -DBUILD_TEST_0024_ABSOLUTE_LUT_FALLBACK \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -7636,6 +7640,10 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0018_mft1_b2a_xyz_matrix.c \
     color/icc/0019_mft2_b2a_xyz_matrix.c \
     color/icc/0020_mft2_b2d_xyz_matrix.c \
+    color/icc/0021_absolute_matrix_xyz.c \
+    color/icc/0022_absolute_lut_xyz.c \
+    color/icc/0023_absolute_definition_xyz.c \
+    color/icc/0024_absolute_lut_fallback.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
     color/space/0004_extended_srgb_decode.c \

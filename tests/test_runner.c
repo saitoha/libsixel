@@ -376,6 +376,10 @@ int test_icc_0017(int argc, char **argv);
 int test_icc_0018(int argc, char **argv);
 int test_icc_0019(int argc, char **argv);
 int test_icc_0020(int argc, char **argv);
+int test_icc_0021(int argc, char **argv);
+int test_icc_0022(int argc, char **argv);
+int test_icc_0023(int argc, char **argv);
+int test_icc_0024(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10085,6 +10089,10 @@ static test_entry_t const test_entries[] = {
     { "icc/0018_mft1_b2a_xyz_matrix", test_icc_0018 },
     { "icc/0019_mft2_b2a_xyz_matrix", test_icc_0019 },
     { "icc/0020_mft2_b2d_xyz_matrix", test_icc_0020 },
+    { "icc/0021_absolute_matrix_xyz", test_icc_0021 },
+    { "icc/0022_absolute_lut_xyz", test_icc_0022 },
+    { "icc/0023_absolute_definition_xyz", test_icc_0023 },
+    { "icc/0024_absolute_lut_fallback", test_icc_0024 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

@@ -386,7 +386,7 @@ sixel_icc_profile_destroy(sixel_icc_profile_t *profile)
     profile->kind = SIXEL_ICC_PROFILE_KIND_INVALID;
     profile->pcs = SIXEL_ICC_PROFILE_PCS_INVALID;
     memset(profile->matrix_to_xyz_d50, 0, sizeof(profile->matrix_to_xyz_d50));
-    memset(profile->gray_white_xyz_d50, 0, sizeof(profile->gray_white_xyz_d50));
+    memset(profile->media_white_xyz, 0, sizeof(profile->media_white_xyz));
 }
 
 static int
@@ -2066,6 +2066,7 @@ sixel_icc_parse_profile(void const *data,
     int has_forward_slot;
     int has_reverse_slot;
     int has_matrix_tags;
+    int has_white_tag;
     unsigned int slot;
 
     if (data == NULL || length < 132u || out_profile == NULL) {
@@ -2104,6 +2105,13 @@ sixel_icc_parse_profile(void const *data,
     }
 
     sixel_icc_trace_tags(profile_data, profile_size);
+
+    /* Relative paths already describe PCS colors. Keep the media white
+     * separately for the absolute intent, including for LUT profiles. */
+    has_white_tag = sixel_icc_find_tag(profile_data, profile_size, "wtpt",
+                                      &wtpt_offset, &wtpt_length)
+        && sixel_icc_parse_xyz_tag(profile_data, profile_size, wtpt_offset,
+                                  wtpt_length, parsed.media_white_xyz);
 
     color_space = profile_data + 16u;
     pcs = profile_data + 20u;
@@ -2286,11 +2294,7 @@ sixel_icc_parse_profile(void const *data,
         }
 
         if (!has_forward_slot) {
-            has_matrix_tags = sixel_icc_find_tag(profile_data,
-                                                 profile_size,
-                                                 "wtpt",
-                                                 &wtpt_offset,
-                                                 &wtpt_length)
+            has_matrix_tags = has_white_tag
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
                                       "kTRC",
@@ -2300,12 +2304,7 @@ sixel_icc_parse_profile(void const *data,
                 goto fail;
             }
 
-            if (!sixel_icc_parse_xyz_tag(profile_data,
-                                         profile_size,
-                                         wtpt_offset,
-                                         wtpt_length,
-                                         parsed.gray_white_xyz_d50) ||
-                !sixel_icc_parse_curve_tag(profile_data,
+            if (!sixel_icc_parse_curve_tag(profile_data,
                                            profile_size,
                                            ktrc_offset,
                                            ktrc_length,

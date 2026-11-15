@@ -89,8 +89,9 @@ clf_free(void *p)
 }
 
 static int
-clf_icc(double xyz[3], double const *src, size_t channels,
-          sixel_icc_profile_t const *profile, unsigned int slot, int fallback)
+clf_icc_apply(double xyz[3], double const *src, size_t channels,
+              sixel_icc_profile_t const *profile, unsigned int slot,
+              int fallback, int physical)
 {
     int ok;
 
@@ -99,10 +100,27 @@ clf_icc(double xyz[3], double const *src, size_t channels,
         ++clf_rejections;
         return 0;
     }
-    ok = sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
-        xyz, src, channels, profile, slot, fallback);
+    ok = physical
+        ? sixel_icc_apply_device_to_physical_xyz(xyz, src, channels,
+                                                  profile, slot)
+        : sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+            xyz, src, channels, profile, slot, fallback);
     if (clf_arm == CMS_LAB_FAIL_BUILTIN_LATE && ok) { ++clf_successes; }
     return ok;
+}
+
+static int
+clf_icc(double xyz[3], double const *src, size_t channels,
+        sixel_icc_profile_t const *profile, unsigned int slot, int fallback)
+{
+    return clf_icc_apply(xyz, src, channels, profile, slot, fallback, 0);
+}
+
+static int
+clf_icc_physical(double xyz[3], double const *src, size_t channels,
+                 sixel_icc_profile_t const *profile, unsigned int slot)
+{
+    return clf_icc_apply(xyz, src, channels, profile, slot, 0, 1);
 }
 
 #if defined(__APPLE__) && HAVE_COREGRAPHICS
@@ -471,6 +489,7 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #define malloc clf_malloc
 #define free clf_free
 #define sixel_icc_apply_device_to_xyz_d50_with_a2b_slot clf_icc
+#define sixel_icc_apply_device_to_physical_xyz clf_icc_physical
 #define ColorSyncTransformConvert clf_cs
 SIXEL_INTERNAL_API char const *
 sixel_cms_cicp_name(unsigned char const codes[4]);
@@ -484,6 +503,7 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef malloc
 #undef free
 #undef sixel_icc_apply_device_to_xyz_d50_with_a2b_slot
+#undef sixel_icc_apply_device_to_physical_xyz
 #undef ColorSyncTransformConvert
 #if HAVE_LIBTIFF
 #define tiff_logluv_xyz_to_linear clf_logluv_xyz_to_linear

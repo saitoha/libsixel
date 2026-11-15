@@ -146,6 +146,244 @@ iccn_read32(unsigned char const *p)
         ((unsigned int)p[2] << 8) | (unsigned int)p[3];
 }
 
+static void
+iccn_absolute_source(unsigned char bytes[sizeof(color_icc)])
+{
+    size_t i;
+    size_t count;
+    unsigned char const *entry;
+    unsigned char *white;
+
+    memcpy(bytes, color_icc, sizeof(color_icc));
+    /* The P3 colorants already incorporate chad. Give the input profile
+     * a medium whose white is dimmer and has a different chromaticity. */
+    memcpy(bytes + 12u, "scnr", 4u);
+    count = iccn_read32(bytes + 128u);
+    for (i = 0u; i < count; ++i) {
+        entry = bytes + 132u + i * 12u;
+        if (memcmp(entry, "wtpt", 4u) == 0) {
+            white = bytes + iccn_read32(entry + 4u) + 8u;
+            iccn_be32(white, 57344u);
+            iccn_be32(white + 4u, 49152u);
+            iccn_be32(white + 8u, 40960u);
+            return;
+        }
+    }
+}
+
+static int
+iccn_check_absolute_pair(sixel_cms_profile_t *source,
+                         sixel_cms_profile_t *destination,
+                         float const input[3], double const expected[2][3],
+                         char const *const intents[2])
+{
+    sixel_cms_transform_t *transforms[2];
+    float output[3];
+    size_t intent;
+    size_t channel;
+    int ok;
+
+    memset(transforms, 0, sizeof(transforms));
+    ok = source != NULL && destination != NULL;
+    for (intent = 0u; ok && intent < 2u; ++intent) {
+        if (sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT",
+                                intents[intent]) != 0) {
+            ok = 0;
+            break;
+        }
+        transforms[intent] = sixel_cms_create_transform(source,
+            SIXEL_CMS_PIXELFORMAT_RGB_F32, destination,
+            SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
+        ok = transforms[intent] != NULL;
+    }
+    /* Both descriptors must remember the choice made at creation. */
+    for (intent = 0u; ok && intent < 2u; ++intent) {
+        ok = sixel_cms_do_transform(transforms[intent], input, output, 1u);
+        for (channel = 0u; ok && channel < 3u; ++channel) {
+            if (!(fabs(output[channel] - expected[intent][channel]) < 2e-7)) {
+                fprintf(stderr, "%s channel %zu: expected %.9g, got %.9g\n",
+                        intents[intent], channel, expected[intent][channel],
+                        (double)output[channel]);
+                ok = 0;
+            }
+        }
+    }
+    sixel_cms_delete_transform(transforms[1]);
+    sixel_cms_delete_transform(transforms[0]);
+    (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static char const *const iccn_absolute_intents[] = {
+    "relative,absolute!", "absolute!"
+};
+
+int
+icc_numeric_absolute_matrix_test(void)
+{
+    static float const input[3] = {0.25f, 0.5f, 0.75f};
+    /* From the stored P3 para/TRCs and adapted colorant columns. For
+     * absolute, multiply XYZ by (7/8, 3/4, 5/8) / D50. The final matrix
+     * is the inverse of the sRGB basis derived from xy and Bradford. */
+    static double const expected[2][3] = {
+        {0.014169133463280738, 0.220915626153715852, 0.556046604618495345},
+        {0.093356213137581713, 0.139467338091442965, 0.423482751109502806}
+    };
+    unsigned char bytes[sizeof(color_icc)];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *destination;
+    sixel_cms_engine_t previous;
+    int result;
+
+    iccn_absolute_source(bytes);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, sizeof(bytes));
+    destination = sixel_cms_create_linear_srgb_profile();
+    result = iccn_check_absolute_pair(source, destination, input, expected,
+                                       iccn_absolute_intents);
+    sixel_cms_close_profile(destination);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return result;
+}
+
+static void
+iccn_absolute_lut_profile(unsigned char bytes[312],
+                          unsigned int const white[3], unsigned char slot)
+{
+    unsigned char *lut;
+    unsigned char *p;
+    size_t i;
+    size_t channel;
+
+    memset(bytes, 0, 312u);
+    iccn_be32(bytes, 312u);
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "prtrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 68u, 63190u);
+    iccn_be32(bytes + 72u, 65536u);
+    iccn_be32(bytes + 76u, 54061u);
+    iccn_be32(bytes + 128u, 3u);
+    memcpy(bytes + 132u, "A2B1", 4u);
+    bytes[135] = slot;
+    iccn_be32(bytes + 136u, 168u);
+    iccn_be32(bytes + 140u, 124u);
+    memcpy(bytes + 144u, "B2A1", 4u);
+    bytes[147] = slot;
+    iccn_be32(bytes + 148u, 168u);
+    iccn_be32(bytes + 152u, 124u);
+    memcpy(bytes + 156u, "wtpt", 4u);
+    iccn_be32(bytes + 160u, 292u);
+    iccn_be32(bytes + 164u, 20u);
+    memcpy(bytes + 292u, "XYZ ", 4u);
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(bytes + 300u + i * 4u, white[i]);
+    }
+
+    lut = bytes + 168u;
+    memcpy(lut, "mft2", 4u);
+    lut[8] = lut[9] = 3u;
+    lut[10] = 2u;
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(lut + 12u + i * 16u, 65536u);
+    }
+    lut[49] = lut[51] = 2u;
+    p = lut + 52u;
+    for (i = 0u; i < 3u; ++i) {
+        iccn_reverse_sample(&p, 1, 0u);
+        iccn_reverse_sample(&p, 1, 255u);
+    }
+    for (i = 0u; i < 8u; ++i) {
+        for (channel = 0u; channel < 3u; ++channel) {
+            iccn_reverse_sample(&p, 1, (i & (4u >> channel)) ? 255u : 0u);
+        }
+    }
+    for (i = 0u; i < 3u; ++i) {
+        iccn_reverse_sample(&p, 1, 0u);
+        iccn_reverse_sample(&p, 1, 255u);
+    }
+}
+
+int
+icc_numeric_absolute_lut_test(int fallback)
+{
+    static unsigned int const src_white[] = {49152u, 57344u, 65536u};
+    static unsigned int const dst_white[] = {65536u, 49152u, 32768u};
+    static float const input[] = {0.5f, 0.375f, 0.25f};
+    /* Both tables are identity. The XYZ encoding factors cancel, leaving
+     * exactly the media ratio (3/4, 7/6, 2) for absolute. */
+    static double const expected[2][3] = {
+        {0.5, 0.375, 0.25}, {0.375, 0.4375, 0.5}
+    };
+    static double const expected_fallback[2][3] = {
+        {0.5, 0.375, 0.25}, {0.5, 0.375, 0.25}
+    };
+    static char const *const fallback_intents[] = {
+        "saturation!", "absolute,saturation!"
+    };
+    unsigned char src_bytes[312];
+    unsigned char dst_bytes[312];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *destination;
+    sixel_cms_engine_t previous;
+    unsigned char slot;
+    int result;
+
+    /* Saturation-only profiles cannot supply the colorimetric basis. */
+    slot = fallback ? '2' : '1';
+    iccn_absolute_lut_profile(src_bytes, src_white, slot);
+    iccn_absolute_lut_profile(dst_bytes, dst_white, slot);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(src_bytes, sizeof(src_bytes));
+    destination = sixel_cms_open_profile_from_mem(dst_bytes, sizeof(dst_bytes));
+    result = iccn_check_absolute_pair(source, destination, input,
+        fallback ? expected_fallback : expected,
+        fallback ? fallback_intents : iccn_absolute_intents);
+    sixel_cms_close_profile(destination);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return result;
+}
+
+int
+icc_numeric_absolute_definition_test(void)
+{
+    static double const input[] = {0.25, 0.5, 0.75};
+    /* Independent evaluation of the stored type-4 curves and XYZ columns,
+     * with the PCS-relative and media-white-scaled outputs in that order. */
+    static double const expected[2][3] = {
+        {0.170795938812887680, 0.195230144127393545, 0.418609569483359935},
+        {0.154995277391906991, 0.146422608095545159, 0.317166906203297320}
+    };
+    unsigned char bytes[sizeof(color_icc)];
+    sixel_color_def_t *definition;
+    double xyz[3];
+    double rgb[3];
+    size_t i;
+    size_t channel;
+    int intent;
+    int ok;
+
+    iccn_absolute_source(bytes);
+    definition = sixel_cdef_icc(bytes, sizeof(bytes));
+    ok = definition != NULL;
+    for (i = 0u; ok && i < 2u; ++i) {
+        intent = i == 0u ? SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC
+                         : SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC;
+        ok = sixel_cdef_to_xyz(definition, input, xyz, intent) &&
+            sixel_cdef_from_xyz(definition, expected[i], rgb, intent);
+        for (channel = 0u; ok && channel < 3u; ++channel) {
+            ok = fabs(xyz[channel] - expected[i][channel]) < 2e-14 &&
+                fabs(rgb[channel] - input[channel]) < 2e-14;
+        }
+    }
+    sixel_cdef_free(definition);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 static size_t
 iccn_profile(unsigned char *bytes, int segmented, int failure)
 {

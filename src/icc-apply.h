@@ -146,6 +146,17 @@ SIXEL_INTERNAL_API int
 sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
                           int inverse, double *out);
 
+/* Bridge to physical PCS XYZ before applying an intent adjustment. */
+SIXEL_INTERNAL_API int
+sixel_icc_apply_device_to_physical_xyz(
+    double xyz[3], double const *device, size_t channels,
+    sixel_icc_profile_t const *profile, unsigned int slot);
+
+SIXEL_INTERNAL_API int
+sixel_icc_apply_physical_xyz_to_device(
+    double *device, size_t channels, double const xyz[3],
+    sixel_icc_profile_t const *profile, unsigned int slot);
+
 #endif
 
 

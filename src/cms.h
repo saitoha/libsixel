@@ -313,7 +313,7 @@ SIXEL_INTERNAL_API void
 sixel_cdef_free(sixel_color_def_t *definition);
 
 /* XYZ is D50 PCS (Y=1); an ICC slot supplies its rendering semantics.
- * No additional black-point compensation or absolute adaptation is added.
+ * The absolute intent accounts for media white at the XYZ boundary.
  * Analytic definitions use relative colorimetry, never clipped to sRGB. */
 SIXEL_INTERNAL_API int
 sixel_cdef_to_xyz(sixel_color_def_t const *definition,

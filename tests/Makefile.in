@@ -2125,6 +2125,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/icc/0018_mft1_b2a_xyz_matrix.c \
 	color/icc/0019_mft2_b2a_xyz_matrix.c \
 	color/icc/0020_mft2_b2d_xyz_matrix.c \
+	color/icc/0021_absolute_matrix_xyz.c \
+	color/icc/0022_absolute_lut_xyz.c \
+	color/icc/0023_absolute_definition_xyz.c \
+	color/icc/0024_absolute_lut_fallback.c \
 	_support/diagnostics/icc_numeric_common.c \
 	_support/diagnostics/icc_numeric_common.h \
 	color/space/0004_extended_srgb_decode.c \
@@ -7602,6 +7606,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0018_mft1_b2a_xyz_matrix.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0019_mft2_b2a_xyz_matrix.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0020_mft2_b2d_xyz_matrix.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0021_absolute_matrix_xyz.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0022_absolute_lut_xyz.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0023_absolute_definition_xyz.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0024_absolute_lut_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0005_extended_srgb_encode.$(OBJEXT) \
@@ -11911,6 +11919,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/icc/$(DEPDIR)/test_runner-0018_mft1_b2a_xyz_matrix.Po \
 	color/icc/$(DEPDIR)/test_runner-0019_mft2_b2a_xyz_matrix.Po \
 	color/icc/$(DEPDIR)/test_runner-0020_mft2_b2d_xyz_matrix.Po \
+	color/icc/$(DEPDIR)/test_runner-0021_absolute_matrix_xyz.Po \
+	color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Po \
+	color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Po \
+	color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po \
@@ -19366,6 +19378,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_MFT1_B2A_XYZ_MATRIX \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_MFT2_B2A_XYZ_MATRIX \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_MFT2_B2D_XYZ_MATRIX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_ABSOLUTE_MATRIX_XYZ \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_ABSOLUTE_LUT_XYZ \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_ABSOLUTE_DEFINITION_XYZ \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_ABSOLUTE_LUT_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -24689,6 +24705,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0018_mft1_b2a_xyz_matrix.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0019_mft2_b2a_xyz_matrix.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0020_mft2_b2d_xyz_matrix.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0021_absolute_matrix_xyz.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0022_absolute_lut_xyz.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0023_absolute_definition_xyz.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0024_absolute_lut_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0004_extended_srgb_decode.c \
@@ -35030,6 +35050,14 @@ color/icc/test_runner-0018_mft1_b2a_xyz_matrix.$(OBJEXT):  \
 color/icc/test_runner-0019_mft2_b2a_xyz_matrix.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0020_mft2_b2d_xyz_matrix.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0021_absolute_matrix_xyz.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0022_absolute_lut_xyz.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0023_absolute_definition_xyz.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0024_absolute_lut_fallback.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 _support/diagnostics/$(am__dirstamp):
 	@$(MKDIR_P) _support/diagnostics
@@ -47187,6 +47215,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0018_mft1_b2a_xyz_matrix.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0019_mft2_b2a_xyz_matrix.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0020_mft2_b2d_xyz_matrix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0021_absolute_matrix_xyz.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po@am__quote@ # am--include-marker
@@ -79291,6 +79323,62 @@ color/icc/test_runner-0020_mft2_b2d_xyz_matrix.obj: color/icc/0020_mft2_b2d_xyz_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0020_mft2_b2d_xyz_matrix.c' object='color/icc/test_runner-0020_mft2_b2d_xyz_matrix.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0020_mft2_b2d_xyz_matrix.obj `if test -f 'color/icc/0020_mft2_b2d_xyz_matrix.c'; then $(CYGPATH_W) 'color/icc/0020_mft2_b2d_xyz_matrix.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0020_mft2_b2d_xyz_matrix.c'; fi`
+
+color/icc/test_runner-0021_absolute_matrix_xyz.o: color/icc/0021_absolute_matrix_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0021_absolute_matrix_xyz.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0021_absolute_matrix_xyz.Tpo -c -o color/icc/test_runner-0021_absolute_matrix_xyz.o `test -f 'color/icc/0021_absolute_matrix_xyz.c' || echo '$(srcdir)/'`color/icc/0021_absolute_matrix_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0021_absolute_matrix_xyz.Tpo color/icc/$(DEPDIR)/test_runner-0021_absolute_matrix_xyz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0021_absolute_matrix_xyz.c' object='color/icc/test_runner-0021_absolute_matrix_xyz.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0021_absolute_matrix_xyz.o `test -f 'color/icc/0021_absolute_matrix_xyz.c' || echo '$(srcdir)/'`color/icc/0021_absolute_matrix_xyz.c
+
+color/icc/test_runner-0021_absolute_matrix_xyz.obj: color/icc/0021_absolute_matrix_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0021_absolute_matrix_xyz.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0021_absolute_matrix_xyz.Tpo -c -o color/icc/test_runner-0021_absolute_matrix_xyz.obj `if test -f 'color/icc/0021_absolute_matrix_xyz.c'; then $(CYGPATH_W) 'color/icc/0021_absolute_matrix_xyz.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0021_absolute_matrix_xyz.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0021_absolute_matrix_xyz.Tpo color/icc/$(DEPDIR)/test_runner-0021_absolute_matrix_xyz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0021_absolute_matrix_xyz.c' object='color/icc/test_runner-0021_absolute_matrix_xyz.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0021_absolute_matrix_xyz.obj `if test -f 'color/icc/0021_absolute_matrix_xyz.c'; then $(CYGPATH_W) 'color/icc/0021_absolute_matrix_xyz.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0021_absolute_matrix_xyz.c'; fi`
+
+color/icc/test_runner-0022_absolute_lut_xyz.o: color/icc/0022_absolute_lut_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0022_absolute_lut_xyz.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Tpo -c -o color/icc/test_runner-0022_absolute_lut_xyz.o `test -f 'color/icc/0022_absolute_lut_xyz.c' || echo '$(srcdir)/'`color/icc/0022_absolute_lut_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Tpo color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0022_absolute_lut_xyz.c' object='color/icc/test_runner-0022_absolute_lut_xyz.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0022_absolute_lut_xyz.o `test -f 'color/icc/0022_absolute_lut_xyz.c' || echo '$(srcdir)/'`color/icc/0022_absolute_lut_xyz.c
+
+color/icc/test_runner-0022_absolute_lut_xyz.obj: color/icc/0022_absolute_lut_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0022_absolute_lut_xyz.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Tpo -c -o color/icc/test_runner-0022_absolute_lut_xyz.obj `if test -f 'color/icc/0022_absolute_lut_xyz.c'; then $(CYGPATH_W) 'color/icc/0022_absolute_lut_xyz.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0022_absolute_lut_xyz.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Tpo color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0022_absolute_lut_xyz.c' object='color/icc/test_runner-0022_absolute_lut_xyz.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0022_absolute_lut_xyz.obj `if test -f 'color/icc/0022_absolute_lut_xyz.c'; then $(CYGPATH_W) 'color/icc/0022_absolute_lut_xyz.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0022_absolute_lut_xyz.c'; fi`
+
+color/icc/test_runner-0023_absolute_definition_xyz.o: color/icc/0023_absolute_definition_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0023_absolute_definition_xyz.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Tpo -c -o color/icc/test_runner-0023_absolute_definition_xyz.o `test -f 'color/icc/0023_absolute_definition_xyz.c' || echo '$(srcdir)/'`color/icc/0023_absolute_definition_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Tpo color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0023_absolute_definition_xyz.c' object='color/icc/test_runner-0023_absolute_definition_xyz.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0023_absolute_definition_xyz.o `test -f 'color/icc/0023_absolute_definition_xyz.c' || echo '$(srcdir)/'`color/icc/0023_absolute_definition_xyz.c
+
+color/icc/test_runner-0023_absolute_definition_xyz.obj: color/icc/0023_absolute_definition_xyz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0023_absolute_definition_xyz.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Tpo -c -o color/icc/test_runner-0023_absolute_definition_xyz.obj `if test -f 'color/icc/0023_absolute_definition_xyz.c'; then $(CYGPATH_W) 'color/icc/0023_absolute_definition_xyz.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0023_absolute_definition_xyz.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Tpo color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0023_absolute_definition_xyz.c' object='color/icc/test_runner-0023_absolute_definition_xyz.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0023_absolute_definition_xyz.obj `if test -f 'color/icc/0023_absolute_definition_xyz.c'; then $(CYGPATH_W) 'color/icc/0023_absolute_definition_xyz.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0023_absolute_definition_xyz.c'; fi`
+
+color/icc/test_runner-0024_absolute_lut_fallback.o: color/icc/0024_absolute_lut_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0024_absolute_lut_fallback.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Tpo -c -o color/icc/test_runner-0024_absolute_lut_fallback.o `test -f 'color/icc/0024_absolute_lut_fallback.c' || echo '$(srcdir)/'`color/icc/0024_absolute_lut_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0024_absolute_lut_fallback.c' object='color/icc/test_runner-0024_absolute_lut_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0024_absolute_lut_fallback.o `test -f 'color/icc/0024_absolute_lut_fallback.c' || echo '$(srcdir)/'`color/icc/0024_absolute_lut_fallback.c
+
+color/icc/test_runner-0024_absolute_lut_fallback.obj: color/icc/0024_absolute_lut_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0024_absolute_lut_fallback.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Tpo -c -o color/icc/test_runner-0024_absolute_lut_fallback.obj `if test -f 'color/icc/0024_absolute_lut_fallback.c'; then $(CYGPATH_W) 'color/icc/0024_absolute_lut_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0024_absolute_lut_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0024_absolute_lut_fallback.c' object='color/icc/test_runner-0024_absolute_lut_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0024_absolute_lut_fallback.obj `if test -f 'color/icc/0024_absolute_lut_fallback.c'; then $(CYGPATH_W) 'color/icc/0024_absolute_lut_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0024_absolute_lut_fallback.c'; fi`
 
 _support/diagnostics/test_runner-icc_numeric_common.o: _support/diagnostics/icc_numeric_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/diagnostics/test_runner-icc_numeric_common.o -MD -MP -MF _support/diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo -c -o _support/diagnostics/test_runner-icc_numeric_common.o `test -f '_support/diagnostics/icc_numeric_common.c' || echo '$(srcdir)/'`_support/diagnostics/icc_numeric_common.c
