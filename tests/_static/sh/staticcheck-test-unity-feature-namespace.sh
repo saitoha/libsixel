@@ -8,6 +8,9 @@ set -v
 awk '
 function valid(text,    count, copy) {
     gsub(/[[:space:]]+/, " ", text)
+    # The printf format selection is independent of the feature namespace.
+    sub(/test_feature_c_args = libsixel_posix_defs \+ test_printf_args /,
+        "test_feature_c_args = libsixel_posix_defs ", text)
     copy = text
     count = gsub(/c_args: test_feature_c_args \+/, "", copy)
     return count == 3 &&
