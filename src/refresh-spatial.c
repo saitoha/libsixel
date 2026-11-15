@@ -30,7 +30,7 @@ void
 sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
     unsigned char *scratch, uint32_t activity[128])
 {
-    unsigned char *luma, *fine, *small, *blur;
+    unsigned char *luma, *fine, *coarse, *blur;
     size_t n, p, q;
     int sw, sh, x, y, xx, yy, xm, xp, ym, yp, dx, dy;
     int i, j, sum, count, gx, gy, x0, x1, y0, y1;
@@ -40,8 +40,8 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
     sh = (h + 3) / 4;
     luma = scratch;
     fine = luma + n;
-    small = fine + n;
-    blur = small + (size_t)sw * sh;
+    coarse = fine + n;
+    blur = coarse + (size_t)sw * sh;
     for (p = 0; p < n; ++p)
         luma[p] = (unsigned char)((54U * rgb[p * 3] +
             183U * rgb[p * 3 + 1] + 19U * rgb[p * 3 + 2] + 128U) >> 8);
@@ -61,17 +61,20 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
             fine[(size_t)y * w + x] = (unsigned char)(sum > 255 ? 255 : sum);
         }
     }
+    /* The origin of every tile is inside the image, even at an edge. */
     for (y = 0; y < sh; ++y) {
         for (x = 0; x < sw; ++x) {
             sum = 0;
             count = 0;
-            for (j = 0; j < 4 && y * 4 + j < h; ++j) {
-                for (i = 0; i < 4 && x * 4 + i < w; ++i) {
+            j = 0;
+            do {
+                i = 0;
+                do {
                     sum += fine[(size_t)(y * 4 + j)*w + x * 4 + i];
                     ++count;
-                }
-            }
-            small[(size_t)y * sw + x] = (unsigned char)
+                } while (++i < 4 && x * 4 + i < w);
+            } while (++j < 4 && y * 4 + j < h);
+            coarse[(size_t)y * sw + x] = (unsigned char)
                 ((sum + count / 2) / count);
         }
     }
@@ -80,7 +83,7 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
             sum = 0;
             for (i = -4; i <= 4; ++i) {
                 xx = x + i < 0 ? 0 : x + i >= sw ? sw - 1 : x + i;
-                sum += small[(size_t)y * sw + xx];
+                sum += coarse[(size_t)y * sw + xx];
             }
             blur[(size_t)y * sw + x] = (unsigned char)((sum + 4)/9);
         }
@@ -92,7 +95,7 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
                 yy = y + j < 0 ? 0 : y + j >= sh ? sh - 1 : y + j;
                 sum += blur[(size_t)yy * sw + x];
             }
-            small[(size_t)y * sw + x] = (unsigned char)((sum + 4)/9);
+            coarse[(size_t)y * sw + x] = (unsigned char)((sum + 4)/9);
         }
     }
     /* A fixed 64x64 classification bounds publication/upload to 512 bytes.
@@ -111,7 +114,7 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
             for (y = y0; y < y1; ++y) {
                 for (x = x0; x < x1; ++x) {
                     q = (size_t)y * sw + x;
-                    if (small[q] < sum) sum = small[q];
+                    if (coarse[q] < sum) sum = coarse[q];
                 }
             }
             p = (size_t)gy * 64 + gx;
@@ -228,14 +231,14 @@ sixel_refresh_spatial_new(sixel_refresh_spatial_t **out,
     sixel_refresh_spatial_hooks_t const *hooks)
 {
     sixel_refresh_spatial_t *state;
-    size_t n, small;
+    size_t n, coarse_pixels;
     SIXELSTATUS status;
 
     *out = NULL;
     if (w <= 0 || h <= 0 || w > 100000 || h > 100000 ||
             (size_t)w > SIZE_MAX / (size_t)h / 8U) return SIXEL_BAD_ARGUMENT;
     n = (size_t)w * h;
-    small = (size_t)((w + 3)/4)*((h + 3)/4);
+    coarse_pixels = (size_t)((w + 3)/4)*((h + 3)/4);
     state = sixel_allocator_calloc(allocator, 1, sizeof(*state));
     if (state == NULL) return SIXEL_BAD_ALLOCATION;
     state->allocator = allocator;
@@ -248,7 +251,8 @@ sixel_refresh_spatial_new(sixel_refresh_spatial_t **out,
     if (status != SIXEL_OK) goto fail_mutex;
     state->input = sixel_allocator_malloc(allocator, n * 3);
     state->work = sixel_allocator_malloc(allocator, n * 3);
-    state->scratch = sixel_allocator_malloc(allocator, n * 2 + small * 2);
+    state->scratch = sixel_allocator_malloc(allocator,
+        n * 2 + coarse_pixels * 2);
     if (!state->input || !state->work || !state->scratch) {
         status = SIXEL_BAD_ALLOCATION;
         goto fail_buffers;

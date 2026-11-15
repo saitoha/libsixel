@@ -3034,11 +3034,16 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
 {
     int diffuse;
     int dither_limited;
+    int spatial_supported;
 
+#if SIXEL_ENABLE_THREADS
+    spatial_supported = encoder->refresh_floor == 4U &&
+        (encoder->refresh_curve == 1U || encoder->refresh_periods[3] != 0U);
+#else
+    spatial_supported = 0;
+#endif
     if (encoder->refresh_spatial && sixel_encoder_refresh_enabled(encoder) &&
-            (!SIXEL_ENABLE_THREADS || encoder->refresh_floor != 4U ||
-             (encoder->refresh_curve != 1U &&
-              encoder->refresh_periods[3] == 0U))) {
+            !spatial_supported) {
         sixel_helper_set_additional_message(
             "spatial refresh requires threads and refresh_floor=4. "
             "Use refresh_curve=1 for a fixed frame period.");

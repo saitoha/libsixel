@@ -13,10 +13,10 @@ actual=$(sh "$TOP_SRCDIR/tools/embed-metal.sh" \
     exit 0
 }
 case "$actual" in
-    *'",'*'",'*'",'*)
+    *'"),'*'"),'*'"),'*)
         echo 'not ok 1 - the source was split into more than two literals' ;;
-    *'",
-"\n",')
+    *'"),
+("\n"),')
         echo 'ok 1 - the source newline starts a second C literal' ;;
     *)
         echo 'not ok 1 - the source newline crossed the C literal limit' ;;

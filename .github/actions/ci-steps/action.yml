@@ -1062,7 +1062,7 @@ runs:
         LLVM_PROFDATA="$(command -v llvm-profdata || true)"
         if test -z "$LLVM_PROFDATA"; then
           LLVM_PROFDATA="$(clang --print-prog-name=llvm-profdata 2>/dev/null || true)"
-          if test "x$LLVM_PROFDATA" = "xllvm-profdata"; then
+          if test "$LLVM_PROFDATA" = "llvm-profdata"; then
             LLVM_PROFDATA=""
           fi
         fi
@@ -1085,9 +1085,11 @@ runs:
         fi
         echo "Resolved llvm-profdata: ${LLVM_PROFDATA:-<not found>}"
         test -n "$LLVM_PROFDATA"
-        mapfile -t profraw_files < <(find "$PWD/pgo" -type f -name '*.profraw')
-        test "${#profraw_files[@]}" -gt 0
-        "$LLVM_PROFDATA" merge -output="$PWD/pgo/default.profdata" "${profraw_files[@]}"
+        # The test suite can produce more paths than fit in one argument list.
+        find "$PWD/pgo" -type f -name '*.profraw' > "$PWD/pgo/profraw.list"
+        test -s "$PWD/pgo/profraw.list"
+        "$LLVM_PROFDATA" merge --input-files="$PWD/pgo/profraw.list" \
+          -output="$PWD/pgo/default.profdata"
         if test -d "$PWD/builddir"; then
           cp "$PWD/pgo/default.profdata" "$PWD/builddir/default.profdata"
         fi

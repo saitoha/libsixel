@@ -14,7 +14,7 @@ METAL
     exit 0
 }
 test "${actual##*
-}" = '"\"a\\b\?\?/\"\n",' || {
+}" = '("\"a\\b\?\?/\"\n"),' || {
     echo 'not ok 1 - Metal spelling is not preserved by C escaping'
     exit 0
 }

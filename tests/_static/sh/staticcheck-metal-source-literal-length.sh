@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/build/support-scripts.md
-# Count decoded bytes across adjacent C literals without a target compiler.
+# Check grouping and decoded byte counts without a target compiler.
 set -eux
 echo '1..1'
 set -v
@@ -11,16 +11,18 @@ generated=$(LC_ALL=C awk -f "$src_root/tools/embed-metal.awk" \
     exit 0
 }
 printf '%s\n' "$generated" | LC_ALL=C awk '
-function bounded(text,    n, lines, i, line, last, bytes) {
+function bounded(text,    n, lines, i, line, first, last, bytes) {
     chunks = 0
     n = split(text, lines, "\n")
     for (i = 1; i <= n; ++i) {
         line = lines[i]
         if (line == "" || line ~ /^\/\*.*\*\/$/) continue
-        if (line !~ /^"([^"\\]|\\[\\"?tnr])*",?$/) return 0
-        last = line ~ /,$/
+        first = sub(/^\(/, "", line)
+        last = sub(/\),$/, "", line)
+        if (first != (bytes == 0)) return 0
+        if (line !~ /^"([^"\\]|\\[\\"?tnr])*"$/) return 0
         sub(/^"/, "", line)
-        sub(/",?$/, "", line)
+        sub(/"$/, "", line)
         gsub(/\\[\\"?tnr]/, "x", line)
         bytes += length(line)
         if (bytes > 1024) return 0
@@ -33,9 +35,9 @@ function bounded(text,    n, lines, i, line, last, bytes) {
 }
 BEGIN {
     limit = "\"" sprintf("%1024s", "") "\""
-    if (!bounded(limit ",") || bounded(limit "\n\"x\",") ||
-        !bounded("\"\\\"\\\\\\?\\n\",") || bounded("\"\\x41\",") ||
-        bounded("\"unterminated\"")) {
+    if (!bounded("(" limit "),") || bounded("(" limit "\n\"x\"),") ||
+        !bounded("(\"\\\"\\\\\\?\\n\"),") || bounded("(\"\\x41\"),") ||
+        bounded("(\"unterminated\"") || bounded(limit ",")) {
         print "# literal byte-count controls failed"
         failed = 1
     }
@@ -43,8 +45,8 @@ BEGIN {
 { source = source $0 "\n" }
 END { exit failed || !bounded(source) || chunks < 2 }
 ' || {
-    echo 'not ok 1 - embedded Metal literals violate the 1024-byte bound'
+    echo 'not ok 1 - Metal chunks must be parenthesized and at most 1024 bytes'
     exit 0
 }
-echo 'ok 1 - embedded Metal literals fit the 1024-byte bound'
+echo 'ok 1 - embedded Metal chunks are parenthesized and at most 1024 bytes'
 exit 0
