@@ -12991,6 +12991,20 @@ fi
           fi~
           $CC -Fe$tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
           linknames='
+	# Clang in CL mode expands the export response file before invoking
+	# LINK. A long export list then forces a second response file, which
+	# can swallow the separately forwarded object response file.
+	if test "x$using_clangcl" = xyes; then
+	  archive_expsym_cmds='if func_dll_def_p '"'"'$export_symbols'"'"'; then
+            cp '"'"'$export_symbols'"'"' '"'"'$output_objdir/$soname.def'"'"';
+          else
+            { $ECHO EXPORTS &&
+              $SED -e '\''s/,DATA$/ DATA/'\'' < '"'"'$export_symbols'"'"';
+            } > '"'"'$output_objdir/$soname.def'"'"';
+          fi || exit 1~
+          $CC -Fe$tool_output_objdir$soname $libobjs $compiler_flags $deplibs -link -dll -def:'"'"'$tool_output_objdir$soname.def'"'"' -implib:'"'"'$tool_output_objdir$libname.dll.lib'"'"'~
+          linknames='
+	fi
 	# The linker will not automatically build a static lib if we build a DLL.
 	# _LT_TAGVAR(old_archive_from_new_cmds, )='true'
 	enable_shared_with_static_runtimes=yes
