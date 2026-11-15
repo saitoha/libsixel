@@ -2129,6 +2129,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/icc/0022_absolute_lut_xyz.c \
 	color/icc/0023_absolute_definition_xyz.c \
 	color/icc/0024_absolute_lut_fallback.c \
+	color/icc/0025_status_unsupported_profile.c \
+	color/icc/0026_status_malformed_profile.c \
+	color/icc/0027_status_optional_pipeline.c \
+	color/icc/0028_status_native_fallback.c \
+	color/icc/0029_status_incompatible_format.c \
+	color/icc/0030_status_profile_allocation.c \
 	_support/diagnostics/icc_numeric_common.c \
 	_support/diagnostics/icc_numeric_common.h \
 	color/space/0004_extended_srgb_decode.c \
@@ -7610,6 +7616,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0022_absolute_lut_xyz.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0023_absolute_definition_xyz.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0024_absolute_lut_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0025_status_unsupported_profile.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0026_status_malformed_profile.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0027_status_optional_pipeline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0028_status_native_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0029_status_incompatible_format.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0030_status_profile_allocation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0005_extended_srgb_encode.$(OBJEXT) \
@@ -11923,6 +11935,12 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Po \
 	color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Po \
 	color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Po \
+	color/icc/$(DEPDIR)/test_runner-0025_status_unsupported_profile.Po \
+	color/icc/$(DEPDIR)/test_runner-0026_status_malformed_profile.Po \
+	color/icc/$(DEPDIR)/test_runner-0027_status_optional_pipeline.Po \
+	color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Po \
+	color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Po \
+	color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po \
@@ -19382,6 +19400,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_ABSOLUTE_LUT_XYZ \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_ABSOLUTE_DEFINITION_XYZ \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_ABSOLUTE_LUT_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_STATUS_UNSUPPORTED_PROFILE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_STATUS_MALFORMED_PROFILE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_STATUS_OPTIONAL_PIPELINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_STATUS_NATIVE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_STATUS_INCOMPATIBLE_FORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_STATUS_PROFILE_ALLOCATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -24709,6 +24733,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0022_absolute_lut_xyz.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0023_absolute_definition_xyz.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0024_absolute_lut_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0025_status_unsupported_profile.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0026_status_malformed_profile.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0027_status_optional_pipeline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0028_status_native_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0029_status_incompatible_format.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0030_status_profile_allocation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0004_extended_srgb_decode.c \
@@ -35058,6 +35088,18 @@ color/icc/test_runner-0022_absolute_lut_xyz.$(OBJEXT):  \
 color/icc/test_runner-0023_absolute_definition_xyz.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0024_absolute_lut_fallback.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0025_status_unsupported_profile.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0026_status_malformed_profile.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0027_status_optional_pipeline.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0028_status_native_fallback.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0029_status_incompatible_format.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0030_status_profile_allocation.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 _support/diagnostics/$(am__dirstamp):
 	@$(MKDIR_P) _support/diagnostics
@@ -47219,6 +47261,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0022_absolute_lut_xyz.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0023_absolute_definition_xyz.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0024_absolute_lut_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0025_status_unsupported_profile.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0026_status_malformed_profile.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0027_status_optional_pipeline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po@am__quote@ # am--include-marker
@@ -79379,6 +79427,90 @@ color/icc/test_runner-0024_absolute_lut_fallback.obj: color/icc/0024_absolute_lu
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0024_absolute_lut_fallback.c' object='color/icc/test_runner-0024_absolute_lut_fallback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0024_absolute_lut_fallback.obj `if test -f 'color/icc/0024_absolute_lut_fallback.c'; then $(CYGPATH_W) 'color/icc/0024_absolute_lut_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0024_absolute_lut_fallback.c'; fi`
+
+color/icc/test_runner-0025_status_unsupported_profile.o: color/icc/0025_status_unsupported_profile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0025_status_unsupported_profile.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0025_status_unsupported_profile.Tpo -c -o color/icc/test_runner-0025_status_unsupported_profile.o `test -f 'color/icc/0025_status_unsupported_profile.c' || echo '$(srcdir)/'`color/icc/0025_status_unsupported_profile.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0025_status_unsupported_profile.Tpo color/icc/$(DEPDIR)/test_runner-0025_status_unsupported_profile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0025_status_unsupported_profile.c' object='color/icc/test_runner-0025_status_unsupported_profile.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0025_status_unsupported_profile.o `test -f 'color/icc/0025_status_unsupported_profile.c' || echo '$(srcdir)/'`color/icc/0025_status_unsupported_profile.c
+
+color/icc/test_runner-0025_status_unsupported_profile.obj: color/icc/0025_status_unsupported_profile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0025_status_unsupported_profile.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0025_status_unsupported_profile.Tpo -c -o color/icc/test_runner-0025_status_unsupported_profile.obj `if test -f 'color/icc/0025_status_unsupported_profile.c'; then $(CYGPATH_W) 'color/icc/0025_status_unsupported_profile.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0025_status_unsupported_profile.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0025_status_unsupported_profile.Tpo color/icc/$(DEPDIR)/test_runner-0025_status_unsupported_profile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0025_status_unsupported_profile.c' object='color/icc/test_runner-0025_status_unsupported_profile.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0025_status_unsupported_profile.obj `if test -f 'color/icc/0025_status_unsupported_profile.c'; then $(CYGPATH_W) 'color/icc/0025_status_unsupported_profile.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0025_status_unsupported_profile.c'; fi`
+
+color/icc/test_runner-0026_status_malformed_profile.o: color/icc/0026_status_malformed_profile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0026_status_malformed_profile.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0026_status_malformed_profile.Tpo -c -o color/icc/test_runner-0026_status_malformed_profile.o `test -f 'color/icc/0026_status_malformed_profile.c' || echo '$(srcdir)/'`color/icc/0026_status_malformed_profile.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0026_status_malformed_profile.Tpo color/icc/$(DEPDIR)/test_runner-0026_status_malformed_profile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0026_status_malformed_profile.c' object='color/icc/test_runner-0026_status_malformed_profile.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0026_status_malformed_profile.o `test -f 'color/icc/0026_status_malformed_profile.c' || echo '$(srcdir)/'`color/icc/0026_status_malformed_profile.c
+
+color/icc/test_runner-0026_status_malformed_profile.obj: color/icc/0026_status_malformed_profile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0026_status_malformed_profile.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0026_status_malformed_profile.Tpo -c -o color/icc/test_runner-0026_status_malformed_profile.obj `if test -f 'color/icc/0026_status_malformed_profile.c'; then $(CYGPATH_W) 'color/icc/0026_status_malformed_profile.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0026_status_malformed_profile.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0026_status_malformed_profile.Tpo color/icc/$(DEPDIR)/test_runner-0026_status_malformed_profile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0026_status_malformed_profile.c' object='color/icc/test_runner-0026_status_malformed_profile.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0026_status_malformed_profile.obj `if test -f 'color/icc/0026_status_malformed_profile.c'; then $(CYGPATH_W) 'color/icc/0026_status_malformed_profile.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0026_status_malformed_profile.c'; fi`
+
+color/icc/test_runner-0027_status_optional_pipeline.o: color/icc/0027_status_optional_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0027_status_optional_pipeline.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0027_status_optional_pipeline.Tpo -c -o color/icc/test_runner-0027_status_optional_pipeline.o `test -f 'color/icc/0027_status_optional_pipeline.c' || echo '$(srcdir)/'`color/icc/0027_status_optional_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0027_status_optional_pipeline.Tpo color/icc/$(DEPDIR)/test_runner-0027_status_optional_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0027_status_optional_pipeline.c' object='color/icc/test_runner-0027_status_optional_pipeline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0027_status_optional_pipeline.o `test -f 'color/icc/0027_status_optional_pipeline.c' || echo '$(srcdir)/'`color/icc/0027_status_optional_pipeline.c
+
+color/icc/test_runner-0027_status_optional_pipeline.obj: color/icc/0027_status_optional_pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0027_status_optional_pipeline.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0027_status_optional_pipeline.Tpo -c -o color/icc/test_runner-0027_status_optional_pipeline.obj `if test -f 'color/icc/0027_status_optional_pipeline.c'; then $(CYGPATH_W) 'color/icc/0027_status_optional_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0027_status_optional_pipeline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0027_status_optional_pipeline.Tpo color/icc/$(DEPDIR)/test_runner-0027_status_optional_pipeline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0027_status_optional_pipeline.c' object='color/icc/test_runner-0027_status_optional_pipeline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0027_status_optional_pipeline.obj `if test -f 'color/icc/0027_status_optional_pipeline.c'; then $(CYGPATH_W) 'color/icc/0027_status_optional_pipeline.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0027_status_optional_pipeline.c'; fi`
+
+color/icc/test_runner-0028_status_native_fallback.o: color/icc/0028_status_native_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0028_status_native_fallback.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Tpo -c -o color/icc/test_runner-0028_status_native_fallback.o `test -f 'color/icc/0028_status_native_fallback.c' || echo '$(srcdir)/'`color/icc/0028_status_native_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0028_status_native_fallback.c' object='color/icc/test_runner-0028_status_native_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0028_status_native_fallback.o `test -f 'color/icc/0028_status_native_fallback.c' || echo '$(srcdir)/'`color/icc/0028_status_native_fallback.c
+
+color/icc/test_runner-0028_status_native_fallback.obj: color/icc/0028_status_native_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0028_status_native_fallback.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Tpo -c -o color/icc/test_runner-0028_status_native_fallback.obj `if test -f 'color/icc/0028_status_native_fallback.c'; then $(CYGPATH_W) 'color/icc/0028_status_native_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0028_status_native_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0028_status_native_fallback.c' object='color/icc/test_runner-0028_status_native_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0028_status_native_fallback.obj `if test -f 'color/icc/0028_status_native_fallback.c'; then $(CYGPATH_W) 'color/icc/0028_status_native_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0028_status_native_fallback.c'; fi`
+
+color/icc/test_runner-0029_status_incompatible_format.o: color/icc/0029_status_incompatible_format.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0029_status_incompatible_format.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Tpo -c -o color/icc/test_runner-0029_status_incompatible_format.o `test -f 'color/icc/0029_status_incompatible_format.c' || echo '$(srcdir)/'`color/icc/0029_status_incompatible_format.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Tpo color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0029_status_incompatible_format.c' object='color/icc/test_runner-0029_status_incompatible_format.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0029_status_incompatible_format.o `test -f 'color/icc/0029_status_incompatible_format.c' || echo '$(srcdir)/'`color/icc/0029_status_incompatible_format.c
+
+color/icc/test_runner-0029_status_incompatible_format.obj: color/icc/0029_status_incompatible_format.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0029_status_incompatible_format.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Tpo -c -o color/icc/test_runner-0029_status_incompatible_format.obj `if test -f 'color/icc/0029_status_incompatible_format.c'; then $(CYGPATH_W) 'color/icc/0029_status_incompatible_format.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0029_status_incompatible_format.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Tpo color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0029_status_incompatible_format.c' object='color/icc/test_runner-0029_status_incompatible_format.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0029_status_incompatible_format.obj `if test -f 'color/icc/0029_status_incompatible_format.c'; then $(CYGPATH_W) 'color/icc/0029_status_incompatible_format.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0029_status_incompatible_format.c'; fi`
+
+color/icc/test_runner-0030_status_profile_allocation.o: color/icc/0030_status_profile_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0030_status_profile_allocation.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Tpo -c -o color/icc/test_runner-0030_status_profile_allocation.o `test -f 'color/icc/0030_status_profile_allocation.c' || echo '$(srcdir)/'`color/icc/0030_status_profile_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Tpo color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0030_status_profile_allocation.c' object='color/icc/test_runner-0030_status_profile_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0030_status_profile_allocation.o `test -f 'color/icc/0030_status_profile_allocation.c' || echo '$(srcdir)/'`color/icc/0030_status_profile_allocation.c
+
+color/icc/test_runner-0030_status_profile_allocation.obj: color/icc/0030_status_profile_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0030_status_profile_allocation.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Tpo -c -o color/icc/test_runner-0030_status_profile_allocation.obj `if test -f 'color/icc/0030_status_profile_allocation.c'; then $(CYGPATH_W) 'color/icc/0030_status_profile_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0030_status_profile_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Tpo color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0030_status_profile_allocation.c' object='color/icc/test_runner-0030_status_profile_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0030_status_profile_allocation.obj `if test -f 'color/icc/0030_status_profile_allocation.c'; then $(CYGPATH_W) 'color/icc/0030_status_profile_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0030_status_profile_allocation.c'; fi`
 
 _support/diagnostics/test_runner-icc_numeric_common.o: _support/diagnostics/icc_numeric_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/diagnostics/test_runner-icc_numeric_common.o -MD -MP -MF _support/diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo -c -o _support/diagnostics/test_runner-icc_numeric_common.o `test -f '_support/diagnostics/icc_numeric_common.c' || echo '$(srcdir)/'`_support/diagnostics/icc_numeric_common.c

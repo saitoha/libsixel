@@ -380,6 +380,12 @@ int test_icc_0021(int argc, char **argv);
 int test_icc_0022(int argc, char **argv);
 int test_icc_0023(int argc, char **argv);
 int test_icc_0024(int argc, char **argv);
+int test_icc_0025(int argc, char **argv);
+int test_icc_0026(int argc, char **argv);
+int test_icc_0027(int argc, char **argv);
+int test_icc_0028(int argc, char **argv);
+int test_icc_0029(int argc, char **argv);
+int test_icc_0030(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10093,6 +10099,12 @@ static test_entry_t const test_entries[] = {
     { "icc/0022_absolute_lut_xyz", test_icc_0022 },
     { "icc/0023_absolute_definition_xyz", test_icc_0023 },
     { "icc/0024_absolute_lut_fallback", test_icc_0024 },
+    { "icc/0025_status_unsupported_profile", test_icc_0025 },
+    { "icc/0026_status_malformed_profile", test_icc_0026 },
+    { "icc/0027_status_optional_pipeline", test_icc_0027 },
+    { "icc/0028_status_native_fallback", test_icc_0028 },
+    { "icc/0029_status_incompatible_format", test_icc_0029 },
+    { "icc/0030_status_profile_allocation", test_icc_0030 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

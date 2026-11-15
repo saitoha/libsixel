@@ -2349,6 +2349,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0022_ABSOLUTE_LUT_XYZ \
     -DBUILD_TEST_0023_ABSOLUTE_DEFINITION_XYZ \
     -DBUILD_TEST_0024_ABSOLUTE_LUT_FALLBACK \
+    -DBUILD_TEST_0025_STATUS_UNSUPPORTED_PROFILE \
+    -DBUILD_TEST_0026_STATUS_MALFORMED_PROFILE \
+    -DBUILD_TEST_0027_STATUS_OPTIONAL_PIPELINE \
+    -DBUILD_TEST_0028_STATUS_NATIVE_FALLBACK \
+    -DBUILD_TEST_0029_STATUS_INCOMPATIBLE_FORMAT \
+    -DBUILD_TEST_0030_STATUS_PROFILE_ALLOCATION \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -7644,6 +7650,12 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0022_absolute_lut_xyz.c \
     color/icc/0023_absolute_definition_xyz.c \
     color/icc/0024_absolute_lut_fallback.c \
+    color/icc/0025_status_unsupported_profile.c \
+    color/icc/0026_status_malformed_profile.c \
+    color/icc/0027_status_optional_pipeline.c \
+    color/icc/0028_status_native_fallback.c \
+    color/icc/0029_status_incompatible_format.c \
+    color/icc/0030_status_profile_allocation.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
     color/space/0004_extended_srgb_decode.c \

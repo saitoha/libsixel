@@ -28,6 +28,7 @@
 /* Capture the ordinary library before mapping test-copy entry points. */
 static sixel_cms_engine_t (*clf_public_engine)(void) = sixel_cms_get_engine;
 static int clf_arm;
+static int clf_fail_next_allocation;
 static size_t clf_successes;
 static size_t clf_rejections;
 static size_t clf_alloc_failures;
@@ -48,6 +49,10 @@ clf_malloc(size_t n)
     void *p;
     size_t i;
 
+    if (clf_fail_next_allocation) {
+        clf_fail_next_allocation = 0;
+        return NULL;
+    }
     if (clf_arm && n == CLF_BYTES) {
         ++clf_scratch_calls;
         if (clf_arm == CMS_LAB_FAIL_ALLOCATION && !clf_alloc_failures) {
@@ -280,6 +285,11 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cms_profile_create_srgb_colorsync clf_local_112
 #define sixel_cms_profile_create_srgb_lcms2 clf_local_113
 #define sixel_cms_profile_open_builtin clf_local_114
+#define sixel_cms_status_name clf_cms_status_1
+#define sixel_cms_profile_issue clf_cms_status_2
+#define sixel_cms_open_profile_from_mem_ex clf_cms_status_3
+#define sixel_cms_create_transform_ex clf_cms_status_4
+#define sixel_cms_do_transform_ex clf_cms_status_5
 #define sixel_cms_profile_open_colorsync clf_local_115
 #define sixel_cms_profile_open_lcms2 clf_local_116
 #define sixel_cms_profile_t clf_local_117
@@ -505,6 +515,29 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef sixel_icc_apply_device_to_xyz_d50_with_a2b_slot
 #undef sixel_icc_apply_device_to_physical_xyz
 #undef ColorSyncTransformConvert
+
+int
+cms_status_allocation_test(void)
+{
+    sixel_cms_profile_t *profile;
+    sixel_cms_profile_result_t report;
+    sixel_cms_engine_t previous;
+    int ok;
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    /* Fail the descriptor allocation before reading the profile bytes. */
+    clf_fail_next_allocation = 1;
+    profile = sixel_cms_open_profile_from_mem_ex("x", 1u, &report);
+    ok = !clf_fail_next_allocation && profile == NULL &&
+        report.status == SIXEL_CMS_STATUS_ALLOCATION &&
+        report.actual_engine == SIXEL_CMS_ENGINE_NONE;
+    clf_fail_next_allocation = 0;
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 #if HAVE_LIBTIFF
 #define tiff_logluv_xyz_to_linear clf_logluv_xyz_to_linear
 #define tiff_convert_samples_to_linear llbf_byte
@@ -662,6 +695,11 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef sixel_cms_profile_create_srgb_colorsync
 #undef sixel_cms_profile_create_srgb_lcms2
 #undef sixel_cms_profile_open_builtin
+#undef sixel_cms_status_name
+#undef sixel_cms_profile_issue
+#undef sixel_cms_open_profile_from_mem_ex
+#undef sixel_cms_create_transform_ex
+#undef sixel_cms_do_transform_ex
 #undef sixel_cms_profile_open_colorsync
 #undef sixel_cms_profile_open_lcms2
 #undef sixel_cms_profile_t

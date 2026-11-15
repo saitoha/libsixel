@@ -146,6 +146,134 @@ iccn_read32(unsigned char const *p)
         ((unsigned int)p[2] << 8) | (unsigned int)p[3];
 }
 
+int
+icc_numeric_profile_status_test(int malformed, int keep_matrix)
+{
+    unsigned char bytes[sizeof(color_icc) + 20u];
+    unsigned char *entry;
+    unsigned char *payload;
+    size_t count;
+    size_t i;
+    sixel_cms_profile_t *profile;
+    sixel_cms_profile_result_t report;
+    sixel_cms_engine_t previous;
+    sixel_cms_status_t expected;
+    int ok;
+
+    memcpy(bytes, color_icc, sizeof(color_icc));
+    payload = bytes + sizeof(color_icc);
+    memset(payload, 0, 20u);
+    memcpy(payload, malformed ? "mft2" : "mpet", 4u);
+    iccn_be32(bytes, sizeof(bytes));
+    count = iccn_read32(bytes + 128u);
+    entry = bytes + 132u;
+    if (keep_matrix) {
+        /* Replace an optional tag so the colorants and TRCs can still win. */
+        for (i = 0u; i < count && memcmp(entry, "chad", 4u) != 0; ++i) {
+            entry += 12u;
+        }
+        if (i == count) {
+            return EXIT_FAILURE;
+        }
+    } else {
+        iccn_be32(bytes + 128u, 1u);
+    }
+    memcpy(entry, "D2B0", 4u);
+    iccn_be32(entry + 4u, sizeof(color_icc));
+    iccn_be32(entry + 8u, 20u);
+
+    expected = malformed ? SIXEL_CMS_STATUS_MALFORMED_PROFILE
+                         : SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE;
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    profile = sixel_cms_open_profile_from_mem_ex(bytes, sizeof(bytes),
+                                                 &report);
+    ok = report.first_engine == SIXEL_CMS_ENGINE_BUILTIN &&
+        report.first_engine_failure == SIXEL_CMS_STATUS_OK;
+    if (keep_matrix) {
+        ok = ok && profile != NULL && report.status == SIXEL_CMS_STATUS_OK &&
+            report.actual_engine == SIXEL_CMS_ENGINE_BUILTIN &&
+            report.skipped_path == expected;
+    } else {
+        ok = ok && profile == NULL && report.status == expected &&
+            report.actual_engine == SIXEL_CMS_ENGINE_NONE &&
+            report.skipped_path == SIXEL_CMS_STATUS_OK;
+    }
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_native_fallback_status_test(void)
+{
+    unsigned char bytes[sizeof(color_icc)];
+    sixel_cms_profile_t *profile;
+    sixel_cms_profile_result_t report;
+    sixel_cms_engine_t previous;
+    sixel_cms_engine_t preferred;
+    int ok;
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_LCMS2);
+    preferred = sixel_cms_get_engine();
+    if (preferred != SIXEL_CMS_ENGINE_LCMS2) {
+        sixel_cms_set_engine(previous);
+        return 77;
+    }
+    /* Native engines check the ICC signature. Builtin can still evaluate
+     * the same colorants and curves under its compatibility policy. */
+    memcpy(bytes, color_icc, sizeof(bytes));
+    memset(bytes + 36u, 0, 4u);
+    profile = sixel_cms_open_profile_from_mem_ex(bytes, sizeof(bytes),
+                                                 &report);
+    ok = profile != NULL && report.status == SIXEL_CMS_STATUS_OK &&
+        report.first_engine == preferred &&
+        report.actual_engine == SIXEL_CMS_ENGINE_BUILTIN &&
+        report.first_engine_failure == SIXEL_CMS_STATUS_BACKEND_REJECTED;
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_apply_status_test(void)
+{
+    static float const input[3] = {0.25f, 0.5f, 0.75f};
+    float output[3];
+    sixel_cms_profile_t *profile;
+    sixel_cms_transform_t *transform;
+    sixel_cms_engine_t previous;
+    sixel_cms_status_t status;
+    int ok;
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    profile = sixel_cms_create_srgb_profile();
+    transform = sixel_cms_create_transform_ex(profile,
+        SIXEL_CMS_PIXELFORMAT_GRAY_8, profile, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        SIXEL_CMS_TRANSFORM_DEFAULT, &status);
+    memcpy(output, input, sizeof(output));
+    ok = transform != NULL && status == SIXEL_CMS_STATUS_OK &&
+        !sixel_cms_do_transform_ex(transform, input, output, 1u, &status) &&
+        status == SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT &&
+        memcmp(output, input, sizeof(output)) == 0;
+    sixel_cms_delete_transform(transform);
+    if (ok) {
+        transform = sixel_cms_create_transform_ex(
+            profile, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+            profile, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+            SIXEL_CMS_TRANSFORM_DEFAULT, &status);
+        ok = transform != NULL && status == SIXEL_CMS_STATUS_OK &&
+            sixel_cms_do_transform_ex(transform, input, output, 1u, &status) &&
+            status == SIXEL_CMS_STATUS_OK;
+        sixel_cms_delete_transform(transform);
+    }
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 static void
 iccn_absolute_source(unsigned char bytes[sizeof(color_icc)])
 {

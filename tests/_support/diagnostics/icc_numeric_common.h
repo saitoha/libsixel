@@ -7,4 +7,7 @@ int icc_numeric_reverse_matrix_test(int lut16, char const *tag_name);
 int icc_numeric_absolute_matrix_test(void);
 int icc_numeric_absolute_lut_test(int fallback);
 int icc_numeric_absolute_definition_test(void);
+int icc_numeric_profile_status_test(int malformed, int keep_matrix);
+int icc_numeric_native_fallback_status_test(void);
+int icc_numeric_apply_status_test(void);
 #endif

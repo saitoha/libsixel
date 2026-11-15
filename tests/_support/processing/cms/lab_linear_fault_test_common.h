@@ -11,4 +11,5 @@ enum {
 };
 int cms_lab_failure_probe(int mode);
 int tiff_lab_failure_probe(int argc, char **argv, int mode);
+int cms_status_allocation_test(void);
 #endif

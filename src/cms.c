@@ -1443,7 +1443,7 @@ sixel_cms_colorsync_create_transform_one(
 static int
 sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
                                void const *data,
-                               size_t length)
+                               size_t length, sixel_icc_issue_t *issue)
 {
     size_t illuminant_offset;
     int has_dynamic_lut_path;
@@ -1460,7 +1460,8 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
         return 0;
     }
 
-    if (!sixel_icc_parse_profile(data, length, &profile->builtin_profile)) {
+    if (!sixel_icc_parse_profile_ex(data, length, &profile->builtin_profile,
+                                    issue)) {
         return 0;
     }
 
@@ -1522,6 +1523,9 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
                "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
                12u) == 0) {
         sixel_icc_profile_destroy(&profile->builtin_profile);
+        if (*issue < SIXEL_ICC_ISSUE_MALFORMED) {
+            *issue = SIXEL_ICC_ISSUE_MALFORMED;
+        }
         return 0;
     }
 
@@ -1667,44 +1671,133 @@ sixel_cms_profile_create_rgb_gamma_chrm_builtin(
     return 1;
 }
 
+static char const *
+sixel_cms_status_name(sixel_cms_status_t status)
+{
+    switch (status) {
+    case SIXEL_CMS_STATUS_OK:
+        return "ok";
+    case SIXEL_CMS_STATUS_INVALID_ARGUMENT:
+        return "invalid-argument";
+    case SIXEL_CMS_STATUS_DISABLED:
+        return "disabled";
+    case SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE:
+        return "unsupported-profile";
+    case SIXEL_CMS_STATUS_MALFORMED_PROFILE:
+        return "malformed-profile";
+    case SIXEL_CMS_STATUS_NO_PATH:
+        return "no-path";
+    case SIXEL_CMS_STATUS_ALLOCATION:
+        return "allocation-failed";
+    case SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT:
+        return "incompatible-format";
+    case SIXEL_CMS_STATUS_BACKEND_MISMATCH:
+        return "backend-mismatch";
+    case SIXEL_CMS_STATUS_BACKEND_REJECTED:
+        return "backend-rejected";
+    case SIXEL_CMS_STATUS_EVALUATION_FAILED:
+    default:
+        return "evaluation-failed";
+    }
+}
+
+static sixel_cms_status_t
+sixel_cms_profile_issue(sixel_icc_issue_t issue)
+{
+    switch (issue) {
+    case SIXEL_ICC_ISSUE_NONE:
+        return SIXEL_CMS_STATUS_OK;
+    case SIXEL_ICC_ISSUE_UNSUPPORTED:
+        return SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE;
+    case SIXEL_ICC_ISSUE_MALFORMED:
+        return SIXEL_CMS_STATUS_MALFORMED_PROFILE;
+    case SIXEL_ICC_ISSUE_ALLOCATION:
+        return SIXEL_CMS_STATUS_ALLOCATION;
+    case SIXEL_ICC_ISSUE_NO_PATH:
+    default:
+        return SIXEL_CMS_STATUS_NO_PATH;
+    }
+}
+
 sixel_cms_profile_t *
-sixel_cms_open_profile_from_mem(void const *data, size_t length)
+sixel_cms_open_profile_from_mem_ex(void const *data, size_t length,
+                                  sixel_cms_profile_result_t *result)
 {
     sixel_cms_profile_t *profile;
-    sixel_cms_engine_t engine;
+    sixel_cms_profile_result_t report;
+    sixel_icc_issue_t issue;
 
+    profile = NULL;
+    report.status = SIXEL_CMS_STATUS_OK;
+    report.first_engine = sixel_cms_get_engine();
+    report.actual_engine = SIXEL_CMS_ENGINE_NONE;
+    report.first_engine_failure = SIXEL_CMS_STATUS_OK;
+    report.skipped_path = SIXEL_CMS_STATUS_OK;
+    issue = SIXEL_ICC_ISSUE_NONE;
     if (data == NULL || length == 0u) {
-        return NULL;
+        report.status = SIXEL_CMS_STATUS_INVALID_ARGUMENT;
+        goto done;
     }
-
+    if (report.first_engine == SIXEL_CMS_ENGINE_NONE) {
+        report.status = SIXEL_CMS_STATUS_DISABLED;
+        goto done;
+    }
     profile = sixel_cms_allocate_profile();
     if (profile == NULL) {
-        return NULL;
+        report.status = SIXEL_CMS_STATUS_ALLOCATION;
+        goto done;
     }
 
-    engine = sixel_cms_get_engine();
-    if (engine == SIXEL_CMS_ENGINE_NONE) {
-        free(profile);
-        return NULL;
-    }
 #if HAVE_LCMS2
-    if (engine == SIXEL_CMS_ENGINE_LCMS2 &&
+    if (report.first_engine == SIXEL_CMS_ENGINE_LCMS2 &&
         sixel_cms_profile_open_lcms2(profile, data, length)) {
-        return profile;
+        report.actual_engine = SIXEL_CMS_ENGINE_LCMS2;
+        goto done;
     }
 #endif
 #if SIXEL_CMS_HAVE_COLORSYNC
-    if (engine == SIXEL_CMS_ENGINE_COLORSYNC &&
+    if (report.first_engine == SIXEL_CMS_ENGINE_COLORSYNC &&
         sixel_cms_profile_open_colorsync(profile, data, length)) {
-        return profile;
+        report.actual_engine = SIXEL_CMS_ENGINE_COLORSYNC;
+        goto done;
     }
 #endif
-    if (sixel_cms_profile_open_builtin(profile, data, length)) {
-        return profile;
+    if (report.first_engine != SIXEL_CMS_ENGINE_BUILTIN) {
+        report.first_engine_failure = SIXEL_CMS_STATUS_BACKEND_REJECTED;
+    }
+    if (sixel_cms_profile_open_builtin(profile, data, length, &issue)) {
+        report.actual_engine = SIXEL_CMS_ENGINE_BUILTIN;
+        report.skipped_path = sixel_cms_profile_issue(issue);
+    } else {
+        report.status = sixel_cms_profile_issue(issue == SIXEL_ICC_ISSUE_NONE
+            ? SIXEL_ICC_ISSUE_NO_PATH : issue);
+        free(profile);
+        profile = NULL;
     }
 
-    free(profile);
-    return NULL;
+done:
+    if (result != NULL) {
+        *result = report;
+    }
+    if (report.status != SIXEL_CMS_STATUS_OK ||
+        report.first_engine_failure != SIXEL_CMS_STATUS_OK ||
+        report.skipped_path != SIXEL_CMS_STATUS_OK) {
+        loader_trace_message(
+            "LSXCMS2|event=profile-open|first=%s|engine=%s|reason=%s|"
+            "first_failure=%s|skipped_path=%s",
+            sixel_cms_engine_to_string(report.first_engine),
+            sixel_cms_engine_to_string(report.actual_engine),
+            sixel_cms_status_name(report.status),
+            sixel_cms_status_name(report.first_engine_failure),
+            sixel_cms_status_name(report.skipped_path));
+    }
+    return profile;
+}
+
+sixel_cms_profile_t *
+sixel_cms_open_profile_from_mem(void const *data, size_t length)
+{
+    return sixel_cms_open_profile_from_mem_ex(data, length, NULL);
 }
 
 SIXELAPI sixel_cms_profile_t *
@@ -2021,7 +2114,7 @@ sixel_cms_create_transform_lcms2(sixel_cms_profile_t const *src_profile,
                                  sixel_cms_pixel_format_t src_format,
                                  sixel_cms_profile_t const *dst_profile,
                                  sixel_cms_pixel_format_t dst_format,
-                                 int flags)
+                                 int flags, sixel_cms_status_t *status)
 {
     sixel_cms_transform_t *transform;
     cmsUInt32Number cflags;
@@ -2039,6 +2132,7 @@ sixel_cms_create_transform_lcms2(sixel_cms_profile_t const *src_profile,
 
     transform = (sixel_cms_transform_t *)malloc(sizeof(*transform));
     if (transform == NULL) {
+        *status = SIXEL_CMS_STATUS_ALLOCATION;
         return NULL;
     }
     memset(transform, 0, sizeof(*transform));
@@ -2141,7 +2235,7 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
                                      sixel_cms_pixel_format_t src_format,
                                      sixel_cms_profile_t const *dst_profile,
                                      sixel_cms_pixel_format_t dst_format,
-                                     int flags)
+                                     int flags, sixel_cms_status_t *status)
 {
     sixel_cms_transform_t *transform;
     int intents[4];
@@ -2156,6 +2250,7 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
 
     transform = (sixel_cms_transform_t *)malloc(sizeof(*transform));
     if (transform == NULL) {
+        *status = SIXEL_CMS_STATUS_ALLOCATION;
         return NULL;
     }
     memset(transform, 0, sizeof(*transform));
@@ -2175,6 +2270,7 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
                                         &transform->dst_depth,
                                         &transform->dst_layout,
                                         &transform->dst_bytes_per_pixel)) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         free(transform);
         return NULL;
     }
@@ -2218,7 +2314,7 @@ sixel_cms_create_transform_builtin(sixel_cms_profile_t const *src_profile,
                                    sixel_cms_pixel_format_t src_format,
                                    sixel_cms_profile_t const *dst_profile,
                                    sixel_cms_pixel_format_t dst_format,
-                                   int flags)
+                                   int flags, sixel_cms_status_t *status)
 {
     sixel_cms_transform_t *transform;
     int intents[4];
@@ -2230,6 +2326,7 @@ sixel_cms_create_transform_builtin(sixel_cms_profile_t const *src_profile,
 
     transform = (sixel_cms_transform_t *)malloc(sizeof(*transform));
     if (transform == NULL) {
+        *status = SIXEL_CMS_STATUS_ALLOCATION;
         return NULL;
     }
     memset(transform, 0, sizeof(*transform));
@@ -2249,46 +2346,64 @@ sixel_cms_create_transform_builtin(sixel_cms_profile_t const *src_profile,
 }
 
 sixel_cms_transform_t *
+sixel_cms_create_transform_ex(sixel_cms_profile_t const *src_profile,
+                              sixel_cms_pixel_format_t src_format,
+                              sixel_cms_profile_t const *dst_profile,
+                              sixel_cms_pixel_format_t dst_format,
+                              int flags, sixel_cms_status_t *status)
+{
+    sixel_cms_transform_t *transform;
+    sixel_cms_status_t failure;
+
+    transform = NULL;
+    failure = SIXEL_CMS_STATUS_BACKEND_REJECTED;
+    if (src_profile == NULL || dst_profile == NULL) {
+        failure = SIXEL_CMS_STATUS_INVALID_ARGUMENT;
+    } else if (src_profile->backend != dst_profile->backend) {
+        failure = SIXEL_CMS_STATUS_BACKEND_MISMATCH;
+    } else {
+        switch (src_profile->backend) {
+#if HAVE_LCMS2
+        case SIXEL_CMS_PROFILE_BACKEND_LCMS2:
+            transform = sixel_cms_create_transform_lcms2(src_profile,
+                src_format, dst_profile, dst_format, flags, &failure);
+            break;
+#endif
+#if SIXEL_CMS_HAVE_COLORSYNC
+        case SIXEL_CMS_PROFILE_BACKEND_COLORSYNC:
+            transform = sixel_cms_create_transform_colorsync(src_profile,
+                src_format, dst_profile, dst_format, flags, &failure);
+            break;
+#endif
+        case SIXEL_CMS_PROFILE_BACKEND_BUILTIN:
+            transform = sixel_cms_create_transform_builtin(src_profile,
+                src_format, dst_profile, dst_format, flags, &failure);
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (status != NULL) {
+        *status = transform != NULL ? SIXEL_CMS_STATUS_OK : failure;
+    }
+    if (transform == NULL) {
+        loader_trace_message(
+            "LSXCMS2|event=transform-create|src=%d|dst=%d|reason=%s",
+            (int)src_format, (int)dst_format, sixel_cms_status_name(failure));
+    }
+    return transform;
+}
+
+sixel_cms_transform_t *
 sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
                            sixel_cms_pixel_format_t src_format,
                            sixel_cms_profile_t const *dst_profile,
                            sixel_cms_pixel_format_t dst_format,
                            int flags)
 {
-    if (src_profile == NULL || dst_profile == NULL) {
-        return NULL;
-    }
-    if (src_profile->backend != dst_profile->backend) {
-        return NULL;
-    }
-
-#if HAVE_LCMS2
-    if (src_profile->backend == SIXEL_CMS_PROFILE_BACKEND_LCMS2) {
-        return sixel_cms_create_transform_lcms2(src_profile,
-                                                src_format,
-                                                dst_profile,
-                                                dst_format,
-                                                flags);
-    }
-#endif
-#if SIXEL_CMS_HAVE_COLORSYNC
-    if (src_profile->backend == SIXEL_CMS_PROFILE_BACKEND_COLORSYNC) {
-        return sixel_cms_create_transform_colorsync(src_profile,
-                                                    src_format,
-                                                    dst_profile,
-                                                    dst_format,
-                                                    flags);
-    }
-#endif
-    if (src_profile->backend == SIXEL_CMS_PROFILE_BACKEND_BUILTIN) {
-        return sixel_cms_create_transform_builtin(src_profile,
-                                                  src_format,
-                                                  dst_profile,
-                                                  dst_format,
-                                                  flags);
-    }
-
-    return NULL;
+    return sixel_cms_create_transform_ex(src_profile, src_format, dst_profile,
+                                         dst_format, flags, NULL);
 }
 
 static int
@@ -2954,7 +3069,8 @@ sixel_cms_do_transform_builtin_device_to_device(
     sixel_cms_transform_t const *transform,
     void const *src,
     void *dst,
-    size_t pixel_count)
+    size_t pixel_count,
+                              sixel_cms_status_t *status)
 {
     sixel_cms_profile_t const *src_profile;
     sixel_cms_profile_t const *dst_profile;
@@ -3002,10 +3118,12 @@ sixel_cms_do_transform_builtin_device_to_device(
     }
     if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
         src_profile->builtin_profile.kind != SIXEL_ICC_PROFILE_KIND_LAB) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
     if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
         dst_profile->builtin_profile.kind != SIXEL_ICC_PROFILE_KIND_LAB) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
     if (sixel_cms_builtin_profile_is_srgb(dst_profile)) {
@@ -3306,9 +3424,11 @@ sixel_cms_do_transform_builtin_device_to_device(
                transform->dst_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32) {
         output_channel_count = 4u;
     } else {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
     if (output_channel_count != expected_channel_count) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
 
@@ -3360,7 +3480,8 @@ sixel_cms_do_transform_builtin_to_srgb(
     sixel_cms_transform_t const *transform,
     void const *src,
     void *dst,
-    size_t pixel_count)
+    size_t pixel_count,
+                              sixel_cms_status_t *status)
 {
     sixel_cms_profile_t const *src_profile;
     sixel_cms_profile_t const *dst_profile;
@@ -3490,6 +3611,7 @@ sixel_cms_do_transform_builtin_to_srgb(
         transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8) {
         tmp_gray = (unsigned char *)malloc(pixel_count);
         if (tmp_gray == NULL) {
+            *status = SIXEL_CMS_STATUS_ALLOCATION;
             return 0;
         }
         memcpy(tmp_gray, src, pixel_count);
@@ -3518,6 +3640,7 @@ sixel_cms_do_transform_builtin_to_srgb(
         }
         tmp_rgb = (unsigned char *)malloc(pixel_count * 3u);
         if (tmp_rgb == NULL) {
+            *status = SIXEL_CMS_STATUS_ALLOCATION;
             return 0;
         }
         for (i = 0u; i < pixel_count; ++i) {
@@ -3551,6 +3674,7 @@ sixel_cms_do_transform_builtin_to_srgb(
         }
         tmp_rgb = (unsigned char *)malloc(pixel_count * 3u);
         if (tmp_rgb == NULL) {
+            *status = SIXEL_CMS_STATUS_ALLOCATION;
             return 0;
         }
         memcpy(tmp_rgb, src, pixel_count * 3u);
@@ -3650,6 +3774,7 @@ sixel_cms_do_transform_builtin_to_srgb(
         return 1;
     }
 
+    *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
     return 0;
 }
 
@@ -3862,7 +3987,8 @@ sixel_cms_absolute_device(double device[4], double const xyz[3],
 
 static int
 sixel_cms_do_builtin_absolute(sixel_cms_transform_t const *transform,
-                              void const *src, void *dst, size_t count)
+                              void const *src, void *dst, size_t count,
+                              sixel_cms_status_t *status)
 {
     sixel_cms_profile_t const *target;
     sixel_cms_color_space_t src_space;
@@ -3893,6 +4019,7 @@ sixel_cms_do_builtin_absolute(sixel_cms_transform_t const *transform,
         (dst_space != target->colorspace &&
          !(target->is_srgb_profile && src_space == SIXEL_CMS_COLORSPACE_GRAY &&
            transform->dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_8))) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
     extended = target->rgb_definition != NULL &&
@@ -3957,7 +4084,8 @@ static int
 sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
                                void const *src,
                                void *dst,
-                               size_t pixel_count)
+                               size_t pixel_count,
+                              sixel_cms_status_t *status)
 {
     sixel_cms_profile_t const *dst_profile;
 
@@ -3971,7 +4099,8 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
         return 0;
     }
     if (transform->builtin_absolute) {
-        return sixel_cms_do_builtin_absolute(transform, src, dst, pixel_count);
+        return sixel_cms_do_builtin_absolute(transform, src, dst,
+                                             pixel_count, status);
     }
     if (dst_profile->rgb_definition != NULL &&
         transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
@@ -3981,12 +4110,12 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
         return sixel_cms_do_transform_builtin_to_srgb(transform,
                                                       src,
                                                       dst,
-                                                      pixel_count);
+                                                      pixel_count, status);
     }
     return sixel_cms_do_transform_builtin_device_to_device(transform,
                                                            src,
                                                            dst,
-                                                           pixel_count);
+                                                           pixel_count, status);
 }
 
 #if SIXEL_CMS_HAVE_COLORSYNC
@@ -4179,12 +4308,14 @@ static int
 sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
                        void const *src,
                        void *dst,
-                       size_t pixel_count)
+                       size_t pixel_count,
+                              sixel_cms_status_t *status)
 {
     sixel_cms_color_space_t expected;
     sixel_cms_color_space_t actual;
 
     if (transform == NULL || src == NULL || dst == NULL || pixel_count == 0u) {
+        *status = SIXEL_CMS_STATUS_INVALID_ARGUMENT;
         return 0;
     }
 
@@ -4224,12 +4355,14 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
                     sixel_cms_transform_engine(transform)),
                 transform->src_format, transform->dst_format, actual,
                 expected);
+            *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
             return 0;
         }
     }
 
 #if HAVE_LCMS2
     if (transform->backend == SIXEL_CMS_PROFILE_BACKEND_LCMS2) {
+        *status = SIXEL_CMS_STATUS_BACKEND_REJECTED;
         if (transform->lcms_handle == NULL) {
             return 0;
         }
@@ -4249,6 +4382,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
             loader_trace_message("LSXCMS2|event=reject|engine=lcms2|"
                 "reason=expanding-alias|src=%d|dst=%d",
                 transform->src_format, transform->dst_format);
+            *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
             return 0;
         }
         if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
@@ -4276,6 +4410,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         size_t i;
         int converted;
 
+        *status = SIXEL_CMS_STATUS_BACKEND_REJECTED;
         if (transform->colorsync_handle == NULL ||
             transform->src_bytes_per_pixel == 0u ||
             transform->dst_bytes_per_pixel == 0u) {
@@ -4315,6 +4450,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         if (copy_alpha && src == dst) {
             alpha_copy = (unsigned char *)malloc(pixel_count);
             if (alpha_copy == NULL) {
+                *status = SIXEL_CMS_STATUS_ALLOCATION;
                 return 0;
             }
             for (i = 0u; i < pixel_count; ++i) {
@@ -4359,7 +4495,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         return sixel_cms_do_transform_builtin(transform,
                                               src,
                                               dst,
-                                              pixel_count);
+                                              pixel_count, status);
     }
 
     return 0;
@@ -4384,13 +4520,23 @@ sixel_cms_transform_engine(sixel_cms_transform_t const *transform)
 }
 
 int
-sixel_cms_do_transform(sixel_cms_transform_t const *transform,
-                       void const *src, void *dst, size_t pixel_count)
+sixel_cms_do_transform_ex(sixel_cms_transform_t const *transform,
+                       void const *src, void *dst, size_t pixel_count,
+                          sixel_cms_status_t *status)
 {
     int result;
     char const *path;
+    sixel_cms_status_t outcome;
 
-    result = sixel_cms_apply_backend(transform, src, dst, pixel_count);
+    outcome = SIXEL_CMS_STATUS_EVALUATION_FAILED;
+    result = sixel_cms_apply_backend(transform, src, dst, pixel_count,
+                                     &outcome);
+    if (result) {
+        outcome = SIXEL_CMS_STATUS_OK;
+    }
+    if (status != NULL) {
+        *status = outcome;
+    }
     if (transform != NULL) {
         path = "external";
         if (transform->backend == SIXEL_CMS_PROFILE_BACKEND_BUILTIN) {
@@ -4403,8 +4549,26 @@ sixel_cms_do_transform(sixel_cms_transform_t const *transform,
             sixel_cms_engine_to_string(sixel_cms_transform_engine(transform)),
             path, (int)transform->src_format, (int)transform->dst_format,
             result);
+        /* Consumers parse the complete apply record. Keep its schema and
+         * attach failure diagnostics through a separate event. */
+        if (!result) {
+            sixel_trace_topic_message("loader",
+                "LSXCMS2|event=transform-failure|engine=%s|src=%d|dst=%d"
+                "|reason=%s",
+                sixel_cms_engine_to_string(
+                    sixel_cms_transform_engine(transform)),
+                (int)transform->src_format, (int)transform->dst_format,
+                sixel_cms_status_name(outcome));
+        }
     }
     return result;
+}
+
+int
+sixel_cms_do_transform(sixel_cms_transform_t const *transform,
+                       void const *src, void *dst, size_t pixel_count)
+{
+    return sixel_cms_do_transform_ex(transform, src, dst, pixel_count, NULL);
 }
 
 void
@@ -5211,6 +5375,7 @@ sixel_cms_apply_linear_colorsync(sixel_cms_profile_t const *source_profile,
     sixel_cms_profile_t const *destination, sixel_cms_pixel_format_t format,
     float const *source, float *output, size_t count, int strict)
 {
+    sixel_cms_status_t status;
     sixel_cms_profile_t prepared;
     sixel_cms_profile_t const *active_profile;
     sixel_cms_transform_t *transform;
@@ -5292,7 +5457,7 @@ sixel_cms_apply_linear_colorsync(sixel_cms_profile_t const *source_profile,
     }
     transform = strict
         ? sixel_cms_create_transform_colorsync(active_profile, format,
-              destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0)
+              destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0, &status)
         : sixel_cms_create_transform(active_profile, format, destination,
               SIXEL_CMS_PIXELFORMAT_RGB_F32, 0);
     if (transform == NULL) {
@@ -5336,7 +5501,7 @@ sixel_cms_apply_linear_colorsync(sixel_cms_profile_t const *source_profile,
         }
         transform = strict
             ? sixel_cms_create_transform_colorsync(active_profile, format,
-                  destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0)
+                  destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0, &status)
             : sixel_cms_create_transform(active_profile, format, destination,
                   SIXEL_CMS_PIXELFORMAT_RGB_F32, 0);
         if (transform == NULL) {

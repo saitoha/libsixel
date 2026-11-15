@@ -48,6 +48,31 @@ typedef enum sixel_cms_engine {
     SIXEL_CMS_ENGINE_COLORSYNC = 4
 } sixel_cms_engine_t;
 
+typedef enum sixel_cms_status {
+    SIXEL_CMS_STATUS_OK = 0,
+    SIXEL_CMS_STATUS_INVALID_ARGUMENT,
+    SIXEL_CMS_STATUS_DISABLED,
+    SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE,
+    SIXEL_CMS_STATUS_MALFORMED_PROFILE,
+    SIXEL_CMS_STATUS_NO_PATH,
+    SIXEL_CMS_STATUS_ALLOCATION,
+    SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT,
+    SIXEL_CMS_STATUS_BACKEND_MISMATCH,
+    SIXEL_CMS_STATUS_BACKEND_REJECTED,
+    SIXEL_CMS_STATUS_EVALUATION_FAILED
+} sixel_cms_status_t;
+
+typedef struct sixel_cms_profile_result {
+    sixel_cms_status_t status;
+    /* First engine after availability resolution and engine that opened it. */
+    sixel_cms_engine_t first_engine;
+    sixel_cms_engine_t actual_engine;
+    /* OK when the first engine did not reject the profile. */
+    sixel_cms_status_t first_engine_failure;
+    /* A rejected builtin path bypassed while opening a usable profile. */
+    sixel_cms_status_t skipped_path;
+} sixel_cms_profile_result_t;
+
 /* Stable values let the generic ordered-choice registry store CMS intent. */
 typedef enum sixel_cms_rendering_intent {
     SIXEL_CMS_INTENT_PERCEPTUAL = 0,
@@ -173,6 +198,11 @@ sixel_cms_convert_rgbf32_gamma_to_linear(float *pixels, size_t pixel_count);
 SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_open_profile_from_mem(void const *data, size_t length);
 
+/* Optional diagnostics belong to the call, including recovered paths. */
+SIXEL_INTERNAL_API sixel_cms_profile_t *
+sixel_cms_open_profile_from_mem_ex(void const *data, size_t length,
+                                  sixel_cms_profile_result_t *result);
+
 SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_srgb_profile(void);
 
@@ -224,6 +254,13 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
                            sixel_cms_pixel_format_t dst_format,
                            int flags);
 
+SIXEL_INTERNAL_API sixel_cms_transform_t *
+sixel_cms_create_transform_ex(sixel_cms_profile_t const *src_profile,
+                              sixel_cms_pixel_format_t src_format,
+                              sixel_cms_profile_t const *dst_profile,
+                              sixel_cms_pixel_format_t dst_format,
+                              int flags, sixel_cms_status_t *status);
+
 /* Known source formats and profile domains must agree for RGB_F32 output.
  * Creation may reject a mismatch; an existing transform rejects it before
  * any source/output write. UNKNOWN domains, invalid formats and other
@@ -241,6 +278,11 @@ sixel_cms_do_transform(sixel_cms_transform_t const *transform,
                        void const *src,
                        void *dst,
                        size_t pixel_count);
+
+SIXEL_INTERNAL_API int
+sixel_cms_do_transform_ex(sixel_cms_transform_t const *transform,
+                          void const *src, void *dst, size_t pixel_count,
+                          sixel_cms_status_t *status);
 
 /* Report the transform's actual backend, including profile-open fallback. */
 SIXEL_INTERNAL_API sixel_cms_engine_t

@@ -149,6 +149,20 @@ sixel_icc_parse_profile(void const *data,
                         size_t length,
                         sixel_icc_profile_t *out_profile);
 
+/* A usable profile may still have a rejected optional path. */
+typedef enum sixel_icc_issue {
+    SIXEL_ICC_ISSUE_NONE = 0,
+    SIXEL_ICC_ISSUE_NO_PATH,
+    SIXEL_ICC_ISSUE_UNSUPPORTED,
+    SIXEL_ICC_ISSUE_MALFORMED,
+    SIXEL_ICC_ISSUE_ALLOCATION
+} sixel_icc_issue_t;
+
+SIXEL_INTERNAL_API int
+sixel_icc_parse_profile_ex(void const *data, size_t length,
+                            sixel_icc_profile_t *out_profile,
+                            sixel_icc_issue_t *out_issue);
+
 SIXEL_INTERNAL_API int
 sixel_icc_parse_png_iccp(unsigned char const *png_data,
                          size_t png_size,
