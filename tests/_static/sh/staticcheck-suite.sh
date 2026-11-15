@@ -1174,6 +1174,10 @@ run_case_tap "staticcheck-tap-failure-status" \
     sh "$src_root/tests/_static/sh/staticcheck-tap-failure-status.sh" \
     "$src_root"
 
+run_case_tap "staticcheck-tap-timing" \
+    sh "$src_root/tests/_static/sh/staticcheck-tap-timing.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-tap-interpreter-skip" \
     sh "$src_root/tests/_static/sh/staticcheck-tap-interpreter-skip.sh" \
     "$src_root"
