@@ -943,6 +943,14 @@ AS_IF([test "x$using_clangcl" = xyes &&
   ])
 ])
 
+# A shell-wrapped Windows compiler can leave Libtool's runtime precedence
+# unknown. Windows still searches PATH for build-tree DLLs in that mode.
+AS_IF([test "x$version_type" = xwindows &&
+       test "x$shlibpath_var" = xPATH &&
+       test "x$shlibpath_overrides_runpath" = xunknown], [
+  shlibpath_overrides_runpath=yes
+])
+
 # Expose libtool runtime metadata to test environments so shell tests can
 # execute the real binaries directly without probing stale build artifacts.
 AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])
