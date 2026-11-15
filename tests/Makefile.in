@@ -2135,6 +2135,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/icc/0028_status_native_fallback.c \
 	color/icc/0029_status_incompatible_format.c \
 	color/icc/0030_status_profile_allocation.c \
+	color/icc/0031_resource_tag_boundary.c \
+	color/icc/0032_resource_tag_limit.c \
+	color/icc/0033_resource_alloc_boundary.c \
+	color/icc/0034_resource_alloc_recovery.c \
 	_support/diagnostics/icc_numeric_common.c \
 	_support/diagnostics/icc_numeric_common.h \
 	color/space/0004_extended_srgb_decode.c \
@@ -7622,6 +7626,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0028_status_native_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0029_status_incompatible_format.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0030_status_profile_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0031_resource_tag_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0032_resource_tag_limit.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0033_resource_alloc_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0034_resource_alloc_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0005_extended_srgb_encode.$(OBJEXT) \
@@ -11941,6 +11949,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Po \
 	color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Po \
 	color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Po \
+	color/icc/$(DEPDIR)/test_runner-0031_resource_tag_boundary.Po \
+	color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Po \
+	color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Po \
+	color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po \
@@ -19406,6 +19418,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_STATUS_NATIVE_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_STATUS_INCOMPATIBLE_FORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_STATUS_PROFILE_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_RESOURCE_TAG_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_RESOURCE_TAG_LIMIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_RESOURCE_ALLOC_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_RESOURCE_ALLOC_RECOVERY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -24739,6 +24755,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0028_status_native_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0029_status_incompatible_format.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0030_status_profile_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0031_resource_tag_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0032_resource_tag_limit.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0033_resource_alloc_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0034_resource_alloc_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0004_extended_srgb_decode.c \
@@ -35100,6 +35120,14 @@ color/icc/test_runner-0028_status_native_fallback.$(OBJEXT):  \
 color/icc/test_runner-0029_status_incompatible_format.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0030_status_profile_allocation.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0031_resource_tag_boundary.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0032_resource_tag_limit.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0033_resource_alloc_boundary.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0034_resource_alloc_recovery.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 _support/diagnostics/$(am__dirstamp):
 	@$(MKDIR_P) _support/diagnostics
@@ -47267,6 +47295,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0028_status_native_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0029_status_incompatible_format.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0030_status_profile_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0031_resource_tag_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po@am__quote@ # am--include-marker
@@ -79511,6 +79543,62 @@ color/icc/test_runner-0030_status_profile_allocation.obj: color/icc/0030_status_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0030_status_profile_allocation.c' object='color/icc/test_runner-0030_status_profile_allocation.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0030_status_profile_allocation.obj `if test -f 'color/icc/0030_status_profile_allocation.c'; then $(CYGPATH_W) 'color/icc/0030_status_profile_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0030_status_profile_allocation.c'; fi`
+
+color/icc/test_runner-0031_resource_tag_boundary.o: color/icc/0031_resource_tag_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0031_resource_tag_boundary.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0031_resource_tag_boundary.Tpo -c -o color/icc/test_runner-0031_resource_tag_boundary.o `test -f 'color/icc/0031_resource_tag_boundary.c' || echo '$(srcdir)/'`color/icc/0031_resource_tag_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0031_resource_tag_boundary.Tpo color/icc/$(DEPDIR)/test_runner-0031_resource_tag_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0031_resource_tag_boundary.c' object='color/icc/test_runner-0031_resource_tag_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0031_resource_tag_boundary.o `test -f 'color/icc/0031_resource_tag_boundary.c' || echo '$(srcdir)/'`color/icc/0031_resource_tag_boundary.c
+
+color/icc/test_runner-0031_resource_tag_boundary.obj: color/icc/0031_resource_tag_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0031_resource_tag_boundary.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0031_resource_tag_boundary.Tpo -c -o color/icc/test_runner-0031_resource_tag_boundary.obj `if test -f 'color/icc/0031_resource_tag_boundary.c'; then $(CYGPATH_W) 'color/icc/0031_resource_tag_boundary.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0031_resource_tag_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0031_resource_tag_boundary.Tpo color/icc/$(DEPDIR)/test_runner-0031_resource_tag_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0031_resource_tag_boundary.c' object='color/icc/test_runner-0031_resource_tag_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0031_resource_tag_boundary.obj `if test -f 'color/icc/0031_resource_tag_boundary.c'; then $(CYGPATH_W) 'color/icc/0031_resource_tag_boundary.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0031_resource_tag_boundary.c'; fi`
+
+color/icc/test_runner-0032_resource_tag_limit.o: color/icc/0032_resource_tag_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0032_resource_tag_limit.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Tpo -c -o color/icc/test_runner-0032_resource_tag_limit.o `test -f 'color/icc/0032_resource_tag_limit.c' || echo '$(srcdir)/'`color/icc/0032_resource_tag_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Tpo color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0032_resource_tag_limit.c' object='color/icc/test_runner-0032_resource_tag_limit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0032_resource_tag_limit.o `test -f 'color/icc/0032_resource_tag_limit.c' || echo '$(srcdir)/'`color/icc/0032_resource_tag_limit.c
+
+color/icc/test_runner-0032_resource_tag_limit.obj: color/icc/0032_resource_tag_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0032_resource_tag_limit.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Tpo -c -o color/icc/test_runner-0032_resource_tag_limit.obj `if test -f 'color/icc/0032_resource_tag_limit.c'; then $(CYGPATH_W) 'color/icc/0032_resource_tag_limit.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0032_resource_tag_limit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Tpo color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0032_resource_tag_limit.c' object='color/icc/test_runner-0032_resource_tag_limit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0032_resource_tag_limit.obj `if test -f 'color/icc/0032_resource_tag_limit.c'; then $(CYGPATH_W) 'color/icc/0032_resource_tag_limit.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0032_resource_tag_limit.c'; fi`
+
+color/icc/test_runner-0033_resource_alloc_boundary.o: color/icc/0033_resource_alloc_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0033_resource_alloc_boundary.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Tpo -c -o color/icc/test_runner-0033_resource_alloc_boundary.o `test -f 'color/icc/0033_resource_alloc_boundary.c' || echo '$(srcdir)/'`color/icc/0033_resource_alloc_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Tpo color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0033_resource_alloc_boundary.c' object='color/icc/test_runner-0033_resource_alloc_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0033_resource_alloc_boundary.o `test -f 'color/icc/0033_resource_alloc_boundary.c' || echo '$(srcdir)/'`color/icc/0033_resource_alloc_boundary.c
+
+color/icc/test_runner-0033_resource_alloc_boundary.obj: color/icc/0033_resource_alloc_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0033_resource_alloc_boundary.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Tpo -c -o color/icc/test_runner-0033_resource_alloc_boundary.obj `if test -f 'color/icc/0033_resource_alloc_boundary.c'; then $(CYGPATH_W) 'color/icc/0033_resource_alloc_boundary.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0033_resource_alloc_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Tpo color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0033_resource_alloc_boundary.c' object='color/icc/test_runner-0033_resource_alloc_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0033_resource_alloc_boundary.obj `if test -f 'color/icc/0033_resource_alloc_boundary.c'; then $(CYGPATH_W) 'color/icc/0033_resource_alloc_boundary.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0033_resource_alloc_boundary.c'; fi`
+
+color/icc/test_runner-0034_resource_alloc_recovery.o: color/icc/0034_resource_alloc_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0034_resource_alloc_recovery.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Tpo -c -o color/icc/test_runner-0034_resource_alloc_recovery.o `test -f 'color/icc/0034_resource_alloc_recovery.c' || echo '$(srcdir)/'`color/icc/0034_resource_alloc_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Tpo color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0034_resource_alloc_recovery.c' object='color/icc/test_runner-0034_resource_alloc_recovery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0034_resource_alloc_recovery.o `test -f 'color/icc/0034_resource_alloc_recovery.c' || echo '$(srcdir)/'`color/icc/0034_resource_alloc_recovery.c
+
+color/icc/test_runner-0034_resource_alloc_recovery.obj: color/icc/0034_resource_alloc_recovery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0034_resource_alloc_recovery.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Tpo -c -o color/icc/test_runner-0034_resource_alloc_recovery.obj `if test -f 'color/icc/0034_resource_alloc_recovery.c'; then $(CYGPATH_W) 'color/icc/0034_resource_alloc_recovery.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0034_resource_alloc_recovery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Tpo color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0034_resource_alloc_recovery.c' object='color/icc/test_runner-0034_resource_alloc_recovery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0034_resource_alloc_recovery.obj `if test -f 'color/icc/0034_resource_alloc_recovery.c'; then $(CYGPATH_W) 'color/icc/0034_resource_alloc_recovery.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0034_resource_alloc_recovery.c'; fi`
 
 _support/diagnostics/test_runner-icc_numeric_common.o: _support/diagnostics/icc_numeric_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/diagnostics/test_runner-icc_numeric_common.o -MD -MP -MF _support/diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo -c -o _support/diagnostics/test_runner-icc_numeric_common.o `test -f '_support/diagnostics/icc_numeric_common.c' || echo '$(srcdir)/'`_support/diagnostics/icc_numeric_common.c

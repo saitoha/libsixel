@@ -2355,6 +2355,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0028_STATUS_NATIVE_FALLBACK \
     -DBUILD_TEST_0029_STATUS_INCOMPATIBLE_FORMAT \
     -DBUILD_TEST_0030_STATUS_PROFILE_ALLOCATION \
+    -DBUILD_TEST_0031_RESOURCE_TAG_BOUNDARY \
+    -DBUILD_TEST_0032_RESOURCE_TAG_LIMIT \
+    -DBUILD_TEST_0033_RESOURCE_ALLOC_BOUNDARY \
+    -DBUILD_TEST_0034_RESOURCE_ALLOC_RECOVERY \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -7656,6 +7660,10 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0028_status_native_fallback.c \
     color/icc/0029_status_incompatible_format.c \
     color/icc/0030_status_profile_allocation.c \
+    color/icc/0031_resource_tag_boundary.c \
+    color/icc/0032_resource_tag_limit.c \
+    color/icc/0033_resource_alloc_boundary.c \
+    color/icc/0034_resource_alloc_recovery.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
     color/space/0004_extended_srgb_decode.c \

@@ -1689,6 +1689,8 @@ sixel_cms_status_name(sixel_cms_status_t status)
         return "no-path";
     case SIXEL_CMS_STATUS_ALLOCATION:
         return "allocation-failed";
+    case SIXEL_CMS_STATUS_RESOURCE_LIMIT:
+        return "resource-limit";
     case SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT:
         return "incompatible-format";
     case SIXEL_CMS_STATUS_BACKEND_MISMATCH:
@@ -1713,6 +1715,8 @@ sixel_cms_profile_issue(sixel_icc_issue_t issue)
         return SIXEL_CMS_STATUS_MALFORMED_PROFILE;
     case SIXEL_ICC_ISSUE_ALLOCATION:
         return SIXEL_CMS_STATUS_ALLOCATION;
+    case SIXEL_ICC_ISSUE_RESOURCE_LIMIT:
+        return SIXEL_CMS_STATUS_RESOURCE_LIMIT;
     case SIXEL_ICC_ISSUE_NO_PATH:
     default:
         return SIXEL_CMS_STATUS_NO_PATH;

@@ -386,6 +386,10 @@ int test_icc_0027(int argc, char **argv);
 int test_icc_0028(int argc, char **argv);
 int test_icc_0029(int argc, char **argv);
 int test_icc_0030(int argc, char **argv);
+int test_icc_0031(int argc, char **argv);
+int test_icc_0032(int argc, char **argv);
+int test_icc_0033(int argc, char **argv);
+int test_icc_0034(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10105,6 +10109,10 @@ static test_entry_t const test_entries[] = {
     { "icc/0028_status_native_fallback", test_icc_0028 },
     { "icc/0029_status_incompatible_format", test_icc_0029 },
     { "icc/0030_status_profile_allocation", test_icc_0030 },
+    { "icc/0031_resource_tag_boundary", test_icc_0031 },
+    { "icc/0032_resource_tag_limit", test_icc_0032 },
+    { "icc/0033_resource_alloc_boundary", test_icc_0033 },
+    { "icc/0034_resource_alloc_recovery", test_icc_0034 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

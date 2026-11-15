@@ -147,6 +147,162 @@ iccn_read32(unsigned char const *p)
 }
 
 int
+icc_numeric_tag_budget_test(int over_limit)
+{
+    unsigned char bytes[132u + 257u * 12u + 68u];
+    unsigned char *entry;
+    unsigned char *payload;
+    size_t length;
+    size_t offset;
+    unsigned int tags;
+    unsigned int i;
+    sixel_cms_profile_t *profile;
+    sixel_cms_profile_result_t report;
+    sixel_cms_engine_t previous;
+    int ok;
+
+    tags = over_limit ? 257u : 256u;
+    offset = 132u + (size_t)tags * 12u;
+    length = offset + 68u;
+    memset(bytes, 0, length);
+    iccn_be32(bytes, (unsigned int)length);
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "mntrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 68u, 63190u);
+    iccn_be32(bytes + 72u, 65536u);
+    iccn_be32(bytes + 76u, 54061u);
+    iccn_be32(bytes + 128u, tags);
+
+    /* Each entry is in bounds. Only the last entry supplies the path. */
+    for (i = 0u; i < tags; ++i) {
+        entry = bytes + 132u + (size_t)i * 12u;
+        memcpy(entry, "zzAA", 4u);
+        entry[2] = (unsigned char)('A' + i / 26u);
+        entry[3] = (unsigned char)('A' + i % 26u);
+        iccn_be32(entry + 4u, (unsigned int)offset);
+        iccn_be32(entry + 8u, 68u);
+    }
+    memcpy(bytes + offset - 12u, "A2B0", 4u);
+    payload = bytes + offset;
+    memcpy(payload, "mAB ", 4u);
+    payload[8] = payload[9] = 3u;
+    iccn_be32(payload + 12u, 32u);
+    for (i = 0u; i < 3u; ++i) {
+        memcpy(payload + 32u + i * 12u, "curv", 4u);
+    }
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    profile = sixel_cms_open_profile_from_mem_ex(bytes, length, &report);
+    if (over_limit) {
+        ok = profile == NULL && report.actual_engine == SIXEL_CMS_ENGINE_NONE
+            && report.status == SIXEL_CMS_STATUS_RESOURCE_LIMIT;
+    } else {
+        ok = profile != NULL && report.status == SIXEL_CMS_STATUS_OK &&
+            report.skipped_path == SIXEL_CMS_STATUS_OK;
+    }
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* Two A2B slots share one 8-bit payload. Each owned copy uses
+ * 2 * (128 * 128 * 85 * 3 + 16384) bytes, exactly 8 MiB.
+ * Adding one curve sample to the shared payload charges four more bytes. */
+#define ICCN_BUDGET_CLUT_VALUES ((size_t)128u * 128u * 85u * 3u)
+#define ICCN_BUDGET_FIXTURE_BYTES \
+    (156u + 32u + 12u + 2u * 16385u + 2u + 24u + 20u + ICCN_BUDGET_CLUT_VALUES)
+
+static size_t
+iccn_make_budget_profile(unsigned char *bytes, int over_limit)
+{
+    unsigned char *payload;
+    size_t curve_entries;
+    size_t identity_offset;
+    size_t clut_offset;
+    size_t tag_size;
+    size_t profile_size;
+
+    curve_entries = over_limit ? 16385u : 16384u;
+    identity_offset = (32u + 12u + 2u * curve_entries + 3u) & ~(size_t)3u;
+    clut_offset = identity_offset + 24u;
+    tag_size = clut_offset + 20u + ICCN_BUDGET_CLUT_VALUES;
+    profile_size = 156u + tag_size;
+    memset(bytes, 0, profile_size);
+    iccn_be32(bytes, (unsigned int)profile_size);
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "mntrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 128u, 2u);
+    memcpy(bytes + 132u, "A2B0", 4u);
+    iccn_be32(bytes + 136u, 156u);
+    iccn_be32(bytes + 140u, (unsigned int)tag_size);
+    memcpy(bytes + 144u, "A2B1", 4u);
+    iccn_be32(bytes + 148u, 156u);
+    iccn_be32(bytes + 152u, (unsigned int)tag_size);
+
+    payload = bytes + 156u;
+    memcpy(payload, "mAB ", 4u);
+    payload[8] = payload[9] = 3u;
+    iccn_be32(payload + 12u, 32u);
+    iccn_be32(payload + 24u, (unsigned int)clut_offset);
+    memcpy(payload + 32u, "curv", 4u);
+    iccn_be32(payload + 40u, (unsigned int)curve_entries);
+    memcpy(payload + identity_offset, "curv", 4u);
+    memcpy(payload + identity_offset + 12u, "curv", 4u);
+    payload[clut_offset] = 128u;
+    payload[clut_offset + 1u] = 128u;
+    payload[clut_offset + 2u] = 85u;
+    payload[clut_offset + 16u] = 1u;
+    return profile_size;
+}
+
+int
+icc_numeric_parse_budget_test(int over_limit)
+{
+    unsigned char *bytes;
+    size_t length;
+    sixel_icc_profile_t profile;
+    unsigned char untouched[sizeof(profile)];
+    sixel_icc_issue_t issue;
+    int parsed;
+    int ok;
+
+    bytes = (unsigned char *)malloc(ICCN_BUDGET_FIXTURE_BYTES);
+    if (bytes == NULL) {
+        return EXIT_FAILURE;
+    }
+    ok = 1;
+    if (over_limit) {
+        length = iccn_make_budget_profile(bytes, 1);
+        memset(&profile, 0xa5, sizeof(profile));
+        memcpy(untouched, &profile, sizeof(untouched));
+        parsed = sixel_icc_parse_profile_ex(bytes, length, &profile, &issue);
+        ok = !parsed && issue == SIXEL_ICC_ISSUE_RESOURCE_LIMIT &&
+            memcmp(&profile, untouched, sizeof(profile)) == 0;
+        if (parsed) {
+            sixel_icc_profile_destroy(&profile);
+        }
+    }
+    if (ok) {
+        /* Retry at the exact limit using the same destination storage. */
+        length = iccn_make_budget_profile(bytes, 0);
+        parsed = sixel_icc_parse_profile_ex(bytes, length, &profile, &issue);
+        ok = parsed && issue == SIXEL_ICC_ISSUE_NONE &&
+            profile.a2b_mab[0].clut.value_count == ICCN_BUDGET_CLUT_VALUES &&
+            profile.a2b_mab[1].clut.value_count == ICCN_BUDGET_CLUT_VALUES &&
+            profile.a2b_mab[0].b_curves[0].table_length == 16384u &&
+            profile.a2b_mab[1].b_curves[0].table_length == 16384u;
+        if (parsed) {
+            sixel_icc_profile_destroy(&profile);
+        }
+    }
+    free(bytes);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 icc_numeric_profile_status_test(int malformed, int keep_matrix)
 {
     unsigned char bytes[sizeof(color_icc) + 20u];
