@@ -102,6 +102,8 @@ replays a bounded subset.
 - Manual inputs can select the source workflow, branch, run, replay reference,
   and maximum number of jobs.
 
+Each replay matrix can run up to eight jobs concurrently. VM replays use the repository-wide VM queue, while each native build-and-test replay has its own concurrency group.
+
 Triage accelerates diagnosis; it does not replace the full source workflow or
 prove that a branch is green.
 
@@ -176,7 +178,7 @@ evidence that the synchronized inputs actually work.
 
 ## Dependency and infrastructure policy
 
-Virtual-machine jobs in the normal and experimental workflows use the repository-wide `libsixel-vm` concurrency group. `queue: max` retains pending jobs instead of replacing the previous waiter, and `cancel-in-progress: false` preserves the running guest. This serializes VM provisioning and execution across workflow and matrix boundaries; `max-parallel: 1` alone serializes only one matrix. GitHub limits a concurrency queue to 100 pending jobs, so excess submissions can still be rejected. The [VM concurrency check](../../tests/_static/sh/staticcheck-ci-vm-concurrency.sh) discovers VM consumers and requires the shared queue.
+Virtual-machine jobs in the normal, experimental, and triage workflows use the repository-wide `libsixel-vm` concurrency group. `queue: max` retains pending jobs instead of replacing the previous waiter, and `cancel-in-progress: false` preserves the running guest. This serializes VM provisioning and execution across workflow and matrix boundaries; `max-parallel: 1` alone serializes only one matrix. GitHub limits a concurrency queue to 100 pending jobs, so excess submissions can still be rejected. The [VM concurrency check](../../tests/_static/sh/staticcheck-ci-vm-concurrency.sh) discovers VM consumers and requires the shared queue.
 
 GitHub-hosted runners impose a [six-hour job limit](https://docs.github.com/en/actions/reference/limits) that cannot be extended with `timeout-minutes`. The macOS TSan matrix has three Autotools jobs and six Meson jobs with explicit 360-minute budgets. Each builds the instrumented programs and runs one partition of its build system's test inventory. Autotools selects by ordinal during [test discovery](../build/test-harness.md). Meson passes the matrix index to `meson test --slice`, which requires Meson 1.8 or later. Matrix fail-fast is disabled so a failure in one partition does not cancel the others. The [CI check](../../tests/_static/sh/staticcheck-ci-tsan-shards.sh) verifies the matrix and command wiring and exercises the Autotools partition directly. Linux TSan runs its full test inventory in each build-system job.
 
@@ -301,5 +303,5 @@ change and directly required source, test, or generated-file updates.
 | CI-12 | SPARC retries only bounded VM preparation, resets the failed guest, and runs the source build once with failure propagation. | [tests/_static/sh/staticcheck-sparc-vm-retry.sh](../../tests/_static/sh/staticcheck-sparc-vm-retry.sh) |
 | CI-13 | Explicit VM data directories stay under host `$HOME/.cache`, outside the source-transfer tree, without parent-directory traversal. | [tests/_static/sh/staticcheck-vm-data-sync.sh](../../tests/_static/sh/staticcheck-vm-data-sync.sh) |
 | CI-14 | vcpkg bootstrap retries are bounded, remove partial executables and propagate failure before the single dependency installation. | [tests/_static/sh/staticcheck-vcpkg-bootstrap.sh](../../tests/_static/sh/staticcheck-vcpkg-bootstrap.sh) |
-| CI-15 | Normal and experimental VM consumers share a serial queue without replacing waiting or running jobs. | [tests/_static/sh/staticcheck-ci-vm-concurrency.sh](../../tests/_static/sh/staticcheck-ci-vm-concurrency.sh) |
+| CI-15 | Normal, experimental, and triage VM consumers share a serial queue without replacing waiting or running jobs. | [tests/_static/sh/staticcheck-ci-vm-concurrency.sh](../../tests/_static/sh/staticcheck-ci-vm-concurrency.sh) |
 | CI-16 | Bounded macOS TSan jobs route three Autotools selections and six Meson slices to their respective test runners. | [tests/_static/sh/staticcheck-ci-tsan-shards.sh](../../tests/_static/sh/staticcheck-ci-tsan-shards.sh) |

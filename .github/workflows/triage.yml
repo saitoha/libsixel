@@ -617,9 +617,14 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
+    concurrency:
+      # Each native job gets its own group. VM jobs share the repository queue.
+      group: ${{ (endsWith(matrix.exec_type, '-vm') || matrix.exec_type == 'cross-platform-vms') && 'libsixel-vm' || format('triage-job-{0}-{1}-{2}', github.run_id, github.run_attempt, strategy.job-index) }}
+      queue: max
+      cancel-in-progress: false
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 8
       matrix: ${{ fromJson(needs.collect.outputs.matrix) }}
     steps:
       - name: Report triage selection
@@ -732,7 +737,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 8
       matrix: ${{ fromJson(needs.collect.outputs.matrix) }}
     env:
       AFL_IMPORT_FIRST: 1
