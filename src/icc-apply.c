@@ -1058,41 +1058,24 @@ sixel_icc_apply_b2a_mab_from_xyz_d50(double *outputs,
 }
 
 static int
-sixel_icc_apply_b2a_lut_from_xyz_d50(double *outputs,
-                                     size_t output_channel_count,
-                                     double const xyz_d50[3],
-                                     unsigned int b2a_slot,
-                                     sixel_icc_profile_t const *profile)
+sixel_icc_apply_reverse_lut(double *outputs,
+                            size_t output_channel_count,
+                            double const xyz_d50[3],
+                            sixel_icc_profile_pcs_t pcs,
+                            sixel_icc_lut_t const *lut)
 {
     double pcs_unit[3];
-    double lut_inputs[4];
+    double matrix_out[3];
+    double const *input;
+    double lut_inputs[3];
     double lut_outputs[16];
     size_t channel;
     uint16_t in_entries;
     uint16_t out_entries;
     uint16_t const *table;
-    sixel_icc_lut_t const *lut;
 
-    channel = 0u;
-    in_entries = 0u;
-    out_entries = 0u;
-    table = NULL;
-    lut = NULL;
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
-        return 0;
-    }
     if (output_channel_count == 0u || output_channel_count > 16u ||
-        b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
-        return 0;
-    }
-    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
-                                              xyz_d50,
-                                              profile->pcs)) {
-        return 0;
-    }
-
-    lut = &profile->b2a_lut[b2a_slot];
-    if (lut->kind == SIXEL_ICC_LUT_INVALID ||
+        lut->kind == SIXEL_ICC_LUT_INVALID ||
         lut->input_tables == NULL ||
         lut->clut_values == NULL ||
         lut->output_tables == NULL ||
@@ -1106,12 +1089,23 @@ sixel_icc_apply_b2a_lut_from_xyz_d50(double *outputs,
     if (in_entries == 0u || out_entries == 0u) {
         return 0;
     }
+    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit, xyz_d50, pcs)) {
+        return 0;
+    }
+
+    /* The legacy matrix acts on normalized PCS XYZ before the input
+     * tables. Their domain also clips the matrix result. Lab skips it. */
+    input = pcs_unit;
+    if (pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
+        sixel_icc_apply_matrix(lut->matrix, pcs_unit, matrix_out);
+        input = matrix_out;
+    }
 
     for (channel = 0u; channel < 3u; ++channel) {
         table = lut->input_tables + channel * (size_t)in_entries;
         lut_inputs[channel] = sixel_icc_eval_lut_table(table,
                                                        (size_t)in_entries,
-                                                       pcs_unit[channel]);
+                                                       input[channel]);
     }
     if (!sixel_icc_eval_clut(lut, lut_inputs, lut_outputs)) {
         return 0;
@@ -1133,7 +1127,8 @@ sixel_icc_apply_b2a_from_xyz_d50(double *outputs,
                                  unsigned int b2a_slot,
                                  sixel_icc_profile_t const *profile)
 {
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
+    if (outputs == NULL || xyz_d50 == NULL || profile == NULL ||
+        b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
         return 0;
     }
 
@@ -1145,11 +1140,9 @@ sixel_icc_apply_b2a_from_xyz_d50(double *outputs,
         return 1;
     }
 
-    return sixel_icc_apply_b2a_lut_from_xyz_d50(outputs,
-                                                output_channel_count,
-                                                xyz_d50,
-                                                b2a_slot,
-                                                profile);
+    return sixel_icc_apply_reverse_lut(outputs, output_channel_count,
+                                       xyz_d50, profile->pcs,
+                                       &profile->b2a_lut[b2a_slot]);
 }
 
 static int
@@ -1194,82 +1187,14 @@ sixel_icc_apply_b2d_mab_from_xyz_d50(double *outputs,
 }
 
 static int
-sixel_icc_apply_b2d_lut_from_xyz_d50(double *outputs,
-                                     size_t output_channel_count,
-                                     double const xyz_d50[3],
-                                     unsigned int b2d_slot,
-                                     sixel_icc_profile_t const *profile)
-{
-    double pcs_unit[3];
-    double lut_inputs[4];
-    double lut_outputs[16];
-    size_t channel;
-    uint16_t in_entries;
-    uint16_t out_entries;
-    uint16_t const *table;
-    sixel_icc_lut_t const *lut;
-
-    channel = 0u;
-    in_entries = 0u;
-    out_entries = 0u;
-    table = NULL;
-    lut = NULL;
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
-        return 0;
-    }
-    if (output_channel_count == 0u || output_channel_count > 16u ||
-        b2d_slot >= SIXEL_ICC_B2D_SLOT_COUNT) {
-        return 0;
-    }
-    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
-                                              xyz_d50,
-                                              profile->pcs)) {
-        return 0;
-    }
-
-    lut = &profile->b2d_lut[b2d_slot];
-    if (lut->kind == SIXEL_ICC_LUT_INVALID ||
-        lut->input_tables == NULL ||
-        lut->clut_values == NULL ||
-        lut->output_tables == NULL ||
-        lut->input_channels != 3u ||
-        lut->output_channels != (uint8_t)output_channel_count) {
-        return 0;
-    }
-
-    in_entries = lut->input_entries;
-    out_entries = lut->output_entries;
-    if (in_entries == 0u || out_entries == 0u) {
-        return 0;
-    }
-
-    for (channel = 0u; channel < 3u; ++channel) {
-        table = lut->input_tables + channel * (size_t)in_entries;
-        lut_inputs[channel] = sixel_icc_eval_lut_table(table,
-                                                       (size_t)in_entries,
-                                                       pcs_unit[channel]);
-    }
-    if (!sixel_icc_eval_clut(lut, lut_inputs, lut_outputs)) {
-        return 0;
-    }
-    for (channel = 0u; channel < output_channel_count; ++channel) {
-        table = lut->output_tables + channel * (size_t)out_entries;
-        outputs[channel] = sixel_icc_eval_lut_table(table,
-                                                    (size_t)out_entries,
-                                                    lut_outputs[channel]);
-    }
-
-    return 1;
-}
-
-static int
 sixel_icc_apply_b2d_from_xyz_d50(double *outputs,
                                  size_t output_channel_count,
                                  double const xyz_d50[3],
                                  unsigned int b2d_slot,
                                  sixel_icc_profile_t const *profile)
 {
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
+    if (outputs == NULL || xyz_d50 == NULL || profile == NULL ||
+        b2d_slot >= SIXEL_ICC_B2D_SLOT_COUNT) {
         return 0;
     }
 
@@ -1281,11 +1206,9 @@ sixel_icc_apply_b2d_from_xyz_d50(double *outputs,
         return 1;
     }
 
-    return sixel_icc_apply_b2d_lut_from_xyz_d50(outputs,
-                                                output_channel_count,
-                                                xyz_d50,
-                                                b2d_slot,
-                                                profile);
+    return sixel_icc_apply_reverse_lut(outputs, output_channel_count,
+                                       xyz_d50, profile->pcs,
+                                       &profile->b2d_lut[b2d_slot]);
 }
 
 static int

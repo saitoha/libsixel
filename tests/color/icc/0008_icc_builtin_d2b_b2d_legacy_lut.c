@@ -64,6 +64,10 @@ icc0008_build_mft2_identity(unsigned char *tag, size_t capacity)
     tag[8u] = (unsigned char)input_channels;
     tag[9u] = (unsigned char)output_channels;
     tag[10u] = (unsigned char)grid_points;
+    /* The reverse XYZ path applies the stored matrix. */
+    icc0008_write_be32(tag + 12u, 0x00010000u);
+    icc0008_write_be32(tag + 28u, 0x00010000u);
+    icc0008_write_be32(tag + 44u, 0x00010000u);
     icc0008_write_be16(tag + 48u, 2u);
     icc0008_write_be16(tag + 50u, 2u);
 

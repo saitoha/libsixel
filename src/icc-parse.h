@@ -72,6 +72,7 @@ typedef struct sixel_icc_lut {
     uint8_t clut_grid_points;
     uint16_t input_entries;
     uint16_t output_entries;
+    double matrix[3][3];
     uint16_t *input_tables;
     uint16_t *clut_values;
     uint16_t *output_tables;

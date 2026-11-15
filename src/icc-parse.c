@@ -167,6 +167,21 @@ sixel_icc_read_s15fixed16(unsigned char const *p)
     return (double)fixed / 65536.0;
 }
 
+/* The caller has already checked the 36-byte row-major matrix block. */
+static void
+sixel_icc_read_matrix(double matrix[3][3], unsigned char const *data)
+{
+    size_t row;
+    size_t column;
+
+    for (row = 0u; row < 3u; ++row) {
+        for (column = 0u; column < 3u; ++column) {
+            matrix[row][column] = sixel_icc_read_s15fixed16(data);
+            data += 4u;
+        }
+    }
+}
+
 static void
 sixel_icc_curve_reset(sixel_icc_curve_t *curve)
 {
@@ -209,6 +224,7 @@ sixel_icc_lut_reset(sixel_icc_lut_t *lut)
     lut->clut_grid_points = 0u;
     lut->input_entries = 0u;
     lut->output_entries = 0u;
+    memset(lut->matrix, 0, sizeof(lut->matrix));
     lut->input_tables = NULL;
     lut->clut_values = NULL;
     lut->output_tables = NULL;
@@ -1281,24 +1297,15 @@ sixel_icc_parse_mab_matrix_block(unsigned char const *tag_data,
                                  double matrix_offset[3])
 {
     size_t i;
-    size_t j;
     size_t offset;
 
-    i = 0u;
-    j = 0u;
-    offset = 0u;
     if (tag_data == NULL || matrix == NULL || matrix_offset == NULL ||
         block_offset > tag_length || tag_length - block_offset < 48u) {
         return 0;
     }
 
-    offset = block_offset;
-    for (i = 0u; i < 3u; ++i) {
-        for (j = 0u; j < 3u; ++j) {
-            matrix[i][j] = sixel_icc_read_s15fixed16(tag_data + offset);
-            offset += 4u;
-        }
-    }
+    sixel_icc_read_matrix(matrix, tag_data + block_offset);
+    offset = block_offset + 36u;
     for (i = 0u; i < 3u; ++i) {
         matrix_offset[i] = sixel_icc_read_s15fixed16(tag_data + offset);
         offset += 4u;
@@ -1574,6 +1581,7 @@ sixel_icc_parse_lut8_tag(unsigned char const *tag_data,
         parsed.output_tables[i] = (uint16_t)((unsigned int)tag_data[offset + i] * 257u);
     }
 
+    sixel_icc_read_matrix(parsed.matrix, tag_data + 12u);
     parsed.kind = SIXEL_ICC_LUT_MFT1;
     parsed.input_channels = input_channels;
     parsed.output_channels = output_channels;
@@ -1700,6 +1708,7 @@ sixel_icc_parse_lut16_tag(unsigned char const *tag_data,
         parsed.output_tables[i] = sixel_icc_read_be16(tag_data + offset + i * 2u);
     }
 
+    sixel_icc_read_matrix(parsed.matrix, tag_data + 12u);
     parsed.kind = SIXEL_ICC_LUT_MFT2;
     parsed.input_channels = input_channels;
     parsed.output_channels = output_channels;

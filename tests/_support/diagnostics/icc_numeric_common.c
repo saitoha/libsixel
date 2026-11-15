@@ -28,6 +28,117 @@ iccn_le32(unsigned char *p, unsigned int v)
     p[3] = (unsigned char)(v >> 24);
 }
 
+static void
+iccn_reverse_sample(unsigned char **p, int lut16, unsigned int sample)
+{
+    *(*p)++ = (unsigned char)sample;
+    if (lut16) {
+        /* This fixture uses only 0 and 65535 in the word tables. */
+        *(*p)++ = (unsigned char)sample;
+    }
+}
+
+int
+icc_numeric_reverse_matrix_test(int lut16, char const *tag_name)
+{
+    static unsigned int const matrix[] = {
+        0u, 0u, 0x00010000u,
+        0x00010000u, 0xffff8000u, 0x00008000u,
+        0x00010000u, 0x00010000u, 0x00010000u
+    };
+    static double const expected[] = {0.25, 0.375, 0.0};
+    unsigned char bytes[2048];
+    unsigned char *forward;
+    unsigned char *reverse;
+    unsigned char *p;
+    sixel_color_def_t *definition;
+    double xyz[3];
+    double rgb[3];
+    double scale;
+    size_t entries;
+    size_t channel;
+    size_t i;
+    unsigned int sample;
+    int ok;
+
+    memset(bytes, 0, sizeof(bytes));
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "mntrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 128u, 2u);
+    memcpy(bytes + 132u, "A2B0", 4u);
+    iccn_be32(bytes + 136u, 156u);
+    iccn_be32(bytes + 140u, 68u);
+    memcpy(bytes + 144u, tag_name, 4u);
+    iccn_be32(bytes + 148u, 224u);
+
+    /* A B-curve-only forward tag satisfies the RGB parser. The test
+     * passes known XYZ directly, so it cannot hide reverse errors. */
+    forward = bytes + 156u;
+    memcpy(forward, "mAB ", 4u);
+    forward[8] = forward[9] = 3u;
+    iccn_be32(forward + 12u, 32u);
+    for (i = 0u; i < 3u; ++i) {
+        memcpy(forward + 32u + i * 12u, "curv", 4u);
+    }
+
+    reverse = bytes + 224u;
+    memcpy(reverse, lut16 ? "mft2" : "mft1", 4u);
+    reverse[8] = reverse[9] = 3u;
+    reverse[10] = 2u;
+    for (i = 0u; i < 9u; ++i) {
+        iccn_be32(reverse + 12u + i * 4u, matrix[i]);
+    }
+    entries = lut16 ? 2u : 256u;
+    if (lut16) {
+        reverse[49] = reverse[51] = 2u;
+    }
+    p = reverse + (lut16 ? 52u : 48u);
+    for (channel = 0u; channel < 3u; ++channel) {
+        for (i = 0u; i < entries; ++i) {
+            sample = (unsigned int)(i * 255u / (entries - 1u));
+            iccn_reverse_sample(&p, lut16,
+                                channel == 1u ? sample : 255u - sample);
+        }
+    }
+    for (i = 0u; i < 8u; ++i) {
+        for (channel = 0u; channel < 3u; ++channel) {
+            iccn_reverse_sample(&p, lut16,
+                                (i & (4u >> channel)) ? 255u : 0u);
+        }
+    }
+    for (channel = 0u; channel < 3u; ++channel) {
+        for (i = 0u; i < entries; ++i) {
+            iccn_reverse_sample(&p, lut16,
+                                (unsigned int)(i * 255u / (entries - 1u)));
+        }
+    }
+    iccn_be32(bytes, (unsigned int)(p - bytes));
+    iccn_be32(bytes + 152u, (unsigned int)(p - reverse));
+
+    /* Physical XYZ maps to (1/4, 1/2, 3/4) in the LUT domain. The
+     * matrix gives (3/4, 3/8, 3/2). The tables invert channels 0 and 2
+     * after clipping, giving (1/4, 3/8, 0); the remaining stages are
+     * identity. Different input curves make stage order observable. */
+    scale = lut16 ? 65535.0 / 32768.0 : 255.0 / 128.0;
+    xyz[0] = scale * 0.25;
+    xyz[1] = scale * 0.5;
+    xyz[2] = scale * 0.75;
+    definition = sixel_cdef_icc(bytes, (size_t)(p - bytes));
+    ok = sixel_cdef_from_xyz(definition, xyz, rgb, 0);
+    if (ok) {
+        for (channel = 0u; channel < 3u; ++channel) {
+            if (!(fabs(rgb[channel] - expected[channel]) <= 1e-12)) {
+                fprintf(stderr, "Channel %zu: expected %.17g, got %.17g\n",
+                        channel, expected[channel], rgb[channel]);
+                ok = 0;
+            }
+        }
+    }
+    sixel_cdef_free(definition);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 static unsigned int
 iccn_read32(unsigned char const *p)
 {

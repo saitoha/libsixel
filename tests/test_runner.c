@@ -373,6 +373,9 @@ int test_icc_0014(int argc, char **argv);
 int test_icc_0015(int argc, char **argv);
 int test_icc_0016(int argc, char **argv);
 int test_icc_0017(int argc, char **argv);
+int test_icc_0018(int argc, char **argv);
+int test_icc_0019(int argc, char **argv);
+int test_icc_0020(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10079,6 +10082,9 @@ static test_entry_t const test_entries[] = {
     { "icc/0015_segm_finite_table", test_icc_0015 },
     { "icc/0016_para_loader_recovery", test_icc_0016 },
     { "icc/0017_segm_loader_recovery", test_icc_0017 },
+    { "icc/0018_mft1_b2a_xyz_matrix", test_icc_0018 },
+    { "icc/0019_mft2_b2a_xyz_matrix", test_icc_0019 },
+    { "icc/0020_mft2_b2d_xyz_matrix", test_icc_0020 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

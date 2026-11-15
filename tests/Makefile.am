@@ -2342,6 +2342,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0015_SEGM_FINITE_TABLE \
     -DBUILD_TEST_0016_PARA_LOADER_RECOVERY \
     -DBUILD_TEST_0017_SEGM_LOADER_RECOVERY \
+    -DBUILD_TEST_0018_MFT1_B2A_XYZ_MATRIX \
+    -DBUILD_TEST_0019_MFT2_B2A_XYZ_MATRIX \
+    -DBUILD_TEST_0020_MFT2_B2D_XYZ_MATRIX \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -7630,6 +7633,9 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0015_segm_finite_table.c \
     color/icc/0016_para_loader_recovery.c \
     color/icc/0017_segm_loader_recovery.c \
+    color/icc/0018_mft1_b2a_xyz_matrix.c \
+    color/icc/0019_mft2_b2a_xyz_matrix.c \
+    color/icc/0020_mft2_b2d_xyz_matrix.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
     color/space/0004_extended_srgb_decode.c \
