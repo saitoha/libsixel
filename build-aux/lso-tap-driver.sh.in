@@ -655,19 +655,14 @@ run_and_capture() {
 # storage until the child exits; no extra per-test file or process is needed.
 # The parser then appends stdout to .log and publishes the final .trs metadata.
 # Staticcheck targets stream output to console while preserving .log files.
-if [ "$stream_output" = "yes" ]; then
-    # Streaming output cannot be wrapped in command substitution because that
-    # would swallow progress lines; use timestamp helper instead.
-    time_begin=$(timestamp_millis)
-    run_and_capture "$@"
-    rc=$?
-    time_end=$(timestamp_millis)
-elif test "$(command -v time)" = time; then
-    # use builtin time
+if [ "$stream_output" != "yes" ] && [ -n "${BASH_VERSION-}" ]; then
+    # Bash understands TIMEFORMAT. Some other shells also have a builtin
+    # time, but print several fields or values such as 0m0000s.
     time_begin=0.000
     time_end=$( TIMEFORMAT='%R'; { time run_and_capture "$@"; } 2>&1 )
     rc=$?
 else
+    # Measure around the command directly to keep progress output streaming.
     time_begin=$(timestamp_millis)
     run_and_capture "$@"
     rc=$?

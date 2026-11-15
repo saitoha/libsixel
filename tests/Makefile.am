@@ -13448,6 +13448,7 @@ EXTRA_DIST += _static/sh/staticcheck-test-float-lookup-unity.sh \
 
 EXTRA_DIST += _static/sh/staticcheck-tap-stderr-isolation.sh \
     _static/sh/staticcheck-tap-failure-status.sh \
+    _static/sh/staticcheck-tap-timing.sh \
     _static/sh/staticcheck-pkg-config-package-name.sh \
     _static/sh/staticcheck-decoder-neon-portability.sh
 
