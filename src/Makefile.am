@@ -862,7 +862,6 @@ else
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) \
                 $(MAYBE_COVERAGE) $(LIBSIXEL_LDFLAGS)
 endif
-LS_LT_CURRENT = $(word 1,$(subst :, ,$(LS_LTVERSION)))
 libsixel_la_LIBADD = $(FLOAT_LOOKUP_LIB) -lm \
                 $(LIBCURL_LIBS) \
                 $(LIBFETCH_LIBS) \
@@ -889,7 +888,7 @@ EXTRA_DIST = $(srcdir)/rgblookup.gperf \
              $(srcdir)/classid-factory.gperf \
              $(srcdir)/classid-service.gperf
 
-.PHONY: libobjs libsixel-import-lib-alias
+.PHONY: libobjs
 
 # Build only the libtool object set for libsixel.
 #
@@ -907,27 +906,6 @@ libobjs:
 else
 libobjs: $(libsixel_la_OBJECTS)
 endif
-
-if BUILDING_ON_WINDOWS
-if USING_CL
-# clang-cl/link.exe may emit only versioned import libraries such as
-# '.libs/sixel-1.lib'. Provide the stable '.libs/sixel.dll.lib' alias
-# explicitly so dependent program links can always resolve it.
-$(top_builddir)/src/.libs/sixel.dll.lib: libsixel.la
-	@if test -f .libs/sixel.dll.lib; then \
-		:; \
-	elif test -f .libs/sixel-$(LS_LT_CURRENT).lib; then \
-		cp .libs/sixel-$(LS_LT_CURRENT).lib .libs/sixel.dll.lib; \
-	elif test -f .libs/sixel.lib; then \
-		cp .libs/sixel.lib .libs/sixel.dll.lib; \
-	fi
-LIBSIXEL_IMPORT_LIB_ALIAS_DEPS = $(top_builddir)/src/.libs/sixel.dll.lib
-endif
-endif
-
-# Keep this helper target always defined so top-level phase orchestration can
-# call it unconditionally. It becomes a no-op on non-MSVC builds.
-libsixel-import-lib-alias: $(LIBSIXEL_IMPORT_LIB_ALIAS_DEPS)
 
 GPERF_OPT=--ignore-case --language=ANSI-C
 GPERF_FACTORY_CLASSID_OPT=--language=ANSI-C \

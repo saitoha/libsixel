@@ -1716,7 +1716,6 @@ all-src-libobjs:
 
 all-src-lib: all-src-libobjs
 	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
-	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel-import-lib-alias
 
 # Language binding targets can also be invoked directly.  During the top-level
 # phased build, phase1-all has already built libsixel.la; rerunning all-src-lib

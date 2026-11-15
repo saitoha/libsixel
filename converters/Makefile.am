@@ -171,11 +171,6 @@ img2sixel_LDADD += \
 if HAVE_ABORT_TRACE
 img2sixel_LDADD += $(ABORTTRACE_LIBS)
 endif
-if BUILDING_ON_WINDOWS
-if USING_CL
-EXTRA_img2sixel_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
-endif
-endif
 endif
 # Automake emits the link rule unconditionally, so a _LINK defined only
 # in one branch leaves the variable empty everywhere else and make then
@@ -237,11 +232,6 @@ sixel2png_LDADD += \
         @THREAD_CFLAGS@
 if HAVE_ABORT_TRACE
 sixel2png_LDADD += $(ABORTTRACE_LIBS)
-endif
-if BUILDING_ON_WINDOWS
-if USING_CL
-EXTRA_sixel2png_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
-endif
 endif
 endif
 if OPENVMS_GNV

@@ -115,11 +115,6 @@ lsqa_LDADD += -lm \
         $(METAL_LIBS) \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
-if BUILDING_ON_WINDOWS
-if USING_CL
-EXTRA_lsqa_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
-endif
-endif
 endif
 # Automake emits the link rule unconditionally, so a _LINK defined only
 # in one branch leaves the variable empty everywhere else and make then
