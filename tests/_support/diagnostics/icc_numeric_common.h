@@ -55,5 +55,8 @@ int icc_numeric_colorspace_lab_slot_zero_test(int reverse);
 int icc_numeric_mpet_high_dimensional_clut_test(void);
 int icc_numeric_mpet_legacy_slot_pair_test(void);
 int icc_numeric_mpet_lab_neutral_test(int reverse);
+int icc_numeric_mpet_reachable_legacy_pair_test(void);
+int icc_numeric_colorspace_legacy_rgb8_test(void);
+int icc_numeric_mpet_definition_absolute_fallback_test(int reverse);
 
 #endif

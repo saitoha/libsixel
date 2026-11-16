@@ -277,6 +277,8 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cms_builtin_pcs_candidates clf_local_175
 #define sixel_cms_do_builtin_legacy clf_local_176
 #define sixel_cms_eval_builtin_pcs clf_local_177
+#define sixel_cms_has_colorspace_fallback clf_local_178
+#define sixel_cdef_slots clf_local_179
 #define sixel_cms_get_color_space clf_local_88
 #define sixel_cms_get_engine clf_local_89
 #define sixel_cms_intent_contains clf_local_90
@@ -693,6 +695,8 @@ cms_status_allocation_test(void)
 #undef sixel_cms_builtin_pcs_candidates
 #undef sixel_cms_do_builtin_legacy
 #undef sixel_cms_eval_builtin_pcs
+#undef sixel_cms_has_colorspace_fallback
+#undef sixel_cdef_slots
 #undef sixel_cms_get_color_space
 #undef sixel_cms_get_engine
 #undef sixel_cms_intent_contains

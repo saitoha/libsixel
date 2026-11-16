@@ -452,6 +452,10 @@ int test_icc_0093(int argc, char **argv);
 int test_icc_0094(int argc, char **argv);
 int test_icc_0095(int argc, char **argv);
 int test_icc_0096(int argc, char **argv);
+int test_icc_0097(int argc, char **argv);
+int test_icc_0098(int argc, char **argv);
+int test_icc_0099(int argc, char **argv);
+int test_icc_0100(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10237,6 +10241,10 @@ static test_entry_t const test_entries[] = {
     { "icc/0094_mpet_legacy_slot_pair", test_icc_0094 },
     { "icc/0095_mpet_lab_neutral_forward", test_icc_0095 },
     { "icc/0096_mpet_lab_neutral_reverse", test_icc_0096 },
+    { "icc/0097_mpet_reachable_legacy_pair", test_icc_0097 },
+    { "icc/0098_colorspace_legacy_rgb8", test_icc_0098 },
+    { "icc/0099_mpet_definition_absolute_fallback_forward", test_icc_0099 },
+    { "icc/0100_mpet_definition_absolute_fallback_reverse", test_icc_0100 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

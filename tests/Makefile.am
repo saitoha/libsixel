@@ -2420,6 +2420,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0094_MPET_LEGACY_SLOT_PAIR \
     -DBUILD_TEST_0095_MPET_LAB_NEUTRAL_FORWARD \
     -DBUILD_TEST_0096_MPET_LAB_NEUTRAL_REVERSE \
+    -DBUILD_TEST_0097_MPET_REACHABLE_LEGACY_PAIR \
+    -DBUILD_TEST_0098_COLORSPACE_LEGACY_RGB8 \
+    -DBUILD_TEST_0099_MPET_DEFINITION_ABSOLUTE_FALLBACK_FORWARD \
+    -DBUILD_TEST_0100_MPET_DEFINITION_ABSOLUTE_FALLBACK_REVERSE \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7787,6 +7791,10 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0094_mpet_legacy_slot_pair.c \
     color/icc/0095_mpet_lab_neutral_forward.c \
     color/icc/0096_mpet_lab_neutral_reverse.c \
+    color/icc/0097_mpet_reachable_legacy_pair.c \
+    color/icc/0098_colorspace_legacy_rgb8.c \
+    color/icc/0099_mpet_definition_absolute_fallback_forward.c \
+    color/icc/0100_mpet_definition_absolute_fallback_reverse.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

@@ -2941,3 +2941,131 @@ icc_numeric_mpet_lab_neutral_test(int reverse)
     sixel_cms_set_engine(previous);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+int
+icc_numeric_mpet_reachable_legacy_pair_test(void)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static float const input[] = {0.25f, 0.375f, 0.5f};
+    static double const expected[] = {0.25, 0.375, 0.5};
+    unsigned char src[516];
+    unsigned char dst[312];
+    size_t length;
+    int result;
+
+    /* The configured D2B0 can run, but has no matching reverse route.
+     * The legacy identity pair is A2B1 on input and B2A2 on output. */
+    length = iccn_mpet_transform_profile(src, 0, '1', 0, 65536u, 1);
+    src[135] = '0';
+    iccn_absolute_lut_profile(dst, white, '2');
+    result = iccn_check_mpet_transform(src, length, dst, sizeof(dst),
+        "relative,saturation,perceptual!", input, expected);
+    if (result != EXIT_SUCCESS) {
+        return result;
+    }
+
+    /* Also check the same legacy pair after a numeric D2B2 failure. */
+    src[135] = '2';
+    iccn_mpet_overflow_matrix(src + 168u + 24u);
+    return iccn_check_mpet_transform(src, length, dst, sizeof(dst),
+        "relative,saturation!", input, expected);
+}
+
+int
+icc_numeric_colorspace_legacy_rgb8_test(void)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static unsigned char const input[] = {64u, 64u, 64u};
+    static char const *const intents[] = {"perceptual!", "relative!"};
+    /* The identity mft2 yields 64/255 in each legacy XYZ component.
+     * Bradford adaptation, inverse sRGB primaries and the sRGB transfer
+     * function give these rounded bytes. */
+    static unsigned char const expected[] = {139u, 135u, 152u};
+    unsigned char bytes[312];
+    unsigned char output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t i;
+    int ok;
+
+    iccn_absolute_lut_profile(bytes, white, '0');
+    memcpy(bytes + 12u, "spac", 4u);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, sizeof(bytes));
+    target = sixel_cms_create_srgb_profile();
+    ok = source != NULL && target != NULL;
+    for (i = 0u; ok && i < sizeof(intents) / sizeof(intents[0]); ++i) {
+        ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_RGB_8,
+            target, SIXEL_CMS_PIXELFORMAT_RGB_8, intents[i], input,
+            output, 1u);
+        if (ok && memcmp(output, expected, sizeof(expected)) != 0) {
+            fprintf(stderr, "%s: expected RGB (139,135,152), got (%u,%u,%u)\n",
+                intents[i], (unsigned int)output[0], (unsigned int)output[1],
+                (unsigned int)output[2]);
+            ok = 0;
+        }
+    }
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_definition_absolute_fallback_test(int reverse)
+{
+    static double const input[] = {0.25, 0.375, 0.5};
+    static double const pcs_white[] = {0.9642, 1.0, 0.8249};
+    unsigned char bytes[516];
+    double output[3];
+    double scale;
+    double expected;
+    size_t length;
+    size_t i;
+    sixel_color_def_t *definition;
+    int ok;
+
+    length = iccn_mpet_transform_profile(bytes, reverse, '1', 0, 49152u, 1);
+    bytes[159] = '0';
+    iccn_mpet_overflow_matrix(bytes + 168u + 24u);
+    if (reverse) {
+        /* Reserve a fourth directory entry and provide a usable A2B0
+         * as well, so the same reverse fixture opens before CMS-07. */
+        memmove(bytes + 180u, bytes + 168u, length - 168u);
+        iccn_be32(bytes + 128u, 4u);
+        iccn_be32(bytes + 136u, 180u);
+        iccn_be32(bytes + 148u, 264u);
+        iccn_be32(bytes + 160u, 284u);
+        memcpy(bytes + 168u, "A2B0", 4u);
+        iccn_be32(bytes + 172u, (unsigned int)length + 12u);
+        iccn_be32(bytes + 176u, 68u);
+        memcpy(bytes + length + 12u, bytes + 284u, 68u);
+        memcpy(bytes + length + 12u, "mAB ", 4u);
+        length += 80u;
+        iccn_be32(bytes, (unsigned int)length);
+    }
+    definition = sixel_cdef_icc(bytes, length);
+    ok = definition != NULL;
+    if (ok && reverse) {
+        ok = sixel_cdef_from_xyz(definition, input, output,
+                                SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC);
+    } else if (ok) {
+        ok = sixel_cdef_to_xyz(definition, input, output,
+                              SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC);
+    }
+    /* Slot zero has identity B curves. Combine its integer XYZ
+     * encoding with the media-white ratio in the requested direction. */
+    for (i = 0u; ok && i < 3u; ++i) {
+        scale = (65535.0 / 32768.0) * (0.75 / pcs_white[i]);
+        expected = reverse ? input[i] / scale : input[i] * scale;
+        if (!(fabs(output[i] - expected) < 1e-12)) {
+            fprintf(stderr, "channel %zu: expected %.12g, got %.12g\n",
+                i, expected, output[i]);
+            ok = 0;
+        }
+    }
+    sixel_cdef_free(definition);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
