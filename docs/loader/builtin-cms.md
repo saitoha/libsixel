@@ -32,10 +32,10 @@ The authoritative definitions are in [`icc-parse.h`](../../src/icc-parse.h), wit
 | `mft1` / `mft2` | Matrix, input tables, CLUT, and output tables. Reverse LUTs apply the matrix to PCS XYZ before the input tables. Byte table values are expanded into 16-bit storage. | The matrix stage is limited to reverse XYZ paths, including the compatibility route for legacy B2D payloads. |
 | `mAB` / `mBA` | Optional A/M/B curves, CLUT, and a three-channel matrix with offsets. | A fixed pipeline representation, not a general graph of processing elements. Channel counts and stage compatibility constrain execution. |
 | A2B / B2A | Three slots, numbered 0–2, with separate forward and reverse storage. | A forward table does not automatically provide its inverse. |
-| D2B / B2D | Slots 0–2 recognize standard `mpet` element lists and retain structurally valid lists with their owned data. Compatibility paths also recognize mAB/mBA and mft payloads. | The evaluator uses the compatibility payloads. Standard `mpet` evaluation and slot 3 remain pending. |
+| D2B / B2D | Slots 0–2 recognize standard `mpet` element lists and retain structurally valid lists with their owned data. Compatibility paths also recognize mAB/mBA and mft payloads. | Profile conversion uses the compatibility payloads. Standard `mpet` pipeline routing and slot 3 remain pending. |
 | Auxiliary and private tags | Only the specific data used by the parser is consumed. | Named colors, preview/gamut machinery, arbitrary profile classes, and a general calibration workflow are not provided by this subsystem. |
 
-The `mpet` reader retains the position table's element order, channel counts, and a shared copy of the tag bytes. The `cvst` element has its own segmented floating-point curve reader and evaluator. Matrix and CLUT data remain encoded for their element readers. Builtin profile conversion still uses the executable legacy and analytic paths.
+The `mpet` reader retains the position table's element order, channel counts, and a shared copy of the tag bytes. The `cvst`, `matf`, and `clut` elements have individual floating-point evaluators. Coefficients and samples enter the evaluators at their encoded precision, and arithmetic uses double precision. CLUT interpolation limits each input to the unit interval. Matrix inputs and all element results retain their float coordinates. At a floating-point PCS boundary, the coordinates are XYZ or L*, a*, b* directly. Builtin profile conversion uses the executable legacy and analytic paths.
 
 ## Architecture and data flow
 
@@ -123,7 +123,7 @@ The [ignored-feature trace](color-management/README.md#diagnosing-ignored-icc-fe
 
 Treat additions as changes to a specification interpreter. For each new feature, define its exact tag/payload grammar, allowed numeric domains, PCS encoding, evaluation order, ownership, failure behavior, and interactions with existing paths before adding a parser branch. Preserve a distinction between unsupported data, malformed data, resource failure, and a valid alternate rendering path wherever the API can express it.
 
-Execution of standard `mpet` needs element payload readers, floating-point semantics through the intermediate stages, bounded execution, and independent expected-value tests. iccMAX and its broader element repertoire remain outside the supported subset.
+Connecting standard `mpet` to profile conversion still requires bounded execution of the complete element sequence and intent routing. iccMAX and its broader element repertoire remain outside the supported subset.
 
 ## Test coverage
 

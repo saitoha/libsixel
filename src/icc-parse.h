@@ -36,6 +36,7 @@
 #define SIXEL_ICC_B2A_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
 #define SIXEL_ICC_D2B_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
 #define SIXEL_ICC_B2D_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
+#define SIXEL_ICC_MPE_CLUT_MAX_AXES 16u
 
 typedef enum sixel_icc_curve_kind {
     SIXEL_ICC_CURVE_INVALID = 0,
@@ -138,9 +139,11 @@ typedef struct sixel_icc_mpe {
     uint16_t output_channels;
     uint32_t offset;
     uint32_t length;
-    /* Only the first position for a shared element owns the curve array. */
+    /* Shared positions refer to the first position's decoded payload. */
     sixel_icc_mpe_curve_t *curves;
-    uint16_t curve_element;
+    double *values;
+    uint8_t grid_points[SIXEL_ICC_MPE_CLUT_MAX_AXES];
+    uint16_t payload_element;
 } sixel_icc_mpe_t;
 
 typedef struct sixel_icc_mpet {

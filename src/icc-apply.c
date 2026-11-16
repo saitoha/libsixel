@@ -213,7 +213,7 @@ sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,
         channels != mpe->input_channels) {
         return 0;
     }
-    curves = mpet->elements[mpe->curve_element].curves;
+    curves = mpet->elements[mpe->payload_element].curves;
     for (channel = 0u; channel < channels; ++channel) {
         x = in[channel];
         if (!isfinite(x) || fabs(x) > FLT_MAX) {
@@ -242,6 +242,133 @@ sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,
         out[channel] = y;
     }
     return 1;
+}
+
+static int
+sixel_icc_apply_mpe_matrix(double *out, double const *in,
+                           sixel_icc_mpe_t const *mpe)
+{
+    double const *coefficient;
+    double const *offset;
+    double y;
+    size_t i;
+    size_t j;
+
+    coefficient = mpe->values;
+    offset = coefficient +
+        (size_t)mpe->input_channels * mpe->output_channels;
+    for (i = 0u; i < mpe->input_channels; ++i) {
+        if (!isfinite(in[i]) || fabs(in[i]) > FLT_MAX) {
+            return 0;
+        }
+    }
+    /* The coefficients are row-major, followed by one offset per row. */
+    for (j = 0u; j < mpe->output_channels; ++j) {
+        y = 0.0;
+        for (i = 0u; i < mpe->input_channels; ++i) {
+            y += *coefficient++ * in[i];
+        }
+        y += offset[j];
+        if (!isfinite(y) || fabs(y) > FLT_MAX) {
+            return 0;
+        }
+        out[j] = y;
+    }
+    return 1;
+}
+
+/* Interpolate only axes between grid points. Pairwise interpolation
+ * also preserves a constant sample exactly, including at float limits. */
+static double
+sixel_icc_mpe_clut_lerp(double const *values, size_t const *steps,
+                         double const *fractions, size_t axes)
+{
+    double lo;
+    double hi;
+    double f;
+
+    if (axes == 0u) {
+        return *values;
+    }
+    --axes;
+    lo = sixel_icc_mpe_clut_lerp(values, steps, fractions, axes);
+    hi = sixel_icc_mpe_clut_lerp(values + steps[axes], steps, fractions, axes);
+    f = fractions[axes];
+    return f <= 0.5 ? lo + (hi - lo) * f : hi + (lo - hi) * (1.0 - f);
+}
+
+static int
+sixel_icc_apply_mpe_clut(double *out, double const *in,
+                         sixel_icc_mpe_t const *mpe)
+{
+    size_t steps[SIXEL_ICC_MPE_CLUT_MAX_AXES];
+    double fractions[SIXEL_ICC_MPE_CLUT_MAX_AXES];
+    size_t stride;
+    size_t base;
+    size_t axes;
+    size_t low;
+    size_t i;
+    double position;
+
+    if (mpe->input_channels > SIXEL_ICC_MPE_CLUT_MAX_AXES) {
+        return 0;
+    }
+    /* The last input axis changes fastest. Only CLUT inputs use the
+     * unit interval. The sampled output channels stay in float units. */
+    stride = mpe->output_channels;
+    base = 0u;
+    axes = 0u;
+    for (i = mpe->input_channels; i > 0u; --i) {
+        if (!isfinite(in[i - 1u])) {
+            return 0;
+        }
+        position = sixel_icc_clamp_unit(in[i - 1u]) *
+            (double)(mpe->grid_points[i - 1u] - 1u);
+        low = (size_t)position;
+        base += low * stride;
+        if (position > (double)low) {
+            steps[axes] = stride;
+            fractions[axes] = position - (double)low;
+            ++axes;
+        }
+        stride *= mpe->grid_points[i - 1u];
+    }
+    for (i = 0u; i < mpe->output_channels; ++i) {
+        out[i] = sixel_icc_mpe_clut_lerp(mpe->values + base + i, steps,
+                                         fractions, axes);
+    }
+    return 1;
+}
+
+int
+sixel_icc_apply_mpe_element(double *out, size_t output_channels,
+                            double const *in, size_t input_channels,
+                            sixel_icc_mpet_t const *mpet, size_t element)
+{
+    sixel_icc_mpe_t const *mpe;
+
+    if (mpet == NULL || element >= mpet->element_count ||
+        in == NULL || out == NULL) {
+        return 0;
+    }
+    mpe = &mpet->elements[element];
+    if (output_channels != mpe->output_channels ||
+        input_channels != mpe->input_channels) {
+        return 0;
+    }
+    /* Shape was checked for this position; the payload can be shared. */
+    mpe = &mpet->elements[mpe->payload_element];
+    switch (mpe->kind) {
+    case SIXEL_ICC_MPE_CURVE_SET:
+        return sixel_icc_apply_mpe_curves(out, in, input_channels,
+                                          mpet, element);
+    case SIXEL_ICC_MPE_MATRIX:
+        return sixel_icc_apply_mpe_matrix(out, in, mpe);
+    case SIXEL_ICC_MPE_CLUT:
+        return sixel_icc_apply_mpe_clut(out, in, mpe);
+    default:
+        return 0;
+    }
 }
 
 static double

@@ -2378,6 +2378,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0051_MPET_CURVE_LOG_RANGE \
     -DBUILD_TEST_0052_MPET_CURVE_SAMPLE_ENDPOINT \
     -DBUILD_TEST_0053_STATUS_MPET_SLOT3_FALLBACK \
+    -DBUILD_TEST_0054_MPET_FLOAT_MATRIX \
+    -DBUILD_TEST_0055_MPET_FLOAT_CLUT \
+    -DBUILD_TEST_0056_MPET_NUMERIC_PAYLOAD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -7702,6 +7705,9 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0051_mpet_curve_log_range.c \
     color/icc/0052_mpet_curve_sample_endpoint.c \
     color/icc/0053_status_mpet_slot3_fallback.c \
+    color/icc/0054_mpet_float_matrix.c \
+    color/icc/0055_mpet_float_clut.c \
+    color/icc/0056_mpet_numeric_payload.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
     color/space/0004_extended_srgb_decode.c \

@@ -151,6 +151,14 @@ SIXEL_INTERNAL_API int
 sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,
                           sixel_icc_mpet_t const *mpet, size_t element);
 
+/* Evaluate one parsed curve set, matrix or CLUT with distinct I/O buffers.
+ * At the PCS boundary the values are XYZ or L*, a*, b* directly.
+ * Discard the output on failure. */
+SIXEL_INTERNAL_API int
+sixel_icc_apply_mpe_element(double *out, size_t output_channels,
+                            double const *in, size_t input_channels,
+                            sixel_icc_mpet_t const *mpet, size_t element);
+
 /* Bridge to physical PCS XYZ before applying an intent adjustment. */
 SIXEL_INTERNAL_API int
 sixel_icc_apply_device_to_physical_xyz(

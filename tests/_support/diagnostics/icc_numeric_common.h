@@ -30,4 +30,7 @@ int icc_mpet_curve_evaluation_failure_test(void);
 int icc_mpet_curve_log_range_test(void);
 int icc_mpet_curve_sample_endpoint_test(void);
 int icc_numeric_mpet_slot3_status_test(void);
+int icc_mpet_float_matrix_test(void);
+int icc_mpet_float_clut_test(void);
+int icc_mpet_numeric_payload_test(void);
 #endif
