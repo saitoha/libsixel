@@ -33,4 +33,9 @@ int icc_numeric_mpet_slot3_status_test(void);
 int icc_mpet_float_matrix_test(void);
 int icc_mpet_float_clut_test(void);
 int icc_mpet_numeric_payload_test(void);
+int icc_mpet_chain_test(int reverse);
+int icc_mpet_absolute_test(int relative_endpoint);
+int icc_mpet_float_pcs_lab_test(int reverse);
+int icc_mpet_missing_intent_test(void);
+
 #endif

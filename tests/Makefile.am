@@ -2377,10 +2377,18 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0050_ABSOLUTE_UNPAIRED \
     -DBUILD_TEST_0051_MPET_CURVE_LOG_RANGE \
     -DBUILD_TEST_0052_MPET_CURVE_SAMPLE_ENDPOINT \
-    -DBUILD_TEST_0053_STATUS_MPET_SLOT3_FALLBACK \
+    -DBUILD_TEST_0053_STATUS_MPET_SLOT3_SUPPORTED \
     -DBUILD_TEST_0054_MPET_FLOAT_MATRIX \
     -DBUILD_TEST_0055_MPET_FLOAT_CLUT \
     -DBUILD_TEST_0056_MPET_NUMERIC_PAYLOAD \
+    -DBUILD_TEST_0057_MPET_FORWARD_CHAIN \
+    -DBUILD_TEST_0058_MPET_REVERSE_CHAIN \
+    -DBUILD_TEST_0059_MPET_ABSOLUTE_BOTH \
+    -DBUILD_TEST_0060_MPET_ABSOLUTE_REVERSE \
+    -DBUILD_TEST_0061_MPET_ABSOLUTE_FORWARD \
+    -DBUILD_TEST_0063_MPET_PCS_LAB_REVERSE \
+    -DBUILD_TEST_0064_MPET_MISSING_INTENT \
+    -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -7704,10 +7712,18 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0050_absolute_unpaired.c \
     color/icc/0051_mpet_curve_log_range.c \
     color/icc/0052_mpet_curve_sample_endpoint.c \
-    color/icc/0053_status_mpet_slot3_fallback.c \
+    color/icc/0053_status_mpet_slot3_supported.c \
     color/icc/0054_mpet_float_matrix.c \
     color/icc/0055_mpet_float_clut.c \
     color/icc/0056_mpet_numeric_payload.c \
+    color/icc/0057_mpet_forward_chain.c \
+    color/icc/0058_mpet_reverse_chain.c \
+    color/icc/0059_mpet_absolute_both.c \
+    color/icc/0060_mpet_absolute_reverse.c \
+    color/icc/0061_mpet_absolute_forward.c \
+    color/icc/0063_mpet_pcs_lab_reverse.c \
+    color/icc/0064_mpet_missing_intent.c \
+    color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
     color/space/0004_extended_srgb_decode.c \

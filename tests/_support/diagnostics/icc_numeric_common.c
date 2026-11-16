@@ -237,7 +237,7 @@ icc_numeric_mpet_order_test(void)
         return EXIT_FAILURE;
     }
     memset(bytes, 0, length);
-    ok = issue == SIXEL_ICC_ISSUE_UNSUPPORTED;
+    ok = issue == SIXEL_ICC_ISSUE_NONE;
     for (direction = 0u; direction < 2u; ++direction) {
         mpet = direction == 0u ? &profile.d2b_mpet[0] : &profile.b2d_mpet[0];
         if (mpet->element_count != 4u ||
@@ -396,6 +396,7 @@ icc_numeric_mpet_no_path_test(void)
     length = iccn_make_mpet_profile(bytes, 4u);
     memset(bytes + 132u, 'x', 4u);
     memset(bytes + 144u, 'y', 4u);
+    memcpy(bytes + ICCN_MPET_OFFSET + 48u, "zzzz", 4u);
     memset(&profile, 0, sizeof(profile));
     profile.kind = SIXEL_ICC_PROFILE_KIND_GRAY;
     if (sixel_icc_parse_profile_ex(bytes, length, &profile, &issue)) {
@@ -421,7 +422,7 @@ icc_numeric_mpet_count_test(int over_limit)
         return over_limit && issue == SIXEL_ICC_ISSUE_RESOURCE_LIMIT
             ? EXIT_SUCCESS : EXIT_FAILURE;
     }
-    ok = !over_limit && issue == SIXEL_ICC_ISSUE_UNSUPPORTED &&
+    ok = !over_limit && issue == SIXEL_ICC_ISSUE_NONE &&
         profile.d2b_mpet[0].element_count == 256u &&
         profile.d2b_mpet[0].elements[255].offset == 2064u;
     sixel_icc_profile_destroy(&profile);
@@ -866,7 +867,7 @@ icc_numeric_mpet_slot3_status_test(void)
     profile = sixel_cms_open_profile_from_mem_ex(bytes, length, &report);
     ok = profile != NULL && report.status == SIXEL_CMS_STATUS_OK &&
         report.actual_engine == SIXEL_CMS_ENGINE_BUILTIN &&
-        report.skipped_path == SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE;
+        report.skipped_path == SIXEL_CMS_STATUS_OK;
     sixel_cms_close_profile(profile);
     sixel_cms_set_engine(previous);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -1866,4 +1867,292 @@ end:
         sixel_allocator_unref(allocator);
     }
     return result;
+}
+
+static void
+iccn_mpet_position(unsigned char *tag, size_t index,
+                    unsigned int offset, unsigned int length)
+{
+    iccn_be32(tag + 16u + index * 8u, offset);
+    iccn_be32(tag + 20u + index * 8u, length);
+}
+
+static unsigned int
+iccn_mpet_chain(unsigned char *tag)
+{
+    static unsigned int const curve[] = {
+        0x3f800000u, 0x3f800000u, 0u, 0x3e000000u
+    };
+    static float const matrix[] = {
+        0.0f, 1.0f, 0.0f, 0.25f, 0.0f, 1.0f, -0.25f, -0.125f
+    };
+    unsigned char *element;
+    unsigned char *sample;
+    size_t i;
+    int u;
+    int v;
+
+    iccn_be32(tag + 12u, 4u);
+    /* Physical order is matrix, placeholder, CLUT, curves. */
+    iccn_mpet_position(tag, 0u, 184u, 76u);
+    iccn_mpet_position(tag, 1u, 48u, 44u);
+    iccn_mpet_position(tag, 2u, 92u, 16u);
+    iccn_mpet_position(tag, 3u, 108u, 76u);
+    element = tag + 48u;
+    memcpy(element, "matf", 4u);
+    element[9] = 3u;
+    element[11] = 2u;
+    for (i = 0u; i < 8u; ++i) {
+        iccn_mpe_write_float(element + 12u + i * 4u, matrix[i]);
+    }
+    element = tag + 92u;
+    memcpy(element, "bACS", 4u);
+    element[9] = element[11] = 2u;
+    element = tag + 108u;
+    memcpy(element, "clut", 4u);
+    element[9] = 2u;
+    element[11] = 3u;
+    element[12] = element[13] = 2u;
+    sample = element + 28u;
+    for (u = 0; u < 2; ++u) {
+        for (v = 0; v < 2; ++v) {
+            iccn_mpe_write_float(sample, u + v / 2.0f - 0.75f);
+            iccn_mpe_write_float(sample + 4u, v + 1.0f);
+            iccn_mpe_write_float(sample + 8u, u * v + 0x1p-20f);
+            sample += 12u;
+        }
+    }
+    element = tag + 184u;
+    memcpy(element, "cvst", 4u);
+    element[9] = element[11] = 3u;
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(element + 12u + i * 8u, 36u);
+        iccn_be32(element + 16u + i * 8u, 40u);
+    }
+    memcpy(element + 36u, "curf", 4u);
+    element[45] = 1u;
+    iccn_mpe_write_formula(element + 48u, 0u, curve);
+    return 260u;
+}
+
+static size_t
+iccn_mpet_transform_profile(unsigned char bytes[516], int reverse,
+                             char slot, int chain, unsigned int white,
+                             int legacy)
+{
+    unsigned char *tag;
+    unsigned char *element;
+    unsigned int length;
+    size_t i;
+
+    memset(bytes, 0, 516u);
+    bytes[8] = 4u;
+    bytes[9] = 0x40u;
+    memcpy(bytes + 12u, "prtrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 68u, 63190u);
+    iccn_be32(bytes + 72u, 65536u);
+    iccn_be32(bytes + 76u, 54061u);
+    iccn_be32(bytes + 128u, legacy ? 3u : 2u);
+    memcpy(bytes + 132u, reverse ? "B2D" : "D2B", 3u);
+    bytes[135] = (unsigned char)slot;
+    iccn_be32(bytes + 136u, 168u);
+    memcpy(bytes + 144u, "wtpt", 4u);
+    iccn_be32(bytes + 152u, 20u);
+    tag = bytes + 168u;
+    memcpy(tag, "mpet", 4u);
+    tag[9] = tag[11] = 3u;
+    if (chain) {
+        length = iccn_mpet_chain(tag);
+    } else {
+        length = 84u;
+        iccn_be32(tag + 12u, 1u);
+        iccn_mpet_position(tag, 0u, 24u, 60u);
+        element = tag + 24u;
+        memcpy(element, "matf", 4u);
+        element[9] = element[11] = 3u;
+        for (i = 0u; i < 3u; ++i) {
+            iccn_mpe_write_float(element + 12u + i * 16u, 1.0f);
+        }
+    }
+    iccn_be32(bytes + 140u, length);
+    length += 168u;
+    iccn_be32(bytes + 148u, length);
+    memcpy(bytes + length, "XYZ ", 4u);
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(bytes + length + 8u + i * 4u, white);
+    }
+    length += 20u;
+    if (legacy) {
+        /* A competing legacy path has identical identity B curves.
+         * The independent expectation requires the standard path. */
+        memcpy(bytes + 156u, reverse ? "B2A" : "A2B", 3u);
+        bytes[159] = (unsigned char)slot;
+        iccn_be32(bytes + 160u, length);
+        iccn_be32(bytes + 164u, 68u);
+        element = bytes + length;
+        memcpy(element, reverse ? "mBA " : "mAB ", 4u);
+        element[8] = element[9] = 3u;
+        iccn_be32(element + 12u, 32u);
+        for (i = 0u; i < 3u; ++i) {
+            memcpy(element + 32u + i * 12u, "curv", 4u);
+        }
+        length += 68u;
+    }
+    iccn_be32(bytes, length);
+    return length;
+}
+
+static int
+iccn_check_mpet_transform(unsigned char const *src_bytes, size_t src_length,
+                           unsigned char const *dst_bytes, size_t dst_length,
+                           char const *intent, float const input[3],
+                           double const expected[3])
+{
+    sixel_cms_profile_t *src;
+    sixel_cms_profile_t *dst;
+    sixel_cms_transform_t *transform;
+    sixel_cms_engine_t previous;
+    float output[3];
+    size_t i;
+    int ok;
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    src = sixel_cms_open_profile_from_mem(src_bytes, src_length);
+    dst = sixel_cms_open_profile_from_mem(dst_bytes, dst_length);
+    transform = NULL;
+    if (src != NULL && dst != NULL &&
+        sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", intent) == 0) {
+        transform = sixel_cms_create_transform(
+            src, SIXEL_CMS_PIXELFORMAT_RGB_F32, dst,
+            SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
+    }
+    ok = transform != NULL &&
+        sixel_cms_do_transform(transform, input, output, 1u);
+    for (i = 0u; ok && i < 3u; ++i) {
+        if (!(fabs(output[i] - expected[i]) < 0x1p-23)) {
+            fprintf(stderr, "%s channel %zu: expected %.9g, got %.9g\n",
+                    intent, i, expected[i], (double)output[i]);
+            ok = 0;
+        }
+    }
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(dst);
+    sixel_cms_close_profile(src);
+    sixel_cms_set_engine(previous);
+    (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_mpet_chain_test(int reverse)
+{
+    /* Curves add 1/8. The matrix gives (u,v) = (3/8,9/32) forward
+     * and (1/4,19/32) reverse. The CLUT encodes (u+v/2-3/4, v+1,
+     * u*v+2^-20). The other profile is the identity. */
+    static float const input[][3] = {
+        {1.5f, 0.5f, -0.125f}, {-0.25f, 0.375f, 0.625f}
+    };
+    static double const expected[][3] = {
+        {-0.234375, 1.28125, 0.10546875 + 0x1p-20},
+        {-0.203125, 1.59375, 0.1484375 + 0x1p-20}
+    };
+    unsigned char src[516];
+    unsigned char dst[516];
+    size_t src_length;
+    size_t dst_length;
+    char slot;
+
+    slot = reverse ? '2' : '1';
+    src_length = iccn_mpet_transform_profile(src, 0, slot, !reverse, 49152u,
+                                              !reverse);
+    dst_length = iccn_mpet_transform_profile(dst, 1, slot, reverse, 32768u,
+                                              reverse);
+    return iccn_check_mpet_transform(src, src_length, dst, dst_length,
+        reverse ? "saturation!" : "relative!", input[reverse],
+        expected[reverse]);
+}
+
+int
+icc_mpet_absolute_test(int relative_endpoint)
+{
+    static float const input[] = {0.25f, 0.375f, 0.5f};
+    static double const expected[][3] = {
+        {0.25, 0.375, 0.5},
+        {0.25 * (0.75 / 0.9642), 0.375 * 0.75, 0.5 * (0.75 / 0.8249)},
+        {0.25 * (0.9642 / 0.5), 0.375 / 0.5, 0.5 * (0.8249 / 0.5)}
+    };
+    unsigned char src[516];
+    unsigned char dst[516];
+    size_t src_length;
+    size_t dst_length;
+
+    src_length = iccn_mpet_transform_profile(src, 0,
+        relative_endpoint == 1 ? '1' : '3', 0, 49152u, 0);
+    dst_length = iccn_mpet_transform_profile(dst, 1,
+        relative_endpoint == 2 ? '1' : '3', 0, 32768u, 0);
+    return iccn_check_mpet_transform(src, src_length, dst, dst_length,
+        "absolute!", input, expected[relative_endpoint]);
+}
+
+int
+icc_mpet_float_pcs_lab_test(int reverse)
+{
+    static float const input[][3] = {
+        {42.0f, -25.0f, 20.0f}, {-0x1p-10f, 0.0f, 0.0f}
+    };
+    static double const expected[][3] = {
+        /* f(Y)=0.5, f(X)=0.45, and f(Z)=0.4. */
+        {0.9642 * 0.45 * 0.45 * 0.45, 0.125, 0.8249 * 0.064},
+        /* The linear branch has slope (29/6)^2/3 below zero.
+         * Only a* is nonzero and reads X relative to D50. */
+        {0.0, -500.0 * (841.0 / 108.0) * 0x1p-10 / 0.9642, 0.0}
+    };
+    unsigned char src[516];
+    unsigned char dst[516];
+    size_t src_length;
+    size_t dst_length;
+
+    src_length = iccn_mpet_transform_profile(src, 0, '1', 0, 49152u, 0);
+    dst_length = iccn_mpet_transform_profile(dst, 1, '1', 0, 32768u, 0);
+    memcpy((reverse ? dst : src) + 20u, "Lab ", 4u);
+    return iccn_check_mpet_transform(src, src_length, dst, dst_length,
+        "relative!", input[reverse], expected[reverse]);
+}
+
+int
+icc_mpet_missing_intent_test(void)
+{
+    static unsigned char const input[] = {64u, 128u, 192u};
+    unsigned char src_bytes[516];
+    sixel_cms_profile_t *src;
+    sixel_cms_profile_t *dst;
+    sixel_cms_transform_t *transform;
+    sixel_cms_engine_t previous;
+    unsigned char output[3];
+    size_t length;
+    int ok;
+
+    length = iccn_mpet_transform_profile(src_bytes, 0, '2', 0, 49152u, 0);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    src = sixel_cms_open_profile_from_mem(src_bytes, length);
+    dst = sixel_cms_create_srgb_profile();
+    transform = NULL;
+    if (src != NULL && dst != NULL &&
+        sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT",
+                            "relative!") == 0) {
+        transform = sixel_cms_create_transform(
+            src, SIXEL_CMS_PIXELFORMAT_RGB_8, dst,
+            SIXEL_CMS_PIXELFORMAT_RGB_8, SIXEL_CMS_TRANSFORM_DEFAULT);
+    }
+    ok = transform != NULL &&
+        !sixel_cms_do_transform(transform, input, output, 1u);
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(dst);
+    sixel_cms_close_profile(src);
+    sixel_cms_set_engine(previous);
+    (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

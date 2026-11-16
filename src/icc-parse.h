@@ -36,7 +36,10 @@
 #define SIXEL_ICC_B2A_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
 #define SIXEL_ICC_D2B_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
 #define SIXEL_ICC_B2D_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
+#define SIXEL_ICC_MPET_SLOT_COUNT 4u
+#define SIXEL_ICC_MPET_ABSOLUTE_SLOT 3u
 #define SIXEL_ICC_MPE_CLUT_MAX_AXES 16u
+#define SIXEL_ICC_MPE_MAX_CHANNELS 16u
 
 typedef enum sixel_icc_curve_kind {
     SIXEL_ICC_CURVE_INVALID = 0,
@@ -182,10 +185,10 @@ typedef struct sixel_icc_profile {
     sixel_icc_mab_pipeline_t b2a_mab[SIXEL_ICC_B2A_SLOT_COUNT];
     sixel_icc_lut_t d2b_lut[SIXEL_ICC_D2B_SLOT_COUNT];
     sixel_icc_mab_pipeline_t d2b_mab[SIXEL_ICC_D2B_SLOT_COUNT];
-    sixel_icc_mpet_t d2b_mpet[SIXEL_ICC_D2B_SLOT_COUNT];
+    sixel_icc_mpet_t d2b_mpet[SIXEL_ICC_MPET_SLOT_COUNT];
     sixel_icc_lut_t b2d_lut[SIXEL_ICC_B2D_SLOT_COUNT];
     sixel_icc_mab_pipeline_t b2d_mab[SIXEL_ICC_B2D_SLOT_COUNT];
-    sixel_icc_mpet_t b2d_mpet[SIXEL_ICC_B2D_SLOT_COUNT];
+    sixel_icc_mpet_t b2d_mpet[SIXEL_ICC_MPET_SLOT_COUNT];
 } sixel_icc_profile_t;
 
 SIXEL_INTERNAL_API int

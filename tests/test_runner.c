@@ -412,6 +412,14 @@ int test_icc_0053(int argc, char **argv);
 int test_icc_0054(int argc, char **argv);
 int test_icc_0055(int argc, char **argv);
 int test_icc_0056(int argc, char **argv);
+int test_icc_0057(int argc, char **argv);
+int test_icc_0058(int argc, char **argv);
+int test_icc_0059(int argc, char **argv);
+int test_icc_0060(int argc, char **argv);
+int test_icc_0061(int argc, char **argv);
+int test_icc_0062(int argc, char **argv);
+int test_icc_0063(int argc, char **argv);
+int test_icc_0064(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10153,10 +10161,18 @@ static test_entry_t const test_entries[] = {
     { "icc/0050_absolute_unpaired", test_icc_0050 },
     { "icc/0051_mpet_curve_log_range", test_icc_0051 },
     { "icc/0052_mpet_curve_sample_endpoint", test_icc_0052 },
-    { "icc/0053_status_mpet_slot3_fallback", test_icc_0053 },
+    { "icc/0053_status_mpet_slot3_supported", test_icc_0053 },
     { "icc/0054_mpet_float_matrix", test_icc_0054 },
     { "icc/0055_mpet_float_clut", test_icc_0055 },
     { "icc/0056_mpet_numeric_payload", test_icc_0056 },
+    { "icc/0057_mpet_forward_chain", test_icc_0057 },
+    { "icc/0058_mpet_reverse_chain", test_icc_0058 },
+    { "icc/0059_mpet_absolute_both", test_icc_0059 },
+    { "icc/0060_mpet_absolute_reverse", test_icc_0060 },
+    { "icc/0061_mpet_absolute_forward", test_icc_0061 },
+    { "icc/0062_mpet_pcs_lab_forward", test_icc_0062 },
+    { "icc/0063_mpet_pcs_lab_reverse", test_icc_0063 },
+    { "icc/0064_mpet_missing_intent", test_icc_0064 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

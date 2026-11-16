@@ -15,10 +15,13 @@ message=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m
     exit 0
 }
 
-case "${message}" in *tag=44324230\|type=6d706574\|reason=mpet-evaluation-unavailable*) true ;; *) false ;; esac || {
-    echo "not ok 1 - missing ICC decision reason"
+case "${message}" in
+    *tag=44324233*|*event=pipeline-rejected\|tag=D2B3*) false ;;
+    *) true ;;
+esac || {
+    echo "not ok 1 - supported D2B3 must not be ignored or rejected"
     exit 0
 }
 
-echo "ok 1 - mpet payload reason"
+echo "ok 1 - supported D2B3 must not be ignored or rejected"
 exit 0

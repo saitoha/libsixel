@@ -14,10 +14,10 @@ message=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m
     exit 0
 }
 
-case "${message}" in *event=pipeline-rejected\|tag=D2B0\|reason=mpet-evaluation-unavailable*) true ;; *) false ;; esac || {
+case "${message}" in *tag=44324234\|type=6d706574\|reason=unsupported-intent-slot*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing ICC decision reason"
     exit 0
 }
 
-echo "ok 1 - pipeline rejection reason"
+echo "ok 1 - unsupported mpet slot reason"
 exit 0
