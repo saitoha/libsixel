@@ -299,8 +299,8 @@ sixel_icc_mpe_clut_lerp(double const *values, size_t const *steps,
 
 /* Split the cell into simplices by sorting its fractional coordinates.
  * Each simplex follows at most one edge per axis, so even a 16-axis
- * table reads at most 17 vertices. Accumulate differences along its
- * edges to preserve constant tables exactly. */
+ * table reads at most 17 vertices. Use barycentric weights directly so
+ * a zero-weight vertex cannot affect the sum through cancellation. */
 static void
 sixel_icc_mpe_clut_simplex(double *out, size_t channels,
                             double const *values, size_t *steps,
@@ -310,9 +310,16 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
     size_t j;
     size_t channel;
     size_t step;
+    size_t count;
     double fraction;
+    double weight;
+    double weights[SIXEL_ICC_MPE_CLUT_MAX_AXES + 1u];
     double const *vertex;
-    double const *next;
+    double const *vertices[SIXEL_ICC_MPE_CLUT_MAX_AXES + 1u];
+    double sample;
+    double low;
+    double high;
+    double sum;
 
     for (i = 1u; i < axes; ++i) {
         step = steps[i];
@@ -326,19 +333,34 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
         steps[j] = step;
         fractions[j] = fraction;
     }
-    for (channel = 0u; channel < channels; ++channel) {
-        out[channel] = 0.0;
-    }
+    /* Fractional axes are strictly inside the cell. Its first vertex
+     * therefore contributes even if all the other weights are zero. */
+    count = 1u;
     vertex = values;
+    vertices[0] = vertex;
+    weights[0] = axes == 0u ? 1.0 : 1.0 - fractions[0];
     for (i = 0u; i < axes; ++i) {
-        next = vertex + steps[i];
-        for (channel = 0u; channel < channels; ++channel) {
-            out[channel] += fractions[i] * (next[channel] - vertex[channel]);
+        fraction = i + 1u == axes ? 0.0 : fractions[i + 1u];
+        weight = fractions[i] - fraction;
+        vertex += steps[i];
+        if (weight > 0.0) {
+            weights[count] = weight;
+            vertices[count++] = vertex;
         }
-        vertex = next;
     }
     for (channel = 0u; channel < channels; ++channel) {
-        out[channel] += values[channel];
+        /* Roundoff can leave the convex hull by a few ulps. Bound the
+         * result by its contributing samples, including constant CLUTs
+         * whose values may lie outside the unit interval. */
+        low = high = vertices[0][channel];
+        sum = 0.0;
+        for (i = 0u; i < count; ++i) {
+            sample = vertices[i][channel];
+            low = sample < low ? sample : low;
+            high = sample > high ? sample : high;
+            sum += weights[i] * sample;
+        }
+        out[channel] = fmin(high, fmax(low, sum));
     }
 }
 
@@ -932,16 +954,24 @@ sixel_icc_eval_mab_pipeline(double *outputs,
 }
 
 static double
-sixel_icc_lab_inverse_f(double t)
+sixel_icc_lab_inverse_f(double t, int centered)
 {
     double delta;
 
     delta = 6.0 / 29.0;
+    if (centered) {
+        /* The floating PCS linear branch keeps the coordinate
+         * relative to its origin at 4/29. */
+        if (t <= 2.0 / 29.0) {
+            return 3.0 * delta * delta * t;
+        }
+        t += 4.0 / 29.0;
+    }
     if (t > delta) {
         return t * t * t;
     }
-    /* t is stored as double. Match that precision for the origin so x87
-     * does not turn exact Lab black into a small negative XYZ value. */
+    /* Match the stored precision of the legacy coordinate's origin
+     * so x87 does not turn exact Lab black into negative XYZ. */
     return 3.0 * delta * delta * (t - (double)(4.0 / 29.0));
 }
 
@@ -954,21 +984,23 @@ sixel_icc_decode_lab_unit(double const in[3], double lab[3])
 }
 
 static void
-sixel_icc_lab_to_xyz_d50(double const lab[3], double xyz[3])
+sixel_icc_lab_to_xyz_d50(double const lab[3], double xyz[3], int centered)
 {
     double fy;
     double fx;
     double fz;
 
-    fy = (lab[0] + 16.0) / 116.0;
+    fy = centered ? lab[0] / 116.0 : (lab[0] + 16.0) / 116.0;
     fx = fy + lab[1] / 500.0;
     fz = fy - lab[2] / 200.0;
 
-    xyz[0] = sixel_icc_d50_white_xyz[0] * sixel_icc_lab_inverse_f(fx);
-    xyz[1] = sixel_icc_d50_white_xyz[1] * sixel_icc_lab_inverse_f(fy);
-    xyz[2] = sixel_icc_d50_white_xyz[2] * sixel_icc_lab_inverse_f(fz);
+    xyz[0] = sixel_icc_d50_white_xyz[0] * sixel_icc_lab_inverse_f(fx, centered);
+    xyz[1] = sixel_icc_d50_white_xyz[1] * sixel_icc_lab_inverse_f(fy, centered);
+    xyz[2] = sixel_icc_d50_white_xyz[2] * sixel_icc_lab_inverse_f(fz, centered);
 }
 
+/* Floating PCS uses f(t) centered at 4/29, which keeps small linear
+ * coordinates separate from the origin. Bounded tables use f(t). */
 static double
 sixel_icc_lab_forward_f(double t, int bounded)
 {
@@ -981,9 +1013,9 @@ sixel_icc_lab_forward_f(double t, int bounded)
         t = 0.0;
     }
     if (t > delta3) {
-        return pow(t, 1.0 / 3.0);
+        return pow(t, 1.0 / 3.0) - (bounded ? 0.0 : 4.0 / 29.0);
     }
-    return t / (3.0 * delta * delta) + 4.0 / 29.0;
+    return t / (3.0 * delta * delta) + (bounded ? 4.0 / 29.0 : 0.0);
 }
 
 static void
@@ -1014,7 +1046,7 @@ sixel_icc_xyz_d50_to_lab(double const xyz[3], double lab[3], int bounded)
     fy = sixel_icc_lab_forward_f(yr, bounded);
     fz = sixel_icc_lab_forward_f(zr, bounded);
 
-    lab[0] = 116.0 * fy - 16.0;
+    lab[0] = 116.0 * fy - (bounded ? 16.0 : 0.0);
     lab[1] = 500.0 * (fx - fy);
     lab[2] = 200.0 * (fy - fz);
 }
@@ -1050,7 +1082,7 @@ sixel_icc_decode_pcs_unit_to_xyz_d50(double xyz_d50[3],
     }
     if (pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
         sixel_icc_decode_lab_unit(pcs_unit, lab);
-        sixel_icc_lab_to_xyz_d50(lab, xyz_d50);
+        sixel_icc_lab_to_xyz_d50(lab, xyz_d50, 0);
         return 1;
     }
 
@@ -1603,7 +1635,7 @@ sixel_icc_apply_d2b_mpet(double xyz[3], double const *device, size_t channels,
         return 0;
     }
     if (profile->pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
-        sixel_icc_lab_to_xyz_d50(pcs, xyz);
+        sixel_icc_lab_to_xyz_d50(pcs, xyz, 1);
     } else {
         memcpy(xyz, pcs, sizeof(pcs));
     }

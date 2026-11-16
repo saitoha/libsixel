@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #ifndef ICC_NUMERIC_COMMON_H
 #define ICC_NUMERIC_COMMON_H
+#include <stddef.h>
 int icc_numeric_parse_test(int segmented, int failure);
 int icc_numeric_loader_test(int segmented);
 int icc_numeric_reverse_matrix_test(int lut16, char const *tag_name);
@@ -58,5 +59,8 @@ int icc_numeric_mpet_lab_neutral_test(int reverse);
 int icc_numeric_mpet_reachable_legacy_pair_test(void);
 int icc_numeric_colorspace_legacy_rgb8_test(void);
 int icc_numeric_mpet_definition_absolute_fallback_test(int reverse);
+size_t icc_numeric_rgba_legacy_profile(unsigned char bytes[516]);
+int icc_numeric_mpet_simplex_zero_weight_test(void);
+int icc_numeric_mpet_lab_pcs_neutral_test(int reverse);
 
 #endif

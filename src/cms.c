@@ -3634,7 +3634,8 @@ sixel_cms_do_transform_builtin_to_srgb(
     void const *src,
     void *dst,
     size_t pixel_count,
-                              sixel_cms_status_t *status)
+    sixel_cms_status_t *status,
+    unsigned char **rgba_scratch)
 {
     sixel_cms_profile_t const *src_profile;
     sixel_cms_profile_t const *dst_profile;
@@ -3791,10 +3792,20 @@ sixel_cms_do_transform_builtin_to_srgb(
         if (pixel_count > SIZE_MAX / 3u) {
             return 0;
         }
-        tmp_rgb = (unsigned char *)malloc(pixel_count * 3u);
+        /* The ordered PCS loop reuses a one-pixel buffer across its
+         * compatibility calls. Bulk conversion owns its full buffer. */
+        if (rgba_scratch != NULL) {
+            tmp_rgb = *rgba_scratch;
+        }
         if (tmp_rgb == NULL) {
-            *status = SIXEL_CMS_STATUS_ALLOCATION;
-            return 0;
+            tmp_rgb = (unsigned char *)malloc(pixel_count * 3u);
+            if (tmp_rgb == NULL) {
+                *status = SIXEL_CMS_STATUS_ALLOCATION;
+                return 0;
+            }
+            if (rgba_scratch != NULL) {
+                *rgba_scratch = tmp_rgb;
+            }
         }
         for (i = 0u; i < pixel_count; ++i) {
             tmp_rgb[i * 3u + 0u] = src_u8[i * 4u + 0u];
@@ -3807,7 +3818,9 @@ sixel_cms_do_transform_builtin_to_srgb(
                 pixel_count,
                 &src_profile->builtin_profile,
                 transform)) {
-            free(tmp_rgb);
+            if (rgba_scratch == NULL) {
+                free(tmp_rgb);
+            }
             return 0;
         }
         for (i = 0u; i < pixel_count; ++i) {
@@ -3816,7 +3829,9 @@ sixel_cms_do_transform_builtin_to_srgb(
             dst_u8[i * 4u + 2u] = tmp_rgb[i * 3u + 2u];
             dst_u8[i * 4u + 3u] = src_u8[i * 4u + 3u];
         }
-        free(tmp_rgb);
+        if (rgba_scratch == NULL) {
+            free(tmp_rgb);
+        }
         return 1;
     }
 
@@ -4147,7 +4162,8 @@ sixel_cms_pcs_to_device(double device[4], double const xyz[3],
 static int
 sixel_cms_do_builtin_legacy(sixel_cms_transform_t const *transform,
                              void const *src, void *dst, size_t count,
-                             sixel_cms_status_t *status)
+                             sixel_cms_status_t *status,
+                             unsigned char **rgba_scratch)
 {
     sixel_cms_profile_t const *target;
 
@@ -4158,7 +4174,7 @@ sixel_cms_do_builtin_legacy(sixel_cms_transform_t const *transform,
     }
     if (sixel_cms_builtin_profile_is_srgb(target)) {
         return sixel_cms_do_transform_builtin_to_srgb(transform, src, dst,
-                                                      count, status);
+            count, status, rgba_scratch);
     }
     return sixel_cms_do_transform_builtin_device_to_device(transform,
         src, dst, count, status);
@@ -4305,12 +4321,14 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
     double matrix[9];
     double inverse[9];
     double const *inverse_rgb;
+    unsigned char *rgba_scratch;
     unsigned char alpha;
     int float_rgb;
     int uses_mpet;
     int legacy_rgb8_pair;
     int keep_legacy;
     int try_legacy_pair;
+    int ok;
 
     target = transform->dst_profile;
     src_stride = sixel_cms_builtin_pixel_stride(transform->src_format,
@@ -4351,6 +4369,8 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
     }
 
     n = sixel_cms_builtin_pcs_candidates(candidates, transform);
+    rgba_scratch = NULL;
+    ok = 0;
     for (step = 0u; step < count; ++step) {
         pixel = src == dst && dst_stride > src_stride
             ? count - step - 1u : step;
@@ -4360,7 +4380,7 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                 transform->src_format, input, 0u,
                 transform->builtin_pcs_ordered ||
                     (float_rgb && src_space == SIXEL_CMS_COLORSPACE_RGB))) {
-            return 0;
+            goto done;
         }
         for (i = 0u; i < n; ++i) {
             candidate = &candidates[i];
@@ -4370,11 +4390,16 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
             }
             /* The presence of other mpet tags cannot change the PCS
              * encoding or rounding of an existing legacy path. */
-            legacy_status = SIXEL_CMS_STATUS_OK;
-            if (!uses_mpet && !candidate->builtin_absolute && keep_legacy &&
-                sixel_cms_do_builtin_legacy(candidate, input, &sample, 1u,
-                                             &legacy_status)) {
-                break;
+            if (!uses_mpet && !candidate->builtin_absolute && keep_legacy) {
+                legacy_status = SIXEL_CMS_STATUS_OK;
+                if (sixel_cms_do_builtin_legacy(candidate, input, &sample, 1u,
+                        &legacy_status, &rgba_scratch)) {
+                    break;
+                }
+                if (legacy_status == SIXEL_CMS_STATUS_ALLOCATION) {
+                    *status = legacy_status;
+                    goto done;
+                }
             }
             if (sixel_cms_builtin_store_dst_unit(&sample, transform->dst_format,
                     0u, device, alpha, uses_mpet || float_rgb)) {
@@ -4388,14 +4413,19 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
             if (!try_legacy_pair ||
                 !sixel_cms_do_transform_builtin_device_to_device(
                     transform, input, &sample, 1u, status)) {
-                return 0;
+                goto done;
             }
         }
         /* A failed intent can partially write its scratch sample. Commit
          * only the successful candidate, also for in-place conversion. */
         memcpy((unsigned char *)dst + pixel * dst_stride, &sample, dst_stride);
     }
-    return 1;
+    ok = 1;
+done:
+    if (rgba_scratch != NULL) {
+        free(rgba_scratch);
+    }
+    return ok;
 }
 
 static int
@@ -4415,7 +4445,7 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
         return 0;
     }
     return sixel_cms_do_builtin_legacy(transform, src, dst, pixel_count,
-                                       status);
+                                       status, NULL);
 }
 
 #if SIXEL_CMS_HAVE_COLORSYNC

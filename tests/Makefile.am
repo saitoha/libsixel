@@ -2424,6 +2424,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0098_COLORSPACE_LEGACY_RGB8 \
     -DBUILD_TEST_0099_MPET_DEFINITION_ABSOLUTE_FALLBACK_FORWARD \
     -DBUILD_TEST_0100_MPET_DEFINITION_ABSOLUTE_FALLBACK_REVERSE \
+    -DBUILD_TEST_0101_MPET_RGBA_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0102_MPET_RGBA_SCRATCH_REUSE \
+    -DBUILD_TEST_0103_MPET_SIMPLEX_ZERO_WEIGHT \
+    -DBUILD_TEST_0104_MPET_LAB_PCS_NEUTRAL_FORWARD \
+    -DBUILD_TEST_0105_MPET_LAB_PCS_NEUTRAL_REVERSE \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7795,6 +7800,11 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0098_colorspace_legacy_rgb8.c \
     color/icc/0099_mpet_definition_absolute_fallback_forward.c \
     color/icc/0100_mpet_definition_absolute_fallback_reverse.c \
+    color/icc/0101_mpet_rgba_allocation_failure.c \
+    color/icc/0102_mpet_rgba_scratch_reuse.c \
+    color/icc/0103_mpet_simplex_zero_weight.c \
+    color/icc/0104_mpet_lab_pcs_neutral_forward.c \
+    color/icc/0105_mpet_lab_pcs_neutral_reverse.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

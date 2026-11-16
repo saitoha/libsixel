@@ -2,6 +2,7 @@
 /* Finite fixed-point coefficients can still produce NaN/Inf in pow().
  * Profiles and a one-pixel BMP are constructed in memory, without a CMM
  * oracle or fixture I/O. Every caller reports one independent observation. */
+#include <float.h>
 #include <math.h>
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "tests/_support/diagnostics/icc_numeric_common.h"
@@ -3068,4 +3069,90 @@ icc_numeric_mpet_definition_absolute_fallback_test(int reverse)
     }
     sixel_cdef_free(definition);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+size_t
+icc_numeric_rgba_legacy_profile(unsigned char bytes[516])
+{
+    size_t length;
+
+    /* Relative A2B1 supplies the color. Reachable D2B2 takes the facade
+     * through ordered PCS and exercises its legacy compatibility call. */
+    length = iccn_mpet_transform_profile(bytes, 0, '1', 0, 65536u, 1);
+    bytes[135] = '2';
+    return length;
+}
+
+int
+icc_numeric_mpet_simplex_zero_weight_test(void)
+{
+    static double const input[] = {0.5, 0.5, 0.5, 0.5, 0.5};
+    sixel_icc_mpe_t clut;
+    sixel_icc_mpet_t mpet;
+    double values[32];
+    double output;
+    size_t i;
+
+    memset(&clut, 0, sizeof(clut));
+    memset(&mpet, 0, sizeof(mpet));
+    clut.kind = SIXEL_ICC_MPE_CLUT;
+    clut.input_channels = 5u;
+    clut.output_channels = 1u;
+    memset(clut.grid_points, 2, clut.input_channels);
+    clut.values = values;
+    mpet.input_channels = clut.input_channels;
+    mpet.output_channels = clut.output_channels;
+    mpet.element_count = 1u;
+    mpet.elements = &clut;
+
+    /* Tied input fractions give weight 1/2 to each end of the cell's
+     * diagonal and zero weight to every intermediate vertex. */
+    values[0] = 0.0;
+    for (i = 1u; i < 31u; ++i) {
+        values[i] = FLT_MAX;
+    }
+    values[31] = 1.0;
+    if (!sixel_icc_apply_mpe_element(&output, 1u, input, 5u, &mpet, 0u) ||
+        output != 0.5) {
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+
+int
+icc_numeric_mpet_lab_pcs_neutral_test(int reverse)
+{
+    static float const input[2][3] = {
+        {0.0f, 0x1p-60f, 0.0f}, {(float)(0.9642 * 0x1p-65), 0.0f, 0.0f}
+    };
+    unsigned char src[516];
+    unsigned char dst[516];
+    unsigned char *matrix;
+    double expected[3];
+    size_t src_length;
+    size_t dst_length;
+
+    src_length = iccn_mpet_transform_profile(src, 0, '1', 0, 65536u, 0);
+    dst_length = iccn_mpet_transform_profile(dst, 1, '1', 0, 65536u, 0);
+    matrix = dst + 168u + 24u + 12u;
+    expected[1] = expected[2] = 0.0;
+    if (reverse) {
+        /* XYZ is near black, so a* = 500 * (841/108) * X / Xn.
+         * Amplify just that chroma and discard Y and Z in the output. */
+        memcpy(dst + 20u, "Lab ", 4u);
+        iccn_mpe_write_float(matrix, 0.0f);
+        iccn_mpe_write_float(matrix + 4u, 0x1p45f);
+        iccn_mpe_write_float(matrix + 16u, 0.0f);
+        iccn_mpe_write_float(matrix + 32u, 0.0f);
+        expected[0] = ((double)input[1][0] / 0.9642) *
+            (500.0 * (841.0 / 108.0)) * 0x1p45;
+    } else {
+        /* With L*=b*=0 the linear inverse gives
+         * X = Xn * (108/841) * (a* / 500). Amplify X by 2^70. */
+        memcpy(src + 20u, "Lab ", 4u);
+        iccn_mpe_write_float(matrix, 0x1p70f);
+        expected[0] = 0.9642 * (108.0 / 841.0) * 0x1p10 / 500.0;
+    }
+    return iccn_check_mpet_transform(src, src_length, dst, dst_length,
+        "relative!", input[reverse], expected);
 }

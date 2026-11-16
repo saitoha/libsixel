@@ -18,6 +18,7 @@
 #include "src/chunk-factory.h"
 #include "tests/data/color-numeric/colorsync-lab.h"
 #include "tests/data/color-numeric/tiff-lab-linear.h"
+#include "tests/_support/diagnostics/icc_numeric_common.h"
 #include "lab_linear_fault_test_common.h"
 #if defined(__APPLE__) && HAVE_COREGRAPHICS
 #include <ColorSync/ColorSync.h>
@@ -29,6 +30,9 @@
 static sixel_cms_engine_t (*clf_public_engine)(void) = sixel_cms_get_engine;
 static int clf_arm;
 static int clf_fail_next_allocation;
+static int clf_measure_allocations;
+static size_t clf_measured_allocations;
+static size_t clf_measured_frees;
 static size_t clf_successes;
 static size_t clf_rejections;
 static size_t clf_alloc_failures;
@@ -49,6 +53,9 @@ clf_malloc(size_t n)
     void *p;
     size_t i;
 
+    if (clf_measure_allocations) {
+        ++clf_measured_allocations;
+    }
     if (clf_fail_next_allocation) {
         clf_fail_next_allocation = 0;
         return NULL;
@@ -76,6 +83,9 @@ clf_free(void *p)
 {
     size_t i;
 
+    if (clf_measure_allocations && p != NULL) {
+        ++clf_measured_frees;
+    }
     if (p != NULL && p == (void *)clf_scratch) {
         ++clf_freed;
         memcpy(clf_released, p, sizeof(clf_released));
@@ -560,6 +570,84 @@ cms_status_allocation_test(void)
     clf_fail_next_allocation = 0;
     sixel_cms_close_profile(profile);
     sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+cms_rgba_legacy_allocation_test(int inject)
+{
+    enum { pixels = 16, stride = 4 };
+    unsigned char bytes[516];
+    unsigned char input[pixels * stride];
+    unsigned char output[pixels * stride];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_transform_t *transform;
+    sixel_cms_engine_t previous;
+    sixel_cms_status_t status;
+    size_t length;
+    size_t i;
+    int applied;
+    int ok;
+
+    length = icc_numeric_rgba_legacy_profile(bytes);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, length);
+    target = sixel_cms_create_srgb_profile();
+    transform = NULL;
+    if (source != NULL && target != NULL &&
+        sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT",
+                            "relative,saturation!") == 0) {
+        transform = sixel_cms_create_transform(source,
+            SIXEL_CMS_PIXELFORMAT_RGBA_8, target, SIXEL_CMS_PIXELFORMAT_RGBA_8,
+            SIXEL_CMS_TRANSFORM_DEFAULT);
+    }
+    ok = transform != NULL;
+    if (ok) {
+        memset(input, 64, sizeof(input));
+        for (i = 3u; i < sizeof(input); i += stride) {
+            input[i] = (unsigned char)(192u + i / stride);
+        }
+        memset(output, 0xa5, sizeof(output));
+        clf_measured_allocations = 0u;
+        clf_measured_frees = 0u;
+        clf_measure_allocations = 1;
+        clf_fail_next_allocation = inject;
+        applied = sixel_cms_do_transform_ex(transform, input, output,
+                                               pixels, &status);
+        clf_measure_allocations = 0;
+        ok = !clf_fail_next_allocation && clf_measured_allocations == 1u;
+        clf_fail_next_allocation = 0;
+        if (inject) {
+            ok = ok && !applied && status == SIXEL_CMS_STATUS_ALLOCATION &&
+                clf_measured_frees == 0u;
+            for (i = 0u; ok && i < sizeof(output); ++i) {
+                ok = output[i] == 0xa5u;
+            }
+        } else {
+            ok = ok && applied && status == SIXEL_CMS_STATUS_OK &&
+                clf_measured_frees == 1u;
+            /* The identity legacy LUT maps 64/255 to each XYZ component.
+             * Bradford adaptation and sRGB encoding give these bytes. */
+            for (i = 0u; ok && i < sizeof(output); i += stride) {
+                ok = output[i] == 139u && output[i + 1u] == 135u &&
+                    output[i + 2u] == 152u && output[i + 3u] == input[i + 3u];
+            }
+        }
+        if (!ok) {
+            fprintf(stderr, "RGBA8 applied=%d status=%d alloc=%zu free=%zu "
+                    "first=(%u,%u,%u,%u)\n", applied, (int)status,
+                    clf_measured_allocations, clf_measured_frees,
+                    (unsigned int)output[0], (unsigned int)output[1],
+                    (unsigned int)output[2], (unsigned int)output[3]);
+        }
+    }
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
