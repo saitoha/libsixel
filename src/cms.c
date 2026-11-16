@@ -3107,12 +3107,7 @@ sixel_cms_builtin_store_dst_unit(void *dst,
             if (!isfinite(dst_unit[i]) || fabs(dst_unit[i]) > FLT_MAX) {
                 return 0;
             }
-            if (dst_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 && i != 0u) {
-                dst_f32[base + i] =
-                    (float)((dst_unit[i] * 255.0 - 128.0) / 128.0);
-            } else {
-                dst_f32[base + i] = (float)dst_unit[i];
-            }
+            dst_f32[base + i] = (float)dst_unit[i];
         }
         return 1;
     }
@@ -3181,10 +3176,8 @@ sixel_cms_builtin_store_dst_unit(void *dst,
     case SIXEL_CMS_PIXELFORMAT_LAB_F32:
         base = pixel_index * 3u;
         dst_f32[base + 0u] = (float)sixel_cms_clamp_unit(dst_unit[0]);
-        dst_f32[base + 1u] = (float)sixel_cms_clamp_lab_ab(
-            (sixel_cms_clamp_unit(dst_unit[1]) * 255.0 - 128.0) / 128.0);
-        dst_f32[base + 2u] = (float)sixel_cms_clamp_lab_ab(
-            (sixel_cms_clamp_unit(dst_unit[2]) * 255.0 - 128.0) / 128.0);
+        dst_f32[base + 1u] = (float)sixel_cms_clamp_lab_ab(dst_unit[1]);
+        dst_f32[base + 2u] = (float)sixel_cms_clamp_lab_ab(dst_unit[2]);
         return 1;
     default:
         break;
@@ -3591,12 +3584,17 @@ sixel_cms_do_transform_builtin_device_to_device(
                                                        output_channel_count,
                                                        xyz_d50,
                                                        dst_profile,
-                                                       transform) ||
-            !sixel_cms_builtin_store_dst_unit(dst,
-                                              transform->dst_format,
-                                              i,
-                                              dst_unit,
-                                              alpha, 0)) {
+                                                       transform)) {
+            return 0;
+        }
+        if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_LAB_F32) {
+            /* The legacy evaluator returned unsigned Lab table units.
+             * Storage expects chroma centered at the facade's zero. */
+            dst_unit[1] = (dst_unit[1] * 255.0 - 128.0) / 128.0;
+            dst_unit[2] = (dst_unit[2] * 255.0 - 128.0) / 128.0;
+        }
+        if (!sixel_cms_builtin_store_dst_unit(dst, transform->dst_format,
+                i, dst_unit, alpha, 0)) {
             return 0;
         }
     }
@@ -3980,9 +3978,8 @@ sixel_cms_float_source_xyz(double xyz[3], double const source[4],
         }
         return SIXEL_ICC_PATH_LEGACY;
     }
-    return sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(xyz, source,
-        channels, icc, SIXEL_ICC_MPET_SLOT_COUNT, 1)
-        ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
+    return sixel_icc_device_to_pcs(xyz, source, channels, icc,
+                                   SIXEL_ICC_MPET_SLOT_COUNT, 1);
 }
 
 static int
@@ -4023,16 +4020,6 @@ sixel_cms_float_rgb(sixel_cms_transform_t const *transform,
         } else if (!sixel_cms_builtin_load_src_unit(source, &channels, NULL,
                        transform->src_format, src, pixel, 0)) {
             return 0;
-        }
-        if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32) {
-            /* The facade stores a/b divided by 128, whereas ICC device
-             * tables use an unsigned unit interval with a neutral offset.
-             * Keep this conversion at the new float endpoint boundary;
-             * legacy device transforms perform their own normalization. */
-            source[1] = sixel_cms_clamp_unit(
-                (source[1] * 128.0 + 128.0) / 255.0);
-            source[2] = sixel_cms_clamp_unit(
-                (source[2] * 128.0 + 128.0) / 255.0);
         }
         if (!sixel_cms_float_source_xyz(xyz, source, channels, transform) ||
             !sixel_cdef_from_xyz(transform->dst_profile->rgb_definition,
@@ -4131,7 +4118,7 @@ sixel_cms_pcs_to_device(double device[4], double const xyz[3],
         return sixel_icc_curve_device(&icc->curves[0], xyz[1], 1, device)
             ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
     }
-    return sixel_icc_apply_lab_xyz_to_device(device, xyz, icc)
+    return sixel_icc_apply_lab_xyz_to_device(device, xyz, icc, 1)
         ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
 }
 
@@ -4342,10 +4329,6 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                 transform->builtin_pcs_ordered ||
                     (float_rgb && src_space == SIXEL_CMS_COLORSPACE_RGB))) {
             return 0;
-        }
-        if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32) {
-            source[1] = (source[1] * 128.0 + 128.0) / 255.0;
-            source[2] = (source[2] * 128.0 + 128.0) / 255.0;
         }
         for (i = 0u; i < n; ++i) {
             candidate = &candidates[i];

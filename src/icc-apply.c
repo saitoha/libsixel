@@ -1584,15 +1584,18 @@ sixel_icc_apply_rgb_gray_triplet_lut(double rgb[3],
 
 static int
 sixel_icc_apply_d2b_mpet(double xyz[3], double const *device, size_t channels,
-                         sixel_icc_profile_t const *profile, unsigned int slot)
+                         sixel_icc_profile_t const *profile, unsigned int slot,
+                         int lab_float)
 {
     double pcs[3];
     double lab[3];
 
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
         lab[0] = device[0] * 100.0;
-        lab[1] = device[1] * 255.0 - 128.0;
-        lab[2] = device[2] * 255.0 - 128.0;
+        /* The float facade already centers chroma at zero. Scaling it
+         * directly retains small a* and b* near the neutral point. */
+        lab[1] = lab_float ? device[1] * 128.0 : device[1] * 255.0 - 128.0;
+        lab[2] = lab_float ? device[2] * 128.0 : device[2] * 255.0 - 128.0;
         device = lab;
     }
     if (!sixel_icc_apply_mpet(pcs, 3u, device, channels,
@@ -1609,7 +1612,8 @@ sixel_icc_apply_d2b_mpet(double xyz[3], double const *device, size_t channels,
 
 static int
 sixel_icc_apply_b2d_mpet(double *device, size_t channels, double const xyz[3],
-                         sixel_icc_profile_t const *profile, unsigned int slot)
+                         sixel_icc_profile_t const *profile, unsigned int slot,
+                         int lab_float)
 {
     double lab[3];
 
@@ -1624,8 +1628,8 @@ sixel_icc_apply_b2d_mpet(double *device, size_t channels, double const xyz[3],
     }
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
         device[0] /= 100.0;
-        device[1] = (device[1] + 128.0) / 255.0;
-        device[2] = (device[2] + 128.0) / 255.0;
+        device[1] = lab_float ? device[1] / 128.0 : (device[1] + 128.0) / 255.0;
+        device[2] = lab_float ? device[2] / 128.0 : (device[2] + 128.0) / 255.0;
     }
     return 1;
 }
@@ -1637,9 +1641,10 @@ sixel_icc_apply_device_to_xyz(
     size_t input_channel_count,
     sixel_icc_profile_t const *profile,
     unsigned int a2b_slot,
-    int allow_matrix_trc_fallback, int physical, int legacy_only)
+    int allow_matrix_trc_fallback, int physical, int legacy_only, int lab_float)
 {
     double source_linear[3];
+    double lab_unit[3];
     int has_selected_a2b;
     int has_selected_d2b;
 
@@ -1674,7 +1679,7 @@ sixel_icc_apply_device_to_xyz(
           allow_matrix_trc_fallback) &&
         profile->d2b_mpet[a2b_slot].element_count != 0u &&
         sixel_icc_apply_d2b_mpet(xyz_d50, device_unit, input_channel_count,
-                                 profile, a2b_slot)) {
+                                 profile, a2b_slot, lab_float)) {
         return SIXEL_ICC_PATH_MPET;
     }
     /* The absolute slot has no integer encoding. */
@@ -1683,6 +1688,13 @@ sixel_icc_apply_device_to_xyz(
         return SIXEL_ICC_PATH_NONE;
     }
 
+    /* Legacy tables and the bounded Lab fallback use unsigned chroma. */
+    if (lab_float && profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
+        lab_unit[0] = device_unit[0];
+        lab_unit[1] = (device_unit[1] * 128.0 + 128.0) / 255.0;
+        lab_unit[2] = (device_unit[2] * 128.0 + 128.0) / 255.0;
+        device_unit = lab_unit;
+    }
     has_selected_a2b = sixel_icc_profile_has_a2b_slot(profile, a2b_slot);
     if (has_selected_a2b &&
         sixel_icc_apply_a2b_to_xyz_d50(xyz_d50,
@@ -1736,12 +1748,27 @@ sixel_icc_apply_device_to_xyz(
     return SIXEL_ICC_PATH_LEGACY;
 }
 
+/* Convert the bounded legacy Lab encoding to float facade units. */
+static void
+sixel_icc_center_lab_chroma(double device[3])
+{
+    device[1] = (device[1] * 255.0 - 128.0) / 128.0;
+    device[2] = (device[2] * 255.0 - 128.0) / 128.0;
+}
+
 int
 sixel_icc_apply_lab_xyz_to_device(double device[3], double const xyz[3],
-                                   sixel_icc_profile_t const *profile)
+                                   sixel_icc_profile_t const *profile,
+                                   int lab_float)
 {
-    return profile->kind == SIXEL_ICC_PROFILE_KIND_LAB && !profile->lut_only &&
-        sixel_icc_encode_xyz_d50_to_pcs_unit(device, xyz, profile->pcs);
+    if (profile->kind != SIXEL_ICC_PROFILE_KIND_LAB || profile->lut_only ||
+        !sixel_icc_encode_xyz_d50_to_pcs_unit(device, xyz, profile->pcs)) {
+        return 0;
+    }
+    if (lab_float) {
+        sixel_icc_center_lab_chroma(device);
+    }
+    return 1;
 }
 
 static sixel_icc_path_t
@@ -1751,7 +1778,7 @@ sixel_icc_apply_xyz_to_device(
     double const xyz_d50[3],
     sixel_icc_profile_t const *profile,
     unsigned int b2a_slot, int physical, int legacy_only,
-    int allow_lab_fallback)
+    int allow_lab_fallback, int lab_float)
 {
     size_t expected_channels;
     size_t i;
@@ -1784,7 +1811,7 @@ sixel_icc_apply_xyz_to_device(
     if (!legacy_only &&
         profile->b2d_mpet[b2a_slot].element_count != 0u &&
         sixel_icc_apply_b2d_mpet(device_unit, output_channel_count, xyz_d50,
-                                 profile, b2a_slot)) {
+                                 profile, b2a_slot, lab_float)) {
         return SIXEL_ICC_PATH_MPET;
     }
     if (b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
@@ -1807,7 +1834,8 @@ sixel_icc_apply_xyz_to_device(
     }
 
     if (allow_lab_fallback && !has_b2a && !has_b2d &&
-        sixel_icc_apply_lab_xyz_to_device(device_unit, xyz_d50, profile)) {
+        sixel_icc_apply_lab_xyz_to_device(device_unit, xyz_d50, profile,
+                                          lab_float)) {
         return SIXEL_ICC_PATH_LEGACY;
     }
     return SIXEL_ICC_PATH_NONE;
@@ -1815,6 +1843,9 @@ sixel_icc_apply_xyz_to_device(
 clamp:
     for (i = 0u; i < output_channel_count; ++i) {
         device_unit[i] = sixel_icc_clamp_unit(device_unit[i]);
+    }
+    if (lab_float && profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
+        sixel_icc_center_lab_chroma(device_unit);
     }
     return SIXEL_ICC_PATH_LEGACY;
 }
@@ -1826,7 +1857,7 @@ sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
     sixel_icc_profile_t const *profile, unsigned int slot, int allow_fallback)
 {
     return sixel_icc_apply_device_to_xyz(xyz, device, channels, profile,
-        slot, allow_fallback, 0, 1) != SIXEL_ICC_PATH_NONE;
+        slot, allow_fallback, 0, 1, 0) != SIXEL_ICC_PATH_NONE;
 }
 
 int
@@ -1835,7 +1866,7 @@ sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(
     sixel_icc_profile_t const *profile, unsigned int slot)
 {
     return sixel_icc_apply_xyz_to_device(device, channels, xyz, profile,
-        slot, 0, 1, 1) != SIXEL_ICC_PATH_NONE;
+        slot, 0, 1, 1, 0) != SIXEL_ICC_PATH_NONE;
 }
 
 sixel_icc_path_t
@@ -1843,8 +1874,12 @@ sixel_icc_device_to_pcs(double xyz[3], double const *device, size_t channels,
                          sixel_icc_profile_t const *profile, unsigned int slot,
                          int legacy_only)
 {
+    int analytic_lab;
+
+    analytic_lab = slot == SIXEL_ICC_MPET_SLOT_COUNT && profile != NULL &&
+        profile->kind == SIXEL_ICC_PROFILE_KIND_LAB;
     return sixel_icc_apply_device_to_xyz(xyz, device, channels, profile,
-                                         slot, 0, 1, legacy_only);
+                                         slot, analytic_lab, 1, legacy_only, 1);
 }
 
 sixel_icc_path_t
@@ -1853,7 +1888,7 @@ sixel_icc_pcs_to_device(double *device, size_t channels, double const xyz[3],
                          int legacy_only)
 {
     return sixel_icc_apply_xyz_to_device(device, channels, xyz, profile,
-                                         slot, 1, legacy_only, 0);
+                                         slot, 1, legacy_only, 0, 1);
 }
 
 int
@@ -1861,8 +1896,8 @@ sixel_icc_apply_device_to_physical_xyz(
     double xyz[3], double const *device, size_t channels,
     sixel_icc_profile_t const *profile, unsigned int slot)
 {
-    return sixel_icc_device_to_pcs(xyz, device, channels, profile, slot, 0)
-        != SIXEL_ICC_PATH_NONE;
+    return sixel_icc_apply_device_to_xyz(xyz, device, channels, profile,
+        slot, 0, 1, 0, 0) != SIXEL_ICC_PATH_NONE;
 }
 
 int
@@ -1871,7 +1906,7 @@ sixel_icc_apply_physical_xyz_to_device(
     sixel_icc_profile_t const *profile, unsigned int slot)
 {
     return sixel_icc_apply_xyz_to_device(device, channels, xyz, profile,
-        slot, 1, 0, 1) != SIXEL_ICC_PATH_NONE;
+        slot, 1, 0, 1, 0) != SIXEL_ICC_PATH_NONE;
 }
 
 static int

@@ -2879,3 +2879,65 @@ icc_numeric_mpet_legacy_slot_pair_test(void)
     return iccn_check_mpet_transform(src, length, dst, sizeof(dst),
         "relative,saturation!", input, expected);
 }
+
+int
+icc_numeric_mpet_lab_neutral_test(int reverse)
+{
+    static float const input[2][3] = {
+        {0.5f, 0x1p-60f, -0x1p-61f}, {0.5f, 0x1p-53f, -0x1p-54f}
+    };
+    static float const expected[2][3] = {
+        {1.0f, 0.78125f, -0.5f}, {0.005f, 0x1p-60f, -0x1p-61f}
+    };
+    unsigned char src[516];
+    unsigned char dst[516];
+    unsigned char *matrix;
+    float output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t src_length;
+    size_t dst_length;
+    size_t i;
+    int ok;
+
+    src_length = iccn_mpet_transform_profile(src, 0, '1', 0, 65536u, 0);
+    dst_length = iccn_mpet_transform_profile(dst, 1, '1', 0, 65536u, 0);
+    if (reverse) {
+        /* The identity B2D matrix returns XYZ as L*, a*, b*. The facade
+         * scales L* by 1/100 and the two chroma channels by 1/128. */
+        memcpy(dst + 16u, "Lab ", 4u);
+    } else {
+        /* The facade input is (50, 2^-53, -2^-54) in CIELAB. The D2B
+         * matrix scales the chroma by 2^53 and the lightness by 1/64. */
+        memcpy(src + 16u, "Lab ", 4u);
+        matrix = src + 168u + 24u + 12u;
+        iccn_mpe_write_float(matrix, 0.0f);
+        iccn_mpe_write_float(matrix + 4u, 0x1p53f);
+        iccn_mpe_write_float(matrix + 12u, 0x1p-6f);
+        iccn_mpe_write_float(matrix + 16u, 0.0f);
+        iccn_mpe_write_float(matrix + 32u, 0x1p53f);
+    }
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(src, src_length);
+    target = sixel_cms_open_profile_from_mem(dst, dst_length);
+    ok = iccn_transform_pixels(source,
+        reverse ? SIXEL_CMS_PIXELFORMAT_RGB_F32 : SIXEL_CMS_PIXELFORMAT_LAB_F32,
+        target,
+        reverse ? SIXEL_CMS_PIXELFORMAT_LAB_F32 : SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        "relative!", input[reverse], output, 1u);
+    for (i = 0u; ok && i < 3u; ++i) {
+        /* An absolute tolerance would accept lost chroma in the reverse
+         * path. These expected floats are rounded once for storage. */
+        if (output[i] != expected[reverse][i]) {
+            fprintf(stderr, "channel %zu: expected %a, got %a\n",
+                i, (double)expected[reverse][i], (double)output[i]);
+            ok = 0;
+        }
+    }
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}

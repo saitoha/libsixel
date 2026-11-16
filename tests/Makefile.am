@@ -2418,6 +2418,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0092_COLORSPACE_LAB_SLOT_ZERO_REVERSE \
     -DBUILD_TEST_0093_MPET_HIGH_DIMENSIONAL_CLUT \
     -DBUILD_TEST_0094_MPET_LEGACY_SLOT_PAIR \
+    -DBUILD_TEST_0095_MPET_LAB_NEUTRAL_FORWARD \
+    -DBUILD_TEST_0096_MPET_LAB_NEUTRAL_REVERSE \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7783,6 +7785,8 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0092_colorspace_lab_slot_zero_reverse.c \
     color/icc/0093_mpet_high_dimensional_clut.c \
     color/icc/0094_mpet_legacy_slot_pair.c \
+    color/icc/0095_mpet_lab_neutral_forward.c \
+    color/icc/0096_mpet_lab_neutral_reverse.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

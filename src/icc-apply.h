@@ -166,6 +166,9 @@ typedef enum {
     SIXEL_ICC_PATH_MPET
 } sixel_icc_path_t;
 
+/* These two entries accept and return Lab in facade float units
+ * (L* / 100, signed a* / 128, signed b* / 128).
+ * A forward slot of SIXEL_ICC_MPET_SLOT_COUNT requests analytic Lab. */
 SIXEL_INTERNAL_API sixel_icc_path_t
 sixel_icc_device_to_pcs(double xyz[3], double const *device, size_t channels,
                          sixel_icc_profile_t const *profile,
@@ -178,8 +181,10 @@ sixel_icc_pcs_to_device(double *device, size_t channels, double const xyz[3],
 
 SIXEL_INTERNAL_API int
 sixel_icc_apply_lab_xyz_to_device(double device[3], double const xyz[3],
-                                   sixel_icc_profile_t const *profile);
+                                   sixel_icc_profile_t const *profile,
+                                   int lab_float);
 
+/* The boolean entry points use the legacy unsigned Lab encoding. */
 SIXEL_INTERNAL_API int
 sixel_icc_apply_device_to_physical_xyz(
     double xyz[3], double const *device, size_t channels,
