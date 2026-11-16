@@ -605,6 +605,14 @@ run_case_tap "staticcheck-dither-policy-warning-compile" \
     "$src_root/tests/_static/sh/staticcheck-dither-policy-warning-compile.sh" \
     "$src_root" "$build_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-refresh-spatial-rpc-macro" \
+    sh "$src_root/tests/_static/sh/staticcheck-refresh-spatial-rpc-macro.sh" \
+    "$src_root" "$build_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-refresh-spatial-clang-analyzer" \
+    sh "$src_root/tests/_static/sh/staticcheck-refresh-spatial-clang-analyzer.sh" \
+    "$src_root" "$build_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-runner-amalgamation-defines-sync" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
     "$src_root" || fail_and_exit $?
@@ -959,6 +967,10 @@ else
         "missing config.h in build root"
 fi
 
+run_case_tap "staticcheck-encoder-no-threads" \
+    sh "$src_root/tests/_static/sh/staticcheck-encoder-no-threads.sh" \
+    "$src_root" "$build_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-build-doc-configure-help" \
     "$src_root/tests/_static/sh/staticcheck-build-doc-configure-help.sh" \
     "$src_root" || fail_and_exit $?
@@ -1292,6 +1304,10 @@ run_case_tap "staticcheck-test-common-header-guards" \
 
 run_case_tap "staticcheck-ci-pgo-study-training" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-pgo-study-training.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-ci-clang-pgo-input-list" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-clang-pgo-input-list.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-prepare-ahead-capability" \

@@ -28632,6 +28632,10 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-ci-vm-concurrency.sh \
 	_static/awk/ci-vm-concurrency.awk \
 	_static/sh/staticcheck-ci-tsan-shards.sh \
+	_static/sh/staticcheck-ci-clang-pgo-input-list.sh \
+	_static/sh/staticcheck-encoder-no-threads.sh \
+	_static/sh/staticcheck-refresh-spatial-clang-analyzer.sh \
+	_static/sh/staticcheck-refresh-spatial-rpc-macro.sh \
 	dither/gpu-direct/0017_gpu_none_snapshot.t \
 	dither/gpu-direct/0018_gpu_none_reject_method.t \
 	dither/gpu-direct/0019_gpu_none_isolation.t \
