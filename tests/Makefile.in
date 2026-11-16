@@ -2147,6 +2147,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/icc/0040_mpet_element_boundary.c \
 	color/icc/0041_mpet_element_limit.c \
 	color/icc/0042_mpet_element_kinds.c \
+	color/icc/0043_mpet_curve_formulas.c \
+	color/icc/0044_mpet_curve_samples.c \
+	color/icc/0045_mpet_curve_structure.c \
+	color/icc/0046_mpet_curve_unsupported.c \
+	color/icc/0047_mpet_curve_evaluation_failure.c \
 	_support/diagnostics/icc_numeric_common.c \
 	_support/diagnostics/icc_numeric_common.h \
 	color/space/0004_extended_srgb_decode.c \
@@ -7646,6 +7651,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0040_mpet_element_boundary.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0041_mpet_element_limit.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0042_mpet_element_kinds.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0043_mpet_curve_formulas.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0044_mpet_curve_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0045_mpet_curve_structure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0046_mpet_curve_unsupported.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0047_mpet_curve_evaluation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0005_extended_srgb_encode.$(OBJEXT) \
@@ -11977,6 +11987,11 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Po \
 	color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Po \
 	color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Po \
+	color/icc/$(DEPDIR)/test_runner-0043_mpet_curve_formulas.Po \
+	color/icc/$(DEPDIR)/test_runner-0044_mpet_curve_samples.Po \
+	color/icc/$(DEPDIR)/test_runner-0045_mpet_curve_structure.Po \
+	color/icc/$(DEPDIR)/test_runner-0046_mpet_curve_unsupported.Po \
+	color/icc/$(DEPDIR)/test_runner-0047_mpet_curve_evaluation_failure.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po \
@@ -19454,6 +19469,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_MPET_ELEMENT_BOUNDARY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_MPET_ELEMENT_LIMIT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_MPET_ELEMENT_KINDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_MPET_CURVE_FORMULAS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_MPET_CURVE_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_MPET_CURVE_STRUCTURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_MPET_CURVE_UNSUPPORTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_MPET_CURVE_EVALUATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -24799,6 +24819,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0040_mpet_element_boundary.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0041_mpet_element_limit.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0042_mpet_element_kinds.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0043_mpet_curve_formulas.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0044_mpet_curve_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0045_mpet_curve_structure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0046_mpet_curve_unsupported.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0047_mpet_curve_evaluation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0004_extended_srgb_decode.c \
@@ -35184,6 +35209,16 @@ color/icc/test_runner-0040_mpet_element_boundary.$(OBJEXT):  \
 color/icc/test_runner-0041_mpet_element_limit.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0042_mpet_element_kinds.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0043_mpet_curve_formulas.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0044_mpet_curve_samples.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0045_mpet_curve_structure.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0046_mpet_curve_unsupported.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0047_mpet_curve_evaluation_failure.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 _support/diagnostics/$(am__dirstamp):
 	@$(MKDIR_P) _support/diagnostics
@@ -47363,6 +47398,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0043_mpet_curve_formulas.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0044_mpet_curve_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0045_mpet_curve_structure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0046_mpet_curve_unsupported.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0047_mpet_curve_evaluation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po@am__quote@ # am--include-marker
@@ -79775,6 +79815,76 @@ color/icc/test_runner-0042_mpet_element_kinds.obj: color/icc/0042_mpet_element_k
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0042_mpet_element_kinds.c' object='color/icc/test_runner-0042_mpet_element_kinds.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0042_mpet_element_kinds.obj `if test -f 'color/icc/0042_mpet_element_kinds.c'; then $(CYGPATH_W) 'color/icc/0042_mpet_element_kinds.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0042_mpet_element_kinds.c'; fi`
+
+color/icc/test_runner-0043_mpet_curve_formulas.o: color/icc/0043_mpet_curve_formulas.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0043_mpet_curve_formulas.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0043_mpet_curve_formulas.Tpo -c -o color/icc/test_runner-0043_mpet_curve_formulas.o `test -f 'color/icc/0043_mpet_curve_formulas.c' || echo '$(srcdir)/'`color/icc/0043_mpet_curve_formulas.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0043_mpet_curve_formulas.Tpo color/icc/$(DEPDIR)/test_runner-0043_mpet_curve_formulas.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0043_mpet_curve_formulas.c' object='color/icc/test_runner-0043_mpet_curve_formulas.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0043_mpet_curve_formulas.o `test -f 'color/icc/0043_mpet_curve_formulas.c' || echo '$(srcdir)/'`color/icc/0043_mpet_curve_formulas.c
+
+color/icc/test_runner-0043_mpet_curve_formulas.obj: color/icc/0043_mpet_curve_formulas.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0043_mpet_curve_formulas.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0043_mpet_curve_formulas.Tpo -c -o color/icc/test_runner-0043_mpet_curve_formulas.obj `if test -f 'color/icc/0043_mpet_curve_formulas.c'; then $(CYGPATH_W) 'color/icc/0043_mpet_curve_formulas.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0043_mpet_curve_formulas.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0043_mpet_curve_formulas.Tpo color/icc/$(DEPDIR)/test_runner-0043_mpet_curve_formulas.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0043_mpet_curve_formulas.c' object='color/icc/test_runner-0043_mpet_curve_formulas.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0043_mpet_curve_formulas.obj `if test -f 'color/icc/0043_mpet_curve_formulas.c'; then $(CYGPATH_W) 'color/icc/0043_mpet_curve_formulas.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0043_mpet_curve_formulas.c'; fi`
+
+color/icc/test_runner-0044_mpet_curve_samples.o: color/icc/0044_mpet_curve_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0044_mpet_curve_samples.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0044_mpet_curve_samples.Tpo -c -o color/icc/test_runner-0044_mpet_curve_samples.o `test -f 'color/icc/0044_mpet_curve_samples.c' || echo '$(srcdir)/'`color/icc/0044_mpet_curve_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0044_mpet_curve_samples.Tpo color/icc/$(DEPDIR)/test_runner-0044_mpet_curve_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0044_mpet_curve_samples.c' object='color/icc/test_runner-0044_mpet_curve_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0044_mpet_curve_samples.o `test -f 'color/icc/0044_mpet_curve_samples.c' || echo '$(srcdir)/'`color/icc/0044_mpet_curve_samples.c
+
+color/icc/test_runner-0044_mpet_curve_samples.obj: color/icc/0044_mpet_curve_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0044_mpet_curve_samples.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0044_mpet_curve_samples.Tpo -c -o color/icc/test_runner-0044_mpet_curve_samples.obj `if test -f 'color/icc/0044_mpet_curve_samples.c'; then $(CYGPATH_W) 'color/icc/0044_mpet_curve_samples.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0044_mpet_curve_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0044_mpet_curve_samples.Tpo color/icc/$(DEPDIR)/test_runner-0044_mpet_curve_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0044_mpet_curve_samples.c' object='color/icc/test_runner-0044_mpet_curve_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0044_mpet_curve_samples.obj `if test -f 'color/icc/0044_mpet_curve_samples.c'; then $(CYGPATH_W) 'color/icc/0044_mpet_curve_samples.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0044_mpet_curve_samples.c'; fi`
+
+color/icc/test_runner-0045_mpet_curve_structure.o: color/icc/0045_mpet_curve_structure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0045_mpet_curve_structure.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0045_mpet_curve_structure.Tpo -c -o color/icc/test_runner-0045_mpet_curve_structure.o `test -f 'color/icc/0045_mpet_curve_structure.c' || echo '$(srcdir)/'`color/icc/0045_mpet_curve_structure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0045_mpet_curve_structure.Tpo color/icc/$(DEPDIR)/test_runner-0045_mpet_curve_structure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0045_mpet_curve_structure.c' object='color/icc/test_runner-0045_mpet_curve_structure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0045_mpet_curve_structure.o `test -f 'color/icc/0045_mpet_curve_structure.c' || echo '$(srcdir)/'`color/icc/0045_mpet_curve_structure.c
+
+color/icc/test_runner-0045_mpet_curve_structure.obj: color/icc/0045_mpet_curve_structure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0045_mpet_curve_structure.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0045_mpet_curve_structure.Tpo -c -o color/icc/test_runner-0045_mpet_curve_structure.obj `if test -f 'color/icc/0045_mpet_curve_structure.c'; then $(CYGPATH_W) 'color/icc/0045_mpet_curve_structure.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0045_mpet_curve_structure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0045_mpet_curve_structure.Tpo color/icc/$(DEPDIR)/test_runner-0045_mpet_curve_structure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0045_mpet_curve_structure.c' object='color/icc/test_runner-0045_mpet_curve_structure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0045_mpet_curve_structure.obj `if test -f 'color/icc/0045_mpet_curve_structure.c'; then $(CYGPATH_W) 'color/icc/0045_mpet_curve_structure.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0045_mpet_curve_structure.c'; fi`
+
+color/icc/test_runner-0046_mpet_curve_unsupported.o: color/icc/0046_mpet_curve_unsupported.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0046_mpet_curve_unsupported.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0046_mpet_curve_unsupported.Tpo -c -o color/icc/test_runner-0046_mpet_curve_unsupported.o `test -f 'color/icc/0046_mpet_curve_unsupported.c' || echo '$(srcdir)/'`color/icc/0046_mpet_curve_unsupported.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0046_mpet_curve_unsupported.Tpo color/icc/$(DEPDIR)/test_runner-0046_mpet_curve_unsupported.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0046_mpet_curve_unsupported.c' object='color/icc/test_runner-0046_mpet_curve_unsupported.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0046_mpet_curve_unsupported.o `test -f 'color/icc/0046_mpet_curve_unsupported.c' || echo '$(srcdir)/'`color/icc/0046_mpet_curve_unsupported.c
+
+color/icc/test_runner-0046_mpet_curve_unsupported.obj: color/icc/0046_mpet_curve_unsupported.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0046_mpet_curve_unsupported.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0046_mpet_curve_unsupported.Tpo -c -o color/icc/test_runner-0046_mpet_curve_unsupported.obj `if test -f 'color/icc/0046_mpet_curve_unsupported.c'; then $(CYGPATH_W) 'color/icc/0046_mpet_curve_unsupported.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0046_mpet_curve_unsupported.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0046_mpet_curve_unsupported.Tpo color/icc/$(DEPDIR)/test_runner-0046_mpet_curve_unsupported.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0046_mpet_curve_unsupported.c' object='color/icc/test_runner-0046_mpet_curve_unsupported.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0046_mpet_curve_unsupported.obj `if test -f 'color/icc/0046_mpet_curve_unsupported.c'; then $(CYGPATH_W) 'color/icc/0046_mpet_curve_unsupported.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0046_mpet_curve_unsupported.c'; fi`
+
+color/icc/test_runner-0047_mpet_curve_evaluation_failure.o: color/icc/0047_mpet_curve_evaluation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0047_mpet_curve_evaluation_failure.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0047_mpet_curve_evaluation_failure.Tpo -c -o color/icc/test_runner-0047_mpet_curve_evaluation_failure.o `test -f 'color/icc/0047_mpet_curve_evaluation_failure.c' || echo '$(srcdir)/'`color/icc/0047_mpet_curve_evaluation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0047_mpet_curve_evaluation_failure.Tpo color/icc/$(DEPDIR)/test_runner-0047_mpet_curve_evaluation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0047_mpet_curve_evaluation_failure.c' object='color/icc/test_runner-0047_mpet_curve_evaluation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0047_mpet_curve_evaluation_failure.o `test -f 'color/icc/0047_mpet_curve_evaluation_failure.c' || echo '$(srcdir)/'`color/icc/0047_mpet_curve_evaluation_failure.c
+
+color/icc/test_runner-0047_mpet_curve_evaluation_failure.obj: color/icc/0047_mpet_curve_evaluation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0047_mpet_curve_evaluation_failure.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0047_mpet_curve_evaluation_failure.Tpo -c -o color/icc/test_runner-0047_mpet_curve_evaluation_failure.obj `if test -f 'color/icc/0047_mpet_curve_evaluation_failure.c'; then $(CYGPATH_W) 'color/icc/0047_mpet_curve_evaluation_failure.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0047_mpet_curve_evaluation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0047_mpet_curve_evaluation_failure.Tpo color/icc/$(DEPDIR)/test_runner-0047_mpet_curve_evaluation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0047_mpet_curve_evaluation_failure.c' object='color/icc/test_runner-0047_mpet_curve_evaluation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0047_mpet_curve_evaluation_failure.obj `if test -f 'color/icc/0047_mpet_curve_evaluation_failure.c'; then $(CYGPATH_W) 'color/icc/0047_mpet_curve_evaluation_failure.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0047_mpet_curve_evaluation_failure.c'; fi`
 
 _support/diagnostics/test_runner-icc_numeric_common.o: _support/diagnostics/icc_numeric_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/diagnostics/test_runner-icc_numeric_common.o -MD -MP -MF _support/diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo -c -o _support/diagnostics/test_runner-icc_numeric_common.o `test -f '_support/diagnostics/icc_numeric_common.c' || echo '$(srcdir)/'`_support/diagnostics/icc_numeric_common.c

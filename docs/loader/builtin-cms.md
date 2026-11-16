@@ -35,7 +35,7 @@ The authoritative definitions are in [`icc-parse.h`](../../src/icc-parse.h), wit
 | D2B / B2D | Slots 0–2 recognize standard `mpet` element lists and retain structurally valid lists with their owned data. Compatibility paths also recognize mAB/mBA and mft payloads. | The evaluator uses the compatibility payloads. Standard `mpet` evaluation and slot 3 remain pending. |
 | Auxiliary and private tags | Only the specific data used by the parser is consumed. | Named colors, preview/gamut machinery, arbitrary profile classes, and a general calibration workflow are not provided by this subsystem. |
 
-The `mpet` reader retains the position table's element order, channel counts, and a shared copy of the tag bytes. Nested curve data and floating-point samples remain encoded for their element readers. Builtin conversion still uses the executable legacy and analytic paths.
+The `mpet` reader retains the position table's element order, channel counts, and a shared copy of the tag bytes. The `cvst` element has its own segmented floating-point curve reader and evaluator. Matrix and CLUT data remain encoded for their element readers. Builtin profile conversion still uses the executable legacy and analytic paths.
 
 ## Architecture and data flow
 

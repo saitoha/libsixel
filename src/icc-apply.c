@@ -34,6 +34,7 @@
 #endif
 
 #include <stddef.h>
+#include <float.h>
 #include <string.h>
 
 static double const sixel_icc_xyz_d50_to_d65[3][3] = {
@@ -77,6 +78,108 @@ sixel_icc_encode_srgb_unit(double linear_value)
         return linear_value * 12.92;
     }
     return 1.055 * pow(linear_value, 1.0 / 2.4) - 0.055;
+}
+
+static double
+sixel_icc_mpe_formula(sixel_icc_mpe_segment_t const *segment, double x)
+{
+    double const *p;
+
+    p = segment->params;
+    switch (segment->function_type) {
+    case 0u:
+        return pow(p[1] * x + p[2], p[0]) + p[3];
+    case 1u:
+        return p[1] * log10(p[2] * pow(x, p[0]) + p[3]) + p[4];
+    default:
+        return p[0] * pow(p[1], p[2] * x + p[3]) + p[4];
+    }
+}
+
+static double
+sixel_icc_mpe_sample(sixel_icc_mpe_segment_t const *segment,
+                      sixel_icc_mpe_segment_t const *previous, double x)
+{
+    double position;
+    double left;
+    double right;
+    size_t index;
+
+    position = ((x - previous->end) / (segment->end - previous->end))
+        * (double)segment->sample_count;
+    if (position >= (double)segment->sample_count) {
+        return segment->samples[segment->sample_count - 1u];
+    }
+    index = (size_t)position;
+    /* The sample at the lower breakpoint is implicit. The preceding
+     * segment supplies it, including when that segment is also sampled. */
+    if (index == 0u) {
+        left = previous->sample_count == 0u
+            ? sixel_icc_mpe_formula(previous, previous->end)
+            : previous->samples[previous->sample_count - 1u];
+        if (!isfinite(left) || fabs(left) > FLT_MAX) {
+            return NAN;
+        }
+    } else {
+        left = segment->samples[index - 1u];
+    }
+    right = segment->samples[index];
+    return left + (right - left) * (position - (double)index);
+}
+
+int
+sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,
+                          sixel_icc_mpet_t const *mpet, size_t element)
+{
+    sixel_icc_mpe_t const *mpe;
+    sixel_icc_mpe_curve_t const *curves;
+    sixel_icc_mpe_curve_t const *curve;
+    sixel_icc_mpe_segment_t const *segment;
+    size_t channel;
+    size_t low;
+    size_t high;
+    size_t mid;
+    double x;
+    double y;
+
+    if (mpet == NULL || element >= mpet->element_count ||
+        in == NULL || out == NULL) {
+        return 0;
+    }
+    mpe = &mpet->elements[element];
+    if (mpe->kind != SIXEL_ICC_MPE_CURVE_SET ||
+        channels != mpe->input_channels) {
+        return 0;
+    }
+    curves = mpet->elements[mpe->curve_element].curves;
+    for (channel = 0u; channel < channels; ++channel) {
+        x = in[channel];
+        if (!isfinite(x) || fabs(x) > FLT_MAX) {
+            return 0;
+        }
+        curve = &curves[curves[channel].curve_channel];
+        low = 0u;
+        high = curve->segment_count - 1u;
+        /* The first segment whose upper bound includes x wins. The last
+         * segment is unbounded and never supplies a search breakpoint. */
+        while (low < high) {
+            mid = low + (high - low) / 2u;
+            if (x <= curve->segments[mid].end) {
+                high = mid;
+            } else {
+                low = mid + 1u;
+            }
+        }
+        segment = &curve->segments[low];
+        y = segment->sample_count == 0u
+            ? sixel_icc_mpe_formula(segment, x)
+            : sixel_icc_mpe_sample(segment, segment - 1u, x);
+        if (!isfinite(y) || fabs(y) > FLT_MAX) {
+            return 0;
+        }
+        out[channel] = y;
+    }
+    return 1;
 }
 
 static double

@@ -381,8 +381,33 @@ sixel_icc_mab_pipeline_destroy(sixel_icc_mab_pipeline_t *pipeline)
 }
 
 static void
+sixel_icc_mpe_curves_destroy(sixel_icc_mpe_t *mpe)
+{
+    sixel_icc_mpe_curve_t *curve;
+    size_t channel;
+    size_t segment;
+
+    if (mpe->curves == NULL) {
+        return;
+    }
+    for (channel = 0u; channel < mpe->input_channels; ++channel) {
+        curve = &mpe->curves[channel];
+        for (segment = 0u; segment < curve->segment_count; ++segment) {
+            free(curve->segments[segment].samples);
+        }
+        free(curve->segments);
+    }
+    free(mpe->curves);
+}
+
+static void
 sixel_icc_mpet_destroy(sixel_icc_mpet_t *mpet)
 {
+    size_t i;
+
+    for (i = 0u; i < mpet->element_count; ++i) {
+        sixel_icc_mpe_curves_destroy(&mpet->elements[i]);
+    }
     free(mpet->elements);
     free(mpet->data);
     memset(mpet, 0, sizeof(*mpet));
@@ -1847,6 +1872,7 @@ static char const *const sixel_icc_b2d_tag_names[SIXEL_ICC_B2D_SLOT_COUNT] = {
 typedef struct sixel_icc_mpe_range {
     uint32_t offset;
     uint32_t length;
+    uint16_t index;
 } sixel_icc_mpe_range_t;
 
 static int
@@ -1857,7 +1883,244 @@ sixel_icc_compare_mpe_ranges(void const *left, void const *right)
 
     a = (sixel_icc_mpe_range_t const *)left;
     b = (sixel_icc_mpe_range_t const *)right;
+    if (a->offset == b->offset) {
+        return (a->index > b->index) - (a->index < b->index);
+    }
     return (a->offset > b->offset) - (a->offset < b->offset);
+}
+
+/* Sort the ranges independently of the element or channel order. */
+static int
+sixel_icc_order_mpe_ranges(sixel_icc_mpe_range_t *ranges, size_t count,
+                           size_t first_offset)
+{
+    size_t i;
+
+    qsort(ranges, count, sizeof(*ranges), sixel_icc_compare_mpe_ranges);
+    if (ranges[0].offset != first_offset) {
+        return 0;
+    }
+    for (i = 1u; i < count; ++i) {
+        if (ranges[i].offset == ranges[i - 1u].offset &&
+            ranges[i].length == ranges[i - 1u].length) {
+            continue;
+        }
+        if (ranges[i].offset - ranges[i - 1u].offset <
+            ranges[i - 1u].length) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Decode finite ICC binary32 numbers without assuming the host layout. */
+static int
+sixel_icc_mpe_read_float(unsigned char const *data, double *out)
+{
+    uint32_t bits;
+    uint32_t fraction;
+    int exponent;
+    double value;
+
+    bits = sixel_icc_read_be32(data);
+    exponent = (int)((bits >> 23u) & 255u);
+    if (exponent == 255) {
+        return 0;
+    }
+    fraction = bits & 0x007fffffu;
+    value = exponent == 0 ? ldexp((double)fraction, -149)
+        : ldexp((double)(fraction | 0x00800000u), exponent - 150);
+    *out = bits >> 31u ? -value : value;
+    return 1;
+}
+
+static int
+sixel_icc_parse_mpe_segment(unsigned char const *data, size_t length,
+                             int allows_samples, sixel_icc_mpe_segment_t *seg,
+                             size_t *used, sixel_icc_parse_budget_t *budget,
+                             sixel_icc_issue_t *issue)
+{
+    double *values;
+    size_t count;
+    size_t i;
+    int sampled;
+
+    if (length < 12u || sixel_icc_read_be32(data + 4u) != 0u) {
+        goto malformed;
+    }
+    sampled = memcmp(data, "samf", 4u) == 0;
+    if (sampled) {
+        count = sixel_icc_read_be32(data + 8u);
+        if (!allows_samples || count == 0u) {
+            goto malformed;
+        }
+    } else if (memcmp(data, "parf", 4u) == 0) {
+        if (sixel_icc_read_be16(data + 10u) != 0u) {
+            goto malformed;
+        }
+        seg->function_type = sixel_icc_read_be16(data + 8u);
+        if (seg->function_type > 2u) {
+            goto unsupported;
+        }
+        count = seg->function_type == 0u ? 4u : 5u;
+    } else {
+        goto unsupported;
+    }
+
+    if (count > (length - 12u) / 4u) {
+        goto malformed;
+    }
+    values = seg->params;
+    if (sampled) {
+        if (!sixel_icc_parse_fits(budget, count, sizeof(*values), issue)) {
+            return 0;
+        }
+        seg->samples = (double *)sixel_icc_parse_alloc(
+            budget, count * sizeof(*values), issue);
+        if (seg->samples == NULL) {
+            return 0;
+        }
+        seg->sample_count = count;
+        values = seg->samples;
+    }
+    for (i = 0u; i < count; ++i) {
+        if (!sixel_icc_mpe_read_float(data + 12u + i * 4u, &values[i])) {
+            goto malformed;
+        }
+    }
+    *used = 12u + count * 4u;
+    return 1;
+
+unsupported:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
+    return 0;
+
+malformed:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+    return 0;
+}
+
+static int
+sixel_icc_parse_mpe_curve(unsigned char const *data, size_t length,
+                           sixel_icc_mpe_curve_t *curve,
+                           sixel_icc_parse_budget_t *budget,
+                           sixel_icc_issue_t *issue)
+{
+    size_t count;
+    size_t offset;
+    size_t used;
+    size_t i;
+
+    if (length < 12u || memcmp(data, "curf", 4u) != 0 ||
+        sixel_icc_read_be32(data + 4u) != 0u ||
+        sixel_icc_read_be16(data + 10u) != 0u) {
+        goto malformed;
+    }
+    count = sixel_icc_read_be16(data + 8u);
+    if (count == 0u || count - 1u > (length - 12u) / 4u) {
+        goto malformed;
+    }
+    offset = 12u + (count - 1u) * 4u;
+    if (count > (length - offset) / 12u) {
+        goto malformed;
+    }
+    curve->segments = (sixel_icc_mpe_segment_t *)sixel_icc_parse_alloc(
+        budget, count * sizeof(*curve->segments), issue);
+    if (curve->segments == NULL) {
+        return 0;
+    }
+    curve->segment_count = count;
+    memset(curve->segments, 0, count * sizeof(*curve->segments));
+    for (i = 0u; i + 1u < count; ++i) {
+        if (!sixel_icc_mpe_read_float(data + 12u + i * 4u,
+                                       &curve->segments[i].end) ||
+            (i != 0u &&
+             curve->segments[i].end < curve->segments[i - 1u].end)) {
+            goto malformed;
+        }
+    }
+    for (i = 0u; i < count; ++i) {
+        if (!sixel_icc_parse_mpe_segment(data + offset, length - offset,
+                i != 0u && i + 1u < count, &curve->segments[i], &used,
+                budget, issue)) {
+            return 0;
+        }
+        offset += used;
+    }
+    if (offset == length) {
+        return 1;
+    }
+
+malformed:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+    return 0;
+}
+
+/* Parse each shared curve once, keeping the original channel assignment. */
+static int
+sixel_icc_parse_mpe_curves(unsigned char const *data, sixel_icc_mpe_t *mpe,
+                            sixel_icc_parse_budget_t *budget,
+                            sixel_icc_issue_t *issue)
+{
+    sixel_icc_mpe_range_t *ranges;
+    sixel_icc_mpe_range_t const *range;
+    size_t count;
+    size_t start;
+    size_t i;
+    uint16_t owner;
+    int ok;
+
+    count = mpe->input_channels;
+    start = 12u + count * 8u;
+    ranges = (sixel_icc_mpe_range_t *)sixel_icc_parse_alloc(
+        budget, count * sizeof(*ranges), issue);
+    if (ranges == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < count; ++i) {
+        ranges[i].offset = sixel_icc_read_be32(data + 12u + i * 8u);
+        ranges[i].length = sixel_icc_read_be32(data + 16u + i * 8u);
+        ranges[i].index = (uint16_t)i;
+        if (ranges[i].offset < start || ranges[i].offset % 4u != 0u ||
+            ranges[i].offset > mpe->length ||
+            ranges[i].length > mpe->length - ranges[i].offset ||
+            ranges[i].length < 12u) {
+            goto malformed;
+        }
+    }
+    if (!sixel_icc_order_mpe_ranges(ranges, count, start)) {
+        goto malformed;
+    }
+    mpe->curves = (sixel_icc_mpe_curve_t *)sixel_icc_parse_alloc(
+        budget, count * sizeof(*mpe->curves), issue);
+    if (mpe->curves == NULL) {
+        ok = 0;
+        goto done;
+    }
+    memset(mpe->curves, 0, count * sizeof(*mpe->curves));
+    owner = ranges[0].index;
+    for (i = 0u; i < count; ++i) {
+        range = &ranges[i];
+        if (i == 0u || range->offset != ranges[i - 1u].offset) {
+            owner = range->index;
+            if (!sixel_icc_parse_mpe_curve(data + range->offset, range->length,
+                                            &mpe->curves[owner], budget,
+                                            issue)) {
+                ok = 0;
+                goto done;
+            }
+        }
+        mpe->curves[range->index].curve_channel = owner;
+    }
+    ok = 1;
+    goto done;
+
+malformed:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+    ok = 0;
+done:
+    free(ranges);
+    return ok;
 }
 
 static sixel_icc_issue_t
@@ -1941,6 +2204,7 @@ sixel_icc_parse_mpet(unsigned char const *data, size_t length,
     table_end = 16u + count * 8u;
     channels = input_channels;
     unknown_element = 0;
+    memset(elements, 0, count * sizeof(*elements));
     for (i = 0u; i < count; ++i) {
         mpe = &elements[i];
         mpe->offset = sixel_icc_read_be32(data + 16u + i * 8u);
@@ -1959,26 +2223,14 @@ sixel_icc_parse_mpet(unsigned char const *data, size_t length,
         channels = mpe->output_channels;
         ranges[i].offset = mpe->offset;
         ranges[i].length = mpe->length;
+        ranges[i].index = (uint16_t)i;
     }
     if (channels != output_channels) {
         goto malformed;
     }
 
-    /* Position order is execution order. Sort only the ranges to check
-     * physical storage, which may be out of order or shared verbatim. */
-    qsort(ranges, count, sizeof(*ranges), sixel_icc_compare_mpe_ranges);
-    if (ranges[0].offset != table_end) {
+    if (!sixel_icc_order_mpe_ranges(ranges, count, table_end)) {
         goto malformed;
-    }
-    for (i = 1u; i < count; ++i) {
-        if (ranges[i].offset == ranges[i - 1u].offset &&
-            ranges[i].length == ranges[i - 1u].length) {
-            continue;
-        }
-        if (ranges[i].offset - ranges[i - 1u].offset <
-            ranges[i - 1u].length) {
-            goto malformed;
-        }
     }
     if (unknown_element) {
         sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
@@ -2006,6 +2258,23 @@ sixel_icc_parse_mpet(unsigned char const *data, size_t length,
     parsed.input_channels = input_channels;
     parsed.output_channels = output_channels;
     parsed.element_count = count;
+    for (i = 0u; i < count; ++i) {
+        mpe = &parsed.elements[ranges[i].index];
+        if (mpe->kind != SIXEL_ICC_MPE_CURVE_SET) {
+            continue;
+        }
+        if (i != 0u && ranges[i].offset == ranges[i - 1u].offset) {
+            mpe->curve_element = parsed.elements[ranges[i - 1u].index]
+                .curve_element;
+            continue;
+        }
+        mpe->curve_element = ranges[i].index;
+        if (!sixel_icc_parse_mpe_curves(data + mpe->offset, mpe,
+                                        budget, issue)) {
+            sixel_icc_mpet_destroy(&parsed);
+            return 0;
+        }
+    }
     *out = parsed;
     return 1;
 

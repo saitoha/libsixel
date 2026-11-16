@@ -2367,6 +2367,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0040_MPET_ELEMENT_BOUNDARY \
     -DBUILD_TEST_0041_MPET_ELEMENT_LIMIT \
     -DBUILD_TEST_0042_MPET_ELEMENT_KINDS \
+    -DBUILD_TEST_0043_MPET_CURVE_FORMULAS \
+    -DBUILD_TEST_0044_MPET_CURVE_SAMPLES \
+    -DBUILD_TEST_0045_MPET_CURVE_STRUCTURE \
+    -DBUILD_TEST_0046_MPET_CURVE_UNSUPPORTED \
+    -DBUILD_TEST_0047_MPET_CURVE_EVALUATION_FAILURE \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -7680,6 +7685,11 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0040_mpet_element_boundary.c \
     color/icc/0041_mpet_element_limit.c \
     color/icc/0042_mpet_element_kinds.c \
+    color/icc/0043_mpet_curve_formulas.c \
+    color/icc/0044_mpet_curve_samples.c \
+    color/icc/0045_mpet_curve_structure.c \
+    color/icc/0046_mpet_curve_unsupported.c \
+    color/icc/0047_mpet_curve_evaluation_failure.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
     color/space/0004_extended_srgb_decode.c \

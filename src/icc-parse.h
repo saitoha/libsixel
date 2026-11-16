@@ -118,12 +118,29 @@ typedef enum sixel_icc_mpe_kind {
     SIXEL_ICC_MPE_END_ACS
 } sixel_icc_mpe_kind_t;
 
+typedef struct sixel_icc_mpe_segment {
+    double end;
+    double params[5];
+    double *samples;
+    size_t sample_count;
+    uint16_t function_type;
+} sixel_icc_mpe_segment_t;
+
+typedef struct sixel_icc_mpe_curve {
+    sixel_icc_mpe_segment_t *segments;
+    size_t segment_count;
+    uint16_t curve_channel;
+} sixel_icc_mpe_curve_t;
+
 typedef struct sixel_icc_mpe {
     sixel_icc_mpe_kind_t kind;
     uint16_t input_channels;
     uint16_t output_channels;
     uint32_t offset;
     uint32_t length;
+    /* Only the first position for a shared element owns the curve array. */
+    sixel_icc_mpe_curve_t *curves;
+    uint16_t curve_element;
 } sixel_icc_mpe_t;
 
 typedef struct sixel_icc_mpet {

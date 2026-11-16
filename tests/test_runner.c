@@ -398,6 +398,11 @@ int test_icc_0039(int argc, char **argv);
 int test_icc_0040(int argc, char **argv);
 int test_icc_0041(int argc, char **argv);
 int test_icc_0042(int argc, char **argv);
+int test_icc_0043(int argc, char **argv);
+int test_icc_0044(int argc, char **argv);
+int test_icc_0045(int argc, char **argv);
+int test_icc_0046(int argc, char **argv);
+int test_icc_0047(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10129,6 +10134,11 @@ static test_entry_t const test_entries[] = {
     { "icc/0040_mpet_element_boundary", test_icc_0040 },
     { "icc/0041_mpet_element_limit", test_icc_0041 },
     { "icc/0042_mpet_element_kinds", test_icc_0042 },
+    { "icc/0043_mpet_curve_formulas", test_icc_0043 },
+    { "icc/0044_mpet_curve_samples", test_icc_0044 },
+    { "icc/0045_mpet_curve_structure", test_icc_0045 },
+    { "icc/0046_mpet_curve_unsupported", test_icc_0046 },
+    { "icc/0047_mpet_curve_evaluation_failure", test_icc_0047 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },
