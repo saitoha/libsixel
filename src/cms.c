@@ -4058,7 +4058,8 @@ sixel_cms_do_builtin_absolute(sixel_cms_transform_t const *transform,
                 transform->src_format, src, pixel)) {
             return 0;
         }
-        if (src_space == SIXEL_CMS_COLORSPACE_LAB) {
+        /* Only the Lab float loader supplies signed Lab a/b units. */
+        if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32) {
             source[1] = (source[1] * 128.0 + 128.0) / 255.0;
             source[2] = (source[2] * 128.0 + 128.0) / 255.0;
         } else if (extended &&

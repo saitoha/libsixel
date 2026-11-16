@@ -61,16 +61,19 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
             fine[(size_t)y * w + x] = (unsigned char)(sum > 255 ? 255 : sum);
         }
     }
+    /* The rounded-up grid gives every tile at least one source pixel. */
     for (y = 0; y < sh; ++y) {
         for (x = 0; x < sw; ++x) {
             sum = 0;
             count = 0;
-            for (j = 0; j < 4 && y * 4 + j < h; ++j) {
-                for (i = 0; i < 4 && x * 4 + i < w; ++i) {
+            j = 0;
+            do {
+                i = 0;
+                do {
                     sum += fine[(size_t)(y * 4 + j)*w + x * 4 + i];
                     ++count;
-                }
-            }
+                } while (++i < 4 && x * 4 + i < w);
+            } while (++j < 4 && y * 4 + j < h);
             small[(size_t)y * sw + x] = (unsigned char)
                 ((sum + count / 2) / count);
         }
