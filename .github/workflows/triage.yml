@@ -256,7 +256,7 @@ jobs:
           failed_jobs_json="$(
             gh api \
               --paginate \
-              "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
+              "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=30" \
               --jq '.jobs[] | select(.conclusion == "failure") | .name' |
               ruby -rjson -e 'puts JSON.generate(STDIN.read.lines.map(&:chomp))'
           )"
@@ -290,6 +290,20 @@ jobs:
                 values.map { |value| entry.merge(axis => value) }
               end
             end
+          end
+
+          def ci_test_partition(label)
+            label.match(/\A(.+)-[1-9]\d*-of-([1-9]\d*)\z/)&.captures || [label, nil]
+          end
+
+          def failed_ci_entry?(label, failed_jobs, failed_partitions)
+            return false unless label
+            return true if failed_jobs.include?(label)
+
+            # An edited partition can move tests between shards. Replay the
+            # whole failed configuration if its shard count changed.
+            base, count = ci_test_partition(label)
+            failed_partitions.fetch(base, []).any? { |_, old_count| old_count != count }
           end
 
           def buildtool_prefix(entry, autotools_prefix, meson_prefix)
@@ -511,6 +525,7 @@ jobs:
 
           workflow_file = ENV.fetch('WORKFLOW_FILE')
           failed_jobs = JSON.parse(ENV.fetch('FAILED_JOBS_JSON'))
+          failed_partitions = failed_jobs.map { |label| ci_test_partition(label) }.group_by(&:first)
           max_jobs = Integer(ENV.fetch('MAX_JOBS'))
           run_meta = JSON.parse(ENV.fetch('RUN_META_JSON'))
           source = {
@@ -552,7 +567,7 @@ jobs:
 
             matrix_entries(job).each do |entry|
               next unless entry.is_a?(Hash)
-              next unless failed_jobs.include?(entry['label'])
+              next unless failed_ci_entry?(entry['label'], failed_jobs, failed_partitions)
 
               replay_entry = entry.dup
               replay_entry['job_env'] = (job['env'] || {}).dup

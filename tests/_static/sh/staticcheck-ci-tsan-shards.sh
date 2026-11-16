@@ -20,17 +20,17 @@ active && /test_shard:/ { shards[label, $2]++ }
 /meson test -C builddir --slice "\$SIXEL_TEST_SHARD"/ { meson_slice = 1 }
 /read-check-test-list.sh.*include newline.*SIXEL_TEST_SHARD/ { selected = 1 }
 END {
-    for (i = 1; i <= 3; i++) {
-        label = "Autotools-macos-aarch64-TSan-" i "-of-3"
-        if (labels[label] != 1 || shards[label, i "/3"] != 1) exit 1
+    for (i = 1; i <= 10; i++) {
+        label = "Autotools-macos-aarch64-TSan-" i "-of-10"
+        if (labels[label] != 1 || shards[label, i "/10"] != 1) exit 1
     }
-    for (i = 1; i <= 6; i++) {
-        label = "Meson-macos-aarch64-TSan-" i "-of-6"
-        if (labels[label] != 1 || shards[label, i "/6"] != 1) exit 1
+    for (i = 1; i <= 13; i++) {
+        label = "Meson-macos-aarch64-TSan-" i "-of-13"
+        if (labels[label] != 1 || shards[label, i "/13"] != 1) exit 1
     }
     for (label in labels) label_count++
     for (shard in shards) shard_count++
-    exit !(bounded && independent && label_count == 9 && shard_count == 9 &&
+    exit !(bounded && independent && label_count == 23 && shard_count == 23 &&
            routed && selected && meson_env && meson_slice)
 }
 ' "$1/.github/workflows/ci.yml" "$1/.github/actions/ci-steps/action.yml" \

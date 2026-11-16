@@ -19,7 +19,7 @@ function valid(text,    lines, n, i, command) {
         }
     }
     return command == 1 && index(text, "shell: cmd") &&
-        index(text, "endsWith(fromJSON(inputs.matrix_json).label,")
+        index(text, "&& fromJSON(inputs.matrix_json).pgo_use_options }}")
 }
 
 /    - name:/ {
@@ -32,8 +32,10 @@ function valid(text,    lines, n, i, command) {
         sub(/if errorlevel 1 exit \/b %errorlevel%/, "", unguarded)
         commented = block
         sub(/        builddir/, "        rem builddir", commented)
+        ungated = block
+        sub(/ && fromJSON\(inputs.matrix_json\)\.pgo_use_options/, "", ungated)
         if (!valid(block) || valid(missing) || valid(unguarded) ||
-                valid(commented)) failed = 1
+                valid(commented) || valid(ungated)) failed = 1
     }
     active = /Train progressive study \(MSVC PGO\)/
     block = ""

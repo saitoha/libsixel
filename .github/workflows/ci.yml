@@ -457,7 +457,38 @@ jobs:
               meson
             exec_type: bash
 
-          - label: Meson-cmd-x86_64-msvc-pgo
+          - label: Meson-cmd-x86_64-msvc-pgo-1-of-4
+            test_shard: 1/4
+            buildtool: meson
+            runner: windows-latest
+            setup_options: >-
+              -Dmsvc_pgo=generate
+            pgo_use_options: >-
+              -Dmsvc_pgo=use
+            exec_type: cmd
+
+          - label: Meson-cmd-x86_64-msvc-pgo-2-of-4
+            test_shard: 2/4
+            buildtool: meson
+            runner: windows-latest
+            setup_options: >-
+              -Dmsvc_pgo=generate
+            pgo_use_options: >-
+              -Dmsvc_pgo=use
+            exec_type: cmd
+
+          - label: Meson-cmd-x86_64-msvc-pgo-3-of-4
+            test_shard: 3/4
+            buildtool: meson
+            runner: windows-latest
+            setup_options: >-
+              -Dmsvc_pgo=generate
+            pgo_use_options: >-
+              -Dmsvc_pgo=use
+            exec_type: cmd
+
+          - label: Meson-cmd-x86_64-msvc-pgo-4-of-4
+            test_shard: 4/4
             buildtool: meson
             runner: windows-latest
             setup_options: >-
@@ -1649,7 +1680,8 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Autotools-macos-x86_64-coverage
+          - label: Autotools-macos-x86_64-coverage-1-of-21
+            test_shard: 1/21
             buildtool: autotools
             runner: macos-15-intel
             setup_options: >-
@@ -1658,7 +1690,208 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-lcms2-coverage
+          - label: Autotools-macos-x86_64-coverage-2-of-21
+            test_shard: 2/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-3-of-21
+            test_shard: 3/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-4-of-21
+            test_shard: 4/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-5-of-21
+            test_shard: 5/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-6-of-21
+            test_shard: 6/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-7-of-21
+            test_shard: 7/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-8-of-21
+            test_shard: 8/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-9-of-21
+            test_shard: 9/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-10-of-21
+            test_shard: 10/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-11-of-21
+            test_shard: 11/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-12-of-21
+            test_shard: 12/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-13-of-21
+            test_shard: 13/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-14-of-21
+            test_shard: 14/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-15-of-21
+            test_shard: 15/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-16-of-21
+            test_shard: 16/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-17-of-21
+            test_shard: 17/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-18-of-21
+            test_shard: 18/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-19-of-21
+            test_shard: 19/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-20-of-21
+            test_shard: 20/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage-21-of-21
+            test_shard: 21/21
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-lcms2-coverage-1-of-3
+            test_shard: 1/3
             buildtool: autotools
             runner: macos-latest
             setup_options: >-
@@ -1674,7 +1907,42 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-coverage
+          - label: Autotools-macos-aarch64-lcms2-coverage-2-of-3
+            test_shard: 2/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --with-lcms2
+            extra_packages: >-
+              lcms2
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-lcms2-coverage-3-of-3
+            test_shard: 3/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --with-lcms2
+            extra_packages: >-
+              lcms2
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-coverage-1-of-3
+            test_shard: 1/3
             buildtool: autotools
             runner: macos-latest
             setup_options: >-
@@ -1694,7 +1962,50 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-lcms2-coverage
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-coverage-2-of-3
+            test_shard: 2/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-librsvg
+              --without-lcms2
+            extra_packages: >-
+              libpng
+              jpeg-turbo
+              libtiff
+              webp
+              librsvg
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-coverage-3-of-3
+            test_shard: 3/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-librsvg
+              --without-lcms2
+            extra_packages: >-
+              libpng
+              jpeg-turbo
+              libtiff
+              webp
+              librsvg
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-lcms2-coverage-1-of-4
+            test_shard: 1/4
             buildtool: autotools
             runner: macos-latest
             setup_options: >-
@@ -1715,7 +2026,74 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-gdk-pixbuf2-coverage
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-lcms2-coverage-2-of-4
+            test_shard: 2/4
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-librsvg
+              --with-lcms2
+            extra_packages: >-
+              libpng
+              jpeg-turbo
+              libtiff
+              webp
+              librsvg
+              lcms2
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-lcms2-coverage-3-of-4
+            test_shard: 3/4
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-librsvg
+              --with-lcms2
+            extra_packages: >-
+              libpng
+              jpeg-turbo
+              libtiff
+              webp
+              librsvg
+              lcms2
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-webp-svg-lcms2-coverage-4-of-4
+            test_shard: 4/4
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-librsvg
+              --with-lcms2
+            extra_packages: >-
+              libpng
+              jpeg-turbo
+              libtiff
+              webp
+              librsvg
+              lcms2
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-gdk-pixbuf2-coverage-1-of-3
+            test_shard: 1/3
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -1731,7 +2109,42 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-GD-coverage
+          - label: Autotools-macos-aarch64-gdk-pixbuf2-coverage-2-of-3
+            test_shard: 2/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              gdk-pixbuf
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-gdk-pixbuf2-coverage-3-of-3
+            test_shard: 3/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              gdk-pixbuf
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-GD-coverage-1-of-3
+            test_shard: 1/3
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -1747,7 +2160,42 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Autotools-msys2-mingw64-static-coverage
+          - label: Autotools-macos-aarch64-GD-coverage-2-of-3
+            test_shard: 2/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --with-gd
+            extra_packages: >-
+              gd
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-GD-coverage-3-of-3
+            test_shard: 3/3
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --with-gd
+            extra_packages: >-
+              gd
+              lcov
+            exec_type: bash
+
+          - label: Autotools-msys2-mingw64-static-coverage-1-of-9
+            test_shard: 1/9
             buildtool: autotools
             runner: windows-latest
             msystem: MINGW64
@@ -1761,7 +2209,254 @@ jobs:
               mingw-w64-x86_64-lcov
             exec_type: msys2
 
-          - label: Autotools-msys2-mingw64-no-simd-coverage
+          - label: Autotools-msys2-mingw64-static-coverage-2-of-9
+            test_shard: 2/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-static-coverage-3-of-9
+            test_shard: 3/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-static-coverage-4-of-9
+            test_shard: 4/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-static-coverage-5-of-9
+            test_shard: 5/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-static-coverage-6-of-9
+            test_shard: 6/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-static-coverage-7-of-9
+            test_shard: 7/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-static-coverage-8-of-9
+            test_shard: 8/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-static-coverage-9-of-9
+            test_shard: 9/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-1-of-10
+            test_shard: 1/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-2-of-10
+            test_shard: 2/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-3-of-10
+            test_shard: 3/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-4-of-10
+            test_shard: 4/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-5-of-10
+            test_shard: 5/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-6-of-10
+            test_shard: 6/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-7-of-10
+            test_shard: 7/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-8-of-10
+            test_shard: 8/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-9-of-10
+            test_shard: 9/10
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage-10-of-10
+            test_shard: 10/10
             buildtool: autotools
             runner: windows-latest
             msystem: MINGW64
@@ -1799,7 +2494,8 @@ jobs:
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
 
-          - label: Autotools-msys2-clang64-coverage
+          - label: Autotools-msys2-clang64-coverage-1-of-7
+            test_shard: 1/7
             buildtool: autotools
             runner: windows-latest
             msystem: CLANG64
@@ -1813,7 +2509,98 @@ jobs:
               mingw-w64-clang-x86_64-lcov
             exec_type: msys2
 
-          - label: Autotools-msys2-msys-gcc-coverage
+          - label: Autotools-msys2-clang64-coverage-2-of-7
+            test_shard: 2/7
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-coverage-3-of-7
+            test_shard: 3/7
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-coverage-4-of-7
+            test_shard: 4/7
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-coverage-5-of-7
+            test_shard: 5/7
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-coverage-6-of-7
+            test_shard: 6/7
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-coverage-7-of-7
+            test_shard: 7/7
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-1-of-13
+            test_shard: 1/13
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
@@ -1827,7 +2614,408 @@ jobs:
               pkgconf
             exec_type: msys2
 
-          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage
+          - label: Autotools-msys2-msys-gcc-coverage-2-of-13
+            test_shard: 2/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-3-of-13
+            test_shard: 3/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-4-of-13
+            test_shard: 4/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-5-of-13
+            test_shard: 5/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-6-of-13
+            test_shard: 6/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-7-of-13
+            test_shard: 7/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-8-of-13
+            test_shard: 8/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-9-of-13
+            test_shard: 9/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-10-of-13
+            test_shard: 10/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-11-of-13
+            test_shard: 11/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-12-of-13
+            test_shard: 12/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage-13-of-13
+            test_shard: 13/13
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: PKG_CONFIG=/usr/bin/pkg-config
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+              pkgconf
+            exec_type: msys2
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-1-of-12
+            test_shard: 1/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-2-of-12
+            test_shard: 2/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-3-of-12
+            test_shard: 3/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-4-of-12
+            test_shard: 4/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-5-of-12
+            test_shard: 5/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-6-of-12
+            test_shard: 6/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-7-of-12
+            test_shard: 7/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-8-of-12
+            test_shard: 8/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-9-of-12
+            test_shard: 9/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-10-of-12
+            test_shard: 10/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-11-of-12
+            test_shard: 11/12
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage-12-of-12
+            test_shard: 12/12
             buildtool: autotools
             runner: windows-latest
             setup_prefix: >-
@@ -2052,7 +3240,8 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Meson-macos-x86_64-unity-coverage
+          - label: Meson-macos-x86_64-unity-coverage-1-of-3
+            test_shard: 1/3
             buildtool: meson
             runner: macos-15-intel
             setup_options: >-
@@ -2063,7 +3252,68 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Meson-macos-aarch64-gdk-pixbuf2-coverage
+          - label: Meson-macos-x86_64-unity-coverage-2-of-3
+            test_shard: 2/3
+            buildtool: meson
+            runner: macos-15-intel
+            setup_options: >-
+              -Db_coverage=true
+              -Dunity=on
+            extra_packages: >-
+              meson
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-x86_64-unity-coverage-3-of-3
+            test_shard: 3/3
+            buildtool: meson
+            runner: macos-15-intel
+            setup_options: >-
+              -Db_coverage=true
+              -Dunity=on
+            extra_packages: >-
+              meson
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-gdk-pixbuf2-coverage-1-of-3
+            test_shard: 1/3
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              gdk-pixbuf
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-gdk-pixbuf2-coverage-2-of-3
+            test_shard: 2/3
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              gdk-pixbuf
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-gdk-pixbuf2-coverage-3-of-3
+            test_shard: 3/3
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -2097,7 +3347,8 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit-coverage
+          - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit-coverage-1-of-3
+            test_shard: 1/3
             buildtool: meson
             runner: macos-latest
             setup_options: >-
@@ -2109,7 +3360,34 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Meson-msys2-mingw64-no-simd-coverage
+          - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit-coverage-2-of-3
+            test_shard: 2/3
+            buildtool: meson
+            runner: macos-latest
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+              -Dappkit=disabled
+            extra_packages: >-
+              meson
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit-coverage-3-of-3
+            test_shard: 3/3
+            buildtool: meson
+            runner: macos-latest
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+              -Dappkit=disabled
+            extra_packages: >-
+              meson
+              lcov
+            exec_type: bash
+
+          - label: Meson-msys2-mingw64-no-simd-coverage-1-of-5
+            test_shard: 1/5
             buildtool: meson
             runner: windows-latest
             msystem: MINGW64
@@ -2124,8 +3402,72 @@ jobs:
               mingw-w64-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-mingw64-no-threads-coverage-1-of-2
-            test_shard: 1/2
+          - label: Meson-msys2-mingw64-no-simd-coverage-2-of-5
+            test_shard: 2/5
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              -Db_coverage=true
+              -Dsimd=disabled
+            setup_prefix: >-
+              CC=gcc
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-simd-coverage-3-of-5
+            test_shard: 3/5
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              -Db_coverage=true
+              -Dsimd=disabled
+            setup_prefix: >-
+              CC=gcc
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-simd-coverage-4-of-5
+            test_shard: 4/5
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              -Db_coverage=true
+              -Dsimd=disabled
+            setup_prefix: >-
+              CC=gcc
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-simd-coverage-5-of-5
+            test_shard: 5/5
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              -Db_coverage=true
+              -Dsimd=disabled
+            setup_prefix: >-
+              CC=gcc
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-threads-coverage-1-of-6
+            test_shard: 1/6
             buildtool: meson
             runner: windows-latest
             msystem: MINGW64
@@ -2140,8 +3482,72 @@ jobs:
               mingw-w64-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-mingw64-no-threads-coverage-2-of-2
-            test_shard: 2/2
+          - label: Meson-msys2-mingw64-no-threads-coverage-2-of-6
+            test_shard: 2/6
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dthreads=disabled
+              -Db_coverage=true
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-threads-coverage-3-of-6
+            test_shard: 3/6
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dthreads=disabled
+              -Db_coverage=true
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-threads-coverage-4-of-6
+            test_shard: 4/6
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dthreads=disabled
+              -Db_coverage=true
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-threads-coverage-5-of-6
+            test_shard: 5/6
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dthreads=disabled
+              -Db_coverage=true
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-threads-coverage-6-of-6
+            test_shard: 6/6
             buildtool: meson
             runner: windows-latest
             msystem: MINGW64
@@ -2171,8 +3577,8 @@ jobs:
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-1-of-2
-            test_shard: 1/2
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-1-of-9
+            test_shard: 1/9
             buildtool: meson
             runner: windows-latest
             msystem: UCRT64
@@ -2187,8 +3593,120 @@ jobs:
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-2-of-2
-            test_shard: 2/2
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-2-of-9
+            test_shard: 2/9
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-3-of-9
+            test_shard: 3/9
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-4-of-9
+            test_shard: 4/9
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-5-of-9
+            test_shard: 5/9
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-6-of-9
+            test_shard: 6/9
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-7-of-9
+            test_shard: 7/9
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-8-of-9
+            test_shard: 8/9
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage-9-of-9
+            test_shard: 9/9
             buildtool: meson
             runner: windows-latest
             msystem: UCRT64
@@ -2217,8 +3735,8 @@ jobs:
               mingw-w64-clang-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-1-of-2
-            test_shard: 1/2
+          - label: Meson-msys2-msys-gcc-coverage-1-of-5
+            test_shard: 1/5
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -2232,8 +3750,53 @@ jobs:
               lcov
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-2-of-2
-            test_shard: 2/2
+          - label: Meson-msys2-msys-gcc-coverage-2-of-5
+            test_shard: 2/5
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-3-of-5
+            test_shard: 3/5
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-4-of-5
+            test_shard: 4/5
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-5-of-5
+            test_shard: 5/5
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -2994,7 +4557,8 @@ jobs:
             extra_packages: make
             exec_type: msys2
 
-          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-1-of-12
+            test_shard: 1/12
             buildtool: autotools
             runner: windows-11-arm
             msystem: MSYS
@@ -3011,6 +4575,238 @@ jobs:
               --enable-amalgamated-tools
               --disable-shared
             extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-2-of-12
+            test_shard: 2/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-3-of-12
+            test_shard: 3/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-4-of-12
+            test_shard: 4/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-5-of-12
+            test_shard: 5/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-6-of-12
+            test_shard: 6/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-7-of-12
+            test_shard: 7/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-8-of-12
+            test_shard: 8/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-9-of-12
+            test_shard: 9/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-10-of-12
+            test_shard: 10/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-11-of-12
+            test_shard: 11/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static-12-of-12
+            test_shard: 12/12
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-tools
+              --disable-shared
+            extra_packages: make
+            skip_initial_build: true
             exec_type: msys2
 
           - label: Autotools-msys2-msvc-vcpkg-libpng-libjpeg
@@ -3523,8 +5319,8 @@ jobs:
             exec_type: bash
 
           # Both check and installcheck inside distcheck use this shard.
-          - label: Autotools-msys2-clang64-distcheck-1-of-3
-            test_shard: 1/3
+          - label: Autotools-msys2-clang64-distcheck-1-of-8
+            test_shard: 1/8
             buildtool: autotools
             runner: windows-latest
             msystem: CLANG64
@@ -3533,11 +5329,12 @@ jobs:
             extra_packages: >-
               make
               mingw-w64-clang-x86_64-toolchain
-            check_target: distcheck
+            check_target: distcheck GZIP_ENV=-1
+            skip_initial_build: true
             exec_type: msys2
 
-          - label: Autotools-msys2-clang64-distcheck-2-of-3
-            test_shard: 2/3
+          - label: Autotools-msys2-clang64-distcheck-2-of-8
+            test_shard: 2/8
             buildtool: autotools
             runner: windows-latest
             msystem: CLANG64
@@ -3546,11 +5343,12 @@ jobs:
             extra_packages: >-
               make
               mingw-w64-clang-x86_64-toolchain
-            check_target: distcheck
+            check_target: distcheck GZIP_ENV=-1
+            skip_initial_build: true
             exec_type: msys2
 
-          - label: Autotools-msys2-clang64-distcheck-3-of-3
-            test_shard: 3/3
+          - label: Autotools-msys2-clang64-distcheck-3-of-8
+            test_shard: 3/8
             buildtool: autotools
             runner: windows-latest
             msystem: CLANG64
@@ -3559,7 +5357,78 @@ jobs:
             extra_packages: >-
               make
               mingw-w64-clang-x86_64-toolchain
-            check_target: distcheck
+            check_target: distcheck GZIP_ENV=-1
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-distcheck-4-of-8
+            test_shard: 4/8
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            check_target: distcheck GZIP_ENV=-1
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-distcheck-5-of-8
+            test_shard: 5/8
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            check_target: distcheck GZIP_ENV=-1
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-distcheck-6-of-8
+            test_shard: 6/8
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            check_target: distcheck GZIP_ENV=-1
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-distcheck-7-of-8
+            test_shard: 7/8
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            check_target: distcheck GZIP_ENV=-1
+            skip_initial_build: true
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-distcheck-8-of-8
+            test_shard: 8/8
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            check_target: distcheck GZIP_ENV=-1
+            skip_initial_build: true
             exec_type: msys2
 
           - label: Meson-cmd-x86_64-msvc-x86_64-distcheck
@@ -3969,7 +5838,48 @@ jobs:
               gdk-pixbuf
             exec_type: bash
 
-          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2
+          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2-1-of-3
+            test_shard: 1/3
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=address,undefined
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              gdk-pixbuf
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2-2-of-3
+            test_shard: 2/3
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=address,undefined
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              gdk-pixbuf
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2-3-of-3
+            test_shard: 3/3
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4020,7 +5930,48 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-GD
+          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-GD-1-of-3
+            test_shard: 1/3
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=address,undefined
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgd=enabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-GD-2-of-3
+            test_shard: 2/3
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=address,undefined
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgd=enabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-GD-3-of-3
+            test_shard: 3/3
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4292,8 +6243,8 @@ jobs:
 
           # Hosted runners cap each job at six hours. Partition the complete
           # sorted test inventory, keeping each case in exactly one shard.
-          - label: Autotools-macos-aarch64-TSan-1-of-3
-            test_shard: 1/3
+          - label: Autotools-macos-aarch64-TSan-1-of-10
+            test_shard: 1/10
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -4305,8 +6256,8 @@ jobs:
               --without-tiff
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-TSan-2-of-3
-            test_shard: 2/3
+          - label: Autotools-macos-aarch64-TSan-2-of-10
+            test_shard: 2/10
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -4318,8 +6269,99 @@ jobs:
               --without-tiff
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-TSan-3-of-3
-            test_shard: 3/3
+          - label: Autotools-macos-aarch64-TSan-3-of-10
+            test_shard: 3/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-4-of-10
+            test_shard: 4/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-5-of-10
+            test_shard: 5/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-6-of-10
+            test_shard: 6/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-7-of-10
+            test_shard: 7/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-8-of-10
+            test_shard: 8/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-9-of-10
+            test_shard: 9/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=thread
+              --without-png
+              --without-jpeg
+              --without-tiff
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-TSan-10-of-10
+            test_shard: 10/10
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -4332,8 +6374,8 @@ jobs:
             exec_type: bash
 
           # Allow time for both the instrumented build and uneven test costs.
-          - label: Meson-macos-aarch64-TSan-1-of-6
-            test_shard: 1/6
+          - label: Meson-macos-aarch64-TSan-1-of-13
+            test_shard: 1/13
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4351,8 +6393,8 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Meson-macos-aarch64-TSan-2-of-6
-            test_shard: 2/6
+          - label: Meson-macos-aarch64-TSan-2-of-13
+            test_shard: 2/13
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4370,8 +6412,8 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Meson-macos-aarch64-TSan-3-of-6
-            test_shard: 3/6
+          - label: Meson-macos-aarch64-TSan-3-of-13
+            test_shard: 3/13
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4389,8 +6431,8 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Meson-macos-aarch64-TSan-4-of-6
-            test_shard: 4/6
+          - label: Meson-macos-aarch64-TSan-4-of-13
+            test_shard: 4/13
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4408,8 +6450,8 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Meson-macos-aarch64-TSan-5-of-6
-            test_shard: 5/6
+          - label: Meson-macos-aarch64-TSan-5-of-13
+            test_shard: 5/13
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4427,8 +6469,141 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Meson-macos-aarch64-TSan-6-of-6
-            test_shard: 6/6
+          - label: Meson-macos-aarch64-TSan-6-of-13
+            test_shard: 6/13
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-7-of-13
+            test_shard: 7/13
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-8-of-13
+            test_shard: 8/13
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-9-of-13
+            test_shard: 9/13
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-10-of-13
+            test_shard: 10/13
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-11-of-13
+            test_shard: 11/13
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-12-of-13
+            test_shard: 12/13
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=thread
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-TSan-13-of-13
+            test_shard: 13/13
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4519,7 +6694,84 @@ jobs:
               nodejs
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-emscripten-static
+          - label: Autotools-macos-aarch64-emscripten-static-1-of-5
+            test_shard: 1/5
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O1 -g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            # This job runs many short Emscripten TAP scripts on macOS, where
+            # the hosted runner can hit the per-user process limit even at
+            # -j2 before the jobserver finishes draining skipped tests.
+            make_jobs: 1
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-emscripten-static-2-of-5
+            test_shard: 2/5
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O1 -g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            # This job runs many short Emscripten TAP scripts on macOS, where
+            # the hosted runner can hit the per-user process limit even at
+            # -j2 before the jobserver finishes draining skipped tests.
+            make_jobs: 1
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-emscripten-static-3-of-5
+            test_shard: 3/5
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O1 -g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            # This job runs many short Emscripten TAP scripts on macOS, where
+            # the hosted runner can hit the per-user process limit even at
+            # -j2 before the jobserver finishes draining skipped tests.
+            make_jobs: 1
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-emscripten-static-4-of-5
+            test_shard: 4/5
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O1 -g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            # This job runs many short Emscripten TAP scripts on macOS, where
+            # the hosted runner can hit the per-user process limit even at
+            # -j2 before the jobserver finishes draining skipped tests.
+            make_jobs: 1
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-emscripten-static-5-of-5
+            test_shard: 5/5
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -4707,7 +6959,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-aarch64-emscripten-coverage
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-1-of-5
+            test_shard: 1/5
             buildtool: autotools
             make_jobs: 2
             runner: ubuntu-24.04-arm
@@ -4727,7 +6980,92 @@ jobs:
               llvm
             exec_type: bash
 
-          - label: Meson-ubuntu-aarch64-emscripten-coverage
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-2-of-5
+            test_shard: 2/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-3-of-5
+            test_shard: 3/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-4-of-5
+            test_shard: 4/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-5-of-5
+            test_shard: 5/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-1-of-4
+            test_shard: 1/4
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -4746,7 +7084,68 @@ jobs:
               llvm
             exec_type: bash
 
-          - label: Autotools-ubuntu-aarch64-emscripten-coverage-png-jpeg
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-2-of-4
+            test_shard: 2/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-3-of-4
+            test_shard: 3/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-4-of-4
+            test_shard: 4/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-png-jpeg-1-of-5
+            test_shard: 1/5
             buildtool: autotools
             make_jobs: 2
             runner: ubuntu-24.04-arm
@@ -4768,7 +7167,100 @@ jobs:
               llvm
             exec_type: bash
 
-          - label: Meson-ubuntu-aarch64-emscripten-coverage-png-jpeg
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-png-jpeg-2-of-5
+            test_shard: 2/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --without-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-png-jpeg-3-of-5
+            test_shard: 3/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --without-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-png-jpeg-4-of-5
+            test_shard: 4/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --without-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-png-jpeg-5-of-5
+            test_shard: 5/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --without-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-png-jpeg-1-of-4
+            test_shard: 1/4
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -4789,7 +7281,74 @@ jobs:
               llvm
             exec_type: bash
 
-          - label: Autotools-ubuntu-aarch64-emscripten-coverage-libfetch
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-png-jpeg-2-of-4
+            test_shard: 2/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+              -Dpng=enabled
+              -Djpeg=enabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-png-jpeg-3-of-4
+            test_shard: 3/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+              -Dpng=enabled
+              -Djpeg=enabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-png-jpeg-4-of-4
+            test_shard: 4/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+              -Dpng=enabled
+              -Djpeg=enabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-libfetch-1-of-5
+            test_shard: 1/5
             buildtool: autotools
             make_jobs: 2
             runner: ubuntu-24.04-arm
@@ -4810,7 +7369,96 @@ jobs:
               llvm
             exec_type: bash
 
-          - label: Meson-ubuntu-aarch64-emscripten-coverage-libfetch
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-libfetch-2-of-5
+            test_shard: 2/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libcurl
+              --with-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-libfetch-3-of-5
+            test_shard: 3/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libcurl
+              --with-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-libfetch-4-of-5
+            test_shard: 4/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libcurl
+              --with-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten-coverage-libfetch-5-of-5
+            test_shard: 5/5
+            buildtool: autotools
+            make_jobs: 2
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libcurl
+              --with-libfetch
+            extra_packages: >-
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-libfetch-1-of-4
+            test_shard: 1/4
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -4830,8 +7478,71 @@ jobs:
               llvm
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-emscripten-coverage-1-of-2
-            test_shard: 1/2
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-libfetch-2-of-4
+            test_shard: 2/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dcurl=disabled
+              -Dfetch=enabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-libfetch-3-of-4
+            test_shard: 3/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dcurl=disabled
+              -Dfetch=enabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-coverage-libfetch-4-of-4
+            test_shard: 4/4
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dcurl=disabled
+              -Dfetch=enabled
+            extra_packages: >-
+              meson
+              nodejs
+              lcov
+              gcovr
+              python3-venv
+              llvm
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-emscripten-coverage-1-of-9
+            test_shard: 1/9
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -4849,8 +7560,8 @@ jobs:
             # Bound concurrent coverage-instrumented Node processes to two.
             make_jobs: 2
 
-          - label: Autotools-macos-aarch64-emscripten-coverage-2-of-2
-            test_shard: 2/2
+          - label: Autotools-macos-aarch64-emscripten-coverage-2-of-9
+            test_shard: 2/9
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -4868,8 +7579,141 @@ jobs:
             # Bound concurrent coverage-instrumented Node processes to two.
             make_jobs: 2
 
-          - label: Meson-macos-aarch64-emscripten-coverage-1-of-2
-            test_shard: 1/2
+          - label: Autotools-macos-aarch64-emscripten-coverage-3-of-9
+            test_shard: 3/9
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              node
+              gcovr
+            exec_type: bash
+            # Bound concurrent coverage-instrumented Node processes to two.
+            make_jobs: 2
+
+          - label: Autotools-macos-aarch64-emscripten-coverage-4-of-9
+            test_shard: 4/9
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              node
+              gcovr
+            exec_type: bash
+            # Bound concurrent coverage-instrumented Node processes to two.
+            make_jobs: 2
+
+          - label: Autotools-macos-aarch64-emscripten-coverage-5-of-9
+            test_shard: 5/9
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              node
+              gcovr
+            exec_type: bash
+            # Bound concurrent coverage-instrumented Node processes to two.
+            make_jobs: 2
+
+          - label: Autotools-macos-aarch64-emscripten-coverage-6-of-9
+            test_shard: 6/9
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              node
+              gcovr
+            exec_type: bash
+            # Bound concurrent coverage-instrumented Node processes to two.
+            make_jobs: 2
+
+          - label: Autotools-macos-aarch64-emscripten-coverage-7-of-9
+            test_shard: 7/9
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              node
+              gcovr
+            exec_type: bash
+            # Bound concurrent coverage-instrumented Node processes to two.
+            make_jobs: 2
+
+          - label: Autotools-macos-aarch64-emscripten-coverage-8-of-9
+            test_shard: 8/9
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              node
+              gcovr
+            exec_type: bash
+            # Bound concurrent coverage-instrumented Node processes to two.
+            make_jobs: 2
+
+          - label: Autotools-macos-aarch64-emscripten-coverage-9-of-9
+            test_shard: 9/9
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+              --enable-gcov
+              --without-libfetch
+            extra_packages: >-
+              node
+              gcovr
+            exec_type: bash
+            # Bound concurrent coverage-instrumented Node processes to two.
+            make_jobs: 2
+
+          - label: Meson-macos-aarch64-emscripten-coverage-1-of-5
+            test_shard: 1/5
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -4885,8 +7729,59 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Meson-macos-aarch64-emscripten-coverage-2-of-2
-            test_shard: 2/2
+          - label: Meson-macos-aarch64-emscripten-coverage-2-of-5
+            test_shard: 2/5
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              node
+              gcovr
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-emscripten-coverage-3-of-5
+            test_shard: 3/5
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              node
+              gcovr
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-emscripten-coverage-4-of-5
+            test_shard: 4/5
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O0 -g" LDFLAGS="-g"
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_coverage=true
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              node
+              gcovr
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-emscripten-coverage-5-of-5
+            test_shard: 5/5
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
