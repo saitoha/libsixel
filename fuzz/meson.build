@@ -74,6 +74,32 @@ fuzz_loader_builtin = executable('fuzz-loader-builtin-libfuzzer',
   build_by_default: true,
 )
 
+fuzz_cms_builtin = executable('fuzz-cms-builtin-libfuzzer',
+  'fuzz-cms-builtin-libfuzzer.c',
+  include_directories: project_inc,
+  dependencies: [libsixel_dep],
+  c_args: fuzz_common_c_args,
+  link_args: fuzz_common_link_args,
+  build_by_default: true,
+)
+
+run_target('fuzz-run-cms-builtin',
+  command: [sh, '-c', '''
+set -eu
+target="$1"
+source_dir="$2"
+build_dir="$3"
+corpus="${FUZZ_CMS_CORPUS:-$build_dir/cms-builtin-corpus}"
+args="${FUZZ_CMS_ARGS:-${FUZZ_BUILTIN_ARGS:-}}"
+mkdir -p "$corpus"
+# Intentional word splitting for libFuzzer arguments.
+exec "$target" "-dict=$source_dir/cms-builtin.dict" $args "$corpus" "$source_dir/corpus/cms-builtin"
+''', 'fuzz-run-cms-builtin',
+            fuzz_cms_builtin.full_path(),
+            meson.current_source_dir(),
+            meson.current_build_dir()],
+  depends: [fuzz_cms_builtin])
+
 fuzz_encoder_encode_bytes = executable('fuzz-encoder-encode-bytes-libfuzzer',
   'fuzz-encoder-encode-bytes-libfuzzer.c',
   include_directories: project_inc,

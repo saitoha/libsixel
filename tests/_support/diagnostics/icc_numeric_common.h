@@ -42,4 +42,8 @@ int icc_numeric_profile_header_test(int specimen);
 int icc_numeric_profile_missing_header_test(void);
 int icc_numeric_colorspace_lab_fallback_test(int legacy);
 
+int icc_numeric_mpet_runtime_fallback_test(void);
+int icc_numeric_mpet_clut_budget_test(void);
+int icc_numeric_mpet_bmp_test(int absolute, int reject);
+
 #endif

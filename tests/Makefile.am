@@ -2402,6 +2402,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0076_PROFILE_HEADER_MISSING_FIELDS \
     -DBUILD_TEST_0077_PROFILE_CLASS_COLORSPACE_NO_ANALYTIC \
     -DBUILD_TEST_0078_PROFILE_CLASS_V2_LAB_FALLBACK \
+    -DBUILD_TEST_0079_MFT1_B2D_XYZ_MATRIX \
+    -DBUILD_TEST_0080_MPET_RUNTIME_FALLBACK \
+    -DBUILD_TEST_0081_MPET_CLUT_BUDGET_RECOVERY \
+    -DBUILD_TEST_0082_MPET_BMP_RELATIVE \
+    -DBUILD_TEST_0083_MPET_BMP_ABSOLUTE \
+    -DBUILD_TEST_0084_MPET_BMP_MALFORMED_RECOVERY \
+    -DBUILD_TEST_0085_MPET_BMP_CLASS_RECOVERY \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7751,6 +7758,13 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0076_profile_header_missing_fields.c \
     color/icc/0077_profile_class_colorspace_no_analytic.c \
     color/icc/0078_profile_class_v2_lab_fallback.c \
+    color/icc/0079_mft1_b2d_xyz_matrix.c \
+    color/icc/0080_mpet_runtime_fallback.c \
+    color/icc/0081_mpet_clut_budget_recovery.c \
+    color/icc/0082_mpet_bmp_relative.c \
+    color/icc/0083_mpet_bmp_absolute.c \
+    color/icc/0084_mpet_bmp_malformed_recovery.c \
+    color/icc/0085_mpet_bmp_class_recovery.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

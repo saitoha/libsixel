@@ -434,6 +434,13 @@ int test_icc_0075(int argc, char **argv);
 int test_icc_0076(int argc, char **argv);
 int test_icc_0077(int argc, char **argv);
 int test_icc_0078(int argc, char **argv);
+int test_icc_0079(int argc, char **argv);
+int test_icc_0080(int argc, char **argv);
+int test_icc_0081(int argc, char **argv);
+int test_icc_0082(int argc, char **argv);
+int test_icc_0083(int argc, char **argv);
+int test_icc_0084(int argc, char **argv);
+int test_icc_0085(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10201,6 +10208,13 @@ static test_entry_t const test_entries[] = {
     { "icc/0076_profile_header_missing_fields", test_icc_0076 },
     { "icc/0077_profile_class_colorspace_no_analytic", test_icc_0077 },
     { "icc/0078_profile_class_v2_lab_fallback", test_icc_0078 },
+    { "icc/0079_mft1_b2d_xyz_matrix", test_icc_0079 },
+    { "icc/0080_mpet_runtime_fallback", test_icc_0080 },
+    { "icc/0081_mpet_clut_budget_recovery", test_icc_0081 },
+    { "icc/0082_mpet_bmp_relative", test_icc_0082 },
+    { "icc/0083_mpet_bmp_absolute", test_icc_0083 },
+    { "icc/0084_mpet_bmp_malformed_recovery", test_icc_0084 },
+    { "icc/0085_mpet_bmp_class_recovery", test_icc_0085 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },
