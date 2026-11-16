@@ -46,4 +46,13 @@ int icc_numeric_mpet_runtime_fallback_test(void);
 int icc_numeric_mpet_clut_budget_test(void);
 int icc_numeric_mpet_bmp_test(int absolute, int reject);
 
+int icc_numeric_mpet_legacy_color_test(void);
+int icc_numeric_mpet_fallback_from_absolute_test(void);
+int icc_numeric_mpet_fallback_to_absolute_test(void);
+int icc_numeric_mpet_matrix_target_intent_test(void);
+int icc_numeric_mpet_raw_lab_target_test(void);
+int icc_numeric_colorspace_lab_slot_zero_test(int reverse);
+int icc_numeric_mpet_high_dimensional_clut_test(void);
+int icc_numeric_mpet_legacy_slot_pair_test(void);
+
 #endif

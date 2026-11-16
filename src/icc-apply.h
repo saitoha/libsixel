@@ -160,6 +160,26 @@ sixel_icc_apply_mpe_element(double *out, size_t output_channels,
                             sixel_icc_mpet_t const *mpet, size_t element);
 
 /* Bridge to physical PCS XYZ before applying an intent adjustment. */
+typedef enum {
+    SIXEL_ICC_PATH_NONE,
+    SIXEL_ICC_PATH_LEGACY,
+    SIXEL_ICC_PATH_MPET
+} sixel_icc_path_t;
+
+SIXEL_INTERNAL_API sixel_icc_path_t
+sixel_icc_device_to_pcs(double xyz[3], double const *device, size_t channels,
+                         sixel_icc_profile_t const *profile,
+                         unsigned int slot, int legacy_only);
+
+SIXEL_INTERNAL_API sixel_icc_path_t
+sixel_icc_pcs_to_device(double *device, size_t channels, double const xyz[3],
+                         sixel_icc_profile_t const *profile,
+                         unsigned int slot, int legacy_only);
+
+SIXEL_INTERNAL_API int
+sixel_icc_apply_lab_xyz_to_device(double device[3], double const xyz[3],
+                                   sixel_icc_profile_t const *profile);
+
 SIXEL_INTERNAL_API int
 sixel_icc_apply_device_to_physical_xyz(
     double xyz[3], double const *device, size_t channels,

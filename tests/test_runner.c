@@ -441,6 +441,15 @@ int test_icc_0082(int argc, char **argv);
 int test_icc_0083(int argc, char **argv);
 int test_icc_0084(int argc, char **argv);
 int test_icc_0085(int argc, char **argv);
+int test_icc_0086(int argc, char **argv);
+int test_icc_0087(int argc, char **argv);
+int test_icc_0088(int argc, char **argv);
+int test_icc_0089(int argc, char **argv);
+int test_icc_0090(int argc, char **argv);
+int test_icc_0091(int argc, char **argv);
+int test_icc_0092(int argc, char **argv);
+int test_icc_0093(int argc, char **argv);
+int test_icc_0094(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10215,6 +10224,15 @@ static test_entry_t const test_entries[] = {
     { "icc/0083_mpet_bmp_absolute", test_icc_0083 },
     { "icc/0084_mpet_bmp_malformed_recovery", test_icc_0084 },
     { "icc/0085_mpet_bmp_class_recovery", test_icc_0085 },
+    { "icc/0086_mpet_legacy_color", test_icc_0086 },
+    { "icc/0087_mpet_fallback_from_absolute", test_icc_0087 },
+    { "icc/0088_mpet_fallback_to_absolute", test_icc_0088 },
+    { "icc/0089_mpet_matrix_target_intent", test_icc_0089 },
+    { "icc/0090_mpet_raw_lab_target", test_icc_0090 },
+    { "icc/0091_colorspace_lab_slot_zero_forward", test_icc_0091 },
+    { "icc/0092_colorspace_lab_slot_zero_reverse", test_icc_0092 },
+    { "icc/0093_mpet_high_dimensional_clut", test_icc_0093 },
+    { "icc/0094_mpet_legacy_slot_pair", test_icc_0094 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

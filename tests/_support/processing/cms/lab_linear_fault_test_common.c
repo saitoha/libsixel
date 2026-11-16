@@ -93,39 +93,54 @@ clf_free(void *p)
     free(p);
 }
 
-static int
+static sixel_icc_path_t
 clf_icc_apply(double xyz[3], double const *src, size_t channels,
               sixel_icc_profile_t const *profile, unsigned int slot,
-              int fallback, int physical)
+              int fallback, int physical, int legacy_only)
 {
-    int ok;
+    sixel_icc_path_t path;
 
     if (clf_arm) { ++clf_apply_calls; }
     if (clf_arm == CMS_LAB_FAIL_BUILTIN_LATE && clf_successes >= 256u) {
         ++clf_rejections;
-        return 0;
+        return SIXEL_ICC_PATH_NONE;
     }
-    ok = physical
-        ? sixel_icc_apply_device_to_physical_xyz(xyz, src, channels,
-                                                  profile, slot)
-        : sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
-            xyz, src, channels, profile, slot, fallback);
-    if (clf_arm == CMS_LAB_FAIL_BUILTIN_LATE && ok) { ++clf_successes; }
-    return ok;
+    if (physical) {
+        path = sixel_icc_device_to_pcs(xyz, src, channels, profile, slot,
+                                        legacy_only);
+    } else {
+        path = sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+            xyz, src, channels, profile, slot, fallback)
+            ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
+    }
+    if (clf_arm == CMS_LAB_FAIL_BUILTIN_LATE && path != SIXEL_ICC_PATH_NONE) {
+        ++clf_successes;
+    }
+    return path;
 }
 
 static int
 clf_icc(double xyz[3], double const *src, size_t channels,
         sixel_icc_profile_t const *profile, unsigned int slot, int fallback)
 {
-    return clf_icc_apply(xyz, src, channels, profile, slot, fallback, 0);
+    return clf_icc_apply(xyz, src, channels, profile, slot, fallback, 0, 1)
+        != SIXEL_ICC_PATH_NONE;
 }
 
 static int
 clf_icc_physical(double xyz[3], double const *src, size_t channels,
                  sixel_icc_profile_t const *profile, unsigned int slot)
 {
-    return clf_icc_apply(xyz, src, channels, profile, slot, 0, 1);
+    return clf_icc_apply(xyz, src, channels, profile, slot, 0, 1, 0)
+        != SIXEL_ICC_PATH_NONE;
+}
+
+static sixel_icc_path_t
+clf_icc_pcs(double xyz[3], double const *src, size_t channels,
+            sixel_icc_profile_t const *profile, unsigned int slot,
+            int legacy_only)
+{
+    return clf_icc_apply(xyz, src, channels, profile, slot, 0, 1, legacy_only);
 }
 
 #if defined(__APPLE__) && HAVE_COREGRAPHICS
@@ -256,6 +271,10 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cms_engine_unlock clf_local_85
 #define sixel_cms_float_rgb clf_local_86
 #define sixel_cms_float_source_xyz clf_local_87
+#define sixel_cms_builtin_needs_ordered_pcs clf_local_174
+#define sixel_cms_builtin_pcs_candidates clf_local_175
+#define sixel_cms_do_builtin_legacy clf_local_176
+#define sixel_cms_eval_builtin_pcs clf_local_177
 #define sixel_cms_get_color_space clf_local_88
 #define sixel_cms_get_engine clf_local_89
 #define sixel_cms_intent_contains clf_local_90
@@ -500,6 +519,7 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 #define free clf_free
 #define sixel_icc_apply_device_to_xyz_d50_with_a2b_slot clf_icc
 #define sixel_icc_apply_device_to_physical_xyz clf_icc_physical
+#define sixel_icc_device_to_pcs clf_icc_pcs
 #define ColorSyncTransformConvert clf_cs
 SIXEL_INTERNAL_API char const *
 sixel_cms_cicp_name(unsigned char const codes[4]);
@@ -514,6 +534,7 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef free
 #undef sixel_icc_apply_device_to_xyz_d50_with_a2b_slot
 #undef sixel_icc_apply_device_to_physical_xyz
+#undef sixel_icc_device_to_pcs
 #undef ColorSyncTransformConvert
 
 int
@@ -666,6 +687,10 @@ cms_status_allocation_test(void)
 #undef sixel_cms_engine_unlock
 #undef sixel_cms_float_rgb
 #undef sixel_cms_float_source_xyz
+#undef sixel_cms_builtin_needs_ordered_pcs
+#undef sixel_cms_builtin_pcs_candidates
+#undef sixel_cms_do_builtin_legacy
+#undef sixel_cms_eval_builtin_pcs
 #undef sixel_cms_get_color_space
 #undef sixel_cms_get_engine
 #undef sixel_cms_intent_contains

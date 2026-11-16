@@ -2514,3 +2514,368 @@ done:
     (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+static int
+iccn_transform_pixels(sixel_cms_profile_t const *source,
+                      sixel_cms_pixel_format_t src_format,
+                      sixel_cms_profile_t const *target,
+                      sixel_cms_pixel_format_t dst_format, char const *intent,
+                      void const *input, void *output, size_t count)
+{
+    sixel_cms_transform_t *transform;
+    int ok;
+
+    if (source == NULL || target == NULL ||
+        sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", intent) != 0) {
+        return 0;
+    }
+    transform = sixel_cms_create_transform(source, src_format, target,
+        dst_format, SIXEL_CMS_TRANSFORM_DEFAULT);
+    ok = transform != NULL &&
+        sixel_cms_do_transform(transform, input, output, count);
+    sixel_cms_delete_transform(transform);
+    (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
+    return ok;
+}
+
+static int
+iccn_float_result(float const *actual, double const *expected, size_t count)
+{
+    size_t i;
+
+    for (i = 0u; i < count; ++i) {
+        if (!(fabs(actual[i] - expected[i]) < 2e-7)) {
+            fprintf(stderr, "sample %zu: expected %.9g, got %.9g\n",
+                    i, expected[i], (double)actual[i]);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static void
+iccn_mpet_overflow_matrix(unsigned char *element)
+{
+    /* Both operands are finite. Positive test inputs exceed the float range. */
+    iccn_be32(element + 12u, 0x7f7fffffu);
+    iccn_be32(element + 48u, 0x7f7fffffu);
+}
+
+int
+icc_numeric_mpet_legacy_color_test(void)
+{
+    static unsigned char const input[] = {64u, 64u, 64u};
+    /* Identity mAB returns legacy XYZ=(64/255,64/255,64/255).
+     * Bradford D50-to-D65, inverse sRGB, and the sRGB OETF give these
+     * rounded bytes. A physical PCS scale of almost two changes them. */
+    static unsigned char const expected[] = {139u, 135u, 152u};
+    unsigned char bytes[516];
+    unsigned char output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t length;
+    int failure;
+    int ok;
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    target = sixel_cms_create_srgb_profile();
+    ok = target != NULL;
+    for (failure = 0; ok && failure <= 1; ++failure) {
+        length = iccn_mpet_transform_profile(bytes, 0, '1', 0, 65536u, 1);
+        if (failure) {
+            iccn_mpet_overflow_matrix(bytes + 168u + 24u);
+        } else {
+            bytes[135] = '2';
+        }
+        source = sixel_cms_open_profile_from_mem(bytes, length);
+        ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_RGB_8,
+            target, SIXEL_CMS_PIXELFORMAT_RGB_8, "relative!", input,
+            output, 1u) && memcmp(output, expected, sizeof(expected)) == 0;
+        sixel_cms_close_profile(source);
+    }
+    sixel_cms_close_profile(target);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_fallback_from_absolute_test(void)
+{
+    static unsigned char const input[] = {64u, 64u, 64u};
+    /* Saturation's identity A2B2 returns 64/255 in each XYZ channel.
+     * Bradford adaptation and sRGB encoding give these rounded bytes. */
+    static unsigned char const expected[] = {139u, 135u, 152u};
+    unsigned char bytes[516];
+    unsigned char output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t length;
+    int ok;
+
+    length = iccn_mpet_transform_profile(bytes, 0, '3', 0, 49152u, 1);
+    bytes[159] = '2';
+    iccn_mpet_overflow_matrix(bytes + 168u + 24u);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, length);
+    target = sixel_cms_create_srgb_profile();
+    ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_RGB_8,
+        target, SIXEL_CMS_PIXELFORMAT_RGB_8, "absolute,saturation!", input,
+        output, 1u) && memcmp(output, expected, sizeof(expected)) == 0;
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static size_t
+iccn_duplicate_mpet_matrix(unsigned char bytes[516], size_t length,
+                            unsigned char new_slot)
+{
+    /* A two-tag matrix fixture reserves space for a third table entry. */
+    iccn_be32(bytes + 128u, 3u);
+    memcpy(bytes + 156u, bytes + 132u, 12u);
+    bytes[159] = new_slot;
+    iccn_be32(bytes + 160u, (unsigned int)length);
+    memcpy(bytes + length, bytes + 168u, 84u);
+    length += 84u;
+    iccn_be32(bytes, (unsigned int)length);
+    return length;
+}
+
+int
+icc_numeric_mpet_fallback_to_absolute_test(void)
+{
+    static double const expected[] = {0.25, 0.375, 0.5, 0.0, 0.125, 0.75};
+    unsigned char src[516];
+    unsigned char dst[516];
+    float pixels[] = {0.25f, 0.375f, 0.5f, -1.0f, 0.125f, 0.75f};
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t src_length;
+    size_t dst_length;
+    int ok;
+
+    src_length = iccn_mpet_transform_profile(src, 0, '1', 0, 49152u, 0);
+    dst_length = iccn_mpet_transform_profile(dst, 1, '1', 0, 32768u, 0);
+    src_length = iccn_duplicate_mpet_matrix(src, src_length, '3');
+    dst_length = iccn_duplicate_mpet_matrix(dst, dst_length, '3');
+    iccn_mpet_overflow_matrix(src + 168u + 24u);
+    /* On pixel 1 D2B1 overflows, so D2B3/B2D3 preserve the input.
+     * On pixel 2 the relative matrix evaluates -FLT_MAX+FLT_MAX to 0.
+     * The in-place buffer also catches fallback using modified inputs. */
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(src, src_length);
+    target = sixel_cms_open_profile_from_mem(dst, dst_length);
+    ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        target, SIXEL_CMS_PIXELFORMAT_RGB_F32, "relative,absolute!", pixels,
+        pixels, 2u) && iccn_float_result(pixels, expected, 6u);
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_matrix_target_intent_test(void)
+{
+    static float const input[] = {0.25f, 0.25f, 0.25f};
+    /* Invert the stored P3 colorant matrix and apply its inverse TRCs.
+     * Absolute first multiplies each XYZ component by 0.75/D50. */
+    static double const expected[][3] = {
+        {0.541132973261, 0.530287072441, 0.589295745559},
+        {0.474842029592, 0.457919475835, 0.566362444335}
+    };
+    unsigned char src[516];
+    size_t length;
+
+    length = iccn_mpet_transform_profile(src, 0, '1', 0, 49152u, 0);
+    return iccn_check_mpet_transform(src, length, color_icc, sizeof(color_icc),
+        "relative,absolute!", input, expected[0]) == EXIT_SUCCESS &&
+        iccn_check_mpet_transform(src, length, color_icc, sizeof(color_icc),
+            "absolute!", input, expected[1]) == EXIT_SUCCESS
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_raw_lab_target_test(void)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static float const input[] = {
+        (float)(0.9642 * 0.45 * 0.45 * 0.45), 0.125f, (float)(0.8249 * 0.064)
+    };
+    /* The normalized XYZ cube roots are 0.45, 0.5, and 0.4. */
+    static double const expected[] = {0.42, -25.0 / 128.0, 20.0 / 128.0};
+    unsigned char src[516];
+    unsigned char dst[312];
+    float lab[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t length;
+    int ok;
+
+    length = iccn_mpet_transform_profile(src, 0, '1', 0, 65536u, 0);
+    iccn_absolute_lut_profile(dst, white, '0');
+    memcpy(dst + 12u, "mntrLab Lab ", 12u);
+    memcpy(dst + 144u, "cprt", 4u);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(src, length);
+    target = sixel_cms_open_profile_from_mem(dst, sizeof(dst));
+    ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        target, SIXEL_CMS_PIXELFORMAT_LAB_F32, "relative!", input,
+        lab, 1u) && iccn_float_result(lab, expected, 3u);
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_colorspace_lab_slot_zero_test(int reverse)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static float const lab[] = {0.58f, 0.0f, 0.0f};
+    static float const rgb[] = {0.125f, 0.125f, 0.125f};
+    unsigned char bytes[312];
+    float output[3];
+    double expected[3];
+    double scale;
+    double f;
+    sixel_cms_profile_t *profile;
+    sixel_cms_profile_t *linear;
+    sixel_cms_engine_t previous;
+    int ok;
+
+    iccn_absolute_lut_profile(bytes, white, '0');
+    memcpy(bytes + 12u, "spacLab Lab ", 12u);
+    /* Both directions use slot 0. Halving L* makes it observable that
+     * the LUT ran instead of analytically passing Lab through. */
+    bytes[282] = 0x80u;
+    bytes[283] = 0u;
+    scale = 32768.0 / 65535.0;
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    profile = sixel_cms_open_profile_from_mem(bytes, sizeof(bytes));
+    linear = sixel_cms_create_linear_srgb_profile();
+    if (reverse) {
+        expected[0] = 0.42 * scale;
+        expected[1] = expected[2] = 0.0;
+        ok = iccn_transform_pixels(linear, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+            profile, SIXEL_CMS_PIXELFORMAT_LAB_F32, "relative!", rgb,
+            output, 1u);
+    } else {
+        f = (58.0 * scale + 16.0) / 116.0;
+        expected[0] = expected[1] = expected[2] = f * f * f;
+        ok = iccn_transform_pixels(profile, SIXEL_CMS_PIXELFORMAT_LAB_F32,
+            linear, SIXEL_CMS_PIXELFORMAT_RGB_F32, "relative!", lab,
+            output, 1u);
+    }
+    ok = ok && iccn_float_result(output, expected, 3u);
+    sixel_cms_close_profile(linear);
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_high_dimensional_clut_test(void)
+{
+    enum { axes = 16, cells = 1u << axes, width = 12 + 16 * axes };
+    static double const input[] = {0.375, 0.5, 0.625};
+    /* The simplex basis for x0*x15 is min(x0,x15); an affine channel
+     * retains its exact value even outside the unit interval. */
+    static double const expected[] = {0.375, 1.625, -0.5};
+    sixel_icc_profile_t profile;
+    double output[3];
+    unsigned char *bytes;
+    unsigned char *tag;
+    unsigned char *matrix;
+    unsigned char *clut;
+    unsigned char *sample;
+    size_t tag_length;
+    size_t length;
+    size_t i;
+    unsigned int x;
+    unsigned int y;
+    unsigned int z;
+    int ok;
+
+    tag_length = 32u + width + 28u + cells * 12u;
+    length = 144u + tag_length;
+    bytes = calloc(1u, length);
+    if (bytes == NULL) {
+        return EXIT_FAILURE;
+    }
+    iccn_be32(bytes, (unsigned int)length);
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "scnrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 128u, 1u);
+    memcpy(bytes + 132u, "D2B1", 4u);
+    iccn_be32(bytes + 136u, 144u);
+    iccn_be32(bytes + 140u, (unsigned int)tag_length);
+    tag = bytes + 144u;
+    memcpy(tag, "mpet", 4u);
+    tag[9] = tag[11] = 3u;
+    iccn_be32(tag + 12u, 2u);
+    iccn_mpet_position(tag, 0u, 32u, width);
+    iccn_mpet_position(tag, 1u, 32u + width, 28u + cells * 12u);
+    matrix = tag + 32u;
+    memcpy(matrix, "matf", 4u);
+    matrix[9] = 3u;
+    matrix[11] = axes;
+    for (i = 0u; i < axes; ++i) {
+        iccn_mpe_write_float(matrix + 12u + 4u * (i * 3u + i % 3u), 1.0f);
+    }
+    iccn_mpe_write_float(matrix + 12u + 4u * ((axes - 1u) * 3u), 0.0f);
+    iccn_mpe_write_float(matrix + 12u + 4u * ((axes - 1u) * 3u + 2u), 1.0f);
+    clut = matrix + width;
+    memcpy(clut, "clut", 4u);
+    clut[9] = axes;
+    clut[11] = 3u;
+    memset(clut + 12u, 2, axes);
+    for (i = 0u; i < cells; ++i) {
+        x = (i & (1u << 15u)) != 0u;
+        y = (i & (1u << 14u)) != 0u;
+        z = (i & 1u) != 0u;
+        sample = clut + 28u + 12u * i;
+        iccn_mpe_write_float(sample, (float)(x * z));
+        iccn_mpe_write_float(sample + 4u, 1.125f + y);
+        iccn_mpe_write_float(sample + 8u, -0.25f + (float)x - (float)z);
+    }
+    ok = sixel_icc_parse_profile(bytes, length, &profile);
+    free(bytes);
+    if (!ok) {
+        return EXIT_FAILURE;
+    }
+    ok = sixel_icc_apply_device_to_physical_xyz(output, input, 3u, &profile,
+        1u) && memcmp(output, expected, sizeof(expected)) == 0;
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_legacy_slot_pair_test(void)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static float const input[] = {0.25f, 0.375f, 0.5f};
+    static double const expected[] = {0.25, 0.375, 0.5};
+    unsigned char src[516];
+    unsigned char dst[312];
+    size_t length;
+
+    /* The established legacy route takes A2B1 on the source and B2A2
+     * on the target. Neither side can use D2B0 with this intent order. */
+    length = iccn_mpet_transform_profile(src, 0, '1', 0, 65536u, 1);
+    src[135] = '0';
+    iccn_absolute_lut_profile(dst, white, '2');
+    return iccn_check_mpet_transform(src, length, dst, sizeof(dst),
+        "relative,saturation!", input, expected);
+}

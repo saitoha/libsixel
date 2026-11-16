@@ -2409,6 +2409,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0083_MPET_BMP_ABSOLUTE \
     -DBUILD_TEST_0084_MPET_BMP_MALFORMED_RECOVERY \
     -DBUILD_TEST_0085_MPET_BMP_CLASS_RECOVERY \
+    -DBUILD_TEST_0086_MPET_LEGACY_COLOR \
+    -DBUILD_TEST_0087_MPET_FALLBACK_FROM_ABSOLUTE \
+    -DBUILD_TEST_0088_MPET_FALLBACK_TO_ABSOLUTE \
+    -DBUILD_TEST_0089_MPET_MATRIX_TARGET_INTENT \
+    -DBUILD_TEST_0090_MPET_RAW_LAB_TARGET \
+    -DBUILD_TEST_0091_COLORSPACE_LAB_SLOT_ZERO_FORWARD \
+    -DBUILD_TEST_0092_COLORSPACE_LAB_SLOT_ZERO_REVERSE \
+    -DBUILD_TEST_0093_MPET_HIGH_DIMENSIONAL_CLUT \
+    -DBUILD_TEST_0094_MPET_LEGACY_SLOT_PAIR \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7765,6 +7774,15 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0083_mpet_bmp_absolute.c \
     color/icc/0084_mpet_bmp_malformed_recovery.c \
     color/icc/0085_mpet_bmp_class_recovery.c \
+    color/icc/0086_mpet_legacy_color.c \
+    color/icc/0087_mpet_fallback_from_absolute.c \
+    color/icc/0088_mpet_fallback_to_absolute.c \
+    color/icc/0089_mpet_matrix_target_intent.c \
+    color/icc/0090_mpet_raw_lab_target.c \
+    color/icc/0091_colorspace_lab_slot_zero_forward.c \
+    color/icc/0092_colorspace_lab_slot_zero_reverse.c \
+    color/icc/0093_mpet_high_dimensional_clut.c \
+    color/icc/0094_mpet_legacy_slot_pair.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
