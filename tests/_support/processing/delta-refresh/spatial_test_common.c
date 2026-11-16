@@ -123,8 +123,8 @@ spatial_published(void *opaque, uint64_t frame)
 }
 
 /* The worker is held outside its queue lock. An ordinary submission must
- * return with A1, and pending input must be latest-only. A condition barrier
- * proves publication; no sleeping or scheduler-speed assumptions are used. */
+ * return with A1, and pending input must be latest-only. Condition barriers
+ * observe progress and report a lost frame without hanging the test. */
 int
 test_refresh_spatial_async(int stale)
 {
@@ -134,12 +134,11 @@ test_refresh_spatial_async(int stale)
     sixel_refresh_spatial_hooks_t hooks;
     spatial_barrier_t gate;
     unsigned char rgb[64 * 64 * 3];
-    int failed, initialized;
+    int failed;
 
     state = NULL;
     allocator = NULL;
     failed = 0;
-    initialized = 0;
     memset(&gate, 0, sizeof(gate));
     memset(&s, 0, sizeof(s));
     memset(rgb, 100, sizeof(rgb));
@@ -150,13 +149,18 @@ test_refresh_spatial_async(int stale)
         == SIXEL_OK);
     RS_CHECK(sixel_mutex_init(&gate.mutex) == SIXEL_OK);
     RS_CHECK(sixel_cond_init(&gate.cond) == SIXEL_OK);
-    initialized = 1;
     s.mask.width = s.mask.height = 64;
     if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
             NULL, &hooks) != SIXEL_OK) { failed = 1; goto end; }
     sixel_mutex_lock(&gate.mutex);
-    while (!gate.entered) sixel_cond_wait(&gate.cond, &gate.mutex);
+    while (!gate.entered &&
+            !sixel_cond_timedwait(&gate.cond, &gate.mutex, 5000)) continue;
+    if (!gate.entered) {
+        fprintf(stderr, "spatial worker did not receive its first frame\n");
+        failed = 1;
+    }
     sixel_mutex_unlock(&gate.mutex);
+    if (failed) goto end;
     s.refresh_next_frame = 4;
     if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
             NULL, &hooks) != SIXEL_OK || s.mask.tiled == 2) failed = 1;
@@ -166,9 +170,14 @@ test_refresh_spatial_async(int stale)
     sixel_mutex_lock(&gate.mutex);
     gate.release = 1;
     sixel_cond_broadcast(&gate.cond);
-    while (!gate.published || gate.frame != 8)
-        sixel_cond_wait(&gate.cond, &gate.mutex);
+    while ((!gate.published || gate.frame != 8) &&
+            !sixel_cond_timedwait(&gate.cond, &gate.mutex, 5000)) continue;
+    if (!gate.published || gate.frame != 8) {
+        fprintf(stderr, "spatial worker did not publish the latest frame\n");
+        failed = 1;
+    }
     sixel_mutex_unlock(&gate.mutex);
+    if (failed) goto end;
     s.refresh_next_frame = stale ? 17 : 9;
     if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
             NULL, &hooks) != SIXEL_OK ||
@@ -184,11 +193,15 @@ test_refresh_spatial_async(int stale)
     if (sixel_refresh_spatial_prepare(&state, allocator, rgb, &s, 1, 1,
             NULL, &hooks) != SIXEL_OK || s.mask.tiled != 1) failed = 1;
 end:
+    /* Unblock either test hook before joining on a failed assertion. */
+    sixel_mutex_lock(&gate.mutex);
+    gate.release = 1;
+    gate.snapshot = 1;
+    sixel_cond_broadcast(&gate.cond);
+    sixel_mutex_unlock(&gate.mutex);
     sixel_refresh_spatial_free(state);
-    if (initialized) {
-        sixel_cond_destroy(&gate.cond);
-        sixel_mutex_destroy(&gate.mutex);
-    }
+    sixel_cond_destroy(&gate.cond);
+    sixel_mutex_destroy(&gate.mutex);
     sixel_allocator_unref(allocator);
     return failed;
 }

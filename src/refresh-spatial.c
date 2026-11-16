@@ -227,7 +227,8 @@ sixel_refresh_spatial_free(sixel_refresh_spatial_t *state)
 
 static SIXELSTATUS
 sixel_refresh_spatial_new(sixel_refresh_spatial_t **out,
-    sixel_allocator_t *allocator, int w, int h,
+    sixel_allocator_t *allocator, unsigned char const *rgb, int w, int h,
+    uint64_t frame,
     sixel_refresh_spatial_hooks_t const *hooks)
 {
     sixel_refresh_spatial_t *state;
@@ -256,6 +257,13 @@ sixel_refresh_spatial_new(sixel_refresh_spatial_t **out,
     if (!state->input || !state->work || !state->scratch) {
         status = SIXEL_BAD_ALLOCATION;
         goto fail_buffers;
+    }
+    /* Queue the first due frame before the worker can take the mutex.
+     * The worker checks pending on entry, so no wakeup is needed. */
+    if (frame % 4U == 0U) {
+        memcpy(state->input, rgb, n * 3);
+        state->queued_frame = frame;
+        state->pending = 1;
     }
     status = sixel_thread_create(&state->thread,
         sixel_refresh_spatial_worker, state);
@@ -297,16 +305,16 @@ sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **owner,
         state = NULL;
         *owner = NULL;
     }
+    queued = 0;
     if (state == NULL) {
-        status = sixel_refresh_spatial_new(owner, allocator,
-            schedule->mask.width, schedule->mask.height, hooks);
+        status = sixel_refresh_spatial_new(owner, allocator, rgb,
+            schedule->mask.width, schedule->mask.height, frame, hooks);
         if (status != SIXEL_OK) return status;
         state = *owner;
-    }
-    queued = 0;
-    /* Both submission and snapshot publication are opportunistic. The
-     * worker never holds this lock while computing or reading its input. */
-    if (sixel_mutex_trylock(&state->mutex)) {
+        queued = frame % 4U == 0U;
+    } else if (sixel_mutex_trylock(&state->mutex)) {
+        /* Ongoing submission and snapshot publication are opportunistic.
+         * The worker releases the lock while computing from its input. */
         if (state->completed) {
             memcpy(state->snapshot, state->result, sizeof(state->snapshot));
             state->cached_frame = state->completed_frame;
