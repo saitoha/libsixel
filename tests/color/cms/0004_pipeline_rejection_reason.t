@@ -14,7 +14,7 @@ message=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m
     exit 0
 }
 
-case "${message}" in *event=pipeline-rejected\|tag=D2B0\|reason=invalid-or-unsupported-pipeline*) true ;; *) false ;; esac || {
+case "${message}" in *event=pipeline-rejected\|tag=D2B0\|reason=mpet-evaluation-unavailable*) true ;; *) false ;; esac || {
     echo "not ok 1 - missing ICC decision reason"
     exit 0
 }

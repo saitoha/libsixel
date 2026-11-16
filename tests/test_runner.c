@@ -390,6 +390,14 @@ int test_icc_0031(int argc, char **argv);
 int test_icc_0032(int argc, char **argv);
 int test_icc_0033(int argc, char **argv);
 int test_icc_0034(int argc, char **argv);
+int test_icc_0035(int argc, char **argv);
+int test_icc_0036(int argc, char **argv);
+int test_icc_0037(int argc, char **argv);
+int test_icc_0038(int argc, char **argv);
+int test_icc_0039(int argc, char **argv);
+int test_icc_0040(int argc, char **argv);
+int test_icc_0041(int argc, char **argv);
+int test_icc_0042(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10113,6 +10121,14 @@ static test_entry_t const test_entries[] = {
     { "icc/0032_resource_tag_limit", test_icc_0032 },
     { "icc/0033_resource_alloc_boundary", test_icc_0033 },
     { "icc/0034_resource_alloc_recovery", test_icc_0034 },
+    { "icc/0035_mpet_shared_order", test_icc_0035 },
+    { "icc/0036_mpet_invalid_positions", test_icc_0036 },
+    { "icc/0037_mpet_channel_connections", test_icc_0037 },
+    { "icc/0038_mpet_unknown_fallback", test_icc_0038 },
+    { "icc/0039_mpet_no_executable_path", test_icc_0039 },
+    { "icc/0040_mpet_element_boundary", test_icc_0040 },
+    { "icc/0041_mpet_element_limit", test_icc_0041 },
+    { "icc/0042_mpet_element_kinds", test_icc_0042 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

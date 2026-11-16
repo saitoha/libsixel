@@ -7,6 +7,7 @@
 #include "tests/_support/diagnostics/icc_numeric_common.h"
 #include "tests/data/color-numeric/icc.h"
 #include "src/icc-parse.h"
+#include "src/icc-apply.h"
 #include "src/cms.h"
 #include "src/loader-common.h"
 
@@ -144,6 +145,345 @@ iccn_read32(unsigned char const *p)
 {
     return ((unsigned int)p[0] << 24) | ((unsigned int)p[1] << 16) |
         ((unsigned int)p[2] << 8) | (unsigned int)p[3];
+}
+
+/* The two legacy tags map normalized XYZ to and from RGB identically.
+ * Both floating-point slots share an on-disk tag. Its matrices would
+ * return zero if evaluated, so calling one in place of a legacy tag is
+ * observable with any nonzero input. */
+#define ICCN_MPET_OFFSET 316u
+#define ICCN_MPET_TEST_BYTES (ICCN_MPET_OFFSET + 16u + 257u * 8u + 92u)
+
+static size_t
+iccn_make_mpet_profile(unsigned char *bytes, unsigned int count)
+{
+    static char const tags[][5] = { "A2B0", "B2A0", "D2B0", "B2D0" };
+    unsigned char *entry;
+    unsigned char *mpet;
+    unsigned char *matrix;
+    unsigned int i;
+    unsigned int j;
+    unsigned int offset;
+    unsigned int data_start;
+    unsigned int length;
+
+    data_start = 16u + count * 8u;
+    length = data_start + (count == 4u ? 92u : 60u);
+    memset(bytes, 0, ICCN_MPET_OFFSET + length);
+    iccn_be32(bytes, ICCN_MPET_OFFSET + length);
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "mntrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 128u, 4u);
+
+    for (i = 0u; i < 4u; ++i) {
+        entry = bytes + 132u + i * 12u;
+        memcpy(entry, tags[i], 4u);
+        offset = i < 2u ? 180u + i * 68u : ICCN_MPET_OFFSET;
+        iccn_be32(entry + 4u, offset);
+        iccn_be32(entry + 8u, i < 2u ? 68u : length);
+        if (i < 2u) {
+            memcpy(bytes + offset, i == 0u ? "mAB " : "mBA ", 4u);
+            bytes[offset + 8u] = bytes[offset + 9u] = 3u;
+            iccn_be32(bytes + offset + 12u, 32u);
+            for (j = 0u; j < 3u; ++j) {
+                memcpy(bytes + offset + 32u + j * 12u, "curv", 4u);
+            }
+        }
+    }
+
+    mpet = bytes + ICCN_MPET_OFFSET;
+    memcpy(mpet, "mpet", 4u);
+    mpet[9] = mpet[11] = 3u;
+    iccn_be32(mpet + 12u, count);
+    matrix = mpet + data_start;
+    memcpy(matrix, "matf", 4u);
+    matrix[9] = count == 4u ? 2u : 3u;
+    matrix[11] = 3u;
+    if (count == 4u) {
+        /* Physical order is 2->3 then 3->2. The position table has
+         * 3->2 then 2->3, and repeats both positions verbatim. */
+        matrix += 48u;
+        memcpy(matrix, "matf", 4u);
+        matrix[9] = 3u;
+        matrix[11] = 2u;
+    }
+    for (i = 0u; i < count; ++i) {
+        entry = mpet + 16u + i * 8u;
+        offset = count == 4u && i % 2u == 0u ? 48u : 0u;
+        iccn_be32(entry, data_start + offset);
+        iccn_be32(entry + 4u, count != 4u ? 60u : offset ? 44u : 48u);
+    }
+    return ICCN_MPET_OFFSET + length;
+}
+
+int
+icc_numeric_mpet_order_test(void)
+{
+    static uint32_t const offsets[] = {96u, 48u, 96u, 48u};
+    static uint32_t const lengths[] = {44u, 48u, 44u, 48u};
+    static uint16_t const channels[] = {3u, 2u, 3u, 2u, 3u};
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    sixel_icc_profile_t profile;
+    sixel_icc_mpet_t const *mpet;
+    sixel_icc_issue_t issue;
+    size_t length;
+    size_t direction;
+    size_t i;
+    int ok;
+
+    length = iccn_make_mpet_profile(bytes, 4u);
+    if (!sixel_icc_parse_profile_ex(bytes, length, &profile, &issue)) {
+        return EXIT_FAILURE;
+    }
+    memset(bytes, 0, length);
+    ok = issue == SIXEL_ICC_ISSUE_UNSUPPORTED;
+    for (direction = 0u; direction < 2u; ++direction) {
+        mpet = direction == 0u ? &profile.d2b_mpet[0] : &profile.b2d_mpet[0];
+        if (mpet->element_count != 4u ||
+            mpet->input_channels != 3u || mpet->output_channels != 3u ||
+            mpet->elements == NULL || mpet->data == NULL) {
+            ok = 0;
+            break;
+        }
+        for (i = 0u; i < 4u; ++i) {
+            ok &= mpet->elements[i].kind == SIXEL_ICC_MPE_MATRIX &&
+                mpet->elements[i].offset == offsets[i] &&
+                mpet->elements[i].length == lengths[i] &&
+                mpet->elements[i].input_channels == channels[i] &&
+                mpet->elements[i].output_channels == channels[i + 1u] &&
+                memcmp(mpet->data + offsets[i], "matf", 4u) == 0;
+        }
+    }
+    sixel_icc_profile_destroy(&profile);
+    ok &= profile.d2b_mpet[0].element_count == 0u &&
+        profile.d2b_mpet[0].data == NULL &&
+        profile.b2d_mpet[0].element_count == 0u &&
+        profile.b2d_mpet[0].elements == NULL;
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+iccn_mpet_rejected(unsigned char const *bytes, size_t length,
+                    sixel_icc_issue_t expected)
+{
+    sixel_icc_profile_t profile;
+    sixel_icc_issue_t issue;
+    int ok;
+
+    if (!sixel_icc_parse_profile_ex(bytes, length, &profile, &issue)) {
+        return 0;
+    }
+    ok = issue == expected &&
+        profile.d2b_mpet[0].element_count == 0u &&
+        profile.d2b_mpet[0].elements == NULL &&
+        profile.d2b_mpet[0].data == NULL &&
+        profile.b2d_mpet[0].element_count == 0u;
+    sixel_icc_profile_destroy(&profile);
+    return ok;
+}
+
+int
+icc_numeric_mpet_position_test(void)
+{
+    static unsigned int const fields[][2] = {
+        {12u, 0u}, {12u, 8192u}, {16u, 40u}, {16u, 97u},
+        {16u, 0xfffffffc}, {20u, 0xffffffff}, {20u, 11u}
+    };
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    size_t i;
+    size_t length;
+
+    for (i = 0u; i < sizeof(fields) / sizeof(*fields); ++i) {
+        length = iccn_make_mpet_profile(bytes, 4u);
+        iccn_be32(bytes + ICCN_MPET_OFFSET + fields[i][0], fields[i][1]);
+        if (!iccn_mpet_rejected(bytes, length, SIXEL_ICC_ISSUE_MALFORMED)) {
+            fprintf(stderr, "Accepted invalid mpet position case %zu\n", i);
+            return EXIT_FAILURE;
+        }
+    }
+
+    /* A CLUT header fits in the range, but this range cannot share the
+     * matrix that begins inside it. Its channel connection is intact. */
+    length = iccn_make_mpet_profile(bytes, 4u);
+    memcpy(bytes + ICCN_MPET_OFFSET + 48u, "clut", 4u);
+    iccn_be32(bytes + ICCN_MPET_OFFSET + 28u, 52u);
+    iccn_be32(bytes + ICCN_MPET_OFFSET + 44u, 52u);
+    return iccn_mpet_rejected(bytes, length, SIXEL_ICC_ISSUE_MALFORMED)
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_channels_test(void)
+{
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    unsigned char *mpet;
+    size_t length;
+
+    length = iccn_make_mpet_profile(bytes, 4u);
+    mpet = bytes + ICCN_MPET_OFFSET;
+    mpet[9] = 2u;
+    if (!iccn_mpet_rejected(bytes, length, SIXEL_ICC_ISSUE_MALFORMED)) {
+        return EXIT_FAILURE;
+    }
+    /* Each substituted matrix has a valid coefficient count. Only
+     * its connection in the position table is invalid. */
+    length = iccn_make_mpet_profile(bytes, 4u);
+    iccn_be32(mpet + 16u, 48u);
+    iccn_be32(mpet + 20u, 48u);
+    if (!iccn_mpet_rejected(bytes, length, SIXEL_ICC_ISSUE_MALFORMED)) {
+        return EXIT_FAILURE;
+    }
+    length = iccn_make_mpet_profile(bytes, 4u);
+    iccn_be32(mpet + 24u, 96u);
+    iccn_be32(mpet + 28u, 44u);
+    if (!iccn_mpet_rejected(bytes, length, SIXEL_ICC_ISSUE_MALFORMED)) {
+        return EXIT_FAILURE;
+    }
+    length = iccn_make_mpet_profile(bytes, 4u);
+    iccn_be32(mpet + 12u, 3u);
+    /* Rebase all positions to keep the physical table bounds valid. */
+    memmove(mpet + 40u, mpet + 48u, 92u);
+    iccn_be32(mpet + 16u, 88u);
+    iccn_be32(mpet + 24u, 40u);
+    iccn_be32(mpet + 32u, 88u);
+    return iccn_mpet_rejected(bytes, length, SIXEL_ICC_ISSUE_MALFORMED)
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_unknown_test(void)
+{
+    static double const rgb[] = {0.125, 0.25, 0.375};
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    sixel_icc_profile_t profile;
+    sixel_icc_issue_t issue;
+    double xyz[3];
+    double output[3];
+    size_t length;
+    size_t i;
+    int ok;
+
+    length = iccn_make_mpet_profile(bytes, 4u);
+    memcpy(bytes + ICCN_MPET_OFFSET + 48u, "zzzz", 4u);
+    if (!iccn_mpet_rejected(bytes, length, SIXEL_ICC_ISSUE_UNSUPPORTED) ||
+        !sixel_icc_parse_profile_ex(bytes, length, &profile, &issue)) {
+        return EXIT_FAILURE;
+    }
+    ok = sixel_icc_apply_device_to_physical_xyz(xyz, rgb, 3u, &profile, 0u)
+        && sixel_icc_apply_physical_xyz_to_device(
+            output, 3u, xyz, &profile, 0u);
+    if (ok) {
+        for (i = 0u; i < 3u; ++i) {
+            ok &= fabs(xyz[i] - rgb[i] * (65535.0 / 32768.0)) <= 1e-12
+                && fabs(output[i] - rgb[i]) <= 1e-12;
+        }
+    }
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_no_path_test(void)
+{
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    sixel_icc_profile_t profile;
+    sixel_icc_issue_t issue;
+    size_t length;
+
+    length = iccn_make_mpet_profile(bytes, 4u);
+    memset(bytes + 132u, 'x', 4u);
+    memset(bytes + 144u, 'y', 4u);
+    memset(&profile, 0, sizeof(profile));
+    profile.kind = SIXEL_ICC_PROFILE_KIND_GRAY;
+    if (sixel_icc_parse_profile_ex(bytes, length, &profile, &issue)) {
+        sixel_icc_profile_destroy(&profile);
+        return EXIT_FAILURE;
+    }
+    return issue == SIXEL_ICC_ISSUE_UNSUPPORTED &&
+        profile.kind == SIXEL_ICC_PROFILE_KIND_GRAY
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_count_test(int over_limit)
+{
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    sixel_icc_profile_t profile;
+    sixel_icc_issue_t issue;
+    size_t length;
+    int ok;
+
+    length = iccn_make_mpet_profile(bytes, over_limit ? 257u : 256u);
+    if (!sixel_icc_parse_profile_ex(bytes, length, &profile, &issue)) {
+        return over_limit && issue == SIXEL_ICC_ISSUE_RESOURCE_LIMIT
+            ? EXIT_SUCCESS : EXIT_FAILURE;
+    }
+    ok = !over_limit && issue == SIXEL_ICC_ISSUE_UNSUPPORTED &&
+        profile.d2b_mpet[0].element_count == 256u &&
+        profile.d2b_mpet[0].elements[255].offset == 2064u;
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_kinds_test(void)
+{
+    static char const signatures[][5] = { "cvst", "bACS", "clut", "eACS" };
+    static unsigned int const sizes[] = {76u, 16u, 124u, 16u};
+    static sixel_icc_mpe_kind_t const kinds[] = {
+        SIXEL_ICC_MPE_CURVE_SET, SIXEL_ICC_MPE_BEGIN_ACS,
+        SIXEL_ICC_MPE_CLUT, SIXEL_ICC_MPE_END_ACS
+    };
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    unsigned char *mpet;
+    unsigned char *element;
+    sixel_icc_profile_t profile;
+    unsigned int offset;
+    size_t i;
+    int ok;
+
+    iccn_make_mpet_profile(bytes, 4u);
+    mpet = bytes + ICCN_MPET_OFFSET;
+    memset(mpet + 48u, 0, 232u);
+    offset = 48u;
+    for (i = 0u; i < 4u; ++i) {
+        iccn_be32(mpet + 16u + i * 8u, offset);
+        iccn_be32(mpet + 20u + i * 8u, sizes[i]);
+        memcpy(mpet + offset, signatures[i], 4u);
+        mpet[offset + 9u] = mpet[offset + 11u] = 3u;
+        offset += sizes[i];
+    }
+    iccn_be32(bytes, ICCN_MPET_OFFSET + offset);
+    iccn_be32(bytes + 164u, offset);
+    iccn_be32(bytes + 176u, offset);
+
+    /* Three curves share one single-segment identity formula. */
+    element = mpet + 48u;
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(element + 12u + i * 8u, 36u);
+        iccn_be32(element + 16u + i * 8u, 40u);
+    }
+    memcpy(element + 36u, "curf", 4u);
+    element[45] = 1u;
+    memcpy(element + 48u, "parf", 4u);
+    iccn_be32(element + 60u, 0x3f800000u);
+    iccn_be32(element + 64u, 0x3f800000u);
+    element = mpet + 140u;
+    element[12] = element[13] = element[14] = 2u;
+
+    if (!sixel_icc_parse_profile(bytes, ICCN_MPET_OFFSET + offset, &profile)) {
+        return EXIT_FAILURE;
+    }
+    ok = profile.d2b_mpet[0].element_count == 4u;
+    if (ok) {
+        for (i = 0u; i < 4u; ++i) {
+            ok &= profile.d2b_mpet[0].elements[i].kind == kinds[i];
+        }
+    }
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 int
@@ -305,7 +645,7 @@ icc_numeric_parse_budget_test(int over_limit)
 int
 icc_numeric_profile_status_test(int malformed, int keep_matrix)
 {
-    unsigned char bytes[sizeof(color_icc) + 20u];
+    unsigned char bytes[sizeof(color_icc) + 36u];
     unsigned char *entry;
     unsigned char *payload;
     size_t count;
@@ -318,8 +658,17 @@ icc_numeric_profile_status_test(int malformed, int keep_matrix)
 
     memcpy(bytes, color_icc, sizeof(color_icc));
     payload = bytes + sizeof(color_icc);
-    memset(payload, 0, 20u);
+    memset(payload, 0, sizeof(bytes) - sizeof(color_icc));
     memcpy(payload, malformed ? "mft2" : "mpet", 4u);
+    if (!malformed) {
+        /* A complete element table with an unknown element is unsupported. */
+        payload[9] = payload[11] = 3u;
+        iccn_be32(payload + 12u, 1u);
+        iccn_be32(payload + 16u, 24u);
+        iccn_be32(payload + 20u, 12u);
+        memcpy(payload + 24u, "zzzz", 4u);
+        payload[33] = payload[35] = 3u;
+    }
     iccn_be32(bytes, sizeof(bytes));
     count = iccn_read32(bytes + 128u);
     entry = bytes + 132u;
@@ -336,7 +685,7 @@ icc_numeric_profile_status_test(int malformed, int keep_matrix)
     }
     memcpy(entry, "D2B0", 4u);
     iccn_be32(entry + 4u, sizeof(color_icc));
-    iccn_be32(entry + 8u, 20u);
+    iccn_be32(entry + 8u, sizeof(bytes) - sizeof(color_icc));
 
     expected = malformed ? SIXEL_CMS_STATUS_MALFORMED_PROFILE
                          : SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE;

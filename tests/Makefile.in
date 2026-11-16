@@ -2139,6 +2139,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/icc/0032_resource_tag_limit.c \
 	color/icc/0033_resource_alloc_boundary.c \
 	color/icc/0034_resource_alloc_recovery.c \
+	color/icc/0035_mpet_shared_order.c \
+	color/icc/0036_mpet_invalid_positions.c \
+	color/icc/0037_mpet_channel_connections.c \
+	color/icc/0038_mpet_unknown_fallback.c \
+	color/icc/0039_mpet_no_executable_path.c \
+	color/icc/0040_mpet_element_boundary.c \
+	color/icc/0041_mpet_element_limit.c \
+	color/icc/0042_mpet_element_kinds.c \
 	_support/diagnostics/icc_numeric_common.c \
 	_support/diagnostics/icc_numeric_common.h \
 	color/space/0004_extended_srgb_decode.c \
@@ -7630,6 +7638,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0032_resource_tag_limit.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0033_resource_alloc_boundary.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0034_resource_alloc_recovery.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0035_mpet_shared_order.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0036_mpet_invalid_positions.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0037_mpet_channel_connections.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0038_mpet_unknown_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0039_mpet_no_executable_path.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0040_mpet_element_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0041_mpet_element_limit.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0042_mpet_element_kinds.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0005_extended_srgb_encode.$(OBJEXT) \
@@ -11953,6 +11969,14 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Po \
 	color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Po \
 	color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Po \
+	color/icc/$(DEPDIR)/test_runner-0035_mpet_shared_order.Po \
+	color/icc/$(DEPDIR)/test_runner-0036_mpet_invalid_positions.Po \
+	color/icc/$(DEPDIR)/test_runner-0037_mpet_channel_connections.Po \
+	color/icc/$(DEPDIR)/test_runner-0038_mpet_unknown_fallback.Po \
+	color/icc/$(DEPDIR)/test_runner-0039_mpet_no_executable_path.Po \
+	color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Po \
+	color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Po \
+	color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po \
@@ -19422,6 +19446,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_RESOURCE_TAG_LIMIT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_RESOURCE_ALLOC_BOUNDARY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_RESOURCE_ALLOC_RECOVERY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_MPET_SHARED_ORDER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_MPET_INVALID_POSITIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_MPET_CHANNEL_CONNECTIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_MPET_UNKNOWN_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_MPET_NO_EXECUTABLE_PATH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_MPET_ELEMENT_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_MPET_ELEMENT_LIMIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_MPET_ELEMENT_KINDS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -24759,6 +24791,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0032_resource_tag_limit.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0033_resource_alloc_boundary.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0034_resource_alloc_recovery.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0035_mpet_shared_order.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0036_mpet_invalid_positions.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0037_mpet_channel_connections.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0038_mpet_unknown_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0039_mpet_no_executable_path.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0040_mpet_element_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0041_mpet_element_limit.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0042_mpet_element_kinds.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0004_extended_srgb_decode.c \
@@ -35128,6 +35168,22 @@ color/icc/test_runner-0032_resource_tag_limit.$(OBJEXT):  \
 color/icc/test_runner-0033_resource_alloc_boundary.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0034_resource_alloc_recovery.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0035_mpet_shared_order.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0036_mpet_invalid_positions.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0037_mpet_channel_connections.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0038_mpet_unknown_fallback.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0039_mpet_no_executable_path.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0040_mpet_element_boundary.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0041_mpet_element_limit.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0042_mpet_element_kinds.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 _support/diagnostics/$(am__dirstamp):
 	@$(MKDIR_P) _support/diagnostics
@@ -47299,6 +47355,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0032_resource_tag_limit.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0033_resource_alloc_boundary.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0034_resource_alloc_recovery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0035_mpet_shared_order.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0036_mpet_invalid_positions.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0037_mpet_channel_connections.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0038_mpet_unknown_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0039_mpet_no_executable_path.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po@am__quote@ # am--include-marker
@@ -79599,6 +79663,118 @@ color/icc/test_runner-0034_resource_alloc_recovery.obj: color/icc/0034_resource_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0034_resource_alloc_recovery.c' object='color/icc/test_runner-0034_resource_alloc_recovery.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0034_resource_alloc_recovery.obj `if test -f 'color/icc/0034_resource_alloc_recovery.c'; then $(CYGPATH_W) 'color/icc/0034_resource_alloc_recovery.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0034_resource_alloc_recovery.c'; fi`
+
+color/icc/test_runner-0035_mpet_shared_order.o: color/icc/0035_mpet_shared_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0035_mpet_shared_order.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0035_mpet_shared_order.Tpo -c -o color/icc/test_runner-0035_mpet_shared_order.o `test -f 'color/icc/0035_mpet_shared_order.c' || echo '$(srcdir)/'`color/icc/0035_mpet_shared_order.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0035_mpet_shared_order.Tpo color/icc/$(DEPDIR)/test_runner-0035_mpet_shared_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0035_mpet_shared_order.c' object='color/icc/test_runner-0035_mpet_shared_order.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0035_mpet_shared_order.o `test -f 'color/icc/0035_mpet_shared_order.c' || echo '$(srcdir)/'`color/icc/0035_mpet_shared_order.c
+
+color/icc/test_runner-0035_mpet_shared_order.obj: color/icc/0035_mpet_shared_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0035_mpet_shared_order.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0035_mpet_shared_order.Tpo -c -o color/icc/test_runner-0035_mpet_shared_order.obj `if test -f 'color/icc/0035_mpet_shared_order.c'; then $(CYGPATH_W) 'color/icc/0035_mpet_shared_order.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0035_mpet_shared_order.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0035_mpet_shared_order.Tpo color/icc/$(DEPDIR)/test_runner-0035_mpet_shared_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0035_mpet_shared_order.c' object='color/icc/test_runner-0035_mpet_shared_order.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0035_mpet_shared_order.obj `if test -f 'color/icc/0035_mpet_shared_order.c'; then $(CYGPATH_W) 'color/icc/0035_mpet_shared_order.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0035_mpet_shared_order.c'; fi`
+
+color/icc/test_runner-0036_mpet_invalid_positions.o: color/icc/0036_mpet_invalid_positions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0036_mpet_invalid_positions.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0036_mpet_invalid_positions.Tpo -c -o color/icc/test_runner-0036_mpet_invalid_positions.o `test -f 'color/icc/0036_mpet_invalid_positions.c' || echo '$(srcdir)/'`color/icc/0036_mpet_invalid_positions.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0036_mpet_invalid_positions.Tpo color/icc/$(DEPDIR)/test_runner-0036_mpet_invalid_positions.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0036_mpet_invalid_positions.c' object='color/icc/test_runner-0036_mpet_invalid_positions.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0036_mpet_invalid_positions.o `test -f 'color/icc/0036_mpet_invalid_positions.c' || echo '$(srcdir)/'`color/icc/0036_mpet_invalid_positions.c
+
+color/icc/test_runner-0036_mpet_invalid_positions.obj: color/icc/0036_mpet_invalid_positions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0036_mpet_invalid_positions.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0036_mpet_invalid_positions.Tpo -c -o color/icc/test_runner-0036_mpet_invalid_positions.obj `if test -f 'color/icc/0036_mpet_invalid_positions.c'; then $(CYGPATH_W) 'color/icc/0036_mpet_invalid_positions.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0036_mpet_invalid_positions.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0036_mpet_invalid_positions.Tpo color/icc/$(DEPDIR)/test_runner-0036_mpet_invalid_positions.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0036_mpet_invalid_positions.c' object='color/icc/test_runner-0036_mpet_invalid_positions.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0036_mpet_invalid_positions.obj `if test -f 'color/icc/0036_mpet_invalid_positions.c'; then $(CYGPATH_W) 'color/icc/0036_mpet_invalid_positions.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0036_mpet_invalid_positions.c'; fi`
+
+color/icc/test_runner-0037_mpet_channel_connections.o: color/icc/0037_mpet_channel_connections.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0037_mpet_channel_connections.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0037_mpet_channel_connections.Tpo -c -o color/icc/test_runner-0037_mpet_channel_connections.o `test -f 'color/icc/0037_mpet_channel_connections.c' || echo '$(srcdir)/'`color/icc/0037_mpet_channel_connections.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0037_mpet_channel_connections.Tpo color/icc/$(DEPDIR)/test_runner-0037_mpet_channel_connections.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0037_mpet_channel_connections.c' object='color/icc/test_runner-0037_mpet_channel_connections.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0037_mpet_channel_connections.o `test -f 'color/icc/0037_mpet_channel_connections.c' || echo '$(srcdir)/'`color/icc/0037_mpet_channel_connections.c
+
+color/icc/test_runner-0037_mpet_channel_connections.obj: color/icc/0037_mpet_channel_connections.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0037_mpet_channel_connections.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0037_mpet_channel_connections.Tpo -c -o color/icc/test_runner-0037_mpet_channel_connections.obj `if test -f 'color/icc/0037_mpet_channel_connections.c'; then $(CYGPATH_W) 'color/icc/0037_mpet_channel_connections.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0037_mpet_channel_connections.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0037_mpet_channel_connections.Tpo color/icc/$(DEPDIR)/test_runner-0037_mpet_channel_connections.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0037_mpet_channel_connections.c' object='color/icc/test_runner-0037_mpet_channel_connections.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0037_mpet_channel_connections.obj `if test -f 'color/icc/0037_mpet_channel_connections.c'; then $(CYGPATH_W) 'color/icc/0037_mpet_channel_connections.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0037_mpet_channel_connections.c'; fi`
+
+color/icc/test_runner-0038_mpet_unknown_fallback.o: color/icc/0038_mpet_unknown_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0038_mpet_unknown_fallback.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0038_mpet_unknown_fallback.Tpo -c -o color/icc/test_runner-0038_mpet_unknown_fallback.o `test -f 'color/icc/0038_mpet_unknown_fallback.c' || echo '$(srcdir)/'`color/icc/0038_mpet_unknown_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0038_mpet_unknown_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0038_mpet_unknown_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0038_mpet_unknown_fallback.c' object='color/icc/test_runner-0038_mpet_unknown_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0038_mpet_unknown_fallback.o `test -f 'color/icc/0038_mpet_unknown_fallback.c' || echo '$(srcdir)/'`color/icc/0038_mpet_unknown_fallback.c
+
+color/icc/test_runner-0038_mpet_unknown_fallback.obj: color/icc/0038_mpet_unknown_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0038_mpet_unknown_fallback.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0038_mpet_unknown_fallback.Tpo -c -o color/icc/test_runner-0038_mpet_unknown_fallback.obj `if test -f 'color/icc/0038_mpet_unknown_fallback.c'; then $(CYGPATH_W) 'color/icc/0038_mpet_unknown_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0038_mpet_unknown_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0038_mpet_unknown_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0038_mpet_unknown_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0038_mpet_unknown_fallback.c' object='color/icc/test_runner-0038_mpet_unknown_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0038_mpet_unknown_fallback.obj `if test -f 'color/icc/0038_mpet_unknown_fallback.c'; then $(CYGPATH_W) 'color/icc/0038_mpet_unknown_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0038_mpet_unknown_fallback.c'; fi`
+
+color/icc/test_runner-0039_mpet_no_executable_path.o: color/icc/0039_mpet_no_executable_path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0039_mpet_no_executable_path.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0039_mpet_no_executable_path.Tpo -c -o color/icc/test_runner-0039_mpet_no_executable_path.o `test -f 'color/icc/0039_mpet_no_executable_path.c' || echo '$(srcdir)/'`color/icc/0039_mpet_no_executable_path.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0039_mpet_no_executable_path.Tpo color/icc/$(DEPDIR)/test_runner-0039_mpet_no_executable_path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0039_mpet_no_executable_path.c' object='color/icc/test_runner-0039_mpet_no_executable_path.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0039_mpet_no_executable_path.o `test -f 'color/icc/0039_mpet_no_executable_path.c' || echo '$(srcdir)/'`color/icc/0039_mpet_no_executable_path.c
+
+color/icc/test_runner-0039_mpet_no_executable_path.obj: color/icc/0039_mpet_no_executable_path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0039_mpet_no_executable_path.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0039_mpet_no_executable_path.Tpo -c -o color/icc/test_runner-0039_mpet_no_executable_path.obj `if test -f 'color/icc/0039_mpet_no_executable_path.c'; then $(CYGPATH_W) 'color/icc/0039_mpet_no_executable_path.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0039_mpet_no_executable_path.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0039_mpet_no_executable_path.Tpo color/icc/$(DEPDIR)/test_runner-0039_mpet_no_executable_path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0039_mpet_no_executable_path.c' object='color/icc/test_runner-0039_mpet_no_executable_path.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0039_mpet_no_executable_path.obj `if test -f 'color/icc/0039_mpet_no_executable_path.c'; then $(CYGPATH_W) 'color/icc/0039_mpet_no_executable_path.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0039_mpet_no_executable_path.c'; fi`
+
+color/icc/test_runner-0040_mpet_element_boundary.o: color/icc/0040_mpet_element_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0040_mpet_element_boundary.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Tpo -c -o color/icc/test_runner-0040_mpet_element_boundary.o `test -f 'color/icc/0040_mpet_element_boundary.c' || echo '$(srcdir)/'`color/icc/0040_mpet_element_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Tpo color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0040_mpet_element_boundary.c' object='color/icc/test_runner-0040_mpet_element_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0040_mpet_element_boundary.o `test -f 'color/icc/0040_mpet_element_boundary.c' || echo '$(srcdir)/'`color/icc/0040_mpet_element_boundary.c
+
+color/icc/test_runner-0040_mpet_element_boundary.obj: color/icc/0040_mpet_element_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0040_mpet_element_boundary.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Tpo -c -o color/icc/test_runner-0040_mpet_element_boundary.obj `if test -f 'color/icc/0040_mpet_element_boundary.c'; then $(CYGPATH_W) 'color/icc/0040_mpet_element_boundary.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0040_mpet_element_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Tpo color/icc/$(DEPDIR)/test_runner-0040_mpet_element_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0040_mpet_element_boundary.c' object='color/icc/test_runner-0040_mpet_element_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0040_mpet_element_boundary.obj `if test -f 'color/icc/0040_mpet_element_boundary.c'; then $(CYGPATH_W) 'color/icc/0040_mpet_element_boundary.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0040_mpet_element_boundary.c'; fi`
+
+color/icc/test_runner-0041_mpet_element_limit.o: color/icc/0041_mpet_element_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0041_mpet_element_limit.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Tpo -c -o color/icc/test_runner-0041_mpet_element_limit.o `test -f 'color/icc/0041_mpet_element_limit.c' || echo '$(srcdir)/'`color/icc/0041_mpet_element_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Tpo color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0041_mpet_element_limit.c' object='color/icc/test_runner-0041_mpet_element_limit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0041_mpet_element_limit.o `test -f 'color/icc/0041_mpet_element_limit.c' || echo '$(srcdir)/'`color/icc/0041_mpet_element_limit.c
+
+color/icc/test_runner-0041_mpet_element_limit.obj: color/icc/0041_mpet_element_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0041_mpet_element_limit.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Tpo -c -o color/icc/test_runner-0041_mpet_element_limit.obj `if test -f 'color/icc/0041_mpet_element_limit.c'; then $(CYGPATH_W) 'color/icc/0041_mpet_element_limit.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0041_mpet_element_limit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Tpo color/icc/$(DEPDIR)/test_runner-0041_mpet_element_limit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0041_mpet_element_limit.c' object='color/icc/test_runner-0041_mpet_element_limit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0041_mpet_element_limit.obj `if test -f 'color/icc/0041_mpet_element_limit.c'; then $(CYGPATH_W) 'color/icc/0041_mpet_element_limit.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0041_mpet_element_limit.c'; fi`
+
+color/icc/test_runner-0042_mpet_element_kinds.o: color/icc/0042_mpet_element_kinds.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0042_mpet_element_kinds.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Tpo -c -o color/icc/test_runner-0042_mpet_element_kinds.o `test -f 'color/icc/0042_mpet_element_kinds.c' || echo '$(srcdir)/'`color/icc/0042_mpet_element_kinds.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Tpo color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0042_mpet_element_kinds.c' object='color/icc/test_runner-0042_mpet_element_kinds.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0042_mpet_element_kinds.o `test -f 'color/icc/0042_mpet_element_kinds.c' || echo '$(srcdir)/'`color/icc/0042_mpet_element_kinds.c
+
+color/icc/test_runner-0042_mpet_element_kinds.obj: color/icc/0042_mpet_element_kinds.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0042_mpet_element_kinds.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Tpo -c -o color/icc/test_runner-0042_mpet_element_kinds.obj `if test -f 'color/icc/0042_mpet_element_kinds.c'; then $(CYGPATH_W) 'color/icc/0042_mpet_element_kinds.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0042_mpet_element_kinds.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Tpo color/icc/$(DEPDIR)/test_runner-0042_mpet_element_kinds.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0042_mpet_element_kinds.c' object='color/icc/test_runner-0042_mpet_element_kinds.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0042_mpet_element_kinds.obj `if test -f 'color/icc/0042_mpet_element_kinds.c'; then $(CYGPATH_W) 'color/icc/0042_mpet_element_kinds.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0042_mpet_element_kinds.c'; fi`
 
 _support/diagnostics/test_runner-icc_numeric_common.o: _support/diagnostics/icc_numeric_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/diagnostics/test_runner-icc_numeric_common.o -MD -MP -MF _support/diagnostics/$(DEPDIR)/test_runner-icc_numeric_common.Tpo -c -o _support/diagnostics/test_runner-icc_numeric_common.o `test -f '_support/diagnostics/icc_numeric_common.c' || echo '$(srcdir)/'`_support/diagnostics/icc_numeric_common.c

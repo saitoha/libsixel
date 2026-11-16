@@ -109,6 +109,32 @@ typedef struct sixel_icc_mab_pipeline {
     double matrix_offset[3];
 } sixel_icc_mab_pipeline_t;
 
+typedef enum sixel_icc_mpe_kind {
+    SIXEL_ICC_MPE_INVALID = 0,
+    SIXEL_ICC_MPE_CURVE_SET,
+    SIXEL_ICC_MPE_MATRIX,
+    SIXEL_ICC_MPE_CLUT,
+    SIXEL_ICC_MPE_BEGIN_ACS,
+    SIXEL_ICC_MPE_END_ACS
+} sixel_icc_mpe_kind_t;
+
+typedef struct sixel_icc_mpe {
+    sixel_icc_mpe_kind_t kind;
+    uint16_t input_channels;
+    uint16_t output_channels;
+    uint32_t offset;
+    uint32_t length;
+} sixel_icc_mpe_t;
+
+typedef struct sixel_icc_mpet {
+    uint16_t input_channels;
+    uint16_t output_channels;
+    size_t element_count;
+    sixel_icc_mpe_t *elements;
+    /* One owned tag copy. Repeated positions share the bytes at that offset. */
+    unsigned char *data;
+} sixel_icc_mpet_t;
+
 typedef enum sixel_icc_profile_pcs {
     SIXEL_ICC_PROFILE_PCS_INVALID = 0,
     SIXEL_ICC_PROFILE_PCS_XYZ,
@@ -136,8 +162,10 @@ typedef struct sixel_icc_profile {
     sixel_icc_mab_pipeline_t b2a_mab[SIXEL_ICC_B2A_SLOT_COUNT];
     sixel_icc_lut_t d2b_lut[SIXEL_ICC_D2B_SLOT_COUNT];
     sixel_icc_mab_pipeline_t d2b_mab[SIXEL_ICC_D2B_SLOT_COUNT];
+    sixel_icc_mpet_t d2b_mpet[SIXEL_ICC_D2B_SLOT_COUNT];
     sixel_icc_lut_t b2d_lut[SIXEL_ICC_B2D_SLOT_COUNT];
     sixel_icc_mab_pipeline_t b2d_mab[SIXEL_ICC_B2D_SLOT_COUNT];
+    sixel_icc_mpet_t b2d_mpet[SIXEL_ICC_B2D_SLOT_COUNT];
 } sixel_icc_profile_t;
 
 SIXEL_INTERNAL_API int

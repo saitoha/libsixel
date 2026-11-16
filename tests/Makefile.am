@@ -2359,6 +2359,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0032_RESOURCE_TAG_LIMIT \
     -DBUILD_TEST_0033_RESOURCE_ALLOC_BOUNDARY \
     -DBUILD_TEST_0034_RESOURCE_ALLOC_RECOVERY \
+    -DBUILD_TEST_0035_MPET_SHARED_ORDER \
+    -DBUILD_TEST_0036_MPET_INVALID_POSITIONS \
+    -DBUILD_TEST_0037_MPET_CHANNEL_CONNECTIONS \
+    -DBUILD_TEST_0038_MPET_UNKNOWN_FALLBACK \
+    -DBUILD_TEST_0039_MPET_NO_EXECUTABLE_PATH \
+    -DBUILD_TEST_0040_MPET_ELEMENT_BOUNDARY \
+    -DBUILD_TEST_0041_MPET_ELEMENT_LIMIT \
+    -DBUILD_TEST_0042_MPET_ELEMENT_KINDS \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
     -DBUILD_TEST_0005_EXTENDED_SRGB_ENCODE \
@@ -7664,6 +7672,14 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0032_resource_tag_limit.c \
     color/icc/0033_resource_alloc_boundary.c \
     color/icc/0034_resource_alloc_recovery.c \
+    color/icc/0035_mpet_shared_order.c \
+    color/icc/0036_mpet_invalid_positions.c \
+    color/icc/0037_mpet_channel_connections.c \
+    color/icc/0038_mpet_unknown_fallback.c \
+    color/icc/0039_mpet_no_executable_path.c \
+    color/icc/0040_mpet_element_boundary.c \
+    color/icc/0041_mpet_element_limit.c \
+    color/icc/0042_mpet_element_kinds.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
     color/space/0004_extended_srgb_decode.c \
