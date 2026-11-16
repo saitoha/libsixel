@@ -403,6 +403,9 @@ int test_icc_0044(int argc, char **argv);
 int test_icc_0045(int argc, char **argv);
 int test_icc_0046(int argc, char **argv);
 int test_icc_0047(int argc, char **argv);
+int test_icc_0048(int argc, char **argv);
+int test_icc_0049(int argc, char **argv);
+int test_icc_0050(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10139,6 +10142,9 @@ static test_entry_t const test_entries[] = {
     { "icc/0045_mpet_curve_structure", test_icc_0045 },
     { "icc/0046_mpet_curve_unsupported", test_icc_0046 },
     { "icc/0047_mpet_curve_evaluation_failure", test_icc_0047 },
+    { "icc/0048_absolute_equal_white", test_icc_0048 },
+    { "icc/0049_absolute_after_missing_relative", test_icc_0049 },
+    { "icc/0050_absolute_unpaired", test_icc_0050 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

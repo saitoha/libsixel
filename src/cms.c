@@ -596,15 +596,12 @@ sixel_cms_build_builtin_a2b_order(unsigned int slots[SIXEL_ICC_A2B_SLOT_COUNT],
     slot = 0u;
     exists = 0;
     j = 0u;
-    if (slots == NULL) {
-        return 0u;
-    }
-
     for (i = 0u; i < intent_count; ++i) {
-        slot = sixel_cms_intent_to_a2b_slot(intents[i]);
-        if (slot >= SIXEL_ICC_A2B_SLOT_COUNT) {
+        /* Absolute needs both endpoints and is selected separately. */
+        if (intents[i] == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
             continue;
         }
+        slot = sixel_cms_intent_to_a2b_slot(intents[i]);
         exists = 0;
         for (j = 0u; j < slot_count; ++j) {
             if (slots[j] == slot) {
@@ -615,13 +612,6 @@ sixel_cms_build_builtin_a2b_order(unsigned int slots[SIXEL_ICC_A2B_SLOT_COUNT],
         if (!exists && slot_count < SIXEL_ICC_A2B_SLOT_COUNT) {
             slots[slot_count++] = slot;
         }
-    }
-
-    if (slot_count == 0u) {
-        slots[0u] = 0u;
-        slots[1u] = 1u;
-        slots[2u] = 2u;
-        return SIXEL_ICC_A2B_SLOT_COUNT;
     }
 
     return slot_count;
@@ -662,17 +652,8 @@ sixel_cms_has_slot(sixel_icc_profile_t const *profile, unsigned int slot,
 }
 
 static int
-sixel_cms_has_absolute_endpoint(sixel_cms_profile_t const *profile,
-                                 int reverse)
+sixel_cms_has_matrix_trc(sixel_icc_profile_t const *icc)
 {
-    sixel_icc_profile_t const *icc;
-
-    icc = &profile->builtin_profile;
-    if (profile->rgb_definition != NULL || profile->is_cielab_d50_profile ||
-        sixel_cms_has_slot(icc, 1u, reverse) ||
-        sixel_cms_has_slot(icc, 0u, reverse)) {
-        return 1;
-    }
     return icc->curves[0].kind != SIXEL_ICC_CURVE_INVALID &&
         (icc->kind == SIXEL_ICC_PROFILE_KIND_GRAY ||
          (icc->kind == SIXEL_ICC_PROFILE_KIND_RGB &&
@@ -680,29 +661,61 @@ sixel_cms_has_absolute_endpoint(sixel_cms_profile_t const *profile,
           icc->curves[2].kind != SIXEL_ICC_CURVE_INVALID));
 }
 
+static int
+sixel_cms_has_absolute_endpoint(sixel_cms_profile_t const *profile,
+                                 int reverse)
+{
+    sixel_icc_profile_t const *icc;
+
+    icc = &profile->builtin_profile;
+    return profile->rgb_definition != NULL || profile->is_cielab_d50_profile ||
+        sixel_cms_has_slot(icc, 1u, reverse) ||
+        sixel_cms_has_slot(icc, 0u, reverse) || sixel_cms_has_matrix_trc(icc);
+}
+
+static int
+sixel_cms_has_prior_intent(sixel_cms_transform_t const *transform, int intent)
+{
+    sixel_cms_profile_t const *source;
+    sixel_cms_profile_t const *target;
+    unsigned int slot;
+    int source_lut;
+    int target_lut;
+
+    source = transform->src_profile;
+    target = transform->dst_profile;
+    slot = sixel_cms_intent_to_a2b_slot(intent);
+    source_lut = sixel_cms_has_slot(&source->builtin_profile, slot, 0);
+    target_lut = sixel_cms_has_slot(&target->builtin_profile, slot, 1);
+
+    /* Relative can use the analytic path alone. Other preceding intents
+     * need an intent-specific LUT, with analytic fallback at either end. */
+    if (intent != SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC &&
+        !source_lut && !target_lut) {
+        return 0;
+    }
+    return (source_lut || source->rgb_definition != NULL ||
+            source->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB ||
+            sixel_cms_has_matrix_trc(&source->builtin_profile)) &&
+        (target_lut || target->is_srgb_profile ||
+         (target->rgb_definition != NULL &&
+          transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) ||
+         target->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB);
+}
+
 static void
 sixel_cms_builtin_select_absolute(sixel_cms_transform_t *transform,
                                   int const intents[4], size_t count)
 {
-    sixel_icc_profile_t const *source;
-    sixel_icc_profile_t const *destination;
     double const *src_white;
     double const *dst_white;
-    unsigned int slot;
     size_t i;
 
-    source = &transform->src_profile->builtin_profile;
-    destination = &transform->dst_profile->builtin_profile;
     for (i = 0u; i < count; ++i) {
         if (intents[i] == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
             break;
         }
-        /* Keep earlier usable legacy slots, and the relative preference
-         * when it precedes absolute even on matrix/TRC-only profiles. */
-        slot = sixel_cms_intent_to_a2b_slot(intents[i]);
-        if (intents[i] == SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC ||
-            sixel_cms_has_slot(source, slot, 0) ||
-            sixel_cms_has_slot(destination, slot, 1)) {
+        if (sixel_cms_has_prior_intent(transform, intents[i])) {
             return;
         }
     }
@@ -714,18 +727,17 @@ sixel_cms_builtin_select_absolute(sixel_cms_transform_t *transform,
         return;
     }
 
-    src_white = sixel_cms_media_white(source);
-    dst_white = sixel_cms_media_white(destination);
+    /* Selecting absolute sets its slot order even when the ratio is one. */
+    transform->builtin_absolute = 1;
+    transform->builtin_a2b_slots[0] = 1u;
+    transform->builtin_a2b_slots[1] = 0u;
+    transform->builtin_a2b_slot_count = 2u;
+    src_white = sixel_cms_media_white(&transform->src_profile->builtin_profile);
+    dst_white = sixel_cms_media_white(&transform->dst_profile->builtin_profile);
     for (i = 0u; i < 3u; ++i) {
         /* The PCS illuminant cancels when connecting the two profiles.
          * The LUTs and colorants already include chromatic adaptation. */
         transform->builtin_media_scale[i] = src_white[i] / dst_white[i];
-        transform->builtin_absolute |= src_white[i] != dst_white[i];
-    }
-    if (transform->builtin_absolute) {
-        transform->builtin_a2b_slots[0] = 1u;
-        transform->builtin_a2b_slots[1] = 0u;
-        transform->builtin_a2b_slot_count = 2u;
     }
 }
 
@@ -4105,6 +4117,9 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
     if (transform->builtin_absolute) {
         return sixel_cms_do_builtin_absolute(transform, src, dst,
                                              pixel_count, status);
+    }
+    if (transform->builtin_a2b_slot_count == 0u) {
+        return 0;
     }
     if (dst_profile->rgb_definition != NULL &&
         transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {

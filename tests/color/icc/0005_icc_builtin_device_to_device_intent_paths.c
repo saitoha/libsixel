@@ -1056,9 +1056,11 @@ run_device_to_device_intent_cases(void)
         goto fail;
     }
 
+    /* Absolute can use slot 0 on both sides even with the same media
+     * white. That complete path takes precedence over saturation. */
     if (test_setenv("SIXEL_CMS_RENDERING_INTENT",
                     "absolute,saturation!") != 0 ||
-        !check_transform_rgb8(src, dst, input, 2u)) {
+        !check_transform_rgb8(src, dst, input, 0u)) {
         goto fail;
     }
 

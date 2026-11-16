@@ -1220,12 +1220,35 @@ iccn_absolute_lut_profile(unsigned char bytes[312],
     }
 }
 
+static int
+iccn_check_absolute_luts(unsigned char const *src_bytes, size_t src_length,
+                         unsigned char const *dst_bytes, size_t dst_length,
+                         double const expected[2][3],
+                         char const *const intents[2])
+{
+    static float const input[] = {0.5f, 0.375f, 0.25f};
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *destination;
+    sixel_cms_engine_t previous;
+    int result;
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(src_bytes, src_length);
+    destination = sixel_cms_open_profile_from_mem(dst_bytes, dst_length);
+    result = iccn_check_absolute_pair(source, destination, input, expected,
+                                      intents);
+    sixel_cms_close_profile(destination);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return result;
+}
+
 int
 icc_numeric_absolute_lut_test(int fallback)
 {
     static unsigned int const src_white[] = {49152u, 57344u, 65536u};
     static unsigned int const dst_white[] = {65536u, 49152u, 32768u};
-    static float const input[] = {0.5f, 0.375f, 0.25f};
     /* Both tables are identity. The XYZ encoding factors cancel, leaving
      * exactly the media ratio (3/4, 7/6, 2) for absolute. */
     static double const expected[2][3] = {
@@ -1239,27 +1262,87 @@ icc_numeric_absolute_lut_test(int fallback)
     };
     unsigned char src_bytes[312];
     unsigned char dst_bytes[312];
-    sixel_cms_profile_t *source;
-    sixel_cms_profile_t *destination;
-    sixel_cms_engine_t previous;
     unsigned char slot;
-    int result;
 
     /* Saturation-only profiles cannot supply the colorimetric basis. */
     slot = fallback ? '2' : '1';
     iccn_absolute_lut_profile(src_bytes, src_white, slot);
     iccn_absolute_lut_profile(dst_bytes, dst_white, slot);
-    previous = sixel_cms_get_engine();
-    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
-    source = sixel_cms_open_profile_from_mem(src_bytes, sizeof(src_bytes));
-    destination = sixel_cms_open_profile_from_mem(dst_bytes, sizeof(dst_bytes));
-    result = iccn_check_absolute_pair(source, destination, input,
+    return iccn_check_absolute_luts(src_bytes, sizeof(src_bytes),
+        dst_bytes, sizeof(dst_bytes),
         fallback ? expected_fallback : expected,
         fallback ? fallback_intents : iccn_absolute_intents);
-    sixel_cms_close_profile(destination);
-    sixel_cms_close_profile(source);
-    sixel_cms_set_engine(previous);
-    return result;
+}
+
+int
+icc_numeric_absolute_equal_white_test(void)
+{
+    static unsigned int const white[] = {49152u, 57344u, 65536u};
+    static double const expected[2][3] = {
+        {0.5, 0.375, 0.25}, {0.5, 0.375, 0.25}
+    };
+    static char const *const intents[] = {"perceptual!", "absolute!"};
+    unsigned char bytes[312];
+
+    /* With equal media whites, the only LUT pair is an identity. */
+    iccn_absolute_lut_profile(bytes, white, '0');
+    return iccn_check_absolute_luts(bytes, sizeof(bytes), bytes, sizeof(bytes),
+                                    expected, intents);
+}
+
+int
+icc_numeric_absolute_after_missing_relative_test(void)
+{
+    static unsigned int const src_white[] = {49152u, 57344u, 65536u};
+    static unsigned int const dst_white[] = {65536u, 49152u, 32768u};
+    static double const expected[2][3] = {
+        {0.375, 0.4375, 0.5}, {0.375, 0.4375, 0.5}
+    };
+    static char const *const intents[] = {"absolute!", "relative,absolute!"};
+    unsigned char src_bytes[312];
+    unsigned char dst_bytes[312];
+
+    /* Neither endpoint has a slot 1. Absolute uses slot 0 on both sides
+     * with the independently calculated media ratio (3/4, 7/6, 2). */
+    iccn_absolute_lut_profile(src_bytes, src_white, '0');
+    iccn_absolute_lut_profile(dst_bytes, dst_white, '0');
+    return iccn_check_absolute_luts(src_bytes, sizeof(src_bytes),
+                                    dst_bytes, sizeof(dst_bytes),
+                                    expected, intents);
+}
+
+int
+icc_numeric_absolute_unpaired_test(void)
+{
+    static unsigned int const src_white[] = {49152u, 57344u, 65536u};
+    static unsigned int const dst_white[] = {65536u, 49152u, 32768u};
+    static double const expected[2][3] = {
+        {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}
+    };
+    static char const *const intents[] = {
+        "saturation!", "absolute,saturation!"
+    };
+    unsigned char src_bytes[448];
+    unsigned char dst_bytes[312];
+
+    iccn_absolute_lut_profile(src_bytes, src_white, '1');
+    iccn_absolute_lut_profile(dst_bytes, dst_white, '2');
+    /* Add A2B2 with an all-zero CLUT beside the identity A2B1. The
+     * destination has only B2A2, so a complete saturation pair gives zero. */
+    memmove(src_bytes + 180u, src_bytes + 168u, 144u);
+    iccn_be32(src_bytes, sizeof(src_bytes));
+    iccn_be32(src_bytes + 128u, 4u);
+    iccn_be32(src_bytes + 136u, 180u);
+    iccn_be32(src_bytes + 148u, 180u);
+    iccn_be32(src_bytes + 160u, 304u);
+    memcpy(src_bytes + 168u, "A2B2", 4u);
+    iccn_be32(src_bytes + 172u, 324u);
+    iccn_be32(src_bytes + 176u, 124u);
+    memcpy(src_bytes + 324u, src_bytes + 180u, 124u);
+    memset(src_bytes + 388u, 0, 48u);
+    return iccn_check_absolute_luts(src_bytes, sizeof(src_bytes),
+                                    dst_bytes, sizeof(dst_bytes),
+                                    expected, intents);
 }
 
 int
