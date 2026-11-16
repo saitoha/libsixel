@@ -294,7 +294,7 @@ The builtin parser and evaluator are in [`icc-parse.c`](../../../src/icc-parse.c
 | Profile connection space (PCS) | XYZ or Lab. The conversion code connects through D50 XYZ and the project's sRGB basis. | Little CMS owns profile connection and intent processing. |
 | Curves | `curv`, `para` function types 0–4, and the implemented `segm` subset. | Little CMS parses and evaluates its supported curve representations. |
 | LUT payloads | `mft1`, `mft2`, and implemented `mAB`/`mBA` curve, matrix, and CLUT stages. Forward A2B and reverse B2A slots 0–2 are represented. | Little CMS handles its supported ICC pipelines and optimization. |
-| D2B/B2D | Looks up slots 0–2 but only parses the same supported LUT payloads. This is not general ICC floating-point multi-process-element support. | Broader ICC pipeline support depends on the linked Little CMS version and transform compatibility. |
+| D2B/B2D | Parses standard `mpet` element lists in slots 0–2 and has a standalone `cvst` curve-set evaluator. Profile conversion uses the supported legacy LUT payloads. | Broader ICC pipeline support depends on the linked Little CMS version and transform compatibility. |
 | Dependency | In-tree implementation with no external CMS library dependency. This says nothing about the selected image decoder's dependencies. | Requires a build linked with lcms2. |
 
 Builtin CMS is therefore more capable than a gamma-only correction or an RGB matrix-only converter. Conversely, accepting some LUT profiles does not make it a full ICC implementation.
@@ -302,8 +302,8 @@ Builtin CMS is therefore more capable than a gamma-only correction or an RGB mat
 ## Cases builtin does not fully support
 
 - **Other input color models:** the profile parser dispatches RGB, GRAY, CMYK, and Lab. XYZ as a device input, CMY, YCbCr, and multicolor input signatures such as five- or six-ink profiles are outside that dispatch. XYZ as a PCS is supported and is a different role.
-- **Arbitrary multi-process elements:** there is no `mpet` payload parser. A D2B tag name alone does not establish support for a standard floating-point processing pipeline. D2B3/B2D3 are not in the slot inventory. A profile requiring those paths needs another supported path or cannot be applied by builtin.
-- **Unimplemented curves or stages:** parametric function types outside 0–4 and payloads outside the implemented curve/LUT grammar cannot be evaluated merely because the enclosing file is ICC. A usable alternate path can still be selected.
+- **Multi-process pipeline execution:** builtin can parse `mpet` and evaluate `cvst` elements separately. Floating-point matrix and CLUT evaluation, complete pipeline execution, and D2B3/B2D3 routing remain outside the current conversion path. Profiles with these tags need an executable legacy or analytic path for builtin conversion.
+- **Unimplemented curves or stages:** `para` function types outside 0–4 and payloads outside the implemented curve/LUT grammar require a supported alternate path.
 - **Full device-link, named-color, spectral, or iccMAX workflows:** the builtin API is not a general implementation of these workflows. Nor does selecting lcms2 expose all of them through `img2sixel`; the loader wrapper has a fixed set of pixel formats and targets.
 - **Unbounded scene-referred ICC processing:** ICC device curves and CLUT stages retain their bounded domains. The builtin facade preserves extended values when its float destination is analytic sRGB or a synthetic RGB definition; this does not make arbitrary ICC pipelines unbounded. HDR metadata interpretation and tone mapping remain loader-specific.
 

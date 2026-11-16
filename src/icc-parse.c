@@ -2477,6 +2477,8 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
     size_t wtpt_length;
     size_t ktrc_offset;
     size_t ktrc_length;
+    size_t slot_offset;
+    size_t slot_length;
     double rxyz[3];
     double gxyz[3];
     double bxyz[3];
@@ -2570,6 +2572,16 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
             *out_issue = SIXEL_ICC_ISSUE_UNSUPPORTED;
         }
         return 0;
+    }
+
+    /* Dedicated absolute-intent slots remain unavailable even when
+     * another path makes the overall profile usable. */
+    if (out_issue != NULL &&
+        (sixel_icc_find_tag(profile_data, profile_size, "D2B3",
+                            &slot_offset, &slot_length, issue) ||
+         sixel_icc_find_tag(profile_data, profile_size, "B2D3",
+                            &slot_offset, &slot_length, issue))) {
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
     }
 
     if (memcmp(color_space, "RGB ", 4u) == 0) {
@@ -2906,15 +2918,6 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
 
 fail:
     if (out_issue != NULL) {
-        /* Slot 3 is reported by the trace audit even when the parser
-         * cannot construct a profile. Retain that classification here. */
-        if (local_issue < SIXEL_ICC_ISSUE_UNSUPPORTED &&
-            (sixel_icc_find_tag(profile_data, profile_size, "D2B3",
-                                &wtpt_offset, &wtpt_length, issue) ||
-             sixel_icc_find_tag(profile_data, profile_size, "B2D3",
-                                &wtpt_offset, &wtpt_length, issue))) {
-            sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
-        }
         *out_issue = local_issue == SIXEL_ICC_ISSUE_NONE
             ? SIXEL_ICC_ISSUE_NO_PATH : local_issue;
     }

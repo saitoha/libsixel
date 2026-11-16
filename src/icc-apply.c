@@ -81,6 +81,56 @@ sixel_icc_encode_srgb_unit(double linear_value)
 }
 
 static double
+sixel_icc_mpe_log_power(double const p[5], double x)
+{
+    static double const ln10 = 2.30258509299404568402;
+    double power;
+    double term;
+    double log_term;
+    double log_bias;
+    double larger;
+    double smaller;
+    int negative;
+
+    power = pow(x, p[0]);
+    if (isnan(power) || (x == 0.0 && p[0] < 0.0)) {
+        return NAN;
+    }
+    if (p[2] == 0.0 || (x == 0.0 && p[0] > 0.0)) {
+        return log10(p[3]);
+    }
+    term = p[2] * power;
+    if (isnormal(power) && isnormal(term)) {
+        return log10(term + p[3]);
+    }
+
+    /* Evaluate the signed sum in log space when the power or product
+     * exceeds double's range or loses precision in the subnormal range. */
+    log_term = log(fabs(p[2])) + p[0] * log(fabs(x));
+    negative = (signbit(power) != 0) != (p[2] < 0.0);
+    if (p[3] == 0.0) {
+        return negative ? NAN : log_term / ln10;
+    }
+    if (negative && p[3] < 0.0) {
+        return NAN;
+    }
+    log_bias = log(fabs(p[3]));
+    if (!negative && p[3] > 0.0) {
+        larger = fmax(log_term, log_bias);
+        smaller = fmin(log_term, log_bias);
+        return (larger + log1p(exp(smaller - larger))) / ln10;
+    }
+    /* For opposite signs, the positive operand must have greater
+     * magnitude. expm1 preserves the difference near cancellation. */
+    larger = negative ? log_bias : log_term;
+    smaller = negative ? log_term : log_bias;
+    if (larger <= smaller) {
+        return NAN;
+    }
+    return (larger + log(-expm1(smaller - larger))) / ln10;
+}
+
+static double
 sixel_icc_mpe_formula(sixel_icc_mpe_segment_t const *segment, double x)
 {
     double const *p;
@@ -90,7 +140,7 @@ sixel_icc_mpe_formula(sixel_icc_mpe_segment_t const *segment, double x)
     case 0u:
         return pow(p[1] * x + p[2], p[0]) + p[3];
     case 1u:
-        return p[1] * log10(p[2] * pow(x, p[0]) + p[3]) + p[4];
+        return p[1] * sixel_icc_mpe_log_power(p, x) + p[4];
     default:
         return p[0] * pow(p[1], p[2] * x + p[3]) + p[4];
     }
@@ -100,17 +150,28 @@ static double
 sixel_icc_mpe_sample(sixel_icc_mpe_segment_t const *segment,
                       sixel_icc_mpe_segment_t const *previous, double x)
 {
+    double lower_distance;
+    double upper_distance;
     double position;
+    double fraction;
     double left;
     double right;
     size_t index;
+    int from_upper;
 
-    position = ((x - previous->end) / (segment->end - previous->end))
-        * (double)segment->sample_count;
-    if (position >= (double)segment->sample_count) {
-        return segment->samples[segment->sample_count - 1u];
-    }
+    /* Count from the closer end so rounding the full span cannot erase
+     * the distance to a nearby breakpoint. Keep that direction for the
+     * interpolation as well, including a value exactly on a grid point. */
+    lower_distance = x - previous->end;
+    upper_distance = segment->end - x;
+    from_upper = upper_distance < lower_distance;
+    position = (from_upper ? upper_distance : lower_distance) /
+        (segment->end - previous->end) * (double)segment->sample_count;
     index = (size_t)position;
+    fraction = position - (double)index;
+    if (from_upper) {
+        index = segment->sample_count - 1u - index;
+    }
     /* The sample at the lower breakpoint is implicit. The preceding
      * segment supplies it, including when that segment is also sampled. */
     if (index == 0u) {
@@ -124,7 +185,8 @@ sixel_icc_mpe_sample(sixel_icc_mpe_segment_t const *segment,
         left = segment->samples[index - 1u];
     }
     right = segment->samples[index];
-    return left + (right - left) * (position - (double)index);
+    return from_upper ? right + (left - right) * fraction
+                      : left + (right - left) * fraction;
 }
 
 int

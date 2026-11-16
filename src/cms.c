@@ -4140,12 +4140,14 @@ sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
 #if SIXEL_CMS_HAVE_COLORSYNC
 static int
 sixel_cms_colorsync_source_matches(
-    sixel_cms_transform_t const *transform, size_t channels)
+    sixel_cms_transform_t const *transform, size_t channels,
+    sixel_cms_status_t *status)
 {
     /* A scratch row must contain exactly the colorants consumed by the
      * native ICC transform. Otherwise ColorSync can read unfilled scratch
      * components despite reporting success. Reject before any write. */
     if (transform->native_src_channels != channels) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         loader_trace_message("LSXCMS2|event=reject|engine=colorsync|"
             "reason=native-source-channels|src=%d|dst=%d|"
             "native=%lu|expected=%lu", transform->src_format,
@@ -4160,7 +4162,7 @@ sixel_cms_colorsync_source_matches(
 static int
 sixel_cms_colorsync_promote_source(
     sixel_cms_transform_t const *transform,
-    void const *src, void *dst, size_t count)
+    void const *src, void *dst, size_t count, sixel_cms_status_t *status)
 {
     float input[256u * 4u];
     unsigned char const *source8;
@@ -4189,7 +4191,7 @@ sixel_cms_colorsync_promote_source(
     }
     if (!sixel_cms_colorsync_source_matches(transform,
             channels - (transform->src_format
-                        == SIXEL_CMS_PIXELFORMAT_RGBA_8 ? 1u : 0u))) {
+                        == SIXEL_CMS_PIXELFORMAT_RGBA_8 ? 1u : 0u), status)) {
         return 0;
     }
     source8 = (unsigned char const *)src;
@@ -4230,7 +4232,8 @@ sixel_cms_colorsync_promote_source(
 
 static int
 sixel_cms_colorsync_lab_units(sixel_cms_transform_t const *transform,
-                              void const *src, void *dst, size_t count)
+                              void const *src, void *dst, size_t count,
+                              sixel_cms_status_t *status)
 {
     float input[256u * 3u];
     float const *source;
@@ -4246,7 +4249,7 @@ sixel_cms_colorsync_lab_units(sixel_cms_transform_t const *transform,
      * LUT encoding with an offset of 128. For a matching native source
      * layout, change only these input units; preserve native value
      * handling and extended RGB output. */
-    if (!sixel_cms_colorsync_source_matches(transform, 3u)) {
+    if (!sixel_cms_colorsync_source_matches(transform, 3u, status)) {
         return 0;
     }
     source = src;
@@ -4446,7 +4449,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
             transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
             return sixel_cms_colorsync_lab_units(transform, src, dst,
-                                                  pixel_count);
+                                                  pixel_count, status);
         }
 
         if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
@@ -4456,7 +4459,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
              transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_8 ||
              transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_16)) {
             return sixel_cms_colorsync_promote_source(transform, src, dst,
-                                                       pixel_count);
+                                                       pixel_count, status);
         }
 
         copy_alpha = ((transform->flags & SIXEL_CMS_TRANSFORM_COPY_ALPHA) != 0 &&

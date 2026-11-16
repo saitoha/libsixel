@@ -768,6 +768,110 @@ icc_mpet_curve_evaluation_failure_test(void)
 }
 
 int
+icc_mpet_curve_log_range_test(void)
+{
+    static unsigned int const overflow[] = {
+        0x447a0000u, 0x3f800000u, 0x3f800000u, 0x3f800000u, 0u
+    };
+    static unsigned int const underflow[] = {
+        0x447a0000u, 0x3f800000u, 0x3f800000u, 0u, 0u
+    };
+    static double const input[] = {-0.75, 3.0, 0.25};
+    /* log10(3^1000 + 1) and 1000 * log10(1/4). Neither power fits
+     * in double, but both logarithms are representable. */
+    static double const expected[] = {-0.5, 477.12125471966244,
+                                     -602.0599913279624};
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    unsigned char *curve;
+    sixel_icc_profile_t profile;
+    double output[3];
+    size_t length;
+    size_t i;
+    int ok;
+
+    length = iccn_make_mpet_formulas(bytes);
+    curve = bytes + ICCN_CVST_OFFSET;
+    iccn_mpe_write_formula(curve + 248u + 48u, 1u, overflow);
+    curve += 36u;
+    iccn_be32(curve + 12u, 0x3e000000u);
+    iccn_be32(curve + 16u, 0x3f800000u);
+    iccn_mpe_write_formula(curve + 48u, 1u, underflow);
+    if (!sixel_icc_parse_profile(bytes, length, &profile)) {
+        return EXIT_FAILURE;
+    }
+    ok = sixel_icc_apply_mpe_curves(output, input, 3u, &profile.d2b_mpet[0],
+                                    0u);
+    if (ok) {
+        for (i = 0u; i < 3u; ++i) {
+            ok &= fabs(output[i] - expected[i]) <= 1e-12;
+        }
+    }
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_mpet_curve_sample_endpoint_test(void)
+{
+    static double const input[] = {0.0, -0.5, 1.0};
+    /* y = 2^100 * (1 - x) / (2^100 + 1). The denominator rounds to
+     * 2^100 at double precision, giving the reference values below. */
+    static double const expected[] = {1.0, 1.5, 0.0};
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    unsigned char *curve;
+    sixel_icc_profile_t profile;
+    double output[3];
+    size_t length;
+    size_t i;
+    int ok;
+
+    length = iccn_make_mpet_samples(bytes);
+    curve = bytes + ICCN_CURF_OFFSET;
+    /* Sampled interval (-2^100, 1], with y=2^100 supplied by the
+     * preceding -x formula, then samples 2^99 and 0. */
+    iccn_be32(curve + 12u, 0xf1800000u);
+    iccn_be32(curve + 44u, 0xbf800000u);
+    iccn_be32(curve + 68u, 0x71000000u);
+    iccn_be32(curve + 72u, 0u);
+    if (!sixel_icc_parse_profile(bytes, length, &profile)) {
+        return EXIT_FAILURE;
+    }
+    ok = sixel_icc_apply_mpe_curves(output, input, 3u, &profile.d2b_mpet[0],
+                                    0u);
+    if (ok) {
+        for (i = 0u; i < 3u; ++i) {
+            ok &= fabs(output[i] - expected[i]) <= 1e-14;
+        }
+    }
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_slot3_status_test(void)
+{
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    sixel_cms_profile_t *profile;
+    sixel_cms_profile_result_t report;
+    sixel_cms_engine_t previous;
+    size_t length;
+    int ok;
+
+    length = iccn_make_mpet_profile(bytes, 4u);
+    memcpy(bytes + 156u, "D2B3", 4u);
+    memcpy(bytes + 168u, "B2D3", 4u);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    profile = sixel_cms_open_profile_from_mem_ex(bytes, length, &report);
+    ok = profile != NULL && report.status == SIXEL_CMS_STATUS_OK &&
+        report.actual_engine == SIXEL_CMS_ENGINE_BUILTIN &&
+        report.skipped_path == SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE;
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 icc_numeric_tag_budget_test(int over_limit)
 {
     unsigned char bytes[132u + 257u * 12u + 68u];
