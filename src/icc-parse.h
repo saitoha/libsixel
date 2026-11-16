@@ -175,6 +175,8 @@ typedef enum sixel_icc_profile_kind {
 typedef struct sixel_icc_profile {
     sixel_icc_profile_kind_t kind;
     sixel_icc_profile_pcs_t pcs;
+    /* Require an explicit PCS path for every evaluated intent. */
+    int lut_only;
     double matrix_to_xyz_d50[3][3];
     /* Media white in the PCS adopted-white basis, when usable. */
     double media_white_xyz[3];

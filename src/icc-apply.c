@@ -1653,7 +1653,7 @@ sixel_icc_apply_device_to_xyz(
     }
 
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_CMYK ||
-        !allow_matrix_trc_fallback) {
+        profile->lut_only || !allow_matrix_trc_fallback) {
         return 0;
     }
 
@@ -1750,7 +1750,7 @@ sixel_icc_apply_xyz_to_device(
     }
 
     if (profile->kind != SIXEL_ICC_PROFILE_KIND_LAB ||
-        has_b2a || has_b2d ||
+        profile->lut_only || has_b2a || has_b2d ||
         !sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
                                               xyz_d50,
                                               profile->pcs)) {
@@ -1875,7 +1875,7 @@ sixel_icc_apply_rgb_triplet_internal(double rgb[3],
             sixel_icc_apply_rgb_gray_triplet_lut(rgb, a2b_slot, profile)) {
             return 1;
         }
-        if (!allow_matrix_trc_fallback) {
+        if (!allow_matrix_trc_fallback || profile->lut_only) {
             return 0;
         }
     }

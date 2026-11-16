@@ -2156,3 +2156,134 @@ icc_mpet_missing_intent_test(void)
     (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+static int
+iccn_check_profile_header(unsigned char const *bytes, size_t length,
+                            sixel_cms_status_t expected)
+{
+    sixel_cms_profile_t *profile;
+    sixel_cms_profile_result_t report;
+    sixel_cms_engine_t previous;
+    sixel_cms_engine_t actual;
+    int open;
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    profile = sixel_cms_open_profile_from_mem_ex(bytes, length, &report);
+    actual = profile != NULL ? SIXEL_CMS_ENGINE_BUILTIN : SIXEL_CMS_ENGINE_NONE;
+    open = profile != NULL;
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    if (report.status != expected || open != (expected == SIXEL_CMS_STATUS_OK)
+        || report.actual_engine != actual) {
+        fprintf(stderr, "ICC header: expected status %d, got %d (open=%d)\n",
+                (int)expected, (int)report.status, open);
+        return 0;
+    }
+    return 1;
+}
+
+int
+icc_numeric_profile_header_test(int specimen)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static struct {
+        size_t offset;
+        char const *field;
+        sixel_cms_status_t status;
+        int matrix;
+    } const cases[] = {
+        { 8u, "\x02\x40\0\0", SIXEL_CMS_STATUS_OK, 0 },
+        { 8u, "\x05\x00\0\0", SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE, 0 },
+        { 8u, "\x04\xa0\0\0", SIXEL_CMS_STATUS_MALFORMED_PROFILE, 0 },
+        { 36u, "bad!", SIXEL_CMS_STATUS_MALFORMED_PROFILE, 0 },
+        { 12u, "link", SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE, 0 },
+        { 12u, "abst", SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE, 0 },
+        { 12u, "nmcl", SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE, 0 },
+        { 12u, "priv", SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE, 0 },
+        { 12u, "spac", SIXEL_CMS_STATUS_OK, 0 },
+        { 12u, "spac", SIXEL_CMS_STATUS_NO_PATH, 1 },
+        { 8u, "\x04\x30\0\x01", SIXEL_CMS_STATUS_MALFORMED_PROFILE, 0 }
+    };
+    unsigned char bytes[sizeof(color_icc) + 312u];
+    size_t length;
+
+    if (cases[specimen].matrix) {
+        length = sizeof(color_icc);
+        memcpy(bytes, color_icc, length);
+    } else {
+        length = 312u;
+        iccn_absolute_lut_profile(bytes, white, '0');
+    }
+    memcpy(bytes + cases[specimen].offset, cases[specimen].field, 4u);
+    return iccn_check_profile_header(bytes, length, cases[specimen].status)
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_profile_missing_header_test(void)
+{
+    static size_t const offsets[] = {8u, 12u, 36u};
+    unsigned char bytes[sizeof(color_icc)];
+    unsigned int fields;
+    size_t i;
+
+    /* Check every combination of the three historically absent fields. */
+    for (fields = 0u; fields < 8u; ++fields) {
+        memcpy(bytes, color_icc, sizeof(bytes));
+        for (i = 0u; i < 3u; ++i) {
+            if ((fields & (1u << i)) != 0u) {
+                memset(bytes + offsets[i], 0, 4u);
+            }
+        }
+        if (!iccn_check_profile_header(bytes, sizeof(bytes),
+                                        SIXEL_CMS_STATUS_OK)) {
+            fprintf(stderr, "Absent ICC fields mask %u\n", fields);
+            return EXIT_FAILURE;
+        }
+    }
+
+    /* An absent signature and version do not hide an explicit class. */
+    memcpy(bytes + 12u, "link", 4u);
+    return iccn_check_profile_header(bytes, sizeof(bytes),
+                                     SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE)
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_colorspace_lab_fallback_test(int legacy)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static double const xyz[] = {0.9642 / 8.0, 1.0 / 8.0, 0.8249 / 8.0};
+    static double const expected[] = {0.42, 128.0 / 255.0, 128.0 / 255.0};
+    unsigned char bytes[312];
+    sixel_icc_profile_t profile;
+    double result[3];
+    size_t i;
+    int applied;
+
+    iccn_absolute_lut_profile(bytes, white, '0');
+    memcpy(bytes + 12u, "spacLab Lab ", 12u);
+    if (legacy) {
+        bytes[8] = 2u;
+        bytes[9] = 0x20u;
+    }
+    if (!sixel_icc_parse_profile(bytes, sizeof(bytes), &profile)) {
+        return EXIT_FAILURE;
+    }
+    applied = sixel_icc_apply_physical_xyz_to_device(result, 3u, xyz,
+                                                     &profile, 1u);
+    sixel_icc_profile_destroy(&profile);
+    if (applied != legacy) {
+        return EXIT_FAILURE;
+    }
+    if (applied) {
+        /* The cube root of 1/8 gives neutral Lab at L*=42. */
+        for (i = 0u; i < 3u; ++i) {
+            if (!(fabs(result[i] - expected[i]) < 1e-12)) {
+                return EXIT_FAILURE;
+            }
+        }
+    }
+    return EXIT_SUCCESS;
+}

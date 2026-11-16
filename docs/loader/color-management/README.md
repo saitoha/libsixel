@@ -209,7 +209,7 @@ SIXEL_TRACE_TOPIC=loader img2sixel --cms-engine=builtin image.png > image.six
 
 Records use `LSXCMS1|engine=builtin`. `event=ignored-tag` includes `tag`, payload `type`, and a `reason`: `unsupported-pipeline-type`, `unsupported-intent-slot`, `tag-not-consumed`, or `invalid-tag-bounds`. Tag and type signatures use eight hexadecimal digits. D2B0 is `44324230` and mpet is `6d706574`. Descriptive `desc`, `cprt`, `dmnd`, and `dmdd` tags are omitted from this audit. `tag-not-consumed` means this parser does not read that tag; it does not assert that the tag is invalid or that ignoring it changes the image.
 
-A present transformation slot that cannot supply a conversion path emits `event=pipeline-rejected` with its tag. The reason is `unsupported-mpet-element` for an unsupported element or stage width, `unsupported-pipeline-type` for a non-mpet absolute D2B/B2D payload, or `invalid-or-unsupported-pipeline` for other parsing and channel validation errors. The parser may still accept another path. `event=profile-rejected` identifies an unsupported PCS, a resource limit, or the absence of a usable profile path. An invalid tag table emits `event=invalid-table`. These records describe the builtin parser. The apply event reports the subsequent CMS execution result.
+A present transformation slot that cannot supply a conversion path emits `event=pipeline-rejected` with its tag. The reason is `unsupported-mpet-element` for an unsupported element or stage width, `unsupported-pipeline-type` for a non-mpet absolute D2B/B2D payload, or `invalid-or-unsupported-pipeline` for other parsing and channel validation errors. The parser may still accept another path. `event=profile-rejected` identifies an invalid signature or version encoding, an unsupported version, class or PCS, a resource limit, or the absence of a usable profile path. An invalid tag table emits `event=invalid-table`. These records describe the builtin parser. The apply event reports the subsequent CMS execution result.
 
 The facade separately emits `LSXCMS2|event=apply` after a transform executes. Its `engine` comes from the transform backend, including profile-open fallback, rather than the requested global selector. `path=extended-rgb` identifies builtin analytic float RGB, `bounded-device` identifies the legacy builtin device path, and `external` identifies an external CMS call. `src` and `dst` are internal CMS pixel-format enum values; `ok=1` records apply success. This proves that invocation executed, not that later loader/frame stages preserved its output. With the loader topic disabled, the apply record is also silent.
 
@@ -285,7 +285,7 @@ The shared [PNG color metadata and ColorSync compatibility](../png-color-metadat
 
 ## Supported profile structures and practical differences
 
-The builtin parser and evaluator are in [`icc-parse.c`](../../../src/icc-parse.c) and [`icc-apply.c`](../../../src/icc-apply.c). Acceptance depends on the actual tags, channel counts, direction, and available conversion path; an ICC version number or a familiar profile name alone is insufficient.
+The builtin parser and evaluator are in [`icc-parse.c`](../../../src/icc-parse.c) and [`icc-apply.c`](../../../src/icc-apply.c). Acceptance depends on the [builtin ICC header and class rules](../builtin-cms.md#specification-model), the actual tags, channel counts, direction, and available conversion path.
 
 | Area | builtin CMS | lcms2 through libsixel |
 | --- | --- | --- |

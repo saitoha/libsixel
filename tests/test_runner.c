@@ -420,6 +420,20 @@ int test_icc_0061(int argc, char **argv);
 int test_icc_0062(int argc, char **argv);
 int test_icc_0063(int argc, char **argv);
 int test_icc_0064(int argc, char **argv);
+int test_icc_0065(int argc, char **argv);
+int test_icc_0066(int argc, char **argv);
+int test_icc_0067(int argc, char **argv);
+int test_icc_0068(int argc, char **argv);
+int test_icc_0069(int argc, char **argv);
+int test_icc_0070(int argc, char **argv);
+int test_icc_0071(int argc, char **argv);
+int test_icc_0072(int argc, char **argv);
+int test_icc_0073(int argc, char **argv);
+int test_icc_0074(int argc, char **argv);
+int test_icc_0075(int argc, char **argv);
+int test_icc_0076(int argc, char **argv);
+int test_icc_0077(int argc, char **argv);
+int test_icc_0078(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10173,6 +10187,20 @@ static test_entry_t const test_entries[] = {
     { "icc/0062_mpet_pcs_lab_forward", test_icc_0062 },
     { "icc/0063_mpet_pcs_lab_reverse", test_icc_0063 },
     { "icc/0064_mpet_missing_intent", test_icc_0064 },
+    { "icc/0065_profile_version_v2", test_icc_0065 },
+    { "icc/0066_profile_version_unsupported", test_icc_0066 },
+    { "icc/0067_profile_version_invalid_bcd", test_icc_0067 },
+    { "icc/0068_profile_signature_invalid", test_icc_0068 },
+    { "icc/0069_profile_class_device_link", test_icc_0069 },
+    { "icc/0070_profile_class_abstract", test_icc_0070 },
+    { "icc/0071_profile_class_named_color", test_icc_0071 },
+    { "icc/0072_profile_class_unknown", test_icc_0072 },
+    { "icc/0073_profile_class_colorspace_lut", test_icc_0073 },
+    { "icc/0074_profile_class_colorspace_matrix", test_icc_0074 },
+    { "icc/0075_profile_version_reserved", test_icc_0075 },
+    { "icc/0076_profile_header_missing_fields", test_icc_0076 },
+    { "icc/0077_profile_class_colorspace_no_analytic", test_icc_0077 },
+    { "icc/0078_profile_class_v2_lab_fallback", test_icc_0078 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

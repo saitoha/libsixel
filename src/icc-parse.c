@@ -484,6 +484,7 @@ sixel_icc_profile_destroy(sixel_icc_profile_t *profile)
 
     profile->kind = SIXEL_ICC_PROFILE_KIND_INVALID;
     profile->pcs = SIXEL_ICC_PROFILE_PCS_INVALID;
+    profile->lut_only = 0;
     memset(profile->matrix_to_xyz_d50, 0, sizeof(profile->matrix_to_xyz_d50));
     memset(profile->media_white_xyz, 0, sizeof(profile->media_white_xyz));
 }
@@ -2527,6 +2528,53 @@ sixel_icc_parse_b2d_slot(unsigned char const *profile_data,
         &parsed->b2d_lut[slot], &parsed->b2d_mab[slot], budget, issue);
 }
 
+/* Gate header fields that identify the transform model. Some embedded
+ * profiles omit these fields altogether. A zero field retains the legacy
+ * interpretation, while an explicit declaration still has to be usable. */
+static sixel_icc_issue_t
+sixel_icc_check_profile_header(unsigned char const *data, int *lut_only)
+{
+    unsigned char const *profile_class;
+    uint32_t version;
+    uint32_t signature;
+    unsigned int major;
+    unsigned int revision;
+    sixel_icc_issue_t issue;
+    char const *reason;
+
+    version = sixel_icc_read_be32(data + 8u);
+    profile_class = data + 12u;
+    signature = sixel_icc_read_be32(data + 36u);
+    major = data[8];
+    revision = data[9];
+    issue = SIXEL_ICC_ISSUE_MALFORMED;
+    if (signature != 0u && memcmp(data + 36u, "acsp", 4u) != 0) {
+        reason = "invalid-profile-signature";
+    } else if ((version & 0xffffu) != 0u ||
+               (major >> 4) > 9u || (major & 0x0fu) > 9u ||
+               (revision >> 4) > 9u || (revision & 0x0fu) > 9u) {
+        reason = "invalid-profile-version";
+    } else if (version != 0u && major != 2u && major != 4u) {
+        issue = SIXEL_ICC_ISSUE_UNSUPPORTED;
+        reason = "unsupported-profile-version";
+    } else if (memcmp(profile_class, "spac", 4u) == 0) {
+        *lut_only = 1;
+        return SIXEL_ICC_ISSUE_NONE;
+    } else if (sixel_icc_read_be32(profile_class) == 0u ||
+               memcmp(profile_class, "scnr", 4u) == 0 ||
+               memcmp(profile_class, "mntr", 4u) == 0 ||
+               memcmp(profile_class, "prtr", 4u) == 0) {
+        return SIXEL_ICC_ISSUE_NONE;
+    } else {
+        issue = SIXEL_ICC_ISSUE_UNSUPPORTED;
+        reason = "unsupported-profile-class";
+    }
+
+    loader_trace_message(
+        "LSXCMS1|engine=builtin|event=profile-rejected|reason=%s", reason);
+    return issue;
+}
+
 int
 sixel_icc_parse_profile_ex(void const *data, size_t length,
                             sixel_icc_profile_t *out_profile,
@@ -2610,6 +2658,15 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
     profile_data = (unsigned char const *)data;
     profile_size = (size_t)sixel_icc_read_be32(profile_data + 0u);
     if (profile_size < 132u || profile_size > length) {
+        return 0;
+    }
+
+    local_issue = sixel_icc_check_profile_header(profile_data,
+                                                 &parsed.lut_only);
+    if (local_issue != SIXEL_ICC_ISSUE_NONE) {
+        if (out_issue != NULL) {
+            *out_issue = local_issue;
+        }
         return 0;
     }
 
@@ -2740,7 +2797,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
             goto fail;
         }
 
-        if (!has_forward_slot) {
+        if (!has_forward_slot && !parsed.lut_only) {
             has_matrix_tags = sixel_icc_find_tag(profile_data,
                                                  profile_size,
                                                  "rXYZ",
@@ -2884,7 +2941,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
             goto fail;
         }
 
-        if (!has_forward_slot) {
+        if (!has_forward_slot && !parsed.lut_only) {
             has_matrix_tags = has_white_tag
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
@@ -2955,7 +3012,8 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
             goto fail;
         }
 
-        if (!has_forward_slot && !has_forward_mpet && !has_reverse_mpet) {
+        if (!parsed.lut_only && !has_forward_slot &&
+            !has_forward_mpet && !has_reverse_mpet) {
             goto fail;
         }
     } else if (parsed.kind == SIXEL_ICC_PROFILE_KIND_LAB) {
@@ -3003,10 +3061,21 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
         }
     }
 
-    if (budget.limit != NULL) {
+    /* A ColorSpace profile encodes an explicit mapping between its
+     * device-side encoding and PCS. Colorants and TRCs cannot supply it. */
+    if (budget.limit != NULL ||
+        (parsed.lut_only && !has_forward_slot && !has_reverse_slot &&
+         !has_forward_mpet && !has_reverse_mpet)) {
         goto fail;
     }
 accepted:
+    /* Embedded v2 Lab-to-Lab ColorSpace profiles with a usable LUT
+     * retain the D50 Lab fallback for other intents. */
+    if (parsed.lut_only && profile_data[8] == 2u &&
+        parsed.kind == SIXEL_ICC_PROFILE_KIND_LAB &&
+        parsed.pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
+        parsed.lut_only = 0;
+    }
     if (out_issue != NULL) {
         *out_issue = local_issue;
     }

@@ -2388,6 +2388,20 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0061_MPET_ABSOLUTE_FORWARD \
     -DBUILD_TEST_0063_MPET_PCS_LAB_REVERSE \
     -DBUILD_TEST_0064_MPET_MISSING_INTENT \
+    -DBUILD_TEST_0065_PROFILE_VERSION_V2 \
+    -DBUILD_TEST_0066_PROFILE_VERSION_UNSUPPORTED \
+    -DBUILD_TEST_0067_PROFILE_VERSION_INVALID_BCD \
+    -DBUILD_TEST_0068_PROFILE_SIGNATURE_INVALID \
+    -DBUILD_TEST_0069_PROFILE_CLASS_DEVICE_LINK \
+    -DBUILD_TEST_0070_PROFILE_CLASS_ABSTRACT \
+    -DBUILD_TEST_0071_PROFILE_CLASS_NAMED_COLOR \
+    -DBUILD_TEST_0072_PROFILE_CLASS_UNKNOWN \
+    -DBUILD_TEST_0073_PROFILE_CLASS_COLORSPACE_LUT \
+    -DBUILD_TEST_0074_PROFILE_CLASS_COLORSPACE_MATRIX \
+    -DBUILD_TEST_0075_PROFILE_VERSION_RESERVED \
+    -DBUILD_TEST_0076_PROFILE_HEADER_MISSING_FIELDS \
+    -DBUILD_TEST_0077_PROFILE_CLASS_COLORSPACE_NO_ANALYTIC \
+    -DBUILD_TEST_0078_PROFILE_CLASS_V2_LAB_FALLBACK \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7723,6 +7737,20 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0061_mpet_absolute_forward.c \
     color/icc/0063_mpet_pcs_lab_reverse.c \
     color/icc/0064_mpet_missing_intent.c \
+    color/icc/0065_profile_version_v2.c \
+    color/icc/0066_profile_version_unsupported.c \
+    color/icc/0067_profile_version_invalid_bcd.c \
+    color/icc/0068_profile_signature_invalid.c \
+    color/icc/0069_profile_class_device_link.c \
+    color/icc/0070_profile_class_abstract.c \
+    color/icc/0071_profile_class_named_color.c \
+    color/icc/0072_profile_class_unknown.c \
+    color/icc/0073_profile_class_colorspace_lut.c \
+    color/icc/0074_profile_class_colorspace_matrix.c \
+    color/icc/0075_profile_version_reserved.c \
+    color/icc/0076_profile_header_missing_fields.c \
+    color/icc/0077_profile_class_colorspace_no_analytic.c \
+    color/icc/0078_profile_class_v2_lab_fallback.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

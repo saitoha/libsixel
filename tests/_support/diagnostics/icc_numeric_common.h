@@ -38,4 +38,8 @@ int icc_mpet_absolute_test(int relative_endpoint);
 int icc_mpet_float_pcs_lab_test(int reverse);
 int icc_mpet_missing_intent_test(void);
 
+int icc_numeric_profile_header_test(int specimen);
+int icc_numeric_profile_missing_header_test(void);
+int icc_numeric_colorspace_lab_fallback_test(int legacy);
+
 #endif

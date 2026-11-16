@@ -2168,6 +2168,20 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/icc/0061_mpet_absolute_forward.c \
 	color/icc/0063_mpet_pcs_lab_reverse.c \
 	color/icc/0064_mpet_missing_intent.c \
+	color/icc/0065_profile_version_v2.c \
+	color/icc/0066_profile_version_unsupported.c \
+	color/icc/0067_profile_version_invalid_bcd.c \
+	color/icc/0068_profile_signature_invalid.c \
+	color/icc/0069_profile_class_device_link.c \
+	color/icc/0070_profile_class_abstract.c \
+	color/icc/0071_profile_class_named_color.c \
+	color/icc/0072_profile_class_unknown.c \
+	color/icc/0073_profile_class_colorspace_lut.c \
+	color/icc/0074_profile_class_colorspace_matrix.c \
+	color/icc/0075_profile_version_reserved.c \
+	color/icc/0076_profile_header_missing_fields.c \
+	color/icc/0077_profile_class_colorspace_no_analytic.c \
+	color/icc/0078_profile_class_v2_lab_fallback.c \
 	color/icc/0062_mpet_pcs_lab_forward.c \
 	_support/diagnostics/icc_numeric_common.c \
 	_support/diagnostics/icc_numeric_common.h \
@@ -7689,6 +7703,20 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0061_mpet_absolute_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0063_mpet_pcs_lab_reverse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0064_mpet_missing_intent.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0065_profile_version_v2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0066_profile_version_unsupported.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0067_profile_version_invalid_bcd.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0068_profile_signature_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0069_profile_class_device_link.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0070_profile_class_abstract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0071_profile_class_named_color.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0072_profile_class_unknown.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0073_profile_class_colorspace_lut.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0074_profile_class_colorspace_matrix.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0075_profile_version_reserved.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0076_profile_header_missing_fields.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0077_profile_class_colorspace_no_analytic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0078_profile_class_v2_lab_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0062_mpet_pcs_lab_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
@@ -12043,6 +12071,20 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/icc/$(DEPDIR)/test_runner-0062_mpet_pcs_lab_forward.Po \
 	color/icc/$(DEPDIR)/test_runner-0063_mpet_pcs_lab_reverse.Po \
 	color/icc/$(DEPDIR)/test_runner-0064_mpet_missing_intent.Po \
+	color/icc/$(DEPDIR)/test_runner-0065_profile_version_v2.Po \
+	color/icc/$(DEPDIR)/test_runner-0066_profile_version_unsupported.Po \
+	color/icc/$(DEPDIR)/test_runner-0067_profile_version_invalid_bcd.Po \
+	color/icc/$(DEPDIR)/test_runner-0068_profile_signature_invalid.Po \
+	color/icc/$(DEPDIR)/test_runner-0069_profile_class_device_link.Po \
+	color/icc/$(DEPDIR)/test_runner-0070_profile_class_abstract.Po \
+	color/icc/$(DEPDIR)/test_runner-0071_profile_class_named_color.Po \
+	color/icc/$(DEPDIR)/test_runner-0072_profile_class_unknown.Po \
+	color/icc/$(DEPDIR)/test_runner-0073_profile_class_colorspace_lut.Po \
+	color/icc/$(DEPDIR)/test_runner-0074_profile_class_colorspace_matrix.Po \
+	color/icc/$(DEPDIR)/test_runner-0075_profile_version_reserved.Po \
+	color/icc/$(DEPDIR)/test_runner-0076_profile_header_missing_fields.Po \
+	color/icc/$(DEPDIR)/test_runner-0077_profile_class_colorspace_no_analytic.Po \
+	color/icc/$(DEPDIR)/test_runner-0078_profile_class_v2_lab_fallback.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po \
@@ -19541,6 +19583,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_MPET_ABSOLUTE_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_MPET_PCS_LAB_REVERSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_MPET_MISSING_INTENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_PROFILE_VERSION_V2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_PROFILE_VERSION_UNSUPPORTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_PROFILE_VERSION_INVALID_BCD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_PROFILE_SIGNATURE_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_PROFILE_CLASS_DEVICE_LINK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_PROFILE_CLASS_ABSTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_PROFILE_CLASS_NAMED_COLOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_PROFILE_CLASS_UNKNOWN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0073_PROFILE_CLASS_COLORSPACE_LUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_PROFILE_CLASS_COLORSPACE_MATRIX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_PROFILE_VERSION_RESERVED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0076_PROFILE_HEADER_MISSING_FIELDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_PROFILE_CLASS_COLORSPACE_NO_ANALYTIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0078_PROFILE_CLASS_V2_LAB_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -24908,6 +24964,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0061_mpet_absolute_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0063_mpet_pcs_lab_reverse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0064_mpet_missing_intent.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0065_profile_version_v2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0066_profile_version_unsupported.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0067_profile_version_invalid_bcd.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0068_profile_signature_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0069_profile_class_device_link.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0070_profile_class_abstract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0071_profile_class_named_color.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0072_profile_class_unknown.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0073_profile_class_colorspace_lut.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0074_profile_class_colorspace_matrix.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0075_profile_version_reserved.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0076_profile_header_missing_fields.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0077_profile_class_colorspace_no_analytic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0078_profile_class_v2_lab_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0062_mpet_pcs_lab_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.h \
@@ -35336,6 +35406,34 @@ color/icc/test_runner-0061_mpet_absolute_forward.$(OBJEXT):  \
 color/icc/test_runner-0063_mpet_pcs_lab_reverse.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0064_mpet_missing_intent.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0065_profile_version_v2.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0066_profile_version_unsupported.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0067_profile_version_invalid_bcd.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0068_profile_signature_invalid.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0069_profile_class_device_link.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0070_profile_class_abstract.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0071_profile_class_named_color.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0072_profile_class_unknown.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0073_profile_class_colorspace_lut.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0074_profile_class_colorspace_matrix.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0075_profile_version_reserved.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0076_profile_header_missing_fields.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0077_profile_class_colorspace_no_analytic.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0078_profile_class_v2_lab_fallback.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0062_mpet_pcs_lab_forward.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
@@ -47539,6 +47637,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0062_mpet_pcs_lab_forward.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0063_mpet_pcs_lab_reverse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0064_mpet_missing_intent.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0065_profile_version_v2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0066_profile_version_unsupported.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0067_profile_version_invalid_bcd.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0068_profile_signature_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0069_profile_class_device_link.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0070_profile_class_abstract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0071_profile_class_named_color.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0072_profile_class_unknown.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0073_profile_class_colorspace_lut.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0074_profile_class_colorspace_matrix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0075_profile_version_reserved.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0076_profile_header_missing_fields.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0077_profile_class_colorspace_no_analytic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0078_profile_class_v2_lab_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po@am__quote@ # am--include-marker
@@ -80245,6 +80357,202 @@ color/icc/test_runner-0064_mpet_missing_intent.obj: color/icc/0064_mpet_missing_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0064_mpet_missing_intent.c' object='color/icc/test_runner-0064_mpet_missing_intent.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0064_mpet_missing_intent.obj `if test -f 'color/icc/0064_mpet_missing_intent.c'; then $(CYGPATH_W) 'color/icc/0064_mpet_missing_intent.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0064_mpet_missing_intent.c'; fi`
+
+color/icc/test_runner-0065_profile_version_v2.o: color/icc/0065_profile_version_v2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0065_profile_version_v2.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0065_profile_version_v2.Tpo -c -o color/icc/test_runner-0065_profile_version_v2.o `test -f 'color/icc/0065_profile_version_v2.c' || echo '$(srcdir)/'`color/icc/0065_profile_version_v2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0065_profile_version_v2.Tpo color/icc/$(DEPDIR)/test_runner-0065_profile_version_v2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0065_profile_version_v2.c' object='color/icc/test_runner-0065_profile_version_v2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0065_profile_version_v2.o `test -f 'color/icc/0065_profile_version_v2.c' || echo '$(srcdir)/'`color/icc/0065_profile_version_v2.c
+
+color/icc/test_runner-0065_profile_version_v2.obj: color/icc/0065_profile_version_v2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0065_profile_version_v2.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0065_profile_version_v2.Tpo -c -o color/icc/test_runner-0065_profile_version_v2.obj `if test -f 'color/icc/0065_profile_version_v2.c'; then $(CYGPATH_W) 'color/icc/0065_profile_version_v2.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0065_profile_version_v2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0065_profile_version_v2.Tpo color/icc/$(DEPDIR)/test_runner-0065_profile_version_v2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0065_profile_version_v2.c' object='color/icc/test_runner-0065_profile_version_v2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0065_profile_version_v2.obj `if test -f 'color/icc/0065_profile_version_v2.c'; then $(CYGPATH_W) 'color/icc/0065_profile_version_v2.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0065_profile_version_v2.c'; fi`
+
+color/icc/test_runner-0066_profile_version_unsupported.o: color/icc/0066_profile_version_unsupported.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0066_profile_version_unsupported.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0066_profile_version_unsupported.Tpo -c -o color/icc/test_runner-0066_profile_version_unsupported.o `test -f 'color/icc/0066_profile_version_unsupported.c' || echo '$(srcdir)/'`color/icc/0066_profile_version_unsupported.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0066_profile_version_unsupported.Tpo color/icc/$(DEPDIR)/test_runner-0066_profile_version_unsupported.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0066_profile_version_unsupported.c' object='color/icc/test_runner-0066_profile_version_unsupported.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0066_profile_version_unsupported.o `test -f 'color/icc/0066_profile_version_unsupported.c' || echo '$(srcdir)/'`color/icc/0066_profile_version_unsupported.c
+
+color/icc/test_runner-0066_profile_version_unsupported.obj: color/icc/0066_profile_version_unsupported.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0066_profile_version_unsupported.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0066_profile_version_unsupported.Tpo -c -o color/icc/test_runner-0066_profile_version_unsupported.obj `if test -f 'color/icc/0066_profile_version_unsupported.c'; then $(CYGPATH_W) 'color/icc/0066_profile_version_unsupported.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0066_profile_version_unsupported.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0066_profile_version_unsupported.Tpo color/icc/$(DEPDIR)/test_runner-0066_profile_version_unsupported.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0066_profile_version_unsupported.c' object='color/icc/test_runner-0066_profile_version_unsupported.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0066_profile_version_unsupported.obj `if test -f 'color/icc/0066_profile_version_unsupported.c'; then $(CYGPATH_W) 'color/icc/0066_profile_version_unsupported.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0066_profile_version_unsupported.c'; fi`
+
+color/icc/test_runner-0067_profile_version_invalid_bcd.o: color/icc/0067_profile_version_invalid_bcd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0067_profile_version_invalid_bcd.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0067_profile_version_invalid_bcd.Tpo -c -o color/icc/test_runner-0067_profile_version_invalid_bcd.o `test -f 'color/icc/0067_profile_version_invalid_bcd.c' || echo '$(srcdir)/'`color/icc/0067_profile_version_invalid_bcd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0067_profile_version_invalid_bcd.Tpo color/icc/$(DEPDIR)/test_runner-0067_profile_version_invalid_bcd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0067_profile_version_invalid_bcd.c' object='color/icc/test_runner-0067_profile_version_invalid_bcd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0067_profile_version_invalid_bcd.o `test -f 'color/icc/0067_profile_version_invalid_bcd.c' || echo '$(srcdir)/'`color/icc/0067_profile_version_invalid_bcd.c
+
+color/icc/test_runner-0067_profile_version_invalid_bcd.obj: color/icc/0067_profile_version_invalid_bcd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0067_profile_version_invalid_bcd.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0067_profile_version_invalid_bcd.Tpo -c -o color/icc/test_runner-0067_profile_version_invalid_bcd.obj `if test -f 'color/icc/0067_profile_version_invalid_bcd.c'; then $(CYGPATH_W) 'color/icc/0067_profile_version_invalid_bcd.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0067_profile_version_invalid_bcd.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0067_profile_version_invalid_bcd.Tpo color/icc/$(DEPDIR)/test_runner-0067_profile_version_invalid_bcd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0067_profile_version_invalid_bcd.c' object='color/icc/test_runner-0067_profile_version_invalid_bcd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0067_profile_version_invalid_bcd.obj `if test -f 'color/icc/0067_profile_version_invalid_bcd.c'; then $(CYGPATH_W) 'color/icc/0067_profile_version_invalid_bcd.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0067_profile_version_invalid_bcd.c'; fi`
+
+color/icc/test_runner-0068_profile_signature_invalid.o: color/icc/0068_profile_signature_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0068_profile_signature_invalid.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0068_profile_signature_invalid.Tpo -c -o color/icc/test_runner-0068_profile_signature_invalid.o `test -f 'color/icc/0068_profile_signature_invalid.c' || echo '$(srcdir)/'`color/icc/0068_profile_signature_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0068_profile_signature_invalid.Tpo color/icc/$(DEPDIR)/test_runner-0068_profile_signature_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0068_profile_signature_invalid.c' object='color/icc/test_runner-0068_profile_signature_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0068_profile_signature_invalid.o `test -f 'color/icc/0068_profile_signature_invalid.c' || echo '$(srcdir)/'`color/icc/0068_profile_signature_invalid.c
+
+color/icc/test_runner-0068_profile_signature_invalid.obj: color/icc/0068_profile_signature_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0068_profile_signature_invalid.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0068_profile_signature_invalid.Tpo -c -o color/icc/test_runner-0068_profile_signature_invalid.obj `if test -f 'color/icc/0068_profile_signature_invalid.c'; then $(CYGPATH_W) 'color/icc/0068_profile_signature_invalid.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0068_profile_signature_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0068_profile_signature_invalid.Tpo color/icc/$(DEPDIR)/test_runner-0068_profile_signature_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0068_profile_signature_invalid.c' object='color/icc/test_runner-0068_profile_signature_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0068_profile_signature_invalid.obj `if test -f 'color/icc/0068_profile_signature_invalid.c'; then $(CYGPATH_W) 'color/icc/0068_profile_signature_invalid.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0068_profile_signature_invalid.c'; fi`
+
+color/icc/test_runner-0069_profile_class_device_link.o: color/icc/0069_profile_class_device_link.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0069_profile_class_device_link.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0069_profile_class_device_link.Tpo -c -o color/icc/test_runner-0069_profile_class_device_link.o `test -f 'color/icc/0069_profile_class_device_link.c' || echo '$(srcdir)/'`color/icc/0069_profile_class_device_link.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0069_profile_class_device_link.Tpo color/icc/$(DEPDIR)/test_runner-0069_profile_class_device_link.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0069_profile_class_device_link.c' object='color/icc/test_runner-0069_profile_class_device_link.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0069_profile_class_device_link.o `test -f 'color/icc/0069_profile_class_device_link.c' || echo '$(srcdir)/'`color/icc/0069_profile_class_device_link.c
+
+color/icc/test_runner-0069_profile_class_device_link.obj: color/icc/0069_profile_class_device_link.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0069_profile_class_device_link.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0069_profile_class_device_link.Tpo -c -o color/icc/test_runner-0069_profile_class_device_link.obj `if test -f 'color/icc/0069_profile_class_device_link.c'; then $(CYGPATH_W) 'color/icc/0069_profile_class_device_link.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0069_profile_class_device_link.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0069_profile_class_device_link.Tpo color/icc/$(DEPDIR)/test_runner-0069_profile_class_device_link.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0069_profile_class_device_link.c' object='color/icc/test_runner-0069_profile_class_device_link.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0069_profile_class_device_link.obj `if test -f 'color/icc/0069_profile_class_device_link.c'; then $(CYGPATH_W) 'color/icc/0069_profile_class_device_link.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0069_profile_class_device_link.c'; fi`
+
+color/icc/test_runner-0070_profile_class_abstract.o: color/icc/0070_profile_class_abstract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0070_profile_class_abstract.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0070_profile_class_abstract.Tpo -c -o color/icc/test_runner-0070_profile_class_abstract.o `test -f 'color/icc/0070_profile_class_abstract.c' || echo '$(srcdir)/'`color/icc/0070_profile_class_abstract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0070_profile_class_abstract.Tpo color/icc/$(DEPDIR)/test_runner-0070_profile_class_abstract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0070_profile_class_abstract.c' object='color/icc/test_runner-0070_profile_class_abstract.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0070_profile_class_abstract.o `test -f 'color/icc/0070_profile_class_abstract.c' || echo '$(srcdir)/'`color/icc/0070_profile_class_abstract.c
+
+color/icc/test_runner-0070_profile_class_abstract.obj: color/icc/0070_profile_class_abstract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0070_profile_class_abstract.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0070_profile_class_abstract.Tpo -c -o color/icc/test_runner-0070_profile_class_abstract.obj `if test -f 'color/icc/0070_profile_class_abstract.c'; then $(CYGPATH_W) 'color/icc/0070_profile_class_abstract.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0070_profile_class_abstract.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0070_profile_class_abstract.Tpo color/icc/$(DEPDIR)/test_runner-0070_profile_class_abstract.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0070_profile_class_abstract.c' object='color/icc/test_runner-0070_profile_class_abstract.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0070_profile_class_abstract.obj `if test -f 'color/icc/0070_profile_class_abstract.c'; then $(CYGPATH_W) 'color/icc/0070_profile_class_abstract.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0070_profile_class_abstract.c'; fi`
+
+color/icc/test_runner-0071_profile_class_named_color.o: color/icc/0071_profile_class_named_color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0071_profile_class_named_color.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0071_profile_class_named_color.Tpo -c -o color/icc/test_runner-0071_profile_class_named_color.o `test -f 'color/icc/0071_profile_class_named_color.c' || echo '$(srcdir)/'`color/icc/0071_profile_class_named_color.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0071_profile_class_named_color.Tpo color/icc/$(DEPDIR)/test_runner-0071_profile_class_named_color.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0071_profile_class_named_color.c' object='color/icc/test_runner-0071_profile_class_named_color.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0071_profile_class_named_color.o `test -f 'color/icc/0071_profile_class_named_color.c' || echo '$(srcdir)/'`color/icc/0071_profile_class_named_color.c
+
+color/icc/test_runner-0071_profile_class_named_color.obj: color/icc/0071_profile_class_named_color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0071_profile_class_named_color.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0071_profile_class_named_color.Tpo -c -o color/icc/test_runner-0071_profile_class_named_color.obj `if test -f 'color/icc/0071_profile_class_named_color.c'; then $(CYGPATH_W) 'color/icc/0071_profile_class_named_color.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0071_profile_class_named_color.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0071_profile_class_named_color.Tpo color/icc/$(DEPDIR)/test_runner-0071_profile_class_named_color.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0071_profile_class_named_color.c' object='color/icc/test_runner-0071_profile_class_named_color.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0071_profile_class_named_color.obj `if test -f 'color/icc/0071_profile_class_named_color.c'; then $(CYGPATH_W) 'color/icc/0071_profile_class_named_color.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0071_profile_class_named_color.c'; fi`
+
+color/icc/test_runner-0072_profile_class_unknown.o: color/icc/0072_profile_class_unknown.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0072_profile_class_unknown.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0072_profile_class_unknown.Tpo -c -o color/icc/test_runner-0072_profile_class_unknown.o `test -f 'color/icc/0072_profile_class_unknown.c' || echo '$(srcdir)/'`color/icc/0072_profile_class_unknown.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0072_profile_class_unknown.Tpo color/icc/$(DEPDIR)/test_runner-0072_profile_class_unknown.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0072_profile_class_unknown.c' object='color/icc/test_runner-0072_profile_class_unknown.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0072_profile_class_unknown.o `test -f 'color/icc/0072_profile_class_unknown.c' || echo '$(srcdir)/'`color/icc/0072_profile_class_unknown.c
+
+color/icc/test_runner-0072_profile_class_unknown.obj: color/icc/0072_profile_class_unknown.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0072_profile_class_unknown.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0072_profile_class_unknown.Tpo -c -o color/icc/test_runner-0072_profile_class_unknown.obj `if test -f 'color/icc/0072_profile_class_unknown.c'; then $(CYGPATH_W) 'color/icc/0072_profile_class_unknown.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0072_profile_class_unknown.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0072_profile_class_unknown.Tpo color/icc/$(DEPDIR)/test_runner-0072_profile_class_unknown.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0072_profile_class_unknown.c' object='color/icc/test_runner-0072_profile_class_unknown.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0072_profile_class_unknown.obj `if test -f 'color/icc/0072_profile_class_unknown.c'; then $(CYGPATH_W) 'color/icc/0072_profile_class_unknown.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0072_profile_class_unknown.c'; fi`
+
+color/icc/test_runner-0073_profile_class_colorspace_lut.o: color/icc/0073_profile_class_colorspace_lut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0073_profile_class_colorspace_lut.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0073_profile_class_colorspace_lut.Tpo -c -o color/icc/test_runner-0073_profile_class_colorspace_lut.o `test -f 'color/icc/0073_profile_class_colorspace_lut.c' || echo '$(srcdir)/'`color/icc/0073_profile_class_colorspace_lut.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0073_profile_class_colorspace_lut.Tpo color/icc/$(DEPDIR)/test_runner-0073_profile_class_colorspace_lut.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0073_profile_class_colorspace_lut.c' object='color/icc/test_runner-0073_profile_class_colorspace_lut.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0073_profile_class_colorspace_lut.o `test -f 'color/icc/0073_profile_class_colorspace_lut.c' || echo '$(srcdir)/'`color/icc/0073_profile_class_colorspace_lut.c
+
+color/icc/test_runner-0073_profile_class_colorspace_lut.obj: color/icc/0073_profile_class_colorspace_lut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0073_profile_class_colorspace_lut.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0073_profile_class_colorspace_lut.Tpo -c -o color/icc/test_runner-0073_profile_class_colorspace_lut.obj `if test -f 'color/icc/0073_profile_class_colorspace_lut.c'; then $(CYGPATH_W) 'color/icc/0073_profile_class_colorspace_lut.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0073_profile_class_colorspace_lut.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0073_profile_class_colorspace_lut.Tpo color/icc/$(DEPDIR)/test_runner-0073_profile_class_colorspace_lut.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0073_profile_class_colorspace_lut.c' object='color/icc/test_runner-0073_profile_class_colorspace_lut.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0073_profile_class_colorspace_lut.obj `if test -f 'color/icc/0073_profile_class_colorspace_lut.c'; then $(CYGPATH_W) 'color/icc/0073_profile_class_colorspace_lut.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0073_profile_class_colorspace_lut.c'; fi`
+
+color/icc/test_runner-0074_profile_class_colorspace_matrix.o: color/icc/0074_profile_class_colorspace_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0074_profile_class_colorspace_matrix.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0074_profile_class_colorspace_matrix.Tpo -c -o color/icc/test_runner-0074_profile_class_colorspace_matrix.o `test -f 'color/icc/0074_profile_class_colorspace_matrix.c' || echo '$(srcdir)/'`color/icc/0074_profile_class_colorspace_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0074_profile_class_colorspace_matrix.Tpo color/icc/$(DEPDIR)/test_runner-0074_profile_class_colorspace_matrix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0074_profile_class_colorspace_matrix.c' object='color/icc/test_runner-0074_profile_class_colorspace_matrix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0074_profile_class_colorspace_matrix.o `test -f 'color/icc/0074_profile_class_colorspace_matrix.c' || echo '$(srcdir)/'`color/icc/0074_profile_class_colorspace_matrix.c
+
+color/icc/test_runner-0074_profile_class_colorspace_matrix.obj: color/icc/0074_profile_class_colorspace_matrix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0074_profile_class_colorspace_matrix.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0074_profile_class_colorspace_matrix.Tpo -c -o color/icc/test_runner-0074_profile_class_colorspace_matrix.obj `if test -f 'color/icc/0074_profile_class_colorspace_matrix.c'; then $(CYGPATH_W) 'color/icc/0074_profile_class_colorspace_matrix.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0074_profile_class_colorspace_matrix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0074_profile_class_colorspace_matrix.Tpo color/icc/$(DEPDIR)/test_runner-0074_profile_class_colorspace_matrix.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0074_profile_class_colorspace_matrix.c' object='color/icc/test_runner-0074_profile_class_colorspace_matrix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0074_profile_class_colorspace_matrix.obj `if test -f 'color/icc/0074_profile_class_colorspace_matrix.c'; then $(CYGPATH_W) 'color/icc/0074_profile_class_colorspace_matrix.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0074_profile_class_colorspace_matrix.c'; fi`
+
+color/icc/test_runner-0075_profile_version_reserved.o: color/icc/0075_profile_version_reserved.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0075_profile_version_reserved.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0075_profile_version_reserved.Tpo -c -o color/icc/test_runner-0075_profile_version_reserved.o `test -f 'color/icc/0075_profile_version_reserved.c' || echo '$(srcdir)/'`color/icc/0075_profile_version_reserved.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0075_profile_version_reserved.Tpo color/icc/$(DEPDIR)/test_runner-0075_profile_version_reserved.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0075_profile_version_reserved.c' object='color/icc/test_runner-0075_profile_version_reserved.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0075_profile_version_reserved.o `test -f 'color/icc/0075_profile_version_reserved.c' || echo '$(srcdir)/'`color/icc/0075_profile_version_reserved.c
+
+color/icc/test_runner-0075_profile_version_reserved.obj: color/icc/0075_profile_version_reserved.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0075_profile_version_reserved.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0075_profile_version_reserved.Tpo -c -o color/icc/test_runner-0075_profile_version_reserved.obj `if test -f 'color/icc/0075_profile_version_reserved.c'; then $(CYGPATH_W) 'color/icc/0075_profile_version_reserved.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0075_profile_version_reserved.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0075_profile_version_reserved.Tpo color/icc/$(DEPDIR)/test_runner-0075_profile_version_reserved.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0075_profile_version_reserved.c' object='color/icc/test_runner-0075_profile_version_reserved.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0075_profile_version_reserved.obj `if test -f 'color/icc/0075_profile_version_reserved.c'; then $(CYGPATH_W) 'color/icc/0075_profile_version_reserved.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0075_profile_version_reserved.c'; fi`
+
+color/icc/test_runner-0076_profile_header_missing_fields.o: color/icc/0076_profile_header_missing_fields.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0076_profile_header_missing_fields.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0076_profile_header_missing_fields.Tpo -c -o color/icc/test_runner-0076_profile_header_missing_fields.o `test -f 'color/icc/0076_profile_header_missing_fields.c' || echo '$(srcdir)/'`color/icc/0076_profile_header_missing_fields.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0076_profile_header_missing_fields.Tpo color/icc/$(DEPDIR)/test_runner-0076_profile_header_missing_fields.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0076_profile_header_missing_fields.c' object='color/icc/test_runner-0076_profile_header_missing_fields.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0076_profile_header_missing_fields.o `test -f 'color/icc/0076_profile_header_missing_fields.c' || echo '$(srcdir)/'`color/icc/0076_profile_header_missing_fields.c
+
+color/icc/test_runner-0076_profile_header_missing_fields.obj: color/icc/0076_profile_header_missing_fields.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0076_profile_header_missing_fields.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0076_profile_header_missing_fields.Tpo -c -o color/icc/test_runner-0076_profile_header_missing_fields.obj `if test -f 'color/icc/0076_profile_header_missing_fields.c'; then $(CYGPATH_W) 'color/icc/0076_profile_header_missing_fields.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0076_profile_header_missing_fields.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0076_profile_header_missing_fields.Tpo color/icc/$(DEPDIR)/test_runner-0076_profile_header_missing_fields.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0076_profile_header_missing_fields.c' object='color/icc/test_runner-0076_profile_header_missing_fields.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0076_profile_header_missing_fields.obj `if test -f 'color/icc/0076_profile_header_missing_fields.c'; then $(CYGPATH_W) 'color/icc/0076_profile_header_missing_fields.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0076_profile_header_missing_fields.c'; fi`
+
+color/icc/test_runner-0077_profile_class_colorspace_no_analytic.o: color/icc/0077_profile_class_colorspace_no_analytic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0077_profile_class_colorspace_no_analytic.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0077_profile_class_colorspace_no_analytic.Tpo -c -o color/icc/test_runner-0077_profile_class_colorspace_no_analytic.o `test -f 'color/icc/0077_profile_class_colorspace_no_analytic.c' || echo '$(srcdir)/'`color/icc/0077_profile_class_colorspace_no_analytic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0077_profile_class_colorspace_no_analytic.Tpo color/icc/$(DEPDIR)/test_runner-0077_profile_class_colorspace_no_analytic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0077_profile_class_colorspace_no_analytic.c' object='color/icc/test_runner-0077_profile_class_colorspace_no_analytic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0077_profile_class_colorspace_no_analytic.o `test -f 'color/icc/0077_profile_class_colorspace_no_analytic.c' || echo '$(srcdir)/'`color/icc/0077_profile_class_colorspace_no_analytic.c
+
+color/icc/test_runner-0077_profile_class_colorspace_no_analytic.obj: color/icc/0077_profile_class_colorspace_no_analytic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0077_profile_class_colorspace_no_analytic.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0077_profile_class_colorspace_no_analytic.Tpo -c -o color/icc/test_runner-0077_profile_class_colorspace_no_analytic.obj `if test -f 'color/icc/0077_profile_class_colorspace_no_analytic.c'; then $(CYGPATH_W) 'color/icc/0077_profile_class_colorspace_no_analytic.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0077_profile_class_colorspace_no_analytic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0077_profile_class_colorspace_no_analytic.Tpo color/icc/$(DEPDIR)/test_runner-0077_profile_class_colorspace_no_analytic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0077_profile_class_colorspace_no_analytic.c' object='color/icc/test_runner-0077_profile_class_colorspace_no_analytic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0077_profile_class_colorspace_no_analytic.obj `if test -f 'color/icc/0077_profile_class_colorspace_no_analytic.c'; then $(CYGPATH_W) 'color/icc/0077_profile_class_colorspace_no_analytic.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0077_profile_class_colorspace_no_analytic.c'; fi`
+
+color/icc/test_runner-0078_profile_class_v2_lab_fallback.o: color/icc/0078_profile_class_v2_lab_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0078_profile_class_v2_lab_fallback.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0078_profile_class_v2_lab_fallback.Tpo -c -o color/icc/test_runner-0078_profile_class_v2_lab_fallback.o `test -f 'color/icc/0078_profile_class_v2_lab_fallback.c' || echo '$(srcdir)/'`color/icc/0078_profile_class_v2_lab_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0078_profile_class_v2_lab_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0078_profile_class_v2_lab_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0078_profile_class_v2_lab_fallback.c' object='color/icc/test_runner-0078_profile_class_v2_lab_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0078_profile_class_v2_lab_fallback.o `test -f 'color/icc/0078_profile_class_v2_lab_fallback.c' || echo '$(srcdir)/'`color/icc/0078_profile_class_v2_lab_fallback.c
+
+color/icc/test_runner-0078_profile_class_v2_lab_fallback.obj: color/icc/0078_profile_class_v2_lab_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0078_profile_class_v2_lab_fallback.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0078_profile_class_v2_lab_fallback.Tpo -c -o color/icc/test_runner-0078_profile_class_v2_lab_fallback.obj `if test -f 'color/icc/0078_profile_class_v2_lab_fallback.c'; then $(CYGPATH_W) 'color/icc/0078_profile_class_v2_lab_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0078_profile_class_v2_lab_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0078_profile_class_v2_lab_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0078_profile_class_v2_lab_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0078_profile_class_v2_lab_fallback.c' object='color/icc/test_runner-0078_profile_class_v2_lab_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0078_profile_class_v2_lab_fallback.obj `if test -f 'color/icc/0078_profile_class_v2_lab_fallback.c'; then $(CYGPATH_W) 'color/icc/0078_profile_class_v2_lab_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0078_profile_class_v2_lab_fallback.c'; fi`
 
 color/icc/test_runner-0062_mpet_pcs_lab_forward.o: color/icc/0062_mpet_pcs_lab_forward.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0062_mpet_pcs_lab_forward.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0062_mpet_pcs_lab_forward.Tpo -c -o color/icc/test_runner-0062_mpet_pcs_lab_forward.o `test -f 'color/icc/0062_mpet_pcs_lab_forward.c' || echo '$(srcdir)/'`color/icc/0062_mpet_pcs_lab_forward.c

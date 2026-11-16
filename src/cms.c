@@ -725,12 +725,14 @@ sixel_cms_has_prior_intent(sixel_cms_transform_t const *transform, int intent)
         return 0;
     }
     return (source_lut || source->rgb_definition != NULL ||
-            source->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB ||
+            (source->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB &&
+             !source->builtin_profile.lut_only) ||
             sixel_cms_has_matrix_trc(&source->builtin_profile)) &&
         (target_lut || target->is_srgb_profile ||
          (target->rgb_definition != NULL &&
           transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) ||
-         target->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB);
+         (target->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB &&
+          !target->builtin_profile.lut_only));
 }
 
 static void
