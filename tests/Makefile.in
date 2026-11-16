@@ -130742,13 +130742,10 @@ distdir-am: $(DISTFILES)
 dist-hook:
 	@set -eu; \
 	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
-	    tests "$(srcdir)" include | tr ' ' '\n' | \
-	while IFS= read -r test_path; do \
-	    test -n "$$test_path" || continue; \
-	    dst="$(distdir)/$$test_path"; \
-	    $(MKDIR_P) "`dirname "$$dst"`"; \
-	    cp -pf "$(srcdir)/$$test_path" "$$dst"; \
-	done
+	    tests "$(srcdir)" include newline >dist-files.list; \
+	$(SHELL) "$(top_srcdir)/build-aux/copy-test-dist.sh" \
+	    "$(srcdir)" "$(top_srcdir)" "$(top_builddir)" "$(distdir)" \
+	    source-only <dist-files.list
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the

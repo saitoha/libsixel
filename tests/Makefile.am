@@ -13228,13 +13228,10 @@ include $(top_srcdir)/build-aux/test-dist.am
 dist-hook:
 	@set -eu; \
 	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
-	    tests "$(srcdir)" include | tr ' ' '\n' | \
-	while IFS= read -r test_path; do \
-	    test -n "$$test_path" || continue; \
-	    dst="$(distdir)/$$test_path"; \
-	    $(MKDIR_P) "`dirname "$$dst"`"; \
-	    cp -pf "$(srcdir)/$$test_path" "$$dst"; \
-	done
+	    tests "$(srcdir)" include newline >dist-files.list; \
+	$(SHELL) "$(top_srcdir)/build-aux/copy-test-dist.sh" \
+	    "$(srcdir)" "$(top_srcdir)" "$(top_builddir)" "$(distdir)" \
+	    source-only <dist-files.list
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it

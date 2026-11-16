@@ -10,12 +10,14 @@ trap 'chmod -R u+w "$work"; rm -rf "$work"' EXIT HUP INT TERM
 # The observation is file distribution, so these small files are the evidence.
 mkdir -p "$work/source/sub" "$work/source/data/nested" "$work/data"
 printf '%s\n' source > "$work/source/sub/file.c"
+printf '%s\n' grouped > "$work/source/sub/neighbor.c"
+printf '%s\n' script > "$work/source/sub/file.t"
 printf '%s\n' generated > "$work/generated.h"
 printf '%s\n' fixture > "$work/source/data/nested/fixture"
 printf '%s\n' built > "$work/data/generated"
 chmod -R a-w "$work/source/data"
 cat > "$work/Makefile" <<MAKE
-DISTFILES = source/sub/file.c generated.h data data/nested
+DISTFILES = source/sub/file.c source/sub/neighbor.c generated.h data data/nested
 VPATH = source
 srcdir = source
 top_srcdir = $src_root
@@ -24,6 +26,9 @@ distdir = package
 include $src_root/build-aux/test-dist.am
 dist-hook:
 	@test -f package/sub/file.c
+	@printf '%s\n' stale > package/sub/file.t
+	@chmod a-w package/sub/file.t
+	@printf '%s\n' sub/file.t | sh $src_root/build-aux/copy-test-dist.sh source . . package source-only
 MAKE
 make_bin=${MAKE:-make}
 command -v gmake >/dev/null 2>&1 && make_bin=gmake
@@ -34,6 +39,8 @@ command -v gmake >/dev/null 2>&1 && make_bin=gmake
 # Every comparison must pass; the failure branch covers any mismatch.
 # shellcheck disable=SC2015
 cmp "$work/source/sub/file.c" "$work/package/sub/file.c" &&
+cmp "$work/source/sub/neighbor.c" "$work/package/sub/neighbor.c" &&
+cmp "$work/source/sub/file.t" "$work/package/sub/file.t" &&
 cmp "$work/generated.h" "$work/package/generated.h" &&
 cmp "$work/source/data/nested/fixture" \
     "$work/package/data/nested/fixture" &&
