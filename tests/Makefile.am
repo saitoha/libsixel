@@ -13577,6 +13577,9 @@ EXTRA_DIST += _static/sh/staticcheck-ci-clang-pgo-input-list.sh \
     _static/sh/staticcheck-refresh-spatial-clang-analyzer.sh \
     _static/sh/staticcheck-refresh-spatial-rpc-macro.sh
 
+EXTRA_DIST += _static/sh/staticcheck-pty-coverage-exec.sh \
+    _support/cli/pty-child-exec.h
+
 EXTRA_DIST += dither/gpu-direct/0017_gpu_none_snapshot.t
 
 EXTRA_DIST += dither/gpu-direct/0018_gpu_none_reject_method.t

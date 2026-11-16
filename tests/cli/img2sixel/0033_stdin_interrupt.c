@@ -25,6 +25,7 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#include "../../_support/cli/pty-child-exec.h"
 #endif
 
 #if HAVE_CLI_COLOR_PTY && defined(FIONREAD)
@@ -125,7 +126,7 @@ int test_cli_stdin_interrupt(int argc, char **argv)
         if (worker == 0) {
             close(output[1]);
             signal(SIGINT, SIG_DFL);
-            execl(argv[1], argv[1], (char *)NULL);
+            test_pty_child_exec(argv[1], argv + 1);
             _exit(121);
         }
         if (worker < 0) {

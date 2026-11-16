@@ -1298,6 +1298,10 @@ run_case_tap "staticcheck-pty-open-flags" \
     sh "$src_root/tests/_static/sh/staticcheck-pty-open-flags.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-pty-coverage-exec" \
+    sh "$src_root/tests/_static/sh/staticcheck-pty-coverage-exec.sh" \
+    "$src_root" "$build_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-common-header-guards" \
     sh "$src_root/tests/_static/sh/staticcheck-test-common-header-guards.sh" \
     "$src_root" || fail_and_exit $?

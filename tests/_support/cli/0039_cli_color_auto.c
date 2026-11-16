@@ -27,6 +27,7 @@
 # include <termios.h>
 # include <time.h>
 # include <unistd.h>
+# include "pty-child-exec.h"
 
 #define COLOR_AUTO_CAP "\033[?1./r"
 #define COLOR_AUTO_QUERY "\033P$q1./p\033\\"
@@ -474,28 +475,64 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     }
     if (!baseline && color_auto_is(name, "stdin")) {
         input = open(fixture, O_RDONLY);
-        input_size = input < 0 ? -1 : read(input, input_bytes,
-                                           sizeof(input_bytes));
-        if (input < 0 || input_size <= 0 ||
+        if (input < 0) {
+            _exit(121);
+        }
+        input_size = read(input, input_bytes, sizeof(input_bytes));
+        close(input);
+        if (input_size <= 0 ||
             input_size == (ssize_t)sizeof(input_bytes) ||
             pipe(input_pipe) != 0 ||
             write(input_pipe[1], input_bytes, (size_t)input_size) !=
-                input_size || dup2(input_pipe[0], STDIN_FILENO) < 0) {
+                input_size) {
             _exit(121);
         }
-        close(input);
-        close(input_pipe[0]);
         close(input_pipe[1]);
+        input = input_pipe[0];
     } else {
+        /* Only the stdout PTY carries the terminal protocol. Keep the
+         * runner's stdin out of every filename-based invocation. */
+        input = open("/dev/null", O_RDONLY);
         arguments[count++] = (char *)fixture;
         if (!baseline && (color_auto_is(name, "multiple") ||
             color_auto_is(name, "multiple-silent"))) {
             arguments[count++] = (char *)fixture;
         }
     }
+    if (input < 0 || dup2(input, STDIN_FILENO) < 0) {
+        _exit(121);
+    }
+    if (input != STDIN_FILENO) {
+        close(input);
+    }
+    if (isatty(STDIN_FILENO)) {
+        fprintf(stderr, "CLI color auto: stdin is still a terminal\n");
+        _exit(121);
+    }
     arguments[count] = NULL;
-    execv(binary, arguments);
+    test_pty_child_exec(binary, arguments);
     _exit(122);
+}
+
+static int
+color_auto_open_pty(int *master, int *slave)
+{
+    char const *path;
+
+    /* FreeBSD accepts only access and controlling-terminal flags here. */
+    *master = posix_openpt(O_RDWR | O_NOCTTY);
+    if (*master < 0) {
+        return 0;
+    }
+    if (grantpt(*master) == 0 && unlockpt(*master) == 0) {
+        path = ptsname(*master);
+        *slave = path == NULL ? -1 : open(path, O_RDWR | O_NOCTTY);
+        if (*slave >= 0) {
+            return 1;
+        }
+    }
+    close(*master);
+    return 0;
 }
 
 static int
@@ -505,7 +542,8 @@ color_auto_start(color_auto_peer_t *peer, char const *name,
     int errors[2];
     int output[2];
     int to_file;
-    char const *path;
+    int parent_master;
+    int parent_slave;
     struct winsize geometry;
 
     memset(peer, 0, sizeof(*peer));
@@ -535,17 +573,10 @@ color_auto_start(color_auto_peer_t *peer, char const *name,
         pipe(output) != 0) {
         return 0;
     }
-    peer->master = posix_openpt(O_RDWR | O_NOCTTY);
-    /* Set nonblocking mode after the portable PTY allocation call. */
-    if (peer->master < 0 ||
-        fcntl(peer->master, F_SETFL, O_NONBLOCK) < 0 ||
-        grantpt(peer->master) < 0 ||
-        unlockpt(peer->master) < 0) {
+    if (!color_auto_open_pty(&peer->master, &peer->slave)) {
         return color_auto_error("cannot allocate PTY");
     }
-    path = ptsname(peer->master);
-    peer->slave = path == NULL ? -1 : open(path, O_RDWR | O_NOCTTY);
-    if (peer->slave < 0 || pipe(errors) < 0) {
+    if (fcntl(peer->master, F_SETFL, O_NONBLOCK) < 0 || pipe(errors) < 0) {
         return color_auto_error("cannot prepare peer");
     }
     if (peer->drcs) {
@@ -564,6 +595,25 @@ color_auto_start(color_auto_peer_t *peer, char const *name,
         close(errors[0]);
         if (output[0] >= 0) {
             close(output[0]);
+        }
+        if (color_auto_is(name, "parent-stdin")) {
+            /* Supply an unrelated, live PTY even when TAP has no tty. */
+            if (!color_auto_open_pty(&parent_master, &parent_slave)) {
+                _exit(120);
+            }
+            if (parent_master == STDIN_FILENO) {
+                parent_master = fcntl(parent_master, F_DUPFD,
+                                      STDERR_FILENO + 1);
+            }
+            if (parent_master < 0 ||
+                fcntl(parent_master, F_SETFD, FD_CLOEXEC) < 0 ||
+                dup2(parent_slave, STDIN_FILENO) < 0 ||
+                !isatty(STDIN_FILENO)) {
+                _exit(120);
+            }
+            if (parent_slave != STDIN_FILENO) {
+                close(parent_slave);
+            }
         }
         color_auto_child(name, binary, fixture, baseline,
                           peer->slave, errors[1],
@@ -968,6 +1018,7 @@ test_cli_0039_color_auto(int argc, char **argv)
         "drcs-overridden",
         "drcs-gamma",
         "drcs-p3",
+        "parent-stdin",
     };
 
     if (argc != 4) {
