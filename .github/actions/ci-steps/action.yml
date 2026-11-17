@@ -571,6 +571,27 @@ runs:
           echo "$VENV_BIN_DIR" >> "$GITHUB_PATH"
         fi
 
+    - name: Ensure Meson test slicing (bash)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'bash'
+            && fromJSON(inputs.matrix_json).test_shard != '' }}
+      shell: bash
+      run: |
+        set -euxo pipefail
+        meson --version
+        if meson test --help | grep -q -- '--slice'; then
+          exit 0
+        fi
+        # Ubuntu 24.04 ships Meson 1.3.2; slicing requires 1.8 or newer.
+        # Keep setup, compile and test on the same upgraded Meson instance.
+        meson_venv="$RUNNER_TEMP/libsixel-meson"
+        python3 -m venv "$meson_venv"
+        "$meson_venv/bin/python" -m pip install 'meson>=1.8'
+        "$meson_venv/bin/meson" --version
+        "$meson_venv/bin/meson" test --help | grep -- '--slice'
+        echo "$meson_venv/bin" >> "$GITHUB_PATH"
+
     - name: Install Perl modules (Perl matrices)
       if: ${{ contains(fromJSON(inputs.matrix_json).label, '-perl') }}
       shell: bash

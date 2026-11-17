@@ -6,7 +6,20 @@
 set -eux
 echo '1..1'
 set -v
-awk '
+awk -v quote="'" '
+/^    - name:/ {
+    meson_setup = /Ensure Meson test slicing \(bash\)/
+    if (/Build and test \(Meson, bash\)/ && !meson_ready) exit 1
+}
+meson_setup && index($0, "buildtool == " quote "meson" quote) { setup_meson = 1 }
+meson_setup && index($0, "exec_type == " quote "bash" quote) { setup_bash = 1 }
+meson_setup && index($0, "test_shard != " quote quote) { setup_shard = 1 }
+meson_setup && /meson>=1\.8/ { setup_version = 1 }
+meson_setup && /\/bin\/meson.*test --help/ { setup_verified = 1 }
+meson_setup && /echo .*meson_venv\/bin.*GITHUB_PATH/ {
+    meson_ready = setup_meson && setup_bash && setup_shard &&
+                  setup_version && setup_verified
+}
 /^  tsan:/ { active = 1; next }
 active && /^  [^ ]/ { active = 0 }
 active && /timeout-minutes: 360/ { bounded = 1 }
@@ -31,7 +44,7 @@ END {
     for (label in labels) label_count++
     for (shard in shards) shard_count++
     exit !(bounded && independent && label_count == 23 && shard_count == 23 &&
-           routed && selected && meson_env && meson_slice)
+           routed && selected && meson_env && meson_slice && meson_ready)
 }
 ' "$1/.github/workflows/ci.yml" "$1/.github/actions/ci-steps/action.yml" \
     "$1/tests/Makefile.am" || {
