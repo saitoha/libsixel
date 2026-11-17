@@ -661,12 +661,9 @@ sixel_cms_profile_has_mpet(sixel_icc_profile_t const *profile)
 }
 
 static int
-sixel_cms_has_slot(sixel_icc_profile_t const *profile, unsigned int slot,
-                   int reverse)
+sixel_cms_has_legacy_slot(sixel_icc_profile_t const *profile,
+                          unsigned int slot, int reverse)
 {
-    if (sixel_cms_has_mpet(profile, slot, reverse)) {
-        return 1;
-    }
     if (slot >= SIXEL_ICC_A2B_SLOT_COUNT) {
         return 0;
     }
@@ -680,6 +677,14 @@ sixel_cms_has_slot(sixel_icc_profile_t const *profile, unsigned int slot,
         profile->a2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
         profile->d2b_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
         profile->d2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID;
+}
+
+static int
+sixel_cms_has_slot(sixel_icc_profile_t const *profile, unsigned int slot,
+                   int reverse)
+{
+    return sixel_cms_has_mpet(profile, slot, reverse) ||
+        sixel_cms_has_legacy_slot(profile, slot, reverse);
 }
 
 /* ColorSpace endpoints use the legacy perceptual tag when the exact
@@ -6725,6 +6730,7 @@ static int
 sixel_cdef_separable(sixel_color_def_t const *definition)
 {
     unsigned int slot;
+    unsigned int relative;
 
     if (definition == NULL) {
         return 0;
@@ -6735,11 +6741,17 @@ sixel_cdef_separable(sixel_color_def_t const *definition)
     if (!definition->matrix_valid) {
         return 0;
     }
-    /* Palette snap and gamut mapping operate on the relative device
-     * encoding. Dedicated absolute tags do not replace that encoding. */
+    /* Palette snap and gamut mapping use the relative MPE slot. Keep the
+     * existing legacy LUT eligibility rule for owned ICC definitions. */
+    relative = sixel_cms_intent_to_a2b_slot(
+        SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC);
+    if (sixel_cms_has_mpet(&definition->icc, relative, 0) ||
+        sixel_cms_has_mpet(&definition->icc, relative, 1)) {
+        return 0;
+    }
     for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
-        if (sixel_cms_has_slot(&definition->icc, slot, 0) ||
-            sixel_cms_has_slot(&definition->icc, slot, 1)) {
+        if (sixel_cms_has_legacy_slot(&definition->icc, slot, 0) ||
+            sixel_cms_has_legacy_slot(&definition->icc, slot, 1)) {
             return 0;
         }
     }

@@ -270,6 +270,17 @@ sixel_icc_add_compensated(double *sum, double *residual, double term)
     *sum = next;
 }
 
+/* Recover the rounding error of the product as well as of the sum. */
+static void
+sixel_icc_add_product(double *sum, double *residual, double a, double b)
+{
+    double product;
+
+    product = a * b;
+    sixel_icc_add_compensated(sum, residual, product);
+    *residual += fma(a, b, -product);
+}
+
 static int
 sixel_icc_apply_mpe_matrix(double *out, double const *in,
                            sixel_icc_mpe_t const *mpe)
@@ -294,7 +305,7 @@ sixel_icc_apply_mpe_matrix(double *out, double const *in,
         y = 0.0;
         residual = 0.0;
         for (i = 0u; i < mpe->input_channels; ++i) {
-            sixel_icc_add_compensated(&y, &residual, *coefficient++ * in[i]);
+            sixel_icc_add_product(&y, &residual, *coefficient++, in[i]);
         }
         sixel_icc_add_compensated(&y, &residual, offset[j]);
         y += residual;
@@ -344,6 +355,7 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
     double fraction;
     double weight;
     double weights[SIXEL_ICC_MPE_CLUT_MAX_AXES + 1u];
+    double weight_residuals[SIXEL_ICC_MPE_CLUT_MAX_AXES + 1u];
     double const *vertex;
     double const *vertices[SIXEL_ICC_MPE_CLUT_MAX_AXES + 1u];
     double sample;
@@ -369,12 +381,17 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
     count = 1u;
     vertex = values;
     vertices[0] = vertex;
-    weights[0] = axes == 0u ? 1.0 : 1.0 - fractions[0];
+    fraction = axes == 0u ? 0.0 : fractions[0];
+    weights[0] = 1.0 - fraction;
+    weight_residuals[0] = (1.0 - weights[0]) - fraction;
     for (i = 0u; i < axes; ++i) {
         fraction = i + 1u == axes ? 0.0 : fractions[i + 1u];
         weight = fractions[i] - fraction;
         vertex += steps[i];
         if (weight > 0.0) {
+            /* Sorted fractions let us recover the subtraction error with
+             * the larger operand first. This includes 1 - fraction above. */
+            weight_residuals[count] = (fractions[i] - weight) - fraction;
             weights[count] = weight;
             vertices[count++] = vertex;
         }
@@ -390,7 +407,8 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
             sample = vertices[i][channel];
             low = sample < low ? sample : low;
             high = sample > high ? sample : high;
-            sixel_icc_add_compensated(&sum, &residual, weights[i] * sample);
+            sixel_icc_add_product(&sum, &residual, weights[i], sample);
+            residual = fma(weight_residuals[i], sample, residual);
         }
         out[channel] = fmin(high, fmax(low, sum + residual));
     }

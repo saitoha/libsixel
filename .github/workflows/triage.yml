@@ -1666,6 +1666,7 @@ jobs:
           name: ${{ matrix.label }}
           if-no-files-found: ignore
           retention-days: 7
+          include-hidden-files: true
           path: |
             .tmp/fuzz-artifacts-*
             .tmp/fuzz-corpus-*

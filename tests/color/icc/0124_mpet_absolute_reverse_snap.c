@@ -6,5 +6,5 @@ test_icc_0124(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return icc_numeric_absolute_mpet_palette_test(1, 0);
+    return icc_numeric_mpet_palette_test(1, '3', 0);
 }

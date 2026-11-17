@@ -2454,6 +2454,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0128_MPET_CURVE_SMALL_RESIDUAL \
     -DBUILD_TEST_0129_MPET_LEGACY_MIXED_FLOAT \
     -DBUILD_TEST_0130_MPET_LEGACY_MIXED_BYTE \
+    -DBUILD_TEST_0131_MPET_MATRIX_PRODUCT_RESIDUAL \
+    -DBUILD_TEST_0132_MPET_SIMPLEX_WEIGHT_RESIDUAL \
+    -DBUILD_TEST_0133_MPET_NONRELATIVE_SNAP \
+    -DBUILD_TEST_0134_MPET_NONRELATIVE_GAMUT \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7855,6 +7859,10 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0128_mpet_curve_small_residual.c \
     color/icc/0129_mpet_legacy_mixed_float.c \
     color/icc/0130_mpet_legacy_mixed_byte.c \
+    color/icc/0131_mpet_matrix_product_residual.c \
+    color/icc/0132_mpet_simplex_weight_residual.c \
+    color/icc/0133_mpet_nonrelative_snap.c \
+    color/icc/0134_mpet_nonrelative_gamut.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

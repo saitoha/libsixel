@@ -3862,20 +3862,26 @@ icc_numeric_mpet_downstream_fallback_test(int absolute)
 }
 
 int
-icc_numeric_mpet_small_residual_test(int clut)
+icc_numeric_mpet_small_residual_test(unsigned int clut_axes)
 {
     static double const input[] = {1.0, 0x1p-60, 1.0};
-    unsigned char bytes[400];
+    unsigned char bytes[468];
     unsigned char *tag;
     unsigned char *element;
     sixel_icc_profile_t profile;
     double result[3];
+    unsigned int matrix_size;
+    unsigned int clut_size;
+    unsigned int clut_points;
     size_t tag_size;
     size_t size;
     int ok;
 
     memset(bytes, 0, sizeof(bytes));
-    tag_size = clut ? 140u : 96u;
+    clut_points = 1u << clut_axes;
+    clut_size = 28u + 4u * clut_points;
+    matrix_size = clut_axes > 0u ? 12u + 16u * clut_axes : 28u;
+    tag_size = clut_axes > 0u ? 40u + matrix_size + clut_size + 36u : 96u;
     size = 144u + tag_size;
     iccn_be32(bytes, (unsigned int)size);
     bytes[8] = 4u;
@@ -3888,43 +3894,104 @@ icc_numeric_mpet_small_residual_test(int clut)
     tag = bytes + 144u;
     memcpy(tag, "mpet", 4u);
     tag[9] = tag[11] = 3u;
-    iccn_be32(tag + 12u, clut ? 3u : 2u);
+    iccn_be32(tag + 12u, clut_axes > 0u ? 3u : 2u);
     /* Reserve 40 bytes for the position table when a CLUT is included. */
-    iccn_mpet_position(tag, 0u, clut ? 40u : 32u, 28u);
-    element = tag + (clut ? 40u : 32u);
+    element = tag + (clut_axes > 0u ? 40u : 32u);
+    iccn_mpet_position(tag, 0u, (unsigned int)(element - tag), matrix_size);
     memcpy(element, "matf", 4u);
     element[9] = 3u;
-    element[11] = 1u;
-    /* Select G for the CLUT. The matrix-only case adds R+G-B. */
+    element[11] = clut_axes > 0u ? (unsigned char)clut_axes : 1u;
+    /* Select G for the first CLUT axis and leave any other axes at zero.
+     * The matrix-only case adds R+G-B. */
     iccn_mpe_write_float(element + 16u, 1.0f);
-    if (!clut) {
+    if (clut_axes == 0u) {
         iccn_mpe_write_float(element + 12u, 1.0f);
         iccn_mpe_write_float(element + 20u, -1.0f);
     }
-    element += 28u;
-    if (clut) {
-        iccn_mpet_position(tag, 1u, 68u, 36u);
+    element += matrix_size;
+    if (clut_axes > 0u) {
+        iccn_mpet_position(tag, 1u, (unsigned int)(element - tag), clut_size);
         memcpy(element, "clut", 4u);
-        element[9] = element[11] = 1u;
-        element[12] = 2u;
+        element[9] = (unsigned char)clut_axes;
+        element[11] = 1u;
+        memset(element + 12u, 2, clut_axes);
+        /* (1 - 2^-60) * 2^-60 - 2^-60 is exactly -2^-120. */
         iccn_mpe_write_float(element + 28u, 0x1p-60f);
-        iccn_mpe_write_float(element + 32u, -1.0f);
-        element += 36u;
+        iccn_mpe_write_float(element + 28u + 2u * clut_points, -1.0f);
+        element += clut_size;
     }
-    iccn_mpet_position(tag, clut ? 2u : 1u,
+    iccn_mpet_position(tag, clut_axes > 0u ? 2u : 1u,
         (unsigned int)(element - tag), 36u);
     memcpy(element, "matf", 4u);
     element[9] = 1u;
     element[11] = 3u;
-    iccn_mpe_write_float(element + 12u, clut ? 0x1p100f : 0x1p60f);
+    iccn_mpe_write_float(element + 12u, clut_axes > 0u ? 0x1p100f : 0x1p60f);
     ok = sixel_icc_parse_profile(bytes, size, &profile);
     if (ok) {
         ok = sixel_icc_device_to_pcs(result, input, 3u, &profile, 1u, 0)
                 == SIXEL_ICC_PATH_MPET &&
-            result[0] == (clut ? -0x1p-20 : 1.0) &&
+            result[0] == (clut_axes > 0u ? -0x1p-20 : 1.0) &&
             result[1] == 0.0 && result[2] == 0.0;
         sixel_icc_profile_destroy(&profile);
     }
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_matrix_product_residual_test(void)
+{
+    static double const input[] = {0.5, 0.5 + 0x1p-24, 0.5};
+    unsigned char bytes[288] = {0};
+    unsigned char *tag;
+    unsigned char *matrix;
+    sixel_icc_profile_t profile;
+    double result[3];
+    int ok;
+
+    iccn_be32(bytes, sizeof(bytes));
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "scnrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 128u, 1u);
+    memcpy(bytes + 132u, "D2B1", 4u);
+    iccn_be32(bytes + 136u, 144u);
+    iccn_be32(bytes + 140u, sizeof(bytes) - 144u);
+    tag = bytes + 144u;
+    memcpy(tag, "mpet", 4u);
+    tag[9] = tag[11] = 3u;
+    iccn_be32(tag + 12u, 3u);
+    iccn_mpet_position(tag, 0u, 40u, 44u);
+    iccn_mpet_position(tag, 1u, 84u, 24u);
+    iccn_mpet_position(tag, 2u, 108u, 36u);
+    matrix = tag + 40u;
+    memcpy(matrix, "matf", 4u);
+    matrix[9] = 3u;
+    matrix[11] = 2u;
+    iccn_mpe_write_float(matrix + 12u, 1.0f);
+    iccn_mpe_write_float(matrix + 28u, 1.0f);
+    iccn_mpe_write_float(matrix + 36u, 0x1p-31f);
+    iccn_mpe_write_float(matrix + 40u, 0x1p-31f);
+    matrix = tag + 84u;
+    memcpy(matrix, "matf", 4u);
+    matrix[9] = 2u;
+    matrix[11] = 1u;
+    iccn_mpe_write_float(matrix + 12u, 1.0f + 0x1p-23f);
+    iccn_mpe_write_float(matrix + 16u, -1.0f);
+    matrix = tag + 108u;
+    memcpy(matrix, "matf", 4u);
+    matrix[9] = 1u;
+    matrix[11] = 3u;
+    iccn_mpe_write_float(matrix + 12u, 0x1p54f);
+
+    /* (0.5 + 2^-31) * (1 + 2^-23) - (0.5 + 2^-24 + 2^-31)
+     * leaves only 2^-31 * 2^-23, which the final matrix scales to one. */
+    if (!sixel_icc_parse_profile(bytes, sizeof(bytes), &profile)) {
+        return EXIT_FAILURE;
+    }
+    ok = sixel_icc_device_to_pcs(result, input, 3u, &profile, 1u, 0)
+            == SIXEL_ICC_PATH_MPET &&
+        result[0] == 1.0 && result[1] == 0.0 && result[2] == 0.0;
+    sixel_icc_profile_destroy(&profile);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
@@ -3992,7 +4059,7 @@ icc_numeric_mpet_curve_small_residual_test(void)
 }
 
 int
-icc_numeric_absolute_mpet_palette_test(int reverse, int gamut)
+icc_numeric_mpet_palette_test(int reverse, char slot, int gamut)
 {
     static double const input[] = {0.2, 0.3, 0.4};
     unsigned char bytes[sizeof(color_icc) + 96u];
@@ -4011,10 +4078,11 @@ icc_numeric_absolute_mpet_palette_test(int reverse, int gamut)
 
     tag = iccn_expand_tag_directory(bytes, color_icc, sizeof(color_icc), 1u);
     iccn_be32(bytes, sizeof(bytes));
-    memcpy(tag, reverse ? "B2D3" : "D2B3", 4u);
+    memcpy(tag, reverse ? "B2D" : "D2B", 3u);
+    tag[3] = (unsigned char)slot;
     iccn_be32(tag + 4u, sizeof(color_icc) + 12u);
     iccn_be32(tag + 8u, 84u);
-    iccn_mpet_transform_profile(mpet, reverse, '3', 0, 65536u, 0);
+    iccn_mpet_transform_profile(mpet, reverse, slot, 0, 65536u, 0);
     memcpy(bytes + sizeof(color_icc) + 12u, mpet + 168u, 84u);
     definition = sixel_cdef_icc(bytes, sizeof(bytes));
     reference = sixel_cdef_icc(color_icc, sizeof(color_icc));
@@ -4024,7 +4092,14 @@ icc_numeric_absolute_mpet_palette_test(int reverse, int gamut)
     ok = definition != NULL && reference != NULL &&
         SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
                                                NULL));
-    if (gamut && ok) {
+    if (ok && slot == '1') {
+        /* A relative MPE replaces part of the matrix/TRC transform. */
+        ok = gamut
+            ? SIXEL_FAILED(sixel_gamut_new(&mapper, definition, 0,
+                SIXEL_GAMUT_LOCAL_MINDE, allocator))
+            : SIXEL_FAILED(sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_DIRECT,
+                SIXEL_COLORSPACE_LINEAR, definition, allocator));
+    } else if (gamut && ok) {
         ok = SIXEL_SUCCEEDED(sixel_gamut_new(&mapper, definition, 0,
                 SIXEL_GAMUT_LOCAL_MINDE, allocator)) &&
             SIXEL_SUCCEEDED(sixel_gamut_new(&base_mapper, reference, 0,
@@ -4043,7 +4118,7 @@ icc_numeric_absolute_mpet_palette_test(int reverse, int gamut)
             SIXEL_SUCCEEDED(sixel_snap_grid_project(base_grid, input, 1, 1.0,
                                                        expected));
     }
-    ok = ok && memcmp(result, expected, sizeof(result)) == 0;
+    ok = ok && (slot == '1' || memcmp(result, expected, sizeof(result)) == 0);
     sixel_snap_grid_destroy(base_grid);
     sixel_snap_grid_destroy(grid);
     sixel_gamut_free(base_mapper);
@@ -4052,6 +4127,26 @@ icc_numeric_absolute_mpet_palette_test(int reverse, int gamut)
     sixel_cdef_free(reference);
     sixel_cdef_free(definition);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_nonrelative_mpet_palette_test(int gamut)
+{
+    static char const slots[] = {'0', '2', '1'};
+    size_t i;
+    int reverse;
+
+    for (i = 0u; i < sizeof(slots); ++i) {
+        for (reverse = 0; reverse <= 1; ++reverse) {
+            if (icc_numeric_mpet_palette_test(reverse, slots[i], gamut)
+                    != EXIT_SUCCESS) {
+                fprintf(stderr, "%s%c: unexpected relative operation\n",
+                        reverse ? "B2D" : "D2B", slots[i]);
+                return EXIT_FAILURE;
+            }
+        }
+    }
+    return EXIT_SUCCESS;
 }
 
 typedef struct iccn_png_capture {
