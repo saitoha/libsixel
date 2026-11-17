@@ -243,6 +243,33 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
+    -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
+    -DBUILD_TEST_0015_AUTO_NEGATIVE_EXPOSURE \
+    -DBUILD_TEST_0016_REINHARD_NEGATIVE_EXPOSURE \
+    -DBUILD_TEST_0017_AUTO_SIGNED_COLORS \
+    -DBUILD_TEST_0018_REINHARD_SIGNED_COLORS \
+    -DBUILD_TEST_0018_BMP_PQ_COMPOSITE_NO_BACKGROUND \
+    -DBUILD_TEST_0019_BMP_PQ_COMPOSITE_BACKGROUND \
+    -DBUILD_TEST_0020_BMP_PQ_CLEAR_NO_BACKGROUND \
+    -DBUILD_TEST_0021_BMP_PQ_CLEAR_BACKGROUND \
+    -DBUILD_TEST_0022_BMP_PQ_KEEP_NO_BACKGROUND \
+    -DBUILD_TEST_0023_BMP_PQ_KEEP_BACKGROUND \
+    -DBUILD_TEST_0024_BMP_PQ_AUTO_NO_BACKGROUND \
+    -DBUILD_TEST_0025_BMP_PQ_AUTO_BACKGROUND \
+    -DBUILD_TEST_0026_BUILTIN_PQ_BKGD_CICP \
+    -DBUILD_TEST_0027_BUILTIN_PQ_BKGD_MANUAL \
+    -DBUILD_TEST_0028_LIBPNG_PQ_BKGD_CICP \
+    -DBUILD_TEST_0029_LIBPNG_PQ_BKGD_MANUAL \
+    -DBUILD_TEST_0030_BMP_PQ_BKGD_CICP \
+    -DBUILD_TEST_0031_BMP_PQ_BKGD_MANUAL \
+    -DBUILD_TEST_0032_BUILTIN_HLG_PARTIAL_DISPOSE_NONE \
+    -DBUILD_TEST_0033_BUILTIN_HLG_PARTIAL_DISPOSE_BACKGROUND \
+    -DBUILD_TEST_0034_BUILTIN_HLG_PARTIAL_DISPOSE_PREVIOUS \
+    -DBUILD_TEST_0035_LIBPNG_HLG_PARTIAL_DISPOSE_NONE \
+    -DBUILD_TEST_0036_LIBPNG_HLG_PARTIAL_DISPOSE_BACKGROUND \
+    -DBUILD_TEST_0037_LIBPNG_HLG_PARTIAL_DISPOSE_PREVIOUS \
+    -DBUILD_PNG_HDR_COMPOSITION_COMMON \
     -DBUILD_TEST_0001_PQ_NEUTRAL \
     -DBUILD_TEST_0002_HLG_NEUTRAL \
     -DBUILD_TEST_0003_HLG_COLOR_OOTF \
@@ -7307,6 +7334,36 @@ test_runner_SOURCES = test_runner.c \
     color/hdr/0014_reinhard_samples.c \
     loader-png/hdr/0017_builtin_bmp_pq8_alpha.c \
     _support/processing/cms/hdr_finish_common.h \
+    color/bpc/0020_relative_before_cached_float.c \
+    color/bpc/0021_relative_before_cached_byte.c \
+    color/hdr/0015_auto_negative_exposure.c \
+    color/hdr/0016_reinhard_negative_exposure.c \
+    color/hdr/0017_auto_signed_colors.c \
+    color/hdr/0018_reinhard_signed_colors.c \
+    loader-png/hdr/0018_bmp_pq_composite_no_background.c \
+    loader-png/hdr/0019_bmp_pq_composite_background.c \
+    loader-png/hdr/0020_bmp_pq_clear_no_background.c \
+    loader-png/hdr/0021_bmp_pq_clear_background.c \
+    loader-png/hdr/0022_bmp_pq_keep_no_background.c \
+    loader-png/hdr/0023_bmp_pq_keep_background.c \
+    loader-png/hdr/0024_bmp_pq_auto_no_background.c \
+    loader-png/hdr/0025_bmp_pq_auto_background.c \
+    loader-png/hdr/0026_builtin_pq_bkgd_cicp.c \
+    loader-png/hdr/0027_builtin_pq_bkgd_manual.c \
+    loader-png/hdr/0028_libpng_pq_bkgd_cicp.c \
+    loader-png/hdr/0029_libpng_pq_bkgd_manual.c \
+    loader-png/hdr/0030_bmp_pq_bkgd_cicp.c \
+    loader-png/hdr/0031_bmp_pq_bkgd_manual.c \
+    loader-png/hdr/0032_builtin_hlg_partial_dispose_none.c \
+    loader-png/hdr/0033_builtin_hlg_partial_dispose_background.c \
+    loader-png/hdr/0034_builtin_hlg_partial_dispose_previous.c \
+    loader-png/hdr/0035_libpng_hlg_partial_dispose_none.c \
+    loader-png/hdr/0036_libpng_hlg_partial_dispose_background.c \
+    loader-png/hdr/0037_libpng_hlg_partial_dispose_previous.c \
+    _support/processing/cms/hdr_exposure_common.h \
+    _support/loader/png_hdr_composition_common.c \
+    _support/loader/png_hdr_composition_common.h \
+    _support/loader/png_hdr_composition_expected.h \
     _support/processing/cms/hdr_numeric_common.h \
     _support/processing/cms/hdr_fault_common.c \
     color/cms/0140_rgb16_alias.c \

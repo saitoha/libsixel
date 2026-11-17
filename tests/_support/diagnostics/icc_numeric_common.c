@@ -3670,6 +3670,117 @@ icc_numeric_mpet_legacy_mixed_precedence_test(int byte_input,
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+/* A relative affine endpoint with a known neutral black. A positive gain
+ * builds the inverse; gain two distinguishes it from the legacy identity. */
+static void
+iccn_bpc_relative_endpoint(unsigned char tag[84], double black, double gain)
+{
+    static double const white[3] = {0.9642, 1.0, 0.8249};
+    size_t i;
+    size_t c;
+    double value;
+
+    memset(tag, 0, 84u);
+    memcpy(tag, "mpet", 4u);
+    tag[9] = tag[11] = 3u;
+    iccn_be32(tag + 12u, 1u);
+    iccn_be32(tag + 16u, 24u);
+    iccn_be32(tag + 20u, 60u);
+    memcpy(tag + 24u, "matf", 4u);
+    tag[33] = tag[35] = 3u;
+    for (i = 0u; i < 3u; ++i) {
+        for (c = 0u; c < 3u; ++c) {
+            value = i != c ? 0.0 : gain > 0.0
+                ? gain / (white[i] * (1.0 - black))
+                : white[i] * (1.0 - black);
+            iccn_mpe_write_float(tag + 36u + (i * 3u + c) * 4u,
+                                (float)value);
+        }
+        value = gain > 0.0 ? -gain * black / (1.0 - black) : white[i] * black;
+        iccn_mpe_write_float(tag + 72u + i * 4u, (float)value);
+    }
+}
+
+int
+icc_numeric_bpc_relative_before_cached_pair_test(int byte_input)
+{
+    static unsigned int const white[3] = {63190u, 65536u, 54061u};
+    static unsigned char const rgb8[3] = {32u, 64u, 96u};
+    static unsigned char const expected8[3] = {64u, 128u, 192u};
+    static float const rgb[3] = {0.125f, 0.25f, 0.375f};
+    static double const expected[3] = {0.25, 0.5, 0.75};
+    unsigned char tables[312];
+    unsigned char base_src[380];
+    unsigned char base_dst[380];
+    unsigned char src[476];
+    unsigned char dst[572];
+    unsigned char *tag;
+    unsigned char output8[3];
+    float output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    sixel_cms_pixel_format_t format;
+    int ok;
+
+    /* Saturation can pair A2B2 with B2A0 only after perceptual is reached.
+     * Its identity result must not displace the intervening relative path. */
+    iccn_absolute_lut_profile(tables, white, '0');
+    memcpy(base_src, tables, sizeof(tables));
+    memcpy(base_dst, tables, sizeof(tables));
+    iccn_be32(base_src, sizeof(base_src));
+    iccn_be32(base_dst, sizeof(base_dst));
+    memcpy(base_src + 144u, "A2B2", 4u);
+    iccn_be32(base_src + 148u, sizeof(tables));
+    iccn_be32(base_src + 152u, 68u);
+    iccn_identity_a2b(base_src + sizeof(tables));
+    memset(base_src + 232u, 0, 48u);
+    iccn_be32(base_dst + 136u, sizeof(tables));
+    iccn_be32(base_dst + 140u, 68u);
+    iccn_identity_a2b(base_dst + sizeof(tables));
+
+    tag = iccn_expand_tag_directory(src, base_src, sizeof(base_src), 1u);
+    iccn_be32(src, sizeof(src));
+    memcpy(tag, "D2B1", 4u);
+    iccn_be32(tag + 4u, 392u);
+    iccn_be32(tag + 8u, 84u);
+    iccn_bpc_relative_endpoint(src + 392u, 0.25, 0.0);
+    tag = iccn_expand_tag_directory(dst, base_dst, sizeof(base_dst), 2u);
+    iccn_be32(dst, sizeof(dst));
+    memcpy(tag, "D2B1", 4u);
+    iccn_be32(tag + 4u, 404u);
+    iccn_be32(tag + 8u, 84u);
+    memcpy(tag + 12u, "B2D1", 4u);
+    iccn_be32(tag + 16u, 488u);
+    iccn_be32(tag + 20u, 84u);
+    iccn_bpc_relative_endpoint(dst + 404u, 0.125, 0.0);
+    iccn_bpc_relative_endpoint(dst + 488u, 0.125, 2.0);
+
+    /* BPC maps (.25 + .75*x) to (.125 + .875*x), then the destination's
+     * inverse gives exactly 2*x. Neither skipping nor doubling BPC does so. */
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(src, sizeof(src));
+    target = sixel_cms_open_profile_from_mem(dst, sizeof(dst));
+    format = byte_input ? SIXEL_CMS_PIXELFORMAT_RGB_8
+                        : SIXEL_CMS_PIXELFORMAT_RGB_F32;
+    ok = iccn_transform_pixels(source, format, target, format,
+        "saturation,relative,perceptual!",
+        byte_input ? (void const *)rgb8 : rgb,
+        byte_input ? (void *)output8 : output, 1u);
+    if (ok) {
+        ok = byte_input ? memcmp(output8, expected8, sizeof(output8)) == 0
+                        : iccn_float_result(output, expected, 3u);
+    }
+    if (!ok) {
+        fprintf(stderr, "relative BPC lost to a cached legacy pair\n");
+    }
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? 0 : 1;
+}
+
 int
 icc_numeric_mpet_before_later_legacy_test(void)
 {

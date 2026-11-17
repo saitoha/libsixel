@@ -4735,6 +4735,32 @@ int test_hdr_numeric_06(int argc, char **argv);
 int test_hdr_numeric_07(int argc, char **argv);
 int test_hdr_numeric_08(int argc, char **argv);
 int test_hdr_numeric_09(int argc, char **argv);
+int test_bpc_19(int argc, char **argv);
+int test_bpc_20(int argc, char **argv);
+int test_hdr_numeric_14(int argc, char **argv);
+int test_hdr_numeric_15(int argc, char **argv);
+int test_hdr_numeric_16(int argc, char **argv);
+int test_hdr_numeric_17(int argc, char **argv);
+int test_png_hdr_18(int argc, char **argv);
+int test_png_hdr_19(int argc, char **argv);
+int test_png_hdr_20(int argc, char **argv);
+int test_png_hdr_21(int argc, char **argv);
+int test_png_hdr_22(int argc, char **argv);
+int test_png_hdr_23(int argc, char **argv);
+int test_png_hdr_24(int argc, char **argv);
+int test_png_hdr_25(int argc, char **argv);
+int test_png_hdr_26(int argc, char **argv);
+int test_png_hdr_27(int argc, char **argv);
+int test_png_hdr_28(int argc, char **argv);
+int test_png_hdr_29(int argc, char **argv);
+int test_png_hdr_30(int argc, char **argv);
+int test_png_hdr_31(int argc, char **argv);
+int test_png_hdr_32(int argc, char **argv);
+int test_png_hdr_33(int argc, char **argv);
+int test_png_hdr_34(int argc, char **argv);
+int test_png_hdr_35(int argc, char **argv);
+int test_png_hdr_36(int argc, char **argv);
+int test_png_hdr_37(int argc, char **argv);
 int test_bpc_15(int argc, char **argv);
 int test_bpc_16(int argc, char **argv);
 int test_bpc_17(int argc, char **argv);
@@ -14112,6 +14138,32 @@ static test_entry_t const test_entries[] = {
     { "hdr/0008_size_overflow", test_hdr_numeric_07 },
     { "hdr/0009_reference_white_alias", test_hdr_numeric_08 },
     { "hdr/0010_allocation_retry", test_hdr_numeric_09 },
+    { "bpc/0020_relative_before_cached_float", test_bpc_19 },
+    { "bpc/0021_relative_before_cached_byte", test_bpc_20 },
+    { "hdr/0015_auto_negative_exposure", test_hdr_numeric_14 },
+    { "hdr/0016_reinhard_negative_exposure", test_hdr_numeric_15 },
+    { "hdr/0017_auto_signed_colors", test_hdr_numeric_16 },
+    { "hdr/0018_reinhard_signed_colors", test_hdr_numeric_17 },
+    { "png-hdr/0018_bmp_pq_composite_no_background", test_png_hdr_18 },
+    { "png-hdr/0019_bmp_pq_composite_background", test_png_hdr_19 },
+    { "png-hdr/0020_bmp_pq_clear_no_background", test_png_hdr_20 },
+    { "png-hdr/0021_bmp_pq_clear_background", test_png_hdr_21 },
+    { "png-hdr/0022_bmp_pq_keep_no_background", test_png_hdr_22 },
+    { "png-hdr/0023_bmp_pq_keep_background", test_png_hdr_23 },
+    { "png-hdr/0024_bmp_pq_auto_no_background", test_png_hdr_24 },
+    { "png-hdr/0025_bmp_pq_auto_background", test_png_hdr_25 },
+    { "png-hdr/0026_builtin_pq_bkgd_cicp", test_png_hdr_26 },
+    { "png-hdr/0027_builtin_pq_bkgd_manual", test_png_hdr_27 },
+    { "png-hdr/0028_libpng_pq_bkgd_cicp", test_png_hdr_28 },
+    { "png-hdr/0029_libpng_pq_bkgd_manual", test_png_hdr_29 },
+    { "png-hdr/0030_bmp_pq_bkgd_cicp", test_png_hdr_30 },
+    { "png-hdr/0031_bmp_pq_bkgd_manual", test_png_hdr_31 },
+    { "png-hdr/0032_builtin_hlg_partial_dispose_none", test_png_hdr_32 },
+    { "png-hdr/0033_builtin_hlg_partial_dispose_background", test_png_hdr_33 },
+    { "png-hdr/0034_builtin_hlg_partial_dispose_previous", test_png_hdr_34 },
+    { "png-hdr/0035_libpng_hlg_partial_dispose_none", test_png_hdr_35 },
+    { "png-hdr/0036_libpng_hlg_partial_dispose_background", test_png_hdr_36 },
+    { "png-hdr/0037_libpng_hlg_partial_dispose_previous", test_png_hdr_37 },
     { "bpc/0016_nonrelative_mixed_float", test_bpc_15 },
     { "bpc/0017_nonrelative_mixed_byte", test_bpc_16 },
     { "bpc/0018_mixed_before_relative_float", test_bpc_17 },
