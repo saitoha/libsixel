@@ -425,6 +425,14 @@ jobs:
 
           def fuzzing_replay_entry(job_id, job, entry, source)
             case job_id
+            when 'fuzz_push_cms_builtin'
+              label = buildtool_prefix(
+                entry,
+                'Autotools-ubuntu-x86_64-clang',
+                'Meson-ubuntu-x86_64-clang'
+              ) + '-fuzz-cms-builtin'
+              fuzzing_entry('cms_builtin', label, job.fetch('runs-on'),
+                entry.fetch('buildtool'), 'cms-builtin', source)
             when 'fuzz_push_full', 'fuzz_push_encode_helpers'
               kind = job_id == 'fuzz_push_full' ? 'struct' : 'image_api'
               buildtool = entry.fetch('buildtool')
@@ -836,6 +844,7 @@ jobs:
             || matrix.kind == 'loader_format'
             || matrix.kind == 'loader_autodetect'
             || matrix.kind == 'image_api'
+            || matrix.kind == 'cms_builtin'
           }}
         shell: bash
         run: |
@@ -885,6 +894,11 @@ jobs:
         shell: pwsh
         run: |
           & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch x64
+
+      - name: Run raw ICC seed replay
+        if: ${{ matrix.kind == 'cms_builtin' }}
+        shell: bash
+        run: bash .github/scripts/replay-cms-builtin.sh "${{ matrix.buildtool }}"
 
       - name: Run Ubuntu libFuzzer replay
         if: >-
@@ -1667,6 +1681,7 @@ jobs:
           name: ${{ matrix.label }}
           if-no-files-found: ignore
           retention-days: 7
+          include-hidden-files: true
           path: |
             .tmp/fuzz-artifacts-*
             .tmp/fuzz-corpus-*

@@ -207,15 +207,15 @@ Enable `SIXEL_TRACE_TOPIC=loader` to record builtin ICC parser decisions on stde
 SIXEL_TRACE_TOPIC=loader img2sixel --cms-engine=builtin image.png > image.six
 ```
 
-Records use `LSXCMS1|engine=builtin`. `event=ignored-tag` includes `tag`, payload `type`, and a `reason`: `unsupported-pipeline-type` (including `mpet`), `unsupported-intent-slot` (including D2B3/B2D3), `tag-not-consumed`, or `invalid-tag-bounds`. Tag and type signatures are eight hexadecimal digits, not raw untrusted text: D2B0 is `44324230` and mpet is `6d706574`. Descriptive `desc`, `cprt`, `dmnd`, and `dmdd` tags are omitted from this audit. `tag-not-consumed` means this parser does not read that tag; it does not assert that the tag is invalid or that ignoring it changes the image.
+Records use `LSXCMS1|engine=builtin`. `event=ignored-tag` includes `tag`, payload `type`, and a `reason`: `unsupported-pipeline-type`, `unsupported-intent-slot`, `tag-not-consumed`, or `invalid-tag-bounds`. Tag and type signatures use eight hexadecimal digits. D2B0 is `44324230` and mpet is `6d706574`. Descriptive `desc`, `cprt`, `dmnd`, and `dmdd` tags are omitted from this audit. `tag-not-consumed` means this parser does not read that tag; it does not assert that the tag is invalid or that ignoring it changes the image.
 
-A present transformation slot that fails parsing or channel validation emits `event=pipeline-rejected` with its tag and `reason=invalid-or-unsupported-pipeline`. The parser may still accept another path. `event=profile-rejected` identifies an unsupported PCS or the absence of a usable profile path; an invalid tag table emits `event=invalid-table`. These messages do not distinguish every malformed nested element from every unsupported feature, and a successfully parsed profile is not proof that a loader ultimately applied it. They describe the builtin parser, not decisions inside Little CMS or ColorSync. Profiles that do not reach the parser, including CMS-disabled loads, are outside this diagnostic boundary.
+A present transformation slot that cannot supply a conversion path emits `event=pipeline-rejected` with its tag. The reason is `unsupported-mpet-element` for an unsupported element or stage width, `unsupported-pipeline-type` for a non-mpet absolute D2B/B2D payload, or `invalid-or-unsupported-pipeline` for other parsing and channel validation errors. The parser may still accept another path. `event=profile-rejected` identifies an invalid signature or version encoding, an unsupported version, class or PCS, a resource limit, or the absence of a usable profile path. An invalid tag table emits `event=invalid-table`. These records describe the builtin parser. The apply event reports the subsequent CMS execution result.
 
 The facade separately emits `LSXCMS2|event=apply` after a transform executes. Its `engine` comes from the transform backend, including profile-open fallback, rather than the requested global selector. `path=extended-rgb` identifies builtin analytic float RGB, `bounded-device` identifies the legacy builtin device path, and `external` identifies an external CMS call. `src` and `dst` are internal CMS pixel-format enum values; `ok=1` records apply success. This proves that invocation executed, not that later loader/frame stages preserved its output. With the loader topic disabled, the apply record is also silent.
 
 The tag audit checks offsets and lengths before reading payload signatures, limits detailed records to 64 per parse, and then emits `event=tag-audit-truncated`. Repeated parsing can produce repeated records. With the loader trace topic disabled, this audit is skipped and no new diagnostics are emitted. Trace selection does not change profile acceptance, fallback, or output pixels.
 
-The diagnostic fixture `tests/data/colormgmt/input/custom/rgb_trace_ignored_tags.png` preserves the PNG pixels and original profile tags from `rgb_parametric_012.png`. Its iCCP profile adds D2B0 and D2B3 mpet payloads containing a three-channel identity matrix element, plus a private tag whose signature contains ESC. Profile size, tag offsets, compressed iCCP data, and PNG CRC are updated. It exercises unsupported paths and escaped logging while retaining the original usable normalization path; it is not an mpet conformance fixture.
+The diagnostic fixture `tests/data/colormgmt/input/custom/rgb_trace_ignored_tags.png` preserves the PNG pixels and original profile tags from `rgb_parametric_012.png`. Its iCCP profile adds an unsupported D2B0 element, a D2B3 identity matrix shared with D2B4, and a private tag whose signature contains ESC. It checks pipeline diagnostics and escaped logging.
 
 ## Default-on migration and measurements
 
@@ -285,7 +285,7 @@ The shared [PNG color metadata and ColorSync compatibility](../png-color-metadat
 
 ## Supported profile structures and practical differences
 
-The builtin parser and evaluator are in [`icc-parse.c`](../../../src/icc-parse.c) and [`icc-apply.c`](../../../src/icc-apply.c). Acceptance depends on the actual tags, channel counts, direction, and available conversion path; an ICC version number or a familiar profile name alone is insufficient.
+The builtin parser and evaluator are in [`icc-parse.c`](../../../src/icc-parse.c) and [`icc-apply.c`](../../../src/icc-apply.c). Acceptance depends on the [builtin ICC header and class rules](../builtin-cms.md#specification-model), the actual tags, channel counts, direction, and available conversion path.
 
 | Area | builtin CMS | lcms2 through libsixel |
 | --- | --- | --- |
@@ -294,7 +294,7 @@ The builtin parser and evaluator are in [`icc-parse.c`](../../../src/icc-parse.c
 | Profile connection space (PCS) | XYZ or Lab. The conversion code connects through D50 XYZ and the project's sRGB basis. | Little CMS owns profile connection and intent processing. |
 | Curves | `curv`, `para` function types 0–4, and the implemented `segm` subset. | Little CMS parses and evaluates its supported curve representations. |
 | LUT payloads | `mft1`, `mft2`, and implemented `mAB`/`mBA` curve, matrix, and CLUT stages. Forward A2B and reverse B2A slots 0–2 are represented. | Little CMS handles its supported ICC pipelines and optimization. |
-| D2B/B2D | Looks up slots 0–2 but only parses the same supported LUT payloads. This is not general ICC floating-point multi-process-element support. | Broader ICC pipeline support depends on the linked Little CMS version and transform compatibility. |
+| D2B/B2D | Executes standard `mpet` pipelines in slots 0–3, including `cvst`, `matf`, and `clut`. See [builtin CMS intent routing](../builtin-cms.md#rendering-paths-and-fallback). | Broader ICC pipeline support depends on the linked Little CMS version and transform compatibility. |
 | Dependency | In-tree implementation with no external CMS library dependency. This says nothing about the selected image decoder's dependencies. | Requires a build linked with lcms2. |
 
 Builtin CMS is therefore more capable than a gamma-only correction or an RGB matrix-only converter. Conversely, accepting some LUT profiles does not make it a full ICC implementation.
@@ -302,9 +302,7 @@ Builtin CMS is therefore more capable than a gamma-only correction or an RGB mat
 ## Cases builtin does not fully support
 
 - **Other input color models:** the profile parser dispatches RGB, GRAY, CMYK, and Lab. XYZ as a device input, CMY, YCbCr, and multicolor input signatures such as five- or six-ink profiles are outside that dispatch. XYZ as a PCS is supported and is a different role.
-- **Arbitrary multi-process elements:** there is no `mpet` payload parser. A D2B tag name alone does not establish support for a standard floating-point processing pipeline. D2B3/B2D3 are not in the slot inventory. A profile requiring those paths needs another supported path or cannot be applied by builtin.
-- **Unimplemented curves or stages:** parametric function types outside 0–4 and payloads outside the implemented curve/LUT grammar cannot be evaluated merely because the enclosing file is ICC. A usable alternate path can still be selected.
-- **Distinct absolute-colorimetric intent:** builtin maps both `relative` and `absolute` to slot 1. It does not implement a separate intent-dependent media-white adaptation step. Selecting `absolute` therefore must not be interpreted as an lcms2-equivalent paper-white simulation.
+- **Unimplemented curves or stages:** `para` function types outside 0–4 and payloads outside the implemented curve/LUT grammar require a supported alternate path.
 - **Full device-link, named-color, spectral, or iccMAX workflows:** the builtin API is not a general implementation of these workflows. Nor does selecting lcms2 expose all of them through `img2sixel`; the loader wrapper has a fixed set of pixel formats and targets.
 - **Unbounded scene-referred ICC processing:** ICC device curves and CLUT stages retain their bounded domains. The builtin facade preserves extended values when its float destination is analytic sRGB or a synthetic RGB definition; this does not make arbitrary ICC pipelines unbounded. HDR metadata interpretation and tone mapping remain loader-specific.
 
@@ -314,7 +312,7 @@ There is no loader option here for an arbitrary output/printer ICC profile, a pr
 
 `cms_intent=perceptual|relative|saturation|absolute` can be expressed as an ordered `+` list. The default attempt order is perceptual, relative, saturation, absolute. An inner `!` suppresses appending omitted intents; see the [loader grammar](../README.md) for how this combines with the loader-chain terminator.
 
-Builtin turns intents into deduplicated LUT slots: perceptual → 0, relative/absolute → 1, saturation → 2. RGB/gray-to-sRGB paths can subsequently fall back to matrix/TRC conversion when those slots cannot be applied. Thus an exclusive intent list is not a guarantee that conversion fails unless the profile contains that exact LUT, and a matrix profile need not produce different results for every intent. Builtin does not synthesize a new perceptual gamut map just because `perceptual` was requested.
+Builtin selects LUT slots for perceptual (0), relative (1), and saturation (2). Absolute uses the relative path with the [media-white adjustment](../builtin-cms.md#rendering-paths-and-fallback). RGB/gray-to-sRGB paths can fall back to matrix/TRC conversion, including for an exclusive intent list. Perceptual gamut mapping is supplied by the selected profile path.
 
 The lcms2 wrapper tries creating a transform with each allowed intent using normal flags. If all fail, it retries with `cmsFLAGS_NOOPTIMIZE`. Intent support and any internal profile fallback then belong to Little CMS. These are different mechanisms from builtin's slot evaluation; a matching intent name does not imply identical output.
 
@@ -642,7 +640,7 @@ The independent [curv fixture record](../../../tests/data/color-numeric/curv-sam
 | --- | --- | --- |
 | CMS-01 | Builtin RGB/gray segmented-curve and selected A2B0 paths are evaluated. | [tests/color/icc/0001_icc_builtin_rgb_gray_v4_paths.t](../../../tests/color/icc/0001_icc_builtin_rgb_gray_v4_paths.t) |
 | CMS-02 | Selected RGB, gray, and CMYK mAB/mBA paths are evaluated. | [tests/color/icc/0002_icc_builtin_mab_mba_a2b0_paths.t](../../../tests/color/icc/0002_icc_builtin_mab_mba_a2b0_paths.t) |
-| CMS-03 | Builtin rendering-intent selection reaches the expected A2B slots, including relative/absolute slot sharing. | [tests/color/icc/0003_icc_builtin_a2b_intent_paths.t](../../../tests/color/icc/0003_icc_builtin_a2b_intent_paths.t) |
+| CMS-03 | Builtin rendering-intent selection reaches the expected A2B slots, including slot 1 for absolute with nominal media white. | [tests/color/icc/0003_icc_builtin_a2b_intent_paths.t](../../../tests/color/icc/0003_icc_builtin_a2b_intent_paths.t) |
 | CMS-04 | A builtin PNG with parametric ICC curves matches independent curve and PCS equations within 0.004 byte levels before palette quantization. | [tests/loader-png/profile/0002_loader_builtin_png_rgb_parametric_012_builtin_cms_samples.t](../../../tests/loader-png/profile/0002_loader_builtin_png_rgb_parametric_012_builtin_cms_samples.t) |
 | CMS-05 | Explicit CMS changes reference interpretation and matches component selection. | [tests/assessment/cms/0001_lsqa_cms_reference_selection.t](../../../tests/assessment/cms/0001_lsqa_cms_reference_selection.t) |
 | CMS-06 | CMS also reaches the target read from standard input. | [tests/assessment/cms/0002_lsqa_cms_target_stdin.t](../../../tests/assessment/cms/0002_lsqa_cms_target_stdin.t) |
@@ -652,10 +650,10 @@ The independent [curv fixture record](../../../tests/data/color-numeric/curv-sam
 | CMS-10 | Missing engines are rejected with an argument diagnostic. | [tests/assessment/cms/0006_lsqa_cms_missing_engine.t](../../../tests/assessment/cms/0006_lsqa_cms_missing_engine.t) |
 | CMS-11 | Repeated selection uses the last value, including the off alias. | [tests/assessment/cms/0007_lsqa_cms_repeated_alias.t](../../../tests/assessment/cms/0007_lsqa_cms_repeated_alias.t) |
 | CMS-12 | Omitting the option retains the environment-selected CMS default. | [tests/assessment/cms/0008_lsqa_cms_omitted_uses_env.t](../../../tests/assessment/cms/0008_lsqa_cms_omitted_uses_env.t) |
-| CMS-13 | mpet payload reason. | [tests/color/cms/0001_mpet_payload_reason.t](../../../tests/color/cms/0001_mpet_payload_reason.t) |
-| CMS-14 | absolute slot reason. | [tests/color/cms/0002_absolute_slot_reason.t](../../../tests/color/cms/0002_absolute_slot_reason.t) |
+| CMS-13 | The loader trace omits a usable standard D2B3 path from ignored and rejected records. | [tests/color/cms/0001_supported_mpet_trace.t](../../../tests/color/cms/0001_supported_mpet_trace.t) |
+| CMS-14 | The tag audit reports an unsupported intent slot for D2B4. | [tests/color/cms/0002_unsupported_mpet_slot_reason.t](../../../tests/color/cms/0002_unsupported_mpet_slot_reason.t) |
 | CMS-15 | unknown tag escaped. | [tests/color/cms/0003_unknown_tag_escaped.t](../../../tests/color/cms/0003_unknown_tag_escaped.t) |
-| CMS-16 | pipeline rejection reason. | [tests/color/cms/0004_pipeline_rejection_reason.t](../../../tests/color/cms/0004_pipeline_rejection_reason.t) |
+| CMS-16 | The parser identifies an unknown element in a D2B0 `mpet` pipeline. | [tests/color/cms/0004_unsupported_mpet_element_reason.t](../../../tests/color/cms/0004_unsupported_mpet_element_reason.t) |
 | CMS-17 | trace disabled quiet. | [tests/color/cms/0005_trace_disabled_quiet.t](../../../tests/color/cms/0005_trace_disabled_quiet.t) |
 | CMS-18 | ignored tags preserve pixels. | [tests/color/cms/0006_ignored_tags_preserve_pixels.t](../../../tests/color/cms/0006_ignored_tags_preserve_pixels.t) |
 | CMS-19 | lsqa defaults to auto and normalizes a profiled image differently from none. | [tests/assessment/cms/0009_lsqa_cms_default_auto.t](../../../tests/assessment/cms/0009_lsqa_cms_default_auto.t) |

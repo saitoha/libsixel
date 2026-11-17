@@ -360,6 +360,11 @@ bf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define sixel_cms_profile_create_srgb_colorsync bf_local_112
 #define sixel_cms_profile_create_srgb_lcms2 bf_local_113
 #define sixel_cms_profile_open_builtin bf_local_114
+#define sixel_cms_status_name bf_cms_status_1
+#define sixel_cms_profile_issue bf_cms_status_2
+#define sixel_cms_open_profile_from_mem_ex bf_cms_status_3
+#define sixel_cms_create_transform_ex bf_cms_status_4
+#define sixel_cms_do_transform_ex bf_cms_status_5
 #define sixel_cms_profile_open_colorsync bf_local_115
 #define sixel_cms_profile_open_lcms2 bf_local_116
 #define sixel_cms_profile_t bf_local_117
@@ -766,6 +771,11 @@ bf_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cms_profile_create_srgb_colorsync
 #undef sixel_cms_profile_create_srgb_lcms2
 #undef sixel_cms_profile_open_builtin
+#undef sixel_cms_status_name
+#undef sixel_cms_profile_issue
+#undef sixel_cms_open_profile_from_mem_ex
+#undef sixel_cms_create_transform_ex
+#undef sixel_cms_do_transform_ex
 #undef sixel_cms_profile_open_colorsync
 #undef sixel_cms_profile_open_lcms2
 #undef sixel_cms_profile_t

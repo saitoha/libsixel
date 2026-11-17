@@ -244,6 +244,11 @@ cmf_apply(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cms_profile_create_srgb_colorsync cmf_local_112
 #define sixel_cms_profile_create_srgb_lcms2 cmf_local_113
 #define sixel_cms_profile_open_builtin cmf_local_114
+#define sixel_cms_status_name cmf_cms_status_1
+#define sixel_cms_profile_issue cmf_cms_status_2
+#define sixel_cms_open_profile_from_mem_ex cmf_cms_status_3
+#define sixel_cms_create_transform_ex cmf_cms_status_4
+#define sixel_cms_do_transform_ex cmf_cms_status_5
 #define sixel_cms_profile_open_colorsync cmf_local_115
 #define sixel_cms_profile_open_lcms2 cmf_local_116
 #define sixel_cms_profile_t cmf_local_117
@@ -569,6 +574,11 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef sixel_cms_profile_create_srgb_colorsync
 #undef sixel_cms_profile_create_srgb_lcms2
 #undef sixel_cms_profile_open_builtin
+#undef sixel_cms_status_name
+#undef sixel_cms_profile_issue
+#undef sixel_cms_open_profile_from_mem_ex
+#undef sixel_cms_create_transform_ex
+#undef sixel_cms_do_transform_ex
 #undef sixel_cms_profile_open_colorsync
 #undef sixel_cms_profile_open_lcms2
 #undef sixel_cms_profile_t

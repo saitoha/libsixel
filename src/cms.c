@@ -111,6 +111,10 @@ struct sixel_cms_transform {
     sixel_cms_profile_t const *dst_profile;
     unsigned int builtin_a2b_slots[SIXEL_ICC_A2B_SLOT_COUNT];
     size_t builtin_a2b_slot_count;
+    int builtin_absolute;
+    int builtin_pcs_ordered;
+    int builtin_intents[4];
+    size_t builtin_intent_count;
 #if HAVE_LCMS2
     cmsHTRANSFORM lcms_handle;
 #endif
@@ -580,32 +584,26 @@ sixel_cms_intent_to_a2b_slot(int intent)
 }
 
 static size_t
-sixel_cms_build_builtin_a2b_order(unsigned int slots[SIXEL_ICC_A2B_SLOT_COUNT])
+sixel_cms_build_builtin_a2b_order(unsigned int slots[SIXEL_ICC_A2B_SLOT_COUNT],
+                                  int const intents[4], size_t intent_count)
 {
-    int intents[4];
-    size_t intent_count;
     size_t slot_count;
     size_t i;
     unsigned int slot;
     int exists;
     size_t j;
 
-    intent_count = 0u;
     slot_count = 0u;
     i = 0u;
     slot = 0u;
     exists = 0;
     j = 0u;
-    if (slots == NULL) {
-        return 0u;
-    }
-
-    intent_count = sixel_cms_build_intent_order(intents);
     for (i = 0u; i < intent_count; ++i) {
-        slot = sixel_cms_intent_to_a2b_slot(intents[i]);
-        if (slot >= SIXEL_ICC_A2B_SLOT_COUNT) {
+        /* Absolute needs both endpoints and is selected separately. */
+        if (intents[i] == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
             continue;
         }
+        slot = sixel_cms_intent_to_a2b_slot(intents[i]);
         exists = 0;
         for (j = 0u; j < slot_count; ++j) {
             if (slots[j] == slot) {
@@ -618,14 +616,175 @@ sixel_cms_build_builtin_a2b_order(unsigned int slots[SIXEL_ICC_A2B_SLOT_COUNT])
         }
     }
 
-    if (slot_count == 0u) {
-        slots[0u] = 0u;
-        slots[1u] = 1u;
-        slots[2u] = 2u;
-        return SIXEL_ICC_A2B_SLOT_COUNT;
+    return slot_count;
+}
+
+static double const sixel_cms_pcs_white[3] = {0.9642, 1.0, 0.8249};
+
+static double const *
+sixel_cms_media_white(sixel_icc_profile_t const *profile)
+{
+    double const *white;
+
+    white = profile->media_white_xyz;
+    /* Missing or unusable media white leaves the PCS white in effect.
+     * Recognize the fixed-point encoding of the nominal D50 neutral. */
+    if (white[0] <= 0.0 || white[1] <= 0.0 || white[2] <= 0.0 ||
+        (white[0] == 63190.0 / 65536.0 && white[1] == 1.0 &&
+         white[2] == 54061.0 / 65536.0)) {
+        return sixel_cms_pcs_white;
+    }
+    return white;
+}
+
+static int
+sixel_cms_has_mpet(sixel_icc_profile_t const *profile, unsigned int slot,
+                   int reverse)
+{
+    return slot < SIXEL_ICC_MPET_SLOT_COUNT &&
+        (reverse ? profile->b2d_mpet[slot].element_count != 0u
+                 : profile->d2b_mpet[slot].element_count != 0u);
+}
+
+static int
+sixel_cms_profile_has_mpet(sixel_icc_profile_t const *profile)
+{
+    unsigned int slot;
+
+    for (slot = 0u; slot < SIXEL_ICC_MPET_SLOT_COUNT; ++slot) {
+        if (sixel_cms_has_mpet(profile, slot, 0) ||
+            sixel_cms_has_mpet(profile, slot, 1)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int
+sixel_cms_has_legacy_slot(sixel_icc_profile_t const *profile,
+                          unsigned int slot, int reverse)
+{
+    if (slot >= SIXEL_ICC_A2B_SLOT_COUNT) {
+        return 0;
+    }
+    if (reverse) {
+        return profile->b2a_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+            profile->b2a_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
+            profile->b2d_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+            profile->b2d_lut[slot].kind != SIXEL_ICC_LUT_INVALID;
+    }
+    return profile->a2b_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+        profile->a2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
+        profile->d2b_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+        profile->d2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID;
+}
+
+static int
+sixel_cms_has_slot(sixel_icc_profile_t const *profile, unsigned int slot,
+                   int reverse)
+{
+    return sixel_cms_has_mpet(profile, slot, reverse) ||
+        sixel_cms_has_legacy_slot(profile, slot, reverse);
+}
+
+/* ColorSpace endpoints use the legacy perceptual tag when the exact
+ * slot cannot supply the required LUT. */
+static int
+sixel_cms_has_colorspace_fallback(sixel_icc_profile_t const *profile,
+                                   int reverse)
+{
+    if (!profile->lut_only) {
+        return 0;
+    }
+    return reverse
+        ? profile->b2a_mab[0].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+          profile->b2a_lut[0].kind != SIXEL_ICC_LUT_INVALID
+        : profile->a2b_mab[0].type != SIXEL_ICC_MAB_TYPE_INVALID ||
+          profile->a2b_lut[0].kind != SIXEL_ICC_LUT_INVALID;
+}
+
+static int
+sixel_cms_has_matrix_trc(sixel_icc_profile_t const *icc)
+{
+    return icc->curves[0].kind != SIXEL_ICC_CURVE_INVALID &&
+        (icc->kind == SIXEL_ICC_PROFILE_KIND_GRAY ||
+         (icc->kind == SIXEL_ICC_PROFILE_KIND_RGB &&
+          icc->curves[1].kind != SIXEL_ICC_CURVE_INVALID &&
+          icc->curves[2].kind != SIXEL_ICC_CURVE_INVALID));
+}
+
+static int
+sixel_cms_has_absolute_endpoint(sixel_cms_profile_t const *profile,
+                                 int reverse)
+{
+    sixel_icc_profile_t const *icc;
+
+    icc = &profile->builtin_profile;
+    return profile->rgb_definition != NULL || profile->is_cielab_d50_profile ||
+        sixel_cms_has_mpet(icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT, reverse) ||
+        sixel_cms_has_slot(icc, 1u, reverse) ||
+        sixel_cms_has_slot(icc, 0u, reverse) || sixel_cms_has_matrix_trc(icc);
+}
+
+static int
+sixel_cms_has_prior_intent(sixel_cms_transform_t const *transform, int intent)
+{
+    sixel_cms_profile_t const *source;
+    sixel_cms_profile_t const *target;
+    unsigned int slot;
+    int source_lut;
+    int target_lut;
+
+    source = transform->src_profile;
+    target = transform->dst_profile;
+    slot = sixel_cms_intent_to_a2b_slot(intent);
+    source_lut = sixel_cms_has_slot(&source->builtin_profile, slot, 0);
+    target_lut = sixel_cms_has_slot(&target->builtin_profile, slot, 1);
+
+    /* Relative can use the analytic path alone. Other preceding intents
+     * need an intent-specific LUT, with analytic fallback at either end. */
+    if (intent != SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC &&
+        !source_lut && !target_lut) {
+        return 0;
+    }
+    return (source_lut || source->rgb_definition != NULL ||
+            (source->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB &&
+             !source->builtin_profile.lut_only) ||
+            sixel_cms_has_matrix_trc(&source->builtin_profile)) &&
+        (target_lut || target->is_srgb_profile ||
+         (target->rgb_definition != NULL &&
+          transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) ||
+         (target->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_LAB &&
+          !target->builtin_profile.lut_only));
+}
+
+static void
+sixel_cms_builtin_select_absolute(sixel_cms_transform_t *transform,
+                                  int const intents[4], size_t count)
+{
+    size_t i;
+
+    for (i = 0u; i < count; ++i) {
+        if (intents[i] == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
+            break;
+        }
+        if (sixel_cms_has_prior_intent(transform, intents[i])) {
+            return;
+        }
+    }
+    /* Leave later intents available when either endpoint lacks a path
+     * from which absolute can be derived. */
+    if (i == count ||
+        !sixel_cms_has_absolute_endpoint(transform->src_profile, 0) ||
+        !sixel_cms_has_absolute_endpoint(transform->dst_profile, 1)) {
+        return;
     }
 
-    return slot_count;
+    /* Selecting absolute sets its slot order even when the ratio is one. */
+    transform->builtin_absolute = 1;
+    transform->builtin_a2b_slots[0] = 1u;
+    transform->builtin_a2b_slots[1] = 0u;
+    transform->builtin_a2b_slot_count = 2u;
 }
 
 #if SIXEL_CMS_HAVE_COLORSYNC
@@ -1342,13 +1501,13 @@ sixel_cms_colorsync_create_transform_one(
 static int
 sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
                                void const *data,
-                               size_t length)
+                               size_t length, sixel_icc_issue_t *issue)
 {
     size_t illuminant_offset;
     int has_dynamic_lut_path;
     int has_secondary_a2b_slot;
     int has_any_b2a_slot;
-    size_t slot;
+    unsigned int slot;
 
     illuminant_offset = 0u;
     has_dynamic_lut_path = 0;
@@ -1359,7 +1518,8 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
         return 0;
     }
 
-    if (!sixel_icc_parse_profile(data, length, &profile->builtin_profile)) {
+    if (!sixel_icc_parse_profile_ex(data, length, &profile->builtin_profile,
+                                    issue)) {
         return 0;
     }
 
@@ -1412,6 +1572,7 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
         }
     }
     if (has_dynamic_lut_path &&
+        !sixel_cms_profile_has_mpet(&profile->builtin_profile) &&
         (profile->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_RGB ||
          profile->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_GRAY) &&
         !has_secondary_a2b_slot &&
@@ -1421,6 +1582,9 @@ sixel_cms_profile_open_builtin(sixel_cms_profile_t *profile,
                "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
                12u) == 0) {
         sixel_icc_profile_destroy(&profile->builtin_profile);
+        if (*issue < SIXEL_ICC_ISSUE_MALFORMED) {
+            *issue = SIXEL_ICC_ISSUE_MALFORMED;
+        }
         return 0;
     }
 
@@ -1566,44 +1730,137 @@ sixel_cms_profile_create_rgb_gamma_chrm_builtin(
     return 1;
 }
 
+static char const *
+sixel_cms_status_name(sixel_cms_status_t status)
+{
+    switch (status) {
+    case SIXEL_CMS_STATUS_OK:
+        return "ok";
+    case SIXEL_CMS_STATUS_INVALID_ARGUMENT:
+        return "invalid-argument";
+    case SIXEL_CMS_STATUS_DISABLED:
+        return "disabled";
+    case SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE:
+        return "unsupported-profile";
+    case SIXEL_CMS_STATUS_MALFORMED_PROFILE:
+        return "malformed-profile";
+    case SIXEL_CMS_STATUS_NO_PATH:
+        return "no-path";
+    case SIXEL_CMS_STATUS_ALLOCATION:
+        return "allocation-failed";
+    case SIXEL_CMS_STATUS_RESOURCE_LIMIT:
+        return "resource-limit";
+    case SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT:
+        return "incompatible-format";
+    case SIXEL_CMS_STATUS_BACKEND_MISMATCH:
+        return "backend-mismatch";
+    case SIXEL_CMS_STATUS_BACKEND_REJECTED:
+        return "backend-rejected";
+    case SIXEL_CMS_STATUS_EVALUATION_FAILED:
+    default:
+        return "evaluation-failed";
+    }
+}
+
+static sixel_cms_status_t
+sixel_cms_profile_issue(sixel_icc_issue_t issue)
+{
+    switch (issue) {
+    case SIXEL_ICC_ISSUE_NONE:
+        return SIXEL_CMS_STATUS_OK;
+    case SIXEL_ICC_ISSUE_UNSUPPORTED:
+        return SIXEL_CMS_STATUS_UNSUPPORTED_PROFILE;
+    case SIXEL_ICC_ISSUE_MALFORMED:
+        return SIXEL_CMS_STATUS_MALFORMED_PROFILE;
+    case SIXEL_ICC_ISSUE_ALLOCATION:
+        return SIXEL_CMS_STATUS_ALLOCATION;
+    case SIXEL_ICC_ISSUE_RESOURCE_LIMIT:
+        return SIXEL_CMS_STATUS_RESOURCE_LIMIT;
+    case SIXEL_ICC_ISSUE_NO_PATH:
+    default:
+        return SIXEL_CMS_STATUS_NO_PATH;
+    }
+}
+
 sixel_cms_profile_t *
-sixel_cms_open_profile_from_mem(void const *data, size_t length)
+sixel_cms_open_profile_from_mem_ex(void const *data, size_t length,
+                                  sixel_cms_profile_result_t *result)
 {
     sixel_cms_profile_t *profile;
-    sixel_cms_engine_t engine;
+    sixel_cms_profile_result_t report;
+    sixel_icc_issue_t issue;
 
+    profile = NULL;
+    report.status = SIXEL_CMS_STATUS_OK;
+    report.first_engine = sixel_cms_get_engine();
+    report.actual_engine = SIXEL_CMS_ENGINE_NONE;
+    report.first_engine_failure = SIXEL_CMS_STATUS_OK;
+    report.skipped_path = SIXEL_CMS_STATUS_OK;
+    issue = SIXEL_ICC_ISSUE_NONE;
     if (data == NULL || length == 0u) {
-        return NULL;
+        report.status = SIXEL_CMS_STATUS_INVALID_ARGUMENT;
+        goto done;
     }
-
+    if (report.first_engine == SIXEL_CMS_ENGINE_NONE) {
+        report.status = SIXEL_CMS_STATUS_DISABLED;
+        goto done;
+    }
     profile = sixel_cms_allocate_profile();
     if (profile == NULL) {
-        return NULL;
+        report.status = SIXEL_CMS_STATUS_ALLOCATION;
+        goto done;
     }
 
-    engine = sixel_cms_get_engine();
-    if (engine == SIXEL_CMS_ENGINE_NONE) {
-        free(profile);
-        return NULL;
-    }
 #if HAVE_LCMS2
-    if (engine == SIXEL_CMS_ENGINE_LCMS2 &&
+    if (report.first_engine == SIXEL_CMS_ENGINE_LCMS2 &&
         sixel_cms_profile_open_lcms2(profile, data, length)) {
-        return profile;
+        report.actual_engine = SIXEL_CMS_ENGINE_LCMS2;
+        goto done;
     }
 #endif
 #if SIXEL_CMS_HAVE_COLORSYNC
-    if (engine == SIXEL_CMS_ENGINE_COLORSYNC &&
+    if (report.first_engine == SIXEL_CMS_ENGINE_COLORSYNC &&
         sixel_cms_profile_open_colorsync(profile, data, length)) {
-        return profile;
+        report.actual_engine = SIXEL_CMS_ENGINE_COLORSYNC;
+        goto done;
     }
 #endif
-    if (sixel_cms_profile_open_builtin(profile, data, length)) {
-        return profile;
+    if (report.first_engine != SIXEL_CMS_ENGINE_BUILTIN) {
+        report.first_engine_failure = SIXEL_CMS_STATUS_BACKEND_REJECTED;
+    }
+    if (sixel_cms_profile_open_builtin(profile, data, length, &issue)) {
+        report.actual_engine = SIXEL_CMS_ENGINE_BUILTIN;
+        report.skipped_path = sixel_cms_profile_issue(issue);
+    } else {
+        report.status = sixel_cms_profile_issue(issue == SIXEL_ICC_ISSUE_NONE
+            ? SIXEL_ICC_ISSUE_NO_PATH : issue);
+        free(profile);
+        profile = NULL;
     }
 
-    free(profile);
-    return NULL;
+done:
+    if (result != NULL) {
+        *result = report;
+    }
+    if (report.status != SIXEL_CMS_STATUS_OK ||
+        report.first_engine_failure != SIXEL_CMS_STATUS_OK ||
+        report.skipped_path != SIXEL_CMS_STATUS_OK) {
+        loader_trace_message(
+            "LSXCMS2|event=profile-open|first=%s|engine=%s|reason=%s|"
+            "first_failure=%s|skipped_path=%s",
+            sixel_cms_engine_to_string(report.first_engine),
+            sixel_cms_engine_to_string(report.actual_engine),
+            sixel_cms_status_name(report.status),
+            sixel_cms_status_name(report.first_engine_failure),
+            sixel_cms_status_name(report.skipped_path));
+    }
+    return profile;
+}
+
+sixel_cms_profile_t *
+sixel_cms_open_profile_from_mem(void const *data, size_t length)
+{
+    return sixel_cms_open_profile_from_mem_ex(data, length, NULL);
 }
 
 SIXELAPI sixel_cms_profile_t *
@@ -1920,7 +2177,7 @@ sixel_cms_create_transform_lcms2(sixel_cms_profile_t const *src_profile,
                                  sixel_cms_pixel_format_t src_format,
                                  sixel_cms_profile_t const *dst_profile,
                                  sixel_cms_pixel_format_t dst_format,
-                                 int flags)
+                                 int flags, sixel_cms_status_t *status)
 {
     sixel_cms_transform_t *transform;
     cmsUInt32Number cflags;
@@ -1938,6 +2195,7 @@ sixel_cms_create_transform_lcms2(sixel_cms_profile_t const *src_profile,
 
     transform = (sixel_cms_transform_t *)malloc(sizeof(*transform));
     if (transform == NULL) {
+        *status = SIXEL_CMS_STATUS_ALLOCATION;
         return NULL;
     }
     memset(transform, 0, sizeof(*transform));
@@ -2040,7 +2298,7 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
                                      sixel_cms_pixel_format_t src_format,
                                      sixel_cms_profile_t const *dst_profile,
                                      sixel_cms_pixel_format_t dst_format,
-                                     int flags)
+                                     int flags, sixel_cms_status_t *status)
 {
     sixel_cms_transform_t *transform;
     int intents[4];
@@ -2055,6 +2313,7 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
 
     transform = (sixel_cms_transform_t *)malloc(sizeof(*transform));
     if (transform == NULL) {
+        *status = SIXEL_CMS_STATUS_ALLOCATION;
         return NULL;
     }
     memset(transform, 0, sizeof(*transform));
@@ -2074,6 +2333,7 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
                                         &transform->dst_depth,
                                         &transform->dst_layout,
                                         &transform->dst_bytes_per_pixel)) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         free(transform);
         return NULL;
     }
@@ -2112,23 +2372,65 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
 }
 #endif
 
+static int
+sixel_cms_builtin_needs_ordered_pcs(sixel_cms_transform_t const *transform)
+{
+    sixel_icc_profile_t const *src;
+    sixel_icc_profile_t const *dst;
+    unsigned int slot;
+    unsigned int slots;
+    size_t i;
+    int intent;
+    int source_lut;
+
+    src = &transform->src_profile->builtin_profile;
+    dst = &transform->dst_profile->builtin_profile;
+    if (src->lut_only || dst->lut_only) {
+        return 1;
+    }
+    slots = 0u;
+    for (i = 0u; i < transform->builtin_intent_count; ++i) {
+        intent = transform->builtin_intents[i];
+        if (intent == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
+            /* Absolute can also derive PCS from relative or perceptual. */
+            slots |= (1u << SIXEL_ICC_MPET_ABSOLUTE_SLOT) | 3u;
+        } else {
+            slots |= 1u << sixel_cms_intent_to_a2b_slot(intent);
+        }
+    }
+    source_lut = 0;
+    for (slot = 0u; slot < SIXEL_ICC_MPET_SLOT_COUNT; ++slot) {
+        if ((slots & (1u << slot)) == 0u) {
+            continue;
+        }
+        if (sixel_cms_has_mpet(src, slot, 0) ||
+            sixel_cms_has_mpet(dst, slot, 1)) {
+            return 1;
+        }
+        source_lut |= sixel_cms_has_slot(src, slot, 0);
+    }
+    /* A profile admitted solely on the strength of an unrelated mpet
+     * must not reach the legacy byte path with missing forward curves. */
+    return !source_lut && !sixel_cms_has_matrix_trc(src) &&
+        src->kind != SIXEL_ICC_PROFILE_KIND_LAB &&
+        sixel_cms_profile_has_mpet(src);
+}
+
 static sixel_cms_transform_t *
 sixel_cms_create_transform_builtin(sixel_cms_profile_t const *src_profile,
                                    sixel_cms_pixel_format_t src_format,
                                    sixel_cms_profile_t const *dst_profile,
                                    sixel_cms_pixel_format_t dst_format,
-                                   int flags)
+                                   int flags, sixel_cms_status_t *status)
 {
     sixel_cms_transform_t *transform;
-    size_t i;
-
-    i = 0u;
     if (src_profile == NULL || dst_profile == NULL) {
         return NULL;
     }
 
     transform = (sixel_cms_transform_t *)malloc(sizeof(*transform));
     if (transform == NULL) {
+        *status = SIXEL_CMS_STATUS_ALLOCATION;
         return NULL;
     }
     memset(transform, 0, sizeof(*transform));
@@ -2139,15 +2441,68 @@ sixel_cms_create_transform_builtin(sixel_cms_profile_t const *src_profile,
     transform->flags = flags;
     transform->src_profile = src_profile;
     transform->dst_profile = dst_profile;
-    transform->builtin_a2b_slot_count
-        = sixel_cms_build_builtin_a2b_order(transform->builtin_a2b_slots);
-    for (i = transform->builtin_a2b_slot_count;
-         i < SIXEL_ICC_A2B_SLOT_COUNT;
-         ++i) {
-        /* i is bounded by SIXEL_ICC_A2B_SLOT_COUNT (0..2). */
-        transform->builtin_a2b_slots[i] = (unsigned int)i;
+    transform->builtin_intent_count =
+        sixel_cms_build_intent_order(transform->builtin_intents);
+    transform->builtin_a2b_slot_count = sixel_cms_build_builtin_a2b_order(
+        transform->builtin_a2b_slots, transform->builtin_intents,
+        transform->builtin_intent_count);
+    transform->builtin_pcs_ordered =
+        sixel_cms_builtin_needs_ordered_pcs(transform);
+    if (!transform->builtin_pcs_ordered) {
+        sixel_cms_builtin_select_absolute(transform, transform->builtin_intents,
+                                           transform->builtin_intent_count);
     }
 
+    return transform;
+}
+
+sixel_cms_transform_t *
+sixel_cms_create_transform_ex(sixel_cms_profile_t const *src_profile,
+                              sixel_cms_pixel_format_t src_format,
+                              sixel_cms_profile_t const *dst_profile,
+                              sixel_cms_pixel_format_t dst_format,
+                              int flags, sixel_cms_status_t *status)
+{
+    sixel_cms_transform_t *transform;
+    sixel_cms_status_t failure;
+
+    transform = NULL;
+    failure = SIXEL_CMS_STATUS_BACKEND_REJECTED;
+    if (src_profile == NULL || dst_profile == NULL) {
+        failure = SIXEL_CMS_STATUS_INVALID_ARGUMENT;
+    } else if (src_profile->backend != dst_profile->backend) {
+        failure = SIXEL_CMS_STATUS_BACKEND_MISMATCH;
+    } else {
+        switch (src_profile->backend) {
+#if HAVE_LCMS2
+        case SIXEL_CMS_PROFILE_BACKEND_LCMS2:
+            transform = sixel_cms_create_transform_lcms2(src_profile,
+                src_format, dst_profile, dst_format, flags, &failure);
+            break;
+#endif
+#if SIXEL_CMS_HAVE_COLORSYNC
+        case SIXEL_CMS_PROFILE_BACKEND_COLORSYNC:
+            transform = sixel_cms_create_transform_colorsync(src_profile,
+                src_format, dst_profile, dst_format, flags, &failure);
+            break;
+#endif
+        case SIXEL_CMS_PROFILE_BACKEND_BUILTIN:
+            transform = sixel_cms_create_transform_builtin(src_profile,
+                src_format, dst_profile, dst_format, flags, &failure);
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (status != NULL) {
+        *status = transform != NULL ? SIXEL_CMS_STATUS_OK : failure;
+    }
+    if (transform == NULL) {
+        loader_trace_message(
+            "LSXCMS2|event=transform-create|src=%d|dst=%d|reason=%s",
+            (int)src_format, (int)dst_format, sixel_cms_status_name(failure));
+    }
     return transform;
 }
 
@@ -2158,40 +2513,8 @@ sixel_cms_create_transform(sixel_cms_profile_t const *src_profile,
                            sixel_cms_pixel_format_t dst_format,
                            int flags)
 {
-    if (src_profile == NULL || dst_profile == NULL) {
-        return NULL;
-    }
-    if (src_profile->backend != dst_profile->backend) {
-        return NULL;
-    }
-
-#if HAVE_LCMS2
-    if (src_profile->backend == SIXEL_CMS_PROFILE_BACKEND_LCMS2) {
-        return sixel_cms_create_transform_lcms2(src_profile,
-                                                src_format,
-                                                dst_profile,
-                                                dst_format,
-                                                flags);
-    }
-#endif
-#if SIXEL_CMS_HAVE_COLORSYNC
-    if (src_profile->backend == SIXEL_CMS_PROFILE_BACKEND_COLORSYNC) {
-        return sixel_cms_create_transform_colorsync(src_profile,
-                                                    src_format,
-                                                    dst_profile,
-                                                    dst_format,
-                                                    flags);
-    }
-#endif
-    if (src_profile->backend == SIXEL_CMS_PROFILE_BACKEND_BUILTIN) {
-        return sixel_cms_create_transform_builtin(src_profile,
-                                                  src_format,
-                                                  dst_profile,
-                                                  dst_format,
-                                                  flags);
-    }
-
-    return NULL;
+    return sixel_cms_create_transform_ex(src_profile, src_format, dst_profile,
+                                         dst_format, flags, NULL);
 }
 
 static int
@@ -2377,6 +2700,10 @@ sixel_cms_builtin_apply_rgb_u8_intent(
             return 1;
         }
     }
+    if (sixel_cms_has_colorspace_fallback(profile, 0)) {
+        return sixel_icc_apply_rgb_u8_with_a2b_slot(
+            pixels, pixel_count, profile, 0u, 0);
+    }
 
     return sixel_icc_apply_rgb_u8_with_a2b_slot(
         pixels,
@@ -2442,6 +2769,10 @@ sixel_cms_builtin_apply_gray_u8_intent(
                 0)) {
             return 1;
         }
+    }
+    if (sixel_cms_has_colorspace_fallback(profile, 0)) {
+        return sixel_icc_apply_gray_u8_with_a2b_slot(
+            pixels, pixel_count, profile, 0u, 0);
     }
 
     return sixel_icc_apply_gray_u8_with_a2b_slot(
@@ -2582,11 +2913,15 @@ sixel_cms_builtin_apply_src_to_xyz_intent(
             return 1;
         }
     }
+    if (sixel_cms_has_colorspace_fallback(&src_profile->builtin_profile, 0)) {
+        return sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+            xyz_d50, src_unit, input_channel_count,
+            &src_profile->builtin_profile, 0u, 0);
+    }
 
     kind = src_profile->builtin_profile.kind;
-    if (kind != SIXEL_ICC_PROFILE_KIND_RGB &&
-        kind != SIXEL_ICC_PROFILE_KIND_GRAY &&
-        kind != SIXEL_ICC_PROFILE_KIND_LAB) {
+    if (kind != SIXEL_ICC_PROFILE_KIND_LAB &&
+        !sixel_cms_has_matrix_trc(&src_profile->builtin_profile)) {
         return 0;
     }
 
@@ -2595,7 +2930,7 @@ sixel_cms_builtin_apply_src_to_xyz_intent(
         src_unit,
         input_channel_count,
         &src_profile->builtin_profile,
-        SIXEL_ICC_A2B_SLOT_COUNT,
+        SIXEL_ICC_MPET_SLOT_COUNT,
         1);
 }
 
@@ -2629,7 +2964,9 @@ sixel_cms_builtin_apply_xyz_to_dst_intent(
         }
     }
 
-    return 0;
+    return sixel_cms_has_colorspace_fallback(&dst_profile->builtin_profile, 1)
+        && sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(dst_unit,
+            output_channel_count, xyz_d50, &dst_profile->builtin_profile, 0u);
 }
 
 static int
@@ -2663,12 +3000,13 @@ sixel_cms_builtin_load_src_unit(double src_unit[4],
                                 unsigned char *alpha,
                                 sixel_cms_pixel_format_t src_format,
                                 void const *src,
-                                size_t pixel_index)
+                                size_t pixel_index, int extended)
 {
     unsigned char const *src_u8;
     uint16_t const *src_u16;
     float const *src_f32;
     size_t base;
+    size_t i;
 
     src_u8 = NULL;
     src_u16 = NULL;
@@ -2691,9 +3029,12 @@ sixel_cms_builtin_load_src_unit(double src_unit[4],
         return 1;
     case SIXEL_CMS_PIXELFORMAT_RGB_F32:
         base = pixel_index * 3u;
-        src_unit[0] = sixel_cms_clamp_unit((double)src_f32[base + 0u]);
-        src_unit[1] = sixel_cms_clamp_unit((double)src_f32[base + 1u]);
-        src_unit[2] = sixel_cms_clamp_unit((double)src_f32[base + 2u]);
+        for (i = 0u; i < 3u; ++i) {
+            src_unit[i] = src_f32[base + i];
+            if (!extended || !isfinite(src_unit[i])) {
+                src_unit[i] = sixel_cms_clamp_unit(src_unit[i]);
+            }
+        }
         *input_channel_count = 3u;
         return 1;
     case SIXEL_CMS_PIXELFORMAT_RGBA_8:
@@ -2707,7 +3048,10 @@ sixel_cms_builtin_load_src_unit(double src_unit[4],
         *input_channel_count = 3u;
         return 1;
     case SIXEL_CMS_PIXELFORMAT_GRAY_F32:
-        src_unit[0] = sixel_cms_clamp_unit(src_f32[pixel_index]);
+        src_unit[0] = src_f32[pixel_index];
+        if (!extended || !isfinite(src_unit[0])) {
+            src_unit[0] = sixel_cms_clamp_unit(src_unit[0]);
+        }
         *input_channel_count = 1u;
         return 1;
     case SIXEL_CMS_PIXELFORMAT_GRAY_8:
@@ -2732,17 +3076,27 @@ sixel_cms_builtin_load_src_unit(double src_unit[4],
         return 1;
     case SIXEL_CMS_PIXELFORMAT_CMYK_F32:
         base = pixel_index * 4u;
-        src_unit[0] = sixel_cms_clamp_unit((double)src_f32[base + 0u]);
-        src_unit[1] = sixel_cms_clamp_unit((double)src_f32[base + 1u]);
-        src_unit[2] = sixel_cms_clamp_unit((double)src_f32[base + 2u]);
-        src_unit[3] = sixel_cms_clamp_unit((double)src_f32[base + 3u]);
+        for (i = 0u; i < 4u; ++i) {
+            src_unit[i] = src_f32[base + i];
+            if (!extended || !isfinite(src_unit[i])) {
+                src_unit[i] = sixel_cms_clamp_unit(src_unit[i]);
+            }
+        }
         *input_channel_count = 4u;
         return 1;
     case SIXEL_CMS_PIXELFORMAT_LAB_F32:
         base = pixel_index * 3u;
-        src_unit[0] = sixel_cms_clamp_unit((double)src_f32[base + 0u]);
-        src_unit[1] = sixel_cms_clamp_lab_ab((double)src_f32[base + 1u]);
-        src_unit[2] = sixel_cms_clamp_lab_ab((double)src_f32[base + 2u]);
+        src_unit[0] = src_f32[base + 0u];
+        src_unit[1] = src_f32[base + 1u];
+        src_unit[2] = src_f32[base + 2u];
+        if (!extended || !isfinite(src_unit[0])) {
+            src_unit[0] = sixel_cms_clamp_unit(src_unit[0]);
+        }
+        for (i = 1u; i < 3u; ++i) {
+            if (!extended || !isfinite(src_unit[i])) {
+                src_unit[i] = sixel_cms_clamp_lab_ab(src_unit[i]);
+            }
+        }
         *input_channel_count = 3u;
         return 1;
     default:
@@ -2757,12 +3111,14 @@ sixel_cms_builtin_store_dst_unit(void *dst,
                                  sixel_cms_pixel_format_t dst_format,
                                  size_t pixel_index,
                                  double const dst_unit[4],
-                                 unsigned char alpha)
+                                 unsigned char alpha, int extended)
 {
     unsigned char *dst_u8;
     uint16_t *dst_u16;
     float *dst_f32;
     size_t base;
+    size_t channels;
+    size_t i;
 
     dst_u8 = NULL;
     dst_u16 = NULL;
@@ -2775,6 +3131,21 @@ sixel_cms_builtin_store_dst_unit(void *dst,
     dst_u8 = (unsigned char *)dst;
     dst_u16 = (uint16_t *)dst;
     dst_f32 = (float *)dst;
+    if (extended && (dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 ||
+                     dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_F32 ||
+                     dst_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32 ||
+                     dst_format == SIXEL_CMS_PIXELFORMAT_LAB_F32)) {
+        channels = dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_F32 ? 1u
+            : dst_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32 ? 4u : 3u;
+        base = pixel_index * channels;
+        for (i = 0u; i < channels; ++i) {
+            if (!isfinite(dst_unit[i]) || fabs(dst_unit[i]) > FLT_MAX) {
+                return 0;
+            }
+            dst_f32[base + i] = (float)dst_unit[i];
+        }
+        return 1;
+    }
     switch (dst_format) {
     case SIXEL_CMS_PIXELFORMAT_RGB_8:
         base = pixel_index * 3u;
@@ -2840,10 +3211,8 @@ sixel_cms_builtin_store_dst_unit(void *dst,
     case SIXEL_CMS_PIXELFORMAT_LAB_F32:
         base = pixel_index * 3u;
         dst_f32[base + 0u] = (float)sixel_cms_clamp_unit(dst_unit[0]);
-        dst_f32[base + 1u] = (float)sixel_cms_clamp_lab_ab(
-            (sixel_cms_clamp_unit(dst_unit[1]) * 255.0 - 128.0) / 128.0);
-        dst_f32[base + 2u] = (float)sixel_cms_clamp_lab_ab(
-            (sixel_cms_clamp_unit(dst_unit[2]) * 255.0 - 128.0) / 128.0);
+        dst_f32[base + 1u] = (float)sixel_cms_clamp_lab_ab(dst_unit[1]);
+        dst_f32[base + 2u] = (float)sixel_cms_clamp_lab_ab(dst_unit[2]);
         return 1;
     default:
         break;
@@ -2857,7 +3226,8 @@ sixel_cms_do_transform_builtin_device_to_device(
     sixel_cms_transform_t const *transform,
     void const *src,
     void *dst,
-    size_t pixel_count)
+    size_t pixel_count,
+                              sixel_cms_status_t *status)
 {
     sixel_cms_profile_t const *src_profile;
     sixel_cms_profile_t const *dst_profile;
@@ -2905,10 +3275,12 @@ sixel_cms_do_transform_builtin_device_to_device(
     }
     if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
         src_profile->builtin_profile.kind != SIXEL_ICC_PROFILE_KIND_LAB) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
     if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
         dst_profile->builtin_profile.kind != SIXEL_ICC_PROFILE_KIND_LAB) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
     if (sixel_cms_builtin_profile_is_srgb(dst_profile)) {
@@ -3209,9 +3581,11 @@ sixel_cms_do_transform_builtin_device_to_device(
                transform->dst_format == SIXEL_CMS_PIXELFORMAT_CMYK_F32) {
         output_channel_count = 4u;
     } else {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
     if (output_channel_count != expected_channel_count) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         return 0;
     }
 
@@ -3222,7 +3596,7 @@ sixel_cms_do_transform_builtin_device_to_device(
                                              &alpha,
                                              transform->src_format,
                                              src,
-                                             i)) {
+                                             i, 0)) {
             return 0;
         }
         if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
@@ -3245,12 +3619,17 @@ sixel_cms_do_transform_builtin_device_to_device(
                                                        output_channel_count,
                                                        xyz_d50,
                                                        dst_profile,
-                                                       transform) ||
-            !sixel_cms_builtin_store_dst_unit(dst,
-                                              transform->dst_format,
-                                              i,
-                                              dst_unit,
-                                              alpha)) {
+                                                       transform)) {
+            return 0;
+        }
+        if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_LAB_F32) {
+            /* The legacy evaluator returned unsigned Lab table units.
+             * Storage expects chroma centered at the facade's zero. */
+            dst_unit[1] = (dst_unit[1] * 255.0 - 128.0) / 128.0;
+            dst_unit[2] = (dst_unit[2] * 255.0 - 128.0) / 128.0;
+        }
+        if (!sixel_cms_builtin_store_dst_unit(dst, transform->dst_format,
+                i, dst_unit, alpha, 0)) {
             return 0;
         }
     }
@@ -3263,7 +3642,9 @@ sixel_cms_do_transform_builtin_to_srgb(
     sixel_cms_transform_t const *transform,
     void const *src,
     void *dst,
-    size_t pixel_count)
+    size_t pixel_count,
+    sixel_cms_status_t *status,
+    unsigned char **rgba_scratch)
 {
     sixel_cms_profile_t const *src_profile;
     sixel_cms_profile_t const *dst_profile;
@@ -3274,6 +3655,7 @@ sixel_cms_do_transform_builtin_to_srgb(
     size_t i;
     unsigned char *tmp_rgb;
     unsigned char *tmp_gray;
+    unsigned char gray_sample;
     double src_lab[3];
     double src_device_unit[4];
     double xyz_d50[3];
@@ -3391,8 +3773,12 @@ sixel_cms_do_transform_builtin_to_srgb(
 
     if (transform->src_format == SIXEL_CMS_PIXELFORMAT_GRAY_8 &&
         transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8) {
-        tmp_gray = (unsigned char *)malloc(pixel_count);
+        /* Ordered PCS replays the legacy path one pixel at a time.
+         * Bulk conversion still needs a copy for in-place expansion. */
+        tmp_gray = pixel_count == 1u ? &gray_sample
+            : (unsigned char *)malloc(pixel_count);
         if (tmp_gray == NULL) {
+            *status = SIXEL_CMS_STATUS_ALLOCATION;
             return 0;
         }
         memcpy(tmp_gray, src, pixel_count);
@@ -3402,7 +3788,9 @@ sixel_cms_do_transform_builtin_to_srgb(
                 pixel_count,
                 &src_profile->builtin_profile,
                 transform)) {
-            free(tmp_gray);
+            if (tmp_gray != &gray_sample) {
+                free(tmp_gray);
+            }
             return 0;
         }
         for (i = 0u; i < pixel_count; ++i) {
@@ -3410,7 +3798,9 @@ sixel_cms_do_transform_builtin_to_srgb(
             dst_u8[i * 3u + 1u] = tmp_gray[i];
             dst_u8[i * 3u + 2u] = tmp_gray[i];
         }
-        free(tmp_gray);
+        if (tmp_gray != &gray_sample) {
+            free(tmp_gray);
+        }
         return 1;
     }
 
@@ -3419,9 +3809,20 @@ sixel_cms_do_transform_builtin_to_srgb(
         if (pixel_count > SIZE_MAX / 3u) {
             return 0;
         }
-        tmp_rgb = (unsigned char *)malloc(pixel_count * 3u);
+        /* The ordered PCS loop reuses a one-pixel buffer across its
+         * compatibility calls. Bulk conversion owns its full buffer. */
+        if (rgba_scratch != NULL) {
+            tmp_rgb = *rgba_scratch;
+        }
         if (tmp_rgb == NULL) {
-            return 0;
+            tmp_rgb = (unsigned char *)malloc(pixel_count * 3u);
+            if (tmp_rgb == NULL) {
+                *status = SIXEL_CMS_STATUS_ALLOCATION;
+                return 0;
+            }
+            if (rgba_scratch != NULL) {
+                *rgba_scratch = tmp_rgb;
+            }
         }
         for (i = 0u; i < pixel_count; ++i) {
             tmp_rgb[i * 3u + 0u] = src_u8[i * 4u + 0u];
@@ -3434,7 +3835,9 @@ sixel_cms_do_transform_builtin_to_srgb(
                 pixel_count,
                 &src_profile->builtin_profile,
                 transform)) {
-            free(tmp_rgb);
+            if (rgba_scratch == NULL) {
+                free(tmp_rgb);
+            }
             return 0;
         }
         for (i = 0u; i < pixel_count; ++i) {
@@ -3443,7 +3846,9 @@ sixel_cms_do_transform_builtin_to_srgb(
             dst_u8[i * 4u + 2u] = tmp_rgb[i * 3u + 2u];
             dst_u8[i * 4u + 3u] = src_u8[i * 4u + 3u];
         }
-        free(tmp_rgb);
+        if (rgba_scratch == NULL) {
+            free(tmp_rgb);
+        }
         return 1;
     }
 
@@ -3454,6 +3859,7 @@ sixel_cms_do_transform_builtin_to_srgb(
         }
         tmp_rgb = (unsigned char *)malloc(pixel_count * 3u);
         if (tmp_rgb == NULL) {
+            *status = SIXEL_CMS_STATUS_ALLOCATION;
             return 0;
         }
         memcpy(tmp_rgb, src, pixel_count * 3u);
@@ -3553,11 +3959,9 @@ sixel_cms_do_transform_builtin_to_srgb(
         return 1;
     }
 
+    *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
     return 0;
 }
-
-static double
-sixel_cdef_pcs_scale(sixel_icc_lut_t const *lut);
 
 /*
  * Float working RGB is an analytic endpoint, not an ICC device or a byte
@@ -3565,46 +3969,42 @@ sixel_cdef_pcs_scale(sixel_icc_lut_t const *lut);
  * ICC device/LUT-domain validation inside the profile evaluator. Legacy
  * byte transforms retain their existing bounded conversion contract.
  */
-static int
+static sixel_icc_path_t
 sixel_cms_float_source_xyz(double xyz[3], double const source[4],
                             size_t channels,
-                            sixel_cms_transform_t const *transform)
+                            sixel_cms_transform_t const *transform,
+                            int legacy_only)
 {
-    static double const d50[3] = {0.9642, 1.0, 0.8249};
     sixel_cms_profile_t const *profile;
     sixel_icc_profile_t const *icc;
-    sixel_icc_lut_t const *lut;
     unsigned int slot;
+    sixel_icc_path_t path;
     size_t i;
     size_t channel;
-    double scale;
     double linear[3];
 
     profile = transform->src_profile;
     if (profile->rgb_definition != NULL) {
         return channels == 3u && sixel_cdef_to_xyz(profile->rgb_definition,
-                                                    source, xyz, 1);
+            source, xyz, 1) ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
     }
     if (!profile->builtin_profile_valid) {
-        return 0;
+        return SIXEL_ICC_PATH_NONE;
     }
     icc = &profile->builtin_profile;
     for (i = 0u; i < transform->builtin_a2b_slot_count; ++i) {
         slot = transform->builtin_a2b_slots[i];
-        if (sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(xyz, source,
-                channels, icc, slot, 0)) {
-            if (icc->pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
-                /* LUT PCS uses u1.7/u1.15; matrix tags already contain
-                 * physical XYZ. A selected LUT never uses matrix fallback. */
-                lut = icc->a2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID
-                    ? &icc->a2b_lut[slot] : &icc->d2b_lut[slot];
-                scale = sixel_cdef_pcs_scale(lut);
-                for (channel = 0u; channel < 3u; ++channel) {
-                    xyz[channel] *= scale;
-                }
-            }
-            return 1;
+        path = sixel_icc_device_to_pcs(xyz, source, channels, icc, slot,
+                                       legacy_only);
+        if (path != SIXEL_ICC_PATH_NONE) {
+            return path;
         }
+    }
+    if (icc->lut_only) {
+        if (sixel_cms_has_colorspace_fallback(icc, 0)) {
+            return sixel_icc_device_to_pcs(xyz, source, channels, icc, 0u, 1);
+        }
+        return SIXEL_ICC_PATH_NONE;
     }
     if (icc->kind == SIXEL_ICC_PROFILE_KIND_RGB && channels == 3u) {
         /* Evaluate retained parametric TRCs directly. The legacy helper's
@@ -3613,7 +4013,7 @@ sixel_cms_float_source_xyz(double xyz[3], double const source[4],
             if (!sixel_icc_curve_device(&icc->curves[channel],
                                            source[channel], 0,
                                            &linear[channel])) {
-                return 0;
+                return SIXEL_ICC_PATH_NONE;
             }
         }
         for (channel = 0u; channel < 3u; ++channel) {
@@ -3621,22 +4021,22 @@ sixel_cms_float_source_xyz(double xyz[3], double const source[4],
                 icc->matrix_to_xyz_d50[channel][1] * linear[1] +
                 icc->matrix_to_xyz_d50[channel][2] * linear[2];
         }
-        return 1;
+        return SIXEL_ICC_PATH_LEGACY;
     }
     if (icc->kind == SIXEL_ICC_PROFILE_KIND_GRAY && channels == 1u) {
         /* Gray kTRC scales the PCS illuminant, independently of media wtpt.
          * Retain parametric precision just as for RGB float sources above. */
         if (!sixel_icc_curve_device(&icc->curves[0], source[0], 0,
                                      &linear[0])) {
-            return 0;
+            return SIXEL_ICC_PATH_NONE;
         }
         for (channel = 0u; channel < 3u; ++channel) {
-            xyz[channel] = d50[channel] * linear[0];
+            xyz[channel] = sixel_cms_pcs_white[channel] * linear[0];
         }
-        return 1;
+        return SIXEL_ICC_PATH_LEGACY;
     }
-    return sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(xyz, source,
-        channels, icc, SIXEL_ICC_A2B_SLOT_COUNT, 1);
+    return sixel_icc_device_to_pcs(xyz, source, channels, icc,
+                                   SIXEL_ICC_MPET_SLOT_COUNT, 1);
 }
 
 static int
@@ -3675,20 +4075,10 @@ sixel_cms_float_rgb(sixel_cms_transform_t const *transform,
                 }
             }
         } else if (!sixel_cms_builtin_load_src_unit(source, &channels, NULL,
-                       transform->src_format, src, pixel)) {
+                       transform->src_format, src, pixel, 0)) {
             return 0;
         }
-        if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32) {
-            /* The facade stores a/b divided by 128, whereas ICC device
-             * tables use an unsigned unit interval with a neutral offset.
-             * Keep this conversion at the new float endpoint boundary;
-             * legacy device transforms perform their own normalization. */
-            source[1] = sixel_cms_clamp_unit(
-                (source[1] * 128.0 + 128.0) / 255.0);
-            source[2] = sixel_cms_clamp_unit(
-                (source[2] * 128.0 + 128.0) / 255.0);
-        }
-        if (!sixel_cms_float_source_xyz(xyz, source, channels, transform) ||
+        if (!sixel_cms_float_source_xyz(xyz, source, channels, transform, 0) ||
             !sixel_cdef_from_xyz(transform->dst_profile->rgb_definition,
                                    xyz, rgb, 1)) {
             return 0;
@@ -3705,48 +4095,475 @@ sixel_cms_float_rgb(sixel_cms_transform_t const *transform,
     return 1;
 }
 
-static int
-sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
-                               void const *src,
-                               void *dst,
-                               size_t pixel_count)
+/* Device layouts used only at the PCS bridge. An exact alias must be
+ * traversed from the end when the destination pixel expands. */
+static size_t
+sixel_cms_builtin_pixel_stride(sixel_cms_pixel_format_t format,
+                               sixel_cms_color_space_t *space)
 {
-    sixel_cms_profile_t const *dst_profile;
+    static struct {
+        sixel_cms_color_space_t space;
+        size_t stride;
+    } const layouts[] = {
+        {SIXEL_CMS_COLORSPACE_GRAY, 1u},
+        {SIXEL_CMS_COLORSPACE_RGB, 3u},
+        {SIXEL_CMS_COLORSPACE_RGB, 4u},
+        {SIXEL_CMS_COLORSPACE_RGB, 3u * sizeof(float)},
+        {SIXEL_CMS_COLORSPACE_CMYK, 4u},
+        {SIXEL_CMS_COLORSPACE_CMYK, 4u * sizeof(uint16_t)},
+        {SIXEL_CMS_COLORSPACE_CMYK, 4u * sizeof(float)},
+        {SIXEL_CMS_COLORSPACE_LAB, 3u * sizeof(float)},
+        {SIXEL_CMS_COLORSPACE_GRAY, sizeof(float)}
+    };
+    unsigned int index;
 
-    dst_profile = NULL;
-    if (transform == NULL || src == NULL || dst == NULL || pixel_count == 0u) {
-        return 0;
+    if (format < SIXEL_CMS_PIXELFORMAT_GRAY_8 ||
+        format > SIXEL_CMS_PIXELFORMAT_GRAY_F32) {
+        return 0u;
     }
+    index = (unsigned int)format - SIXEL_CMS_PIXELFORMAT_GRAY_8;
+    *space = layouts[index].space;
+    return layouts[index].stride;
+}
 
-    dst_profile = transform->dst_profile;
-    if (dst_profile == NULL) {
-        return 0;
+static sixel_icc_path_t
+sixel_cms_pcs_to_device(double device[4], double const xyz[3],
+                        sixel_cms_transform_t const *transform,
+                        double const *inverse)
+{
+    sixel_cms_profile_t const *profile;
+    sixel_icc_profile_t const *icc;
+    sixel_icc_path_t path;
+    size_t channels;
+    size_t i;
+    double linear[3];
+
+    profile = transform->dst_profile;
+    if (profile->rgb_definition != NULL) {
+        return sixel_cdef_from_xyz(profile->rgb_definition, xyz, device, 1)
+            ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
     }
-    if (dst_profile->rgb_definition != NULL &&
+    icc = &profile->builtin_profile;
+    if (!sixel_cms_builtin_kind_channel_count(icc->kind, &channels)) {
+        return SIXEL_ICC_PATH_NONE;
+    }
+    for (i = 0u; i < transform->builtin_a2b_slot_count; ++i) {
+        path = sixel_icc_pcs_to_device(device, channels, xyz, icc,
+                                       transform->builtin_a2b_slots[i], 0);
+        if (path != SIXEL_ICC_PATH_NONE) {
+            return path;
+        }
+    }
+    if (icc->lut_only) {
+        if (sixel_cms_has_colorspace_fallback(icc, 1)) {
+            return sixel_icc_pcs_to_device(device, channels, xyz, icc, 0u, 1);
+        }
+        return SIXEL_ICC_PATH_NONE;
+    }
+    if (inverse != NULL) {
+        sixel_cms_apply_matrix3((double const (*)[3])inverse, xyz, linear);
+        for (i = 0u; i < 3u; ++i) {
+            if (!sixel_icc_curve_device(&icc->curves[i], linear[i], 1,
+                                         &device[i])) {
+                return SIXEL_ICC_PATH_NONE;
+            }
+        }
+        return SIXEL_ICC_PATH_LEGACY;
+    }
+    if (icc->kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
+        return sixel_icc_curve_device(&icc->curves[0], xyz[1], 1, device)
+            ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
+    }
+    return sixel_icc_apply_lab_xyz_to_device(device, xyz, icc, 1)
+        ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
+}
+
+static int
+sixel_cms_do_builtin_legacy(sixel_cms_transform_t const *transform,
+                             void const *src, void *dst, size_t count,
+                             sixel_cms_status_t *status,
+                             unsigned char **rgba_scratch)
+{
+    sixel_cms_profile_t const *target;
+
+    target = transform->dst_profile;
+    if (target->rgb_definition != NULL &&
         transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
-        return sixel_cms_float_rgb(transform, src, dst, pixel_count);
+        return sixel_cms_float_rgb(transform, src, dst, count);
     }
-    if (sixel_cms_builtin_profile_is_srgb(dst_profile)) {
-        return sixel_cms_do_transform_builtin_to_srgb(transform,
-                                                      src,
-                                                      dst,
-                                                      pixel_count);
+    if (sixel_cms_builtin_profile_is_srgb(target)) {
+        return sixel_cms_do_transform_builtin_to_srgb(transform, src, dst,
+            count, status, rgba_scratch);
     }
     return sixel_cms_do_transform_builtin_device_to_device(transform,
-                                                           src,
-                                                           dst,
-                                                           pixel_count);
+        src, dst, count, status);
+}
+
+/* Evaluate one intent without writing any part of the output pixel. */
+static int
+sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
+                            double const source[4], size_t channels,
+                            sixel_cms_transform_t const *transform,
+                            double const *inverse_rgb, size_t *source_index)
+{
+    sixel_cms_transform_t analytic;
+    sixel_icc_profile_t const *src_icc;
+    sixel_icc_profile_t const *dst_icc;
+    sixel_icc_path_t forward;
+    sixel_icc_path_t reverse;
+    double const *white;
+    double const *dst_white;
+    double xyz[3];
+    double absolute[3];
+    size_t dst_channels;
+    size_t i;
+    size_t index;
+    size_t choices;
+    int direct;
+
+    src_icc = &transform->src_profile->builtin_profile;
+    dst_icc = &transform->dst_profile->builtin_profile;
+    choices = 2u * transform->builtin_a2b_slot_count +
+        (size_t)transform->builtin_absolute + 1u;
+    *uses_mpet = 0;
+    /* Try the next source representation when its downstream endpoint
+     * cannot evaluate or store the sample. Absolute PCS precedes the
+     * relative slots, whose MPE and legacy paths retain their own order. */
+    while (*source_index < choices) {
+        index = (*source_index)++;
+        forward = SIXEL_ICC_PATH_NONE;
+        direct = transform->builtin_absolute && index == 0u;
+        if (direct) {
+            forward = sixel_icc_device_to_pcs(xyz, source, channels, src_icc,
+                                              SIXEL_ICC_MPET_ABSOLUTE_SLOT, 0);
+        } else if (index + 1u == choices) {
+            analytic = *transform;
+            analytic.builtin_a2b_slot_count = 0u;
+            forward = sixel_cms_float_source_xyz(xyz, source, channels,
+                                                  &analytic, 1);
+        } else {
+            index -= (size_t)transform->builtin_absolute;
+            forward = sixel_icc_device_to_pcs(xyz, source, channels, src_icc,
+                transform->builtin_a2b_slots[index / 2u], (int)(index % 2u));
+        }
+        if (forward == SIXEL_ICC_PATH_NONE) {
+            continue;
+        }
+        if (transform->builtin_absolute) {
+            /* Dedicated tags use absolute PCS. Adjust the endpoints that
+             * derive absolute from relative PCS without applying adaptation. */
+            white = direct ? sixel_cms_pcs_white
+                : sixel_cms_media_white(src_icc);
+            if (sixel_cms_has_mpet(dst_icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT, 1) &&
+                sixel_cms_builtin_kind_channel_count(dst_icc->kind,
+                                                     &dst_channels)) {
+                for (i = 0u; i < 3u; ++i) {
+                    absolute[i] = xyz[i] * (white[i] / sixel_cms_pcs_white[i]);
+                }
+                if (sixel_icc_pcs_to_device(device, dst_channels, absolute,
+                        dst_icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT, 0)) {
+                    *uses_mpet = 1;
+                    return 1;
+                }
+            }
+            dst_white = sixel_cms_media_white(dst_icc);
+            for (i = 0u; i < 3u; ++i) {
+                xyz[i] *= white[i] / dst_white[i];
+                if (!isfinite(xyz[i])) {
+                    return 0;
+                }
+            }
+        }
+        reverse = sixel_cms_pcs_to_device(device, xyz, transform, inverse_rgb);
+        *uses_mpet = forward == SIXEL_ICC_PATH_MPET ||
+            reverse == SIXEL_ICC_PATH_MPET;
+        if (reverse != SIXEL_ICC_PATH_NONE) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static size_t
+sixel_cms_builtin_pcs_candidates(sixel_cms_transform_t candidates[4],
+                                  sixel_cms_transform_t const *transform)
+{
+    sixel_cms_transform_t *candidate;
+    sixel_icc_profile_t const *src;
+    sixel_icc_profile_t const *dst;
+    size_t i;
+    size_t count;
+    unsigned int slot;
+    int intent;
+
+    candidates[0] = *transform;
+    if (!transform->builtin_pcs_ordered) {
+        return 1u;
+    }
+
+    src = &transform->src_profile->builtin_profile;
+    dst = &transform->dst_profile->builtin_profile;
+    count = 0u;
+    for (i = 0u; i < transform->builtin_intent_count; ++i) {
+        intent = transform->builtin_intents[i];
+        candidate = &candidates[count];
+        *candidate = *transform;
+        if (intent == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
+            candidate->builtin_absolute = 1;
+            candidate->builtin_a2b_slots[0] = 1u;
+            candidate->builtin_a2b_slots[1] = 0u;
+            candidate->builtin_a2b_slot_count = 2u;
+        } else {
+            slot = sixel_cms_intent_to_a2b_slot(intent);
+            /* A non-relative intent preceding absolute or relative needs
+             * an explicit table on at least one end. ColorSpace LUTs
+             * can also fall back to the legacy perceptual table. */
+            if (intent != SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC &&
+                !sixel_cms_has_slot(src, slot, 0) &&
+                !sixel_cms_has_slot(dst, slot, 1) &&
+                !src->lut_only && !dst->lut_only &&
+                transform->builtin_intent_count != 1u) {
+                continue;
+            }
+            candidate->builtin_a2b_slots[0] = slot;
+            candidate->builtin_a2b_slot_count = 1u;
+        }
+        ++count;
+    }
+    return count;
+}
+
+/* A mixed legacy pair is ready when both of its slots have been reached.
+ * An earlier prefix may fail even if each endpoint works in isolation. */
+static size_t
+sixel_cms_builtin_legacy_pair_index(
+    sixel_cms_transform_t const *transform,
+    sixel_cms_transform_t const candidates[4], size_t first, size_t count,
+    void const *src, void *dst)
+{
+    sixel_cms_transform_t prefix;
+    sixel_cms_status_t status;
+    size_t i;
+
+    prefix = *transform;
+    prefix.builtin_a2b_slot_count = 0u;
+    status = SIXEL_CMS_STATUS_OK;
+    for (i = 0u; i < count; ++i) {
+        if (candidates[i].builtin_absolute) {
+            continue;
+        }
+        prefix.builtin_a2b_slots[prefix.builtin_a2b_slot_count++] =
+            candidates[i].builtin_a2b_slots[0];
+        if (i >= first && sixel_cms_do_transform_builtin_device_to_device(
+                &prefix, src, dst, 1u, &status)) {
+            return i;
+        }
+    }
+    return count;
+}
+
+static int
+sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
+                         void const *src, void *dst, size_t count,
+                         sixel_cms_status_t *status)
+{
+    sixel_cms_transform_t candidates[4];
+    sixel_cms_transform_t const *candidate;
+    sixel_cms_profile_t const *target;
+    sixel_cms_color_space_t src_space;
+    sixel_cms_color_space_t dst_space;
+    sixel_cms_status_t legacy_status;
+    size_t src_stride;
+    size_t dst_stride;
+    size_t channels;
+    size_t step;
+    size_t pixel;
+    size_t n;
+    size_t i;
+    size_t legacy_index;
+    size_t source_index;
+    void const *input;
+    union {
+        float f32[4];
+        uint16_t u16[4];
+        unsigned char bytes[4 * sizeof(float)];
+    } sample, legacy_sample;
+    double source[4];
+    double device[4];
+    double matrix[9];
+    double inverse[9];
+    double const *inverse_rgb;
+    unsigned char *rgba_scratch;
+    unsigned char alpha;
+    int float_rgb;
+    int uses_mpet;
+    int legacy_byte_pair;
+    int keep_legacy;
+    int try_legacy_pair;
+    int evaluated;
+    int ok;
+
+    target = transform->dst_profile;
+    src_stride = sixel_cms_builtin_pixel_stride(transform->src_format,
+                                                &src_space);
+    dst_stride = sixel_cms_builtin_pixel_stride(transform->dst_format,
+                                                &dst_space);
+    if (src_stride == 0u || dst_stride == 0u ||
+        count > SIZE_MAX / src_stride || count > SIZE_MAX / dst_stride ||
+        src_space != transform->src_profile->colorspace ||
+        (dst_space != target->colorspace &&
+         !(target->is_srgb_profile && src_space == SIXEL_CMS_COLORSPACE_GRAY &&
+           transform->dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_8))) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
+        return 0;
+    }
+    float_rgb = target->rgb_definition != NULL &&
+        transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32;
+    /* Keep the legacy byte encoding for ColorSpace RGB and for gray
+     * output through the builtin sRGB conversion. */
+    legacy_byte_pair = transform->src_format == transform->dst_format &&
+        (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
+         transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGBA_8);
+    legacy_byte_pair |= target->is_srgb_profile &&
+        transform->src_format == SIXEL_CMS_PIXELFORMAT_GRAY_8 &&
+        (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
+         transform->dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_8);
+    keep_legacy = !float_rgb && (legacy_byte_pair ||
+        (!transform->src_profile->builtin_profile.lut_only &&
+         !target->builtin_profile.lut_only));
+    try_legacy_pair = transform->builtin_pcs_ordered &&
+        transform->builtin_a2b_slot_count > 1u && !float_rgb &&
+        !sixel_cms_builtin_profile_is_srgb(target);
+    inverse_rgb = NULL;
+    if (target->rgb_definition == NULL &&
+        target->builtin_profile.kind == SIXEL_ICC_PROFILE_KIND_RGB &&
+        sixel_cms_has_matrix_trc(&target->builtin_profile)) {
+        memcpy(matrix, target->builtin_profile.matrix_to_xyz_d50,
+               sizeof(matrix));
+        if (sixel_cms_matrix3_invert_internal(matrix, inverse)) {
+            inverse_rgb = inverse;
+        }
+    }
+
+    n = sixel_cms_builtin_pcs_candidates(candidates, transform);
+    rgba_scratch = NULL;
+    ok = 0;
+    for (step = 0u; step < count; ++step) {
+        pixel = src == dst && dst_stride > src_stride
+            ? count - step - 1u : step;
+        input = (unsigned char const *)src + pixel * src_stride;
+        legacy_index = n;
+        alpha = 255u;
+        if (!sixel_cms_builtin_load_src_unit(source, &channels, &alpha,
+                transform->src_format, input, 0u,
+                transform->builtin_pcs_ordered ||
+                    (float_rgb && src_space == SIXEL_CMS_COLORSPACE_RGB))) {
+            goto done;
+        }
+        for (i = 0u; i < n; ++i) {
+            candidate = &candidates[i];
+            source_index = 0u;
+            do {
+                evaluated = sixel_cms_eval_builtin_pcs(device, &uses_mpet,
+                    source, channels, candidate, inverse_rgb, &source_index);
+            } while (evaluated && uses_mpet &&
+                !sixel_cms_builtin_store_dst_unit(&sample,
+                    transform->dst_format, 0u, device, alpha, 1));
+            if (evaluated && uses_mpet) {
+                break;
+            }
+            if (i == legacy_index) {
+                memcpy(&sample, &legacy_sample, dst_stride);
+                break;
+            }
+            if (legacy_index < n && !candidate->builtin_absolute) {
+                continue;
+            }
+            /* The presence of other mpet tags cannot change the PCS
+             * encoding or rounding of an existing legacy path. */
+            if (evaluated && !candidate->builtin_absolute && keep_legacy) {
+                legacy_status = SIXEL_CMS_STATUS_OK;
+                if (sixel_cms_do_builtin_legacy(candidate, input, &sample, 1u,
+                        &legacy_status, &rgba_scratch)) {
+                    break;
+                }
+                if (legacy_status == SIXEL_CMS_STATUS_ALLOCATION) {
+                    *status = legacy_status;
+                    goto done;
+                }
+            }
+            if (try_legacy_pair && !candidate->builtin_absolute) {
+                /* A candidate may fail when its reverse slot is absent.
+                 * Find the mixed pair before a later legacy candidate
+                 * commits, while still giving earlier MPE paths priority. */
+                legacy_index = sixel_cms_builtin_legacy_pair_index(transform,
+                    candidates, i, n, input, &legacy_sample);
+                if (i == legacy_index) {
+                    memcpy(&sample, &legacy_sample, dst_stride);
+                    break;
+                }
+                if (legacy_index < n) {
+                    continue;
+                }
+            }
+            if (evaluated && sixel_cms_builtin_store_dst_unit(&sample,
+                    transform->dst_format, 0u, device, alpha, float_rgb)) {
+                break;
+            }
+        }
+        if (i == n) {
+            /* Legacy device-to-device conversions can pair the first
+             * usable slot on each endpoint independently. Give them the
+             * full slot order after all paired intent candidates fail. */
+            if (!try_legacy_pair ||
+                !sixel_cms_do_transform_builtin_device_to_device(
+                    transform, input, &sample, 1u, status)) {
+                goto done;
+            }
+        }
+        /* A failed intent can partially write its scratch sample. Commit
+         * only the successful candidate, also for in-place conversion. */
+        memcpy((unsigned char *)dst + pixel * dst_stride, &sample, dst_stride);
+    }
+    ok = 1;
+done:
+    if (rgba_scratch != NULL) {
+        free(rgba_scratch);
+    }
+    return ok;
+}
+
+static int
+sixel_cms_do_transform_builtin(sixel_cms_transform_t const *transform,
+                                void const *src, void *dst, size_t pixel_count,
+                                sixel_cms_status_t *status)
+{
+    if (transform == NULL || src == NULL || dst == NULL || pixel_count == 0u ||
+        transform->dst_profile == NULL) {
+        return 0;
+    }
+    if (transform->builtin_absolute || transform->builtin_pcs_ordered) {
+        return sixel_cms_do_builtin_pcs(transform, src, dst, pixel_count,
+                                        status);
+    }
+    if (transform->builtin_a2b_slot_count == 0u) {
+        return 0;
+    }
+    return sixel_cms_do_builtin_legacy(transform, src, dst, pixel_count,
+                                       status, NULL);
 }
 
 #if SIXEL_CMS_HAVE_COLORSYNC
 static int
 sixel_cms_colorsync_source_matches(
-    sixel_cms_transform_t const *transform, size_t channels)
+    sixel_cms_transform_t const *transform, size_t channels,
+    sixel_cms_status_t *status)
 {
     /* A scratch row must contain exactly the colorants consumed by the
      * native ICC transform. Otherwise ColorSync can read unfilled scratch
      * components despite reporting success. Reject before any write. */
     if (transform->native_src_channels != channels) {
+        *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
         loader_trace_message("LSXCMS2|event=reject|engine=colorsync|"
             "reason=native-source-channels|src=%d|dst=%d|"
             "native=%lu|expected=%lu", transform->src_format,
@@ -3761,7 +4578,7 @@ sixel_cms_colorsync_source_matches(
 static int
 sixel_cms_colorsync_promote_source(
     sixel_cms_transform_t const *transform,
-    void const *src, void *dst, size_t count)
+    void const *src, void *dst, size_t count, sixel_cms_status_t *status)
 {
     float input[256u * 4u];
     unsigned char const *source8;
@@ -3790,7 +4607,7 @@ sixel_cms_colorsync_promote_source(
     }
     if (!sixel_cms_colorsync_source_matches(transform,
             channels - (transform->src_format
-                        == SIXEL_CMS_PIXELFORMAT_RGBA_8 ? 1u : 0u))) {
+                        == SIXEL_CMS_PIXELFORMAT_RGBA_8 ? 1u : 0u), status)) {
         return 0;
     }
     source8 = (unsigned char const *)src;
@@ -3831,7 +4648,8 @@ sixel_cms_colorsync_promote_source(
 
 static int
 sixel_cms_colorsync_lab_units(sixel_cms_transform_t const *transform,
-                              void const *src, void *dst, size_t count)
+                              void const *src, void *dst, size_t count,
+                              sixel_cms_status_t *status)
 {
     float input[256u * 3u];
     float const *source;
@@ -3847,7 +4665,7 @@ sixel_cms_colorsync_lab_units(sixel_cms_transform_t const *transform,
      * LUT encoding with an offset of 128. For a matching native source
      * layout, change only these input units; preserve native value
      * handling and extended RGB output. */
-    if (!sixel_cms_colorsync_source_matches(transform, 3u)) {
+    if (!sixel_cms_colorsync_source_matches(transform, 3u, status)) {
         return 0;
     }
     source = src;
@@ -3928,12 +4746,14 @@ static int
 sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
                        void const *src,
                        void *dst,
-                       size_t pixel_count)
+                       size_t pixel_count,
+                              sixel_cms_status_t *status)
 {
     sixel_cms_color_space_t expected;
     sixel_cms_color_space_t actual;
 
     if (transform == NULL || src == NULL || dst == NULL || pixel_count == 0u) {
+        *status = SIXEL_CMS_STATUS_INVALID_ARGUMENT;
         return 0;
     }
 
@@ -3973,12 +4793,14 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
                     sixel_cms_transform_engine(transform)),
                 transform->src_format, transform->dst_format, actual,
                 expected);
+            *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
             return 0;
         }
     }
 
 #if HAVE_LCMS2
     if (transform->backend == SIXEL_CMS_PROFILE_BACKEND_LCMS2) {
+        *status = SIXEL_CMS_STATUS_BACKEND_REJECTED;
         if (transform->lcms_handle == NULL) {
             return 0;
         }
@@ -3998,6 +4820,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
             loader_trace_message("LSXCMS2|event=reject|engine=lcms2|"
                 "reason=expanding-alias|src=%d|dst=%d",
                 transform->src_format, transform->dst_format);
+            *status = SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT;
             return 0;
         }
         if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
@@ -4025,6 +4848,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         size_t i;
         int converted;
 
+        *status = SIXEL_CMS_STATUS_BACKEND_REJECTED;
         if (transform->colorsync_handle == NULL ||
             transform->src_bytes_per_pixel == 0u ||
             transform->dst_bytes_per_pixel == 0u) {
@@ -4041,7 +4865,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         if (transform->src_format == SIXEL_CMS_PIXELFORMAT_LAB_F32 &&
             transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32) {
             return sixel_cms_colorsync_lab_units(transform, src, dst,
-                                                  pixel_count);
+                                                  pixel_count, status);
         }
 
         if (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32 &&
@@ -4051,7 +4875,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
              transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_8 ||
              transform->src_format == SIXEL_CMS_PIXELFORMAT_CMYK_16)) {
             return sixel_cms_colorsync_promote_source(transform, src, dst,
-                                                       pixel_count);
+                                                       pixel_count, status);
         }
 
         copy_alpha = ((transform->flags & SIXEL_CMS_TRANSFORM_COPY_ALPHA) != 0 &&
@@ -4064,6 +4888,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         if (copy_alpha && src == dst) {
             alpha_copy = (unsigned char *)malloc(pixel_count);
             if (alpha_copy == NULL) {
+                *status = SIXEL_CMS_STATUS_ALLOCATION;
                 return 0;
             }
             for (i = 0u; i < pixel_count; ++i) {
@@ -4108,7 +4933,7 @@ sixel_cms_apply_backend(sixel_cms_transform_t const *transform,
         return sixel_cms_do_transform_builtin(transform,
                                               src,
                                               dst,
-                                              pixel_count);
+                                              pixel_count, status);
     }
 
     return 0;
@@ -4133,13 +4958,23 @@ sixel_cms_transform_engine(sixel_cms_transform_t const *transform)
 }
 
 int
-sixel_cms_do_transform(sixel_cms_transform_t const *transform,
-                       void const *src, void *dst, size_t pixel_count)
+sixel_cms_do_transform_ex(sixel_cms_transform_t const *transform,
+                       void const *src, void *dst, size_t pixel_count,
+                          sixel_cms_status_t *status)
 {
     int result;
     char const *path;
+    sixel_cms_status_t outcome;
 
-    result = sixel_cms_apply_backend(transform, src, dst, pixel_count);
+    outcome = SIXEL_CMS_STATUS_EVALUATION_FAILED;
+    result = sixel_cms_apply_backend(transform, src, dst, pixel_count,
+                                     &outcome);
+    if (result) {
+        outcome = SIXEL_CMS_STATUS_OK;
+    }
+    if (status != NULL) {
+        *status = outcome;
+    }
     if (transform != NULL) {
         path = "external";
         if (transform->backend == SIXEL_CMS_PROFILE_BACKEND_BUILTIN) {
@@ -4152,8 +4987,26 @@ sixel_cms_do_transform(sixel_cms_transform_t const *transform,
             sixel_cms_engine_to_string(sixel_cms_transform_engine(transform)),
             path, (int)transform->src_format, (int)transform->dst_format,
             result);
+        /* Consumers parse the complete apply record. Keep its schema and
+         * attach failure diagnostics through a separate event. */
+        if (!result) {
+            sixel_trace_topic_message("loader",
+                "LSXCMS2|event=transform-failure|engine=%s|src=%d|dst=%d"
+                "|reason=%s",
+                sixel_cms_engine_to_string(
+                    sixel_cms_transform_engine(transform)),
+                (int)transform->src_format, (int)transform->dst_format,
+                sixel_cms_status_name(outcome));
+        }
     }
     return result;
+}
+
+int
+sixel_cms_do_transform(sixel_cms_transform_t const *transform,
+                       void const *src, void *dst, size_t pixel_count)
+{
+    return sixel_cms_do_transform_ex(transform, src, dst, pixel_count, NULL);
 }
 
 void
@@ -4960,6 +5813,7 @@ sixel_cms_apply_linear_colorsync(sixel_cms_profile_t const *source_profile,
     sixel_cms_profile_t const *destination, sixel_cms_pixel_format_t format,
     float const *source, float *output, size_t count, int strict)
 {
+    sixel_cms_status_t status;
     sixel_cms_profile_t prepared;
     sixel_cms_profile_t const *active_profile;
     sixel_cms_transform_t *transform;
@@ -5041,7 +5895,7 @@ sixel_cms_apply_linear_colorsync(sixel_cms_profile_t const *source_profile,
     }
     transform = strict
         ? sixel_cms_create_transform_colorsync(active_profile, format,
-              destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0)
+              destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0, &status)
         : sixel_cms_create_transform(active_profile, format, destination,
               SIXEL_CMS_PIXELFORMAT_RGB_F32, 0);
     if (transform == NULL) {
@@ -5085,7 +5939,7 @@ sixel_cms_apply_linear_colorsync(sixel_cms_profile_t const *source_profile,
         }
         transform = strict
             ? sixel_cms_create_transform_colorsync(active_profile, format,
-                  destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0)
+                  destination, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0, &status)
             : sixel_cms_create_transform(active_profile, format, destination,
                   SIXEL_CMS_PIXELFORMAT_RGB_F32, 0);
         if (transform == NULL) {
@@ -5495,22 +6349,6 @@ sixel_cdef_matrix(double const matrix[9], double const in[3], double out[3])
     }
 }
 
-/*
- * Legacy ICC LUT evaluators return normalized encoded PCS samples. XYZ
- * LUT8 is u1.7 and LUT16/mAB is u1.15, whereas matrix tags are s15.16
- * tristimulus values. Decode this boundary only on the new descriptor path;
- * changing the legacy global PCS helper would also affect unrelated users.
- */
-static double
-sixel_cdef_pcs_scale(sixel_icc_lut_t const *lut)
-{
-    if (lut->kind == SIXEL_ICC_LUT_MFT1 ||
-        lut->kind == SIXEL_ICC_LUT_MFT1_RGB_GRAY_A2B0) {
-        return 255.0 / 128.0;
-    }
-    return 65535.0 / 32768.0;
-}
-
 sixel_color_def_t *
 sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
                 double const gamma[3])
@@ -5892,6 +6730,7 @@ static int
 sixel_cdef_separable(sixel_color_def_t const *definition)
 {
     unsigned int slot;
+    unsigned int relative;
 
     if (definition == NULL) {
         return 0;
@@ -5902,15 +6741,17 @@ sixel_cdef_separable(sixel_color_def_t const *definition)
     if (!definition->matrix_valid) {
         return 0;
     }
-    for (slot = 0; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
-        if (definition->icc.a2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
-            definition->icc.b2a_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
-            definition->icc.d2b_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
-            definition->icc.b2d_lut[slot].kind != SIXEL_ICC_LUT_INVALID ||
-            definition->icc.a2b_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
-            definition->icc.b2a_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
-            definition->icc.d2b_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID ||
-            definition->icc.b2d_mab[slot].type != SIXEL_ICC_MAB_TYPE_INVALID) {
+    /* Palette snap and gamut mapping use the relative MPE slot. Keep the
+     * existing legacy LUT eligibility rule for owned ICC definitions. */
+    relative = sixel_cms_intent_to_a2b_slot(
+        SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC);
+    if (sixel_cms_has_mpet(&definition->icc, relative, 0) ||
+        sixel_cms_has_mpet(&definition->icc, relative, 1)) {
+        return 0;
+    }
+    for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
+        if (sixel_cms_has_legacy_slot(&definition->icc, slot, 0) ||
+            sixel_cms_has_legacy_slot(&definition->icc, slot, 1)) {
             return 0;
         }
     }
@@ -5984,42 +6825,63 @@ sixel_cdef_transfer(sixel_color_def_t const *definition,
     return 1;
 }
 
+/* Absolute evaluation tries the relative and perceptual slots in order.
+ * The caller handles the dedicated absolute tag and media-white scaling. */
+static int
+sixel_cdef_slots(unsigned int slots[2], sixel_icc_profile_t const *profile,
+                  int intent, int reverse)
+{
+    unsigned int selected;
+    int count;
+
+    selected = sixel_cms_intent_to_a2b_slot(intent);
+    count = 0;
+    if (sixel_cms_has_slot(profile, selected, reverse)) {
+        slots[count++] = selected;
+    }
+    if (intent == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC &&
+        sixel_cms_has_slot(profile, 0u, reverse)) {
+        slots[count++] = 0u;
+    }
+    return count;
+}
+
 int
 sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                    double const rgb[3], double xyz[3], int intent)
 {
     double linear[3];
     double result[3];
+    double const *white;
+    unsigned int slots[2];
+    int count;
     int i;
 
-    /* Absolute intent requires media-white handling, which is not enabled. */
     if (definition == NULL || xyz == NULL || !sixel_cdef_finite(rgb) ||
-        intent < 0 || intent > 2) {
+        intent < 0 || intent > SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
         return 0;
     }
     if (definition->bytes != NULL) {
-        if (definition->icc.a2b_lut[intent].kind != SIXEL_ICC_LUT_INVALID ||
-            definition->icc.a2b_mab[intent].type !=
-                SIXEL_ICC_MAB_TYPE_INVALID ||
-            definition->icc.d2b_lut[intent].kind != SIXEL_ICC_LUT_INVALID ||
-            definition->icc.d2b_mab[intent].type !=
-                SIXEL_ICC_MAB_TYPE_INVALID) {
-            if (!sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
-                    result, rgb, 3u, &definition->icc,
-                    (unsigned int)intent, 0)) {
-                return 0;
+        if (intent == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC &&
+            sixel_cms_has_mpet(&definition->icc,
+                               SIXEL_ICC_MPET_ABSOLUTE_SLOT, 0) &&
+            sixel_icc_apply_device_to_physical_xyz(result, rgb, 3u,
+                &definition->icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT)) {
+            memcpy(xyz, result, sizeof(result));
+            return 1;
+        }
+        count = sixel_cdef_slots(slots, &definition->icc, intent, 0);
+        for (i = 0; i < count; ++i) {
+            if (sixel_icc_apply_device_to_physical_xyz(
+                    result, rgb, 3u, &definition->icc, slots[i])) {
+                break;
             }
-            if (definition->icc.pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
-                for (i = 0; i < 3; ++i) {
-                    result[i] *= sixel_cdef_pcs_scale(
-                        definition->icc.a2b_lut[intent].kind !=
-                        SIXEL_ICC_LUT_INVALID
-                            ? &definition->icc.a2b_lut[intent]
-                            : &definition->icc.d2b_lut[intent]);
-                }
-            }
-        } else {
-            if (!definition->matrix_valid) {
+        }
+        if (i == count) {
+            /* A tag can be present and still fail for this sample.
+             * Use the retained matrix unless the profile requires a LUT. */
+            if (!definition->matrix_valid ||
+                (count > 0 && definition->icc.lut_only)) {
                 return 0;
             }
             for (i = 0; i < 3; ++i) {
@@ -6029,6 +6891,12 @@ sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                 }
             }
             sixel_cdef_matrix(definition->to_xyz, linear, result);
+        }
+        if (intent == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
+            white = sixel_cms_media_white(&definition->icc);
+            for (i = 0; i < 3; ++i) {
+                result[i] *= white[i] / sixel_cms_pcs_white[i];
+            }
         }
     } else {
         if (!sixel_cdef_transfer(definition, rgb, linear, 0)) {
@@ -6049,36 +6917,44 @@ sixel_cdef_from_xyz(sixel_color_def_t const *definition,
 {
     double linear[3];
     double result[3];
+    double relative[3];
+    double const *white;
+    unsigned int slots[2];
+    int count;
     int i;
 
     if (definition == NULL || rgb == NULL || !sixel_cdef_finite(xyz) ||
-        intent < 0 || intent > 2) {
+        intent < 0 || intent > SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
         return 0;
     }
     if (definition->bytes != NULL) {
-        if (definition->icc.b2a_lut[intent].kind != SIXEL_ICC_LUT_INVALID ||
-            definition->icc.b2a_mab[intent].type !=
-                SIXEL_ICC_MAB_TYPE_INVALID ||
-            definition->icc.b2d_lut[intent].kind != SIXEL_ICC_LUT_INVALID ||
-            definition->icc.b2d_mab[intent].type !=
-                SIXEL_ICC_MAB_TYPE_INVALID) {
-            memcpy(linear, xyz, sizeof(linear));
-            if (definition->icc.pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
-                for (i = 0; i < 3; ++i) {
-                    linear[i] /= sixel_cdef_pcs_scale(
-                        definition->icc.b2a_lut[intent].kind !=
-                        SIXEL_ICC_LUT_INVALID
-                            ? &definition->icc.b2a_lut[intent]
-                            : &definition->icc.b2d_lut[intent]);
-                }
+        if (intent == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
+            if (sixel_cms_has_mpet(&definition->icc,
+                                   SIXEL_ICC_MPET_ABSOLUTE_SLOT, 1) &&
+                sixel_icc_apply_physical_xyz_to_device(result, 3u, xyz,
+                    &definition->icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT)) {
+                memcpy(rgb, result, sizeof(result));
+                return 1;
             }
-            if (!sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(
-                    result, 3u, linear, &definition->icc,
-                    (unsigned int)intent)) {
+            white = sixel_cms_media_white(&definition->icc);
+            for (i = 0; i < 3; ++i) {
+                relative[i] = xyz[i] * (sixel_cms_pcs_white[i] / white[i]);
+            }
+            if (!sixel_cdef_finite(relative)) {
                 return 0;
             }
-        } else {
-            if (!definition->matrix_valid) {
+            xyz = relative;
+        }
+        count = sixel_cdef_slots(slots, &definition->icc, intent, 1);
+        for (i = 0; i < count; ++i) {
+            if (sixel_icc_apply_physical_xyz_to_device(
+                    result, 3u, xyz, &definition->icc, slots[i])) {
+                break;
+            }
+        }
+        if (i == count) {
+            if (!definition->matrix_valid ||
+                (count > 0 && definition->icc.lut_only)) {
                 return 0;
             }
             sixel_cdef_matrix(definition->from_xyz, xyz, linear);
@@ -6115,6 +6991,12 @@ sixel_cdef_output_ready(sixel_color_def_t const *definition,
     double evaluated[3];
     size_t i;
 
+    /* The output-profile policy accepts the three palette intent slots.
+     * Absolute XYZ endpoints are available to CMS transforms separately. */
+    if (encoding_intent < 0 || encoding_intent > 2 ||
+        evaluation_intent < 0 || evaluation_intent > 2) {
+        return 0;
+    }
     for (i = 0; i < sizeof(probes) / sizeof(probes[0]); ++i) {
         if (!sixel_cdef_to_xyz(definition, probes[i], xyz,
                                 evaluation_intent) ||
@@ -6135,7 +7017,8 @@ sixel_cxform_new(sixel_color_def_t const *source,
 {
     sixel_color_xform_t *transform;
 
-    if (source == NULL || destination == NULL || intent < 0 || intent > 2) {
+    if (source == NULL || destination == NULL || intent < 0 ||
+        intent > SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
         return NULL;
     }
     transform = calloc(1, sizeof(*transform));

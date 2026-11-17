@@ -146,6 +146,55 @@ SIXEL_INTERNAL_API int
 sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
                           int inverse, double *out);
 
+/* Evaluate one parsed cvst element. Discard output on failure. */
+SIXEL_INTERNAL_API int
+sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,
+                          sixel_icc_mpet_t const *mpet, size_t element);
+
+/* Evaluate one parsed curve set, matrix or CLUT with distinct I/O buffers.
+ * At the PCS boundary the values are XYZ or L*, a*, b* directly.
+ * Discard the output on failure. */
+SIXEL_INTERNAL_API int
+sixel_icc_apply_mpe_element(double *out, size_t output_channels,
+                            double const *in, size_t input_channels,
+                            sixel_icc_mpet_t const *mpet, size_t element);
+
+/* Bridge to physical PCS XYZ before applying an intent adjustment. */
+typedef enum {
+    SIXEL_ICC_PATH_NONE,
+    SIXEL_ICC_PATH_LEGACY,
+    SIXEL_ICC_PATH_MPET
+} sixel_icc_path_t;
+
+/* These two entries accept and return Lab in facade float units
+ * (L* / 100, signed a* / 128, signed b* / 128).
+ * A forward slot of SIXEL_ICC_MPET_SLOT_COUNT requests analytic Lab. */
+SIXEL_INTERNAL_API sixel_icc_path_t
+sixel_icc_device_to_pcs(double xyz[3], double const *device, size_t channels,
+                         sixel_icc_profile_t const *profile,
+                         unsigned int slot, int legacy_only);
+
+SIXEL_INTERNAL_API sixel_icc_path_t
+sixel_icc_pcs_to_device(double *device, size_t channels, double const xyz[3],
+                         sixel_icc_profile_t const *profile,
+                         unsigned int slot, int legacy_only);
+
+SIXEL_INTERNAL_API int
+sixel_icc_apply_lab_xyz_to_device(double device[3], double const xyz[3],
+                                   sixel_icc_profile_t const *profile,
+                                   int lab_float);
+
+/* The boolean entry points use the legacy unsigned Lab encoding. */
+SIXEL_INTERNAL_API int
+sixel_icc_apply_device_to_physical_xyz(
+    double xyz[3], double const *device, size_t channels,
+    sixel_icc_profile_t const *profile, unsigned int slot);
+
+SIXEL_INTERNAL_API int
+sixel_icc_apply_physical_xyz_to_device(
+    double *device, size_t channels, double const xyz[3],
+    sixel_icc_profile_t const *profile, unsigned int slot);
+
 #endif
 
 

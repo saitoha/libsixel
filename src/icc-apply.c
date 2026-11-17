@@ -34,6 +34,7 @@
 #endif
 
 #include <stddef.h>
+#include <float.h>
 #include <string.h>
 
 static double const sixel_icc_xyz_d50_to_d65[3][3] = {
@@ -77,6 +78,461 @@ sixel_icc_encode_srgb_unit(double linear_value)
         return linear_value * 12.92;
     }
     return 1.055 * pow(linear_value, 1.0 / 2.4) - 0.055;
+}
+
+static double
+sixel_icc_mpe_log_power(double const p[5], double x)
+{
+    static double const ln10 = 2.30258509299404568402;
+    double power;
+    double term;
+    double log_term;
+    double log_bias;
+    double larger;
+    double smaller;
+    int negative;
+
+    power = pow(x, p[0]);
+    if (isnan(power) || (x == 0.0 && p[0] < 0.0)) {
+        return NAN;
+    }
+    if (p[2] == 0.0 || (x == 0.0 && p[0] > 0.0)) {
+        return log10(p[3]);
+    }
+    term = p[2] * power;
+    if (isnormal(power) && isnormal(term)) {
+        return log10(term + p[3]);
+    }
+
+    /* Evaluate the signed sum in log space when the power or product
+     * exceeds double's range or loses precision in the subnormal range. */
+    log_term = log(fabs(p[2])) + p[0] * log(fabs(x));
+    negative = (signbit(power) != 0) != (p[2] < 0.0);
+    if (p[3] == 0.0) {
+        return negative ? NAN : log_term / ln10;
+    }
+    if (negative && p[3] < 0.0) {
+        return NAN;
+    }
+    log_bias = log(fabs(p[3]));
+    if (!negative && p[3] > 0.0) {
+        larger = fmax(log_term, log_bias);
+        smaller = fmin(log_term, log_bias);
+        return (larger + log1p(exp(smaller - larger))) / ln10;
+    }
+    /* For opposite signs, the positive operand must have greater
+     * magnitude. expm1 preserves the difference near cancellation. */
+    larger = negative ? log_bias : log_term;
+    smaller = negative ? log_term : log_bias;
+    if (larger <= smaller) {
+        return NAN;
+    }
+    return (larger + log(-expm1(smaller - larger))) / ln10;
+}
+
+static double
+sixel_icc_mpe_formula(sixel_icc_mpe_segment_t const *segment, double x)
+{
+    double const *p;
+
+    p = segment->params;
+    switch (segment->function_type) {
+    case 0u:
+        return pow(p[1] * x + p[2], p[0]) + p[3];
+    case 1u:
+        return p[1] * sixel_icc_mpe_log_power(p, x) + p[4];
+    default:
+        return p[0] * pow(p[1], p[2] * x + p[3]) + p[4];
+    }
+}
+
+static double
+sixel_icc_mpe_lerp(double from, double to, double fraction)
+{
+    double difference;
+    double residual;
+
+    difference = to - from;
+    residual = fabs(to) >= fabs(from) ? (to - difference) - from
+                                    : (-from - difference) + to;
+    /* Fuse the product and addition, then restore the part of the
+     * endpoint difference that would otherwise be lost to rounding. */
+    return fma(fraction, difference, from) + fraction * residual;
+}
+
+static double
+sixel_icc_mpe_sample(sixel_icc_mpe_segment_t const *segment,
+                      sixel_icc_mpe_segment_t const *previous, double x)
+{
+    double lower_distance;
+    double upper_distance;
+    double position;
+    double fraction;
+    double left;
+    double right;
+    size_t index;
+    int from_upper;
+
+    /* Count from the closer end so rounding the full span cannot erase
+     * the distance to a nearby breakpoint. Keep that direction for the
+     * interpolation as well, including a value exactly on a grid point. */
+    lower_distance = x - previous->end;
+    upper_distance = segment->end - x;
+    from_upper = upper_distance < lower_distance;
+    position = (from_upper ? upper_distance : lower_distance) /
+        (segment->end - previous->end) * (double)segment->sample_count;
+    index = (size_t)position;
+    fraction = position - (double)index;
+    if (from_upper) {
+        index = segment->sample_count - 1u - index;
+    }
+    /* The sample at the lower breakpoint is implicit. The preceding
+     * segment supplies it, including when that segment is also sampled. */
+    if (index == 0u) {
+        left = previous->sample_count == 0u
+            ? sixel_icc_mpe_formula(previous, previous->end)
+            : previous->samples[previous->sample_count - 1u];
+        if (!isfinite(left) || fabs(left) > FLT_MAX) {
+            return NAN;
+        }
+    } else {
+        left = segment->samples[index - 1u];
+    }
+    right = segment->samples[index];
+    return from_upper ? sixel_icc_mpe_lerp(right, left, fraction)
+                      : sixel_icc_mpe_lerp(left, right, fraction);
+}
+
+int
+sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,
+                          sixel_icc_mpet_t const *mpet, size_t element)
+{
+    sixel_icc_mpe_t const *mpe;
+    sixel_icc_mpe_curve_t const *curves;
+    sixel_icc_mpe_curve_t const *curve;
+    sixel_icc_mpe_segment_t const *segment;
+    size_t channel;
+    size_t low;
+    size_t high;
+    size_t mid;
+    double x;
+    double y;
+
+    if (mpet == NULL || element >= mpet->element_count ||
+        in == NULL || out == NULL) {
+        return 0;
+    }
+    mpe = &mpet->elements[element];
+    if (mpe->kind != SIXEL_ICC_MPE_CURVE_SET ||
+        channels != mpe->input_channels) {
+        return 0;
+    }
+    curves = mpet->elements[mpe->payload_element].curves;
+    for (channel = 0u; channel < channels; ++channel) {
+        x = in[channel];
+        if (!isfinite(x) || fabs(x) > FLT_MAX) {
+            return 0;
+        }
+        curve = &curves[curves[channel].curve_channel];
+        low = 0u;
+        high = curve->segment_count - 1u;
+        /* The first segment whose upper bound includes x wins. The last
+         * segment is unbounded and never supplies a search breakpoint. */
+        while (low < high) {
+            mid = low + (high - low) / 2u;
+            if (x <= curve->segments[mid].end) {
+                high = mid;
+            } else {
+                low = mid + 1u;
+            }
+        }
+        segment = &curve->segments[low];
+        y = segment->sample_count == 0u
+            ? sixel_icc_mpe_formula(segment, x)
+            : sixel_icc_mpe_sample(segment, segment - 1u, x);
+        if (!isfinite(y) || fabs(y) > FLT_MAX) {
+            return 0;
+        }
+        out[channel] = y;
+    }
+    return 1;
+}
+
+/* Retain rounding error when terms of very different sizes cancel. */
+static void
+sixel_icc_add_compensated(double *sum, double *residual, double term)
+{
+    double next;
+
+    next = *sum + term;
+    *residual += fabs(*sum) >= fabs(term) ? (*sum - next) + term
+                                        : (term - next) + *sum;
+    *sum = next;
+}
+
+/* Recover the rounding error of the product as well as of the sum. */
+static void
+sixel_icc_add_product(double *sum, double *residual, double a, double b)
+{
+    double product;
+
+    product = a * b;
+    sixel_icc_add_compensated(sum, residual, product);
+    *residual += fma(a, b, -product);
+}
+
+static int
+sixel_icc_apply_mpe_matrix(double *out, double const *in,
+                           sixel_icc_mpe_t const *mpe)
+{
+    double const *coefficient;
+    double const *offset;
+    double y;
+    double residual;
+    size_t i;
+    size_t j;
+
+    coefficient = mpe->values;
+    offset = coefficient +
+        (size_t)mpe->input_channels * mpe->output_channels;
+    for (i = 0u; i < mpe->input_channels; ++i) {
+        if (!isfinite(in[i]) || fabs(in[i]) > FLT_MAX) {
+            return 0;
+        }
+    }
+    /* The coefficients are row-major, followed by one offset per row. */
+    for (j = 0u; j < mpe->output_channels; ++j) {
+        y = 0.0;
+        residual = 0.0;
+        for (i = 0u; i < mpe->input_channels; ++i) {
+            sixel_icc_add_product(&y, &residual, *coefficient++, in[i]);
+        }
+        sixel_icc_add_compensated(&y, &residual, offset[j]);
+        y += residual;
+        if (!isfinite(y) || fabs(y) > FLT_MAX) {
+            return 0;
+        }
+        out[j] = y;
+    }
+    return 1;
+}
+
+/* Interpolate only axes between grid points. Pairwise interpolation
+ * also preserves a constant sample exactly, including at float limits. */
+static double
+sixel_icc_mpe_clut_lerp(double const *values, size_t const *steps,
+                         double const *fractions, size_t axes)
+{
+    double lo;
+    double hi;
+    double f;
+
+    if (axes == 0u) {
+        return *values;
+    }
+    --axes;
+    lo = sixel_icc_mpe_clut_lerp(values, steps, fractions, axes);
+    hi = sixel_icc_mpe_clut_lerp(values + steps[axes], steps, fractions, axes);
+    f = fractions[axes];
+    return f <= 0.5 ? sixel_icc_mpe_lerp(lo, hi, f)
+                    : sixel_icc_mpe_lerp(hi, lo, 1.0 - f);
+}
+
+/* Split the cell into simplices by sorting its fractional coordinates.
+ * Each simplex follows at most one edge per axis, so even a 16-axis
+ * table reads at most 17 vertices. Use barycentric weights directly so
+ * a zero-weight vertex cannot affect the sum through cancellation. */
+static void
+sixel_icc_mpe_clut_simplex(double *out, size_t channels,
+                            double const *values, size_t *steps,
+                            double *fractions, size_t axes)
+{
+    size_t i;
+    size_t j;
+    size_t channel;
+    size_t step;
+    size_t count;
+    double fraction;
+    double weight;
+    double weights[SIXEL_ICC_MPE_CLUT_MAX_AXES + 1u];
+    double weight_residuals[SIXEL_ICC_MPE_CLUT_MAX_AXES + 1u];
+    double const *vertex;
+    double const *vertices[SIXEL_ICC_MPE_CLUT_MAX_AXES + 1u];
+    double sample;
+    double low;
+    double high;
+    double sum;
+    double residual;
+
+    for (i = 1u; i < axes; ++i) {
+        step = steps[i];
+        fraction = fractions[i];
+        j = i;
+        while (j > 0u && fractions[j - 1u] < fraction) {
+            steps[j] = steps[j - 1u];
+            fractions[j] = fractions[j - 1u];
+            --j;
+        }
+        steps[j] = step;
+        fractions[j] = fraction;
+    }
+    /* Fractional axes are strictly inside the cell. Its first vertex
+     * therefore contributes even if all the other weights are zero. */
+    count = 1u;
+    vertex = values;
+    vertices[0] = vertex;
+    fraction = axes == 0u ? 0.0 : fractions[0];
+    weights[0] = 1.0 - fraction;
+    weight_residuals[0] = (1.0 - weights[0]) - fraction;
+    for (i = 0u; i < axes; ++i) {
+        fraction = i + 1u == axes ? 0.0 : fractions[i + 1u];
+        weight = fractions[i] - fraction;
+        vertex += steps[i];
+        if (weight > 0.0) {
+            /* Sorted fractions let us recover the subtraction error with
+             * the larger operand first. This includes 1 - fraction above. */
+            weight_residuals[count] = (fractions[i] - weight) - fraction;
+            weights[count] = weight;
+            vertices[count++] = vertex;
+        }
+    }
+    for (channel = 0u; channel < channels; ++channel) {
+        /* Roundoff can leave the convex hull by a few ulps. Bound the
+         * result by its contributing samples, including constant CLUTs
+         * whose values may lie outside the unit interval. */
+        low = high = vertices[0][channel];
+        sum = 0.0;
+        residual = 0.0;
+        for (i = 0u; i < count; ++i) {
+            sample = vertices[i][channel];
+            low = sample < low ? sample : low;
+            high = sample > high ? sample : high;
+            sixel_icc_add_product(&sum, &residual, weights[i], sample);
+            residual = fma(weight_residuals[i], sample, residual);
+        }
+        out[channel] = fmin(high, fmax(low, sum + residual));
+    }
+}
+
+static int
+sixel_icc_apply_mpe_clut(double *out, double const *in,
+                         sixel_icc_mpe_t const *mpe)
+{
+    size_t steps[SIXEL_ICC_MPE_CLUT_MAX_AXES];
+    double fractions[SIXEL_ICC_MPE_CLUT_MAX_AXES];
+    size_t stride;
+    size_t base;
+    size_t axes;
+    size_t low;
+    size_t i;
+    double position;
+
+    if (mpe->input_channels > SIXEL_ICC_MPE_CLUT_MAX_AXES) {
+        return 0;
+    }
+    /* The last input axis changes fastest. Only CLUT inputs use the
+     * unit interval. The sampled output channels stay in float units. */
+    stride = mpe->output_channels;
+    base = 0u;
+    axes = 0u;
+    for (i = mpe->input_channels; i > 0u; --i) {
+        if (!isfinite(in[i - 1u])) {
+            return 0;
+        }
+        position = sixel_icc_clamp_unit(in[i - 1u]) *
+            (double)(mpe->grid_points[i - 1u] - 1u);
+        low = (size_t)position;
+        base += low * stride;
+        if (position > (double)low) {
+            steps[axes] = stride;
+            fractions[axes] = position - (double)low;
+            ++axes;
+        }
+        stride *= mpe->grid_points[i - 1u];
+    }
+    if (mpe->input_channels > 4u) {
+        sixel_icc_mpe_clut_simplex(out, mpe->output_channels,
+            mpe->values + base, steps, fractions, axes);
+        return 1;
+    }
+    for (i = 0u; i < mpe->output_channels; ++i) {
+        out[i] = sixel_icc_mpe_clut_lerp(mpe->values + base + i, steps,
+                                         fractions, axes);
+    }
+    return 1;
+}
+
+int
+sixel_icc_apply_mpe_element(double *out, size_t output_channels,
+                            double const *in, size_t input_channels,
+                            sixel_icc_mpet_t const *mpet, size_t element)
+{
+    sixel_icc_mpe_t const *mpe;
+
+    if (mpet == NULL || element >= mpet->element_count ||
+        in == NULL || out == NULL) {
+        return 0;
+    }
+    /* Shared positions use the decoded payload and shape of their owner. */
+    mpe = &mpet->elements[mpet->elements[element].payload_element];
+    if (output_channels == 0u || output_channels != mpe->output_channels ||
+        input_channels == 0u || input_channels != mpe->input_channels) {
+        return 0;
+    }
+    switch (mpe->kind) {
+    case SIXEL_ICC_MPE_CURVE_SET:
+        return sixel_icc_apply_mpe_curves(out, in, input_channels,
+                                          mpet, element);
+    case SIXEL_ICC_MPE_MATRIX:
+        return sixel_icc_apply_mpe_matrix(out, in, mpe);
+    case SIXEL_ICC_MPE_CLUT:
+        return sixel_icc_apply_mpe_clut(out, in, mpe);
+    default:
+        return 0;
+    }
+}
+
+/* The parser bounds the stage widths and validates their channel chain.
+ * Alternate scratch buffers so each element reads its entire input intact. */
+static int
+sixel_icc_apply_mpet(double *out, size_t output_channels,
+                     double const *in, size_t channels,
+                     sixel_icc_mpet_t const *mpet)
+{
+    double scratch[2][SIXEL_ICC_MPE_MAX_CHANNELS] = {{0.0}};
+    double *stage;
+    size_t i;
+    size_t next;
+
+    if (mpet->element_count == 0u || channels != mpet->input_channels ||
+        output_channels != mpet->output_channels) {
+        return 0;
+    }
+    for (i = 0u; i < mpet->element_count; ++i) {
+        next = mpet->elements[i].output_channels;
+        if (mpet->elements[i].kind == SIXEL_ICC_MPE_BEGIN_ACS ||
+            mpet->elements[i].kind == SIXEL_ICC_MPE_END_ACS) {
+            /* ICC.1 reserves these elements as pass-through placeholders. */
+            continue;
+        }
+        stage = in == scratch[0] ? scratch[1] : scratch[0];
+        if (next > SIXEL_ICC_MPE_MAX_CHANNELS ||
+            !sixel_icc_apply_mpe_element(stage, next, in, channels, mpet, i)) {
+            return 0;
+        }
+        in = stage;
+        channels = next;
+    }
+    if (channels != output_channels) {
+        return 0;
+    }
+    for (i = 0u; i < channels; ++i) {
+        if (!isfinite(in[i]) || fabs(in[i]) > FLT_MAX) {
+            return 0;
+        }
+    }
+    memmove(out, in, channels * sizeof(*out));
+    return 1;
 }
 
 static double
@@ -548,16 +1004,24 @@ sixel_icc_eval_mab_pipeline(double *outputs,
 }
 
 static double
-sixel_icc_lab_inverse_f(double t)
+sixel_icc_lab_inverse_f(double t, int centered)
 {
     double delta;
 
     delta = 6.0 / 29.0;
+    if (centered) {
+        /* The floating PCS linear branch keeps the coordinate
+         * relative to its origin at 4/29. */
+        if (t <= 2.0 / 29.0) {
+            return 3.0 * delta * delta * t;
+        }
+        t += 4.0 / 29.0;
+    }
     if (t > delta) {
         return t * t * t;
     }
-    /* t is stored as double. Match that precision for the origin so x87
-     * does not turn exact Lab black into a small negative XYZ value. */
+    /* Match the stored precision of the legacy coordinate's origin
+     * so x87 does not turn exact Lab black into negative XYZ. */
     return 3.0 * delta * delta * (t - (double)(4.0 / 29.0));
 }
 
@@ -570,40 +1034,42 @@ sixel_icc_decode_lab_unit(double const in[3], double lab[3])
 }
 
 static void
-sixel_icc_lab_to_xyz_d50(double const lab[3], double xyz[3])
+sixel_icc_lab_to_xyz_d50(double const lab[3], double xyz[3], int centered)
 {
     double fy;
     double fx;
     double fz;
 
-    fy = (lab[0] + 16.0) / 116.0;
+    fy = centered ? lab[0] / 116.0 : (lab[0] + 16.0) / 116.0;
     fx = fy + lab[1] / 500.0;
     fz = fy - lab[2] / 200.0;
 
-    xyz[0] = sixel_icc_d50_white_xyz[0] * sixel_icc_lab_inverse_f(fx);
-    xyz[1] = sixel_icc_d50_white_xyz[1] * sixel_icc_lab_inverse_f(fy);
-    xyz[2] = sixel_icc_d50_white_xyz[2] * sixel_icc_lab_inverse_f(fz);
+    xyz[0] = sixel_icc_d50_white_xyz[0] * sixel_icc_lab_inverse_f(fx, centered);
+    xyz[1] = sixel_icc_d50_white_xyz[1] * sixel_icc_lab_inverse_f(fy, centered);
+    xyz[2] = sixel_icc_d50_white_xyz[2] * sixel_icc_lab_inverse_f(fz, centered);
 }
 
+/* Floating PCS uses f(t) centered at 4/29, which keeps small linear
+ * coordinates separate from the origin. Bounded tables use f(t). */
 static double
-sixel_icc_lab_forward_f(double t)
+sixel_icc_lab_forward_f(double t, int bounded)
 {
     double delta;
     double delta3;
 
     delta = 6.0 / 29.0;
     delta3 = delta * delta * delta;
-    if (t < 0.0) {
+    if (bounded && t < 0.0) {
         t = 0.0;
     }
     if (t > delta3) {
-        return pow(t, 1.0 / 3.0);
+        return pow(t, 1.0 / 3.0) - (bounded ? 0.0 : 4.0 / 29.0);
     }
-    return t / (3.0 * delta * delta) + 4.0 / 29.0;
+    return t / (3.0 * delta * delta) + (bounded ? 4.0 / 29.0 : 0.0);
 }
 
 static void
-sixel_icc_xyz_d50_to_lab(double const xyz[3], double lab[3])
+sixel_icc_xyz_d50_to_lab(double const xyz[3], double lab[3], int bounded)
 {
     double xr;
     double yr;
@@ -626,11 +1092,11 @@ sixel_icc_xyz_d50_to_lab(double const xyz[3], double lab[3])
     yr = xyz[1] / sixel_icc_d50_white_xyz[1];
     zr = xyz[2] / sixel_icc_d50_white_xyz[2];
 
-    fx = sixel_icc_lab_forward_f(xr);
-    fy = sixel_icc_lab_forward_f(yr);
-    fz = sixel_icc_lab_forward_f(zr);
+    fx = sixel_icc_lab_forward_f(xr, bounded);
+    fy = sixel_icc_lab_forward_f(yr, bounded);
+    fz = sixel_icc_lab_forward_f(zr, bounded);
 
-    lab[0] = 116.0 * fy - 16.0;
+    lab[0] = 116.0 * fy - (bounded ? 16.0 : 0.0);
     lab[1] = 500.0 * (fx - fy);
     lab[2] = 200.0 * (fy - fz);
 }
@@ -666,7 +1132,7 @@ sixel_icc_decode_pcs_unit_to_xyz_d50(double xyz_d50[3],
     }
     if (pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
         sixel_icc_decode_lab_unit(pcs_unit, lab);
-        sixel_icc_lab_to_xyz_d50(lab, xyz_d50);
+        sixel_icc_lab_to_xyz_d50(lab, xyz_d50, 0);
         return 1;
     }
 
@@ -694,7 +1160,7 @@ sixel_icc_encode_xyz_d50_to_pcs_unit(double pcs_unit[3],
         return 1;
     }
     if (pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
-        sixel_icc_xyz_d50_to_lab(xyz_d50, lab);
+        sixel_icc_xyz_d50_to_lab(xyz_d50, lab, 1);
         sixel_icc_encode_lab_to_unit(lab, pcs_unit);
         return 1;
     }
@@ -857,30 +1323,60 @@ sixel_icc_apply_a2b_lut_to_xyz_d50(double xyz_d50[3],
                                                 profile->pcs);
 }
 
+/* XYZ tables encode a fixed-point range wider than physical Y=1. */
+static double
+sixel_icc_xyz_lut_scale(sixel_icc_lut_t const *lut)
+{
+    if (lut != NULL && (lut->kind == SIXEL_ICC_LUT_MFT1 ||
+        lut->kind == SIXEL_ICC_LUT_MFT1_RGB_GRAY_A2B0)) {
+        return 255.0 / 128.0;
+    }
+    return 65535.0 / 32768.0;
+}
+
+static void
+sixel_icc_scale_xyz(double xyz[3], double scale)
+{
+    xyz[0] *= scale;
+    xyz[1] *= scale;
+    xyz[2] *= scale;
+}
+
 static int
 sixel_icc_apply_a2b_to_xyz_d50(double xyz_d50[3],
                                double const *inputs,
                                size_t input_channel_count,
                                unsigned int a2b_slot,
-                               sixel_icc_profile_t const *profile)
+                               sixel_icc_profile_t const *profile,
+                               int physical)
 {
+    int xyz_encoded;
+
     if (xyz_d50 == NULL || inputs == NULL || profile == NULL) {
         return 0;
     }
 
+    xyz_encoded = physical && profile->pcs == SIXEL_ICC_PROFILE_PCS_XYZ;
     if (sixel_icc_apply_a2b_mab_to_xyz_d50(xyz_d50,
                                            inputs,
                                            input_channel_count,
                                            a2b_slot,
                                            profile)) {
+        if (xyz_encoded) {
+            sixel_icc_scale_xyz(xyz_d50, sixel_icc_xyz_lut_scale(NULL));
+        }
         return 1;
     }
 
-    return sixel_icc_apply_a2b_lut_to_xyz_d50(xyz_d50,
-                                              inputs,
-                                              input_channel_count,
-                                              a2b_slot,
-                                              profile);
+    if (!sixel_icc_apply_a2b_lut_to_xyz_d50(xyz_d50, inputs,
+            input_channel_count, a2b_slot, profile)) {
+        return 0;
+    }
+    if (xyz_encoded) {
+        sixel_icc_scale_xyz(xyz_d50,
+            sixel_icc_xyz_lut_scale(&profile->a2b_lut[a2b_slot]));
+    }
+    return 1;
 }
 
 static int
@@ -995,104 +1491,57 @@ sixel_icc_apply_d2b_to_xyz_d50(double xyz_d50[3],
                                double const *inputs,
                                size_t input_channel_count,
                                unsigned int d2b_slot,
-                               sixel_icc_profile_t const *profile)
+                               sixel_icc_profile_t const *profile,
+                               int physical)
 {
+    int xyz_encoded;
+
     if (xyz_d50 == NULL || inputs == NULL || profile == NULL) {
         return 0;
     }
 
+    xyz_encoded = physical && profile->pcs == SIXEL_ICC_PROFILE_PCS_XYZ;
     if (sixel_icc_apply_d2b_mab_to_xyz_d50(xyz_d50,
                                            inputs,
                                            input_channel_count,
                                            d2b_slot,
                                            profile)) {
+        if (xyz_encoded) {
+            sixel_icc_scale_xyz(xyz_d50, sixel_icc_xyz_lut_scale(NULL));
+        }
         return 1;
     }
 
-    return sixel_icc_apply_d2b_lut_to_xyz_d50(xyz_d50,
-                                              inputs,
-                                              input_channel_count,
-                                              d2b_slot,
-                                              profile);
-}
-
-static int
-sixel_icc_apply_b2a_mab_from_xyz_d50(double *outputs,
-                                     size_t output_channel_count,
-                                     double const xyz_d50[3],
-                                     unsigned int b2a_slot,
-                                     sixel_icc_profile_t const *profile)
-{
-    double pcs_unit[3];
-    sixel_icc_mab_pipeline_t const *mab;
-
-    mab = NULL;
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
+    if (!sixel_icc_apply_d2b_lut_to_xyz_d50(xyz_d50, inputs,
+            input_channel_count, d2b_slot, profile)) {
         return 0;
     }
-    if (output_channel_count == 0u || output_channel_count > 16u ||
-        b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
-        return 0;
+    if (xyz_encoded) {
+        sixel_icc_scale_xyz(xyz_d50,
+            sixel_icc_xyz_lut_scale(&profile->d2b_lut[d2b_slot]));
     }
-    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
-                                              xyz_d50,
-                                              profile->pcs)) {
-        return 0;
-    }
-
-    mab = &profile->b2a_mab[b2a_slot];
-    if (mab->type == SIXEL_ICC_MAB_TYPE_INVALID ||
-        mab->input_channels != 3u ||
-        mab->output_channels != (uint8_t)output_channel_count) {
-        return 0;
-    }
-    if (!sixel_icc_eval_mab_pipeline(outputs,
-                                     output_channel_count,
-                                     pcs_unit,
-                                     3u,
-                                     mab)) {
-        return 0;
-    }
-
     return 1;
 }
 
 static int
-sixel_icc_apply_b2a_lut_from_xyz_d50(double *outputs,
-                                     size_t output_channel_count,
-                                     double const xyz_d50[3],
-                                     unsigned int b2a_slot,
-                                     sixel_icc_profile_t const *profile)
+sixel_icc_apply_reverse_lut(double *outputs,
+                            size_t output_channel_count,
+                            double const xyz_d50[3],
+                            sixel_icc_profile_pcs_t pcs,
+                            sixel_icc_lut_t const *lut)
 {
     double pcs_unit[3];
-    double lut_inputs[4];
+    double matrix_out[3];
+    double const *input;
+    double lut_inputs[3];
     double lut_outputs[16];
     size_t channel;
     uint16_t in_entries;
     uint16_t out_entries;
     uint16_t const *table;
-    sixel_icc_lut_t const *lut;
 
-    channel = 0u;
-    in_entries = 0u;
-    out_entries = 0u;
-    table = NULL;
-    lut = NULL;
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
-        return 0;
-    }
     if (output_channel_count == 0u || output_channel_count > 16u ||
-        b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
-        return 0;
-    }
-    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
-                                              xyz_d50,
-                                              profile->pcs)) {
-        return 0;
-    }
-
-    lut = &profile->b2a_lut[b2a_slot];
-    if (lut->kind == SIXEL_ICC_LUT_INVALID ||
+        lut->kind == SIXEL_ICC_LUT_INVALID ||
         lut->input_tables == NULL ||
         lut->clut_values == NULL ||
         lut->output_tables == NULL ||
@@ -1106,12 +1555,23 @@ sixel_icc_apply_b2a_lut_from_xyz_d50(double *outputs,
     if (in_entries == 0u || out_entries == 0u) {
         return 0;
     }
+    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit, xyz_d50, pcs)) {
+        return 0;
+    }
+
+    /* The legacy matrix acts on normalized PCS XYZ before the input
+     * tables. Their domain also clips the matrix result. Lab skips it. */
+    input = pcs_unit;
+    if (pcs == SIXEL_ICC_PROFILE_PCS_XYZ) {
+        sixel_icc_apply_matrix(lut->matrix, pcs_unit, matrix_out);
+        input = matrix_out;
+    }
 
     for (channel = 0u; channel < 3u; ++channel) {
         table = lut->input_tables + channel * (size_t)in_entries;
         lut_inputs[channel] = sixel_icc_eval_lut_table(table,
                                                        (size_t)in_entries,
-                                                       pcs_unit[channel]);
+                                                       input[channel]);
     }
     if (!sixel_icc_eval_clut(lut, lut_inputs, lut_outputs)) {
         return 0;
@@ -1127,165 +1587,35 @@ sixel_icc_apply_b2a_lut_from_xyz_d50(double *outputs,
 }
 
 static int
-sixel_icc_apply_b2a_from_xyz_d50(double *outputs,
-                                 size_t output_channel_count,
-                                 double const xyz_d50[3],
-                                 unsigned int b2a_slot,
-                                 sixel_icc_profile_t const *profile)
+sixel_icc_apply_reverse_path(double *outputs, size_t channels,
+                             double const xyz[3], sixel_icc_profile_pcs_t pcs,
+                             sixel_icc_mab_pipeline_t const *mab,
+                             sixel_icc_lut_t const *lut, int physical)
 {
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
-        return 0;
-    }
+    double encoded[3];
+    double pcs_unit[3];
+    double const *input;
+    int xyz_encoded;
 
-    if (sixel_icc_apply_b2a_mab_from_xyz_d50(outputs,
-                                             output_channel_count,
-                                             xyz_d50,
-                                             b2a_slot,
-                                             profile)) {
+    xyz_encoded = physical && pcs == SIXEL_ICC_PROFILE_PCS_XYZ;
+    input = xyz;
+    if (xyz_encoded) {
+        memcpy(encoded, xyz, sizeof(encoded));
+        sixel_icc_scale_xyz(encoded, 1.0 / sixel_icc_xyz_lut_scale(NULL));
+        input = encoded;
+    }
+    if (mab->type != SIXEL_ICC_MAB_TYPE_INVALID &&
+        mab->input_channels == 3u && mab->output_channels == channels &&
+        sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit, input, pcs) &&
+        sixel_icc_eval_mab_pipeline(outputs, channels, pcs_unit, 3u, mab)) {
         return 1;
     }
 
-    return sixel_icc_apply_b2a_lut_from_xyz_d50(outputs,
-                                                output_channel_count,
-                                                xyz_d50,
-                                                b2a_slot,
-                                                profile);
-}
-
-static int
-sixel_icc_apply_b2d_mab_from_xyz_d50(double *outputs,
-                                     size_t output_channel_count,
-                                     double const xyz_d50[3],
-                                     unsigned int b2d_slot,
-                                     sixel_icc_profile_t const *profile)
-{
-    double pcs_unit[3];
-    sixel_icc_mab_pipeline_t const *mab;
-
-    mab = NULL;
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
-        return 0;
+    if (xyz_encoded) {
+        memcpy(encoded, xyz, sizeof(encoded));
+        sixel_icc_scale_xyz(encoded, 1.0 / sixel_icc_xyz_lut_scale(lut));
     }
-    if (output_channel_count == 0u || output_channel_count > 16u ||
-        b2d_slot >= SIXEL_ICC_B2D_SLOT_COUNT) {
-        return 0;
-    }
-    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
-                                              xyz_d50,
-                                              profile->pcs)) {
-        return 0;
-    }
-
-    mab = &profile->b2d_mab[b2d_slot];
-    if (mab->type == SIXEL_ICC_MAB_TYPE_INVALID ||
-        mab->input_channels != 3u ||
-        mab->output_channels != (uint8_t)output_channel_count) {
-        return 0;
-    }
-    if (!sixel_icc_eval_mab_pipeline(outputs,
-                                     output_channel_count,
-                                     pcs_unit,
-                                     3u,
-                                     mab)) {
-        return 0;
-    }
-
-    return 1;
-}
-
-static int
-sixel_icc_apply_b2d_lut_from_xyz_d50(double *outputs,
-                                     size_t output_channel_count,
-                                     double const xyz_d50[3],
-                                     unsigned int b2d_slot,
-                                     sixel_icc_profile_t const *profile)
-{
-    double pcs_unit[3];
-    double lut_inputs[4];
-    double lut_outputs[16];
-    size_t channel;
-    uint16_t in_entries;
-    uint16_t out_entries;
-    uint16_t const *table;
-    sixel_icc_lut_t const *lut;
-
-    channel = 0u;
-    in_entries = 0u;
-    out_entries = 0u;
-    table = NULL;
-    lut = NULL;
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
-        return 0;
-    }
-    if (output_channel_count == 0u || output_channel_count > 16u ||
-        b2d_slot >= SIXEL_ICC_B2D_SLOT_COUNT) {
-        return 0;
-    }
-    if (!sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
-                                              xyz_d50,
-                                              profile->pcs)) {
-        return 0;
-    }
-
-    lut = &profile->b2d_lut[b2d_slot];
-    if (lut->kind == SIXEL_ICC_LUT_INVALID ||
-        lut->input_tables == NULL ||
-        lut->clut_values == NULL ||
-        lut->output_tables == NULL ||
-        lut->input_channels != 3u ||
-        lut->output_channels != (uint8_t)output_channel_count) {
-        return 0;
-    }
-
-    in_entries = lut->input_entries;
-    out_entries = lut->output_entries;
-    if (in_entries == 0u || out_entries == 0u) {
-        return 0;
-    }
-
-    for (channel = 0u; channel < 3u; ++channel) {
-        table = lut->input_tables + channel * (size_t)in_entries;
-        lut_inputs[channel] = sixel_icc_eval_lut_table(table,
-                                                       (size_t)in_entries,
-                                                       pcs_unit[channel]);
-    }
-    if (!sixel_icc_eval_clut(lut, lut_inputs, lut_outputs)) {
-        return 0;
-    }
-    for (channel = 0u; channel < output_channel_count; ++channel) {
-        table = lut->output_tables + channel * (size_t)out_entries;
-        outputs[channel] = sixel_icc_eval_lut_table(table,
-                                                    (size_t)out_entries,
-                                                    lut_outputs[channel]);
-    }
-
-    return 1;
-}
-
-static int
-sixel_icc_apply_b2d_from_xyz_d50(double *outputs,
-                                 size_t output_channel_count,
-                                 double const xyz_d50[3],
-                                 unsigned int b2d_slot,
-                                 sixel_icc_profile_t const *profile)
-{
-    if (outputs == NULL || xyz_d50 == NULL || profile == NULL) {
-        return 0;
-    }
-
-    if (sixel_icc_apply_b2d_mab_from_xyz_d50(outputs,
-                                             output_channel_count,
-                                             xyz_d50,
-                                             b2d_slot,
-                                             profile)) {
-        return 1;
-    }
-
-    return sixel_icc_apply_b2d_lut_from_xyz_d50(outputs,
-                                                output_channel_count,
-                                                xyz_d50,
-                                                b2d_slot,
-                                                profile);
+    return sixel_icc_apply_reverse_lut(outputs, channels, input, pcs, lut);
 }
 
 static int
@@ -1321,7 +1651,7 @@ sixel_icc_apply_rgb_gray_triplet_lut(double rgb[3],
                                         inputs,
                                         input_channel_count,
                                         a2b_slot,
-                                        profile)) {
+                                        profile, 0)) {
         return 0;
     }
 
@@ -1334,53 +1664,127 @@ sixel_icc_apply_rgb_gray_triplet_lut(double rgb[3],
     return 1;
 }
 
-int
-sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+static int
+sixel_icc_apply_d2b_mpet(double xyz[3], double const *device, size_t channels,
+                         sixel_icc_profile_t const *profile, unsigned int slot,
+                         int lab_float)
+{
+    double pcs[3];
+    double lab[3];
+
+    if (profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
+        lab[0] = device[0] * 100.0;
+        /* The float facade already centers chroma at zero. Scaling it
+         * directly retains small a* and b* near the neutral point. */
+        lab[1] = lab_float ? device[1] * 128.0 : device[1] * 255.0 - 128.0;
+        lab[2] = lab_float ? device[2] * 128.0 : device[2] * 255.0 - 128.0;
+        device = lab;
+    }
+    if (!sixel_icc_apply_mpet(pcs, 3u, device, channels,
+                              &profile->d2b_mpet[slot])) {
+        return 0;
+    }
+    if (profile->pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
+        sixel_icc_lab_to_xyz_d50(pcs, xyz, 1);
+    } else {
+        memcpy(xyz, pcs, sizeof(pcs));
+    }
+    return 1;
+}
+
+static int
+sixel_icc_apply_b2d_mpet(double *device, size_t channels, double const xyz[3],
+                         sixel_icc_profile_t const *profile, unsigned int slot,
+                         int lab_float)
+{
+    double lab[3];
+
+    if (profile->pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
+        /* Floating PCSLAB extends the linear branch below zero. */
+        sixel_icc_xyz_d50_to_lab(xyz, lab, 0);
+        xyz = lab;
+    }
+    if (!sixel_icc_apply_mpet(device, channels, xyz, 3u,
+                              &profile->b2d_mpet[slot])) {
+        return 0;
+    }
+    if (profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
+        device[0] /= 100.0;
+        device[1] = lab_float ? device[1] / 128.0 : (device[1] + 128.0) / 255.0;
+        device[2] = lab_float ? device[2] / 128.0 : (device[2] + 128.0) / 255.0;
+    }
+    return 1;
+}
+
+static sixel_icc_path_t
+sixel_icc_apply_device_to_xyz(
     double xyz_d50[3],
     double const *device_unit,
     size_t input_channel_count,
     sixel_icc_profile_t const *profile,
     unsigned int a2b_slot,
-    int allow_matrix_trc_fallback)
+    int allow_matrix_trc_fallback, int physical, int legacy_only, int lab_float)
 {
     double source_linear[3];
+    double lab_unit[3];
     int has_selected_a2b;
     int has_selected_d2b;
 
     has_selected_a2b = 0;
     has_selected_d2b = 0;
     if (xyz_d50 == NULL || device_unit == NULL || profile == NULL) {
-        return 0;
+        return SIXEL_ICC_PATH_NONE;
     }
 
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB) {
         if (input_channel_count != 3u) {
-            return 0;
+            return SIXEL_ICC_PATH_NONE;
         }
     } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
         if (input_channel_count != 1u) {
-            return 0;
+            return SIXEL_ICC_PATH_NONE;
         }
     } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
         if (input_channel_count != 4u) {
-            return 0;
+            return SIXEL_ICC_PATH_NONE;
         }
     } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
         if (input_channel_count != 3u) {
-            return 0;
+            return SIXEL_ICC_PATH_NONE;
         }
     } else {
-        return 0;
+        return SIXEL_ICC_PATH_NONE;
     }
 
+    if (!legacy_only && a2b_slot < SIXEL_ICC_MPET_SLOT_COUNT &&
+        !(a2b_slot == SIXEL_ICC_MPET_ABSOLUTE_SLOT &&
+          allow_matrix_trc_fallback) &&
+        profile->d2b_mpet[a2b_slot].element_count != 0u &&
+        sixel_icc_apply_d2b_mpet(xyz_d50, device_unit, input_channel_count,
+                                 profile, a2b_slot, lab_float)) {
+        return SIXEL_ICC_PATH_MPET;
+    }
+    /* The absolute slot has no integer encoding. */
+    if (a2b_slot == SIXEL_ICC_MPET_ABSOLUTE_SLOT &&
+        !allow_matrix_trc_fallback) {
+        return SIXEL_ICC_PATH_NONE;
+    }
+
+    /* Legacy tables and the bounded Lab fallback use unsigned chroma. */
+    if (lab_float && profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
+        lab_unit[0] = device_unit[0];
+        lab_unit[1] = (device_unit[1] * 128.0 + 128.0) / 255.0;
+        lab_unit[2] = (device_unit[2] * 128.0 + 128.0) / 255.0;
+        device_unit = lab_unit;
+    }
     has_selected_a2b = sixel_icc_profile_has_a2b_slot(profile, a2b_slot);
     if (has_selected_a2b &&
         sixel_icc_apply_a2b_to_xyz_d50(xyz_d50,
                                        device_unit,
                                        input_channel_count,
                                        a2b_slot,
-                                       profile)) {
-        return 1;
+                                       profile, physical)) {
+        return SIXEL_ICC_PATH_LEGACY;
     }
     has_selected_d2b = sixel_icc_profile_has_d2b_slot(profile, a2b_slot);
     if (has_selected_d2b &&
@@ -1388,13 +1792,13 @@ sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
                                        device_unit,
                                        input_channel_count,
                                        a2b_slot,
-                                       profile)) {
-        return 1;
+                                       profile, physical)) {
+        return SIXEL_ICC_PATH_LEGACY;
     }
 
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_CMYK ||
-        !allow_matrix_trc_fallback) {
-        return 0;
+        profile->lut_only || !allow_matrix_trc_fallback) {
+        return SIXEL_ICC_PATH_NONE;
     }
 
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB) {
@@ -1408,12 +1812,11 @@ sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
         sixel_icc_apply_matrix(profile->matrix_to_xyz_d50,
                                source_linear,
                                xyz_d50);
-        return 1;
+        return SIXEL_ICC_PATH_LEGACY;
     }
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
-        return sixel_icc_decode_pcs_unit_to_xyz_d50(xyz_d50,
-                                                    device_unit,
-                                                    profile->pcs);
+        return sixel_icc_decode_pcs_unit_to_xyz_d50(xyz_d50, device_unit,
+            profile->pcs) ? SIXEL_ICC_PATH_LEGACY : SIXEL_ICC_PATH_NONE;
     }
 
     /* Gray TRC output is relative to the PCS illuminant, not the media
@@ -1424,31 +1827,53 @@ sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
     xyz_d50[0] = source_linear[0] * sixel_icc_d50_white_xyz[0];
     xyz_d50[1] = source_linear[0] * sixel_icc_d50_white_xyz[1];
     xyz_d50[2] = source_linear[0] * sixel_icc_d50_white_xyz[2];
-    return 1;
+    return SIXEL_ICC_PATH_LEGACY;
+}
+
+/* Convert the bounded legacy Lab encoding to float facade units. */
+static void
+sixel_icc_center_lab_chroma(double device[3])
+{
+    device[1] = (device[1] * 255.0 - 128.0) / 128.0;
+    device[2] = (device[2] * 255.0 - 128.0) / 128.0;
 }
 
 int
-sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(
+sixel_icc_apply_lab_xyz_to_device(double device[3], double const xyz[3],
+                                   sixel_icc_profile_t const *profile,
+                                   int lab_float)
+{
+    if (profile->kind != SIXEL_ICC_PROFILE_KIND_LAB || profile->lut_only ||
+        !sixel_icc_encode_xyz_d50_to_pcs_unit(device, xyz, profile->pcs)) {
+        return 0;
+    }
+    if (lab_float) {
+        sixel_icc_center_lab_chroma(device);
+    }
+    return 1;
+}
+
+static sixel_icc_path_t
+sixel_icc_apply_xyz_to_device(
     double *device_unit,
     size_t output_channel_count,
     double const xyz_d50[3],
     sixel_icc_profile_t const *profile,
-    unsigned int b2a_slot)
+    unsigned int b2a_slot, int physical, int legacy_only,
+    int allow_lab_fallback, int lab_float)
 {
     size_t expected_channels;
     size_t i;
     int has_b2a;
     int has_b2d;
-    double pcs_unit[3];
 
     expected_channels = 0u;
     i = 0u;
     has_b2a = 0;
     has_b2d = 0;
-    memset(pcs_unit, 0, sizeof(pcs_unit));
     if (device_unit == NULL || xyz_d50 == NULL || profile == NULL ||
-        b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
-        return 0;
+        b2a_slot >= SIXEL_ICC_MPET_SLOT_COUNT) {
+        return SIXEL_ICC_PATH_NONE;
     }
 
     if (profile->kind == SIXEL_ICC_PROFILE_KIND_RGB) {
@@ -1460,48 +1885,110 @@ sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(
     } else if (profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
         expected_channels = 3u;
     } else {
-        return 0;
+        return SIXEL_ICC_PATH_NONE;
     }
     if (output_channel_count != expected_channels) {
-        return 0;
+        return SIXEL_ICC_PATH_NONE;
+    }
+    if (!legacy_only &&
+        profile->b2d_mpet[b2a_slot].element_count != 0u &&
+        sixel_icc_apply_b2d_mpet(device_unit, output_channel_count, xyz_d50,
+                                 profile, b2a_slot, lab_float)) {
+        return SIXEL_ICC_PATH_MPET;
+    }
+    if (b2a_slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
+        return SIXEL_ICC_PATH_NONE;
     }
     has_b2a = sixel_icc_profile_has_b2a_slot(profile, b2a_slot);
     has_b2d = sixel_icc_profile_has_b2d_slot(profile, b2a_slot);
 
     if (has_b2a &&
-        sixel_icc_apply_b2a_from_xyz_d50(device_unit,
-                                         output_channel_count,
-                                         xyz_d50,
-                                         b2a_slot,
-                                         profile)) {
+        sixel_icc_apply_reverse_path(device_unit, output_channel_count,
+            xyz_d50, profile->pcs, &profile->b2a_mab[b2a_slot],
+            &profile->b2a_lut[b2a_slot], physical)) {
         goto clamp;
     }
     if (has_b2d &&
-        sixel_icc_apply_b2d_from_xyz_d50(device_unit,
-                                         output_channel_count,
-                                         xyz_d50,
-                                         b2a_slot,
-                                         profile)) {
+        sixel_icc_apply_reverse_path(device_unit, output_channel_count,
+            xyz_d50, profile->pcs, &profile->b2d_mab[b2a_slot],
+            &profile->b2d_lut[b2a_slot], physical)) {
         goto clamp;
     }
 
-    if (profile->kind != SIXEL_ICC_PROFILE_KIND_LAB ||
-        has_b2a || has_b2d ||
-        !sixel_icc_encode_xyz_d50_to_pcs_unit(pcs_unit,
-                                              xyz_d50,
-                                              profile->pcs)) {
-        return 0;
+    if (allow_lab_fallback && !has_b2a && !has_b2d &&
+        sixel_icc_apply_lab_xyz_to_device(device_unit, xyz_d50, profile,
+                                          lab_float)) {
+        return SIXEL_ICC_PATH_LEGACY;
     }
-
-    device_unit[0] = pcs_unit[0];
-    device_unit[1] = pcs_unit[1];
-    device_unit[2] = pcs_unit[2];
+    return SIXEL_ICC_PATH_NONE;
 
 clamp:
     for (i = 0u; i < output_channel_count; ++i) {
         device_unit[i] = sixel_icc_clamp_unit(device_unit[i]);
     }
-    return 1;
+    if (lab_float && profile->kind == SIXEL_ICC_PROFILE_KIND_LAB) {
+        sixel_icc_center_lab_chroma(device_unit);
+    }
+    return SIXEL_ICC_PATH_LEGACY;
+}
+
+
+int
+sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+    double xyz[3], double const *device, size_t channels,
+    sixel_icc_profile_t const *profile, unsigned int slot, int allow_fallback)
+{
+    return sixel_icc_apply_device_to_xyz(xyz, device, channels, profile,
+        slot, allow_fallback, 0, 1, 0) != SIXEL_ICC_PATH_NONE;
+}
+
+int
+sixel_icc_apply_xyz_d50_to_device_with_b2a_slot(
+    double *device, size_t channels, double const xyz[3],
+    sixel_icc_profile_t const *profile, unsigned int slot)
+{
+    return sixel_icc_apply_xyz_to_device(device, channels, xyz, profile,
+        slot, 0, 1, 1, 0) != SIXEL_ICC_PATH_NONE;
+}
+
+sixel_icc_path_t
+sixel_icc_device_to_pcs(double xyz[3], double const *device, size_t channels,
+                         sixel_icc_profile_t const *profile, unsigned int slot,
+                         int legacy_only)
+{
+    int analytic_lab;
+
+    analytic_lab = slot == SIXEL_ICC_MPET_SLOT_COUNT && profile != NULL &&
+        profile->kind == SIXEL_ICC_PROFILE_KIND_LAB;
+    return sixel_icc_apply_device_to_xyz(xyz, device, channels, profile,
+                                         slot, analytic_lab, 1, legacy_only, 1);
+}
+
+sixel_icc_path_t
+sixel_icc_pcs_to_device(double *device, size_t channels, double const xyz[3],
+                         sixel_icc_profile_t const *profile, unsigned int slot,
+                         int legacy_only)
+{
+    return sixel_icc_apply_xyz_to_device(device, channels, xyz, profile,
+                                         slot, 1, legacy_only, 0, 1);
+}
+
+int
+sixel_icc_apply_device_to_physical_xyz(
+    double xyz[3], double const *device, size_t channels,
+    sixel_icc_profile_t const *profile, unsigned int slot)
+{
+    return sixel_icc_apply_device_to_xyz(xyz, device, channels, profile,
+        slot, 0, 1, 0, 0) != SIXEL_ICC_PATH_NONE;
+}
+
+int
+sixel_icc_apply_physical_xyz_to_device(
+    double *device, size_t channels, double const xyz[3],
+    sixel_icc_profile_t const *profile, unsigned int slot)
+{
+    return sixel_icc_apply_xyz_to_device(device, channels, xyz, profile,
+        slot, 1, 0, 1, 0) != SIXEL_ICC_PATH_NONE;
 }
 
 static int
@@ -1524,7 +2011,7 @@ sixel_icc_apply_cmyk_triplet_internal(double rgb[3],
                                         cmyk,
                                         4u,
                                         a2b_slot,
-                                        profile)) {
+                                        profile, 0)) {
         return 0;
     }
 
@@ -1574,7 +2061,7 @@ sixel_icc_apply_rgb_triplet_internal(double rgb[3],
             sixel_icc_apply_rgb_gray_triplet_lut(rgb, a2b_slot, profile)) {
             return 1;
         }
-        if (!allow_matrix_trc_fallback) {
+        if (!allow_matrix_trc_fallback || profile->lut_only) {
             return 0;
         }
     }

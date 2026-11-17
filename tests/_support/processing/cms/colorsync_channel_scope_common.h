@@ -26,6 +26,7 @@ colorsync_channel_scope_call(sixel_cms_profile_t *source,
     float *reference_output;
     sixel_cms_transform_t *transform;
     sixel_cms_transform_t *reference;
+    sixel_cms_status_t status;
     double const (*bounds)[3];
     double value;
     float stored;
@@ -91,10 +92,11 @@ colorsync_channel_scope_call(sixel_cms_profile_t *source,
     if (sixel_cms_transform_engine(transform) != SIXEL_CMS_ENGINE_COLORSYNC) {
         goto end;
     }
-    applied = sixel_cms_do_transform(transform, input + 32u,
-                                     destination + 32u, count);
+    applied = sixel_cms_do_transform_ex(transform, input + 32u,
+                                       destination + 32u, count, &status);
     if (reject) {
-        ok = !applied && memcmp(input, before, sizeof(before)) == 0 &&
+        ok = !applied && status == SIXEL_CMS_STATUS_INCOMPATIBLE_FORMAT &&
+             memcmp(input, before, sizeof(before)) == 0 &&
              memcmp(destination, output_before, sizeof(output_before)) == 0;
         goto end;
     }

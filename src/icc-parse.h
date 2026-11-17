@@ -36,6 +36,10 @@
 #define SIXEL_ICC_B2A_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
 #define SIXEL_ICC_D2B_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
 #define SIXEL_ICC_B2D_SLOT_COUNT SIXEL_ICC_A2B_SLOT_COUNT
+#define SIXEL_ICC_MPET_SLOT_COUNT 4u
+#define SIXEL_ICC_MPET_ABSOLUTE_SLOT 3u
+#define SIXEL_ICC_MPE_CLUT_MAX_AXES 16u
+#define SIXEL_ICC_MPE_MAX_CHANNELS 16u
 
 typedef enum sixel_icc_curve_kind {
     SIXEL_ICC_CURVE_INVALID = 0,
@@ -72,6 +76,7 @@ typedef struct sixel_icc_lut {
     uint8_t clut_grid_points;
     uint16_t input_entries;
     uint16_t output_entries;
+    double matrix[3][3];
     uint16_t *input_tables;
     uint16_t *clut_values;
     uint16_t *output_tables;
@@ -108,6 +113,52 @@ typedef struct sixel_icc_mab_pipeline {
     double matrix_offset[3];
 } sixel_icc_mab_pipeline_t;
 
+typedef enum sixel_icc_mpe_kind {
+    SIXEL_ICC_MPE_INVALID = 0,
+    SIXEL_ICC_MPE_CURVE_SET,
+    SIXEL_ICC_MPE_MATRIX,
+    SIXEL_ICC_MPE_CLUT,
+    SIXEL_ICC_MPE_BEGIN_ACS,
+    SIXEL_ICC_MPE_END_ACS
+} sixel_icc_mpe_kind_t;
+
+typedef struct sixel_icc_mpe_segment {
+    double end;
+    double params[5];
+    double *samples;
+    size_t sample_count;
+    uint16_t function_type;
+} sixel_icc_mpe_segment_t;
+
+typedef struct sixel_icc_mpe_curve {
+    sixel_icc_mpe_segment_t *segments;
+    size_t segment_count;
+    uint16_t curve_channel;
+} sixel_icc_mpe_curve_t;
+
+typedef struct sixel_icc_mpe {
+    sixel_icc_mpe_kind_t kind;
+    uint16_t input_channels;
+    uint16_t output_channels;
+    uint32_t offset;
+    uint32_t length;
+    /* Shared positions refer to the first position's decoded payload. */
+    sixel_icc_mpe_curve_t *curves;
+    double *values;
+    uint8_t grid_points[SIXEL_ICC_MPE_CLUT_MAX_AXES];
+    uint16_t payload_element;
+} sixel_icc_mpe_t;
+
+typedef struct sixel_icc_mpet {
+    uint16_t input_channels;
+    uint16_t output_channels;
+    size_t element_count;
+    sixel_icc_mpe_t *elements;
+    /* Matching tag spans can borrow the same encoded and decoded data. */
+    unsigned char *data;
+    int shared_payload;
+} sixel_icc_mpet_t;
+
 typedef enum sixel_icc_profile_pcs {
     SIXEL_ICC_PROFILE_PCS_INVALID = 0,
     SIXEL_ICC_PROFILE_PCS_XYZ,
@@ -125,8 +176,11 @@ typedef enum sixel_icc_profile_kind {
 typedef struct sixel_icc_profile {
     sixel_icc_profile_kind_t kind;
     sixel_icc_profile_pcs_t pcs;
+    /* Require an explicit PCS path for every evaluated intent. */
+    int lut_only;
     double matrix_to_xyz_d50[3][3];
-    double gray_white_xyz_d50[3];
+    /* Media white in the PCS adopted-white basis, when usable. */
+    double media_white_xyz[3];
     sixel_icc_curve_t curves[3];
     sixel_icc_lut_t a2b_lut[SIXEL_ICC_A2B_SLOT_COUNT];
     sixel_icc_mab_pipeline_t a2b_mab[SIXEL_ICC_A2B_SLOT_COUNT];
@@ -134,8 +188,10 @@ typedef struct sixel_icc_profile {
     sixel_icc_mab_pipeline_t b2a_mab[SIXEL_ICC_B2A_SLOT_COUNT];
     sixel_icc_lut_t d2b_lut[SIXEL_ICC_D2B_SLOT_COUNT];
     sixel_icc_mab_pipeline_t d2b_mab[SIXEL_ICC_D2B_SLOT_COUNT];
+    sixel_icc_mpet_t d2b_mpet[SIXEL_ICC_MPET_SLOT_COUNT];
     sixel_icc_lut_t b2d_lut[SIXEL_ICC_B2D_SLOT_COUNT];
     sixel_icc_mab_pipeline_t b2d_mab[SIXEL_ICC_B2D_SLOT_COUNT];
+    sixel_icc_mpet_t b2d_mpet[SIXEL_ICC_MPET_SLOT_COUNT];
 } sixel_icc_profile_t;
 
 SIXEL_INTERNAL_API int
@@ -146,6 +202,21 @@ SIXEL_INTERNAL_API int
 sixel_icc_parse_profile(void const *data,
                         size_t length,
                         sixel_icc_profile_t *out_profile);
+
+/* A usable profile may still have a rejected optional path. */
+typedef enum sixel_icc_issue {
+    SIXEL_ICC_ISSUE_NONE = 0,
+    SIXEL_ICC_ISSUE_NO_PATH,
+    SIXEL_ICC_ISSUE_UNSUPPORTED,
+    SIXEL_ICC_ISSUE_MALFORMED,
+    SIXEL_ICC_ISSUE_ALLOCATION,
+    SIXEL_ICC_ISSUE_RESOURCE_LIMIT
+} sixel_icc_issue_t;
+
+SIXEL_INTERNAL_API int
+sixel_icc_parse_profile_ex(void const *data, size_t length,
+                            sixel_icc_profile_t *out_profile,
+                            sixel_icc_issue_t *out_issue);
 
 SIXEL_INTERNAL_API int
 sixel_icc_parse_png_iccp(unsigned char const *png_data,

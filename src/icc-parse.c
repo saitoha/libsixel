@@ -53,6 +53,66 @@ char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
 void stbi_image_free(void *retval_from_stbi_load);
 
 #define SIXEL_ICC_PARAMETRIC_TABLE_SIZE 4096u
+#define SIXEL_ICC_MAX_TAGS 256u
+#define SIXEL_ICC_MAX_MPE_ELEMENTS 256u
+#define SIXEL_ICC_MAX_PARSE_BYTES ((size_t)16u * 1024u * 1024u)
+
+typedef struct sixel_icc_parse_budget {
+    size_t remaining;
+    char const *limit;
+} sixel_icc_parse_budget_t;
+
+typedef struct sixel_icc_mpet_cache {
+    struct {
+        size_t offset;
+        size_t length;
+        sixel_icc_mpet_t *owner;
+    } tags[2 * SIXEL_ICC_MPET_SLOT_COUNT];
+    size_t count;
+} sixel_icc_mpet_cache_t;
+
+static void
+sixel_icc_record_issue(sixel_icc_issue_t *issue, sixel_icc_issue_t value)
+{
+    if (value > *issue) {
+        *issue = value;
+    }
+}
+
+/* Charge all allocations made while parsing a profile, even tables that
+ * are later discarded and separate copies of a shared on-disk payload. */
+static int
+sixel_icc_parse_fits(sixel_icc_parse_budget_t *budget,
+                     size_t count, size_t element_size,
+                     sixel_icc_issue_t *issue)
+{
+    if (budget->limit != NULL || count > budget->remaining / element_size) {
+        if (budget->limit == NULL) {
+            budget->limit = "parse-bytes";
+        }
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_RESOURCE_LIMIT);
+        return 0;
+    }
+    return 1;
+}
+
+static void *
+sixel_icc_parse_alloc(sixel_icc_parse_budget_t *budget, size_t size,
+                      sixel_icc_issue_t *issue)
+{
+    void *data;
+
+    if (!sixel_icc_parse_fits(budget, size, 1u, issue)) {
+        return NULL;
+    }
+    data = malloc(size);
+    if (data == NULL) {
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_ALLOCATION);
+    } else {
+        budget->remaining -= size;
+    }
+    return data;
+}
 
 static uint16_t
 sixel_icc_read_be16(unsigned char const *p)
@@ -67,6 +127,13 @@ sixel_icc_read_be32(unsigned char const *p)
         | ((uint32_t)p[1] << 16u)
         | ((uint32_t)p[2] << 8u)
         | (uint32_t)p[3];
+}
+
+static int
+sixel_icc_is_mpet_slot(void const *signature)
+{
+    return memcmp(signature, "D2B", 3u) == 0
+        || memcmp(signature, "B2D", 3u) == 0;
 }
 
 /*
@@ -112,8 +179,7 @@ sixel_icc_trace_tags(unsigned char const *data, size_t size)
         payload = NULL;
         pipeline = memcmp(entry, "A2B", 3u) == 0
             || memcmp(entry, "B2A", 3u) == 0
-            || memcmp(entry, "D2B", 3u) == 0
-            || memcmp(entry, "B2D", 3u) == 0;
+            || sixel_icc_is_mpet_slot(entry);
         known = 0;
         for (item = 0u; item < sizeof(consumed) / sizeof(consumed[0]);
              ++item) {
@@ -127,9 +193,12 @@ sixel_icc_trace_tags(unsigned char const *data, size_t size)
             reason = "invalid-tag-bounds";
         } else {
             payload = data + offset;
-            if (pipeline && (entry[3] < '0' || entry[3] > '2')) {
+            if (pipeline && (entry[3] < '0' || entry[3] >
+                             (sixel_icc_is_mpet_slot(entry) ? '3' : '2'))) {
                 reason = "unsupported-intent-slot";
             } else if (pipeline
+                       && !(sixel_icc_is_mpet_slot(entry) &&
+                            memcmp(payload, "mpet", 4u) == 0)
                        && memcmp(payload, "mAB ", 4u) != 0
                        && memcmp(payload, "mBA ", 4u) != 0
                        && memcmp(payload, "mft1", 4u) != 0
@@ -165,6 +234,21 @@ sixel_icc_read_s15fixed16(unsigned char const *p)
 
     fixed = (int32_t)sixel_icc_read_be32(p);
     return (double)fixed / 65536.0;
+}
+
+/* The caller has already checked the 36-byte row-major matrix block. */
+static void
+sixel_icc_read_matrix(double matrix[3][3], unsigned char const *data)
+{
+    size_t row;
+    size_t column;
+
+    for (row = 0u; row < 3u; ++row) {
+        for (column = 0u; column < 3u; ++column) {
+            matrix[row][column] = sixel_icc_read_s15fixed16(data);
+            data += 4u;
+        }
+    }
 }
 
 static void
@@ -209,6 +293,7 @@ sixel_icc_lut_reset(sixel_icc_lut_t *lut)
     lut->clut_grid_points = 0u;
     lut->input_entries = 0u;
     lut->output_entries = 0u;
+    memset(lut->matrix, 0, sizeof(lut->matrix));
     lut->input_tables = NULL;
     lut->clut_values = NULL;
     lut->output_tables = NULL;
@@ -305,6 +390,42 @@ sixel_icc_mab_pipeline_destroy(sixel_icc_mab_pipeline_t *pipeline)
 }
 
 static void
+sixel_icc_mpe_curves_destroy(sixel_icc_mpe_t *mpe)
+{
+    sixel_icc_mpe_curve_t *curve;
+    size_t channel;
+    size_t segment;
+
+    if (mpe->curves == NULL) {
+        return;
+    }
+    for (channel = 0u; channel < mpe->input_channels; ++channel) {
+        curve = &mpe->curves[channel];
+        for (segment = 0u; segment < curve->segment_count; ++segment) {
+            free(curve->segments[segment].samples);
+        }
+        free(curve->segments);
+    }
+    free(mpe->curves);
+}
+
+static void
+sixel_icc_mpet_destroy(sixel_icc_mpet_t *mpet)
+{
+    size_t i;
+
+    if (!mpet->shared_payload) {
+        for (i = 0u; i < mpet->element_count; ++i) {
+            sixel_icc_mpe_curves_destroy(&mpet->elements[i]);
+            free(mpet->elements[i].values);
+        }
+        free(mpet->elements);
+        free(mpet->data);
+    }
+    memset(mpet, 0, sizeof(*mpet));
+}
+
+static void
 sixel_icc_profile_reset(sixel_icc_profile_t *profile)
 {
     size_t i;
@@ -367,10 +488,16 @@ sixel_icc_profile_destroy(sixel_icc_profile_t *profile)
         sixel_icc_mab_pipeline_destroy(&profile->b2d_mab[i]);
     }
 
+    for (i = 0u; i < SIXEL_ICC_MPET_SLOT_COUNT; ++i) {
+        sixel_icc_mpet_destroy(&profile->d2b_mpet[i]);
+        sixel_icc_mpet_destroy(&profile->b2d_mpet[i]);
+    }
+
     profile->kind = SIXEL_ICC_PROFILE_KIND_INVALID;
     profile->pcs = SIXEL_ICC_PROFILE_PCS_INVALID;
+    profile->lut_only = 0;
     memset(profile->matrix_to_xyz_d50, 0, sizeof(profile->matrix_to_xyz_d50));
-    memset(profile->gray_white_xyz_d50, 0, sizeof(profile->gray_white_xyz_d50));
+    memset(profile->media_white_xyz, 0, sizeof(profile->media_white_xyz));
 }
 
 static int
@@ -378,7 +505,8 @@ sixel_icc_find_tag(unsigned char const *profile_data,
                    size_t profile_size,
                    char const signature[4],
                    size_t *out_offset,
-                   size_t *out_length)
+                   size_t *out_length,
+                   sixel_icc_issue_t *issue)
 {
     uint32_t tag_count;
     size_t table_offset;
@@ -417,6 +545,7 @@ sixel_icc_find_tag(unsigned char const *profile_data,
 
         if (tag_length == 0u || tag_offset > profile_size ||
             tag_length > profile_size - tag_offset) {
+            sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
             return 0;
         }
 
@@ -639,7 +768,9 @@ sixel_icc_parse_segm_param_count(uint16_t function_type, size_t *param_count)
 static int
 sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
                                     size_t tag_length,
-                                    sixel_icc_curve_t *out_curve)
+                                    sixel_icc_curve_t *out_curve,
+                                sixel_icc_parse_budget_t *budget,
+                                sixel_icc_issue_t *issue)
 {
     uint32_t segment_count_u32;
     size_t segment_count;
@@ -699,14 +830,15 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
         if (breakpoint_count > SIZE_MAX / sizeof(*breakpoints)) {
             return 0;
         }
-        breakpoints = (double *)malloc(breakpoint_count * sizeof(*breakpoints));
+        breakpoints = (double *)sixel_icc_parse_alloc(budget,
+            breakpoint_count * sizeof(*breakpoints), issue);
         if (breakpoints == NULL) {
             return 0;
         }
     }
 
-    segments = (sixel_icc_segm_segment_t *)malloc(segment_count
-                                                  * sizeof(*segments));
+    segments = (sixel_icc_segm_segment_t *)sixel_icc_parse_alloc(budget,
+        segment_count * sizeof(*segments), issue);
     if (segments == NULL) {
         free(breakpoints);
         return 0;
@@ -732,8 +864,8 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
             return 0;
         }
         function_type = sixel_icc_read_be16(tag_data + offset);
-        if (!sixel_icc_parse_segm_param_count(function_type,
-                                              &param_count)) {
+        if (!sixel_icc_parse_segm_param_count(function_type, &param_count)) {
+            sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
             free(segments);
             free(breakpoints);
             return 0;
@@ -754,7 +886,8 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
     }
 
     sample_count = SIXEL_ICC_PARAMETRIC_TABLE_SIZE;
-    out_curve->table = (uint16_t *)malloc(sample_count * sizeof(uint16_t));
+    out_curve->table = (uint16_t *)sixel_icc_parse_alloc(budget,
+        sample_count * sizeof(uint16_t), issue);
     if (out_curve->table == NULL) {
         free(segments);
         free(breakpoints);
@@ -822,7 +955,8 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
 static int
 sixel_icc_parse_curve_tag_length(unsigned char const *tag_data,
                                  size_t tag_length,
-                                 size_t *out_length)
+                                 size_t *out_length,
+                                sixel_icc_issue_t *issue)
 {
     size_t offset;
     size_t segment_count;
@@ -872,8 +1006,11 @@ sixel_icc_parse_curve_tag_length(unsigned char const *tag_data,
 
     if (memcmp(tag_data + 0u, "para", 4u) == 0) {
         function_type = sixel_icc_read_be16(tag_data + 8u);
-        if (!sixel_icc_parse_segm_param_count(function_type, &param_count) ||
-            !sixel_icc_size_multiply(param_count, 4u, &offset) ||
+        if (!sixel_icc_parse_segm_param_count(function_type, &param_count)) {
+            sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
+            return 0;
+        }
+        if (!sixel_icc_size_multiply(param_count, 4u, &offset) ||
             !sixel_icc_size_add(12u, offset, &offset) ||
             offset > tag_length) {
             return 0;
@@ -883,6 +1020,7 @@ sixel_icc_parse_curve_tag_length(unsigned char const *tag_data,
     }
 
     if (memcmp(tag_data + 0u, "segm", 4u) != 0) {
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
         return 0;
     }
 
@@ -904,8 +1042,11 @@ sixel_icc_parse_curve_tag_length(unsigned char const *tag_data,
         }
 
         function_type = sixel_icc_read_be16(tag_data + offset);
-        if (!sixel_icc_parse_segm_param_count(function_type, &param_count) ||
-            !sixel_icc_size_multiply(param_count, 4u, &param_count) ||
+        if (!sixel_icc_parse_segm_param_count(function_type, &param_count)) {
+            sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
+            return 0;
+        }
+        if (!sixel_icc_size_multiply(param_count, 4u, &param_count) ||
             !sixel_icc_size_add(4u, param_count, &param_count) ||
             param_count > tag_length - offset ||
             !sixel_icc_size_add(offset, param_count, &offset)) {
@@ -920,7 +1061,9 @@ sixel_icc_parse_curve_tag_length(unsigned char const *tag_data,
 static int
 sixel_icc_parse_curve_data(unsigned char const *tag_data,
                            size_t tag_length,
-                           sixel_icc_curve_t *out_curve)
+                           sixel_icc_curve_t *out_curve,
+                           sixel_icc_parse_budget_t *budget,
+                           sixel_icc_issue_t *issue)
 {
     if (tag_data == NULL || out_curve == NULL || tag_length < 12u) {
         return 0;
@@ -967,7 +1110,8 @@ sixel_icc_parse_curve_data(unsigned char const *tag_data,
 #endif
         table_length = (size_t)count;
 
-        out_curve->table = (uint16_t *)malloc(table_length * sizeof(uint16_t));
+        out_curve->table = (uint16_t *)sixel_icc_parse_alloc(budget,
+            table_length * sizeof(uint16_t), issue);
         if (out_curve->table == NULL) {
             return 0;
         }
@@ -1004,6 +1148,7 @@ sixel_icc_parse_curve_data(unsigned char const *tag_data,
             param_count = 7u;
             break;
         default:
+            sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
             return 0;
         }
         if (tag_length < 12u + param_count * 4u) {
@@ -1016,7 +1161,8 @@ sixel_icc_parse_curve_data(unsigned char const *tag_data,
         }
 
         sample_count = SIXEL_ICC_PARAMETRIC_TABLE_SIZE;
-        out_curve->table = (uint16_t *)malloc(sample_count * sizeof(uint16_t));
+        out_curve->table = (uint16_t *)sixel_icc_parse_alloc(budget,
+            sample_count * sizeof(uint16_t), issue);
         if (out_curve->table == NULL) {
             return 0;
         }
@@ -1055,9 +1201,10 @@ sixel_icc_parse_curve_data(unsigned char const *tag_data,
     if (memcmp(tag_data + 0u, "segm", 4u) == 0) {
         return sixel_icc_parse_segmented_curve_tag(tag_data,
                                                    tag_length,
-                                                   out_curve);
+                                                   out_curve, budget, issue);
     }
 
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
     return 0;
 }
 
@@ -1066,8 +1213,12 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
                           size_t profile_size,
                           size_t tag_offset,
                           size_t tag_length,
-                          sixel_icc_curve_t *out_curve)
+                          sixel_icc_curve_t *out_curve,
+                          sixel_icc_parse_budget_t *budget,
+                          sixel_icc_issue_t *issue)
 {
+    sixel_icc_issue_t failure;
+
     if (profile_data == NULL || out_curve == NULL) {
         return 0;
     }
@@ -1075,9 +1226,14 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
         return 0;
     }
 
-    return sixel_icc_parse_curve_data(profile_data + tag_offset,
-                                      tag_length,
-                                      out_curve);
+    failure = SIXEL_ICC_ISSUE_NONE;
+    if (sixel_icc_parse_curve_data(profile_data + tag_offset, tag_length,
+                                   out_curve, budget, &failure)) {
+        return 1;
+    }
+    sixel_icc_record_issue(issue, failure == SIXEL_ICC_ISSUE_NONE
+        ? SIXEL_ICC_ISSUE_MALFORMED : failure);
+    return 0;
 }
 
 static int
@@ -1139,7 +1295,9 @@ sixel_icc_parse_curve_block(unsigned char const *tag_data,
                             size_t tag_length,
                             size_t block_offset,
                             size_t curve_count,
-                            sixel_icc_curve_t *out_curves)
+                            sixel_icc_curve_t *out_curves,
+                            sixel_icc_parse_budget_t *budget,
+                            sixel_icc_issue_t *issue)
 {
     size_t i;
     size_t pos;
@@ -1164,10 +1322,10 @@ sixel_icc_parse_curve_block(unsigned char const *tag_data,
         }
         if (!sixel_icc_parse_curve_tag_length(tag_data + pos,
                                               tag_length - pos,
-                                              &curve_length) ||
+                                              &curve_length, issue) ||
             !sixel_icc_parse_curve_data(tag_data + pos,
                                         curve_length,
-                                        &out_curves[i]) ||
+                                        &out_curves[i], budget, issue) ||
             !sixel_icc_size_add(pos, curve_length, &next_pos)) {
             goto fail;
         }
@@ -1195,7 +1353,9 @@ sixel_icc_parse_mab_clut_block(unsigned char const *tag_data,
                                size_t block_offset,
                                uint8_t input_channels,
                                uint8_t output_channels,
-                               sixel_icc_mab_clut_t *out_clut)
+                               sixel_icc_mab_clut_t *out_clut,
+                               sixel_icc_parse_budget_t *budget,
+                               sixel_icc_issue_t *issue)
 {
     sixel_icc_mab_clut_t parsed;
     unsigned char precision;
@@ -1246,7 +1406,8 @@ sixel_icc_parse_mab_clut_block(unsigned char const *tag_data,
         return 0;
     }
 
-    parsed.values = (uint16_t *)malloc(value_count * sizeof(*parsed.values));
+    parsed.values = (uint16_t *)sixel_icc_parse_alloc(budget,
+        value_count * sizeof(*parsed.values), issue);
     if (parsed.values == NULL) {
         return 0;
     }
@@ -1281,24 +1442,15 @@ sixel_icc_parse_mab_matrix_block(unsigned char const *tag_data,
                                  double matrix_offset[3])
 {
     size_t i;
-    size_t j;
     size_t offset;
 
-    i = 0u;
-    j = 0u;
-    offset = 0u;
     if (tag_data == NULL || matrix == NULL || matrix_offset == NULL ||
         block_offset > tag_length || tag_length - block_offset < 48u) {
         return 0;
     }
 
-    offset = block_offset;
-    for (i = 0u; i < 3u; ++i) {
-        for (j = 0u; j < 3u; ++j) {
-            matrix[i][j] = sixel_icc_read_s15fixed16(tag_data + offset);
-            offset += 4u;
-        }
-    }
+    sixel_icc_read_matrix(matrix, tag_data + block_offset);
+    offset = block_offset + 36u;
     for (i = 0u; i < 3u; ++i) {
         matrix_offset[i] = sixel_icc_read_s15fixed16(tag_data + offset);
         offset += 4u;
@@ -1310,7 +1462,9 @@ sixel_icc_parse_mab_matrix_block(unsigned char const *tag_data,
 static int
 sixel_icc_parse_mab_tag_data(unsigned char const *tag_data,
                              size_t tag_length,
-                             sixel_icc_mab_pipeline_t *out_pipeline)
+                             sixel_icc_mab_pipeline_t *out_pipeline,
+                             sixel_icc_parse_budget_t *budget,
+                             sixel_icc_issue_t *issue)
 {
     sixel_icc_mab_pipeline_t parsed;
     size_t b_offset;
@@ -1383,7 +1537,7 @@ sixel_icc_parse_mab_tag_data(unsigned char const *tag_data,
                                          tag_length,
                                          a_offset,
                                          a_count,
-                                         parsed.a_curves)) {
+                                         parsed.a_curves, budget, issue)) {
             goto fail;
         }
         parsed.has_a_curves = 1;
@@ -1394,7 +1548,7 @@ sixel_icc_parse_mab_tag_data(unsigned char const *tag_data,
                                          tag_length,
                                          m_offset,
                                          m_count,
-                                         parsed.m_curves)) {
+                                         parsed.m_curves, budget, issue)) {
             goto fail;
         }
         parsed.has_m_curves = 1;
@@ -1405,7 +1559,7 @@ sixel_icc_parse_mab_tag_data(unsigned char const *tag_data,
                                          tag_length,
                                          b_offset,
                                          b_count,
-                                         parsed.b_curves)) {
+                                         parsed.b_curves, budget, issue)) {
             goto fail;
         }
         parsed.has_b_curves = 1;
@@ -1417,7 +1571,7 @@ sixel_icc_parse_mab_tag_data(unsigned char const *tag_data,
                                             clut_offset,
                                             parsed.input_channels,
                                             parsed.output_channels,
-                                            &parsed.clut)) {
+                                            &parsed.clut, budget, issue)) {
             goto fail;
         }
         parsed.has_clut = 1;
@@ -1453,28 +1607,11 @@ fail:
 }
 
 static int
-sixel_icc_parse_mab_tag(unsigned char const *profile_data,
-                        size_t profile_size,
-                        size_t tag_offset,
-                        size_t tag_length,
-                        sixel_icc_mab_pipeline_t *out_pipeline)
-{
-    if (profile_data == NULL || out_pipeline == NULL) {
-        return 0;
-    }
-    if (tag_offset > profile_size || tag_length > profile_size - tag_offset) {
-        return 0;
-    }
-
-    return sixel_icc_parse_mab_tag_data(profile_data + tag_offset,
-                                        tag_length,
-                                        out_pipeline);
-}
-
-static int
 sixel_icc_parse_lut8_tag(unsigned char const *tag_data,
                          size_t tag_length,
-                         sixel_icc_lut_t *out_lut)
+                         sixel_icc_lut_t *out_lut,
+                         sixel_icc_parse_budget_t *budget,
+                         sixel_icc_issue_t *issue)
 {
     sixel_icc_lut_t parsed;
     unsigned char input_channels;
@@ -1544,15 +1681,17 @@ sixel_icc_parse_lut8_tag(unsigned char const *tag_data,
         return 0;
     }
 
-    if (input_count > SIZE_MAX / sizeof(*parsed.input_tables) ||
-        clut_count > SIZE_MAX / sizeof(*parsed.clut_values) ||
-        output_count > SIZE_MAX / sizeof(*parsed.output_tables)) {
+    if (!sixel_icc_parse_fits(budget, total_sample_count,
+                              sizeof(*parsed.clut_values), issue)) {
         return 0;
     }
 
-    parsed.input_tables = (uint16_t *)malloc(input_count * sizeof(*parsed.input_tables));
-    parsed.clut_values = (uint16_t *)malloc(clut_count * sizeof(*parsed.clut_values));
-    parsed.output_tables = (uint16_t *)malloc(output_count * sizeof(*parsed.output_tables));
+    parsed.input_tables = (uint16_t *)sixel_icc_parse_alloc(budget,
+        input_count * sizeof(*parsed.input_tables), issue);
+    parsed.clut_values = (uint16_t *)sixel_icc_parse_alloc(budget,
+        clut_count * sizeof(*parsed.clut_values), issue);
+    parsed.output_tables = (uint16_t *)sixel_icc_parse_alloc(budget,
+        output_count * sizeof(*parsed.output_tables), issue);
     if (parsed.input_tables == NULL ||
         parsed.clut_values == NULL ||
         parsed.output_tables == NULL) {
@@ -1574,6 +1713,7 @@ sixel_icc_parse_lut8_tag(unsigned char const *tag_data,
         parsed.output_tables[i] = (uint16_t)((unsigned int)tag_data[offset + i] * 257u);
     }
 
+    sixel_icc_read_matrix(parsed.matrix, tag_data + 12u);
     parsed.kind = SIXEL_ICC_LUT_MFT1;
     parsed.input_channels = input_channels;
     parsed.output_channels = output_channels;
@@ -1593,7 +1733,9 @@ fail:
 static int
 sixel_icc_parse_lut16_tag(unsigned char const *tag_data,
                           size_t tag_length,
-                          sixel_icc_lut_t *out_lut)
+                          sixel_icc_lut_t *out_lut,
+                          sixel_icc_parse_budget_t *budget,
+                          sixel_icc_issue_t *issue)
 {
     sixel_icc_lut_t parsed;
     unsigned char input_channels;
@@ -1670,15 +1812,17 @@ sixel_icc_parse_lut16_tag(unsigned char const *tag_data,
         return 0;
     }
 
-    if (input_count > SIZE_MAX / sizeof(*parsed.input_tables) ||
-        clut_count > SIZE_MAX / sizeof(*parsed.clut_values) ||
-        output_count > SIZE_MAX / sizeof(*parsed.output_tables)) {
+    if (!sixel_icc_parse_fits(budget, total_sample_count,
+                              sizeof(*parsed.clut_values), issue)) {
         return 0;
     }
 
-    parsed.input_tables = (uint16_t *)malloc(input_count * sizeof(*parsed.input_tables));
-    parsed.clut_values = (uint16_t *)malloc(clut_count * sizeof(*parsed.clut_values));
-    parsed.output_tables = (uint16_t *)malloc(output_count * sizeof(*parsed.output_tables));
+    parsed.input_tables = (uint16_t *)sixel_icc_parse_alloc(budget,
+        input_count * sizeof(*parsed.input_tables), issue);
+    parsed.clut_values = (uint16_t *)sixel_icc_parse_alloc(budget,
+        clut_count * sizeof(*parsed.clut_values), issue);
+    parsed.output_tables = (uint16_t *)sixel_icc_parse_alloc(budget,
+        output_count * sizeof(*parsed.output_tables), issue);
     if (parsed.input_tables == NULL ||
         parsed.clut_values == NULL ||
         parsed.output_tables == NULL) {
@@ -1700,6 +1844,7 @@ sixel_icc_parse_lut16_tag(unsigned char const *tag_data,
         parsed.output_tables[i] = sixel_icc_read_be16(tag_data + offset + i * 2u);
     }
 
+    sixel_icc_read_matrix(parsed.matrix, tag_data + 12u);
     parsed.kind = SIXEL_ICC_LUT_MFT2;
     parsed.input_channels = input_channels;
     parsed.output_channels = output_channels;
@@ -1716,36 +1861,6 @@ fail:
     return 0;
 }
 
-static int
-sixel_icc_parse_lut_tag(unsigned char const *profile_data,
-                        size_t profile_size,
-                        size_t tag_offset,
-                        size_t tag_length,
-                        sixel_icc_lut_t *out_lut)
-{
-    unsigned char const *tag_data;
-
-    if (profile_data == NULL || out_lut == NULL) {
-        return 0;
-    }
-    if (tag_offset > profile_size || tag_length > profile_size - tag_offset) {
-        return 0;
-    }
-    if (tag_length < 4u) {
-        return 0;
-    }
-
-    tag_data = profile_data + tag_offset;
-    if (memcmp(tag_data + 0u, "mft1", 4u) == 0) {
-        return sixel_icc_parse_lut8_tag(tag_data, tag_length, out_lut);
-    }
-    if (memcmp(tag_data + 0u, "mft2", 4u) == 0) {
-        return sixel_icc_parse_lut16_tag(tag_data, tag_length, out_lut);
-    }
-
-    return 0;
-}
-
 static char const *const sixel_icc_a2b_tag_names[SIXEL_ICC_A2B_SLOT_COUNT] = {
     "A2B0",
     "A2B1",
@@ -1758,282 +1873,756 @@ static char const *const sixel_icc_b2a_tag_names[SIXEL_ICC_B2A_SLOT_COUNT] = {
     "B2A2"
 };
 
-static char const *const sixel_icc_d2b_tag_names[SIXEL_ICC_D2B_SLOT_COUNT] = {
+static char const *const sixel_icc_d2b_tag_names[SIXEL_ICC_MPET_SLOT_COUNT] = {
     "D2B0",
     "D2B1",
-    "D2B2"
+    "D2B2",
+    "D2B3"
 };
 
-static char const *const sixel_icc_b2d_tag_names[SIXEL_ICC_B2D_SLOT_COUNT] = {
+static char const *const sixel_icc_b2d_tag_names[SIXEL_ICC_MPET_SLOT_COUNT] = {
     "B2D0",
     "B2D1",
-    "B2D2"
+    "B2D2",
+    "B2D3"
 };
+
+typedef struct sixel_icc_mpe_range {
+    uint32_t offset;
+    uint32_t length;
+    uint16_t index;
+} sixel_icc_mpe_range_t;
+
+static int
+sixel_icc_compare_mpe_ranges(void const *left, void const *right)
+{
+    sixel_icc_mpe_range_t const *a;
+    sixel_icc_mpe_range_t const *b;
+
+    a = (sixel_icc_mpe_range_t const *)left;
+    b = (sixel_icc_mpe_range_t const *)right;
+    if (a->offset == b->offset) {
+        return (a->index > b->index) - (a->index < b->index);
+    }
+    return (a->offset > b->offset) - (a->offset < b->offset);
+}
+
+/* Sort the ranges independently of the element or channel order. */
+static int
+sixel_icc_order_mpe_ranges(sixel_icc_mpe_range_t *ranges, size_t count,
+                           size_t first_offset)
+{
+    size_t i;
+
+    qsort(ranges, count, sizeof(*ranges), sixel_icc_compare_mpe_ranges);
+    if (ranges[0].offset != first_offset) {
+        return 0;
+    }
+    for (i = 1u; i < count; ++i) {
+        if (ranges[i].offset == ranges[i - 1u].offset &&
+            ranges[i].length == ranges[i - 1u].length) {
+            continue;
+        }
+        if (ranges[i].offset - ranges[i - 1u].offset <
+            ranges[i - 1u].length) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Decode finite ICC binary32 numbers without assuming the host layout. */
+static int
+sixel_icc_mpe_read_float(unsigned char const *data, double *out)
+{
+    uint32_t bits;
+    uint32_t fraction;
+    int exponent;
+    double value;
+
+    bits = sixel_icc_read_be32(data);
+    exponent = (int)((bits >> 23u) & 255u);
+    if (exponent == 255) {
+        return 0;
+    }
+    fraction = bits & 0x007fffffu;
+    value = exponent == 0 ? ldexp((double)fraction, -149)
+        : ldexp((double)(fraction | 0x00800000u), exponent - 150);
+    *out = bits >> 31u ? -value : value;
+    return 1;
+}
+
+static int
+sixel_icc_parse_mpe_segment(unsigned char const *data, size_t length,
+                             int allows_samples, sixel_icc_mpe_segment_t *seg,
+                             size_t *used, sixel_icc_parse_budget_t *budget,
+                             sixel_icc_issue_t *issue)
+{
+    double *values;
+    size_t count;
+    size_t i;
+    int sampled;
+
+    if (length < 12u || sixel_icc_read_be32(data + 4u) != 0u) {
+        goto malformed;
+    }
+    sampled = memcmp(data, "samf", 4u) == 0;
+    if (sampled) {
+        count = sixel_icc_read_be32(data + 8u);
+        if (!allows_samples || count == 0u) {
+            goto malformed;
+        }
+    } else if (memcmp(data, "parf", 4u) == 0) {
+        if (sixel_icc_read_be16(data + 10u) != 0u) {
+            goto malformed;
+        }
+        seg->function_type = sixel_icc_read_be16(data + 8u);
+        if (seg->function_type > 2u) {
+            goto unsupported;
+        }
+        count = seg->function_type == 0u ? 4u : 5u;
+    } else {
+        goto unsupported;
+    }
+
+    if (count > (length - 12u) / 4u) {
+        goto malformed;
+    }
+    values = seg->params;
+    if (sampled) {
+        if (!sixel_icc_parse_fits(budget, count, sizeof(*values), issue)) {
+            return 0;
+        }
+        seg->samples = (double *)sixel_icc_parse_alloc(
+            budget, count * sizeof(*values), issue);
+        if (seg->samples == NULL) {
+            return 0;
+        }
+        seg->sample_count = count;
+        values = seg->samples;
+    }
+    for (i = 0u; i < count; ++i) {
+        if (!sixel_icc_mpe_read_float(data + 12u + i * 4u, &values[i])) {
+            goto malformed;
+        }
+    }
+    *used = 12u + count * 4u;
+    return 1;
+
+unsupported:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
+    return 0;
+
+malformed:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+    return 0;
+}
+
+static int
+sixel_icc_parse_mpe_curve(unsigned char const *data, size_t length,
+                           sixel_icc_mpe_curve_t *curve,
+                           sixel_icc_parse_budget_t *budget,
+                           sixel_icc_issue_t *issue)
+{
+    size_t count;
+    size_t offset;
+    size_t used;
+    size_t i;
+
+    if (length < 12u || memcmp(data, "curf", 4u) != 0 ||
+        sixel_icc_read_be32(data + 4u) != 0u ||
+        sixel_icc_read_be16(data + 10u) != 0u) {
+        goto malformed;
+    }
+    count = sixel_icc_read_be16(data + 8u);
+    if (count == 0u || count - 1u > (length - 12u) / 4u) {
+        goto malformed;
+    }
+    offset = 12u + (count - 1u) * 4u;
+    if (count > (length - offset) / 12u) {
+        goto malformed;
+    }
+    curve->segments = (sixel_icc_mpe_segment_t *)sixel_icc_parse_alloc(
+        budget, count * sizeof(*curve->segments), issue);
+    if (curve->segments == NULL) {
+        return 0;
+    }
+    curve->segment_count = count;
+    memset(curve->segments, 0, count * sizeof(*curve->segments));
+    for (i = 0u; i + 1u < count; ++i) {
+        if (!sixel_icc_mpe_read_float(data + 12u + i * 4u,
+                                       &curve->segments[i].end) ||
+            (i != 0u &&
+             curve->segments[i].end < curve->segments[i - 1u].end)) {
+            goto malformed;
+        }
+    }
+    for (i = 0u; i < count; ++i) {
+        if (!sixel_icc_parse_mpe_segment(data + offset, length - offset,
+                i != 0u && i + 1u < count, &curve->segments[i], &used,
+                budget, issue)) {
+            return 0;
+        }
+        offset += used;
+    }
+    if (offset == length) {
+        return 1;
+    }
+
+malformed:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+    return 0;
+}
+
+/* Parse each shared curve once, keeping the original channel assignment. */
+static int
+sixel_icc_parse_mpe_curves(unsigned char const *data, sixel_icc_mpe_t *mpe,
+                            sixel_icc_parse_budget_t *budget,
+                            sixel_icc_issue_t *issue)
+{
+    sixel_icc_mpe_range_t *ranges;
+    sixel_icc_mpe_range_t const *range;
+    size_t count;
+    size_t start;
+    size_t i;
+    uint16_t owner;
+    int ok;
+
+    count = mpe->input_channels;
+    start = 12u + count * 8u;
+    ranges = (sixel_icc_mpe_range_t *)sixel_icc_parse_alloc(
+        budget, count * sizeof(*ranges), issue);
+    if (ranges == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < count; ++i) {
+        ranges[i].offset = sixel_icc_read_be32(data + 12u + i * 8u);
+        ranges[i].length = sixel_icc_read_be32(data + 16u + i * 8u);
+        ranges[i].index = (uint16_t)i;
+        if (ranges[i].offset < start || ranges[i].offset % 4u != 0u ||
+            ranges[i].offset > mpe->length ||
+            ranges[i].length > mpe->length - ranges[i].offset ||
+            ranges[i].length < 12u) {
+            goto malformed;
+        }
+    }
+    if (!sixel_icc_order_mpe_ranges(ranges, count, start)) {
+        goto malformed;
+    }
+    mpe->curves = (sixel_icc_mpe_curve_t *)sixel_icc_parse_alloc(
+        budget, count * sizeof(*mpe->curves), issue);
+    if (mpe->curves == NULL) {
+        ok = 0;
+        goto done;
+    }
+    memset(mpe->curves, 0, count * sizeof(*mpe->curves));
+    owner = ranges[0].index;
+    for (i = 0u; i < count; ++i) {
+        range = &ranges[i];
+        if (i == 0u || range->offset != ranges[i - 1u].offset) {
+            owner = range->index;
+            if (!sixel_icc_parse_mpe_curve(data + range->offset, range->length,
+                                            &mpe->curves[owner], budget,
+                                            issue)) {
+                ok = 0;
+                goto done;
+            }
+        }
+        mpe->curves[range->index].curve_channel = owner;
+    }
+    ok = 1;
+    goto done;
+
+malformed:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+    ok = 0;
+done:
+    free(ranges);
+    return ok;
+}
+
+static sixel_icc_issue_t
+sixel_icc_parse_mpe_clut_grid(unsigned char const *data, sixel_icc_mpe_t *mpe)
+{
+    size_t values;
+    size_t i;
+    uint8_t points;
+
+    if (mpe->length < 28u ||
+        mpe->input_channels > SIXEL_ICC_MPE_CLUT_MAX_AXES) {
+        return SIXEL_ICC_ISSUE_MALFORMED;
+    }
+    values = mpe->output_channels;
+    for (i = 0u; i < mpe->input_channels; ++i) {
+        points = data[12u + i];
+        if (points < 2u || !sixel_icc_size_multiply(values, points, &values)) {
+            return SIXEL_ICC_ISSUE_MALFORMED;
+        }
+        mpe->grid_points[i] = points;
+    }
+    for (; i < SIXEL_ICC_MPE_CLUT_MAX_AXES; ++i) {
+        if (data[12u + i] != 0u) {
+            return SIXEL_ICC_ISSUE_MALFORMED;
+        }
+    }
+    if ((mpe->length - 28u) % 4u != 0u ||
+        values != (mpe->length - 28u) / 4u) {
+        return SIXEL_ICC_ISSUE_MALFORMED;
+    }
+    return SIXEL_ICC_ISSUE_NONE;
+}
+
+static sixel_icc_issue_t
+sixel_icc_parse_mpe_header(unsigned char const *data, sixel_icc_mpe_t *mpe)
+{
+    size_t matrix_values;
+
+    mpe->input_channels = sixel_icc_read_be16(data + 8u);
+    mpe->output_channels = sixel_icc_read_be16(data + 10u);
+    if (sixel_icc_read_be32(data + 4u) != 0u ||
+        mpe->input_channels == 0u || mpe->output_channels == 0u) {
+        return SIXEL_ICC_ISSUE_MALFORMED;
+    }
+
+    if (memcmp(data, "cvst", 4u) == 0) {
+        mpe->kind = SIXEL_ICC_MPE_CURVE_SET;
+        if (mpe->input_channels != mpe->output_channels ||
+            mpe->input_channels > (mpe->length - 12u) / 8u) {
+            return SIXEL_ICC_ISSUE_MALFORMED;
+        }
+    } else if (memcmp(data, "matf", 4u) == 0) {
+        mpe->kind = SIXEL_ICC_MPE_MATRIX;
+        if (!sixel_icc_size_multiply((size_t)mpe->input_channels + 1u,
+                                     mpe->output_channels, &matrix_values) ||
+            (mpe->length - 12u) % 4u != 0u ||
+            matrix_values != (mpe->length - 12u) / 4u) {
+            return SIXEL_ICC_ISSUE_MALFORMED;
+        }
+    } else if (memcmp(data, "clut", 4u) == 0) {
+        mpe->kind = SIXEL_ICC_MPE_CLUT;
+        return sixel_icc_parse_mpe_clut_grid(data, mpe);
+    } else if (memcmp(data, "bACS", 4u) == 0 ||
+               memcmp(data, "eACS", 4u) == 0) {
+        mpe->kind = data[0] == 'b'
+            ? SIXEL_ICC_MPE_BEGIN_ACS : SIXEL_ICC_MPE_END_ACS;
+        if (mpe->length != 16u ||
+            mpe->input_channels != mpe->output_channels) {
+            return SIXEL_ICC_ISSUE_MALFORMED;
+        }
+    } else {
+        return SIXEL_ICC_ISSUE_UNSUPPORTED;
+    }
+    return SIXEL_ICC_ISSUE_NONE;
+}
+
+/* The element header already established the encoded value count. */
+static int
+sixel_icc_parse_mpe_values(unsigned char const *data, sixel_icc_mpe_t *mpe,
+                            sixel_icc_parse_budget_t *budget,
+                            sixel_icc_issue_t *issue)
+{
+    size_t start;
+    size_t count;
+    size_t i;
+
+    start = mpe->kind == SIXEL_ICC_MPE_MATRIX ? 12u : 28u;
+    count = (mpe->length - start) / 4u;
+    if (!sixel_icc_parse_fits(budget, count, sizeof(*mpe->values), issue)) {
+        return 0;
+    }
+    mpe->values = (double *)sixel_icc_parse_alloc(
+        budget, count * sizeof(*mpe->values), issue);
+    if (mpe->values == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < count; ++i) {
+        if (!sixel_icc_mpe_read_float(data + start + 4u * i, &mpe->values[i])) {
+            sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int
+sixel_icc_parse_mpet(unsigned char const *data, size_t length,
+                      uint16_t input_channels, uint16_t output_channels,
+                      sixel_icc_mpet_t *out, sixel_icc_parse_budget_t *budget,
+                      sixel_icc_issue_t *issue)
+{
+    sixel_icc_mpe_t elements[SIXEL_ICC_MAX_MPE_ELEMENTS];
+    sixel_icc_mpe_range_t ranges[SIXEL_ICC_MAX_MPE_ELEMENTS];
+    sixel_icc_mpet_t parsed;
+    sixel_icc_mpe_t *mpe;
+    sixel_icc_issue_t element_issue;
+    size_t count;
+    size_t table_end;
+    size_t element_bytes;
+    size_t i;
+    uint16_t channels;
+    int unsupported_element;
+    int ok;
+
+    if (length < 16u || sixel_icc_read_be32(data + 4u) != 0u ||
+        sixel_icc_read_be16(data + 8u) != input_channels ||
+        sixel_icc_read_be16(data + 10u) != output_channels) {
+        goto malformed;
+    }
+    count = sixel_icc_read_be32(data + 12u);
+    if (count == 0u || count > (length - 16u) / 8u) {
+        goto malformed;
+    }
+    if (count > SIXEL_ICC_MAX_MPE_ELEMENTS) {
+        budget->limit = "mpe-count";
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_RESOURCE_LIMIT);
+        return 0;
+    }
+
+    table_end = 16u + count * 8u;
+    channels = input_channels;
+    unsupported_element = 0;
+    memset(elements, 0, count * sizeof(*elements));
+    for (i = 0u; i < count; ++i) {
+        mpe = &elements[i];
+        mpe->offset = sixel_icc_read_be32(data + 16u + i * 8u);
+        mpe->length = sixel_icc_read_be32(data + 20u + i * 8u);
+        if (mpe->offset < table_end || mpe->offset % 4u != 0u ||
+            mpe->offset > length || mpe->length > length - mpe->offset ||
+            mpe->length < 12u) {
+            goto malformed;
+        }
+        element_issue = sixel_icc_parse_mpe_header(data + mpe->offset, mpe);
+        if (element_issue == SIXEL_ICC_ISSUE_MALFORMED ||
+            mpe->input_channels != channels) {
+            goto malformed;
+        }
+        unsupported_element |= element_issue == SIXEL_ICC_ISSUE_UNSUPPORTED ||
+            mpe->input_channels > SIXEL_ICC_MPE_MAX_CHANNELS ||
+            mpe->output_channels > SIXEL_ICC_MPE_MAX_CHANNELS;
+        channels = mpe->output_channels;
+        ranges[i].offset = mpe->offset;
+        ranges[i].length = mpe->length;
+        ranges[i].index = (uint16_t)i;
+    }
+    if (channels != output_channels) {
+        goto malformed;
+    }
+
+    if (!sixel_icc_order_mpe_ranges(ranges, count, table_end)) {
+        goto malformed;
+    }
+    if (unsupported_element) {
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
+        return 0;
+    }
+
+    element_bytes = count * sizeof(*elements);
+    /* Bound the encoded copy before adding the small descriptor array. */
+    if (!sixel_icc_parse_fits(budget, length, 1u, issue) ||
+        !sixel_icc_parse_fits(budget, length + element_bytes, 1u, issue)) {
+        return 0;
+    }
+    parsed.elements = (sixel_icc_mpe_t *)sixel_icc_parse_alloc(
+        budget, element_bytes, issue);
+    if (parsed.elements == NULL) {
+        return 0;
+    }
+    parsed.data = (unsigned char *)sixel_icc_parse_alloc(budget, length, issue);
+    if (parsed.data == NULL) {
+        free(parsed.elements);
+        return 0;
+    }
+    memcpy(parsed.elements, elements, element_bytes);
+    memcpy(parsed.data, data, length);
+    parsed.input_channels = input_channels;
+    parsed.output_channels = output_channels;
+    parsed.element_count = count;
+    parsed.shared_payload = 0;
+    for (i = 0u; i < count; ++i) {
+        mpe = &parsed.elements[ranges[i].index];
+        if (i != 0u && ranges[i].offset == ranges[i - 1u].offset) {
+            mpe->payload_element = parsed.elements[ranges[i - 1u].index]
+                .payload_element;
+            continue;
+        }
+        mpe->payload_element = ranges[i].index;
+        if (mpe->kind == SIXEL_ICC_MPE_CURVE_SET) {
+            ok = sixel_icc_parse_mpe_curves(data + mpe->offset, mpe,
+                                            budget, issue);
+        } else if (mpe->kind == SIXEL_ICC_MPE_MATRIX ||
+                   mpe->kind == SIXEL_ICC_MPE_CLUT) {
+            ok = sixel_icc_parse_mpe_values(data + mpe->offset, mpe,
+                                            budget, issue);
+        } else {
+            continue;
+        }
+        if (!ok) {
+            sixel_icc_mpet_destroy(&parsed);
+            return 0;
+        }
+    }
+    *out = parsed;
+    return 1;
+
+malformed:
+    sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+    return 0;
+}
+
+static void
+sixel_icc_parse_mpet_slot(unsigned char const *profile_data,
+                           size_t profile_size, char const tag_name[4],
+                           uint16_t input_channels, uint16_t output_channels,
+                           sixel_icc_mpet_t *out, sixel_icc_mpet_cache_t *cache,
+                           sixel_icc_parse_budget_t *budget,
+                           sixel_icc_issue_t *issue)
+{
+    size_t offset;
+    size_t length;
+    size_t i;
+    sixel_icc_mpet_t const *owner;
+    sixel_icc_issue_t failure;
+    char const *reason;
+
+    if (budget->limit != NULL ||
+        !sixel_icc_find_tag(profile_data, profile_size, tag_name, &offset,
+                             &length, issue)) {
+        return;
+    }
+
+    /* Match both bounds and endpoint widths before borrowing a previously
+     * validated payload. A reverse tag may require a different shape. */
+    for (i = 0u; i < cache->count; ++i) {
+        owner = cache->tags[i].owner;
+        if (offset == cache->tags[i].offset &&
+            length == cache->tags[i].length &&
+            input_channels == owner->input_channels &&
+            output_channels == owner->output_channels) {
+            *out = *owner;
+            out->shared_payload = 1;
+            return;
+        }
+    }
+
+    failure = SIXEL_ICC_ISSUE_NONE;
+    if (length < 4u || memcmp(profile_data + offset, "mpet", 4u) != 0) {
+        /* Other payloads in slots 0–2 belong to the compatibility parser. */
+        if (tag_name[3] != '3') {
+            return;
+        }
+        failure = length < 4u ? SIXEL_ICC_ISSUE_MALFORMED
+            : SIXEL_ICC_ISSUE_UNSUPPORTED;
+    } else if (sixel_icc_parse_mpet(profile_data + offset, length,
+                                    input_channels, output_channels, out,
+                                    budget, &failure)) {
+        /* At most one owner is inserted per D2B/B2D slot. */
+        cache->tags[cache->count].offset = offset;
+        cache->tags[cache->count].length = length;
+        cache->tags[cache->count].owner = out;
+        ++cache->count;
+        return;
+    }
+    if (failure == SIXEL_ICC_ISSUE_UNSUPPORTED) {
+        reason = length >= 4u &&
+            memcmp(profile_data + offset, "mpet", 4u) == 0
+            ? "unsupported-mpet-element" : "unsupported-pipeline-type";
+    } else {
+        reason = "invalid-or-unsupported-pipeline";
+    }
+    sixel_icc_record_issue(issue, failure);
+    loader_trace_message(
+        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s|reason=%s",
+        tag_name, reason);
+}
+
+static int
+sixel_icc_parse_pipeline(unsigned char const *profile_data,
+                          size_t profile_size, char const tag_name[4],
+                          uint8_t input_channels, uint8_t output_channels,
+                          sixel_icc_lut_t *lut,
+                          sixel_icc_mab_pipeline_t *mab,
+                          sixel_icc_parse_budget_t *budget,
+                          sixel_icc_issue_t *issue)
+{
+    size_t offset;
+    size_t length;
+    unsigned char const *payload;
+    sixel_icc_issue_t failure;
+    int parsed_lut;
+
+    if (budget->limit != NULL ||
+        !sixel_icc_find_tag(profile_data, profile_size, tag_name, &offset,
+                             &length, issue)) {
+        return 0;
+    }
+    payload = profile_data + offset;
+    failure = SIXEL_ICC_ISSUE_NONE;
+    if (length < 4u) {
+        failure = SIXEL_ICC_ISSUE_MALFORMED;
+    } else if (sixel_icc_is_mpet_slot(tag_name) &&
+               memcmp(payload, "mpet", 4u) == 0) {
+        /* Standard floating-point slots are parsed separately. */
+        return 0;
+    } else if (memcmp(payload, "mAB ", 4u) == 0 ||
+               memcmp(payload, "mBA ", 4u) == 0) {
+        if (sixel_icc_parse_mab_tag_data(payload, length, mab,
+                                         budget, &failure) &&
+            mab->input_channels == input_channels &&
+            mab->output_channels == output_channels) {
+            return 1;
+        }
+        sixel_icc_mab_pipeline_destroy(mab);
+    } else if (memcmp(payload, "mft1", 4u) == 0 ||
+               memcmp(payload, "mft2", 4u) == 0) {
+        parsed_lut = payload[3] == '1'
+            ? sixel_icc_parse_lut8_tag(payload, length, lut, budget, &failure)
+            : sixel_icc_parse_lut16_tag(payload, length, lut, budget, &failure);
+        if (parsed_lut &&
+            lut->input_channels == input_channels &&
+            lut->output_channels == output_channels) {
+            return 1;
+        }
+        sixel_icc_lut_destroy(lut);
+    } else {
+        failure = SIXEL_ICC_ISSUE_UNSUPPORTED;
+    }
+
+    if (failure == SIXEL_ICC_ISSUE_NONE) {
+        failure = SIXEL_ICC_ISSUE_MALFORMED;
+    }
+    sixel_icc_record_issue(issue, failure);
+    loader_trace_message(
+        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
+        "|reason=invalid-or-unsupported-pipeline", tag_name);
+    return 0;
+}
 
 static int
 sixel_icc_parse_a2b_slot(unsigned char const *profile_data,
-                         size_t profile_size,
-                         unsigned int slot,
-                         uint8_t input_channels,
-                         uint8_t output_channels,
+                         size_t profile_size, unsigned int slot,
+                         uint8_t input_channels, uint8_t output_channels,
                          int is_rgb_or_gray,
-                         sixel_icc_profile_t *parsed)
+                         sixel_icc_profile_t *parsed,
+                         sixel_icc_parse_budget_t *budget,
+                         sixel_icc_issue_t *issue)
 {
-    size_t tag_offset;
-    size_t tag_length;
     sixel_icc_lut_t *lut;
-    sixel_icc_mab_pipeline_t *mab;
-
-    tag_offset = 0u;
-    tag_length = 0u;
-    lut = NULL;
-    mab = NULL;
-    if (profile_data == NULL || parsed == NULL ||
-        slot >= SIXEL_ICC_A2B_SLOT_COUNT) {
-        return 0;
-    }
-
-    if (!sixel_icc_find_tag(profile_data,
-                            profile_size,
-                            sixel_icc_a2b_tag_names[slot],
-                            &tag_offset,
-                            &tag_length)) {
-        return 0;
-    }
 
     lut = &parsed->a2b_lut[slot];
-    mab = &parsed->a2b_mab[slot];
-    if (sixel_icc_parse_mab_tag(profile_data,
-                                profile_size,
-                                tag_offset,
-                                tag_length,
-                                mab) &&
-        mab->input_channels == input_channels &&
-        mab->output_channels == output_channels) {
-        return 1;
+    if (!sixel_icc_parse_pipeline(profile_data, profile_size,
+            sixel_icc_a2b_tag_names[slot], input_channels, output_channels,
+            lut, &parsed->a2b_mab[slot], budget, issue)) {
+        return 0;
     }
-    sixel_icc_mab_pipeline_destroy(mab);
-
-    if (sixel_icc_parse_lut_tag(profile_data,
-                                profile_size,
-                                tag_offset,
-                                tag_length,
-                                lut) &&
-        lut->input_channels == input_channels &&
-        lut->output_channels == output_channels) {
-        if (is_rgb_or_gray && lut->kind == SIXEL_ICC_LUT_MFT1) {
-            lut->kind = SIXEL_ICC_LUT_MFT1_RGB_GRAY_A2B0;
-        } else if (is_rgb_or_gray && lut->kind == SIXEL_ICC_LUT_MFT2) {
-            lut->kind = SIXEL_ICC_LUT_MFT2_RGB_GRAY_A2B0;
-        }
-        return 1;
+    if (is_rgb_or_gray && lut->kind == SIXEL_ICC_LUT_MFT1) {
+        lut->kind = SIXEL_ICC_LUT_MFT1_RGB_GRAY_A2B0;
+    } else if (is_rgb_or_gray && lut->kind == SIXEL_ICC_LUT_MFT2) {
+        lut->kind = SIXEL_ICC_LUT_MFT2_RGB_GRAY_A2B0;
     }
-    sixel_icc_lut_destroy(lut);
-
-    /* A present pipeline can fail validation even if other slots work. */
-    loader_trace_message(
-        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
-        "|reason=invalid-or-unsupported-pipeline",
-        sixel_icc_a2b_tag_names[slot]);
-    return 0;
+    return 1;
 }
 
 static int
 sixel_icc_parse_b2a_slot(unsigned char const *profile_data,
-                         size_t profile_size,
-                         unsigned int slot,
-                         uint8_t input_channels,
-                         uint8_t output_channels,
-                         sixel_icc_profile_t *parsed)
+                         size_t profile_size, unsigned int slot,
+                         uint8_t input_channels, uint8_t output_channels,
+                         sixel_icc_profile_t *parsed,
+                         sixel_icc_parse_budget_t *budget,
+                         sixel_icc_issue_t *issue)
 {
-    size_t tag_offset;
-    size_t tag_length;
-    sixel_icc_lut_t *lut;
-    sixel_icc_mab_pipeline_t *mab;
-
-    tag_offset = 0u;
-    tag_length = 0u;
-    lut = NULL;
-    mab = NULL;
-    if (profile_data == NULL || parsed == NULL ||
-        slot >= SIXEL_ICC_B2A_SLOT_COUNT) {
-        return 0;
-    }
-
-    if (!sixel_icc_find_tag(profile_data,
-                            profile_size,
-                            sixel_icc_b2a_tag_names[slot],
-                            &tag_offset,
-                            &tag_length)) {
-        return 0;
-    }
-
-    lut = &parsed->b2a_lut[slot];
-    mab = &parsed->b2a_mab[slot];
-    if (sixel_icc_parse_mab_tag(profile_data,
-                                profile_size,
-                                tag_offset,
-                                tag_length,
-                                mab) &&
-        mab->input_channels == input_channels &&
-        mab->output_channels == output_channels) {
-        return 1;
-    }
-    sixel_icc_mab_pipeline_destroy(mab);
-
-    if (sixel_icc_parse_lut_tag(profile_data,
-                                profile_size,
-                                tag_offset,
-                                tag_length,
-                                lut) &&
-        lut->input_channels == input_channels &&
-        lut->output_channels == output_channels) {
-        return 1;
-    }
-    sixel_icc_lut_destroy(lut);
-
-    /* A present pipeline can fail validation even if other slots work. */
-    loader_trace_message(
-        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
-        "|reason=invalid-or-unsupported-pipeline",
-        sixel_icc_b2a_tag_names[slot]);
-    return 0;
+    return sixel_icc_parse_pipeline(profile_data, profile_size,
+        sixel_icc_b2a_tag_names[slot], input_channels, output_channels,
+        &parsed->b2a_lut[slot], &parsed->b2a_mab[slot], budget, issue);
 }
 
 static int
 sixel_icc_parse_d2b_slot(unsigned char const *profile_data,
-                         size_t profile_size,
-                         unsigned int slot,
-                         uint8_t input_channels,
-                         uint8_t output_channels,
-                         sixel_icc_profile_t *parsed)
+                         size_t profile_size, unsigned int slot,
+                         uint8_t input_channels, uint8_t output_channels,
+                         sixel_icc_profile_t *parsed,
+                         sixel_icc_parse_budget_t *budget,
+                         sixel_icc_issue_t *issue)
 {
-    size_t tag_offset;
-    size_t tag_length;
-    sixel_icc_lut_t *lut;
-    sixel_icc_mab_pipeline_t *mab;
-
-    tag_offset = 0u;
-    tag_length = 0u;
-    lut = NULL;
-    mab = NULL;
-    if (profile_data == NULL || parsed == NULL ||
-        slot >= SIXEL_ICC_D2B_SLOT_COUNT) {
-        return 0;
-    }
-
-    if (!sixel_icc_find_tag(profile_data,
-                            profile_size,
-                            sixel_icc_d2b_tag_names[slot],
-                            &tag_offset,
-                            &tag_length)) {
-        return 0;
-    }
-
-    lut = &parsed->d2b_lut[slot];
-    mab = &parsed->d2b_mab[slot];
-    if (sixel_icc_parse_mab_tag(profile_data,
-                                profile_size,
-                                tag_offset,
-                                tag_length,
-                                mab) &&
-        mab->input_channels == input_channels &&
-        mab->output_channels == output_channels) {
-        return 1;
-    }
-    sixel_icc_mab_pipeline_destroy(mab);
-
-    if (sixel_icc_parse_lut_tag(profile_data,
-                                profile_size,
-                                tag_offset,
-                                tag_length,
-                                lut) &&
-        lut->input_channels == input_channels &&
-        lut->output_channels == output_channels) {
-        return 1;
-    }
-    sixel_icc_lut_destroy(lut);
-
-    /* A present pipeline can fail validation even if other slots work. */
-    loader_trace_message(
-        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
-        "|reason=invalid-or-unsupported-pipeline",
-        sixel_icc_d2b_tag_names[slot]);
-    return 0;
+    return sixel_icc_parse_pipeline(profile_data, profile_size,
+        sixel_icc_d2b_tag_names[slot], input_channels, output_channels,
+        &parsed->d2b_lut[slot], &parsed->d2b_mab[slot], budget, issue);
 }
 
 static int
 sixel_icc_parse_b2d_slot(unsigned char const *profile_data,
-                         size_t profile_size,
-                         unsigned int slot,
-                         uint8_t input_channels,
-                         uint8_t output_channels,
-                         sixel_icc_profile_t *parsed)
+                         size_t profile_size, unsigned int slot,
+                         uint8_t input_channels, uint8_t output_channels,
+                         sixel_icc_profile_t *parsed,
+                         sixel_icc_parse_budget_t *budget,
+                         sixel_icc_issue_t *issue)
 {
-    size_t tag_offset;
-    size_t tag_length;
-    sixel_icc_lut_t *lut;
-    sixel_icc_mab_pipeline_t *mab;
+    return sixel_icc_parse_pipeline(profile_data, profile_size,
+        sixel_icc_b2d_tag_names[slot], input_channels, output_channels,
+        &parsed->b2d_lut[slot], &parsed->b2d_mab[slot], budget, issue);
+}
 
-    tag_offset = 0u;
-    tag_length = 0u;
-    lut = NULL;
-    mab = NULL;
-    if (profile_data == NULL || parsed == NULL ||
-        slot >= SIXEL_ICC_B2D_SLOT_COUNT) {
-        return 0;
+/* Gate header fields that identify the transform model. Some embedded
+ * profiles omit these fields altogether. A zero field retains the legacy
+ * interpretation, while an explicit declaration still has to be usable. */
+static sixel_icc_issue_t
+sixel_icc_check_profile_header(unsigned char const *data, int *lut_only)
+{
+    unsigned char const *profile_class;
+    uint32_t version;
+    uint32_t signature;
+    unsigned int major;
+    unsigned int revision;
+    sixel_icc_issue_t issue;
+    char const *reason;
+
+    version = sixel_icc_read_be32(data + 8u);
+    profile_class = data + 12u;
+    signature = sixel_icc_read_be32(data + 36u);
+    major = data[8];
+    revision = data[9];
+    issue = SIXEL_ICC_ISSUE_MALFORMED;
+    if (signature != 0u && memcmp(data + 36u, "acsp", 4u) != 0) {
+        reason = "invalid-profile-signature";
+    } else if ((version & 0xffffu) != 0u ||
+               (major >> 4) > 9u || (major & 0x0fu) > 9u ||
+               (revision >> 4) > 9u || (revision & 0x0fu) > 9u) {
+        reason = "invalid-profile-version";
+    } else if (version != 0u && major != 2u && major != 4u) {
+        issue = SIXEL_ICC_ISSUE_UNSUPPORTED;
+        reason = "unsupported-profile-version";
+    } else if (memcmp(profile_class, "spac", 4u) == 0) {
+        *lut_only = 1;
+        return SIXEL_ICC_ISSUE_NONE;
+    } else if (sixel_icc_read_be32(profile_class) == 0u ||
+               memcmp(profile_class, "scnr", 4u) == 0 ||
+               memcmp(profile_class, "mntr", 4u) == 0 ||
+               memcmp(profile_class, "prtr", 4u) == 0) {
+        return SIXEL_ICC_ISSUE_NONE;
+    } else {
+        issue = SIXEL_ICC_ISSUE_UNSUPPORTED;
+        reason = "unsupported-profile-class";
     }
 
-    if (!sixel_icc_find_tag(profile_data,
-                            profile_size,
-                            sixel_icc_b2d_tag_names[slot],
-                            &tag_offset,
-                            &tag_length)) {
-        return 0;
-    }
-
-    lut = &parsed->b2d_lut[slot];
-    mab = &parsed->b2d_mab[slot];
-    if (sixel_icc_parse_mab_tag(profile_data,
-                                profile_size,
-                                tag_offset,
-                                tag_length,
-                                mab) &&
-        mab->input_channels == input_channels &&
-        mab->output_channels == output_channels) {
-        return 1;
-    }
-    sixel_icc_mab_pipeline_destroy(mab);
-
-    if (sixel_icc_parse_lut_tag(profile_data,
-                                profile_size,
-                                tag_offset,
-                                tag_length,
-                                lut) &&
-        lut->input_channels == input_channels &&
-        lut->output_channels == output_channels) {
-        return 1;
-    }
-    sixel_icc_lut_destroy(lut);
-
-    /* A present pipeline can fail validation even if other slots work. */
     loader_trace_message(
-        "LSXCMS1|engine=builtin|event=pipeline-rejected|tag=%.4s"
-        "|reason=invalid-or-unsupported-pipeline",
-        sixel_icc_b2d_tag_names[slot]);
-    return 0;
+        "LSXCMS1|engine=builtin|event=profile-rejected|reason=%s", reason);
+    return issue;
 }
 
 int
-sixel_icc_parse_profile(void const *data,
-                        size_t length,
-                        sixel_icc_profile_t *out_profile)
+sixel_icc_parse_profile_ex(void const *data, size_t length,
+                            sixel_icc_profile_t *out_profile,
+                            sixel_icc_issue_t *out_issue)
 {
     unsigned char const *profile_data;
     size_t profile_size;
+    size_t tag_count;
     unsigned char const *color_space;
     unsigned char const *pcs;
     sixel_icc_profile_t parsed;
+    sixel_icc_parse_budget_t budget;
+    sixel_icc_mpet_cache_t mpet_cache;
+    sixel_icc_issue_t local_issue;
+    sixel_icc_issue_t *issue;
 
     size_t rxyz_offset;
     size_t rxyz_length;
@@ -2051,14 +2640,26 @@ sixel_icc_parse_profile(void const *data,
     size_t wtpt_length;
     size_t ktrc_offset;
     size_t ktrc_length;
+    int has_forward_mpet;
+    int has_reverse_mpet;
     double rxyz[3];
     double gxyz[3];
     double bxyz[3];
     int has_forward_slot;
     int has_reverse_slot;
     int has_matrix_tags;
+    int has_white_tag;
     unsigned int slot;
+    uint16_t device_channels;
+    size_t i;
 
+    budget.remaining = SIXEL_ICC_MAX_PARSE_BYTES;
+    budget.limit = NULL;
+    local_issue = SIXEL_ICC_ISSUE_NONE;
+    issue = &local_issue;
+    if (out_issue != NULL) {
+        *out_issue = SIXEL_ICC_ISSUE_MALFORMED;
+    }
     if (data == NULL || length < 132u || out_profile == NULL) {
         return 0;
     }
@@ -2094,7 +2695,41 @@ sixel_icc_parse_profile(void const *data,
         return 0;
     }
 
+    local_issue = sixel_icc_check_profile_header(profile_data,
+                                                 &parsed.lut_only);
+    if (local_issue != SIXEL_ICC_ISSUE_NONE) {
+        if (out_issue != NULL) {
+            *out_issue = local_issue;
+        }
+        return 0;
+    }
+
+    tag_count = (size_t)sixel_icc_read_be32(profile_data + 128u);
+    if (tag_count > (profile_size - 132u) / 12u) {
+        sixel_icc_trace_tags(profile_data, profile_size);
+        return 0;
+    }
+    if (tag_count > SIXEL_ICC_MAX_TAGS) {
+        loader_trace_message(
+            "LSXCMS1|engine=builtin|event=profile-rejected"
+            "|reason=resource-limit|limit=tag-count");
+        if (out_issue != NULL) {
+            *out_issue = SIXEL_ICC_ISSUE_RESOURCE_LIMIT;
+        }
+        return 0;
+    }
     sixel_icc_trace_tags(profile_data, profile_size);
+
+    /* Relative paths already describe PCS colors. Keep the media white
+     * separately for the absolute intent, including for LUT profiles. */
+    has_white_tag = sixel_icc_find_tag(profile_data, profile_size, "wtpt",
+                                      &wtpt_offset, &wtpt_length, issue);
+    if (has_white_tag &&
+        !sixel_icc_parse_xyz_tag(profile_data, profile_size, wtpt_offset,
+                                  wtpt_length, parsed.media_white_xyz)) {
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+        has_white_tag = 0;
+    }
 
     color_space = profile_data + 16u;
     pcs = profile_data + 20u;
@@ -2106,22 +2741,64 @@ sixel_icc_parse_profile(void const *data,
         loader_trace_message(
             "LSXCMS1|engine=builtin|event=profile-rejected"
             "|reason=unsupported-pcs");
+        if (out_issue != NULL) {
+            *out_issue = SIXEL_ICC_ISSUE_UNSUPPORTED;
+        }
         return 0;
     }
 
     if (memcmp(color_space, "RGB ", 4u) == 0) {
+        parsed.kind = SIXEL_ICC_PROFILE_KIND_RGB;
+        device_channels = 3u;
+    } else if (memcmp(color_space, "GRAY", 4u) == 0) {
+        parsed.kind = SIXEL_ICC_PROFILE_KIND_GRAY;
+        device_channels = 1u;
+    } else if (memcmp(color_space, "CMYK", 4u) == 0) {
+        parsed.kind = SIXEL_ICC_PROFILE_KIND_CMYK;
+        device_channels = 4u;
+    } else if (memcmp(color_space, "Lab ", 4u) == 0) {
+        parsed.kind = SIXEL_ICC_PROFILE_KIND_LAB;
+        device_channels = 3u;
+    } else {
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_UNSUPPORTED);
+        goto fail;
+    }
+
+    has_forward_mpet = 0;
+    has_reverse_mpet = 0;
+    mpet_cache.count = 0u;
+    for (slot = 0u; slot < SIXEL_ICC_MPET_SLOT_COUNT &&
+         budget.limit == NULL; ++slot) {
+        sixel_icc_parse_mpet_slot(profile_data, profile_size,
+            sixel_icc_d2b_tag_names[slot], device_channels, 3u,
+            &parsed.d2b_mpet[slot], &mpet_cache, &budget, issue);
+        has_forward_mpet |= parsed.d2b_mpet[slot].element_count != 0u;
+    }
+    for (slot = 0u; slot < SIXEL_ICC_MPET_SLOT_COUNT &&
+         budget.limit == NULL; ++slot) {
+        sixel_icc_parse_mpet_slot(profile_data, profile_size,
+            sixel_icc_b2d_tag_names[slot], 3u, device_channels,
+            &parsed.b2d_mpet[slot], &mpet_cache, &budget, issue);
+        has_reverse_mpet |= parsed.b2d_mpet[slot].element_count != 0u;
+    }
+    if (budget.limit != NULL) {
+        goto fail;
+    }
+
+    if (parsed.kind == SIXEL_ICC_PROFILE_KIND_RGB) {
         has_forward_slot = 0;
         has_reverse_slot = 0;
         has_matrix_tags = 0;
 
-        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
+        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT &&
+             budget.limit == NULL; ++slot) {
             if (sixel_icc_parse_a2b_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          3u,
                                          1,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_forward_slot = 1;
             }
             if (sixel_icc_parse_d2b_slot(profile_data,
@@ -2129,59 +2806,67 @@ sixel_icc_parse_profile(void const *data,
                                          slot,
                                          3u,
                                          3u,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_forward_slot = 1;
             }
         }
-        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
+        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT &&
+             budget.limit == NULL; ++slot) {
             if (sixel_icc_parse_b2a_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          3u,
-                                         &parsed) ||
+                                         &parsed, &budget, issue) ||
                 sixel_icc_parse_b2d_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          3u,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_reverse_slot = 1;
             }
         }
 
-        if (!has_forward_slot) {
+        if (budget.limit != NULL) {
+            goto fail;
+        }
+
+        if (!has_forward_slot && !parsed.lut_only) {
             has_matrix_tags = sixel_icc_find_tag(profile_data,
                                                  profile_size,
                                                  "rXYZ",
                                                  &rxyz_offset,
-                                                 &rxyz_length)
+                                                 &rxyz_length, issue)
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
                                       "gXYZ",
                                       &gxyz_offset,
-                                      &gxyz_length)
+                                      &gxyz_length, issue)
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
                                       "bXYZ",
                                       &bxyz_offset,
-                                      &bxyz_length)
+                                      &bxyz_length, issue)
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
                                       "rTRC",
                                       &rtrc_offset,
-                                      &rtrc_length)
+                                      &rtrc_length, issue)
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
                                       "gTRC",
                                       &gtrc_offset,
-                                      &gtrc_length)
+                                      &gtrc_length, issue)
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
                                       "bTRC",
                                       &btrc_offset,
-                                      &btrc_length);
+                                      &btrc_length, issue);
             if (!has_matrix_tags || parsed.pcs != SIXEL_ICC_PROFILE_PCS_XYZ) {
+                if (has_forward_mpet || has_reverse_mpet) {
+                    goto accepted;
+                }
                 goto fail;
             }
 
@@ -2200,6 +2885,10 @@ sixel_icc_parse_profile(void const *data,
                                          bxyz_offset,
                                          bxyz_length,
                                          bxyz)) {
+                sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
+                if (has_forward_mpet || has_reverse_mpet) {
+                    goto accepted;
+                }
                 goto fail;
             }
 
@@ -2207,17 +2896,24 @@ sixel_icc_parse_profile(void const *data,
                                            profile_size,
                                            rtrc_offset,
                                            rtrc_length,
-                                           &parsed.curves[0]) ||
+                                           &parsed.curves[0], &budget, issue) ||
                 !sixel_icc_parse_curve_tag(profile_data,
                                            profile_size,
                                            gtrc_offset,
                                            gtrc_length,
-                                           &parsed.curves[1]) ||
+                                           &parsed.curves[1], &budget, issue) ||
                 !sixel_icc_parse_curve_tag(profile_data,
                                            profile_size,
                                            btrc_offset,
                                            btrc_length,
-                                           &parsed.curves[2])) {
+                                           &parsed.curves[2], &budget, issue)) {
+                if (budget.limit == NULL &&
+                    (has_forward_mpet || has_reverse_mpet)) {
+                    for (i = 0u; i < 3u; ++i) {
+                        sixel_icc_curve_destroy(&parsed.curves[i]);
+                    }
+                    goto accepted;
+                }
                 goto fail;
             }
 
@@ -2233,21 +2929,20 @@ sixel_icc_parse_profile(void const *data,
             parsed.matrix_to_xyz_d50[1][2] = bxyz[1];
             parsed.matrix_to_xyz_d50[2][2] = bxyz[2];
         }
-
-        parsed.kind = SIXEL_ICC_PROFILE_KIND_RGB;
-    } else if (memcmp(color_space, "GRAY", 4u) == 0) {
+    } else if (parsed.kind == SIXEL_ICC_PROFILE_KIND_GRAY) {
         has_forward_slot = 0;
         has_reverse_slot = 0;
         has_matrix_tags = 0;
 
-        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
+        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT &&
+             budget.limit == NULL; ++slot) {
             if (sixel_icc_parse_a2b_slot(profile_data,
                                          profile_size,
                                          slot,
                                          1u,
                                          3u,
                                          1,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_forward_slot = 1;
             }
             if (sixel_icc_parse_d2b_slot(profile_data,
@@ -2255,68 +2950,71 @@ sixel_icc_parse_profile(void const *data,
                                          slot,
                                          1u,
                                          3u,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_forward_slot = 1;
             }
         }
-        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
+        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT &&
+             budget.limit == NULL; ++slot) {
             if (sixel_icc_parse_b2a_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          1u,
-                                         &parsed) ||
+                                         &parsed, &budget, issue) ||
                 sixel_icc_parse_b2d_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          1u,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_reverse_slot = 1;
             }
         }
 
-        if (!has_forward_slot) {
-            has_matrix_tags = sixel_icc_find_tag(profile_data,
-                                                 profile_size,
-                                                 "wtpt",
-                                                 &wtpt_offset,
-                                                 &wtpt_length)
+        if (budget.limit != NULL) {
+            goto fail;
+        }
+
+        if (!has_forward_slot && !parsed.lut_only) {
+            has_matrix_tags = has_white_tag
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
                                       "kTRC",
                                       &ktrc_offset,
-                                      &ktrc_length);
+                                      &ktrc_length, issue);
             if (!has_matrix_tags || parsed.pcs != SIXEL_ICC_PROFILE_PCS_XYZ) {
+                if (has_forward_mpet || has_reverse_mpet) {
+                    goto accepted;
+                }
                 goto fail;
             }
 
-            if (!sixel_icc_parse_xyz_tag(profile_data,
-                                         profile_size,
-                                         wtpt_offset,
-                                         wtpt_length,
-                                         parsed.gray_white_xyz_d50) ||
-                !sixel_icc_parse_curve_tag(profile_data,
+            if (!sixel_icc_parse_curve_tag(profile_data,
                                            profile_size,
                                            ktrc_offset,
                                            ktrc_length,
-                                           &parsed.curves[0])) {
+                                           &parsed.curves[0], &budget, issue)) {
+                if (budget.limit == NULL &&
+                    (has_forward_mpet || has_reverse_mpet)) {
+                    sixel_icc_curve_destroy(&parsed.curves[0]);
+                    goto accepted;
+                }
                 goto fail;
             }
         }
-
-        parsed.kind = SIXEL_ICC_PROFILE_KIND_GRAY;
-    } else if (memcmp(color_space, "CMYK", 4u) == 0) {
+    } else if (parsed.kind == SIXEL_ICC_PROFILE_KIND_CMYK) {
         has_forward_slot = 0;
         has_reverse_slot = 0;
-        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
+        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT &&
+             budget.limit == NULL; ++slot) {
             if (sixel_icc_parse_a2b_slot(profile_data,
                                          profile_size,
                                          slot,
                                          4u,
                                          3u,
                                          0,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_forward_slot = 1;
             }
             if (sixel_icc_parse_d2b_slot(profile_data,
@@ -2324,86 +3022,124 @@ sixel_icc_parse_profile(void const *data,
                                          slot,
                                          4u,
                                          3u,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_forward_slot = 1;
             }
         }
-        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
+        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT &&
+             budget.limit == NULL; ++slot) {
             if (sixel_icc_parse_b2a_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          4u,
-                                         &parsed) ||
+                                         &parsed, &budget, issue) ||
                 sixel_icc_parse_b2d_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          4u,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_reverse_slot = 1;
             }
         }
-        if (!has_forward_slot) {
+        if (budget.limit != NULL) {
             goto fail;
         }
 
-        parsed.kind = SIXEL_ICC_PROFILE_KIND_CMYK;
-    } else if (memcmp(color_space, "Lab ", 4u) == 0) {
+        if (!parsed.lut_only && !has_forward_slot &&
+            !has_forward_mpet && !has_reverse_mpet) {
+            goto fail;
+        }
+    } else if (parsed.kind == SIXEL_ICC_PROFILE_KIND_LAB) {
         has_forward_slot = 0;
         has_reverse_slot = 0;
 
-        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
+        for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT &&
+             budget.limit == NULL; ++slot) {
             if (sixel_icc_parse_a2b_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          3u,
                                          0,
-                                         &parsed) ||
+                                         &parsed, &budget, issue) ||
                 sixel_icc_parse_d2b_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          3u,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_forward_slot = 1;
             }
         }
-        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT; ++slot) {
+        for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT &&
+             budget.limit == NULL; ++slot) {
             if (sixel_icc_parse_b2a_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          3u,
-                                         &parsed) ||
+                                         &parsed, &budget, issue) ||
                 sixel_icc_parse_b2d_slot(profile_data,
                                          profile_size,
                                          slot,
                                          3u,
                                          3u,
-                                         &parsed)) {
+                                         &parsed, &budget, issue)) {
                 has_reverse_slot = 1;
             }
         }
-        if (!has_forward_slot && !has_reverse_slot) {
+        if (!has_forward_slot && !has_reverse_slot &&
+            !has_forward_mpet && !has_reverse_mpet) {
             goto fail;
         }
-
-        parsed.kind = SIXEL_ICC_PROFILE_KIND_LAB;
-    } else {
-        goto fail;
     }
 
+    /* A ColorSpace profile encodes an explicit mapping between its
+     * device-side encoding and PCS. Colorants and TRCs cannot supply it. */
+    if (budget.limit != NULL ||
+        (parsed.lut_only && !has_forward_slot && !has_reverse_slot &&
+         !has_forward_mpet && !has_reverse_mpet)) {
+        goto fail;
+    }
+accepted:
+    /* Embedded v2 Lab-to-Lab ColorSpace profiles with a usable LUT
+     * retain the D50 Lab fallback for other intents. */
+    if (parsed.lut_only && profile_data[8] == 2u &&
+        parsed.kind == SIXEL_ICC_PROFILE_KIND_LAB &&
+        parsed.pcs == SIXEL_ICC_PROFILE_PCS_LAB) {
+        parsed.lut_only = 0;
+    }
+    if (out_issue != NULL) {
+        *out_issue = local_issue;
+    }
     *out_profile = parsed;
     return 1;
 
 fail:
-    loader_trace_message(
-        "LSXCMS1|engine=builtin|event=profile-rejected"
-        "|reason=no-usable-profile-path");
+    if (out_issue != NULL) {
+        *out_issue = local_issue == SIXEL_ICC_ISSUE_NONE
+            ? SIXEL_ICC_ISSUE_NO_PATH : local_issue;
+    }
+    if (budget.limit != NULL) {
+        loader_trace_message(
+            "LSXCMS1|engine=builtin|event=profile-rejected"
+            "|reason=resource-limit|limit=%s", budget.limit);
+    } else {
+        loader_trace_message(
+            "LSXCMS1|engine=builtin|event=profile-rejected"
+            "|reason=no-usable-profile-path");
+    }
     sixel_icc_profile_destroy(&parsed);
     return 0;
+}
+
+int
+sixel_icc_parse_profile(void const *data, size_t length,
+                        sixel_icc_profile_t *out_profile)
+{
+    return sixel_icc_parse_profile_ex(data, length, out_profile, NULL);
 }
 
 int

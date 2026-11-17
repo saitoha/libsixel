@@ -44,6 +44,7 @@ FUZZ_STRUCT_FULL_SET = $(FUZZ_STRUCT_TARGETS)
 
 if COND_FUZZ
 noinst_PROGRAMS = \
+    fuzz-cms-builtin-libfuzzer \
     fuzz-encoder-encode-bytes-libfuzzer \
     fuzz-helper-write-image-file-libfuzzer \
     fuzz-loader-builtin-libfuzzer \
@@ -92,6 +93,10 @@ EXTRA_DIST = \
     corpus/img2sixel-cli/seed-snake64.pbm \
     corpus/img2sixel-cli/seed-static.gif \
     corpus/img2sixel-cli/seed-truncated.pic \
+    fuzz-cms-builtin-libfuzzer.c \
+    cms-builtin.dict \
+    corpus/cms-builtin/legacy-rgb.icc \
+    corpus/cms-builtin/mpet-rgb.icc \
     fuzz-encoder-encode-bytes-libfuzzer.c \
     fuzz-helper-write-image-file-libfuzzer.c \
     fuzz-loader-builtin-libfuzzer.c \
@@ -138,6 +143,13 @@ FUZZ_COMMON_LINK_FLAGS = \
 FUZZ_COMMON_LINK_LIBS = \
     $(top_builddir)/src/libsixel.la \
     $(LIBS)
+
+fuzz_cms_builtin_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-cms-builtin-libfuzzer.c
+fuzz_cms_builtin_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_cms_builtin_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_cms_builtin_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_cms_builtin_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
 fuzz_encoder_encode_bytes_libfuzzer_SOURCES = \
     $(srcdir)/fuzz-encoder-encode-bytes-libfuzzer.c
@@ -332,6 +344,8 @@ endif
 
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
+FUZZ_CMS_CORPUS ?= $(abs_builddir)/cms-builtin-corpus
+FUZZ_CMS_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 FUZZ_ENCODE_BYTES_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/encode-bytes
 FUZZ_ENCODE_BYTES_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 FUZZ_WRITE_IMAGE_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/write-image-file
@@ -342,10 +356,18 @@ FUZZ_STRUCT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 FUZZ_COMPONENT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/component
 FUZZ_COMPONENT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 
-.PHONY: run-encoder-encode-bytes run-helper-write-image-file \
+.PHONY: run-cms-builtin run-encoder-encode-bytes run-helper-write-image-file \
     run-loader-builtin run-loader-builtin-formats \
     run-loader-coregraphics run-loader-wic \
     run-struct-push-set run-struct-full-set
+
+run-cms-builtin: fuzz-cms-builtin-libfuzzer$(EXEEXT)
+	@set -eu; \
+	corpus="$(FUZZ_CMS_CORPUS)"; \
+	mkdir -p "$$corpus"; \
+	exec "$(abs_builddir)/fuzz-cms-builtin-libfuzzer$(EXEEXT)" \
+	    -dict="$(abs_srcdir)/cms-builtin.dict" $(FUZZ_CMS_ARGS) \
+	    "$$corpus" "$(abs_srcdir)/corpus/cms-builtin"
 
 run-encoder-encode-bytes: fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT)
 	@set -eu; \
