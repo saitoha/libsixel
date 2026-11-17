@@ -3847,6 +3847,69 @@ icc_numeric_mpet_small_residual_test(int clut)
 }
 
 int
+icc_numeric_mpet_curve_small_residual_test(void)
+{
+    static unsigned int const lower[] = {0x3f800000u, 0u, 0u, 0x21800000u};
+    static unsigned int const upper[] = {0x3f800000u, 0u, 0u, 0xbf800000u};
+    static double const input[] = {1.0, 0x1p-60, 1.0};
+    unsigned char bytes[364] = {0};
+    unsigned char *tag;
+    unsigned char *curves;
+    unsigned char *curve;
+    unsigned char *matrix;
+    sixel_icc_profile_t profile;
+    double result[3];
+    size_t i;
+    int ok;
+
+    iccn_be32(bytes, sizeof(bytes));
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "scnrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 128u, 1u);
+    memcpy(bytes + 132u, "D2B1", 4u);
+    iccn_be32(bytes + 136u, 144u);
+    iccn_be32(bytes + 140u, 220u);
+    tag = bytes + 144u;
+    memcpy(tag, "mpet", 4u);
+    tag[9] = tag[11] = 3u;
+    iccn_be32(tag + 12u, 2u);
+    iccn_mpet_position(tag, 0u, 32u, 128u);
+    iccn_mpet_position(tag, 1u, 160u, 60u);
+    curves = tag + 32u;
+    memcpy(curves, "cvst", 4u);
+    curves[9] = curves[11] = 3u;
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(curves + 12u + 8u * i, 36u);
+        iccn_be32(curves + 16u + 8u * i, 92u);
+    }
+    curve = curves + 36u;
+    memcpy(curve, "curf", 4u);
+    curve[9] = 3u;
+    iccn_mpe_write_float(curve + 16u, 1.0f);
+    iccn_mpe_write_formula(curve + 20u, 0u, lower);
+    memcpy(curve + 48u, "samf", 4u);
+    iccn_be32(curve + 56u, 1u);
+    iccn_mpe_write_float(curve + 60u, -1.0f);
+    iccn_mpe_write_formula(curve + 64u, 0u, upper);
+
+    /* At G=2^-60, interpolation from 2^-60 to -1 gives -2^-120.
+     * The following matrix exposes the residual by scaling G by 2^100. */
+    matrix = tag + 160u;
+    memcpy(matrix, "matf", 4u);
+    matrix[9] = matrix[11] = 3u;
+    iccn_mpe_write_float(matrix + 16u, 0x1p100f);
+    if (!sixel_icc_parse_profile(bytes, sizeof(bytes), &profile)) {
+        return EXIT_FAILURE;
+    }
+    ok = sixel_icc_device_to_pcs(result, input, 3u, &profile, 1u, 0)
+            == SIXEL_ICC_PATH_MPET &&
+        result[0] == -0x1p-20 && result[1] == 0.0 && result[2] == 0.0;
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 icc_numeric_absolute_mpet_palette_test(int reverse, int gamut)
 {
     static double const input[] = {0.2, 0.3, 0.4};

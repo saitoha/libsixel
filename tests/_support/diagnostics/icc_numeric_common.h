@@ -73,6 +73,7 @@ int icc_numeric_mpet_before_later_legacy_test(void);
 int icc_numeric_mpet_tag_share_budget_test(int distinct);
 int icc_numeric_mpet_downstream_fallback_test(int absolute);
 int icc_numeric_mpet_small_residual_test(int clut);
+int icc_numeric_mpet_curve_small_residual_test(void);
 int icc_numeric_absolute_mpet_palette_test(int reverse, int gamut);
 int icc_numeric_mpet_png_storage_fallback_test(void);
 

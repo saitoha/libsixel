@@ -2231,6 +2231,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/icc/0125_mpet_absolute_forward_gamut.c \
 	color/icc/0126_mpet_absolute_reverse_gamut.c \
 	color/icc/0127_mpet_png_storage_fallback.c \
+	color/icc/0128_mpet_curve_small_residual.c \
 	color/icc/0062_mpet_pcs_lab_forward.c \
 	_support/diagnostics/icc_numeric_common.c \
 	_support/diagnostics/icc_numeric_common.h \
@@ -7815,6 +7816,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0125_mpet_absolute_forward_gamut.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0126_mpet_absolute_reverse_gamut.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0127_mpet_png_storage_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0128_mpet_curve_small_residual.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0062_mpet_pcs_lab_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
@@ -12232,6 +12234,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Po \
 	color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Po \
 	color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Po \
+	color/icc/$(DEPDIR)/test_runner-0128_mpet_curve_small_residual.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po \
@@ -19793,6 +19796,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0125_MPET_ABSOLUTE_FORWARD_GAMUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0126_MPET_ABSOLUTE_REVERSE_GAMUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0127_MPET_PNG_STORAGE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0128_MPET_CURVE_SMALL_RESIDUAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -25223,6 +25227,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0125_mpet_absolute_forward_gamut.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0126_mpet_absolute_reverse_gamut.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0127_mpet_png_storage_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0128_mpet_curve_small_residual.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0062_mpet_pcs_lab_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.h \
@@ -35778,6 +35783,8 @@ color/icc/test_runner-0125_mpet_absolute_forward_gamut.$(OBJEXT):  \
 color/icc/test_runner-0126_mpet_absolute_reverse_gamut.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0127_mpet_png_storage_fallback.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0128_mpet_curve_small_residual.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0062_mpet_pcs_lab_forward.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
@@ -48044,6 +48051,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0128_mpet_curve_small_residual.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po@am__quote@ # am--include-marker
@@ -81632,6 +81640,20 @@ color/icc/test_runner-0127_mpet_png_storage_fallback.obj: color/icc/0127_mpet_pn
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0127_mpet_png_storage_fallback.c' object='color/icc/test_runner-0127_mpet_png_storage_fallback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0127_mpet_png_storage_fallback.obj `if test -f 'color/icc/0127_mpet_png_storage_fallback.c'; then $(CYGPATH_W) 'color/icc/0127_mpet_png_storage_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0127_mpet_png_storage_fallback.c'; fi`
+
+color/icc/test_runner-0128_mpet_curve_small_residual.o: color/icc/0128_mpet_curve_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0128_mpet_curve_small_residual.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0128_mpet_curve_small_residual.Tpo -c -o color/icc/test_runner-0128_mpet_curve_small_residual.o `test -f 'color/icc/0128_mpet_curve_small_residual.c' || echo '$(srcdir)/'`color/icc/0128_mpet_curve_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0128_mpet_curve_small_residual.Tpo color/icc/$(DEPDIR)/test_runner-0128_mpet_curve_small_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0128_mpet_curve_small_residual.c' object='color/icc/test_runner-0128_mpet_curve_small_residual.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0128_mpet_curve_small_residual.o `test -f 'color/icc/0128_mpet_curve_small_residual.c' || echo '$(srcdir)/'`color/icc/0128_mpet_curve_small_residual.c
+
+color/icc/test_runner-0128_mpet_curve_small_residual.obj: color/icc/0128_mpet_curve_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0128_mpet_curve_small_residual.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0128_mpet_curve_small_residual.Tpo -c -o color/icc/test_runner-0128_mpet_curve_small_residual.obj `if test -f 'color/icc/0128_mpet_curve_small_residual.c'; then $(CYGPATH_W) 'color/icc/0128_mpet_curve_small_residual.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0128_mpet_curve_small_residual.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0128_mpet_curve_small_residual.Tpo color/icc/$(DEPDIR)/test_runner-0128_mpet_curve_small_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0128_mpet_curve_small_residual.c' object='color/icc/test_runner-0128_mpet_curve_small_residual.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0128_mpet_curve_small_residual.obj `if test -f 'color/icc/0128_mpet_curve_small_residual.c'; then $(CYGPATH_W) 'color/icc/0128_mpet_curve_small_residual.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0128_mpet_curve_small_residual.c'; fi`
 
 color/icc/test_runner-0062_mpet_pcs_lab_forward.o: color/icc/0062_mpet_pcs_lab_forward.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0062_mpet_pcs_lab_forward.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0062_mpet_pcs_lab_forward.Tpo -c -o color/icc/test_runner-0062_mpet_pcs_lab_forward.o `test -f 'color/icc/0062_mpet_pcs_lab_forward.c' || echo '$(srcdir)/'`color/icc/0062_mpet_pcs_lab_forward.c

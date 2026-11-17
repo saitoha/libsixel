@@ -2451,6 +2451,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0125_MPET_ABSOLUTE_FORWARD_GAMUT \
     -DBUILD_TEST_0126_MPET_ABSOLUTE_REVERSE_GAMUT \
     -DBUILD_TEST_0127_MPET_PNG_STORAGE_FALLBACK \
+    -DBUILD_TEST_0128_MPET_CURVE_SMALL_RESIDUAL \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7849,6 +7850,7 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0125_mpet_absolute_forward_gamut.c \
     color/icc/0126_mpet_absolute_reverse_gamut.c \
     color/icc/0127_mpet_png_storage_fallback.c \
+    color/icc/0128_mpet_curve_small_residual.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

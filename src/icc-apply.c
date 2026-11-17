@@ -147,6 +147,20 @@ sixel_icc_mpe_formula(sixel_icc_mpe_segment_t const *segment, double x)
 }
 
 static double
+sixel_icc_mpe_lerp(double from, double to, double fraction)
+{
+    double difference;
+    double residual;
+
+    difference = to - from;
+    residual = fabs(to) >= fabs(from) ? (to - difference) - from
+                                    : (-from - difference) + to;
+    /* Fuse the product and addition, then restore the part of the
+     * endpoint difference that would otherwise be lost to rounding. */
+    return fma(fraction, difference, from) + fraction * residual;
+}
+
+static double
 sixel_icc_mpe_sample(sixel_icc_mpe_segment_t const *segment,
                       sixel_icc_mpe_segment_t const *previous, double x)
 {
@@ -185,8 +199,8 @@ sixel_icc_mpe_sample(sixel_icc_mpe_segment_t const *segment,
         left = segment->samples[index - 1u];
     }
     right = segment->samples[index];
-    return from_upper ? right + (left - right) * fraction
-                      : left + (right - left) * fraction;
+    return from_upper ? sixel_icc_mpe_lerp(right, left, fraction)
+                      : sixel_icc_mpe_lerp(left, right, fraction);
 }
 
 int
@@ -301,9 +315,6 @@ sixel_icc_mpe_clut_lerp(double const *values, size_t const *steps,
     double lo;
     double hi;
     double f;
-    double difference;
-    double residual;
-    double swap;
 
     if (axes == 0u) {
         return *values;
@@ -312,18 +323,8 @@ sixel_icc_mpe_clut_lerp(double const *values, size_t const *steps,
     lo = sixel_icc_mpe_clut_lerp(values, steps, fractions, axes);
     hi = sixel_icc_mpe_clut_lerp(values + steps[axes], steps, fractions, axes);
     f = fractions[axes];
-    if (f > 0.5) {
-        swap = lo;
-        lo = hi;
-        hi = swap;
-        f = 1.0 - f;
-    }
-    difference = hi - lo;
-    residual = fabs(hi) >= fabs(lo) ? (hi - difference) - lo
-                                  : (-lo - difference) + hi;
-    /* The difference may lose the small endpoint. Keep that error, and
-     * fuse the product and addition before restoring its contribution. */
-    return fma(f, difference, lo) + f * residual;
+    return f <= 0.5 ? sixel_icc_mpe_lerp(lo, hi, f)
+                    : sixel_icc_mpe_lerp(hi, lo, 1.0 - f);
 }
 
 /* Split the cell into simplices by sorting its fractional coordinates.
