@@ -137,6 +137,14 @@ Treat additions as changes to a specification interpreter. For each new feature,
 
 iccMAX and its broader element repertoire remain outside the supported subset.
 
+## Relative black-point compensation
+
+`SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION` and the loader `cms_bpc` setting are opt-in. For builtin relative-colorimetric candidates, RGB or Gray device zero is evaluated through the relative forward path of each endpoint. The resulting Y is neutralized along PCS D50; both values must be finite and satisfy `0 <= Y < 1`. The transform applies `XYZ' = XYZ * (1 - Bd)/(1 - Bs) + D50 * (Bd - Bs * (1 - Bd)/(1 - Bs))` exactly once before the destination reverse path. Black and D50 white therefore map together without an additional chromatic adaptation. This is a scoped neutral-axis compensation, not a claim of complete ISO 18619 black-point detection.
+
+Builtin does not infer black for CMYK, Lab device profiles, reverse-only destinations without a usable forward path, or singular endpoints. Such a relative candidate fails and the configured intent fallback order determines whether another candidate is tried; an exclusive relative order fails instead. Perceptual, saturation and absolute candidates do not receive the adjustment. Defaults remain off, and `cms_bpc=1` does not reorder intents. Float and integer adapters pass the flag to their single inner transform; alpha is excluded. Little CMS and ColorSync receive their native BPC option only for relative intent, without a builtin pre-adjustment. Numerical parity across native engines is not promised.
+
+The setting affects transforms created through the common CMS facade. PQ/HLG decoding, unmanaged samples and decoder-native rendering outside that facade do not acquire BPC. See [loader configuration](color-management/README.md#cases-builtin-does-not-fully-support) for scope and an exclusive relative example.
+
 ## HDR display rendering
 
 The loader HDR helper operates on extended linear sRGB after alpha composition. With `hdr_tonemap=auto`, it multiplies RGB by `2^EV / (1 + max(Y, 0) * 2^EV)`, where Y uses the D65 sRGB luminance coefficients. A common factor preserves chromatic ratios, including negative components, for later gamut mapping. Explicit `reinhard` instead maps each nonnegative exposed component to `x/(1+x)`; `none` changes exposure only. Reference-white normalization happens during PQ/HLG decoding, before composition. An explicit SDR background therefore participates in the final tone map.
@@ -203,6 +211,26 @@ These tests establish selected implementation paths. They are not a complete con
 | BCMS-46 | Size overflow has an independent numeric or failure oracle. | [tests/color/hdr/0008_size_overflow.t](../../tests/color/hdr/0008_size_overflow.t) |
 | BCMS-47 | Reference white alias has an independent numeric or failure oracle. | [tests/color/hdr/0009_reference_white_alias.t](../../tests/color/hdr/0009_reference_white_alias.t) |
 | BCMS-48 | Allocation retry has an independent numeric or failure oracle. | [tests/color/hdr/0010_allocation_retry.t](../../tests/color/hdr/0010_allocation_retry.t) |
+
+### Black-point compensation contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| BPC-01 | BPC defaults off and retains the source black offset. | [tests/color/bpc/0001_default_off.t](../../tests/color/bpc/0001_default_off.t) |
+| BPC-02 | Relative compensation maps neutral black and white while preserving independent intermediate values. | [tests/color/bpc/0002_relative_endpoints.t](../../tests/color/bpc/0002_relative_endpoints.t) |
+| BPC-03 | RGB8 compensation uses the same endpoint mapping before byte rounding. | [tests/color/bpc/0003_rgb8.t](../../tests/color/bpc/0003_rgb8.t) |
+| BPC-04 | RGBA16 forwards BPC once through the float adapter and preserves alpha. | [tests/color/bpc/0004_rgba16_once.t](../../tests/color/bpc/0004_rgba16_once.t) |
+| BPC-05 | Equal source and destination black preserve device values. | [tests/color/bpc/0005_equal_black.t](../../tests/color/bpc/0005_equal_black.t) |
+| BPC-06 | Gray zero defines a neutral D50 black point independently of RGB storage. | [tests/color/bpc/0006_gray_source.t](../../tests/color/bpc/0006_gray_source.t) |
+| BPC-07 | A singular black point fails without publishing output. | [tests/color/bpc/0007_singular_black.t](../../tests/color/bpc/0007_singular_black.t) |
+| BPC-08 | Absolute colorimetry does not receive BPC. | [tests/color/bpc/0008_absolute_unchanged.t](../../tests/color/bpc/0008_absolute_unchanged.t) |
+| BPC-09 | Perceptual colorimetry retains its ordinary path. | [tests/color/bpc/0009_perceptual_unchanged.t](../../tests/color/bpc/0009_perceptual_unchanged.t) |
+| BPC-10 | Standard mpet forward and reverse endpoints use one PCS correction. | [tests/color/bpc/0010_mpet_endpoints.t](../../tests/color/bpc/0010_mpet_endpoints.t) |
+| BPC-11 | An unusable relative black point follows the configured absolute fallback. | [tests/color/bpc/0011_intent_fallback.t](../../tests/color/bpc/0011_intent_fallback.t) |
+| BPC-12 | LCMS2 receives BPC for relative only; relative changes the dark sample. | [tests/color/bpc/0012_lcms2_relative.t](../../tests/color/bpc/0012_lcms2_relative.t) |
+| BPC-13 | LCMS2 receives BPC for relative only; absolute is unchanged. | [tests/color/bpc/0013_lcms2_absolute.t](../../tests/color/bpc/0013_lcms2_absolute.t) |
+| BPC-14 | COLORSYNC receives BPC for relative only; relative changes the dark sample. | [tests/color/bpc/0014_colorsync_relative.t](../../tests/color/bpc/0014_colorsync_relative.t) |
+| BPC-15 | COLORSYNC receives BPC for relative only; absolute is unchanged. | [tests/color/bpc/0015_colorsync_absolute.t](../../tests/color/bpc/0015_colorsync_absolute.t) |
 
 ### Defensive and malformed-input tests
 

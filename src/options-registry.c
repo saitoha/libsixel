@@ -2856,6 +2856,10 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "prefer_8bit", 'V', "SIXEL_LOADER_PREFER_8BIT", NULL, NULL,
         cms_prefer_8bit),
+    SIXEL_REGISTRY_LOADER_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_LOADERS, NULL,
+        "cms_bpc", 'L', "SIXEL_LOADER_CMS_BPC", NULL, NULL,
+        cms_black_point_compensation),
     SIXEL_REGISTRY_LOADER_CHOICE_LIST(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "cms_intent", 'R', "SIXEL_LOADER_CMS_RENDERING_INTENT", NULL,

@@ -65,6 +65,13 @@
 #include "pthread-once.h"
 #include "timeline-logger.h"
 
+int
+loader_cms_black_point_compensation(void)
+{
+    return loader_resolve_boolean_suboption(NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(cms_black_point_compensation), 0);
+}
+
 static char const *const loader_hdr_names[] = {
     NULL, "bt709-pq", "bt709-hlg", "display-p3-pq", "display-p3-hlg",
     "rec2020-pq", "rec2020-hlg"

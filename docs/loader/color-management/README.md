@@ -316,7 +316,7 @@ Builtin CMS is therefore more capable than a gamma-only correction or an RGB mat
 - **Full device-link, named-color, spectral, or iccMAX workflows:** the builtin API is not a general implementation of these workflows. Nor does selecting lcms2 expose all of them through `img2sixel`; the loader wrapper has a fixed set of pixel formats and targets.
 - **Unbounded scene-referred ICC processing:** ICC device curves and CLUT stages retain their bounded domains. The builtin facade preserves extended values when its float destination is analytic sRGB or a synthetic RGB definition; this does not make arbitrary ICC pipelines unbounded. HDR metadata interpretation and tone mapping remain loader-specific.
 
-There is no loader option here for an arbitrary output/printer ICC profile, a proofing profile, gamut warnings, or black-preserving separation. Little CMS offers additional facilities, but this wrapper creates ordinary transforms and does not enable `cmsFLAGS_BLACKPOINTCOMPENSATION`. Do not infer black-point compensation or soft proofing from `cms_engine=lcms2`.
+`cms_bpc=0|1` (`:L`, environment `SIXEL_LOADER_CMS_BPC`, default 0) enables relative-colorimetric black-point compensation in common CMS transforms. It does not reorder intents: use `-Lbuiltin:Ebuiltin:L1:Rrelative!!` to require relative conversion and disable loader fallback. Builtin supports neutralized RGB/Gray black points from usable relative forward paths; unsupported or singular endpoints fail that candidate. Little CMS and ColorSync use their native relative BPC option, without a builtin pre-adjustment. See the [numerical contract and limits](../builtin-cms.md#relative-black-point-compensation). PQ/HLG decoding and unmanaged or decoder-native routes outside this facade are unaffected. BPC is not soft proofing, gamut warnings, or CMYK black-preserving separation; those workflows remain outside this loader interface.
 
 ## Rendering intent and fallback
 
@@ -816,6 +816,8 @@ Alias and precedence tests inspect the last complete `LSXSUB1` record for the na
 | CMS-54 | The lcms suboption prefix resolves to lcms2. | [tests/cli/loader-options/0051_option_matching_loader_cms_engine_suboption_lcms_prefix_success.t](../../../tests/cli/loader-options/0051_option_matching_loader_cms_engine_suboption_lcms_prefix_success.t) |
 | CMS-55 | Per-loader color-sync environment alias overrides global none. | [tests/cli/loader-options/0061_option_matching_loader_cms_engine_per_loader_env_color_sync_alias_success.t](../../../tests/cli/loader-options/0061_option_matching_loader_cms_engine_per_loader_env_color_sync_alias_success.t) |
 | CMS-56 | Global color-sync environment alias resolves to colorsync. | [tests/cli/loader-options/0063_option_matching_loader_cms_engine_global_env_color_sync_alias_success.t](../../../tests/cli/loader-options/0063_option_matching_loader_cms_engine_global_env_color_sync_alias_success.t) |
+
+| CB-01 | Relative BPC short/environment options remove the independently specified ICC black offset before SIXEL encoding. | [tests/cli/loader-options/0129_loader_cms_bpc_image_regression.t](../../../tests/cli/loader-options/0129_loader_cms_bpc_image_regression.t) |
 
 ### Quality regression tests
 

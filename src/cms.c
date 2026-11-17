@@ -115,6 +115,9 @@ struct sixel_cms_transform {
     size_t builtin_a2b_slot_count;
     int builtin_absolute;
     int builtin_pcs_ordered;
+    int builtin_bpc;
+    double builtin_bpc_scale;
+    double builtin_bpc_offset;
     int builtin_intents[4];
     size_t builtin_intent_count;
 #if HAVE_LCMS2
@@ -1430,19 +1433,24 @@ sixel_cms_colorsync_create_transform_one(
     ColorSyncProfileRef src_profile,
     ColorSyncProfileRef dst_profile,
     int intent,
+    int flags,
     CFStringRef src_tag,
     CFStringRef dst_tag)
 {
-    CFTypeRef src_keys[3];
-    CFTypeRef src_values[3];
-    CFTypeRef dst_keys[3];
-    CFTypeRef dst_values[3];
+    CFTypeRef src_keys[4];
+    CFTypeRef src_values[4];
+    CFTypeRef dst_keys[4];
+    CFTypeRef dst_values[4];
     CFDictionaryRef src_dict;
     CFDictionaryRef dst_dict;
     CFTypeRef sequence_values[2];
     CFArrayRef sequence;
     ColorSyncTransformRef transform;
+    CFIndex entries;
 
+    /* Preserve the native default when compensation is not requested. */
+    entries = (flags & SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) &&
+        intent == SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC ? 4 : 3;
     src_dict = NULL;
     dst_dict = NULL;
     sequence = NULL;
@@ -1454,6 +1462,8 @@ sixel_cms_colorsync_create_transform_one(
     src_values[1] = sixel_cms_colorsync_intent_to_cfstring(intent);
     src_keys[2] = kColorSyncTransformTag;
     src_values[2] = src_tag;
+    src_keys[3] = kColorSyncBlackPointCompensation;
+    src_values[3] = kCFBooleanTrue;
 
     dst_keys[0] = kColorSyncProfile;
     dst_values[0] = dst_profile;
@@ -1461,11 +1471,13 @@ sixel_cms_colorsync_create_transform_one(
     dst_values[1] = sixel_cms_colorsync_intent_to_cfstring(intent);
     dst_keys[2] = kColorSyncTransformTag;
     dst_values[2] = dst_tag;
+    dst_keys[3] = kColorSyncBlackPointCompensation;
+    dst_values[3] = src_values[3];
 
     src_dict = CFDictionaryCreate(kCFAllocatorDefault,
                                   src_keys,
                                   src_values,
-                                  3,
+                                  entries,
                                   &kCFTypeDictionaryKeyCallBacks,
                                   &kCFTypeDictionaryValueCallBacks);
     if (src_dict == NULL) {
@@ -1475,7 +1487,7 @@ sixel_cms_colorsync_create_transform_one(
     dst_dict = CFDictionaryCreate(kCFAllocatorDefault,
                                   dst_keys,
                                   dst_values,
-                                  3,
+                                  entries,
                                   &kCFTypeDictionaryKeyCallBacks,
                                   &kCFTypeDictionaryValueCallBacks);
     if (dst_dict == NULL) {
@@ -2242,7 +2254,10 @@ sixel_cms_create_transform_lcms2(sixel_cms_profile_t const *src_profile,
                 dst_profile->lcms_handle,
                 sixel_cms_map_format_lcms(dst_format),
                 intents[i],
-                trial_flags[tf]);
+                trial_flags[tf] | ((flags &
+                    SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) != 0 &&
+                    intents[i] == SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC
+                    ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0u));
             if (transform->lcms_handle != NULL) {
                 break;
             }
@@ -2359,7 +2374,7 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
         transform->colorsync_handle = sixel_cms_colorsync_create_transform_one(
             src_profile->colorsync_handle,
             dst_profile->colorsync_handle,
-            intents[i],
+            intents[i], flags,
             kColorSyncTransformDeviceToPCS,
             kColorSyncTransformPCSToDevice);
         if (transform->colorsync_handle != NULL) {
@@ -2368,7 +2383,7 @@ sixel_cms_create_transform_colorsync(sixel_cms_profile_t const *src_profile,
         transform->colorsync_handle = sixel_cms_colorsync_create_transform_one(
             src_profile->colorsync_handle,
             dst_profile->colorsync_handle,
-            intents[i],
+            intents[i], flags,
             kColorSyncTransformDeviceToDevice,
             kColorSyncTransformDeviceToDevice);
         if (transform->colorsync_handle != NULL) {
@@ -2463,6 +2478,10 @@ sixel_cms_create_transform_builtin(sixel_cms_profile_t const *src_profile,
         transform->builtin_a2b_slots, transform->builtin_intents,
         transform->builtin_intent_count);
     transform->builtin_pcs_ordered =
+        ((flags & SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) != 0 &&
+         sixel_cms_intent_contains(transform->builtin_intents,
+             transform->builtin_intent_count,
+             SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) ||
         sixel_cms_builtin_needs_ordered_pcs(transform);
     if (!transform->builtin_pcs_ordered) {
         sixel_cms_builtin_select_absolute(transform, transform->builtin_intents,
@@ -2523,6 +2542,9 @@ sixel_cms_create_transform_ex(sixel_cms_profile_t const *src_profile,
 
     transform = NULL;
     failure = SIXEL_CMS_STATUS_BACKEND_REJECTED;
+    if (loader_cms_black_point_compensation()) {
+        flags |= SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION;
+    }
     if (src_profile == NULL || dst_profile == NULL) {
         failure = SIXEL_CMS_STATUS_INVALID_ARGUMENT;
     } else if (src_profile->backend != dst_profile->backend) {
@@ -2599,7 +2621,8 @@ sixel_cms_create_adapter(sixel_cms_profile_t const *source,
     transform->adapter = sixel_cms_create_transform_ex(source,
         source_channels == 1u ? SIXEL_CMS_PIXELFORMAT_GRAY_F32
                               : SIXEL_CMS_PIXELFORMAT_RGB_F32,
-        target, SIXEL_CMS_PIXELFORMAT_RGB_F32, 0, status);
+        target, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        flags & SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION, status);
     if (transform->adapter == NULL) {
         free(transform);
         return NULL;
@@ -4381,6 +4404,15 @@ sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
                 }
             }
         }
+        if (transform->builtin_bpc) {
+            /* Map neutral black and D50 white together, once in PCS.
+             * This is independent of media-white absolute conversion and
+             * must not be folded into chromatic adaptation matrices. */
+            for (i = 0u; i < 3u; ++i) {
+                xyz[i] = xyz[i] * transform->builtin_bpc_scale +
+                    sixel_cms_pcs_white[i] * transform->builtin_bpc_offset;
+            }
+        }
         reverse = sixel_cms_pcs_to_device(device, xyz, transform, inverse_rgb);
         *uses_mpet = forward == SIXEL_ICC_PATH_MPET ||
             reverse == SIXEL_ICC_PATH_MPET;
@@ -4389,6 +4421,34 @@ sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
         }
     }
     return 0;
+}
+
+static int
+sixel_cms_builtin_black_y(double *black, sixel_cms_profile_t const *profile)
+{
+    sixel_cms_transform_t endpoint;
+    double source[4] = {0.0, 0.0, 0.0, 0.0};
+    double xyz[3];
+    size_t channels;
+
+    if (profile->colorspace == SIXEL_CMS_COLORSPACE_RGB) {
+        channels = 3u;
+    } else if (profile->colorspace == SIXEL_CMS_COLORSPACE_GRAY) {
+        channels = 1u;
+    } else {
+        return 0;
+    }
+    memset(&endpoint, 0, sizeof(endpoint));
+    endpoint.src_profile = profile;
+    endpoint.builtin_a2b_slots[0] = 1u;
+    endpoint.builtin_a2b_slot_count = 1u;
+    if (sixel_cms_float_source_xyz(xyz, source, channels, &endpoint, 0) ==
+            SIXEL_ICC_PATH_NONE || !isfinite(xyz[1]) ||
+        xyz[1] < 0.0 || xyz[1] >= 1.0) {
+        return 0;
+    }
+    *black = xyz[1];
+    return 1;
 }
 
 static size_t
@@ -4402,6 +4462,8 @@ sixel_cms_builtin_pcs_candidates(sixel_cms_transform_t candidates[4],
     size_t count;
     unsigned int slot;
     int intent;
+    double source_black;
+    double target_black;
 
     candidates[0] = *transform;
     if (!transform->builtin_pcs_ordered) {
@@ -4415,6 +4477,26 @@ sixel_cms_builtin_pcs_candidates(sixel_cms_transform_t candidates[4],
         intent = transform->builtin_intents[i];
         candidate = &candidates[count];
         *candidate = *transform;
+        candidate->builtin_bpc = 0;
+        if (intent == SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC &&
+            (transform->flags &
+             SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) != 0) {
+            if (!sixel_cms_builtin_black_y(&source_black,
+                    transform->src_profile) ||
+                !sixel_cms_builtin_black_y(&target_black,
+                    transform->dst_profile)) {
+                loader_trace_message("LSXBPC1|engine=builtin|"
+                    "applied=0|reason=unsupported-black-point");
+                continue;
+            }
+            candidate->builtin_bpc = 1;
+            candidate->builtin_bpc_scale =
+                (1.0 - target_black) / (1.0 - source_black);
+            candidate->builtin_bpc_offset = target_black -
+                source_black * candidate->builtin_bpc_scale;
+            loader_trace_message("LSXBPC1|engine=builtin|prepared=1|"
+                "source=%.9g|destination=%.9g", source_black, target_black);
+        }
         if (intent == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
             candidate->builtin_absolute = 1;
             candidate->builtin_a2b_slots[0] = 1u;
@@ -4540,6 +4622,7 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
          !target->builtin_profile.lut_only));
     try_legacy_pair = transform->builtin_pcs_ordered &&
         transform->builtin_a2b_slot_count > 1u && !float_rgb &&
+        !(transform->flags & SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) &&
         !sixel_cms_builtin_profile_is_srgb(target);
     inverse_rgb = NULL;
     if (target->rgb_definition == NULL &&
@@ -4588,7 +4671,8 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
             }
             /* The presence of other mpet tags cannot change the PCS
              * encoding or rounding of an existing legacy path. */
-            if (evaluated && !candidate->builtin_absolute && keep_legacy) {
+            if (evaluated && !candidate->builtin_absolute &&
+                !candidate->builtin_bpc && keep_legacy) {
                 legacy_status = SIXEL_CMS_STATUS_OK;
                 if (sixel_cms_do_builtin_legacy(candidate, input, &sample, 1u,
                         &legacy_status, &rgba_scratch)) {
@@ -4614,7 +4698,8 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                 }
             }
             if (evaluated && sixel_cms_builtin_store_dst_unit(&sample,
-                    transform->dst_format, 0u, device, alpha, float_rgb)) {
+                    transform->dst_format, 0u, device, alpha,
+                    float_rgb || candidate->builtin_bpc)) {
                 break;
             }
         }

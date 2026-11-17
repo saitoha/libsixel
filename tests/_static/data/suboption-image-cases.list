@@ -59,6 +59,7 @@ tests/cli/loader-options/0125_loader_builtin_hdr_peak_luminance_image_regression
 tests/cli/loader-options/0126_loader_libpng_hdr_source_image_regression.t
 tests/cli/loader-options/0127_loader_libpng_hdr_reference_white_image_regression.t
 tests/cli/loader-options/0128_loader_libpng_hdr_peak_luminance_image_regression.t
+tests/cli/loader-options/0129_loader_cms_bpc_image_regression.t
 tests/cli/lookup-options/0026_lookup_5bit_shared_instance_image_regression.t
 tests/cli/lookup-options/0027_lookup_6bit_shared_instance_image_regression.t
 tests/cli/lookup-options/0028_lookup_certlut_shared_instance_image_regression.t

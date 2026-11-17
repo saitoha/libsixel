@@ -117,7 +117,9 @@ enum {
     /* RGB is multiplied by alpha in the source profile's encoded domain.
      * The adapter returns straight color; alpha zero has canonical RGB zero.
      * Linear-light premultiplication requires a linear source profile. */
-    SIXEL_CMS_TRANSFORM_SRC_PREMULTIPLIED = 2
+    SIXEL_CMS_TRANSFORM_SRC_PREMULTIPLIED = 2,
+    /* Relative colorimetric only; source/destination black map at XYZ PCS. */
+    SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION = 4
 };
 
 SIXEL_INTERNAL_API int

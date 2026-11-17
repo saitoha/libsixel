@@ -253,6 +253,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_SIZE_OVERFLOW \
     -DBUILD_TEST_0009_REFERENCE_WHITE_ALIAS \
     -DBUILD_TEST_0010_ALLOCATION_RETRY \
+    -DBUILD_TEST_0001_DEFAULT_OFF \
+    -DBUILD_TEST_0002_RELATIVE_ENDPOINTS \
+    -DBUILD_TEST_0003_RGB8 \
+    -DBUILD_TEST_0004_RGBA16_ONCE \
+    -DBUILD_TEST_0005_EQUAL_BLACK \
+    -DBUILD_TEST_0006_GRAY_SOURCE \
+    -DBUILD_TEST_0007_SINGULAR_BLACK \
+    -DBUILD_TEST_0008_ABSOLUTE_UNCHANGED \
+    -DBUILD_TEST_0010_MPET_ENDPOINTS \
+    -DBUILD_TEST_0011_INTENT_FALLBACK \
+    -DBUILD_TEST_0012_LCMS2_RELATIVE \
+    -DBUILD_TEST_0013_LCMS2_ABSOLUTE \
+    -DBUILD_TEST_0014_COLORSYNC_RELATIVE \
+    -DBUILD_TEST_0015_COLORSYNC_ABSOLUTE \
+    -DBUILD_TEST_0009_PERCEPTUAL_UNCHANGED \
     -DBUILD_TEST_0001_BUILTIN_PQ16_ALPHA \
     -DBUILD_TEST_0002_LIBPNG_PQ16_ALPHA \
     -DBUILD_TEST_0003_BUILTIN_HLG16 \
@@ -7242,6 +7257,21 @@ test_runner_SOURCES = test_runner.c \
     color/hdr/0008_size_overflow.c \
     color/hdr/0009_reference_white_alias.c \
     color/hdr/0010_allocation_retry.c \
+    color/bpc/0001_default_off.c \
+    color/bpc/0002_relative_endpoints.c \
+    color/bpc/0003_rgb8.c \
+    color/bpc/0004_rgba16_once.c \
+    color/bpc/0005_equal_black.c \
+    color/bpc/0006_gray_source.c \
+    color/bpc/0007_singular_black.c \
+    color/bpc/0008_absolute_unchanged.c \
+    color/bpc/0010_mpet_endpoints.c \
+    color/bpc/0011_intent_fallback.c \
+    color/bpc/0012_lcms2_relative.c \
+    color/bpc/0013_lcms2_absolute.c \
+    color/bpc/0014_colorsync_relative.c \
+    color/bpc/0015_colorsync_absolute.c \
+    color/bpc/0009_perceptual_unchanged.c \
     loader-png/hdr/0001_builtin_pq16_alpha.c \
     loader-png/hdr/0002_libpng_pq16_alpha.c \
     loader-png/hdr/0003_builtin_hlg16.c \
@@ -13979,3 +14009,8 @@ EXTRA_DIST += data/color-numeric/cli-hdr.png \
     data/color-numeric/cli-hdr-source-reference.png \
     data/color-numeric/cli-hdr-reference_white-reference.png \
     data/color-numeric/cli-hdr-peak_luminance-reference.png
+
+EXTRA_DIST += _support/processing/cms/bpc_common.h
+
+EXTRA_DIST += data/color-numeric/cli-bpc.png \
+    data/color-numeric/cli-bpc-reference.png

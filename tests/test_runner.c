@@ -4735,6 +4735,22 @@ int test_hdr_numeric_06(int argc, char **argv);
 int test_hdr_numeric_07(int argc, char **argv);
 int test_hdr_numeric_08(int argc, char **argv);
 int test_hdr_numeric_09(int argc, char **argv);
+int test_bpc_00(int argc, char **argv);
+int test_bpc_01(int argc, char **argv);
+int test_bpc_02(int argc, char **argv);
+int test_bpc_03(int argc, char **argv);
+int test_bpc_04(int argc, char **argv);
+int test_bpc_05(int argc, char **argv);
+int test_bpc_06(int argc, char **argv);
+int test_bpc_07(int argc, char **argv);
+int test_bpc_08(int argc, char **argv);
+int test_bpc_14(int argc, char **argv);
+int test_bpc_13(int argc, char **argv);
+int test_bpc_12(int argc, char **argv);
+int test_bpc_11(int argc, char **argv);
+int test_bpc_10(int argc, char **argv);
+int test_bpc_09(int argc, char **argv);
+
 int test_png_hdr_01(int argc, char **argv);
 int test_png_hdr_02(int argc, char **argv);
 int test_png_hdr_03(int argc, char **argv);
@@ -14087,6 +14103,22 @@ static test_entry_t const test_entries[] = {
     { "hdr/0008_size_overflow", test_hdr_numeric_07 },
     { "hdr/0009_reference_white_alias", test_hdr_numeric_08 },
     { "hdr/0010_allocation_retry", test_hdr_numeric_09 },
+    { "bpc/0001_default_off", test_bpc_00 },
+    { "bpc/0002_relative_endpoints", test_bpc_01 },
+    { "bpc/0003_rgb8", test_bpc_02 },
+    { "bpc/0004_rgba16_once", test_bpc_03 },
+    { "bpc/0005_equal_black", test_bpc_04 },
+    { "bpc/0006_gray_source", test_bpc_05 },
+    { "bpc/0007_singular_black", test_bpc_06 },
+    { "bpc/0008_absolute_unchanged", test_bpc_07 },
+    { "bpc/0009_perceptual_unchanged", test_bpc_08 },
+    { "bpc/0015_colorsync_absolute", test_bpc_14 },
+    { "bpc/0014_colorsync_relative", test_bpc_13 },
+    { "bpc/0013_lcms2_absolute", test_bpc_12 },
+    { "bpc/0012_lcms2_relative", test_bpc_11 },
+    { "bpc/0011_intent_fallback", test_bpc_10 },
+    { "bpc/0010_mpet_endpoints", test_bpc_09 },
+
     { "png-hdr/0001_builtin_pq16_alpha", test_png_hdr_01 },
     { "png-hdr/0002_libpng_pq16_alpha", test_png_hdr_02 },
     { "png-hdr/0003_builtin_hlg16", test_png_hdr_03 },

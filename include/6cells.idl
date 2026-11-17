@@ -2221,6 +2221,7 @@ struct loader_suboptions {
     double libpng_hdr_reference_white;
     double builtin_hdr_peak_luminance;
     double libpng_hdr_peak_luminance;
+    int cms_black_point_compensation;
 };
 
 struct loader_manager_build_request {

@@ -1107,6 +1107,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "(:Cvalue),\n"
         "                               :cms_target=SPACE (:Tvalue), and\n"
         "                               :prefer_8bit=0|1 (:V0/:V1), and\n"
+        "                               :cms_bpc=0|1 (:L0/:L1, default 0),\n"
         "                               :cms_intent=INTENT[+INTENT][!]\n"
         "                               (:Rvalue); when final, use !! to\n"
         "                               also disable loader fallbacks.\n"
@@ -1168,6 +1169,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      common:hdr_fallback_profile="
         "SIXEL_LOADER_HDR_FALLBACK_PROFILE\n"
         "      common:hdr_exposure=SIXEL_LOADER_HDR_EXPOSURE_EV\n"
+        "      common:cms_bpc=SIXEL_LOADER_CMS_BPC\n"
         "      common:hdr_tonemap=SIXEL_LOADER_HDR_TONEMAP\n"
         "      builtin:hdr_source="
         "SIXEL_LOADER_BUILTIN_HDR_SOURCE\n"
@@ -2100,6 +2102,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_LIBPNG_HDR_PEAK_LUMINANCE",
         "PNG HDR peak luminance; use loader hdr_peak_luminance.\n"
         "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_CMS_BPC",
+        "enable relative black-point compensation with 1 (default 0).\n"
+        "Use -Lloader:cms_bpc=0|1 or :L0/:L1; intent order is unchanged."
     },
     {
         "SIXEL_LOADER_HDR_TONEMAP",

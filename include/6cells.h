@@ -3352,6 +3352,7 @@ typedef struct sixel_loader_suboptions {
     double libpng_hdr_reference_white;
     double builtin_hdr_peak_luminance;
     double libpng_hdr_peak_luminance;
+    int cms_black_point_compensation;
 } sixel_loader_suboptions_t;
 
 typedef struct sixel_loader_manager_build_request {

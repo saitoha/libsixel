@@ -1311,6 +1311,12 @@ All loaders accept \fBbackground_policy=file_first|explicit_first\fP
 The plus sign separates the ordered intents inside one loader entry; the
 inner trailing "!" disables fallback intents. When this is the final
 suboption, append a second "!" to also disable fallback loaders.
+All loaders accept \fBcms_bpc=0|1\fP (short form \fBLvalue\fP,
+default 0) for relative-colorimetric black-point compensation through CMS.
+This does not reorder intents. Use cms_intent=relative! to require relative.
+Builtin requires usable RGB/Gray relative forward black points at both ends;
+unsupported or singular points fail that intent candidate. Native CMS engines
+use their own relative BPC option, without builtin pre-adjustment.
 All loaders accept \fBhdr_fallback_profile=linear-srgb|srgb\fP
 (short form \fBFvalue\fP) for builtin HDR fallback decode and
 \fBhdr_exposure=EV\fP (short form \fBXvalue\fP) for finite EV stops.
@@ -1368,6 +1374,7 @@ common:prefer_8bit=SIXEL_LOADER_PREFER_8BIT
 common:cms_intent=SIXEL_LOADER_CMS_RENDERING_INTENT
 common:hdr_fallback_profile=SIXEL_LOADER_HDR_FALLBACK_PROFILE
 common:hdr_exposure=SIXEL_LOADER_HDR_EXPOSURE_EV
+common:cms_bpc=SIXEL_LOADER_CMS_BPC
 common:hdr_tonemap=SIXEL_LOADER_HDR_TONEMAP
 builtin:hdr_source=SIXEL_LOADER_BUILTIN_HDR_SOURCE
 builtin:hdr_reference_white=SIXEL_LOADER_BUILTIN_HDR_REFERENCE_WHITE
@@ -2351,6 +2358,11 @@ Fallback values for the corresponding builtin/libpng HDR settings. Backend
 specific SIXEL_LOADER_BUILTIN_HDR_* and SIXEL_LOADER_LIBPNG_HDR_* names
 have priority over these shared names; explicit loader options take priority
 above both. These settings apply to PNG PQ/HLG interpretation only.
+.TP 5
+.B SIXEL_LOADER_CMS_BPC
+.br
+Enable relative-colorimetric black-point compensation with 1. Default 0.
+Override with cms_bpc=0|1 or short form L0/L1; intent order remains unchanged.
 .TP 5
 .B SIXEL_LOADER_HDR_TONEMAP
 .br

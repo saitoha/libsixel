@@ -105,6 +105,8 @@ SIXEL_INTERNAL_API void sixel_loader_restore_suboptions(
     sixel_loader_suboptions_t const *suboptions);
 sixel_loader_suboptions_t const *sixel_loader_active_suboptions(void);
 
+SIXEL_INTERNAL_API int loader_cms_black_point_compensation(void);
+
 /* HDR source selection is separate from ICC profile evaluation. */
 SIXEL_INTERNAL_API char const *
 loader_hdr_source(char const *base, char const *metadata);

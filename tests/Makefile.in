@@ -1577,7 +1577,18 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/hdr/0007_invalid_parameters.c \
 	color/hdr/0008_size_overflow.c \
 	color/hdr/0009_reference_white_alias.c \
-	color/hdr/0010_allocation_retry.c \
+	color/hdr/0010_allocation_retry.c color/bpc/0001_default_off.c \
+	color/bpc/0002_relative_endpoints.c color/bpc/0003_rgb8.c \
+	color/bpc/0004_rgba16_once.c color/bpc/0005_equal_black.c \
+	color/bpc/0006_gray_source.c color/bpc/0007_singular_black.c \
+	color/bpc/0008_absolute_unchanged.c \
+	color/bpc/0010_mpet_endpoints.c \
+	color/bpc/0011_intent_fallback.c \
+	color/bpc/0012_lcms2_relative.c \
+	color/bpc/0013_lcms2_absolute.c \
+	color/bpc/0014_colorsync_relative.c \
+	color/bpc/0015_colorsync_absolute.c \
+	color/bpc/0009_perceptual_unchanged.c \
 	loader-png/hdr/0001_builtin_pq16_alpha.c \
 	loader-png/hdr/0002_libpng_pq16_alpha.c \
 	loader-png/hdr/0003_builtin_hlg16.c \
@@ -7233,6 +7244,21 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0008_size_overflow.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0009_reference_white_alias.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0010_allocation_retry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0001_default_off.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0002_relative_endpoints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0003_rgb8.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0004_rgba16_once.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0005_equal_black.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0006_gray_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0007_singular_black.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0008_absolute_unchanged.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0010_mpet_endpoints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0011_intent_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0012_lcms2_relative.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0013_lcms2_absolute.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0014_colorsync_relative.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0015_colorsync_absolute.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0009_perceptual_unchanged.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader-png/hdr/test_runner-0001_builtin_pq16_alpha.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader-png/hdr/test_runner-0002_libpng_pq16_alpha.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader-png/hdr/test_runner-0003_builtin_hlg16.$(OBJEXT) \
@@ -12015,6 +12041,21 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	cli/img2sixel/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po \
 	cli/signals/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	cli/terminal-color/$(DEPDIR)/test_runner-0138_probe_parse.Po \
+	color/bpc/$(DEPDIR)/test_runner-0001_default_off.Po \
+	color/bpc/$(DEPDIR)/test_runner-0002_relative_endpoints.Po \
+	color/bpc/$(DEPDIR)/test_runner-0003_rgb8.Po \
+	color/bpc/$(DEPDIR)/test_runner-0004_rgba16_once.Po \
+	color/bpc/$(DEPDIR)/test_runner-0005_equal_black.Po \
+	color/bpc/$(DEPDIR)/test_runner-0006_gray_source.Po \
+	color/bpc/$(DEPDIR)/test_runner-0007_singular_black.Po \
+	color/bpc/$(DEPDIR)/test_runner-0008_absolute_unchanged.Po \
+	color/bpc/$(DEPDIR)/test_runner-0009_perceptual_unchanged.Po \
+	color/bpc/$(DEPDIR)/test_runner-0010_mpet_endpoints.Po \
+	color/bpc/$(DEPDIR)/test_runner-0011_intent_fallback.Po \
+	color/bpc/$(DEPDIR)/test_runner-0012_lcms2_relative.Po \
+	color/bpc/$(DEPDIR)/test_runner-0013_lcms2_absolute.Po \
+	color/bpc/$(DEPDIR)/test_runner-0014_colorsync_relative.Po \
+	color/bpc/$(DEPDIR)/test_runner-0015_colorsync_absolute.Po \
 	color/cms/$(DEPDIR)/test_runner-0007_named_xyz.Po \
 	color/cms/$(DEPDIR)/test_runner-0008_simple_power.Po \
 	color/cms/$(DEPDIR)/test_runner-0009_icc_source_lifetime.Po \
@@ -17733,6 +17774,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_SIZE_OVERFLOW \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_REFERENCE_WHITE_ALIAS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_ALLOCATION_RETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DEFAULT_OFF \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_RELATIVE_ENDPOINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_RGB8 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_RGBA16_ONCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_EQUAL_BLACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_GRAY_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_SINGULAR_BLACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_ABSOLUTE_UNCHANGED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_MPET_ENDPOINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_INTENT_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_LCMS2_RELATIVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_LCMS2_ABSOLUTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_COLORSYNC_RELATIVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_COLORSYNC_ABSOLUTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PERCEPTUAL_UNCHANGED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BUILTIN_PQ16_ALPHA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LIBPNG_PQ16_ALPHA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_BUILTIN_HLG16 \
@@ -24754,6 +24810,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0008_size_overflow.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0009_reference_white_alias.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0010_allocation_retry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0001_default_off.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0002_relative_endpoints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0003_rgb8.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0004_rgba16_once.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0005_equal_black.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0006_gray_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0007_singular_black.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0008_absolute_unchanged.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0010_mpet_endpoints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0011_intent_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0012_lcms2_relative.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0013_lcms2_absolute.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0014_colorsync_relative.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0015_colorsync_absolute.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0009_perceptual_unchanged.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader-png/hdr/0001_builtin_pq16_alpha.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader-png/hdr/0002_libpng_pq16_alpha.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader-png/hdr/0003_builtin_hlg16.c \
@@ -29478,7 +29549,10 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/fixtures/image-size data/color-numeric/cli-hdr.png \
 	data/color-numeric/cli-hdr-source-reference.png \
 	data/color-numeric/cli-hdr-reference_white-reference.png \
-	data/color-numeric/cli-hdr-peak_luminance-reference.png
+	data/color-numeric/cli-hdr-peak_luminance-reference.png \
+	_support/processing/cms/bpc_common.h \
+	data/color-numeric/cli-bpc.png \
+	data/color-numeric/cli-bpc-reference.png
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -34196,6 +34270,42 @@ color/hdr/test_runner-0009_reference_white_alias.$(OBJEXT):  \
 	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
 color/hdr/test_runner-0010_allocation_retry.$(OBJEXT):  \
 	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/bpc/$(am__dirstamp):
+	@$(MKDIR_P) color/bpc
+	@: >>color/bpc/$(am__dirstamp)
+color/bpc/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) color/bpc/$(DEPDIR)
+	@: >>color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0001_default_off.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0002_relative_endpoints.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0003_rgb8.$(OBJEXT): color/bpc/$(am__dirstamp) \
+	color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0004_rgba16_once.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0005_equal_black.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0006_gray_source.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0007_singular_black.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0008_absolute_unchanged.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0010_mpet_endpoints.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0011_intent_fallback.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0012_lcms2_relative.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0013_lcms2_absolute.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0014_colorsync_relative.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0015_colorsync_absolute.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0009_perceptual_unchanged.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
 loader-png/hdr/$(am__dirstamp):
 	@$(MKDIR_P) loader-png/hdr
 	@: >>loader-png/hdr/$(am__dirstamp)
@@ -47412,6 +47522,7 @@ mostlyclean-compile:
 	-rm -f cli/img2sixel/*.$(OBJEXT)
 	-rm -f cli/signals/*.$(OBJEXT)
 	-rm -f cli/terminal-color/*.$(OBJEXT)
+	-rm -f color/bpc/*.$(OBJEXT)
 	-rm -f color/cms/*.$(OBJEXT)
 	-rm -f color/colorsync/*.$(OBJEXT)
 	-rm -f color/gamut/*.$(OBJEXT)
@@ -48104,6 +48215,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/img2sixel/$(DEPDIR)/test_runner-0033_stdin_interrupt.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/signals/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/terminal-color/$(DEPDIR)/test_runner-0138_probe_parse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0001_default_off.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0002_relative_endpoints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0003_rgb8.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0004_rgba16_once.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0005_equal_black.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0006_gray_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0007_singular_black.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0008_absolute_unchanged.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0009_perceptual_unchanged.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0010_mpet_endpoints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0011_intent_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0012_lcms2_relative.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0013_lcms2_absolute.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0014_colorsync_relative.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0015_colorsync_absolute.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0007_named_xyz.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0008_simple_power.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0009_icc_source_lifetime.Po@am__quote@ # am--include-marker
@@ -73283,6 +73409,216 @@ color/hdr/test_runner-0010_allocation_retry.obj: color/hdr/0010_allocation_retry
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0010_allocation_retry.c' object='color/hdr/test_runner-0010_allocation_retry.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0010_allocation_retry.obj `if test -f 'color/hdr/0010_allocation_retry.c'; then $(CYGPATH_W) 'color/hdr/0010_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0010_allocation_retry.c'; fi`
+
+color/bpc/test_runner-0001_default_off.o: color/bpc/0001_default_off.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0001_default_off.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0001_default_off.Tpo -c -o color/bpc/test_runner-0001_default_off.o `test -f 'color/bpc/0001_default_off.c' || echo '$(srcdir)/'`color/bpc/0001_default_off.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0001_default_off.Tpo color/bpc/$(DEPDIR)/test_runner-0001_default_off.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0001_default_off.c' object='color/bpc/test_runner-0001_default_off.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0001_default_off.o `test -f 'color/bpc/0001_default_off.c' || echo '$(srcdir)/'`color/bpc/0001_default_off.c
+
+color/bpc/test_runner-0001_default_off.obj: color/bpc/0001_default_off.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0001_default_off.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0001_default_off.Tpo -c -o color/bpc/test_runner-0001_default_off.obj `if test -f 'color/bpc/0001_default_off.c'; then $(CYGPATH_W) 'color/bpc/0001_default_off.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0001_default_off.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0001_default_off.Tpo color/bpc/$(DEPDIR)/test_runner-0001_default_off.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0001_default_off.c' object='color/bpc/test_runner-0001_default_off.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0001_default_off.obj `if test -f 'color/bpc/0001_default_off.c'; then $(CYGPATH_W) 'color/bpc/0001_default_off.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0001_default_off.c'; fi`
+
+color/bpc/test_runner-0002_relative_endpoints.o: color/bpc/0002_relative_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0002_relative_endpoints.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0002_relative_endpoints.Tpo -c -o color/bpc/test_runner-0002_relative_endpoints.o `test -f 'color/bpc/0002_relative_endpoints.c' || echo '$(srcdir)/'`color/bpc/0002_relative_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0002_relative_endpoints.Tpo color/bpc/$(DEPDIR)/test_runner-0002_relative_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0002_relative_endpoints.c' object='color/bpc/test_runner-0002_relative_endpoints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0002_relative_endpoints.o `test -f 'color/bpc/0002_relative_endpoints.c' || echo '$(srcdir)/'`color/bpc/0002_relative_endpoints.c
+
+color/bpc/test_runner-0002_relative_endpoints.obj: color/bpc/0002_relative_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0002_relative_endpoints.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0002_relative_endpoints.Tpo -c -o color/bpc/test_runner-0002_relative_endpoints.obj `if test -f 'color/bpc/0002_relative_endpoints.c'; then $(CYGPATH_W) 'color/bpc/0002_relative_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0002_relative_endpoints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0002_relative_endpoints.Tpo color/bpc/$(DEPDIR)/test_runner-0002_relative_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0002_relative_endpoints.c' object='color/bpc/test_runner-0002_relative_endpoints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0002_relative_endpoints.obj `if test -f 'color/bpc/0002_relative_endpoints.c'; then $(CYGPATH_W) 'color/bpc/0002_relative_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0002_relative_endpoints.c'; fi`
+
+color/bpc/test_runner-0003_rgb8.o: color/bpc/0003_rgb8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0003_rgb8.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0003_rgb8.Tpo -c -o color/bpc/test_runner-0003_rgb8.o `test -f 'color/bpc/0003_rgb8.c' || echo '$(srcdir)/'`color/bpc/0003_rgb8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0003_rgb8.Tpo color/bpc/$(DEPDIR)/test_runner-0003_rgb8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0003_rgb8.c' object='color/bpc/test_runner-0003_rgb8.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0003_rgb8.o `test -f 'color/bpc/0003_rgb8.c' || echo '$(srcdir)/'`color/bpc/0003_rgb8.c
+
+color/bpc/test_runner-0003_rgb8.obj: color/bpc/0003_rgb8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0003_rgb8.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0003_rgb8.Tpo -c -o color/bpc/test_runner-0003_rgb8.obj `if test -f 'color/bpc/0003_rgb8.c'; then $(CYGPATH_W) 'color/bpc/0003_rgb8.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0003_rgb8.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0003_rgb8.Tpo color/bpc/$(DEPDIR)/test_runner-0003_rgb8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0003_rgb8.c' object='color/bpc/test_runner-0003_rgb8.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0003_rgb8.obj `if test -f 'color/bpc/0003_rgb8.c'; then $(CYGPATH_W) 'color/bpc/0003_rgb8.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0003_rgb8.c'; fi`
+
+color/bpc/test_runner-0004_rgba16_once.o: color/bpc/0004_rgba16_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0004_rgba16_once.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0004_rgba16_once.Tpo -c -o color/bpc/test_runner-0004_rgba16_once.o `test -f 'color/bpc/0004_rgba16_once.c' || echo '$(srcdir)/'`color/bpc/0004_rgba16_once.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0004_rgba16_once.Tpo color/bpc/$(DEPDIR)/test_runner-0004_rgba16_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0004_rgba16_once.c' object='color/bpc/test_runner-0004_rgba16_once.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0004_rgba16_once.o `test -f 'color/bpc/0004_rgba16_once.c' || echo '$(srcdir)/'`color/bpc/0004_rgba16_once.c
+
+color/bpc/test_runner-0004_rgba16_once.obj: color/bpc/0004_rgba16_once.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0004_rgba16_once.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0004_rgba16_once.Tpo -c -o color/bpc/test_runner-0004_rgba16_once.obj `if test -f 'color/bpc/0004_rgba16_once.c'; then $(CYGPATH_W) 'color/bpc/0004_rgba16_once.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0004_rgba16_once.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0004_rgba16_once.Tpo color/bpc/$(DEPDIR)/test_runner-0004_rgba16_once.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0004_rgba16_once.c' object='color/bpc/test_runner-0004_rgba16_once.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0004_rgba16_once.obj `if test -f 'color/bpc/0004_rgba16_once.c'; then $(CYGPATH_W) 'color/bpc/0004_rgba16_once.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0004_rgba16_once.c'; fi`
+
+color/bpc/test_runner-0005_equal_black.o: color/bpc/0005_equal_black.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0005_equal_black.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0005_equal_black.Tpo -c -o color/bpc/test_runner-0005_equal_black.o `test -f 'color/bpc/0005_equal_black.c' || echo '$(srcdir)/'`color/bpc/0005_equal_black.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0005_equal_black.Tpo color/bpc/$(DEPDIR)/test_runner-0005_equal_black.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0005_equal_black.c' object='color/bpc/test_runner-0005_equal_black.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0005_equal_black.o `test -f 'color/bpc/0005_equal_black.c' || echo '$(srcdir)/'`color/bpc/0005_equal_black.c
+
+color/bpc/test_runner-0005_equal_black.obj: color/bpc/0005_equal_black.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0005_equal_black.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0005_equal_black.Tpo -c -o color/bpc/test_runner-0005_equal_black.obj `if test -f 'color/bpc/0005_equal_black.c'; then $(CYGPATH_W) 'color/bpc/0005_equal_black.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0005_equal_black.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0005_equal_black.Tpo color/bpc/$(DEPDIR)/test_runner-0005_equal_black.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0005_equal_black.c' object='color/bpc/test_runner-0005_equal_black.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0005_equal_black.obj `if test -f 'color/bpc/0005_equal_black.c'; then $(CYGPATH_W) 'color/bpc/0005_equal_black.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0005_equal_black.c'; fi`
+
+color/bpc/test_runner-0006_gray_source.o: color/bpc/0006_gray_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0006_gray_source.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0006_gray_source.Tpo -c -o color/bpc/test_runner-0006_gray_source.o `test -f 'color/bpc/0006_gray_source.c' || echo '$(srcdir)/'`color/bpc/0006_gray_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0006_gray_source.Tpo color/bpc/$(DEPDIR)/test_runner-0006_gray_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0006_gray_source.c' object='color/bpc/test_runner-0006_gray_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0006_gray_source.o `test -f 'color/bpc/0006_gray_source.c' || echo '$(srcdir)/'`color/bpc/0006_gray_source.c
+
+color/bpc/test_runner-0006_gray_source.obj: color/bpc/0006_gray_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0006_gray_source.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0006_gray_source.Tpo -c -o color/bpc/test_runner-0006_gray_source.obj `if test -f 'color/bpc/0006_gray_source.c'; then $(CYGPATH_W) 'color/bpc/0006_gray_source.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0006_gray_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0006_gray_source.Tpo color/bpc/$(DEPDIR)/test_runner-0006_gray_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0006_gray_source.c' object='color/bpc/test_runner-0006_gray_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0006_gray_source.obj `if test -f 'color/bpc/0006_gray_source.c'; then $(CYGPATH_W) 'color/bpc/0006_gray_source.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0006_gray_source.c'; fi`
+
+color/bpc/test_runner-0007_singular_black.o: color/bpc/0007_singular_black.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0007_singular_black.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0007_singular_black.Tpo -c -o color/bpc/test_runner-0007_singular_black.o `test -f 'color/bpc/0007_singular_black.c' || echo '$(srcdir)/'`color/bpc/0007_singular_black.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0007_singular_black.Tpo color/bpc/$(DEPDIR)/test_runner-0007_singular_black.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0007_singular_black.c' object='color/bpc/test_runner-0007_singular_black.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0007_singular_black.o `test -f 'color/bpc/0007_singular_black.c' || echo '$(srcdir)/'`color/bpc/0007_singular_black.c
+
+color/bpc/test_runner-0007_singular_black.obj: color/bpc/0007_singular_black.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0007_singular_black.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0007_singular_black.Tpo -c -o color/bpc/test_runner-0007_singular_black.obj `if test -f 'color/bpc/0007_singular_black.c'; then $(CYGPATH_W) 'color/bpc/0007_singular_black.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0007_singular_black.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0007_singular_black.Tpo color/bpc/$(DEPDIR)/test_runner-0007_singular_black.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0007_singular_black.c' object='color/bpc/test_runner-0007_singular_black.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0007_singular_black.obj `if test -f 'color/bpc/0007_singular_black.c'; then $(CYGPATH_W) 'color/bpc/0007_singular_black.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0007_singular_black.c'; fi`
+
+color/bpc/test_runner-0008_absolute_unchanged.o: color/bpc/0008_absolute_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0008_absolute_unchanged.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0008_absolute_unchanged.Tpo -c -o color/bpc/test_runner-0008_absolute_unchanged.o `test -f 'color/bpc/0008_absolute_unchanged.c' || echo '$(srcdir)/'`color/bpc/0008_absolute_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0008_absolute_unchanged.Tpo color/bpc/$(DEPDIR)/test_runner-0008_absolute_unchanged.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0008_absolute_unchanged.c' object='color/bpc/test_runner-0008_absolute_unchanged.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0008_absolute_unchanged.o `test -f 'color/bpc/0008_absolute_unchanged.c' || echo '$(srcdir)/'`color/bpc/0008_absolute_unchanged.c
+
+color/bpc/test_runner-0008_absolute_unchanged.obj: color/bpc/0008_absolute_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0008_absolute_unchanged.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0008_absolute_unchanged.Tpo -c -o color/bpc/test_runner-0008_absolute_unchanged.obj `if test -f 'color/bpc/0008_absolute_unchanged.c'; then $(CYGPATH_W) 'color/bpc/0008_absolute_unchanged.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0008_absolute_unchanged.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0008_absolute_unchanged.Tpo color/bpc/$(DEPDIR)/test_runner-0008_absolute_unchanged.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0008_absolute_unchanged.c' object='color/bpc/test_runner-0008_absolute_unchanged.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0008_absolute_unchanged.obj `if test -f 'color/bpc/0008_absolute_unchanged.c'; then $(CYGPATH_W) 'color/bpc/0008_absolute_unchanged.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0008_absolute_unchanged.c'; fi`
+
+color/bpc/test_runner-0010_mpet_endpoints.o: color/bpc/0010_mpet_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0010_mpet_endpoints.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0010_mpet_endpoints.Tpo -c -o color/bpc/test_runner-0010_mpet_endpoints.o `test -f 'color/bpc/0010_mpet_endpoints.c' || echo '$(srcdir)/'`color/bpc/0010_mpet_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0010_mpet_endpoints.Tpo color/bpc/$(DEPDIR)/test_runner-0010_mpet_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0010_mpet_endpoints.c' object='color/bpc/test_runner-0010_mpet_endpoints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0010_mpet_endpoints.o `test -f 'color/bpc/0010_mpet_endpoints.c' || echo '$(srcdir)/'`color/bpc/0010_mpet_endpoints.c
+
+color/bpc/test_runner-0010_mpet_endpoints.obj: color/bpc/0010_mpet_endpoints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0010_mpet_endpoints.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0010_mpet_endpoints.Tpo -c -o color/bpc/test_runner-0010_mpet_endpoints.obj `if test -f 'color/bpc/0010_mpet_endpoints.c'; then $(CYGPATH_W) 'color/bpc/0010_mpet_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0010_mpet_endpoints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0010_mpet_endpoints.Tpo color/bpc/$(DEPDIR)/test_runner-0010_mpet_endpoints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0010_mpet_endpoints.c' object='color/bpc/test_runner-0010_mpet_endpoints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0010_mpet_endpoints.obj `if test -f 'color/bpc/0010_mpet_endpoints.c'; then $(CYGPATH_W) 'color/bpc/0010_mpet_endpoints.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0010_mpet_endpoints.c'; fi`
+
+color/bpc/test_runner-0011_intent_fallback.o: color/bpc/0011_intent_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0011_intent_fallback.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0011_intent_fallback.Tpo -c -o color/bpc/test_runner-0011_intent_fallback.o `test -f 'color/bpc/0011_intent_fallback.c' || echo '$(srcdir)/'`color/bpc/0011_intent_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0011_intent_fallback.Tpo color/bpc/$(DEPDIR)/test_runner-0011_intent_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0011_intent_fallback.c' object='color/bpc/test_runner-0011_intent_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0011_intent_fallback.o `test -f 'color/bpc/0011_intent_fallback.c' || echo '$(srcdir)/'`color/bpc/0011_intent_fallback.c
+
+color/bpc/test_runner-0011_intent_fallback.obj: color/bpc/0011_intent_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0011_intent_fallback.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0011_intent_fallback.Tpo -c -o color/bpc/test_runner-0011_intent_fallback.obj `if test -f 'color/bpc/0011_intent_fallback.c'; then $(CYGPATH_W) 'color/bpc/0011_intent_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0011_intent_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0011_intent_fallback.Tpo color/bpc/$(DEPDIR)/test_runner-0011_intent_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0011_intent_fallback.c' object='color/bpc/test_runner-0011_intent_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0011_intent_fallback.obj `if test -f 'color/bpc/0011_intent_fallback.c'; then $(CYGPATH_W) 'color/bpc/0011_intent_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0011_intent_fallback.c'; fi`
+
+color/bpc/test_runner-0012_lcms2_relative.o: color/bpc/0012_lcms2_relative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0012_lcms2_relative.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0012_lcms2_relative.Tpo -c -o color/bpc/test_runner-0012_lcms2_relative.o `test -f 'color/bpc/0012_lcms2_relative.c' || echo '$(srcdir)/'`color/bpc/0012_lcms2_relative.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0012_lcms2_relative.Tpo color/bpc/$(DEPDIR)/test_runner-0012_lcms2_relative.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0012_lcms2_relative.c' object='color/bpc/test_runner-0012_lcms2_relative.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0012_lcms2_relative.o `test -f 'color/bpc/0012_lcms2_relative.c' || echo '$(srcdir)/'`color/bpc/0012_lcms2_relative.c
+
+color/bpc/test_runner-0012_lcms2_relative.obj: color/bpc/0012_lcms2_relative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0012_lcms2_relative.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0012_lcms2_relative.Tpo -c -o color/bpc/test_runner-0012_lcms2_relative.obj `if test -f 'color/bpc/0012_lcms2_relative.c'; then $(CYGPATH_W) 'color/bpc/0012_lcms2_relative.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0012_lcms2_relative.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0012_lcms2_relative.Tpo color/bpc/$(DEPDIR)/test_runner-0012_lcms2_relative.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0012_lcms2_relative.c' object='color/bpc/test_runner-0012_lcms2_relative.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0012_lcms2_relative.obj `if test -f 'color/bpc/0012_lcms2_relative.c'; then $(CYGPATH_W) 'color/bpc/0012_lcms2_relative.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0012_lcms2_relative.c'; fi`
+
+color/bpc/test_runner-0013_lcms2_absolute.o: color/bpc/0013_lcms2_absolute.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0013_lcms2_absolute.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0013_lcms2_absolute.Tpo -c -o color/bpc/test_runner-0013_lcms2_absolute.o `test -f 'color/bpc/0013_lcms2_absolute.c' || echo '$(srcdir)/'`color/bpc/0013_lcms2_absolute.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0013_lcms2_absolute.Tpo color/bpc/$(DEPDIR)/test_runner-0013_lcms2_absolute.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0013_lcms2_absolute.c' object='color/bpc/test_runner-0013_lcms2_absolute.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0013_lcms2_absolute.o `test -f 'color/bpc/0013_lcms2_absolute.c' || echo '$(srcdir)/'`color/bpc/0013_lcms2_absolute.c
+
+color/bpc/test_runner-0013_lcms2_absolute.obj: color/bpc/0013_lcms2_absolute.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0013_lcms2_absolute.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0013_lcms2_absolute.Tpo -c -o color/bpc/test_runner-0013_lcms2_absolute.obj `if test -f 'color/bpc/0013_lcms2_absolute.c'; then $(CYGPATH_W) 'color/bpc/0013_lcms2_absolute.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0013_lcms2_absolute.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0013_lcms2_absolute.Tpo color/bpc/$(DEPDIR)/test_runner-0013_lcms2_absolute.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0013_lcms2_absolute.c' object='color/bpc/test_runner-0013_lcms2_absolute.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0013_lcms2_absolute.obj `if test -f 'color/bpc/0013_lcms2_absolute.c'; then $(CYGPATH_W) 'color/bpc/0013_lcms2_absolute.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0013_lcms2_absolute.c'; fi`
+
+color/bpc/test_runner-0014_colorsync_relative.o: color/bpc/0014_colorsync_relative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0014_colorsync_relative.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0014_colorsync_relative.Tpo -c -o color/bpc/test_runner-0014_colorsync_relative.o `test -f 'color/bpc/0014_colorsync_relative.c' || echo '$(srcdir)/'`color/bpc/0014_colorsync_relative.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0014_colorsync_relative.Tpo color/bpc/$(DEPDIR)/test_runner-0014_colorsync_relative.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0014_colorsync_relative.c' object='color/bpc/test_runner-0014_colorsync_relative.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0014_colorsync_relative.o `test -f 'color/bpc/0014_colorsync_relative.c' || echo '$(srcdir)/'`color/bpc/0014_colorsync_relative.c
+
+color/bpc/test_runner-0014_colorsync_relative.obj: color/bpc/0014_colorsync_relative.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0014_colorsync_relative.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0014_colorsync_relative.Tpo -c -o color/bpc/test_runner-0014_colorsync_relative.obj `if test -f 'color/bpc/0014_colorsync_relative.c'; then $(CYGPATH_W) 'color/bpc/0014_colorsync_relative.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0014_colorsync_relative.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0014_colorsync_relative.Tpo color/bpc/$(DEPDIR)/test_runner-0014_colorsync_relative.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0014_colorsync_relative.c' object='color/bpc/test_runner-0014_colorsync_relative.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0014_colorsync_relative.obj `if test -f 'color/bpc/0014_colorsync_relative.c'; then $(CYGPATH_W) 'color/bpc/0014_colorsync_relative.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0014_colorsync_relative.c'; fi`
+
+color/bpc/test_runner-0015_colorsync_absolute.o: color/bpc/0015_colorsync_absolute.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0015_colorsync_absolute.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0015_colorsync_absolute.Tpo -c -o color/bpc/test_runner-0015_colorsync_absolute.o `test -f 'color/bpc/0015_colorsync_absolute.c' || echo '$(srcdir)/'`color/bpc/0015_colorsync_absolute.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0015_colorsync_absolute.Tpo color/bpc/$(DEPDIR)/test_runner-0015_colorsync_absolute.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0015_colorsync_absolute.c' object='color/bpc/test_runner-0015_colorsync_absolute.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0015_colorsync_absolute.o `test -f 'color/bpc/0015_colorsync_absolute.c' || echo '$(srcdir)/'`color/bpc/0015_colorsync_absolute.c
+
+color/bpc/test_runner-0015_colorsync_absolute.obj: color/bpc/0015_colorsync_absolute.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0015_colorsync_absolute.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0015_colorsync_absolute.Tpo -c -o color/bpc/test_runner-0015_colorsync_absolute.obj `if test -f 'color/bpc/0015_colorsync_absolute.c'; then $(CYGPATH_W) 'color/bpc/0015_colorsync_absolute.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0015_colorsync_absolute.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0015_colorsync_absolute.Tpo color/bpc/$(DEPDIR)/test_runner-0015_colorsync_absolute.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0015_colorsync_absolute.c' object='color/bpc/test_runner-0015_colorsync_absolute.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0015_colorsync_absolute.obj `if test -f 'color/bpc/0015_colorsync_absolute.c'; then $(CYGPATH_W) 'color/bpc/0015_colorsync_absolute.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0015_colorsync_absolute.c'; fi`
+
+color/bpc/test_runner-0009_perceptual_unchanged.o: color/bpc/0009_perceptual_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0009_perceptual_unchanged.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0009_perceptual_unchanged.Tpo -c -o color/bpc/test_runner-0009_perceptual_unchanged.o `test -f 'color/bpc/0009_perceptual_unchanged.c' || echo '$(srcdir)/'`color/bpc/0009_perceptual_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0009_perceptual_unchanged.Tpo color/bpc/$(DEPDIR)/test_runner-0009_perceptual_unchanged.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0009_perceptual_unchanged.c' object='color/bpc/test_runner-0009_perceptual_unchanged.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0009_perceptual_unchanged.o `test -f 'color/bpc/0009_perceptual_unchanged.c' || echo '$(srcdir)/'`color/bpc/0009_perceptual_unchanged.c
+
+color/bpc/test_runner-0009_perceptual_unchanged.obj: color/bpc/0009_perceptual_unchanged.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0009_perceptual_unchanged.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0009_perceptual_unchanged.Tpo -c -o color/bpc/test_runner-0009_perceptual_unchanged.obj `if test -f 'color/bpc/0009_perceptual_unchanged.c'; then $(CYGPATH_W) 'color/bpc/0009_perceptual_unchanged.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0009_perceptual_unchanged.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0009_perceptual_unchanged.Tpo color/bpc/$(DEPDIR)/test_runner-0009_perceptual_unchanged.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0009_perceptual_unchanged.c' object='color/bpc/test_runner-0009_perceptual_unchanged.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0009_perceptual_unchanged.obj `if test -f 'color/bpc/0009_perceptual_unchanged.c'; then $(CYGPATH_W) 'color/bpc/0009_perceptual_unchanged.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0009_perceptual_unchanged.c'; fi`
 
 loader-png/hdr/test_runner-0001_builtin_pq16_alpha.o: loader-png/hdr/0001_builtin_pq16_alpha.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader-png/hdr/test_runner-0001_builtin_pq16_alpha.o -MD -MP -MF loader-png/hdr/$(DEPDIR)/test_runner-0001_builtin_pq16_alpha.Tpo -c -o loader-png/hdr/test_runner-0001_builtin_pq16_alpha.o `test -f 'loader-png/hdr/0001_builtin_pq16_alpha.c' || echo '$(srcdir)/'`loader-png/hdr/0001_builtin_pq16_alpha.c
@@ -131996,6 +132332,8 @@ distclean-generic:
 	-$(am__rm_f) cli/signals/$(am__dirstamp)
 	-$(am__rm_f) cli/terminal-color/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/terminal-color/$(am__dirstamp)
+	-$(am__rm_f) color/bpc/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) color/bpc/$(am__dirstamp)
 	-$(am__rm_f) color/cms/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) color/cms/$(am__dirstamp)
 	-$(am__rm_f) color/colorsync/$(DEPDIR)/$(am__dirstamp)
