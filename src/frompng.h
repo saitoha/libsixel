@@ -76,6 +76,7 @@ typedef struct sixel_frompng_composition {
     float background[3];
     int has_background;
     int managed;
+    int hdr;
 } sixel_frompng_composition_t;
 
 SIXELSTATUS

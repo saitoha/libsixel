@@ -1314,10 +1314,17 @@ suboption, append a second "!" to also disable fallback loaders.
 All loaders accept \fBhdr_fallback_profile=linear-srgb|srgb\fP
 (short form \fBFvalue\fP) for builtin HDR fallback decode and
 \fBhdr_exposure=EV\fP (short form \fBXvalue\fP) for finite EV stops.
-All loaders also accept \fBhdr_tonemap=none|reinhard\fP
+All loaders also accept \fBhdr_tonemap=auto|none|reinhard\fP
 (short form \fBHvalue\fP) for builtin HDR tone mapping.
 \fBhdr_header_exposure=0|1\fP (short form \fBU0\fP or \fBU1\fP)
 controls application of Radiance EXPOSURE metadata.
+Builtin and libpng accept \fBhdr_source=NAME\fP (short form \fBSvalue\fP),
+\fBhdr_reference_white=NITS\fP (short form \fBIvalue\fP, default 203, range 1-10000),
+and \fBhdr_peak_luminance=NITS\fP (short form \fBMvalue\fP, default 1000, range 400-10000).
+Source accepts auto (default), bt709-pq, bt709-hlg, display-p3-pq,
+display-p3-hlg, rec2020-pq, or rec2020-hlg. Explicit source overrides PNG
+metadata when CMS is enabled. Peak sets the HLG display assumption; PQ uses
+absolute luminance. HDR rendering follows linear alpha composition.
 PNG-capable loaders accept \fBtrns_keycolor=0|1\fP
 (short form \fBK0\fP or \fBK1\fP, default 1).
 The libpng loader accepts \fBchrm_arithmetic=auto|double|512bit\fP
@@ -1362,6 +1369,12 @@ common:cms_intent=SIXEL_LOADER_CMS_RENDERING_INTENT
 common:hdr_fallback_profile=SIXEL_LOADER_HDR_FALLBACK_PROFILE
 common:hdr_exposure=SIXEL_LOADER_HDR_EXPOSURE_EV
 common:hdr_tonemap=SIXEL_LOADER_HDR_TONEMAP
+builtin:hdr_source=SIXEL_LOADER_BUILTIN_HDR_SOURCE
+builtin:hdr_reference_white=SIXEL_LOADER_BUILTIN_HDR_REFERENCE_WHITE
+builtin:hdr_peak_luminance=SIXEL_LOADER_BUILTIN_HDR_PEAK_LUMINANCE
+libpng:hdr_source=SIXEL_LOADER_LIBPNG_HDR_SOURCE
+libpng:hdr_reference_white=SIXEL_LOADER_LIBPNG_HDR_REFERENCE_WHITE
+libpng:hdr_peak_luminance=SIXEL_LOADER_LIBPNG_HDR_PEAK_LUMINANCE
 common:hdr_header_exposure=SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE
 common:osc11_query=SIXEL_LOADER_OSC11_BG_QUERY
 common:osc11_timeout=SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
@@ -2332,9 +2345,17 @@ Positive values brighten and negative values darken; the default is zero.
 Override with \fB-Lloader:hdr_exposure=EV\fP or short form
 \fB-Lloader:Xvalue\fP.
 .TP 5
+.B SIXEL_LOADER_HDR_SOURCE, SIXEL_LOADER_HDR_REFERENCE_WHITE, SIXEL_LOADER_HDR_PEAK_LUMINANCE
+.br
+Fallback values for the corresponding builtin/libpng HDR settings. Backend
+specific SIXEL_LOADER_BUILTIN_HDR_* and SIXEL_LOADER_LIBPNG_HDR_* names
+have priority over these shared names; explicit loader options take priority
+above both. These settings apply to PNG PQ/HLG interpretation only.
+.TP 5
 .B SIXEL_LOADER_HDR_TONEMAP
 .br
-select builtin HDR tone mapping. Accepts "none" (default) or "reinhard".
+Select HDR tone mapping: "auto" (default), "none", or "reinhard".
+Auto compresses PQ/HLG PNG luminance and leaves Radiance relative light unchanged.
 Override with \fB-Lloader:hdr_tonemap=MODE\fP or short form
 \fB-Lloader:Hvalue\fP.
 .TP 5

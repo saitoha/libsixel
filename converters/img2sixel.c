@@ -1115,7 +1115,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               srgb; :hdr_exposure=EV (:Xvalue)\n"
         "                               applies finite EV stops;\n"
         "                               :hdr_tonemap=MODE (:Hvalue)\n"
-        "                               selects none or reinhard;\n"
+        "                               selects auto, none or reinhard;\n"
+        "                               builtin/libpng: :hdr_source=NAME (:S),\n"
+        "                               :hdr_reference_white=NITS (:I),\n"
+        "                               :hdr_peak_luminance=NITS (:M);\n"
         "                               :hdr_header_exposure=0|1\n"
         "                               (:U0/:U1) controls HDR metadata;\n"
         "                               :osc11_query=0|1 (:Q0/:Q1)\n"
@@ -1166,6 +1169,19 @@ static cli_option_help_t const g_option_help_table[] = {
         "SIXEL_LOADER_HDR_FALLBACK_PROFILE\n"
         "      common:hdr_exposure=SIXEL_LOADER_HDR_EXPOSURE_EV\n"
         "      common:hdr_tonemap=SIXEL_LOADER_HDR_TONEMAP\n"
+        "      builtin:hdr_source="
+        "SIXEL_LOADER_BUILTIN_HDR_SOURCE\n"
+        "      builtin:hdr_reference_white="
+        "SIXEL_LOADER_BUILTIN_HDR_REFERENCE_WHITE\n"
+        "      builtin:hdr_peak_luminance="
+        "SIXEL_LOADER_BUILTIN_HDR_PEAK_LUMINANCE\n"
+        "      libpng:hdr_source="
+        "SIXEL_LOADER_LIBPNG_HDR_SOURCE\n"
+        "      libpng:hdr_reference_white="
+        "SIXEL_LOADER_LIBPNG_HDR_REFERENCE_WHITE\n"
+        "      libpng:hdr_peak_luminance="
+        "SIXEL_LOADER_LIBPNG_HDR_PEAK_LUMINANCE\n"
+
         "      common:hdr_header_exposure="
         "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE\n"
         "      common:osc11_query=SIXEL_LOADER_OSC11_BG_QUERY\n"
@@ -1208,6 +1224,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      builtin:bmp_info40_mode="
         "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE\n"
         "      wic:ico_minsize=SIXEL_LOADER_WIC_ICO_MINSIZE\n"
+        "    HDR source/white/peak fallbacks: SIXEL_LOADER_HDR_SOURCE,\n"
+        "    SIXEL_LOADER_HDR_REFERENCE_WHITE, SIXEL_LOADER_HDR_PEAK_LUMINANCE.\n"
         "    See Environment variables below for fallback and legacy names.\n"
     },
     {
@@ -2039,9 +2057,54 @@ static cli_env_help_t const g_env_help_table[] = {
         "Override with -Lloader:hdr_header_exposure=0|1 or :U0/:U1."
     },
     {
+        "SIXEL_LOADER_HDR_SOURCE",
+        "PNG HDR source; use loader hdr_source.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_HDR_REFERENCE_WHITE",
+        "PNG HDR reference white; use loader hdr_reference_white.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_HDR_PEAK_LUMINANCE",
+        "PNG HDR peak luminance; use loader hdr_peak_luminance.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_BUILTIN_HDR_SOURCE",
+        "PNG HDR source; use loader hdr_source.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_BUILTIN_HDR_REFERENCE_WHITE",
+        "PNG HDR reference white; use loader hdr_reference_white.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_BUILTIN_HDR_PEAK_LUMINANCE",
+        "PNG HDR peak luminance; use loader hdr_peak_luminance.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_LIBPNG_HDR_SOURCE",
+        "PNG HDR source; use loader hdr_source.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_LIBPNG_HDR_REFERENCE_WHITE",
+        "PNG HDR reference white; use loader hdr_reference_white.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
+        "SIXEL_LOADER_LIBPNG_HDR_PEAK_LUMINANCE",
+        "PNG HDR peak luminance; use loader hdr_peak_luminance.\n"
+        "Backend-specific names precede shared names; CLI takes priority."
+    },
+    {
         "SIXEL_LOADER_HDR_TONEMAP",
-        "apply HDR tone mapping on builtin HDR decode path. Accepts none\n"
-        "(default) or reinhard. Override with\n"
+        "apply HDR rendering: auto (default), none, or reinhard.\n"
+        "Auto compresses PQ/HLG PNG, preserving Radiance light. Override with\n"
         "-Lloader:hdr_tonemap=MODE or :Hvalue."
     },
     {

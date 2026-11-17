@@ -1904,8 +1904,22 @@ sixel_cms_create_srgb_profile(void)
 char const *
 sixel_cms_cicp_name(unsigned char const codes[4])
 {
-    if (codes == NULL || codes[1] != 13u || codes[2] != 0u ||
-        codes[3] != 1u) {
+    if (codes == NULL || codes[2] != 0u || codes[3] != 1u) {
+        return NULL;
+    }
+    if (codes[1] == 16u || codes[1] == 18u) {
+        switch (codes[0]) {
+        case 1u:
+            return codes[1] == 16u ? "bt709-pq" : "bt709-hlg";
+        case 12u:
+            return codes[1] == 16u ? "display-p3-pq" : "display-p3-hlg";
+        case 9u:
+            return codes[1] == 16u ? "rec2020-pq" : "rec2020-hlg";
+        default:
+            return NULL;
+        }
+    }
+    if (codes[1] != 13u) {
         return NULL;
     }
     switch (codes[0]) {

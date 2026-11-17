@@ -210,7 +210,11 @@ loader_manager_init_loader_suboptions(
     suboptions->hdr_fallback_profile =
         SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB;
     suboptions->hdr_exposure_ev = 0.0;
-    suboptions->hdr_tonemap_mode = SIXEL_BUILTIN_HDR_TONEMAP_NONE;
+    suboptions->hdr_tonemap_mode = SIXEL_BUILTIN_HDR_TONEMAP_AUTO;
+    suboptions->builtin_hdr_reference_white = 203.0;
+    suboptions->libpng_hdr_reference_white = 203.0;
+    suboptions->builtin_hdr_peak_luminance = 1000.0;
+    suboptions->libpng_hdr_peak_luminance = 1000.0;
     suboptions->hdr_use_header_exposure = 1;
     suboptions->osc11_bg_query = 0;
     suboptions->osc11_bg_query_timeout_ms =

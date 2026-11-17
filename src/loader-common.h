@@ -105,6 +105,15 @@ SIXEL_INTERNAL_API void sixel_loader_restore_suboptions(
     sixel_loader_suboptions_t const *suboptions);
 sixel_loader_suboptions_t const *sixel_loader_active_suboptions(void);
 
+/* HDR source selection is separate from ICC profile evaluation. */
+SIXEL_INTERNAL_API char const *
+loader_hdr_source(char const *base, char const *metadata);
+SIXEL_INTERNAL_API int loader_hdr_is_source(char const *name);
+SIXEL_INTERNAL_API int loader_hdr_decode(char const *base, float *pixels, size_t count,
+                      char const *name);
+/* Apply display rendering only after alpha/canvas composition. */
+SIXEL_INTERNAL_API int loader_hdr_finish(float *pixels, size_t count);
+
 /* Resolve one loader boolean from active request state or its registry row. */
 int loader_resolve_boolean_suboption(
     char const *base_name,

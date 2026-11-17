@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Verify builtin pq fallback icc against its numeric contract. */
+/* Verify builtin pq over icc against its numeric contract. */
 #include "tests/_support/loader/png_cicp_test_common.h"
 
 int

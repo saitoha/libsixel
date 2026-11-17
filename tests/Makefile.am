@@ -253,6 +253,22 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_SIZE_OVERFLOW \
     -DBUILD_TEST_0009_REFERENCE_WHITE_ALIAS \
     -DBUILD_TEST_0010_ALLOCATION_RETRY \
+    -DBUILD_TEST_0001_BUILTIN_PQ16_ALPHA \
+    -DBUILD_TEST_0002_LIBPNG_PQ16_ALPHA \
+    -DBUILD_TEST_0003_BUILTIN_HLG16 \
+    -DBUILD_TEST_0004_LIBPNG_HLG16 \
+    -DBUILD_TEST_0005_BUILTIN_PQ_PALETTE \
+    -DBUILD_TEST_0006_LIBPNG_PQ_PALETTE \
+    -DBUILD_TEST_0007_BUILTIN_HLG_APNG_CANVAS \
+    -DBUILD_TEST_0008_LIBPNG_HLG_APNG_CANVAS \
+    -DBUILD_TEST_0009_BUILTIN_PQ_NO_TONEMAP \
+    -DBUILD_TEST_0010_LIBPNG_PQ_NO_TONEMAP \
+    -DBUILD_TEST_0011_BUILTIN_MANUAL_SOURCE \
+    -DBUILD_TEST_0012_LIBPNG_MANUAL_SOURCE \
+    -DBUILD_TEST_0013_BUILTIN_HLG_DISPLAY_PARAMETERS \
+    -DBUILD_TEST_0014_LIBPNG_HLG_DISPLAY_PARAMETERS \
+    -DBUILD_TEST_0015_BUILTIN_CMS_DISABLED \
+    -DBUILD_TEST_0016_LIBPNG_CMS_DISABLED \
     -DBUILD_HDR_FAULT_COMMON \
     -DBUILD_TEST_0140_RGB16_ALIAS \
     -DBUILD_TEST_0141_RGBA16_FLOAT \
@@ -2106,7 +2122,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_BUILTIN_SRGB_OVER_ICC_BYTE \
     -DBUILD_TEST_0014_BUILTIN_SRGB_BYTE \
     -DBUILD_TEST_0015_BUILTIN_SRGB_PALETTE_BYTE \
-    -DBUILD_TEST_0016_BUILTIN_PQ_FALLBACK_ICC \
+    -DBUILD_TEST_0016_BUILTIN_PQ_OVER_ICC \
     -DBUILD_TEST_0017_BUILTIN_UNKNOWN_FALLBACK_GAMMA \
     -DBUILD_TEST_0018_BUILTIN_NARROW_FALLBACK \
     -DBUILD_TEST_0019_BUILTIN_MATRIX_FALLBACK \
@@ -2137,7 +2153,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0044_LIBPNG_SRGB_OVER_ICC_BYTE \
     -DBUILD_TEST_0045_LIBPNG_SRGB_BYTE \
     -DBUILD_TEST_0046_LIBPNG_SRGB_PALETTE_BYTE \
-    -DBUILD_TEST_0047_LIBPNG_PQ_FALLBACK_ICC \
+    -DBUILD_TEST_0047_LIBPNG_PQ_OVER_ICC \
     -DBUILD_TEST_0048_LIBPNG_UNKNOWN_FALLBACK_GAMMA \
     -DBUILD_TEST_0049_LIBPNG_NARROW_FALLBACK \
     -DBUILD_TEST_0050_LIBPNG_MATRIX_FALLBACK \
@@ -7226,6 +7242,22 @@ test_runner_SOURCES = test_runner.c \
     color/hdr/0008_size_overflow.c \
     color/hdr/0009_reference_white_alias.c \
     color/hdr/0010_allocation_retry.c \
+    loader-png/hdr/0001_builtin_pq16_alpha.c \
+    loader-png/hdr/0002_libpng_pq16_alpha.c \
+    loader-png/hdr/0003_builtin_hlg16.c \
+    loader-png/hdr/0004_libpng_hlg16.c \
+    loader-png/hdr/0005_builtin_pq_palette.c \
+    loader-png/hdr/0006_libpng_pq_palette.c \
+    loader-png/hdr/0007_builtin_hlg_apng_canvas.c \
+    loader-png/hdr/0008_libpng_hlg_apng_canvas.c \
+    loader-png/hdr/0009_builtin_pq_no_tonemap.c \
+    loader-png/hdr/0010_libpng_pq_no_tonemap.c \
+    loader-png/hdr/0011_builtin_manual_source.c \
+    loader-png/hdr/0012_libpng_manual_source.c \
+    loader-png/hdr/0013_builtin_hlg_display_parameters.c \
+    loader-png/hdr/0014_libpng_hlg_display_parameters.c \
+    loader-png/hdr/0015_builtin_cms_disabled.c \
+    loader-png/hdr/0016_libpng_cms_disabled.c \
     _support/processing/cms/hdr_numeric_common.h \
     _support/processing/cms/hdr_fault_common.c \
     color/cms/0140_rgb16_alias.c \
@@ -9216,7 +9248,7 @@ test_runner_SOURCES = test_runner.c \
     loader-png/cicp/0013_builtin_srgb_over_icc_byte.c \
     loader-png/cicp/0014_builtin_srgb_byte.c \
     loader-png/cicp/0015_builtin_srgb_palette_byte.c \
-    loader-png/cicp/0016_builtin_pq_fallback_icc.c \
+    loader-png/cicp/0016_builtin_pq_over_icc.c \
     loader-png/cicp/0017_builtin_unknown_fallback_gamma.c \
     loader-png/cicp/0018_builtin_narrow_fallback.c \
     loader-png/cicp/0019_builtin_matrix_fallback.c \
@@ -9247,7 +9279,7 @@ test_runner_SOURCES = test_runner.c \
     loader-png/cicp/0044_libpng_srgb_over_icc_byte.c \
     loader-png/cicp/0045_libpng_srgb_byte.c \
     loader-png/cicp/0046_libpng_srgb_palette_byte.c \
-    loader-png/cicp/0047_libpng_pq_fallback_icc.c \
+    loader-png/cicp/0047_libpng_pq_over_icc.c \
     loader-png/cicp/0048_libpng_unknown_fallback_gamma.c \
     loader-png/cicp/0049_libpng_narrow_fallback.c \
     loader-png/cicp/0050_libpng_matrix_fallback.c \
@@ -9355,6 +9387,7 @@ test_runner_SOURCES = test_runner.c \
     _support/loader/gif_icc_test_common.h \
     _support/loader/png_cicp_test_common.c \
     _support/loader/png_cicp_test_common.h \
+    _support/loader/png_hdr_expected.h \
     _support/loader/tga_color_test_common.c \
     _support/loader/tga_color_test_common.h \
     _support/loader/builtin_jpeg_icc_test_common.c \
@@ -13941,3 +13974,8 @@ EXTRA_DIST += _static/sh/staticcheck-test-image-size.sh \
     _static/awk/test-image-size.awk _static/data/test-image-size-legacy.tsv
 
 EXTRA_DIST += build/image-size _static/fixtures/image-size
+
+EXTRA_DIST += data/color-numeric/cli-hdr.png \
+    data/color-numeric/cli-hdr-source-reference.png \
+    data/color-numeric/cli-hdr-reference_white-reference.png \
+    data/color-numeric/cli-hdr-peak_luminance-reference.png

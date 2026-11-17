@@ -33,6 +33,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <float.h>
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -52,6 +54,8 @@
 #include <sixel.h>
 
 #include "cms.h"
+#include "cms-hdr.h"
+#include "fromhdr.h"
 #include "chunk-view.h"
 #include "compat_stub.h"
 #include "frame-private.h"
@@ -60,6 +64,110 @@
 #include "options-registry.h"
 #include "pthread-once.h"
 #include "timeline-logger.h"
+
+static char const *const loader_hdr_names[] = {
+    NULL, "bt709-pq", "bt709-hlg", "display-p3-pq", "display-p3-hlg",
+    "rec2020-pq", "rec2020-hlg"
+};
+
+int
+loader_hdr_is_source(char const *name)
+{
+    int i;
+
+    for (i = 1; name != NULL && i < 7; ++i) {
+        if (strcmp(name, loader_hdr_names[i]) == 0) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+char const *
+loader_hdr_source(char const *base, char const *metadata)
+{
+    int source;
+
+    source = loader_resolve_int_suboption(base,
+        strcmp(base, "libpng") == 0
+            ? SIXEL_SUBOPTION_BINDING_ID_1(libpng_hdr_source)
+            : SIXEL_SUBOPTION_BINDING_ID_1(builtin_hdr_source), 0);
+    return source > 0 && source < 7 ? loader_hdr_names[source] : metadata;
+}
+
+int
+loader_hdr_decode(char const *base, float *pixels, size_t count,
+                  char const *name)
+{
+    sixel_cms_hdr_t options;
+    int source;
+    int libpng;
+
+    source = loader_hdr_is_source(name);
+    if (source == 0) {
+        return 0;
+    }
+    libpng = strcmp(base, "libpng") == 0;
+    options.transfer = source % 2 ? SIXEL_CMS_HDR_PQ : SIXEL_CMS_HDR_HLG;
+    options.primaries = (source - 1) / 2;
+    options.reference_white = loader_resolve_double_suboption(base,
+        libpng ? SIXEL_SUBOPTION_BINDING_ID_1(libpng_hdr_reference_white)
+               : SIXEL_SUBOPTION_BINDING_ID_1(builtin_hdr_reference_white),
+        203.0);
+    options.peak_luminance = loader_resolve_double_suboption(base,
+        libpng ? SIXEL_SUBOPTION_BINDING_ID_1(libpng_hdr_peak_luminance)
+               : SIXEL_SUBOPTION_BINDING_ID_1(builtin_hdr_peak_luminance),
+        1000.0);
+    loader_trace_message("PNGHDR1|source=%s|white=%.9g|peak=%.9g",
+        name, options.reference_white, options.peak_luminance);
+    return sixel_cms_hdr_convert(pixels, count, &options);
+}
+
+int
+loader_hdr_finish(float *pixels, size_t count)
+{
+    size_t i;
+    int c;
+    int mode;
+    double exposure;
+    double value;
+    double luminance;
+    double scale;
+
+    mode = loader_resolve_int_suboption(NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(hdr_tonemap_mode),
+        SIXEL_BUILTIN_HDR_TONEMAP_AUTO);
+    exposure = loader_resolve_double_suboption(NULL,
+        SIXEL_SUBOPTION_BINDING_ID_1(hdr_exposure_ev), 0.0);
+    exposure = pow(2.0, exposure);
+    if (!isfinite(exposure) || exposure <= 0.0 || pixels == NULL ||
+        count > SIZE_MAX / (3u * sizeof(float))) {
+        return 0;
+    }
+    for (i = 0u; i < count; ++i) {
+        /* A common luminance factor preserves hue before gamut mapping.
+         * Signed RGB is intentional: wide-gamut primaries can be negative. */
+        luminance = 0.21263900587151036 * pixels[i * 3u] +
+            0.71516867876775593 * pixels[i * 3u + 1u] +
+            0.07219231536073371 * pixels[i * 3u + 2u];
+        scale = exposure;
+        if (mode == SIXEL_BUILTIN_HDR_TONEMAP_AUTO) {
+            scale /= 1.0 + fmax(luminance, 0.0) * exposure;
+        }
+        for (c = 0; c < 3; ++c) {
+            value = pixels[i * 3u + c] * scale;
+            if (mode == SIXEL_BUILTIN_HDR_TONEMAP_REINHARD) {
+                value = fmax(value, 0.0);
+                value /= 1.0 + value;
+            }
+            if (!isfinite(value) || fabs(value) > FLT_MAX) {
+                return 0;
+            }
+            pixels[i * 3u + c] = (float)value;
+        }
+    }
+    return 1;
+}
 
 #if defined(__PCC__) || defined(__TINYC__)
 # define SIXEL_LOADER_NO_TLS_COMPILER 1

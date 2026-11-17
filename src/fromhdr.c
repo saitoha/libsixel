@@ -1320,6 +1320,11 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
             SIXEL_SUBOPTION_BINDING_ID_1(hdr_tonemap_mode),
             SIXEL_BUILTIN_HDR_TONEMAP_NONE);
 
+    /* Radiance has relative linear values, without an HDR display peak. */
+    if (tonemap_mode == SIXEL_BUILTIN_HDR_TONEMAP_AUTO) {
+        tonemap_mode = SIXEL_BUILTIN_HDR_TONEMAP_NONE;
+    }
+
     exposure_ev = loader_resolve_double_suboption(
         NULL,
         SIXEL_SUBOPTION_BINDING_ID_1(hdr_exposure_ev),

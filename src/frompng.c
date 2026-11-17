@@ -754,13 +754,14 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
         return 0;
     }
     pixel_bytes = pixel_count * 3u * sample_bytes;
-    cicp_name = sixel_frompng_cicp_name(buffer, size);
+    cicp_name = loader_hdr_source("builtin",
+        sixel_frompng_cicp_name(buffer, size));
     if (cicp_name != NULL) {
         if (strcmp(cicp_name, "srgb") == 0) {
             return 1;
         }
         chunk_profile = sixel_cms_create_named_rgb_profile(cicp_name);
-        if (chunk_profile == NULL) {
+        if (chunk_profile == NULL && !loader_hdr_is_source(cicp_name)) {
             return 0;
         }
         if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
@@ -774,9 +775,21 @@ sixel_frompng_apply_colorspace_fallback_internal(unsigned char *pixels,
                 cicp_pixels[sample] = sample_bytes == 1u
                     ? pixels[sample] / 255.0f : ((float *)pixels)[sample];
             }
-            converted = sixel_cms_convert_profile_to_srgb(
-                (unsigned char *)cicp_pixels, width, height,
-                SIXEL_PIXELFORMAT_RGBFLOAT32, chunk_profile);
+            if (loader_hdr_is_source(cicp_name)) {
+                converted = loader_hdr_decode("builtin", cicp_pixels,
+                    pixel_count, cicp_name) &&
+                    loader_hdr_finish(cicp_pixels, pixel_count);
+                if (converted) {
+                    for (sample = 0u; sample < pixel_count * 3u; ++sample) {
+                        cicp_pixels[sample] = (float)sixel_color_encode_srgb(
+                            cicp_pixels[sample]);
+                    }
+                }
+            } else {
+                converted = sixel_cms_convert_profile_to_srgb(
+                    (unsigned char *)cicp_pixels, width, height,
+                    SIXEL_PIXELFORMAT_RGBFLOAT32, chunk_profile);
+            }
             if (converted) {
                 if (sample_bytes == sizeof(float)) {
                     memcpy(pixels, cicp_pixels, pixel_bytes);
@@ -1274,6 +1287,7 @@ sixel_frompng_build_chrm_to_srgb_matrix(uint32_t const chrm_xy[8],
 typedef struct {
     sixel_cms_profile_t *profile;
     int required_profile;
+    char const *hdr_source;
     int transfer_mode;
     double file_gamma;
 } sixel_frompng_source_t;
@@ -1302,13 +1316,18 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
     if (!enable_cms) {
         return 1;
     }
-    cicp_name = sixel_frompng_cicp_name(buffer, size);
+    cicp_name = loader_hdr_source("builtin",
+        sixel_frompng_cicp_name(buffer, size));
     if (cicp_name != NULL) {
         loader_trace_message("PNGCICP1|source=%s", cicp_name);
         if (strcmp(cicp_name, "srgb") == 0) {
             return 1;
         }
         source->required_profile = 1;
+        if (loader_hdr_is_source(cicp_name)) {
+            source->hdr_source = cicp_name;
+            return 1;
+        }
         source->profile = sixel_cms_create_named_rgb_profile(cicp_name);
         return source->profile != NULL;
     }
@@ -1356,7 +1375,7 @@ sixel_frompng_has_color_work(unsigned char const *buffer, size_t size)
             sixel_frompng_has_transparency(buffer, size), &source)) {
         return 1;
     }
-    result = source.profile != NULL ||
+    result = source.profile != NULL || source.hdr_source != NULL ||
         source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA;
     sixel_cms_close_profile(source.profile);
     return result;
@@ -1548,7 +1567,8 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
      * Keep RGB bytes until a real transfer/profile transform is required. */
     linear = composition != NULL || (has_alpha && has_background) ||
         source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA;
-    if (linear || is_16bit || source.profile != NULL) {
+    if (linear || is_16bit || source.profile != NULL ||
+        source.hdr_source != NULL) {
         pixels = (float *)sixel_allocator_malloc(allocator,
                                                   count * 3u * sizeof(float));
         if (pixels == NULL) {
@@ -1594,6 +1614,19 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
                 }
             }
         }
+        if (source.hdr_source != NULL) {
+            converted = loader_hdr_decode("builtin", pixels, count,
+                                          source.hdr_source);
+            if (converted && from_file && has_background &&
+                (has_alpha || composition != NULL)) {
+                converted = loader_hdr_decode("builtin", background, 1u,
+                                              source.hdr_source);
+            }
+            if (!converted) {
+                status = SIXEL_RUNTIME_ERROR;
+                goto cleanup;
+            }
+        }
         linear = linear || converted;
         if (linear && !converted) {
             sixel_frompng_decode_samples(pixels, count, &source);
@@ -1628,6 +1661,7 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
         }
         memcpy(composition->background, background, sizeof(background));
         composition->has_background = has_background;
+        composition->hdr = source.hdr_source != NULL;
         composition->managed = converted ||
             source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA;
     }
@@ -1656,6 +1690,11 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
                     background[c] * (1.0 - alpha));
             }
         }
+    }
+    if (composition == NULL && source.hdr_source != NULL &&
+        !loader_hdr_finish(pixels, count)) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
     }
     /* Preserve the ordinary untagged eight-bit path. A failed profile does
      * not turn unchanged device bytes into a falsely managed float frame. */

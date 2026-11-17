@@ -1771,7 +1771,18 @@ static sixel_suboption_choice_t const g_loader_hdr_fallback_env_choices[] = {
     { "gamma", SIXEL_BUILTIN_HDR_FALLBACK_SRGB }
 };
 
+static sixel_suboption_choice_t const g_loader_hdr_source_choices[] = {
+    { "auto", 0 },
+    { "bt709-pq", 1 },
+    { "bt709-hlg", 2 },
+    { "display-p3-pq", 3 },
+    { "display-p3-hlg", 4 },
+    { "rec2020-pq", 5 },
+    { "rec2020-hlg", 6 }
+};
+
 static sixel_suboption_choice_t const g_loader_hdr_tonemap_choices[] = {
+    { "auto", SIXEL_BUILTIN_HDR_TONEMAP_AUTO },
     { "none", SIXEL_BUILTIN_HDR_TONEMAP_NONE },
     { "reinhard", SIXEL_BUILTIN_HDR_TONEMAP_REINHARD }
 };
@@ -2867,6 +2878,52 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "hdr_tonemap", 'H', "SIXEL_LOADER_HDR_TONEMAP", NULL, NULL,
         g_loader_hdr_tonemap_choices,
         hdr_tonemap_mode),
+    SIXEL_REGISTRY_LOADER_CHOICE(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
+        "hdr_source", 'S', "SIXEL_LOADER_BUILTIN_HDR_SOURCE",
+        "SIXEL_LOADER_HDR_SOURCE", NULL, g_loader_hdr_source_choices,
+        builtin_hdr_source),
+    SIXEL_REGISTRY_LOADER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
+        "hdr_reference_white", 'I',
+        "SIXEL_LOADER_BUILTIN_HDR_REFERENCE_WHITE",
+        "SIXEL_LOADER_HDR_REFERENCE_WHITE", NULL, 1.0, 10000.0,
+        "HDR reference white is outside the supported range.",
+        builtin_hdr_reference_white),
+    SIXEL_REGISTRY_LOADER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_BUILTIN,
+        "hdr_peak_luminance", 'M',
+        "SIXEL_LOADER_BUILTIN_HDR_PEAK_LUMINANCE",
+        "SIXEL_LOADER_HDR_PEAK_LUMINANCE", NULL, 400.0, 10000.0,
+        "HDR peak luminance is outside the supported range.",
+        builtin_hdr_peak_luminance),
+#if HAVE_LIBPNG
+    SIXEL_REGISTRY_LOADER_CHOICE(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_LIBPNG,
+        "hdr_source", 'S', "SIXEL_LOADER_LIBPNG_HDR_SOURCE",
+        "SIXEL_LOADER_HDR_SOURCE", NULL, g_loader_hdr_source_choices,
+        libpng_hdr_source),
+    SIXEL_REGISTRY_LOADER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_LIBPNG,
+        "hdr_reference_white", 'I',
+        "SIXEL_LOADER_LIBPNG_HDR_REFERENCE_WHITE",
+        "SIXEL_LOADER_HDR_REFERENCE_WHITE", NULL, 1.0, 10000.0,
+        "HDR reference white is outside the supported range.",
+        libpng_hdr_reference_white),
+    SIXEL_REGISTRY_LOADER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_LOADERS,
+        g_loader_values + SIXEL_LOADER_INDEX_LIBPNG,
+        "hdr_peak_luminance", 'M',
+        "SIXEL_LOADER_LIBPNG_HDR_PEAK_LUMINANCE",
+        "SIXEL_LOADER_HDR_PEAK_LUMINANCE", NULL, 400.0, 10000.0,
+        "HDR peak luminance is outside the supported range.",
+        libpng_hdr_peak_luminance),
+#endif
     SIXEL_REGISTRY_LOADER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "hdr_header_exposure", 'U',

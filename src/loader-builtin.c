@@ -2650,6 +2650,7 @@ sixel_builtin_apng_float_frame(sixel_builtin_apng_canvas_t *canvas,
     sixel_frame_interface_t *emitted;
     sixel_frame_pixels_view_t source;
     sixel_frame_pixels_view_t destination;
+    sixel_frame_pixels_view_t rendered;
     sixel_frame_alpha_t src_alpha;
     sixel_frame_alpha_t dst_alpha;
     sixel_frompng_composition_t composition;
@@ -2742,6 +2743,14 @@ sixel_builtin_apng_float_frame(sixel_builtin_apng_canvas_t *canvas,
             preserve_zero);
         if (SIXEL_FAILED(status)) {
             goto end;
+        }
+        if (composition.hdr) {
+            emitted->vtbl->get_pixels(emitted, &rendered);
+            if (!loader_hdr_finish(rendered.pixels_float32,
+                    (size_t)canvas->width * (size_t)canvas->height)) {
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
         }
         if (composition.managed) {
             status = emitted->vtbl->set_pixelformat(emitted,
@@ -5381,8 +5390,9 @@ sixel_builtin_load_png_single_frame(
         ri == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    cicp_name = enable_cms ? sixel_frompng_cicp_name(
-        sixel_chunk_get_buffer(chunk), sixel_chunk_get_size(chunk)) : NULL;
+    cicp_name = enable_cms ? loader_hdr_source("builtin",
+        sixel_frompng_cicp_name(sixel_chunk_get_buffer(chunk),
+                               sixel_chunk_get_size(chunk))) : NULL;
 
     /*
      * Both indexed PNG fast paths accept only an explicit background pointer.

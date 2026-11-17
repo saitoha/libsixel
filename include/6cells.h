@@ -3346,6 +3346,12 @@ typedef struct sixel_loader_suboptions {
     int builtin_cms_engine;
     int builtin_enable_orientation;
     int builtin_bmp_info40_mode;
+    int builtin_hdr_source;
+    int libpng_hdr_source;
+    double builtin_hdr_reference_white;
+    double libpng_hdr_reference_white;
+    double builtin_hdr_peak_luminance;
+    double libpng_hdr_peak_luminance;
 } sixel_loader_suboptions_t;
 
 typedef struct sixel_loader_manager_build_request {

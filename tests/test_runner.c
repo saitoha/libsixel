@@ -4735,6 +4735,23 @@ int test_hdr_numeric_06(int argc, char **argv);
 int test_hdr_numeric_07(int argc, char **argv);
 int test_hdr_numeric_08(int argc, char **argv);
 int test_hdr_numeric_09(int argc, char **argv);
+int test_png_hdr_01(int argc, char **argv);
+int test_png_hdr_02(int argc, char **argv);
+int test_png_hdr_03(int argc, char **argv);
+int test_png_hdr_04(int argc, char **argv);
+int test_png_hdr_05(int argc, char **argv);
+int test_png_hdr_06(int argc, char **argv);
+int test_png_hdr_07(int argc, char **argv);
+int test_png_hdr_08(int argc, char **argv);
+int test_png_hdr_09(int argc, char **argv);
+int test_png_hdr_10(int argc, char **argv);
+int test_png_hdr_11(int argc, char **argv);
+int test_png_hdr_12(int argc, char **argv);
+int test_png_hdr_13(int argc, char **argv);
+int test_png_hdr_14(int argc, char **argv);
+int test_png_hdr_15(int argc, char **argv);
+int test_png_hdr_16(int argc, char **argv);
+
 int test_cms_format_00(int argc, char **argv);
 int test_cms_format_01(int argc, char **argv);
 int test_cms_format_02(int argc, char **argv);
@@ -12713,7 +12730,7 @@ static test_entry_t const test_entries[] = {
     { "cicp/0013_builtin_srgb_over_icc_byte", test_cicp_0013 },
     { "cicp/0014_builtin_srgb_byte", test_cicp_0014 },
     { "cicp/0015_builtin_srgb_palette_byte", test_cicp_0015 },
-    { "cicp/0016_builtin_pq_fallback_icc", test_cicp_0016 },
+    { "cicp/0016_builtin_pq_over_icc", test_cicp_0016 },
     { "cicp/0017_builtin_unknown_fallback_gamma", test_cicp_0017 },
     { "cicp/0018_builtin_narrow_fallback", test_cicp_0018 },
     { "cicp/0019_builtin_matrix_fallback", test_cicp_0019 },
@@ -12744,7 +12761,7 @@ static test_entry_t const test_entries[] = {
     { "cicp/0044_libpng_srgb_over_icc_byte", test_cicp_0044 },
     { "cicp/0045_libpng_srgb_byte", test_cicp_0045 },
     { "cicp/0046_libpng_srgb_palette_byte", test_cicp_0046 },
-    { "cicp/0047_libpng_pq_fallback_icc", test_cicp_0047 },
+    { "cicp/0047_libpng_pq_over_icc", test_cicp_0047 },
     { "cicp/0048_libpng_unknown_fallback_gamma", test_cicp_0048 },
     { "cicp/0049_libpng_narrow_fallback", test_cicp_0049 },
     { "cicp/0050_libpng_matrix_fallback", test_cicp_0050 },
@@ -14070,6 +14087,23 @@ static test_entry_t const test_entries[] = {
     { "hdr/0008_size_overflow", test_hdr_numeric_07 },
     { "hdr/0009_reference_white_alias", test_hdr_numeric_08 },
     { "hdr/0010_allocation_retry", test_hdr_numeric_09 },
+    { "png-hdr/0001_builtin_pq16_alpha", test_png_hdr_01 },
+    { "png-hdr/0002_libpng_pq16_alpha", test_png_hdr_02 },
+    { "png-hdr/0003_builtin_hlg16", test_png_hdr_03 },
+    { "png-hdr/0004_libpng_hlg16", test_png_hdr_04 },
+    { "png-hdr/0005_builtin_pq_palette", test_png_hdr_05 },
+    { "png-hdr/0006_libpng_pq_palette", test_png_hdr_06 },
+    { "png-hdr/0007_builtin_hlg_apng_canvas", test_png_hdr_07 },
+    { "png-hdr/0008_libpng_hlg_apng_canvas", test_png_hdr_08 },
+    { "png-hdr/0009_builtin_pq_no_tonemap", test_png_hdr_09 },
+    { "png-hdr/0010_libpng_pq_no_tonemap", test_png_hdr_10 },
+    { "png-hdr/0011_builtin_manual_source", test_png_hdr_11 },
+    { "png-hdr/0012_libpng_manual_source", test_png_hdr_12 },
+    { "png-hdr/0013_builtin_hlg_display_parameters", test_png_hdr_13 },
+    { "png-hdr/0014_libpng_hlg_display_parameters", test_png_hdr_14 },
+    { "png-hdr/0015_builtin_cms_disabled", test_png_hdr_15 },
+    { "png-hdr/0016_libpng_cms_disabled", test_png_hdr_16 },
+
     { "cms/0140_rgb16_alias", test_cms_format_00 },
     { "cms/0141_rgba16_float", test_cms_format_01 },
     { "cms/0142_gray16_float", test_cms_format_02 },

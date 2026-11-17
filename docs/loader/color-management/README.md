@@ -26,6 +26,16 @@ Participating loader adapters select source definitions through `cms.c`. They do
 
 CMS still runs inside those loaders. A future independent execution stage needs an owned decoder result containing original sample precision and polarity, source profile/color metadata, alpha, background and animation-rectangle information, plus whether a decoder already applied color management. Moving CMS after a composed APNG callback would lose the current normalize-before-blend boundary or apply it twice. The [encoder execution map](../../encoder/execution-map/README.md) distinguishes its descriptive planner graph from the executable scheduler: current execution LOAD is a no-op after frame delivery, and adaptive sampling can read before PREPLAN. A real future CMS stage must precede both sampling/preplan consumers; adding a graph label alone does not establish that execution boundary. No such DAG migration is implemented here.
 
+## HDR input and SDR rendering
+
+Builtin PNG and libpng recognize supported PQ/HLG cICP automatically when CMS is enabled. Their `hdr_source` (`:S`) override accepts `auto` (default), `bt709-pq`, `bt709-hlg`, `display-p3-pq`, `display-p3-hlg`, `rec2020-pq`, or `rec2020-hlg`. An explicit source overrides PNG metadata and applies only to PNG decoding in that loader; it does not redefine an ICC profile or affect unrelated file formats. `cms_engine=none` disables this interpretation.
+
+`hdr_reference_white` (`:I`) defines one linear working-space unit in cd/m², default 203, range 1–10000. `hdr_peak_luminance` (`:M`) sets the HLG reference display peak, default 1000 cd/m², range 400–10000; PQ retains its absolute transfer regardless of this peak. These are display assumptions, not measurements inferred from mDCV/cLLI. The corresponding environment names are `SIXEL_LOADER_BUILTIN_HDR_SOURCE`, `SIXEL_LOADER_BUILTIN_HDR_REFERENCE_WHITE`, and `SIXEL_LOADER_BUILTIN_HDR_PEAK_LUMINANCE`, with `LIBPNG` alternatives. Each falls back to its `SIXEL_LOADER_HDR_*` common name. Explicit loader suboptions take priority.
+
+The shared `hdr_tonemap` (`:H`) default is `auto`: PQ/HLG PNG uses luminance-based Reinhard compression, while Radiance retains its relative linear values. Explicit `none` retains extended RGB; `reinhard` applies the existing per-channel nonnegative compression. `hdr_exposure` (`:X`, default 0 EV) precedes compression. HDR PNG rejects an exposure scale that overflows or underflows to zero. Alpha is coverage, never a transfer-encoded color; tone mapping follows file or explicit background composition and applies once to each emitted APNG frame. This produces SDR working RGB for normal SIXEL output, not an HDR terminal signal. See the [numerical rendering contract](../builtin-cms.md#hdr-display-rendering) and [PNG metadata precedence](../png-color-metadata.md#cicp-source-definitions).
+
+For example, `img2sixel -Lbuiltin:Ebuiltin:Srec2020-pq:I203:Hauto! image.png` overrides source metadata with BT.2020 PQ while retaining the default reference white and automatic SDR rendering.
+
 ## Loader connections and wide-gamut boundaries
 
 CMS connection, preservation of extended RGB, and tested Display P3 output are separate properties. A float frame created after conversion to bounded sRGB bytes cannot recover the discarded colors. Conversely, an eight-bit source can preserve colors outside sRGB when its original profiled samples enter a float transform before destination packing. The [selected output integration](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path) currently tests libpng and libtiff inputs; accepting another loader's RGB frame does not establish the same end-to-end guarantee.
@@ -36,7 +46,7 @@ These tables describe compiled-in adapters, not a guarantee that every build inc
 
 | Loader and input path | Existing source interpretation | Precision boundary and coverage entry point |
 | --- | --- | --- |
-| [libpng static nonindexed PNG](../libpng.md#color-management-and-precision) | **Shared CMS:** supported cICP, ICC and selected gAMA/cHRM use original Gray/RGB samples, with alpha outside the transform. | Original 8/16-bit samples enter linear float conversion; eligible unmanaged byte paths remain available. The [supported SDR cICP tuples](../png-color-metadata.md#cicp-source-definitions) take priority; HDR cICP and tone mapping remain unsupported. The format page owns metadata precedence and fallback. |
+| [libpng static nonindexed PNG](../libpng.md#color-management-and-precision) | **Shared CMS:** supported cICP, ICC and selected gAMA/cHRM use original Gray/RGB samples, with alpha outside the transform. | Original 8/16-bit samples enter linear float conversion; eligible unmanaged byte paths remain available. The [supported cICP tuples](../png-color-metadata.md#cicp-source-definitions) take priority; PQ/HLG use the shared HDR decoder and render after composition. The format page owns metadata precedence and fallback. |
 | [libpng static indexed PNG](../libpng.md#indexed-palette-precision) | Supported cICP, ICC and selected gAMA/cHRM are applied to the original palette entries before index expansion. | Converted entries remain linear float and are expanded without a byte boundary. Packed and Adam7 indices, CMS targets, engine-specific values and byte-path controls have independent tests. Unapplied metadata retains the original palette; explicit byte export remains bounded. |
 | [libpng APNG](../libpng.md#processing-boundaries) | **Shared CMS:** animation rectangles use the static source-interpretation helper and shared file metadata. | Linear float RGB/alpha canvas before frame delivery. This connection does not establish end-to-end P3 output for every animation/encoder combination. |
 | [libtiff](../libtiff.md) | Shared CMS consumes original RGB/Gray and supported integer Lab/CMYK samples; native XYZ and unmanaged Lab retain their format-specific interpretation. | The [format/CMS support table](../libtiff.md#format-and-color-management-support) separates direct float paths, exact byte fallbacks and remaining photometric/layout limitations. |
@@ -320,7 +330,7 @@ The lcms2 wrapper tries creating a transform with each allowed intent using norm
 
 | Loader path | Consequence for CMS users |
 | --- | --- |
-| [Builtin PNG/APNG](../builtin/png/README.md) and [libpng](../libpng.md) | Follow the [common PNG source-choice policy](../png-color-metadata.md), including the three-chunk exception. Profile acceptance and rejected-profile fallback remain path-specific; libpng never revives ICC bytes rejected by its decoder. Supported SDR cICP tuples select shared named definitions before that exception. Selecting lcms2 does not enable the unsupported cICP/HDR tuples. |
+| [Builtin PNG/APNG](../builtin/png/README.md) and [libpng](../libpng.md) | Follow the [common PNG source-choice policy](../png-color-metadata.md), including the three-chunk exception. Profile acceptance and rejected-profile fallback remain path-specific; libpng never revives ICC bytes rejected by its decoder. Supported cICP tuples select shared named definitions before that exception. HDR transfer decoding is shared across enabled CMS engines; unsupported tuples retain the documented fallback. |
 | [Builtin JPEG](../builtin/jpeg.md) | Gray and CMYK/YCCK use preserved source components; RGB uses decoded RGB. Profile-domain matching and failure behavior are defined by the [JPEG source-domain contract](../builtin/jpeg.md#component-and-color-interpretation). |
 | [Builtin PSD/PSB](../builtin/psd.md) | Applicable RGB, CMYK, and Lab profiles are applied to matching source domains; failed or inapplicable profiles leave format-specific fallback conversion. |
 
@@ -330,11 +340,9 @@ Metadata presence, profile parsing, source-domain compatibility, and actual tran
 
 For a supported matrix/TRC RGB profile, builtin can perform meaningful profile-aware conversion, including sources whose primaries differ from sRGB. Little CMS is not automatically visibly better for every such image. For less common profiles and intent-dependent conversions, its broader implementation is a reason to prefer it, while still validating the specific loader and profile combination.
 
-Builtin samples parametric and segmented curves into 4096-entry, 16-bit tables and interpolates table values. Its CLUT evaluator interpolates the surrounding grid corners; its conversion stages also clamp values. Little CMS can use a different evaluation and optimization path. Differences can therefore appear in dark gradients, saturated patches, LUT transitions, and wide-gamut colors even when both engines successfully apply a profile. Equality of ICC tag support is not bitwise equivalence or proof of equal colorimetric accuracy.
+Builtin preserves analytic parametric and mpet segmented curves in float-capable paths; legacy sampled curves and integer LUT encodings retain their own precision boundaries. CLUT evaluation interpolates surrounding grid corners. The [builtin numerical contract](../builtin-cms.md#pixel-execution-and-numerical-behavior) distinguishes bounded device stages from extended float output. Little CMS can use a different evaluation and optimization path. Differences can therefore appear in dark gradients, saturated patches, LUT transitions, and wide-gamut colors even when both engines successfully apply a profile. Equality of ICC tag support is not bitwise equivalence or proof of equal colorimetric accuracy.
 
 The largest error may instead be a skipped profile: decoding Display P3 or another source RGB space as ordinary sRGB can change color interpretation before quantization starts. More palette colors, float precision, or Oklab dithering cannot correct that interpretation error. Conversely, a valid conversion still ends at the output gamut and SIXEL palette quantization; SIXEL carries no ICC profile for the terminal to recover the original colors.
-
-For float-capable loader paths, `prefer_8bit=0` preserves the selected typed CMS target; `prefer_8bit=1` requests an 8-bit gamma RGB boundary. Float storage reduces additional rounding but cannot recover source precision, clipped colors, or the builtin curve tables' sampling precision. Keep this setting and the actual output frame format fixed when attributing differences to an engine.
 
 ## Speed and memory: workload-dependent tradeoffs
 
@@ -831,12 +839,18 @@ The [ICC diagnostic suite](../../../tests/color/icc) also probes invalid paths. 
 
 The unsupported-feature list above is an implementation audit, not a guarantee that every unsupported profile is rejected with a particular diagnostic. Cross-engine colorimetric accuracy, performance rankings, platform-specific ColorSync behavior, and final terminal appearance are not established by this coverage. Those require the controlled comparisons described above.
 
-## Implementation references
+### HDR option routing
 
-- [`cms.c`](../../../src/cms.c): availability resolution, backend profile opening, intent-to-slot mapping, transform creation, precision interfaces, and fixed sRGB/XYZ adaptation matrices.
-- [`icc-parse.c`](../../../src/icc-parse.c) and [`icc-parse.h`](../../../src/icc-parse.h): accepted source signatures, curve/LUT payloads, slot inventory, and sampled curve representation.
-- [`icc-apply.c`](../../../src/icc-apply.c): interpolation, clamping, forward/reverse profile evaluation, and matrix/TRC fallback.
-- [`loader-common.c`](../../../src/loader-common.c): shared target, intent, and preferred byte-output settings.
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| CH-01 | builtin hdr source reaches independent SDR samples through short and environment options. | [tests/cli/loader-options/0123_loader_builtin_hdr_source_image_regression.t](../../../tests/cli/loader-options/0123_loader_builtin_hdr_source_image_regression.t) |
+| CH-02 | builtin hdr reference white reaches independent SDR samples through short and environment options. | [tests/cli/loader-options/0124_loader_builtin_hdr_reference_white_image_regression.t](../../../tests/cli/loader-options/0124_loader_builtin_hdr_reference_white_image_regression.t) |
+| CH-03 | builtin hdr peak luminance reaches independent SDR samples through short and environment options. | [tests/cli/loader-options/0125_loader_builtin_hdr_peak_luminance_image_regression.t](../../../tests/cli/loader-options/0125_loader_builtin_hdr_peak_luminance_image_regression.t) |
+| CH-04 | libpng hdr source reaches independent SDR samples through short and environment options. | [tests/cli/loader-options/0126_loader_libpng_hdr_source_image_regression.t](../../../tests/cli/loader-options/0126_loader_libpng_hdr_source_image_regression.t) |
+| CH-05 | libpng hdr reference white reaches independent SDR samples through short and environment options. | [tests/cli/loader-options/0127_loader_libpng_hdr_reference_white_image_regression.t](../../../tests/cli/loader-options/0127_loader_libpng_hdr_reference_white_image_regression.t) |
+| CH-06 | libpng hdr peak luminance reaches independent SDR samples through short and environment options. | [tests/cli/loader-options/0128_loader_libpng_hdr_peak_luminance_image_regression.t](../../../tests/cli/loader-options/0128_loader_libpng_hdr_peak_luminance_image_regression.t) |
+
+## Implementation references
 
 ### ColorSync gamma compatibility coverage
 

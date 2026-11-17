@@ -3,6 +3,7 @@
  * expected samples. ICC export builds only a conflicting lower-priority
  * declaration, never the P3 reference values. */
 #include <math.h>
+#include "tests/_support/loader/png_hdr_expected.h"
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/cms.h"
 #include "src/loader-common.h"
@@ -228,20 +229,22 @@ png_cicp_test(int specimen, int native)
         return 77;
     }
     depth = specimen == 2 || specimen == 4 || specimen == 7 ||
-        specimen == 8 || specimen == 30 ? 16 : 8;
+        specimen == 8 || specimen == 30 || specimen == 34 ||
+        specimen == 35 ? 16 : 8;
     indexed = specimen == 5 || specimen == 15 || specimen == 23 ||
-        specimen == 32 || specimen == 33;
+        specimen == 32 || specimen == 33 || specimen == 36;
     gray = specimen == 6 || specimen == 7 || specimen == 8;
     has_alpha = specimen == 3 || specimen == 4 || specimen == 8 ||
         specimen == 9 || specimen == 10 || specimen == 30 ||
-        specimen == 32 || specimen == 33;
+        specimen == 32 || specimen == 33 || specimen == 34 || specimen == 37;
     adam7 = specimen == 31;
-    apng = specimen == 29;
+    apng = specimen == 29 || specimen == 37;
     srgb = (specimen >= 13 && specimen <= 15) || specimen == 33;
-    unmanaged = specimen == 25;
+    unmanaged = specimen == 25 || specimen == 41;
     use_icc = (specimen >= 11 && specimen <= 13) || specimen == 16;
     use_lower = specimen == 12 || specimen == 17;
-    byte_expected = srgb || (specimen >= 18 && specimen <= 25);
+    byte_expected = srgb || (specimen >= 18 && specimen <= 25) ||
+        specimen == 41;
     channels = (gray ? 1 : 3) + has_alpha;
     allocator = NULL;
     component = NULL;
@@ -268,14 +271,15 @@ png_cicp_test(int specimen, int native)
     ihdr[12] = (unsigned char)adam7;
     memcpy(png, "\x89PNG\r\n\x1a\n", 8u);
     offset = 8u + cicp_chunk(png + 8, "IHDR", ihdr, sizeof(ihdr));
-    codes[0] = (unsigned char)(srgb ? 1u : 12u);
-    codes[1] = (unsigned char)(specimen == 16 ? 16u : 13u);
+    codes[0] = (unsigned char)(specimen >= 34 ? 9u : srgb ? 1u : 12u);
+    codes[1] = (unsigned char)(specimen == 35 || specimen == 37 ||
+        specimen == 40 ? 18u : specimen == 16 || specimen >= 34 ? 16u : 13u);
     codes[2] = (unsigned char)(specimen == 19 ? 1u : 0u);
     codes[3] = (unsigned char)(specimen == 18 ? 0u : 1u);
     if (specimen == 17) {
         codes[0] = 255u;
     }
-    if (specimen != 23 && specimen != 24) {
+    if (specimen != 23 && specimen != 24 && specimen != 39) {
         offset += cicp_chunk(png + offset, "cICP", codes,
                              specimen == 21 ? 3u : 4u);
         if (specimen == 20) {
@@ -343,6 +347,7 @@ png_cicp_test(int specimen, int native)
         cicp_be32(animation + 8, 1u);
         animation[21] = 1u;
         animation[23] = 10u;
+        animation[25] = (unsigned char)(specimen == 37);
         offset += cicp_chunk(png + offset, "fcTL", animation, 26u);
     }
     raw_size = 0u;
@@ -420,7 +425,8 @@ png_cicp_test(int specimen, int native)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    if (specimen == 10 || specimen == 30) {
+    if (specimen == 10 || specimen == 30 ||
+        specimen == 34 || specimen == 37) {
         bg[0] = 51u;
         bg[1] = 102u;
         bg[2] = 153u;
@@ -454,10 +460,10 @@ png_cicp_test(int specimen, int native)
                 probe.format, probe.colorspace);
         goto cleanup;
     }
-    /* The fallback specimen uses serialized s15Fixed16 colorants rather
-     * than analytic primaries, so it has the ICC quantization budget. */
-    tolerance = engine == SIXEL_CMS_ENGINE_BUILTIN && specimen != 16
-        ? 2e-6 : 2e-4;
+    tolerance = engine == SIXEL_CMS_ENGINE_BUILTIN ? 2e-6 : 2e-4;
+    if (specimen == 38) {
+        tolerance = 8e-6;
+    }
     for (i = 0u; i < 4u; ++i) {
         for (c = 0u; c < 3u; ++c) {
             lin[c] = cicp_decode(input[i][c]);
@@ -468,7 +474,9 @@ png_cicp_test(int specimen, int native)
                 value += matrix[c][k] * lin[k];
             }
             if (specimen == 16) {
-                value = input[i][c];
+                value = png_hdr_expected[0][i][c];
+            } else if (specimen >= 34 && specimen <= 40) {
+                value = png_hdr_expected[specimen - 33][i][c];
             } else if (specimen == 17) {
                 value = input[i][c] * input[i][c];
             } else if (byte_expected && !apng) {
@@ -514,6 +522,7 @@ png_cicp_test(int specimen, int native)
         }
     }
     if (has_alpha && specimen != 9 && specimen != 10 && specimen != 30 &&
+        specimen != 34 && specimen != 37 &&
         (!probe.alpha_zero || (!probe.palette &&
          memcmp(probe.mask, "\0\0\1\0", 4u)))) {
         fprintf(stderr, "cICP zero alpha coverage mismatch\n");

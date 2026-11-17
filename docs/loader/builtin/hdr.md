@@ -58,7 +58,7 @@ After color interpretation, each channel is scaled as follows:
 output[c] = decoded[c] * 2^hdr_exposure / header_EXPOSURE / COLORCORR[c]
 ```
 
-The `header_EXPOSURE` divisor is present only when `hdr_header_exposure=1`. `COLORCORR` compensation is independent of that switch. Overflowing or non-finite controls are ignored in favor of a safe unit scale. With `hdr_tonemap=none`, finite signed values remain available to later float processing; exposure and correction preserve negative coordinates and saturate only at signed float32 range limits. With `hdr_tonemap=reinhard`, negative components are intentionally set to zero before each scaled component becomes `x / (1 + x)`. This explicit tone mapper produces bounded nonnegative values.
+The `header_EXPOSURE` divisor is present only when `hdr_header_exposure=1`. `COLORCORR` compensation is independent of that switch. Overflowing or non-finite controls are ignored in favor of a safe unit scale. The shared `auto` default resolves to `none` for Radiance; PQ/HLG PNG rendering follows the [shared HDR policy](../color-management/README.md#hdr-input-and-sdr-rendering). With `hdr_tonemap=none`, finite signed values remain available to later float processing; exposure and correction preserve negative coordinates and saturate only at signed float32 range limits. With `hdr_tonemap=reinhard`, negative components are intentionally set to zero before each scaled component becomes `x / (1 + x)`. This explicit tone mapper produces bounded nonnegative values.
 
 A gamma float target applies the analytic sRGB transfer function after the linear exposure and tone-map operations. It retains finite values above one; selecting gamma coordinates does not itself apply a tone map or an eight-bit storage clamp.
 

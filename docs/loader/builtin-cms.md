@@ -27,8 +27,8 @@ The authoritative definitions are in [`icc-parse.h`](../../src/icc-parse.h), wit
 | RGB matrix/TRC | Three XYZ columns and three channel curves. | Used when no accepted forward slot supplies the RGB path. It does not imply support for every auxiliary adaptation or calibration tag. |
 | Gray | Tone curve and D50 white-point representation, plus supported LUT paths. | Gray has its own parser and evaluator branches; RGB support does not establish gray parity automatically. |
 | `curv` | Identity, scalar gamma, or a copied 16-bit sampled table. | Runtime interpolation and endpoint handling define the effective behavior. |
-| `para` | Function types 0–4 sampled into a 4096-entry 16-bit table. | Evaluation is approximated by the sampled representation, not retained as a general analytic program. |
-| Segmented curves | Selected `segm` parsing and sampled representation. | Do not infer support for an arbitrary mpet curve-set element or every segmented-curve encoding from this parser. |
+| `para` | Function types 0–4 retain coefficients alongside a legacy 4096-entry table. | Float device evaluation uses retained analytic parameters; legacy table paths retain their sampled precision. |
+| Segmented curves | Standard mpet `cvst` retains supported formula and sampled segments for float evaluation; compatibility `segm` uses its legacy sampled representation. | Element grammar, ordering, domains and resource limits remain explicit parser constraints. |
 | `mft1` / `mft2` | Matrix, input tables, CLUT, and output tables. Reverse LUTs apply the matrix to PCS XYZ before the input tables. Byte table values are expanded into 16-bit storage. | The matrix stage is limited to reverse XYZ paths, including the compatibility route for legacy B2D payloads. |
 | `mAB` / `mBA` | Optional A/M/B curves, CLUT, and a three-channel matrix with offsets. | A fixed pipeline representation, not a general graph of processing elements. Channel counts and stage compatibility constrain execution. |
 | A2B / B2A | Three slots, numbered 0–2, with separate forward and reverse storage. | A forward table does not automatically provide its inverse. |
@@ -136,6 +136,12 @@ The [ignored-feature trace](color-management/README.md#diagnosing-ignored-icc-fe
 Treat additions as changes to a specification interpreter. For each new feature, define its exact tag/payload grammar, allowed numeric domains, PCS encoding, evaluation order, ownership, failure behavior, and interactions with existing paths before adding a parser branch. Preserve a distinction between unsupported data, malformed data, resource failure, and a valid alternate rendering path wherever the API can express it.
 
 iccMAX and its broader element repertoire remain outside the supported subset.
+
+## HDR display rendering
+
+The loader HDR helper operates on extended linear sRGB after alpha composition. With `hdr_tonemap=auto`, it multiplies RGB by `2^EV / (1 + max(Y, 0) * 2^EV)`, where Y uses the D65 sRGB luminance coefficients. A common factor preserves chromatic ratios, including negative components, for later gamut mapping. Explicit `reinhard` instead maps each nonnegative exposed component to `x/(1+x)`; `none` changes exposure only. Reference-white normalization happens during PQ/HLG decoding, before composition. An explicit SDR background therefore participates in the final tone map.
+
+The helper consumes an owned unpublished static image or an emitted animation copy. It never modifies the persistent HDR canvas. A failed render discards that image rather than publishing partially rendered pixels. This is a simple deterministic SDR rendering policy; it does not implement content-adaptive tone mapping, HDR terminal signaling, or mDCV/cLLI interpretation. Loader settings belong to the [user guide](color-management/README.md#hdr-input-and-sdr-rendering), and [PNG integration tests](png-color-metadata.md#hdr-integration-contracts) verify the composition and output boundary.
 
 ## Test coverage
 

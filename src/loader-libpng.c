@@ -602,6 +602,10 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     reason = !enable_cms ? "cms-disabled" : "no-selected-chrm";
     if (enable_cms && cicp_name != NULL) {
         loader_trace_message("PNGCICP1|source=%s|role=%s", cicp_name, role);
+        if (loader_hdr_is_source(cicp_name)) {
+            return loader_hdr_decode("libpng", pixels, count, cicp_name)
+                ? 1 : -SIXEL_RUNTIME_ERROR;
+        }
         if (strcmp(cicp_name, "srgb") != 0) {
             cicp_profile = sixel_cms_create_named_rgb_profile(cicp_name);
             converted = cicp_profile != NULL &&
@@ -791,6 +795,7 @@ typedef struct sixel_png_alpha {
     double background[3];
     int has_background;
     int defer_composition;
+    int hdr;
 } sixel_png_alpha_t;
 
 /* Expand decoded indices only after converting the small palette. Keeping
@@ -995,7 +1000,9 @@ load_png(unsigned char      /* out */ **result,
 #endif
     png_read_info(png_ptr, info_ptr);
     color_chunks = png_source_color_chunks(buffer, size);
-    cicp_name = enable_cms ? sixel_frompng_cicp_name(buffer, size) : NULL;
+    cicp_name = enable_cms ? loader_hdr_source("libpng",
+        sixel_frompng_cicp_name(buffer, size)) : NULL;
+    alpha_state->hdr = loader_hdr_is_source(cicp_name) != 0;
     cicp_identity = cicp_name != NULL && strcmp(cicp_name, "srgb") == 0;
     if (cicp_identity) {
         /* sRGB is an identity interpretation: retain eligible byte/indexed
@@ -1267,6 +1274,11 @@ load_png(unsigned char      /* out */ **result,
                     float_pixels[dst_index] * value +
                     bg_pixel[channel] * (1.0 - value));
             }
+        }
+        if (alpha_state->hdr && !alpha_state->defer_composition &&
+            !loader_hdr_finish(float_pixels, pixel_count)) {
+            status = SIXEL_RUNTIME_ERROR;
+            goto cleanup;
         }
         *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
         *cms_applied = cms_converted;
@@ -1649,6 +1661,11 @@ load_png(unsigned char      /* out */ **result,
             enable_cms ? "no-selected-chrm" : "cms-disabled");
     }
 
+    if (alpha_state->hdr && !alpha_state->defer_composition &&
+        !loader_hdr_finish((float *)*result, (size_t)*psx * (size_t)*psy)) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
     status = SIXEL_OK;
 
 cleanup:
@@ -2466,6 +2483,12 @@ emit_apng_frame(
                 canvas->pixels[pixel_index * 4u + (size_t)channel] * alpha +
                 alpha_state.background[channel] * (1.0 - alpha));
         }
+    }
+
+    /* Render an emitted copy; the persistent canvas must remain HDR. */
+    if (alpha_state.hdr && !loader_hdr_finish(emitted, pixel_count)) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
     }
 
     /* A byte-exact canvas holds only decoded bytes; the inverse transfer

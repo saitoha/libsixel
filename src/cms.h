@@ -218,8 +218,9 @@ sixel_cms_open_profile_from_mem_ex(void const *data, size_t length,
 SIXEL_INTERNAL_API sixel_cms_profile_t *
 sixel_cms_create_srgb_profile(void);
 
-/* Container-independent H.273 mapping. Only full-range sRGB and Display P3
- * with the sRGB transfer are understood; NULL means an unsupported tuple. */
+/* Container-independent H.273 mapping for supported full-range RGB.
+ * HDR names identify loader transfer policies, not ordinary ICC profiles.
+ * NULL means an unsupported tuple. */
 SIXEL_INTERNAL_API char const *
 sixel_cms_cicp_name(unsigned char const codes[4]);
 
