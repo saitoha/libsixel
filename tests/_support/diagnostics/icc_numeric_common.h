@@ -65,5 +65,8 @@ int icc_numeric_mpet_lab_pcs_neutral_test(int reverse);
 int icc_numeric_colorspace_legacy_gray8_test(void);
 int icc_numeric_mpet_legacy_reverse_precedence_test(void);
 int icc_numeric_owned_mpet_matrix_fallback_test(int reverse);
+int icc_numeric_mpet_float_storage_fallback_test(void);
+int icc_numeric_mpet_simplex_cancellation_test(int amplify);
+size_t icc_numeric_gray_legacy_profile(unsigned char bytes[260]);
 
 #endif

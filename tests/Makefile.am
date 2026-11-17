@@ -2433,6 +2433,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0107_MPET_LEGACY_REVERSE_PRECEDENCE \
     -DBUILD_TEST_0108_OWNED_MPET_MATRIX_FALLBACK_FORWARD \
     -DBUILD_TEST_0109_OWNED_MPET_MATRIX_FALLBACK_REVERSE \
+    -DBUILD_TEST_0110_MPET_FLOAT_STORAGE_FALLBACK \
+    -DBUILD_TEST_0111_MPET_SIMPLEX_CANCELLATION \
+    -DBUILD_TEST_0112_MPET_SIMPLEX_CANCELLATION_CHAIN \
+    -DBUILD_TEST_0113_MPET_GRAY_SCRATCH \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7813,6 +7817,10 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0107_mpet_legacy_reverse_precedence.c \
     color/icc/0108_owned_mpet_matrix_fallback_forward.c \
     color/icc/0109_owned_mpet_matrix_fallback_reverse.c \
+    color/icc/0110_mpet_float_storage_fallback.c \
+    color/icc/0111_mpet_simplex_cancellation.c \
+    color/icc/0112_mpet_simplex_cancellation_chain.c \
+    color/icc/0113_mpet_gray_scratch.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

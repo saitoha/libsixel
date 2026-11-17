@@ -3650,6 +3650,7 @@ sixel_cms_do_transform_builtin_to_srgb(
     size_t i;
     unsigned char *tmp_rgb;
     unsigned char *tmp_gray;
+    unsigned char gray_sample;
     double src_lab[3];
     double src_device_unit[4];
     double xyz_d50[3];
@@ -3767,7 +3768,10 @@ sixel_cms_do_transform_builtin_to_srgb(
 
     if (transform->src_format == SIXEL_CMS_PIXELFORMAT_GRAY_8 &&
         transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8) {
-        tmp_gray = (unsigned char *)malloc(pixel_count);
+        /* Ordered PCS replays the legacy path one pixel at a time.
+         * Bulk conversion still needs a copy for in-place expansion. */
+        tmp_gray = pixel_count == 1u ? &gray_sample
+            : (unsigned char *)malloc(pixel_count);
         if (tmp_gray == NULL) {
             *status = SIXEL_CMS_STATUS_ALLOCATION;
             return 0;
@@ -3779,7 +3783,9 @@ sixel_cms_do_transform_builtin_to_srgb(
                 pixel_count,
                 &src_profile->builtin_profile,
                 transform)) {
-            free(tmp_gray);
+            if (tmp_gray != &gray_sample) {
+                free(tmp_gray);
+            }
             return 0;
         }
         for (i = 0u; i < pixel_count; ++i) {
@@ -3787,7 +3793,9 @@ sixel_cms_do_transform_builtin_to_srgb(
             dst_u8[i * 3u + 1u] = tmp_gray[i];
             dst_u8[i * 3u + 2u] = tmp_gray[i];
         }
-        free(tmp_gray);
+        if (tmp_gray != &gray_sample) {
+            free(tmp_gray);
+        }
         return 1;
     }
 
@@ -3959,7 +3967,8 @@ sixel_cms_do_transform_builtin_to_srgb(
 static sixel_icc_path_t
 sixel_cms_float_source_xyz(double xyz[3], double const source[4],
                             size_t channels,
-                            sixel_cms_transform_t const *transform)
+                            sixel_cms_transform_t const *transform,
+                            int legacy_only)
 {
     sixel_cms_profile_t const *profile;
     sixel_icc_profile_t const *icc;
@@ -3980,7 +3989,8 @@ sixel_cms_float_source_xyz(double xyz[3], double const source[4],
     icc = &profile->builtin_profile;
     for (i = 0u; i < transform->builtin_a2b_slot_count; ++i) {
         slot = transform->builtin_a2b_slots[i];
-        path = sixel_icc_device_to_pcs(xyz, source, channels, icc, slot, 0);
+        path = sixel_icc_device_to_pcs(xyz, source, channels, icc, slot,
+                                       legacy_only);
         if (path != SIXEL_ICC_PATH_NONE) {
             return path;
         }
@@ -4063,7 +4073,7 @@ sixel_cms_float_rgb(sixel_cms_transform_t const *transform,
                        transform->src_format, src, pixel, 0)) {
             return 0;
         }
-        if (!sixel_cms_float_source_xyz(xyz, source, channels, transform) ||
+        if (!sixel_cms_float_source_xyz(xyz, source, channels, transform, 0) ||
             !sixel_cdef_from_xyz(transform->dst_profile->rgb_definition,
                                    xyz, rgb, 1)) {
             return 0;
@@ -4189,7 +4199,7 @@ static int
 sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
                             double const source[4], size_t channels,
                             sixel_cms_transform_t const *transform,
-                            double const *inverse_rgb)
+                            double const *inverse_rgb, int legacy_source)
 {
     sixel_icc_profile_t const *src_icc;
     sixel_icc_profile_t const *dst_icc;
@@ -4206,13 +4216,14 @@ sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
     src_icc = &transform->src_profile->builtin_profile;
     dst_icc = &transform->dst_profile->builtin_profile;
     forward = SIXEL_ICC_PATH_NONE;
-    if (transform->builtin_absolute) {
+    if (transform->builtin_absolute && !legacy_source) {
         forward = sixel_icc_device_to_pcs(xyz, source, channels, src_icc,
                                           SIXEL_ICC_MPET_ABSOLUTE_SLOT, 0);
     }
     direct = forward == SIXEL_ICC_PATH_MPET;
     if (!direct) {
-        forward = sixel_cms_float_source_xyz(xyz, source, channels, transform);
+        forward = sixel_cms_float_source_xyz(xyz, source, channels, transform,
+                                              legacy_source);
     }
     if (forward == SIXEL_ICC_PATH_NONE) {
         return 0;
@@ -4393,8 +4404,22 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
         for (i = 0u; i < n; ++i) {
             candidate = &candidates[i];
             if (!sixel_cms_eval_builtin_pcs(device, &uses_mpet, source,
-                                           channels, candidate, inverse_rgb)) {
+                    channels, candidate, inverse_rgb, 0)) {
                 continue;
+            }
+            if (uses_mpet) {
+                if (sixel_cms_builtin_store_dst_unit(&sample,
+                        transform->dst_format, 0u, device, alpha, 1)) {
+                    break;
+                }
+                /* A reverse MPE already bounds its device output to float.
+                 * An analytic destination can exceed that range even when
+                 * D2B accepts the sample. Retry the same intent with the
+                 * legacy source before advancing to another intent. */
+                if (!sixel_cms_eval_builtin_pcs(device, &uses_mpet, source,
+                        channels, candidate, inverse_rgb, 1)) {
+                    continue;
+                }
             }
             /* The presence of other mpet tags cannot change the PCS
              * encoding or rounding of an existing legacy path. */

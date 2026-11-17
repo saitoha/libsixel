@@ -651,6 +651,67 @@ cms_rgba_legacy_allocation_test(int inject)
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+int
+cms_gray_legacy_allocation_test(void)
+{
+    enum { pixels = 16, stride = 3 };
+    unsigned char bytes[260];
+    unsigned char input[pixels];
+    unsigned char output[pixels * stride];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_transform_t *transform;
+    sixel_cms_engine_t previous;
+    sixel_cms_status_t status;
+    size_t length;
+    size_t i;
+    int applied;
+    int ok;
+
+    length = icc_numeric_gray_legacy_profile(bytes);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, length);
+    target = sixel_cms_create_srgb_profile();
+    transform = NULL;
+    if (source != NULL && target != NULL &&
+        sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT",
+                            "relative,saturation!") == 0) {
+        transform = sixel_cms_create_transform(source,
+            SIXEL_CMS_PIXELFORMAT_GRAY_8, target, SIXEL_CMS_PIXELFORMAT_RGB_8,
+            SIXEL_CMS_TRANSFORM_DEFAULT);
+    }
+    ok = transform != NULL;
+    if (ok) {
+        memset(input, 64, sizeof(input));
+        memset(output, 0xa5, sizeof(output));
+        clf_measured_allocations = 0u;
+        clf_measured_frees = 0u;
+        clf_measure_allocations = 1;
+        applied = sixel_cms_do_transform_ex(transform, input, output,
+                                               pixels, &status);
+        clf_measure_allocations = 0;
+        ok = applied && status == SIXEL_CMS_STATUS_OK &&
+            clf_measured_allocations == 0u && clf_measured_frees == 0u;
+        /* An identity kTRC maps 64/255 to linear gray before sRGB
+         * encoding, which yields 137 in every channel. */
+        for (i = 0u; ok && i < sizeof(output); ++i) {
+            ok = output[i] == 137u;
+        }
+        if (!ok) {
+            fprintf(stderr, "Gray8 applied=%d status=%d alloc=%zu free=%zu\n",
+                applied, (int)status, clf_measured_allocations,
+                clf_measured_frees);
+        }
+    }
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 #if HAVE_LIBTIFF
 #define tiff_logluv_xyz_to_linear clf_logluv_xyz_to_linear
 #define tiff_convert_samples_to_linear llbf_byte

@@ -320,6 +320,9 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
     double low;
     double high;
     double sum;
+    double residual;
+    double term;
+    double next;
 
     for (i = 1u; i < axes; ++i) {
         step = steps[i];
@@ -354,13 +357,20 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
          * whose values may lie outside the unit interval. */
         low = high = vertices[0][channel];
         sum = 0.0;
+        residual = 0.0;
         for (i = 0u; i < count; ++i) {
             sample = vertices[i][channel];
             low = sample < low ? sample : low;
             high = sample > high ? sample : high;
-            sum += weights[i] * sample;
+            term = weights[i] * sample;
+            next = sum + term;
+            /* Keep the rounding residual when opposite-signed vertices
+             * cancel. The larger addend determines the rounded sum. */
+            residual += fabs(sum) >= fabs(term) ? (sum - next) + term
+                                                : (term - next) + sum;
+            sum = next;
         }
-        out[channel] = fmin(high, fmax(low, sum));
+        out[channel] = fmin(high, fmax(low, sum + residual));
     }
 }
 

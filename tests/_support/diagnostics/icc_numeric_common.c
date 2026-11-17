@@ -3346,3 +3346,146 @@ icc_numeric_owned_mpet_matrix_fallback_test(int reverse)
     sixel_cdef_free(reference);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+int
+icc_numeric_mpet_float_storage_fallback_test(void)
+{
+    static float const input[] = {0.25f, 0.375f, 0.5f};
+    /* Identity A2B1 encodes XYZ as input * (65535/32768). Applying the
+     * inverse Bradford-adapted linear sRGB matrix gives these values. */
+    static double const expected[] = {-0.13650551, 0.98114175, 1.26997089};
+    unsigned char bytes[516];
+    unsigned char *matrix;
+    float output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t length;
+    int ok;
+
+    length = iccn_mpet_transform_profile(bytes, 0, '1', 0, 65536u, 1);
+    matrix = bytes + 168u + 24u;
+    memset(matrix + 12u, 0, 48u);
+    /* This XYZ fits in the MPE, but its linear sRGB red exceeds FLT_MAX. */
+    iccn_mpe_write_float(matrix + 48u, FLT_MAX);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, length);
+    target = sixel_cms_create_linear_srgb_profile();
+    ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        target, SIXEL_CMS_PIXELFORMAT_RGB_F32, "relative!", input, output,
+        1u) && iccn_float_result(output, expected, 3u);
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_simplex_cancellation_test(int amplify)
+{
+    static double const input[] = {0.25, 0.5, 0.75};
+    static double const coordinates[] = {0.0, 0.0, 0.25, 0.5, 0.75};
+    double expand[20] = {
+        0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0,
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0,
+        0.0, 0.0, 0.0, 0.0, 0.0
+    };
+    double scale[] = {0x1p60, 0.0, 0.0, 0.0, 0.0, 0.0};
+    double values[32] = {1.0, 0x1p-60, 0.0, -1.0};
+    sixel_icc_profile_t profile;
+    sixel_icc_mpe_t elements[3];
+    sixel_icc_mpet_t *mpet;
+    double output[3];
+    int ok;
+
+    /* The simplex visits vertices 0, 1, 3, and 7, each at weight 1/4.
+     * Cancellation of the unit samples leaves exactly 2^-62. */
+    memset(&profile, 0, sizeof(profile));
+    memset(elements, 0, sizeof(elements));
+    profile.kind = SIXEL_ICC_PROFILE_KIND_RGB;
+    profile.pcs = SIXEL_ICC_PROFILE_PCS_XYZ;
+    mpet = &profile.d2b_mpet[1];
+    mpet->input_channels = 3u;
+    mpet->output_channels = 3u;
+    mpet->element_count = 3u;
+    mpet->elements = elements;
+
+    elements[0].kind = SIXEL_ICC_MPE_MATRIX;
+    elements[0].input_channels = 3u;
+    elements[0].output_channels = 5u;
+    elements[0].values = expand;
+    elements[1].kind = SIXEL_ICC_MPE_CLUT;
+    elements[1].input_channels = 5u;
+    elements[1].output_channels = 1u;
+    elements[1].payload_element = 1u;
+    memset(elements[1].grid_points, 2, 5u);
+    elements[1].values = values;
+    elements[2].kind = SIXEL_ICC_MPE_MATRIX;
+    elements[2].input_channels = 1u;
+    elements[2].output_channels = 3u;
+    elements[2].payload_element = 2u;
+    elements[2].values = scale;
+
+    if (amplify) {
+        ok = sixel_icc_apply_device_to_physical_xyz(output, input, 3u,
+            &profile, 1u) && output[0] == 0.25 &&
+            output[1] == 0.0 && output[2] == 0.0;
+    } else {
+        ok = sixel_icc_apply_mpe_element(output, 1u, coordinates, 5u,
+            mpet, 1u) && output[0] == 0x1p-62;
+    }
+    if (!ok) {
+        fprintf(stderr, "simplex cancellation with amplification=%d\n",
+                amplify);
+    }
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+size_t
+icc_numeric_gray_legacy_profile(unsigned char bytes[260])
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    unsigned char *tag;
+    size_t i;
+
+    memset(bytes, 0, 260u);
+    iccn_be32(bytes, 260u);
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "mntrGRAYXYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    memcpy(bytes + 132u, "wtpt", 4u);
+    iccn_be32(bytes + 128u, 3u);
+    iccn_be32(bytes + 136u, 168u);
+    iccn_be32(bytes + 140u, 20u);
+    memcpy(bytes + 144u, "kTRC", 4u);
+    iccn_be32(bytes + 148u, 188u);
+    iccn_be32(bytes + 152u, 12u);
+    /* The lower-priority saturation MPE enables ordered PCS, while
+     * relative uses the identity gray TRC and the legacy byte path. */
+    memcpy(bytes + 156u, "D2B2", 4u);
+    iccn_be32(bytes + 160u, 200u);
+    iccn_be32(bytes + 164u, 60u);
+    memcpy(bytes + 168u, "XYZ ", 4u);
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(bytes + 68u + i * 4u, white[i]);
+        iccn_be32(bytes + 176u + i * 4u, white[i]);
+    }
+    memcpy(bytes + 188u, "curv", 4u);
+    tag = bytes + 200u;
+    memcpy(tag, "mpet", 4u);
+    tag[9] = 1u;
+    tag[11] = 3u;
+    iccn_be32(tag + 12u, 1u);
+    iccn_mpet_position(tag, 0u, 24u, 36u);
+    memcpy(tag + 24u, "matf", 4u);
+    tag[33] = 1u;
+    tag[35] = 3u;
+    for (i = 0u; i < 3u; ++i) {
+        iccn_mpe_write_float(tag + 36u + i * 4u, 1.0f);
+    }
+    return 260u;
+}
