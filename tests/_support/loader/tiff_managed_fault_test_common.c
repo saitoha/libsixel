@@ -532,11 +532,12 @@ sixel_cxform_free(sixel_color_xform_t *transform);
 
 
 /* Qualify the publication buffer by its owning function as well as size.
- * A transform descriptor can have the same size as a small RGB image. */
-#define MF_STRING_IMPL(value) #value
-#define MF_STRING(value) MF_STRING_IMPL(value)
+ * A transform descriptor can have the same size as a small RGB image.
+ * Keep stringify macros test-prefixed: the Windows SDK owns MF_STRING. */
+#define SIXEL_TEST_MF_STRING_IMPL(value) #value
+#define SIXEL_TEST_MF_STRING(value) SIXEL_TEST_MF_STRING_IMPL(value)
 #define malloc(n) mf_malloc((n), strcmp(__func__, \
-    MF_STRING(sixel_cms_convert_profile_to_linearrgb)) == 0)
+    SIXEL_TEST_MF_STRING(sixel_cms_convert_profile_to_linearrgb)) == 0)
 #define free mf_free
 #define sixel_icc_curve_device mf_curve
 #define ColorSyncTransformConvert mf_cs
@@ -551,8 +552,8 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
                       sixel_allocator_t *allocator);
 #include "src/cms.c"
 #undef malloc
-#undef MF_STRING
-#undef MF_STRING_IMPL
+#undef SIXEL_TEST_MF_STRING
+#undef SIXEL_TEST_MF_STRING_IMPL
 #undef free
 #undef sixel_icc_curve_device
 #undef ColorSyncTransformConvert
