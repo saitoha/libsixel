@@ -2442,6 +2442,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0116_MPET_BEFORE_LATER_LEGACY \
     -DBUILD_TEST_0117_MPET_SHARED_TAG_BUDGET \
     -DBUILD_TEST_0118_MPET_DISTINCT_TAG_BUDGET \
+    -DBUILD_TEST_0119_MPET_REVERSE_FAILURE_FALLBACK \
+    -DBUILD_TEST_0120_MPET_ABSOLUTE_STORAGE_FALLBACK \
+    -DBUILD_TEST_0121_MPET_MATRIX_SMALL_RESIDUAL \
+    -DBUILD_TEST_0122_MPET_CLUT_SMALL_RESIDUAL \
+    -DBUILD_TEST_0123_MPET_ABSOLUTE_FORWARD_SNAP \
+    -DBUILD_TEST_0124_MPET_ABSOLUTE_REVERSE_SNAP \
+    -DBUILD_TEST_0125_MPET_ABSOLUTE_FORWARD_GAMUT \
+    -DBUILD_TEST_0126_MPET_ABSOLUTE_REVERSE_GAMUT \
+    -DBUILD_TEST_0127_MPET_PNG_STORAGE_FALLBACK \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7831,6 +7840,15 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0116_mpet_before_later_legacy.c \
     color/icc/0117_mpet_shared_tag_budget.c \
     color/icc/0118_mpet_distinct_tag_budget.c \
+    color/icc/0119_mpet_reverse_failure_fallback.c \
+    color/icc/0120_mpet_absolute_storage_fallback.c \
+    color/icc/0121_mpet_matrix_small_residual.c \
+    color/icc/0122_mpet_clut_small_residual.c \
+    color/icc/0123_mpet_absolute_forward_snap.c \
+    color/icc/0124_mpet_absolute_reverse_snap.c \
+    color/icc/0125_mpet_absolute_forward_gamut.c \
+    color/icc/0126_mpet_absolute_reverse_gamut.c \
+    color/icc/0127_mpet_png_storage_fallback.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
@@ -13503,6 +13521,7 @@ check-am: apply-shebang-check
 endif
 
 EXTRA_DIST += data/color-numeric/destination-snap.h \
+    data/color-numeric/mpet-storage-png.h \
     data/color-numeric/named-output.h \
     data/color-numeric/generate-named-output.py
 

@@ -604,6 +604,80 @@ jobs:
             ${{ env.FUZZ_BUILTIN_ARTIFACT_DIR }}
             ${{ env.FUZZ_BUILTIN_CORPUS }}
 
+  fuzz_push_cms_builtin:
+    if: >-
+      ${{
+        github.event_name == 'push'
+        || inputs.triage_job_labels != '||'
+      }}
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cms-builtin
+    runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        buildtool: [autotools, meson]
+    env:
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+    steps:
+      - name: Select raw ICC replay scope
+        id: cms_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_target=1
+          if test "${{ github.event_name }}" = "workflow_dispatch"; then
+            label="${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cms-builtin"
+            run_target=0
+            case "${{ inputs.triage_job_labels }}" in
+              *"|$label|"*) run_target=1 ;;
+            esac
+          fi
+          echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v6
+        if: ${{ steps.cms_scope.outputs.run_target == '1' }}
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        if: ${{ steps.cms_scope.outputs.run_target == '1' }}
+        shell: bash
+        run: |
+          bash .github/scripts/install-ubuntu-packages.sh \
+            clang-21 llvm-21 libclang-rt-21-dev libwebp-dev \
+            meson ninja-build pkg-config make autoconf automake libtool
+
+      - name: Build raw ICC harness and replay seeds
+        if: ${{ steps.cms_scope.outputs.run_target == '1' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$PWD/.local/bin:$PWD/build-aux:$PWD/bin:$PATH"
+          sh .github/scripts/build-linux-libfuzzer.sh \
+            "${{ matrix.buildtool }}" fuzz-cms-builtin-libfuzzer
+          harness="$PWD/fuzz/fuzz-cms-builtin-libfuzzer"
+          if test "${{ matrix.buildtool }}" = meson; then
+            harness="$PWD/builddir/fuzz/fuzz-cms-builtin-libfuzzer"
+          fi
+          mkdir -p .tmp/fuzz-cms-builtin
+          # Read the checked-in corpus directly. Zero mutation runs still
+          # initialize and execute every seed through parser and evaluator.
+          "$harness" -runs=0 -seed=1 -timeout=5 -print_final_stats=1 \
+            -artifact_prefix="$PWD/.tmp/fuzz-cms-builtin/" \
+            "$PWD/fuzz/corpus/cms-builtin" 2>&1 \
+            | tee .tmp/fuzz-cms-builtin/replay.log
+          grep -Eq 'DONE[[:space:]]+cov:' .tmp/fuzz-cms-builtin/replay.log
+
+      - name: Upload raw ICC replay artifacts
+        if: ${{ always() && steps.cms_scope.outputs.run_target == '1' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.buildtool }}-fuzz-cms-builtin
+          path: .tmp/fuzz-cms-builtin
+          if-no-files-found: ignore
+          retention-days: 7
+
   fuzz_push_encode_helpers:
     if: >-
       ${{

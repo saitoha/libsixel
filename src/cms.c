@@ -4199,8 +4199,9 @@ static int
 sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
                             double const source[4], size_t channels,
                             sixel_cms_transform_t const *transform,
-                            double const *inverse_rgb, int legacy_source)
+                            double const *inverse_rgb, size_t *source_index)
 {
+    sixel_cms_transform_t analytic;
     sixel_icc_profile_t const *src_icc;
     sixel_icc_profile_t const *dst_icc;
     sixel_icc_path_t forward;
@@ -4211,51 +4212,71 @@ sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
     double absolute[3];
     size_t dst_channels;
     size_t i;
+    size_t index;
+    size_t choices;
     int direct;
 
     src_icc = &transform->src_profile->builtin_profile;
     dst_icc = &transform->dst_profile->builtin_profile;
-    forward = SIXEL_ICC_PATH_NONE;
-    if (transform->builtin_absolute && !legacy_source) {
-        forward = sixel_icc_device_to_pcs(xyz, source, channels, src_icc,
-                                          SIXEL_ICC_MPET_ABSOLUTE_SLOT, 0);
-    }
-    direct = forward == SIXEL_ICC_PATH_MPET;
-    if (!direct) {
-        forward = sixel_cms_float_source_xyz(xyz, source, channels, transform,
-                                              legacy_source);
-    }
-    if (forward == SIXEL_ICC_PATH_NONE) {
-        return 0;
-    }
-    if (transform->builtin_absolute) {
-        /* Dedicated tags use absolute PCS. Adjust the endpoints that
-         * derive absolute from relative PCS without applying adaptation. */
-        white = direct ? sixel_cms_pcs_white : sixel_cms_media_white(src_icc);
-        if (sixel_cms_has_mpet(dst_icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT, 1) &&
-            sixel_cms_builtin_kind_channel_count(dst_icc->kind,
-                                                 &dst_channels)) {
+    choices = 2u * transform->builtin_a2b_slot_count +
+        (size_t)transform->builtin_absolute + 1u;
+    *uses_mpet = 0;
+    /* Try the next source representation when its downstream endpoint
+     * cannot evaluate or store the sample. Absolute PCS precedes the
+     * relative slots, whose MPE and legacy paths retain their own order. */
+    while (*source_index < choices) {
+        index = (*source_index)++;
+        forward = SIXEL_ICC_PATH_NONE;
+        direct = transform->builtin_absolute && index == 0u;
+        if (direct) {
+            forward = sixel_icc_device_to_pcs(xyz, source, channels, src_icc,
+                                              SIXEL_ICC_MPET_ABSOLUTE_SLOT, 0);
+        } else if (index + 1u == choices) {
+            analytic = *transform;
+            analytic.builtin_a2b_slot_count = 0u;
+            forward = sixel_cms_float_source_xyz(xyz, source, channels,
+                                                  &analytic, 1);
+        } else {
+            index -= (size_t)transform->builtin_absolute;
+            forward = sixel_icc_device_to_pcs(xyz, source, channels, src_icc,
+                transform->builtin_a2b_slots[index / 2u], (int)(index % 2u));
+        }
+        if (forward == SIXEL_ICC_PATH_NONE) {
+            continue;
+        }
+        if (transform->builtin_absolute) {
+            /* Dedicated tags use absolute PCS. Adjust the endpoints that
+             * derive absolute from relative PCS without applying adaptation. */
+            white = direct ? sixel_cms_pcs_white
+                : sixel_cms_media_white(src_icc);
+            if (sixel_cms_has_mpet(dst_icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT, 1) &&
+                sixel_cms_builtin_kind_channel_count(dst_icc->kind,
+                                                     &dst_channels)) {
+                for (i = 0u; i < 3u; ++i) {
+                    absolute[i] = xyz[i] * (white[i] / sixel_cms_pcs_white[i]);
+                }
+                if (sixel_icc_pcs_to_device(device, dst_channels, absolute,
+                        dst_icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT, 0)) {
+                    *uses_mpet = 1;
+                    return 1;
+                }
+            }
+            dst_white = sixel_cms_media_white(dst_icc);
             for (i = 0u; i < 3u; ++i) {
-                absolute[i] = xyz[i] * (white[i] / sixel_cms_pcs_white[i]);
-            }
-            if (sixel_icc_pcs_to_device(device, dst_channels, absolute,
-                    dst_icc, SIXEL_ICC_MPET_ABSOLUTE_SLOT, 0)) {
-                *uses_mpet = 1;
-                return 1;
+                xyz[i] *= white[i] / dst_white[i];
+                if (!isfinite(xyz[i])) {
+                    return 0;
+                }
             }
         }
-        dst_white = sixel_cms_media_white(dst_icc);
-        for (i = 0u; i < 3u; ++i) {
-            xyz[i] *= white[i] / dst_white[i];
-            if (!isfinite(xyz[i])) {
-                return 0;
-            }
+        reverse = sixel_cms_pcs_to_device(device, xyz, transform, inverse_rgb);
+        *uses_mpet = forward == SIXEL_ICC_PATH_MPET ||
+            reverse == SIXEL_ICC_PATH_MPET;
+        if (reverse != SIXEL_ICC_PATH_NONE) {
+            return 1;
         }
     }
-    reverse = sixel_cms_pcs_to_device(device, xyz, transform, inverse_rgb);
-    *uses_mpet = forward == SIXEL_ICC_PATH_MPET ||
-        reverse == SIXEL_ICC_PATH_MPET;
-    return reverse != SIXEL_ICC_PATH_NONE;
+    return 0;
 }
 
 static size_t
@@ -4355,6 +4376,7 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
     size_t n;
     size_t i;
     size_t legacy_index;
+    size_t source_index;
     void const *input;
     union {
         float f32[4];
@@ -4435,24 +4457,15 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
         }
         for (i = 0u; i < n; ++i) {
             candidate = &candidates[i];
-            evaluated = sixel_cms_eval_builtin_pcs(device, &uses_mpet, source,
-                channels, candidate, inverse_rgb, 0);
-            if (evaluated && uses_mpet) {
-                if (sixel_cms_builtin_store_dst_unit(&sample,
-                        transform->dst_format, 0u, device, alpha, 1)) {
-                    break;
-                }
-                /* A reverse MPE already bounds its device output to float.
-                 * An analytic destination can exceed that range even when
-                 * D2B accepts the sample. Retry the same intent with the
-                 * legacy source before advancing to another intent. */
+            source_index = 0u;
+            do {
                 evaluated = sixel_cms_eval_builtin_pcs(device, &uses_mpet,
-                    source, channels, candidate, inverse_rgb, 1);
-                if (evaluated && uses_mpet &&
-                    sixel_cms_builtin_store_dst_unit(&sample,
-                        transform->dst_format, 0u, device, alpha, 1)) {
-                    break;
-                }
+                    source, channels, candidate, inverse_rgb, &source_index);
+            } while (evaluated && uses_mpet &&
+                !sixel_cms_builtin_store_dst_unit(&sample,
+                    transform->dst_format, 0u, device, alpha, 1));
+            if (evaluated && uses_mpet) {
+                break;
             }
             if (i == legacy_index) {
                 memcpy(&sample, &legacy_sample, dst_stride);
@@ -6722,7 +6735,9 @@ sixel_cdef_separable(sixel_color_def_t const *definition)
     if (!definition->matrix_valid) {
         return 0;
     }
-    for (slot = 0u; slot < SIXEL_ICC_MPET_SLOT_COUNT; ++slot) {
+    /* Palette snap and gamut mapping operate on the relative device
+     * encoding. Dedicated absolute tags do not replace that encoding. */
+    for (slot = 0u; slot < SIXEL_ICC_A2B_SLOT_COUNT; ++slot) {
         if (sixel_cms_has_slot(&definition->icc, slot, 0) ||
             sixel_cms_has_slot(&definition->icc, slot, 1)) {
             return 0;

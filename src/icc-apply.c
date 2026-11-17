@@ -244,6 +244,18 @@ sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,
     return 1;
 }
 
+/* Retain rounding error when terms of very different sizes cancel. */
+static void
+sixel_icc_add_compensated(double *sum, double *residual, double term)
+{
+    double next;
+
+    next = *sum + term;
+    *residual += fabs(*sum) >= fabs(term) ? (*sum - next) + term
+                                        : (term - next) + *sum;
+    *sum = next;
+}
+
 static int
 sixel_icc_apply_mpe_matrix(double *out, double const *in,
                            sixel_icc_mpe_t const *mpe)
@@ -251,6 +263,7 @@ sixel_icc_apply_mpe_matrix(double *out, double const *in,
     double const *coefficient;
     double const *offset;
     double y;
+    double residual;
     size_t i;
     size_t j;
 
@@ -265,10 +278,12 @@ sixel_icc_apply_mpe_matrix(double *out, double const *in,
     /* The coefficients are row-major, followed by one offset per row. */
     for (j = 0u; j < mpe->output_channels; ++j) {
         y = 0.0;
+        residual = 0.0;
         for (i = 0u; i < mpe->input_channels; ++i) {
-            y += *coefficient++ * in[i];
+            sixel_icc_add_compensated(&y, &residual, *coefficient++ * in[i]);
         }
-        y += offset[j];
+        sixel_icc_add_compensated(&y, &residual, offset[j]);
+        y += residual;
         if (!isfinite(y) || fabs(y) > FLT_MAX) {
             return 0;
         }
@@ -286,6 +301,9 @@ sixel_icc_mpe_clut_lerp(double const *values, size_t const *steps,
     double lo;
     double hi;
     double f;
+    double difference;
+    double residual;
+    double swap;
 
     if (axes == 0u) {
         return *values;
@@ -294,7 +312,18 @@ sixel_icc_mpe_clut_lerp(double const *values, size_t const *steps,
     lo = sixel_icc_mpe_clut_lerp(values, steps, fractions, axes);
     hi = sixel_icc_mpe_clut_lerp(values + steps[axes], steps, fractions, axes);
     f = fractions[axes];
-    return f <= 0.5 ? lo + (hi - lo) * f : hi + (lo - hi) * (1.0 - f);
+    if (f > 0.5) {
+        swap = lo;
+        lo = hi;
+        hi = swap;
+        f = 1.0 - f;
+    }
+    difference = hi - lo;
+    residual = fabs(hi) >= fabs(lo) ? (hi - difference) - lo
+                                  : (-lo - difference) + hi;
+    /* The difference may lose the small endpoint. Keep that error, and
+     * fuse the product and addition before restoring its contribution. */
+    return fma(f, difference, lo) + f * residual;
 }
 
 /* Split the cell into simplices by sorting its fractional coordinates.
@@ -321,8 +350,6 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
     double high;
     double sum;
     double residual;
-    double term;
-    double next;
 
     for (i = 1u; i < axes; ++i) {
         step = steps[i];
@@ -362,13 +389,7 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
             sample = vertices[i][channel];
             low = sample < low ? sample : low;
             high = sample > high ? sample : high;
-            term = weights[i] * sample;
-            next = sum + term;
-            /* Keep the rounding residual when opposite-signed vertices
-             * cancel. The larger addend determines the rounded sum. */
-            residual += fabs(sum) >= fabs(term) ? (sum - next) + term
-                                                : (term - next) + sum;
-            sum = next;
+            sixel_icc_add_compensated(&sum, &residual, weights[i] * sample);
         }
         out[channel] = fmin(high, fmax(low, sum + residual));
     }

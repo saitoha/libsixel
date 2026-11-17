@@ -2222,6 +2222,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/icc/0116_mpet_before_later_legacy.c \
 	color/icc/0117_mpet_shared_tag_budget.c \
 	color/icc/0118_mpet_distinct_tag_budget.c \
+	color/icc/0119_mpet_reverse_failure_fallback.c \
+	color/icc/0120_mpet_absolute_storage_fallback.c \
+	color/icc/0121_mpet_matrix_small_residual.c \
+	color/icc/0122_mpet_clut_small_residual.c \
+	color/icc/0123_mpet_absolute_forward_snap.c \
+	color/icc/0124_mpet_absolute_reverse_snap.c \
+	color/icc/0125_mpet_absolute_forward_gamut.c \
+	color/icc/0126_mpet_absolute_reverse_gamut.c \
+	color/icc/0127_mpet_png_storage_fallback.c \
 	color/icc/0062_mpet_pcs_lab_forward.c \
 	_support/diagnostics/icc_numeric_common.c \
 	_support/diagnostics/icc_numeric_common.h \
@@ -7797,6 +7806,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0116_mpet_before_later_legacy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0117_mpet_shared_tag_budget.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0118_mpet_distinct_tag_budget.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0119_mpet_reverse_failure_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0120_mpet_absolute_storage_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0121_mpet_matrix_small_residual.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0122_mpet_clut_small_residual.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0123_mpet_absolute_forward_snap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0124_mpet_absolute_reverse_snap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0125_mpet_absolute_forward_gamut.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0126_mpet_absolute_reverse_gamut.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0127_mpet_png_storage_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0062_mpet_pcs_lab_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/test_runner-icc_numeric_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0004_extended_srgb_decode.$(OBJEXT) \
@@ -12205,6 +12223,15 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/icc/$(DEPDIR)/test_runner-0116_mpet_before_later_legacy.Po \
 	color/icc/$(DEPDIR)/test_runner-0117_mpet_shared_tag_budget.Po \
 	color/icc/$(DEPDIR)/test_runner-0118_mpet_distinct_tag_budget.Po \
+	color/icc/$(DEPDIR)/test_runner-0119_mpet_reverse_failure_fallback.Po \
+	color/icc/$(DEPDIR)/test_runner-0120_mpet_absolute_storage_fallback.Po \
+	color/icc/$(DEPDIR)/test_runner-0121_mpet_matrix_small_residual.Po \
+	color/icc/$(DEPDIR)/test_runner-0122_mpet_clut_small_residual.Po \
+	color/icc/$(DEPDIR)/test_runner-0123_mpet_absolute_forward_snap.Po \
+	color/icc/$(DEPDIR)/test_runner-0124_mpet_absolute_reverse_snap.Po \
+	color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Po \
+	color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Po \
+	color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po \
 	color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po \
@@ -19757,6 +19784,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0116_MPET_BEFORE_LATER_LEGACY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0117_MPET_SHARED_TAG_BUDGET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0118_MPET_DISTINCT_TAG_BUDGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0119_MPET_REVERSE_FAILURE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0120_MPET_ABSOLUTE_STORAGE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0121_MPET_MATRIX_SMALL_RESIDUAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0122_MPET_CLUT_SMALL_RESIDUAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0123_MPET_ABSOLUTE_FORWARD_SNAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0124_MPET_ABSOLUTE_REVERSE_SNAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0125_MPET_ABSOLUTE_FORWARD_GAMUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0126_MPET_ABSOLUTE_REVERSE_GAMUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0127_MPET_PNG_STORAGE_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -25178,6 +25214,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0116_mpet_before_later_legacy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0117_mpet_shared_tag_budget.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0118_mpet_distinct_tag_budget.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0119_mpet_reverse_failure_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0120_mpet_absolute_storage_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0121_mpet_matrix_small_residual.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0122_mpet_clut_small_residual.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0123_mpet_absolute_forward_snap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0124_mpet_absolute_reverse_snap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0125_mpet_absolute_forward_gamut.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0126_mpet_absolute_reverse_gamut.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0127_mpet_png_storage_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0062_mpet_pcs_lab_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/icc_numeric_common.h \
@@ -28942,6 +28987,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-c-header-modeline.sh \
 	check-test-exports.list $(TEST_DATA_DIRS) \
 	data/color-numeric/destination-snap.h \
+	data/color-numeric/mpet-storage-png.h \
 	data/color-numeric/named-output.h \
 	data/color-numeric/generate-named-output.py \
 	data/color-numeric/named-output-p3.png \
@@ -35714,6 +35760,24 @@ color/icc/test_runner-0116_mpet_before_later_legacy.$(OBJEXT):  \
 color/icc/test_runner-0117_mpet_shared_tag_budget.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0118_mpet_distinct_tag_budget.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0119_mpet_reverse_failure_fallback.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0120_mpet_absolute_storage_fallback.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0121_mpet_matrix_small_residual.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0122_mpet_clut_small_residual.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0123_mpet_absolute_forward_snap.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0124_mpet_absolute_reverse_snap.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0125_mpet_absolute_forward_gamut.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0126_mpet_absolute_reverse_gamut.$(OBJEXT):  \
+	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
+color/icc/test_runner-0127_mpet_png_storage_fallback.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0062_mpet_pcs_lab_forward.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
@@ -47971,6 +48035,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0116_mpet_before_later_legacy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0117_mpet_shared_tag_budget.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0118_mpet_distinct_tag_budget.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0119_mpet_reverse_failure_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0120_mpet_absolute_storage_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0121_mpet_matrix_small_residual.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0122_mpet_clut_small_residual.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0123_mpet_absolute_forward_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0124_mpet_absolute_reverse_snap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0011_lcms_cmyk_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0012_lcms_cmyk_linear_alias.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/lcms2/$(DEPDIR)/test_runner-0013_lcms_cmyk_gamma.Po@am__quote@ # am--include-marker
@@ -81433,6 +81506,132 @@ color/icc/test_runner-0118_mpet_distinct_tag_budget.obj: color/icc/0118_mpet_dis
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0118_mpet_distinct_tag_budget.c' object='color/icc/test_runner-0118_mpet_distinct_tag_budget.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0118_mpet_distinct_tag_budget.obj `if test -f 'color/icc/0118_mpet_distinct_tag_budget.c'; then $(CYGPATH_W) 'color/icc/0118_mpet_distinct_tag_budget.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0118_mpet_distinct_tag_budget.c'; fi`
+
+color/icc/test_runner-0119_mpet_reverse_failure_fallback.o: color/icc/0119_mpet_reverse_failure_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0119_mpet_reverse_failure_fallback.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0119_mpet_reverse_failure_fallback.Tpo -c -o color/icc/test_runner-0119_mpet_reverse_failure_fallback.o `test -f 'color/icc/0119_mpet_reverse_failure_fallback.c' || echo '$(srcdir)/'`color/icc/0119_mpet_reverse_failure_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0119_mpet_reverse_failure_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0119_mpet_reverse_failure_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0119_mpet_reverse_failure_fallback.c' object='color/icc/test_runner-0119_mpet_reverse_failure_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0119_mpet_reverse_failure_fallback.o `test -f 'color/icc/0119_mpet_reverse_failure_fallback.c' || echo '$(srcdir)/'`color/icc/0119_mpet_reverse_failure_fallback.c
+
+color/icc/test_runner-0119_mpet_reverse_failure_fallback.obj: color/icc/0119_mpet_reverse_failure_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0119_mpet_reverse_failure_fallback.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0119_mpet_reverse_failure_fallback.Tpo -c -o color/icc/test_runner-0119_mpet_reverse_failure_fallback.obj `if test -f 'color/icc/0119_mpet_reverse_failure_fallback.c'; then $(CYGPATH_W) 'color/icc/0119_mpet_reverse_failure_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0119_mpet_reverse_failure_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0119_mpet_reverse_failure_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0119_mpet_reverse_failure_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0119_mpet_reverse_failure_fallback.c' object='color/icc/test_runner-0119_mpet_reverse_failure_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0119_mpet_reverse_failure_fallback.obj `if test -f 'color/icc/0119_mpet_reverse_failure_fallback.c'; then $(CYGPATH_W) 'color/icc/0119_mpet_reverse_failure_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0119_mpet_reverse_failure_fallback.c'; fi`
+
+color/icc/test_runner-0120_mpet_absolute_storage_fallback.o: color/icc/0120_mpet_absolute_storage_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0120_mpet_absolute_storage_fallback.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0120_mpet_absolute_storage_fallback.Tpo -c -o color/icc/test_runner-0120_mpet_absolute_storage_fallback.o `test -f 'color/icc/0120_mpet_absolute_storage_fallback.c' || echo '$(srcdir)/'`color/icc/0120_mpet_absolute_storage_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0120_mpet_absolute_storage_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0120_mpet_absolute_storage_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0120_mpet_absolute_storage_fallback.c' object='color/icc/test_runner-0120_mpet_absolute_storage_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0120_mpet_absolute_storage_fallback.o `test -f 'color/icc/0120_mpet_absolute_storage_fallback.c' || echo '$(srcdir)/'`color/icc/0120_mpet_absolute_storage_fallback.c
+
+color/icc/test_runner-0120_mpet_absolute_storage_fallback.obj: color/icc/0120_mpet_absolute_storage_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0120_mpet_absolute_storage_fallback.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0120_mpet_absolute_storage_fallback.Tpo -c -o color/icc/test_runner-0120_mpet_absolute_storage_fallback.obj `if test -f 'color/icc/0120_mpet_absolute_storage_fallback.c'; then $(CYGPATH_W) 'color/icc/0120_mpet_absolute_storage_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0120_mpet_absolute_storage_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0120_mpet_absolute_storage_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0120_mpet_absolute_storage_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0120_mpet_absolute_storage_fallback.c' object='color/icc/test_runner-0120_mpet_absolute_storage_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0120_mpet_absolute_storage_fallback.obj `if test -f 'color/icc/0120_mpet_absolute_storage_fallback.c'; then $(CYGPATH_W) 'color/icc/0120_mpet_absolute_storage_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0120_mpet_absolute_storage_fallback.c'; fi`
+
+color/icc/test_runner-0121_mpet_matrix_small_residual.o: color/icc/0121_mpet_matrix_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0121_mpet_matrix_small_residual.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0121_mpet_matrix_small_residual.Tpo -c -o color/icc/test_runner-0121_mpet_matrix_small_residual.o `test -f 'color/icc/0121_mpet_matrix_small_residual.c' || echo '$(srcdir)/'`color/icc/0121_mpet_matrix_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0121_mpet_matrix_small_residual.Tpo color/icc/$(DEPDIR)/test_runner-0121_mpet_matrix_small_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0121_mpet_matrix_small_residual.c' object='color/icc/test_runner-0121_mpet_matrix_small_residual.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0121_mpet_matrix_small_residual.o `test -f 'color/icc/0121_mpet_matrix_small_residual.c' || echo '$(srcdir)/'`color/icc/0121_mpet_matrix_small_residual.c
+
+color/icc/test_runner-0121_mpet_matrix_small_residual.obj: color/icc/0121_mpet_matrix_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0121_mpet_matrix_small_residual.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0121_mpet_matrix_small_residual.Tpo -c -o color/icc/test_runner-0121_mpet_matrix_small_residual.obj `if test -f 'color/icc/0121_mpet_matrix_small_residual.c'; then $(CYGPATH_W) 'color/icc/0121_mpet_matrix_small_residual.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0121_mpet_matrix_small_residual.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0121_mpet_matrix_small_residual.Tpo color/icc/$(DEPDIR)/test_runner-0121_mpet_matrix_small_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0121_mpet_matrix_small_residual.c' object='color/icc/test_runner-0121_mpet_matrix_small_residual.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0121_mpet_matrix_small_residual.obj `if test -f 'color/icc/0121_mpet_matrix_small_residual.c'; then $(CYGPATH_W) 'color/icc/0121_mpet_matrix_small_residual.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0121_mpet_matrix_small_residual.c'; fi`
+
+color/icc/test_runner-0122_mpet_clut_small_residual.o: color/icc/0122_mpet_clut_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0122_mpet_clut_small_residual.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0122_mpet_clut_small_residual.Tpo -c -o color/icc/test_runner-0122_mpet_clut_small_residual.o `test -f 'color/icc/0122_mpet_clut_small_residual.c' || echo '$(srcdir)/'`color/icc/0122_mpet_clut_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0122_mpet_clut_small_residual.Tpo color/icc/$(DEPDIR)/test_runner-0122_mpet_clut_small_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0122_mpet_clut_small_residual.c' object='color/icc/test_runner-0122_mpet_clut_small_residual.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0122_mpet_clut_small_residual.o `test -f 'color/icc/0122_mpet_clut_small_residual.c' || echo '$(srcdir)/'`color/icc/0122_mpet_clut_small_residual.c
+
+color/icc/test_runner-0122_mpet_clut_small_residual.obj: color/icc/0122_mpet_clut_small_residual.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0122_mpet_clut_small_residual.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0122_mpet_clut_small_residual.Tpo -c -o color/icc/test_runner-0122_mpet_clut_small_residual.obj `if test -f 'color/icc/0122_mpet_clut_small_residual.c'; then $(CYGPATH_W) 'color/icc/0122_mpet_clut_small_residual.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0122_mpet_clut_small_residual.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0122_mpet_clut_small_residual.Tpo color/icc/$(DEPDIR)/test_runner-0122_mpet_clut_small_residual.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0122_mpet_clut_small_residual.c' object='color/icc/test_runner-0122_mpet_clut_small_residual.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0122_mpet_clut_small_residual.obj `if test -f 'color/icc/0122_mpet_clut_small_residual.c'; then $(CYGPATH_W) 'color/icc/0122_mpet_clut_small_residual.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0122_mpet_clut_small_residual.c'; fi`
+
+color/icc/test_runner-0123_mpet_absolute_forward_snap.o: color/icc/0123_mpet_absolute_forward_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0123_mpet_absolute_forward_snap.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0123_mpet_absolute_forward_snap.Tpo -c -o color/icc/test_runner-0123_mpet_absolute_forward_snap.o `test -f 'color/icc/0123_mpet_absolute_forward_snap.c' || echo '$(srcdir)/'`color/icc/0123_mpet_absolute_forward_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0123_mpet_absolute_forward_snap.Tpo color/icc/$(DEPDIR)/test_runner-0123_mpet_absolute_forward_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0123_mpet_absolute_forward_snap.c' object='color/icc/test_runner-0123_mpet_absolute_forward_snap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0123_mpet_absolute_forward_snap.o `test -f 'color/icc/0123_mpet_absolute_forward_snap.c' || echo '$(srcdir)/'`color/icc/0123_mpet_absolute_forward_snap.c
+
+color/icc/test_runner-0123_mpet_absolute_forward_snap.obj: color/icc/0123_mpet_absolute_forward_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0123_mpet_absolute_forward_snap.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0123_mpet_absolute_forward_snap.Tpo -c -o color/icc/test_runner-0123_mpet_absolute_forward_snap.obj `if test -f 'color/icc/0123_mpet_absolute_forward_snap.c'; then $(CYGPATH_W) 'color/icc/0123_mpet_absolute_forward_snap.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0123_mpet_absolute_forward_snap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0123_mpet_absolute_forward_snap.Tpo color/icc/$(DEPDIR)/test_runner-0123_mpet_absolute_forward_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0123_mpet_absolute_forward_snap.c' object='color/icc/test_runner-0123_mpet_absolute_forward_snap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0123_mpet_absolute_forward_snap.obj `if test -f 'color/icc/0123_mpet_absolute_forward_snap.c'; then $(CYGPATH_W) 'color/icc/0123_mpet_absolute_forward_snap.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0123_mpet_absolute_forward_snap.c'; fi`
+
+color/icc/test_runner-0124_mpet_absolute_reverse_snap.o: color/icc/0124_mpet_absolute_reverse_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0124_mpet_absolute_reverse_snap.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0124_mpet_absolute_reverse_snap.Tpo -c -o color/icc/test_runner-0124_mpet_absolute_reverse_snap.o `test -f 'color/icc/0124_mpet_absolute_reverse_snap.c' || echo '$(srcdir)/'`color/icc/0124_mpet_absolute_reverse_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0124_mpet_absolute_reverse_snap.Tpo color/icc/$(DEPDIR)/test_runner-0124_mpet_absolute_reverse_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0124_mpet_absolute_reverse_snap.c' object='color/icc/test_runner-0124_mpet_absolute_reverse_snap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0124_mpet_absolute_reverse_snap.o `test -f 'color/icc/0124_mpet_absolute_reverse_snap.c' || echo '$(srcdir)/'`color/icc/0124_mpet_absolute_reverse_snap.c
+
+color/icc/test_runner-0124_mpet_absolute_reverse_snap.obj: color/icc/0124_mpet_absolute_reverse_snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0124_mpet_absolute_reverse_snap.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0124_mpet_absolute_reverse_snap.Tpo -c -o color/icc/test_runner-0124_mpet_absolute_reverse_snap.obj `if test -f 'color/icc/0124_mpet_absolute_reverse_snap.c'; then $(CYGPATH_W) 'color/icc/0124_mpet_absolute_reverse_snap.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0124_mpet_absolute_reverse_snap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0124_mpet_absolute_reverse_snap.Tpo color/icc/$(DEPDIR)/test_runner-0124_mpet_absolute_reverse_snap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0124_mpet_absolute_reverse_snap.c' object='color/icc/test_runner-0124_mpet_absolute_reverse_snap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0124_mpet_absolute_reverse_snap.obj `if test -f 'color/icc/0124_mpet_absolute_reverse_snap.c'; then $(CYGPATH_W) 'color/icc/0124_mpet_absolute_reverse_snap.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0124_mpet_absolute_reverse_snap.c'; fi`
+
+color/icc/test_runner-0125_mpet_absolute_forward_gamut.o: color/icc/0125_mpet_absolute_forward_gamut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0125_mpet_absolute_forward_gamut.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Tpo -c -o color/icc/test_runner-0125_mpet_absolute_forward_gamut.o `test -f 'color/icc/0125_mpet_absolute_forward_gamut.c' || echo '$(srcdir)/'`color/icc/0125_mpet_absolute_forward_gamut.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Tpo color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0125_mpet_absolute_forward_gamut.c' object='color/icc/test_runner-0125_mpet_absolute_forward_gamut.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0125_mpet_absolute_forward_gamut.o `test -f 'color/icc/0125_mpet_absolute_forward_gamut.c' || echo '$(srcdir)/'`color/icc/0125_mpet_absolute_forward_gamut.c
+
+color/icc/test_runner-0125_mpet_absolute_forward_gamut.obj: color/icc/0125_mpet_absolute_forward_gamut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0125_mpet_absolute_forward_gamut.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Tpo -c -o color/icc/test_runner-0125_mpet_absolute_forward_gamut.obj `if test -f 'color/icc/0125_mpet_absolute_forward_gamut.c'; then $(CYGPATH_W) 'color/icc/0125_mpet_absolute_forward_gamut.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0125_mpet_absolute_forward_gamut.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Tpo color/icc/$(DEPDIR)/test_runner-0125_mpet_absolute_forward_gamut.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0125_mpet_absolute_forward_gamut.c' object='color/icc/test_runner-0125_mpet_absolute_forward_gamut.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0125_mpet_absolute_forward_gamut.obj `if test -f 'color/icc/0125_mpet_absolute_forward_gamut.c'; then $(CYGPATH_W) 'color/icc/0125_mpet_absolute_forward_gamut.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0125_mpet_absolute_forward_gamut.c'; fi`
+
+color/icc/test_runner-0126_mpet_absolute_reverse_gamut.o: color/icc/0126_mpet_absolute_reverse_gamut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0126_mpet_absolute_reverse_gamut.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Tpo -c -o color/icc/test_runner-0126_mpet_absolute_reverse_gamut.o `test -f 'color/icc/0126_mpet_absolute_reverse_gamut.c' || echo '$(srcdir)/'`color/icc/0126_mpet_absolute_reverse_gamut.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Tpo color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0126_mpet_absolute_reverse_gamut.c' object='color/icc/test_runner-0126_mpet_absolute_reverse_gamut.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0126_mpet_absolute_reverse_gamut.o `test -f 'color/icc/0126_mpet_absolute_reverse_gamut.c' || echo '$(srcdir)/'`color/icc/0126_mpet_absolute_reverse_gamut.c
+
+color/icc/test_runner-0126_mpet_absolute_reverse_gamut.obj: color/icc/0126_mpet_absolute_reverse_gamut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0126_mpet_absolute_reverse_gamut.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Tpo -c -o color/icc/test_runner-0126_mpet_absolute_reverse_gamut.obj `if test -f 'color/icc/0126_mpet_absolute_reverse_gamut.c'; then $(CYGPATH_W) 'color/icc/0126_mpet_absolute_reverse_gamut.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0126_mpet_absolute_reverse_gamut.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Tpo color/icc/$(DEPDIR)/test_runner-0126_mpet_absolute_reverse_gamut.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0126_mpet_absolute_reverse_gamut.c' object='color/icc/test_runner-0126_mpet_absolute_reverse_gamut.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0126_mpet_absolute_reverse_gamut.obj `if test -f 'color/icc/0126_mpet_absolute_reverse_gamut.c'; then $(CYGPATH_W) 'color/icc/0126_mpet_absolute_reverse_gamut.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0126_mpet_absolute_reverse_gamut.c'; fi`
+
+color/icc/test_runner-0127_mpet_png_storage_fallback.o: color/icc/0127_mpet_png_storage_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0127_mpet_png_storage_fallback.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Tpo -c -o color/icc/test_runner-0127_mpet_png_storage_fallback.o `test -f 'color/icc/0127_mpet_png_storage_fallback.c' || echo '$(srcdir)/'`color/icc/0127_mpet_png_storage_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0127_mpet_png_storage_fallback.c' object='color/icc/test_runner-0127_mpet_png_storage_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0127_mpet_png_storage_fallback.o `test -f 'color/icc/0127_mpet_png_storage_fallback.c' || echo '$(srcdir)/'`color/icc/0127_mpet_png_storage_fallback.c
+
+color/icc/test_runner-0127_mpet_png_storage_fallback.obj: color/icc/0127_mpet_png_storage_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0127_mpet_png_storage_fallback.obj -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Tpo -c -o color/icc/test_runner-0127_mpet_png_storage_fallback.obj `if test -f 'color/icc/0127_mpet_png_storage_fallback.c'; then $(CYGPATH_W) 'color/icc/0127_mpet_png_storage_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0127_mpet_png_storage_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Tpo color/icc/$(DEPDIR)/test_runner-0127_mpet_png_storage_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/icc/0127_mpet_png_storage_fallback.c' object='color/icc/test_runner-0127_mpet_png_storage_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/icc/test_runner-0127_mpet_png_storage_fallback.obj `if test -f 'color/icc/0127_mpet_png_storage_fallback.c'; then $(CYGPATH_W) 'color/icc/0127_mpet_png_storage_fallback.c'; else $(CYGPATH_W) '$(srcdir)/color/icc/0127_mpet_png_storage_fallback.c'; fi`
 
 color/icc/test_runner-0062_mpet_pcs_lab_forward.o: color/icc/0062_mpet_pcs_lab_forward.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0062_mpet_pcs_lab_forward.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0062_mpet_pcs_lab_forward.Tpo -c -o color/icc/test_runner-0062_mpet_pcs_lab_forward.o `test -f 'color/icc/0062_mpet_pcs_lab_forward.c' || echo '$(srcdir)/'`color/icc/0062_mpet_pcs_lab_forward.c

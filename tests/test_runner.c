@@ -474,6 +474,15 @@ int test_icc_0115(int argc, char **argv);
 int test_icc_0116(int argc, char **argv);
 int test_icc_0117(int argc, char **argv);
 int test_icc_0118(int argc, char **argv);
+int test_icc_0119(int argc, char **argv);
+int test_icc_0120(int argc, char **argv);
+int test_icc_0121(int argc, char **argv);
+int test_icc_0122(int argc, char **argv);
+int test_icc_0123(int argc, char **argv);
+int test_icc_0124(int argc, char **argv);
+int test_icc_0125(int argc, char **argv);
+int test_icc_0126(int argc, char **argv);
+int test_icc_0127(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10281,6 +10290,15 @@ static test_entry_t const test_entries[] = {
     { "icc/0116_mpet_before_later_legacy", test_icc_0116 },
     { "icc/0117_mpet_shared_tag_budget", test_icc_0117 },
     { "icc/0118_mpet_distinct_tag_budget", test_icc_0118 },
+    { "icc/0119_mpet_reverse_failure_fallback", test_icc_0119 },
+    { "icc/0120_mpet_absolute_storage_fallback", test_icc_0120 },
+    { "icc/0121_mpet_matrix_small_residual", test_icc_0121 },
+    { "icc/0122_mpet_clut_small_residual", test_icc_0122 },
+    { "icc/0123_mpet_absolute_forward_snap", test_icc_0123 },
+    { "icc/0124_mpet_absolute_reverse_snap", test_icc_0124 },
+    { "icc/0125_mpet_absolute_forward_gamut", test_icc_0125 },
+    { "icc/0126_mpet_absolute_reverse_gamut", test_icc_0126 },
+    { "icc/0127_mpet_png_storage_fallback", test_icc_0127 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

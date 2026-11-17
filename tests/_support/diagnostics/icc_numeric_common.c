@@ -7,10 +7,13 @@
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "tests/_support/diagnostics/icc_numeric_common.h"
 #include "tests/data/color-numeric/icc.h"
+#include "tests/data/color-numeric/mpet-storage-png.h"
 #include "src/icc-parse.h"
 #include "src/icc-apply.h"
 #include "src/cms.h"
 #include "src/loader-common.h"
+#include "src/gamut.h"
+#include "src/palette-snap-grid.h"
 
 static void
 iccn_be32(unsigned char *p, unsigned int v)
@@ -3709,5 +3712,321 @@ icc_numeric_mpet_tag_share_budget_test(int distinct)
             memcmp(xyz, clut_xyz, sizeof(xyz)) == 0;
     }
     sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_downstream_fallback_test(int absolute)
+{
+    static float const input[] = {0.25f, 0.375f, 0.5f};
+    static double const expected[][3] = {
+        {65535.0 / 65536.0, 0.375 * 65535.0 / 32768.0,
+         0.5 * 65535.0 / 32768.0},
+        {-0.06825380, 0.49057835, 0.63499516}
+    };
+    unsigned char src[516];
+    unsigned char dst[516];
+    unsigned char bytes[516u + 12u + 84u];
+    unsigned char *matrix;
+    unsigned char *tag;
+    size_t src_size;
+    size_t dst_size;
+    float output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    int ok;
+
+    src_size = iccn_mpet_transform_profile(src, 0, '1', 0, 65536u, 1);
+    iccn_be32(src + iccn_read32(src + 148u) + 8u, 63190u);
+    iccn_be32(src + iccn_read32(src + 148u) + 16u, 54061u);
+    matrix = src + 192u;
+    memset(matrix + 12u, 0, 48u);
+    iccn_mpe_write_float(matrix + 48u, FLT_MAX);
+    if (absolute) {
+        /* Keep relative D2B1 and add absolute D2B3 with huge but finite
+         * XYZ. The analytic RGB endpoint cannot store its red channel. */
+        tag = iccn_expand_tag_directory(bytes, src, src_size, 1u);
+        memcpy(tag, "D2B3", 4u);
+        iccn_be32(tag + 4u, (unsigned int)src_size + 12u);
+        iccn_be32(tag + 8u, 84u);
+        memcpy(bytes + src_size + 12u, src + 168u, 84u);
+        src_size += 96u;
+        iccn_be32(bytes, (unsigned int)src_size);
+        matrix = bytes + 204u;
+        memset(matrix + 12u, 0, 48u);
+        iccn_mpe_write_float(matrix + 12u, 1.0f);
+        iccn_mpe_write_float(matrix + 28u, 1.0f);
+        iccn_mpe_write_float(matrix + 44u, 1.0f);
+    } else {
+        memcpy(bytes, src, src_size);
+    }
+    dst_size = iccn_mpet_transform_profile(dst, 1, '1', 0, 65536u, 0);
+    /* Reverse MPE rejects the huge forward result, but accepts A2B1. */
+    iccn_mpe_write_float(dst + 204u, 2.0f);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, src_size);
+    target = absolute ? sixel_cms_create_linear_srgb_profile()
+        : sixel_cms_open_profile_from_mem(dst, dst_size);
+    ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        target, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        absolute ? "absolute!" : "relative!", input, output, 1u) &&
+        iccn_float_result(output, expected[absolute], 3u);
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_small_residual_test(int clut)
+{
+    static double const input[] = {1.0, 0x1p-60, 1.0};
+    unsigned char bytes[400];
+    unsigned char *tag;
+    unsigned char *element;
+    sixel_icc_profile_t profile;
+    double result[3];
+    size_t tag_size;
+    size_t size;
+    int ok;
+
+    memset(bytes, 0, sizeof(bytes));
+    tag_size = clut ? 140u : 96u;
+    size = 144u + tag_size;
+    iccn_be32(bytes, (unsigned int)size);
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "scnrRGB XYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 128u, 1u);
+    memcpy(bytes + 132u, "D2B1", 4u);
+    iccn_be32(bytes + 136u, 144u);
+    iccn_be32(bytes + 140u, (unsigned int)tag_size);
+    tag = bytes + 144u;
+    memcpy(tag, "mpet", 4u);
+    tag[9] = tag[11] = 3u;
+    iccn_be32(tag + 12u, clut ? 3u : 2u);
+    /* Reserve 40 bytes for the position table when a CLUT is included. */
+    iccn_mpet_position(tag, 0u, clut ? 40u : 32u, 28u);
+    element = tag + (clut ? 40u : 32u);
+    memcpy(element, "matf", 4u);
+    element[9] = 3u;
+    element[11] = 1u;
+    /* Select G for the CLUT. The matrix-only case adds R+G-B. */
+    iccn_mpe_write_float(element + 16u, 1.0f);
+    if (!clut) {
+        iccn_mpe_write_float(element + 12u, 1.0f);
+        iccn_mpe_write_float(element + 20u, -1.0f);
+    }
+    element += 28u;
+    if (clut) {
+        iccn_mpet_position(tag, 1u, 68u, 36u);
+        memcpy(element, "clut", 4u);
+        element[9] = element[11] = 1u;
+        element[12] = 2u;
+        iccn_mpe_write_float(element + 28u, 0x1p-60f);
+        iccn_mpe_write_float(element + 32u, -1.0f);
+        element += 36u;
+    }
+    iccn_mpet_position(tag, clut ? 2u : 1u,
+        (unsigned int)(element - tag), 36u);
+    memcpy(element, "matf", 4u);
+    element[9] = 1u;
+    element[11] = 3u;
+    iccn_mpe_write_float(element + 12u, clut ? 0x1p100f : 0x1p60f);
+    ok = sixel_icc_parse_profile(bytes, size, &profile);
+    if (ok) {
+        ok = sixel_icc_device_to_pcs(result, input, 3u, &profile, 1u, 0)
+                == SIXEL_ICC_PATH_MPET &&
+            result[0] == (clut ? -0x1p-20 : 1.0) &&
+            result[1] == 0.0 && result[2] == 0.0;
+        sixel_icc_profile_destroy(&profile);
+    }
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_absolute_mpet_palette_test(int reverse, int gamut)
+{
+    static double const input[] = {0.2, 0.3, 0.4};
+    unsigned char bytes[sizeof(color_icc) + 96u];
+    unsigned char mpet[516];
+    unsigned char *tag;
+    sixel_color_def_t *definition;
+    sixel_color_def_t *reference;
+    sixel_snap_grid_t *grid;
+    sixel_snap_grid_t *base_grid;
+    sixel_gamut_t *mapper;
+    sixel_gamut_t *base_mapper;
+    sixel_allocator_t *allocator;
+    double result[3];
+    double expected[3];
+    int ok;
+
+    tag = iccn_expand_tag_directory(bytes, color_icc, sizeof(color_icc), 1u);
+    iccn_be32(bytes, sizeof(bytes));
+    memcpy(tag, reverse ? "B2D3" : "D2B3", 4u);
+    iccn_be32(tag + 4u, sizeof(color_icc) + 12u);
+    iccn_be32(tag + 8u, 84u);
+    iccn_mpet_transform_profile(mpet, reverse, '3', 0, 65536u, 0);
+    memcpy(bytes + sizeof(color_icc) + 12u, mpet + 168u, 84u);
+    definition = sixel_cdef_icc(bytes, sizeof(bytes));
+    reference = sixel_cdef_icc(color_icc, sizeof(color_icc));
+    allocator = NULL;
+    grid = base_grid = NULL;
+    mapper = base_mapper = NULL;
+    ok = definition != NULL && reference != NULL &&
+        SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
+                                               NULL));
+    if (gamut && ok) {
+        ok = SIXEL_SUCCEEDED(sixel_gamut_new(&mapper, definition, 0,
+                SIXEL_GAMUT_LOCAL_MINDE, allocator)) &&
+            SIXEL_SUCCEEDED(sixel_gamut_new(&base_mapper, reference, 0,
+                SIXEL_GAMUT_LOCAL_MINDE, allocator)) &&
+            sixel_gamut_apply(mapper, input, result, SIXEL_COLORSPACE_LINEAR) &&
+            sixel_gamut_apply(base_mapper, input, expected,
+                               SIXEL_COLORSPACE_LINEAR);
+    } else if (ok) {
+        ok = SIXEL_SUCCEEDED(sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_DIRECT,
+                SIXEL_COLORSPACE_LINEAR, definition, allocator)) &&
+            SIXEL_SUCCEEDED(sixel_snap_grid_new(&base_grid,
+                SIXEL_SNAP_GRID_DIRECT, SIXEL_COLORSPACE_LINEAR, reference,
+                allocator)) &&
+            SIXEL_SUCCEEDED(sixel_snap_grid_project(grid, input, 1, 1.0,
+                                                       result)) &&
+            SIXEL_SUCCEEDED(sixel_snap_grid_project(base_grid, input, 1, 1.0,
+                                                       expected));
+    }
+    ok = ok && memcmp(result, expected, sizeof(result)) == 0;
+    sixel_snap_grid_destroy(base_grid);
+    sixel_snap_grid_destroy(grid);
+    sixel_gamut_free(base_mapper);
+    sixel_gamut_free(mapper);
+    sixel_allocator_unref(allocator);
+    sixel_cdef_free(reference);
+    sixel_cdef_free(definition);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+typedef struct iccn_png_capture {
+    float values[9];
+    unsigned int calls;
+    int unprofiled;
+} iccn_png_capture_t;
+
+static SIXELSTATUS
+iccn_capture_mpet_png(sixel_frame_t *frame, void *context)
+{
+    iccn_png_capture_t *capture;
+    unsigned char const *pixels;
+    double value;
+    size_t i;
+
+    capture = context;
+    ++capture->calls;
+    if (capture->unprofiled && frame->width == 3 && frame->height == 1 &&
+        frame->pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        pixels = sixel_frame_get_pixels(frame);
+        for (i = 0u; i < 9u; ++i) {
+            value = pixels[i] / 255.0;
+            capture->values[i] = (float)(value <= 0.04045
+                ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4));
+        }
+        return SIXEL_OK;
+    }
+    if (frame->width != 3 || frame->height != 1 ||
+        frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        frame->colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr, "PNG frame %dx%d format=%x space=%d\n",
+            frame->width, frame->height, frame->pixelformat,
+            frame->colorspace);
+        return SIXEL_BAD_INPUT;
+    }
+    memcpy(capture->values, sixel_frame_get_pixels(frame),
+           sizeof(capture->values));
+    return SIXEL_OK;
+}
+
+int
+icc_numeric_mpet_png_storage_fallback_test(void)
+{
+    static struct {
+        unsigned char const *bytes;
+        size_t size;
+    } const fixtures[] = {
+        {iccn_png_overflow, sizeof(iccn_png_overflow)},
+        {iccn_png_control, sizeof(iccn_png_control)},
+        {iccn_png_unprofiled, sizeof(iccn_png_unprofiled)},
+        {iccn_png_finite, sizeof(iccn_png_finite)}
+    };
+    /* Inverse Bradford-adapted sRGB matrix applied to the legacy identity
+     * A2B1 XYZ=(RGB8/255)*(65535/32768), independently computed offline. */
+    static double const expected[] = {
+        -0.1370408339536210, 0.9849893630809516, 1.2749511912846483,
+        -0.0559425315684849, 0.1344124041163471, 0.6859170612232661,
+        0.2801083577064768, 0.7645194267287527, 2.3514461693201323
+    };
+    iccn_png_capture_t captures[4];
+    loader_probe_callback_state_t callback;
+    sixel_allocator_t *allocator;
+    sixel_loader_component_t *loader;
+    sixel_chunk_t *chunk;
+    size_t i;
+    int engine;
+    int one;
+    int ok;
+
+    allocator = NULL;
+    loader = NULL;
+    chunk = NULL;
+    engine = SIXEL_CMS_ENGINE_BUILTIN;
+    one = 1;
+    memset(captures, 0, sizeof(captures));
+    captures[2].unprofiled = 1;
+    ok = sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT",
+                             "relative!") == 0 &&
+        SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
+                                               NULL)) &&
+        SIXEL_SUCCEEDED(create_loader_component_by_name("builtin", allocator,
+                                                         (void **)&loader));
+    if (ok) {
+        ok = SIXEL_SUCCEEDED(sixel_loader_component_setopt(loader,
+                SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE, &engine)) &&
+            SIXEL_SUCCEEDED(sixel_loader_component_setopt(loader,
+                SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32, &one));
+    }
+    for (i = 0u; ok && i < 4u; ++i) {
+        callback = (loader_probe_callback_state_t){
+            NULL, iccn_capture_mpet_png, &captures[i]
+        };
+        ok = SIXEL_SUCCEEDED(sixel_chunk_create_from_memory(&chunk,
+            fixtures[i].bytes, fixtures[i].size, NULL, allocator));
+        if (ok) {
+            ok = SIXEL_SUCCEEDED(sixel_loader_component_load(loader, chunk,
+                capture_frame_trampoline, &callback)) &&
+                captures[i].calls == 1u;
+            chunk->vtbl->unref(chunk);
+            chunk = NULL;
+        }
+        if (!ok) {
+            fprintf(stderr, "PNG storage fixture %zu failed: %s\n", i,
+                sixel_helper_get_additional_message());
+        }
+    }
+    /* Both controls distinguish correct ICC application from an ignored
+     * profile or accidental selection of a different MPE. */
+    ok = ok && iccn_float_result(captures[0].values, expected, 9u) &&
+        memcmp(captures[0].values, captures[1].values,
+               sizeof(captures[0].values)) == 0 &&
+        memcmp(captures[0].values, captures[2].values,
+               sizeof(captures[0].values)) != 0 &&
+        memcmp(captures[0].values, captures[3].values,
+               sizeof(captures[0].values)) != 0;
+    if (loader != NULL) {
+        sixel_loader_component_unref(loader);
+    }
+    sixel_allocator_unref(allocator);
+    (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
