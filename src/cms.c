@@ -4307,6 +4307,35 @@ sixel_cms_builtin_pcs_candidates(sixel_cms_transform_t candidates[4],
     return count;
 }
 
+/* A mixed legacy pair is ready when both of its slots have been reached.
+ * An earlier prefix may fail even if each endpoint works in isolation. */
+static size_t
+sixel_cms_builtin_legacy_pair_index(
+    sixel_cms_transform_t const *transform,
+    sixel_cms_transform_t const candidates[4], size_t first, size_t count,
+    void const *src, void *dst)
+{
+    sixel_cms_transform_t prefix;
+    sixel_cms_status_t status;
+    size_t i;
+
+    prefix = *transform;
+    prefix.builtin_a2b_slot_count = 0u;
+    status = SIXEL_CMS_STATUS_OK;
+    for (i = 0u; i < count; ++i) {
+        if (candidates[i].builtin_absolute) {
+            continue;
+        }
+        prefix.builtin_a2b_slots[prefix.builtin_a2b_slot_count++] =
+            candidates[i].builtin_a2b_slots[0];
+        if (i >= first && sixel_cms_do_transform_builtin_device_to_device(
+                &prefix, src, dst, 1u, &status)) {
+            return i;
+        }
+    }
+    return count;
+}
+
 static int
 sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                          void const *src, void *dst, size_t count,
@@ -4325,12 +4354,13 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
     size_t pixel;
     size_t n;
     size_t i;
+    size_t legacy_index;
     void const *input;
     union {
         float f32[4];
         uint16_t u16[4];
         unsigned char bytes[4 * sizeof(float)];
-    } sample;
+    } sample, legacy_sample;
     double source[4];
     double device[4];
     double matrix[9];
@@ -4343,6 +4373,7 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
     int legacy_byte_pair;
     int keep_legacy;
     int try_legacy_pair;
+    int evaluated;
     int ok;
 
     target = transform->dst_profile;
@@ -4374,7 +4405,7 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
         (!transform->src_profile->builtin_profile.lut_only &&
          !target->builtin_profile.lut_only));
     try_legacy_pair = transform->builtin_pcs_ordered &&
-        transform->builtin_a2b_slot_count > 1u && keep_legacy &&
+        transform->builtin_a2b_slot_count > 1u && !float_rgb &&
         !sixel_cms_builtin_profile_is_srgb(target);
     inverse_rgb = NULL;
     if (target->rgb_definition == NULL &&
@@ -4394,6 +4425,7 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
         pixel = src == dst && dst_stride > src_stride
             ? count - step - 1u : step;
         input = (unsigned char const *)src + pixel * src_stride;
+        legacy_index = n;
         alpha = 255u;
         if (!sixel_cms_builtin_load_src_unit(source, &channels, &alpha,
                 transform->src_format, input, 0u,
@@ -4403,11 +4435,9 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
         }
         for (i = 0u; i < n; ++i) {
             candidate = &candidates[i];
-            if (!sixel_cms_eval_builtin_pcs(device, &uses_mpet, source,
-                    channels, candidate, inverse_rgb, 0)) {
-                continue;
-            }
-            if (uses_mpet) {
+            evaluated = sixel_cms_eval_builtin_pcs(device, &uses_mpet, source,
+                channels, candidate, inverse_rgb, 0);
+            if (evaluated && uses_mpet) {
                 if (sixel_cms_builtin_store_dst_unit(&sample,
                         transform->dst_format, 0u, device, alpha, 1)) {
                     break;
@@ -4416,14 +4446,25 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                  * An analytic destination can exceed that range even when
                  * D2B accepts the sample. Retry the same intent with the
                  * legacy source before advancing to another intent. */
-                if (!sixel_cms_eval_builtin_pcs(device, &uses_mpet, source,
-                        channels, candidate, inverse_rgb, 1)) {
-                    continue;
+                evaluated = sixel_cms_eval_builtin_pcs(device, &uses_mpet,
+                    source, channels, candidate, inverse_rgb, 1);
+                if (evaluated && uses_mpet &&
+                    sixel_cms_builtin_store_dst_unit(&sample,
+                        transform->dst_format, 0u, device, alpha, 1)) {
+                    break;
                 }
+            }
+            if (i == legacy_index) {
+                memcpy(&sample, &legacy_sample, dst_stride);
+                break;
+            }
+            if (!evaluated || uses_mpet ||
+                (legacy_index < n && !candidate->builtin_absolute)) {
+                continue;
             }
             /* The presence of other mpet tags cannot change the PCS
              * encoding or rounding of an existing legacy path. */
-            if (!uses_mpet && !candidate->builtin_absolute && keep_legacy) {
+            if (!candidate->builtin_absolute && keep_legacy) {
                 legacy_status = SIXEL_CMS_STATUS_OK;
                 if (sixel_cms_do_builtin_legacy(candidate, input, &sample, 1u,
                         &legacy_status, &rgba_scratch)) {
@@ -4433,17 +4474,22 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                     *status = legacy_status;
                     goto done;
                 }
-                /* Before accepting an analytic endpoint in this
-                 * candidate, honor the independently selected legacy
-                 * slots that a transform without mpet would use. */
-                if (try_legacy_pair &&
-                    sixel_cms_do_transform_builtin_device_to_device(
-                        transform, input, &sample, 1u, &legacy_status)) {
+            }
+            if (try_legacy_pair && !candidate->builtin_absolute) {
+                /* Preserve the legacy pair before accepting analytic
+                 * output, but give earlier intents their turn first. */
+                legacy_index = sixel_cms_builtin_legacy_pair_index(transform,
+                    candidates, i, n, input, &legacy_sample);
+                if (i == legacy_index) {
+                    memcpy(&sample, &legacy_sample, dst_stride);
                     break;
+                }
+                if (legacy_index < n) {
+                    continue;
                 }
             }
             if (sixel_cms_builtin_store_dst_unit(&sample, transform->dst_format,
-                    0u, device, alpha, uses_mpet || float_rgb)) {
+                    0u, device, alpha, float_rgb)) {
                 break;
             }
         }

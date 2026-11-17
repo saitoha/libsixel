@@ -3292,6 +3292,30 @@ icc_numeric_mpet_legacy_reverse_precedence_test(void)
         "relative,perceptual,saturation!", input, expected);
 }
 
+/* Reserve space for more tag records and shift existing payload offsets. */
+static unsigned char *
+iccn_expand_tag_directory(unsigned char *bytes, unsigned char const *base,
+                           size_t length, unsigned int added)
+{
+    size_t tags;
+    size_t end;
+    size_t gap;
+    size_t i;
+    unsigned char *offset;
+
+    tags = iccn_read32(base + 128u);
+    end = 132u + tags * 12u;
+    gap = added * 12u;
+    memcpy(bytes, base, end);
+    memcpy(bytes + end + gap, base + end, length - end);
+    for (i = 0u; i < tags; ++i) {
+        offset = bytes + 136u + i * 12u;
+        iccn_be32(offset, iccn_read32(offset) + (unsigned int)gap);
+    }
+    iccn_be32(bytes + 128u, (unsigned int)tags + added);
+    return bytes + end;
+}
+
 int
 icc_numeric_owned_mpet_matrix_fallback_test(int reverse)
 {
@@ -3303,25 +3327,12 @@ icc_numeric_owned_mpet_matrix_fallback_test(int reverse)
     sixel_color_def_t *definition;
     double expected[3];
     double actual[3];
-    size_t tags;
-    size_t i;
-    size_t directory_end;
     int ok;
 
     /* Add one relative MPE to the existing Display P3 matrix/TRC
      * fixture without changing its colorant or curve payloads. */
-    tags = iccn_read32(color_icc + 128u);
-    directory_end = 132u + tags * 12u;
-    memcpy(bytes, color_icc, directory_end);
-    memcpy(bytes + directory_end + 12u, color_icc + directory_end,
-           sizeof(color_icc) - directory_end);
-    for (i = 0u; i < tags; ++i) {
-        tag = bytes + 132u + i * 12u;
-        iccn_be32(tag + 4u, iccn_read32(tag + 4u) + 12u);
-    }
+    tag = iccn_expand_tag_directory(bytes, color_icc, sizeof(color_icc), 1u);
     iccn_be32(bytes, sizeof(bytes));
-    iccn_be32(bytes + 128u, (unsigned int)tags + 1u);
-    tag = bytes + directory_end;
     memcpy(tag, reverse ? "B2D1" : "D2B1", 4u);
     iccn_be32(tag + 4u, sizeof(color_icc) + 12u);
     iccn_be32(tag + 8u, 84u);
@@ -3488,4 +3499,215 @@ icc_numeric_gray_legacy_profile(unsigned char bytes[260])
         iccn_mpe_write_float(tag + 36u + i * 4u, 1.0f);
     }
     return 260u;
+}
+
+static void
+iccn_identity_a2b(unsigned char *tag)
+{
+    size_t i;
+
+    memset(tag, 0, 68u);
+    memcpy(tag, "mAB ", 4u);
+    tag[8] = tag[9] = 3u;
+    iccn_be32(tag + 12u, 32u);
+    for (i = 0u; i < 3u; ++i) {
+        memcpy(tag + 32u + 12u * i, "curv", 4u);
+    }
+}
+
+int
+icc_numeric_colorspace_legacy_float_pair_test(int byte_input)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static unsigned char const rgb8[] = {64u, 96u, 128u};
+    static float const rgb_float[] = {0.25f, 0.375f, 0.5f};
+    static double const expected[] = {
+        8192.0 / 65535.0, 8192.0 / 65535.0, 8192.0 / 65535.0
+    };
+    unsigned char tables[312];
+    unsigned char src[244];
+    unsigned char dst[380];
+    float output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t i;
+    int ok;
+
+    iccn_absolute_lut_profile(tables, white, '0');
+    memcpy(tables + 12u, "spac", 4u);
+    memcpy(src, tables, 156u);
+    iccn_be32(src, sizeof(src));
+    iccn_be32(src + 128u, 2u);
+    src[135] = '1';
+    iccn_be32(src + 136u, 156u);
+    iccn_be32(src + 140u, 68u);
+    memcpy(src + 144u, tables + 156u, 12u);
+    iccn_be32(src + 148u, 224u);
+    iccn_identity_a2b(src + 156u);
+    memcpy(src + 224u, tables + 292u, 20u);
+
+    memcpy(dst, tables, 168u);
+    iccn_be32(dst, sizeof(dst));
+    iccn_be32(dst + 140u, 68u);
+    dst[147] = '2';
+    iccn_be32(dst + 148u, 236u);
+    iccn_be32(dst + 160u, 360u);
+    iccn_identity_a2b(dst + 168u);
+    memcpy(dst + 236u, tables + 168u, 144u);
+    /* The forward LUTs are identity. The only reverse LUT returns the
+     * same value at every vertex, independently of source quantization. */
+    for (i = 300u; i < 348u; i += 2u) {
+        dst[i] = 0x20u;
+        dst[i + 1u] = 0u;
+    }
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(src, sizeof(src));
+    target = sixel_cms_open_profile_from_mem(dst, sizeof(dst));
+    ok = iccn_transform_pixels(source, byte_input ? SIXEL_CMS_PIXELFORMAT_RGB_8
+        : SIXEL_CMS_PIXELFORMAT_RGB_F32, target, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        "relative,saturation!", byte_input ? (void const *)rgb8 : rgb_float,
+        output, 1u) && iccn_float_result(output, expected, 3u);
+    if (!ok) {
+        fprintf(stderr, "mixed ColorSpace LUTs with byte_input=%d failed\n",
+                byte_input);
+    }
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_before_later_legacy_test(void)
+{
+    static float const input[] = {0.25f, 0.375f, 0.5f};
+    static double const expected[] = {0.75, 0.75, 0.75};
+    unsigned char base[412];
+    unsigned char bytes[412u + 12u + 84u];
+    unsigned char mpet[516];
+    unsigned char *tag;
+    unsigned char *matrix;
+    float output[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t i;
+    int ok;
+
+    iccn_identity_matrix_with_b2a0(base);
+    base[207] = '2';
+    tag = iccn_expand_tag_directory(bytes, base, sizeof(base), 1u);
+    iccn_be32(bytes, sizeof(bytes));
+    memcpy(tag, "B2D0", 4u);
+    iccn_be32(tag + 4u, sizeof(base) + 12u);
+    iccn_be32(tag + 8u, 84u);
+    iccn_mpet_transform_profile(mpet, 1, '0', 0, 65536u, 0);
+    matrix = mpet + 192u;
+    memset(matrix + 12u, 0, 36u);
+    for (i = 0u; i < 3u; ++i) {
+        iccn_mpe_write_float(matrix + 48u + i * 4u, 0.75f);
+    }
+    memcpy(bytes + sizeof(base) + 12u, mpet + 168u, 84u);
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_create_linear_srgb_profile();
+    target = sixel_cms_open_profile_from_mem(bytes, sizeof(bytes));
+    ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        target, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+        "relative,perceptual,saturation!", input, output, 1u) &&
+        iccn_float_result(output, expected, 3u);
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+icc_numeric_mpet_tag_share_budget_test(int distinct)
+{
+    enum { grid = 64, samples = grid * grid * grid * 3,
+           clut_size = 28 + samples * 4, mpet_size = 24 + clut_size };
+    static double const input[] = {0.25, 0.5, 0.75};
+    static double const relative[] = {
+        0.170795938812887680, 0.195230144127393545, 0.418609569483359935
+    };
+    static double const clut_xyz[] = {0.25, 0.375, 0.5};
+    unsigned char *bytes;
+    unsigned char *tag;
+    unsigned char *mpet;
+    unsigned char *clut;
+    unsigned char *value;
+    sixel_icc_profile_t profile;
+    sixel_icc_issue_t issue;
+    double xyz[3];
+    size_t offset;
+    size_t length;
+    size_t i;
+    int parsed;
+    int ok;
+
+    offset = sizeof(color_icc) + 24u;
+    length = offset + (distinct ? 2u : 1u) * mpet_size;
+    bytes = calloc(1u, length);
+    if (bytes == NULL) {
+        return EXIT_FAILURE;
+    }
+    tag = iccn_expand_tag_directory(bytes, color_icc, sizeof(color_icc), 2u);
+    iccn_be32(bytes, (unsigned int)length);
+    memcpy(tag, "D2B0", 4u);
+    iccn_be32(tag + 4u, (unsigned int)offset);
+    iccn_be32(tag + 8u, mpet_size);
+    memcpy(tag + 12u, "D2B2", 4u);
+    iccn_be32(tag + 16u, (unsigned int)offset + (distinct ? mpet_size : 0u));
+    iccn_be32(tag + 20u, mpet_size);
+    mpet = bytes + offset;
+    memcpy(mpet, "mpet", 4u);
+    mpet[9] = mpet[11] = 3u;
+    iccn_be32(mpet + 12u, 1u);
+    iccn_mpet_position(mpet, 0u, 24u, clut_size);
+    clut = mpet + 24u;
+    memcpy(clut, "clut", 4u);
+    clut[9] = clut[11] = 3u;
+    memset(clut + 12u, grid, 3u);
+    value = clut + 28u;
+    for (i = 0u; i < samples; ++i, value += 4u) {
+        iccn_mpe_write_float(value, (float)clut_xyz[i % 3u]);
+    }
+    if (distinct) {
+        memcpy(mpet + mpet_size, mpet, mpet_size);
+    }
+
+    parsed = sixel_icc_parse_profile_ex(bytes, length, &profile, &issue);
+    free(bytes);
+    if (distinct || !parsed) {
+        if (parsed) {
+            sixel_icc_profile_destroy(&profile);
+        }
+        if (!distinct) {
+            fprintf(stderr, "shared MPE failed to parse: issue %d\n", issue);
+        }
+        return distinct && !parsed && issue == SIXEL_ICC_ISSUE_RESOURCE_LIMIT
+            ? EXIT_SUCCESS : EXIT_FAILURE;
+    }
+
+    /* The relative slot still uses the base fixture's colorants and
+     * curves. Each aliased slot must run after the input bytes are freed. */
+    ok = issue == SIXEL_ICC_ISSUE_NONE &&
+        profile.d2b_mpet[0].elements == profile.d2b_mpet[2].elements &&
+        sixel_icc_apply_device_to_xyz_d50_with_a2b_slot(
+            xyz, input, 3u, &profile, 1u, 1);
+    for (i = 0u; ok && i < 3u; ++i) {
+        ok = fabs(xyz[i] - relative[i]) < 1e-4;
+    }
+    for (i = 0u; ok && i <= 2u; i += 2u) {
+        ok = sixel_icc_apply_device_to_physical_xyz(
+            xyz, input, 3u, &profile, (unsigned int)i) &&
+            memcmp(xyz, clut_xyz, sizeof(xyz)) == 0;
+    }
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

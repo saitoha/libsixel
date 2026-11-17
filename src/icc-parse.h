@@ -154,8 +154,9 @@ typedef struct sixel_icc_mpet {
     uint16_t output_channels;
     size_t element_count;
     sixel_icc_mpe_t *elements;
-    /* One owned tag copy. Repeated positions share the bytes at that offset. */
+    /* Matching tag spans can borrow the same encoded and decoded data. */
     unsigned char *data;
+    int shared_payload;
 } sixel_icc_mpet_t;
 
 typedef enum sixel_icc_profile_pcs {

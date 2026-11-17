@@ -62,6 +62,15 @@ typedef struct sixel_icc_parse_budget {
     char const *limit;
 } sixel_icc_parse_budget_t;
 
+typedef struct sixel_icc_mpet_cache {
+    struct {
+        size_t offset;
+        size_t length;
+        sixel_icc_mpet_t *owner;
+    } tags[2 * SIXEL_ICC_MPET_SLOT_COUNT];
+    size_t count;
+} sixel_icc_mpet_cache_t;
+
 static void
 sixel_icc_record_issue(sixel_icc_issue_t *issue, sixel_icc_issue_t value)
 {
@@ -405,12 +414,14 @@ sixel_icc_mpet_destroy(sixel_icc_mpet_t *mpet)
 {
     size_t i;
 
-    for (i = 0u; i < mpet->element_count; ++i) {
-        sixel_icc_mpe_curves_destroy(&mpet->elements[i]);
-        free(mpet->elements[i].values);
+    if (!mpet->shared_payload) {
+        for (i = 0u; i < mpet->element_count; ++i) {
+            sixel_icc_mpe_curves_destroy(&mpet->elements[i]);
+            free(mpet->elements[i].values);
+        }
+        free(mpet->elements);
+        free(mpet->data);
     }
-    free(mpet->elements);
-    free(mpet->data);
     memset(mpet, 0, sizeof(*mpet));
 }
 
@@ -2326,6 +2337,7 @@ sixel_icc_parse_mpet(unsigned char const *data, size_t length,
     parsed.input_channels = input_channels;
     parsed.output_channels = output_channels;
     parsed.element_count = count;
+    parsed.shared_payload = 0;
     for (i = 0u; i < count; ++i) {
         mpe = &parsed.elements[ranges[i].index];
         if (i != 0u && ranges[i].offset == ranges[i - 1u].offset) {
@@ -2361,12 +2373,14 @@ static void
 sixel_icc_parse_mpet_slot(unsigned char const *profile_data,
                            size_t profile_size, char const tag_name[4],
                            uint16_t input_channels, uint16_t output_channels,
-                           sixel_icc_mpet_t *out,
+                           sixel_icc_mpet_t *out, sixel_icc_mpet_cache_t *cache,
                            sixel_icc_parse_budget_t *budget,
                            sixel_icc_issue_t *issue)
 {
     size_t offset;
     size_t length;
+    size_t i;
+    sixel_icc_mpet_t const *owner;
     sixel_icc_issue_t failure;
     char const *reason;
 
@@ -2374,6 +2388,20 @@ sixel_icc_parse_mpet_slot(unsigned char const *profile_data,
         !sixel_icc_find_tag(profile_data, profile_size, tag_name, &offset,
                              &length, issue)) {
         return;
+    }
+
+    /* Match both bounds and endpoint widths before borrowing a previously
+     * validated payload. A reverse tag may require a different shape. */
+    for (i = 0u; i < cache->count; ++i) {
+        owner = cache->tags[i].owner;
+        if (offset == cache->tags[i].offset &&
+            length == cache->tags[i].length &&
+            input_channels == owner->input_channels &&
+            output_channels == owner->output_channels) {
+            *out = *owner;
+            out->shared_payload = 1;
+            return;
+        }
     }
 
     failure = SIXEL_ICC_ISSUE_NONE;
@@ -2387,6 +2415,11 @@ sixel_icc_parse_mpet_slot(unsigned char const *profile_data,
     } else if (sixel_icc_parse_mpet(profile_data + offset, length,
                                     input_channels, output_channels, out,
                                     budget, &failure)) {
+        /* At most one owner is inserted per D2B/B2D slot. */
+        cache->tags[cache->count].offset = offset;
+        cache->tags[cache->count].length = length;
+        cache->tags[cache->count].owner = out;
+        ++cache->count;
         return;
     }
     if (failure == SIXEL_ICC_ISSUE_UNSUPPORTED) {
@@ -2587,6 +2620,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
     unsigned char const *pcs;
     sixel_icc_profile_t parsed;
     sixel_icc_parse_budget_t budget;
+    sixel_icc_mpet_cache_t mpet_cache;
     sixel_icc_issue_t local_issue;
     sixel_icc_issue_t *issue;
 
@@ -2732,18 +2766,19 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
 
     has_forward_mpet = 0;
     has_reverse_mpet = 0;
+    mpet_cache.count = 0u;
     for (slot = 0u; slot < SIXEL_ICC_MPET_SLOT_COUNT &&
          budget.limit == NULL; ++slot) {
         sixel_icc_parse_mpet_slot(profile_data, profile_size,
             sixel_icc_d2b_tag_names[slot], device_channels, 3u,
-            &parsed.d2b_mpet[slot], &budget, issue);
+            &parsed.d2b_mpet[slot], &mpet_cache, &budget, issue);
         has_forward_mpet |= parsed.d2b_mpet[slot].element_count != 0u;
     }
     for (slot = 0u; slot < SIXEL_ICC_MPET_SLOT_COUNT &&
          budget.limit == NULL; ++slot) {
         sixel_icc_parse_mpet_slot(profile_data, profile_size,
             sixel_icc_b2d_tag_names[slot], 3u, device_channels,
-            &parsed.b2d_mpet[slot], &budget, issue);
+            &parsed.b2d_mpet[slot], &mpet_cache, &budget, issue);
         has_reverse_mpet |= parsed.b2d_mpet[slot].element_count != 0u;
     }
     if (budget.limit != NULL) {

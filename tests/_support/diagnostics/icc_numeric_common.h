@@ -68,5 +68,8 @@ int icc_numeric_owned_mpet_matrix_fallback_test(int reverse);
 int icc_numeric_mpet_float_storage_fallback_test(void);
 int icc_numeric_mpet_simplex_cancellation_test(int amplify);
 size_t icc_numeric_gray_legacy_profile(unsigned char bytes[260]);
+int icc_numeric_colorspace_legacy_float_pair_test(int byte_input);
+int icc_numeric_mpet_before_later_legacy_test(void);
+int icc_numeric_mpet_tag_share_budget_test(int distinct);
 
 #endif

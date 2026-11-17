@@ -469,6 +469,11 @@ int test_icc_0110(int argc, char **argv);
 int test_icc_0111(int argc, char **argv);
 int test_icc_0112(int argc, char **argv);
 int test_icc_0113(int argc, char **argv);
+int test_icc_0114(int argc, char **argv);
+int test_icc_0115(int argc, char **argv);
+int test_icc_0116(int argc, char **argv);
+int test_icc_0117(int argc, char **argv);
+int test_icc_0118(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10271,6 +10276,11 @@ static test_entry_t const test_entries[] = {
     { "icc/0111_mpet_simplex_cancellation", test_icc_0111 },
     { "icc/0112_mpet_simplex_cancellation_chain", test_icc_0112 },
     { "icc/0113_mpet_gray_scratch", test_icc_0113 },
+    { "icc/0114_colorspace_legacy_float_pair", test_icc_0114 },
+    { "icc/0115_colorspace_legacy_byte_float_pair", test_icc_0115 },
+    { "icc/0116_mpet_before_later_legacy", test_icc_0116 },
+    { "icc/0117_mpet_shared_tag_budget", test_icc_0117 },
+    { "icc/0118_mpet_distinct_tag_budget", test_icc_0118 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

@@ -285,6 +285,7 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cms_float_source_xyz clf_local_87
 #define sixel_cms_builtin_needs_ordered_pcs clf_local_174
 #define sixel_cms_builtin_pcs_candidates clf_local_175
+#define sixel_cms_builtin_legacy_pair_index clf_local_legacy_pair_index
 #define sixel_cms_do_builtin_legacy clf_local_176
 #define sixel_cms_eval_builtin_pcs clf_local_177
 #define sixel_cms_has_colorspace_fallback clf_local_178
@@ -842,6 +843,7 @@ cms_gray_legacy_allocation_test(void)
 #undef sixel_cms_float_source_xyz
 #undef sixel_cms_builtin_needs_ordered_pcs
 #undef sixel_cms_builtin_pcs_candidates
+#undef sixel_cms_builtin_legacy_pair_index
 #undef sixel_cms_do_builtin_legacy
 #undef sixel_cms_eval_builtin_pcs
 #undef sixel_cms_has_colorspace_fallback

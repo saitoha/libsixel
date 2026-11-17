@@ -2437,6 +2437,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0111_MPET_SIMPLEX_CANCELLATION \
     -DBUILD_TEST_0112_MPET_SIMPLEX_CANCELLATION_CHAIN \
     -DBUILD_TEST_0113_MPET_GRAY_SCRATCH \
+    -DBUILD_TEST_0114_COLORSPACE_LEGACY_FLOAT_PAIR \
+    -DBUILD_TEST_0115_COLORSPACE_LEGACY_BYTE_FLOAT_PAIR \
+    -DBUILD_TEST_0116_MPET_BEFORE_LATER_LEGACY \
+    -DBUILD_TEST_0117_MPET_SHARED_TAG_BUDGET \
+    -DBUILD_TEST_0118_MPET_DISTINCT_TAG_BUDGET \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7821,6 +7826,11 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0111_mpet_simplex_cancellation.c \
     color/icc/0112_mpet_simplex_cancellation_chain.c \
     color/icc/0113_mpet_gray_scratch.c \
+    color/icc/0114_colorspace_legacy_float_pair.c \
+    color/icc/0115_colorspace_legacy_byte_float_pair.c \
+    color/icc/0116_mpet_before_later_legacy.c \
+    color/icc/0117_mpet_shared_tag_budget.c \
+    color/icc/0118_mpet_distinct_tag_budget.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \
