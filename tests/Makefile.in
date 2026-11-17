@@ -141,6 +141,43 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	_support/lso2-gpu/retained_common.c \
+	dither/fs-gpu/0011_retained_full_run.c \
+	dither/fs-gpu/0012_retained_partial_run.c \
+	dither/fs-gpu/0013_retained_full_resolve.c \
+	dither/fs-gpu/0014_retained_partial_resolve.c \
+	dither/lso2-gpu/0082_retained_full_run.c \
+	dither/lso2-gpu/0083_retained_partial_run.c \
+	dither/lso2-gpu/0084_retained_full_resolve.c \
+	dither/lso2-gpu/0085_retained_partial_resolve.c \
+	dither/atkinson-gpu/0011_retained_full_run.c \
+	dither/atkinson-gpu/0012_retained_partial_run.c \
+	dither/atkinson-gpu/0013_retained_full_resolve.c \
+	dither/atkinson-gpu/0014_retained_partial_resolve.c \
+	dither/jajuni-gpu/0011_retained_full_run.c \
+	dither/jajuni-gpu/0012_retained_partial_run.c \
+	dither/jajuni-gpu/0013_retained_full_resolve.c \
+	dither/jajuni-gpu/0014_retained_partial_resolve.c \
+	dither/stucki-gpu/0011_retained_full_run.c \
+	dither/stucki-gpu/0012_retained_partial_run.c \
+	dither/stucki-gpu/0013_retained_full_resolve.c \
+	dither/stucki-gpu/0014_retained_partial_resolve.c \
+	dither/burkes-gpu/0011_retained_full_run.c \
+	dither/burkes-gpu/0012_retained_partial_run.c \
+	dither/burkes-gpu/0013_retained_full_resolve.c \
+	dither/burkes-gpu/0014_retained_partial_resolve.c \
+	dither/sierra1-gpu/0011_retained_full_run.c \
+	dither/sierra1-gpu/0012_retained_partial_run.c \
+	dither/sierra1-gpu/0013_retained_full_resolve.c \
+	dither/sierra1-gpu/0014_retained_partial_resolve.c \
+	dither/sierra2-gpu/0011_retained_full_run.c \
+	dither/sierra2-gpu/0012_retained_partial_run.c \
+	dither/sierra2-gpu/0013_retained_full_resolve.c \
+	dither/sierra2-gpu/0014_retained_partial_resolve.c \
+	dither/sierra3-gpu/0011_retained_full_run.c \
+	dither/sierra3-gpu/0012_retained_partial_run.c \
+	dither/sierra3-gpu/0013_retained_full_resolve.c \
+	dither/sierra3-gpu/0014_retained_partial_resolve.c \
 	_support/processing/delta-refresh/spatial_test_common.c \
 	delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
 	delta/refresh/0101_spatial_defaults.c \
@@ -5852,6 +5889,43 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/path.c
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-retained_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/fs-gpu/test_runner-0011_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/fs-gpu/test_runner-0012_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/fs-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/fs-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0082_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0083_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0084_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0085_retained_partial_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/atkinson-gpu/test_runner-0011_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/atkinson-gpu/test_runner-0012_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/atkinson-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/jajuni-gpu/test_runner-0011_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/jajuni-gpu/test_runner-0012_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/jajuni-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/stucki-gpu/test_runner-0011_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/stucki-gpu/test_runner-0012_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/stucki-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/stucki-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/burkes-gpu/test_runner-0011_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/burkes-gpu/test_runner-0012_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/burkes-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/burkes-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra1-gpu/test_runner-0011_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra1-gpu/test_runner-0012_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra1-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra2-gpu/test_runner-0011_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra2-gpu/test_runner-0012_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra2-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra3-gpu/test_runner-0011_retained_full_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra3-gpu/test_runner-0012_retained_partial_run.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra3-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0097_spatial_blue_gpu_unscheduled_keep.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0101_spatial_defaults.$(OBJEXT) \
@@ -11877,6 +11951,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/lso2-gpu/$(DEPDIR)/test_runner-latest.Po \
 	_support/lso2-gpu/$(DEPDIR)/test_runner-playback.Po \
 	_support/lso2-gpu/$(DEPDIR)/test_runner-rendezvous.Po \
+	_support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Po \
 	_support/lso2-gpu/$(DEPDIR)/test_runner-sierra1_carry_common.Po \
 	_support/lso2-gpu/$(DEPDIR)/test_runner-sierra2_carry_common.Po \
 	_support/lso2-gpu/$(DEPDIR)/test_runner-sierra3_carry_common.Po \
@@ -13231,6 +13306,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po \
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po \
+	dither/atkinson-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po \
+	dither/atkinson-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po \
+	dither/atkinson-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po \
+	dither/atkinson-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0008_positional_8bit_bluenoise_gpu_force_keep_offset.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0023_blue_zero_gamma.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0024_blue_zero_linear.Po \
@@ -13281,6 +13360,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/burkes-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
 	dither/burkes-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po \
 	dither/burkes-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po \
+	dither/burkes-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po \
+	dither/burkes-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po \
+	dither/burkes-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po \
+	dither/burkes-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po \
 	dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Po \
 	dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Po \
 	dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Po \
@@ -13394,6 +13477,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/fs-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
 	dither/fs-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po \
 	dither/fs-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po \
+	dither/fs-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po \
+	dither/fs-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po \
+	dither/fs-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po \
+	dither/fs-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Po \
@@ -13505,6 +13592,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/jajuni-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
 	dither/jajuni-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po \
 	dither/jajuni-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po \
+	dither/jajuni-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po \
+	dither/jajuni-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po \
+	dither/jajuni-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po \
+	dither/jajuni-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0001_standard_indexes.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0002_small_error_indexes.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0003_scratch_reset.Po \
@@ -13586,6 +13677,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0080_queue_sample_live.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po \
+	dither/lso2-gpu/$(DEPDIR)/test_runner-0082_retained_full_run.Po \
+	dither/lso2-gpu/$(DEPDIR)/test_runner-0083_retained_partial_run.Po \
+	dither/lso2-gpu/$(DEPDIR)/test_runner-0084_retained_full_resolve.Po \
+	dither/lso2-gpu/$(DEPDIR)/test_runner-0085_retained_partial_resolve.Po \
 	dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po \
 	dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po \
 	dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po \
@@ -13602,6 +13697,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/sierra1-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
 	dither/sierra1-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po \
 	dither/sierra1-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po \
+	dither/sierra1-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po \
+	dither/sierra1-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po \
+	dither/sierra1-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po \
+	dither/sierra1-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po \
 	dither/sierra2-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po \
 	dither/sierra2-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po \
 	dither/sierra2-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po \
@@ -13612,6 +13711,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/sierra2-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
 	dither/sierra2-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po \
 	dither/sierra2-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po \
+	dither/sierra2-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po \
+	dither/sierra2-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po \
+	dither/sierra2-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po \
+	dither/sierra2-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po \
 	dither/sierra3-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po \
 	dither/sierra3-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po \
 	dither/sierra3-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po \
@@ -13622,6 +13725,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/sierra3-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
 	dither/sierra3-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po \
 	dither/sierra3-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po \
+	dither/sierra3-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po \
+	dither/sierra3-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po \
+	dither/sierra3-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po \
+	dither/sierra3-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po \
 	dither/stucki-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po \
 	dither/stucki-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po \
 	dither/stucki-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po \
@@ -13632,6 +13739,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/stucki-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
 	dither/stucki-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po \
 	dither/stucki-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po \
+	dither/stucki-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po \
+	dither/stucki-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po \
+	dither/stucki-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po \
+	dither/stucki-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po \
 	dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po \
@@ -17876,6 +17987,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETAINED_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_RETAINED_FULL_RUN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_RETAINED_PARTIAL_RUN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_RETAINED_FULL_RESOLVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_RETAINED_PARTIAL_RESOLVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_RETAINED_FULL_RUN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_RETAINED_PARTIAL_RUN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_RETAINED_FULL_RESOLVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_RETAINED_PARTIAL_RESOLVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_AUTO_NEGATIVE_EXPOSURE \
@@ -23514,6 +23634,43 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/retained_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/fs-gpu/0011_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/fs-gpu/0012_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/fs-gpu/0013_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/fs-gpu/0014_retained_partial_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0082_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0083_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0084_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0085_retained_partial_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/atkinson-gpu/0011_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/atkinson-gpu/0012_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/atkinson-gpu/0013_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/atkinson-gpu/0014_retained_partial_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/jajuni-gpu/0011_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/jajuni-gpu/0012_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/jajuni-gpu/0013_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/jajuni-gpu/0014_retained_partial_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/stucki-gpu/0011_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/stucki-gpu/0012_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/stucki-gpu/0013_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/stucki-gpu/0014_retained_partial_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/burkes-gpu/0011_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/burkes-gpu/0012_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/burkes-gpu/0013_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/burkes-gpu/0014_retained_partial_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra1-gpu/0011_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra1-gpu/0012_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra1-gpu/0013_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra1-gpu/0014_retained_partial_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra2-gpu/0011_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra2-gpu/0012_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra2-gpu/0013_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra2-gpu/0014_retained_partial_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra3-gpu/0011_retained_full_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra3-gpu/0012_retained_partial_run.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra3-gpu/0013_retained_full_resolve.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/sierra3-gpu/0014_retained_partial_resolve.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/spatial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0101_spatial_defaults.c \
@@ -29833,6 +29990,177 @@ lookup/delaunay/libfloatlookuptests_la-0012_delaunay_float_bulk.lo:  \
 
 libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
+_support/lso2-gpu/$(am__dirstamp):
+	@$(MKDIR_P) _support/lso2-gpu
+	@: >>_support/lso2-gpu/$(am__dirstamp)
+_support/lso2-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) _support/lso2-gpu/$(DEPDIR)
+	@: >>_support/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+_support/lso2-gpu/test_runner-retained_common.$(OBJEXT):  \
+	_support/lso2-gpu/$(am__dirstamp) \
+	_support/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/fs-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/fs-gpu
+	@: >>dither/fs-gpu/$(am__dirstamp)
+dither/fs-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/fs-gpu/$(DEPDIR)
+	@: >>dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/fs-gpu/test_runner-0011_retained_full_run.$(OBJEXT):  \
+	dither/fs-gpu/$(am__dirstamp) \
+	dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/fs-gpu/test_runner-0012_retained_partial_run.$(OBJEXT):  \
+	dither/fs-gpu/$(am__dirstamp) \
+	dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/fs-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT):  \
+	dither/fs-gpu/$(am__dirstamp) \
+	dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/fs-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT):  \
+	dither/fs-gpu/$(am__dirstamp) \
+	dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/lso2-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/lso2-gpu
+	@: >>dither/lso2-gpu/$(am__dirstamp)
+dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/lso2-gpu/$(DEPDIR)
+	@: >>dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/lso2-gpu/test_runner-0082_retained_full_run.$(OBJEXT):  \
+	dither/lso2-gpu/$(am__dirstamp) \
+	dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/lso2-gpu/test_runner-0083_retained_partial_run.$(OBJEXT):  \
+	dither/lso2-gpu/$(am__dirstamp) \
+	dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/lso2-gpu/test_runner-0084_retained_full_resolve.$(OBJEXT):  \
+	dither/lso2-gpu/$(am__dirstamp) \
+	dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/lso2-gpu/test_runner-0085_retained_partial_resolve.$(OBJEXT):  \
+	dither/lso2-gpu/$(am__dirstamp) \
+	dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/atkinson-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/atkinson-gpu
+	@: >>dither/atkinson-gpu/$(am__dirstamp)
+dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/atkinson-gpu/$(DEPDIR)
+	@: >>dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/atkinson-gpu/test_runner-0011_retained_full_run.$(OBJEXT):  \
+	dither/atkinson-gpu/$(am__dirstamp) \
+	dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/atkinson-gpu/test_runner-0012_retained_partial_run.$(OBJEXT):  \
+	dither/atkinson-gpu/$(am__dirstamp) \
+	dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/atkinson-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT):  \
+	dither/atkinson-gpu/$(am__dirstamp) \
+	dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT):  \
+	dither/atkinson-gpu/$(am__dirstamp) \
+	dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/jajuni-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/jajuni-gpu
+	@: >>dither/jajuni-gpu/$(am__dirstamp)
+dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/jajuni-gpu/$(DEPDIR)
+	@: >>dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/jajuni-gpu/test_runner-0011_retained_full_run.$(OBJEXT):  \
+	dither/jajuni-gpu/$(am__dirstamp) \
+	dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/jajuni-gpu/test_runner-0012_retained_partial_run.$(OBJEXT):  \
+	dither/jajuni-gpu/$(am__dirstamp) \
+	dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/jajuni-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT):  \
+	dither/jajuni-gpu/$(am__dirstamp) \
+	dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT):  \
+	dither/jajuni-gpu/$(am__dirstamp) \
+	dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/stucki-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/stucki-gpu
+	@: >>dither/stucki-gpu/$(am__dirstamp)
+dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/stucki-gpu/$(DEPDIR)
+	@: >>dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/stucki-gpu/test_runner-0011_retained_full_run.$(OBJEXT):  \
+	dither/stucki-gpu/$(am__dirstamp) \
+	dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/stucki-gpu/test_runner-0012_retained_partial_run.$(OBJEXT):  \
+	dither/stucki-gpu/$(am__dirstamp) \
+	dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/stucki-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT):  \
+	dither/stucki-gpu/$(am__dirstamp) \
+	dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/stucki-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT):  \
+	dither/stucki-gpu/$(am__dirstamp) \
+	dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/burkes-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/burkes-gpu
+	@: >>dither/burkes-gpu/$(am__dirstamp)
+dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/burkes-gpu/$(DEPDIR)
+	@: >>dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/burkes-gpu/test_runner-0011_retained_full_run.$(OBJEXT):  \
+	dither/burkes-gpu/$(am__dirstamp) \
+	dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/burkes-gpu/test_runner-0012_retained_partial_run.$(OBJEXT):  \
+	dither/burkes-gpu/$(am__dirstamp) \
+	dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/burkes-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT):  \
+	dither/burkes-gpu/$(am__dirstamp) \
+	dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/burkes-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT):  \
+	dither/burkes-gpu/$(am__dirstamp) \
+	dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra1-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/sierra1-gpu
+	@: >>dither/sierra1-gpu/$(am__dirstamp)
+dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/sierra1-gpu/$(DEPDIR)
+	@: >>dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra1-gpu/test_runner-0011_retained_full_run.$(OBJEXT):  \
+	dither/sierra1-gpu/$(am__dirstamp) \
+	dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra1-gpu/test_runner-0012_retained_partial_run.$(OBJEXT):  \
+	dither/sierra1-gpu/$(am__dirstamp) \
+	dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra1-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT):  \
+	dither/sierra1-gpu/$(am__dirstamp) \
+	dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT):  \
+	dither/sierra1-gpu/$(am__dirstamp) \
+	dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra2-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/sierra2-gpu
+	@: >>dither/sierra2-gpu/$(am__dirstamp)
+dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/sierra2-gpu/$(DEPDIR)
+	@: >>dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra2-gpu/test_runner-0011_retained_full_run.$(OBJEXT):  \
+	dither/sierra2-gpu/$(am__dirstamp) \
+	dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra2-gpu/test_runner-0012_retained_partial_run.$(OBJEXT):  \
+	dither/sierra2-gpu/$(am__dirstamp) \
+	dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra2-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT):  \
+	dither/sierra2-gpu/$(am__dirstamp) \
+	dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT):  \
+	dither/sierra2-gpu/$(am__dirstamp) \
+	dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra3-gpu/$(am__dirstamp):
+	@$(MKDIR_P) dither/sierra3-gpu
+	@: >>dither/sierra3-gpu/$(am__dirstamp)
+dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) dither/sierra3-gpu/$(DEPDIR)
+	@: >>dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra3-gpu/test_runner-0011_retained_full_run.$(OBJEXT):  \
+	dither/sierra3-gpu/$(am__dirstamp) \
+	dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra3-gpu/test_runner-0012_retained_partial_run.$(OBJEXT):  \
+	dither/sierra3-gpu/$(am__dirstamp) \
+	dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra3-gpu/test_runner-0013_retained_full_resolve.$(OBJEXT):  \
+	dither/sierra3-gpu/$(am__dirstamp) \
+	dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.$(OBJEXT):  \
+	dither/sierra3-gpu/$(am__dirstamp) \
+	dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp)
 _support/processing/delta-refresh/$(am__dirstamp):
 	@$(MKDIR_P) _support/processing/delta-refresh
 	@: >>_support/processing/delta-refresh/$(am__dirstamp)
@@ -29905,12 +30233,6 @@ delta/refresh/test_runner-0085_spatial_low_band_32_frames.$(OBJEXT):  \
 delta/refresh/test_runner-0084_spatial_low_band_16_frames.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-_support/lso2-gpu/$(am__dirstamp):
-	@$(MKDIR_P) _support/lso2-gpu
-	@: >>_support/lso2-gpu/$(am__dirstamp)
-_support/lso2-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) _support/lso2-gpu/$(DEPDIR)
-	@: >>_support/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
 _support/lso2-gpu/test_runner-atkinson_carry_common.$(OBJEXT):  \
 	_support/lso2-gpu/$(am__dirstamp) \
 	_support/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -30181,12 +30503,6 @@ dither/a-dither/test_runner-0045_wire_a_hls_none.$(OBJEXT):  \
 dither/a-dither/test_runner-0046_wire_a_hls_eytzinger.$(OBJEXT):  \
 	dither/a-dither/$(am__dirstamp) \
 	dither/a-dither/$(DEPDIR)/$(am__dirstamp)
-dither/atkinson-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/atkinson-gpu
-	@: >>dither/atkinson-gpu/$(am__dirstamp)
-dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/atkinson-gpu/$(DEPDIR)
-	@: >>dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/atkinson-gpu/test_runner-0001_accept_raster_soft.$(OBJEXT):  \
 	dither/atkinson-gpu/$(am__dirstamp) \
 	dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -30244,12 +30560,6 @@ dither/bluenoise/test_runner-0061_auto_strength_p1_after_p2.$(OBJEXT):  \
 dither/bluenoise/test_runner-0062_auto_strength_p256_after_p1.$(OBJEXT):  \
 	dither/bluenoise/$(am__dirstamp) \
 	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
-dither/burkes-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/burkes-gpu
-	@: >>dither/burkes-gpu/$(am__dirstamp)
-dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/burkes-gpu/$(DEPDIR)
-	@: >>dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/burkes-gpu/test_runner-0001_accept_raster_soft.$(OBJEXT):  \
 	dither/burkes-gpu/$(am__dirstamp) \
 	dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -30280,12 +30590,6 @@ dither/burkes-gpu/test_runner-0009_deadzone_scan_parity.$(OBJEXT):  \
 dither/burkes-gpu/test_runner-0010_live_carry_changes_indexes.$(OBJEXT):  \
 	dither/burkes-gpu/$(am__dirstamp) \
 	dither/burkes-gpu/$(DEPDIR)/$(am__dirstamp)
-dither/fs-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/fs-gpu
-	@: >>dither/fs-gpu/$(am__dirstamp)
-dither/fs-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/fs-gpu/$(DEPDIR)
-	@: >>dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/fs-gpu/test_runner-0001_accept_raster_soft.$(OBJEXT):  \
 	dither/fs-gpu/$(am__dirstamp) \
 	dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -30586,12 +30890,6 @@ dither/gpu-direct/test_runner-0100_rgb_cell_6bit_lso2_history_run.$(OBJEXT):  \
 dither/gpu-direct/test_runner-0101_rgb_cell_6bit_lso2_history_deferred.$(OBJEXT):  \
 	dither/gpu-direct/$(am__dirstamp) \
 	dither/gpu-direct/$(DEPDIR)/$(am__dirstamp)
-dither/jajuni-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/jajuni-gpu
-	@: >>dither/jajuni-gpu/$(am__dirstamp)
-dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/jajuni-gpu/$(DEPDIR)
-	@: >>dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/jajuni-gpu/test_runner-0001_accept_raster_soft.$(OBJEXT):  \
 	dither/jajuni-gpu/$(am__dirstamp) \
 	dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -30622,12 +30920,6 @@ dither/jajuni-gpu/test_runner-0009_deadzone_scan_parity.$(OBJEXT):  \
 dither/jajuni-gpu/test_runner-0010_live_carry_changes_indexes.$(OBJEXT):  \
 	dither/jajuni-gpu/$(am__dirstamp) \
 	dither/jajuni-gpu/$(DEPDIR)/$(am__dirstamp)
-dither/sierra1-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/sierra1-gpu
-	@: >>dither/sierra1-gpu/$(am__dirstamp)
-dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/sierra1-gpu/$(DEPDIR)
-	@: >>dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/sierra1-gpu/test_runner-0001_accept_raster_soft.$(OBJEXT):  \
 	dither/sierra1-gpu/$(am__dirstamp) \
 	dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -30658,12 +30950,6 @@ dither/sierra1-gpu/test_runner-0009_deadzone_scan_parity.$(OBJEXT):  \
 dither/sierra1-gpu/test_runner-0010_live_carry_changes_indexes.$(OBJEXT):  \
 	dither/sierra1-gpu/$(am__dirstamp) \
 	dither/sierra1-gpu/$(DEPDIR)/$(am__dirstamp)
-dither/sierra2-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/sierra2-gpu
-	@: >>dither/sierra2-gpu/$(am__dirstamp)
-dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/sierra2-gpu/$(DEPDIR)
-	@: >>dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/sierra2-gpu/test_runner-0001_accept_raster_soft.$(OBJEXT):  \
 	dither/sierra2-gpu/$(am__dirstamp) \
 	dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -30694,12 +30980,6 @@ dither/sierra2-gpu/test_runner-0009_deadzone_scan_parity.$(OBJEXT):  \
 dither/sierra2-gpu/test_runner-0010_live_carry_changes_indexes.$(OBJEXT):  \
 	dither/sierra2-gpu/$(am__dirstamp) \
 	dither/sierra2-gpu/$(DEPDIR)/$(am__dirstamp)
-dither/sierra3-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/sierra3-gpu
-	@: >>dither/sierra3-gpu/$(am__dirstamp)
-dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/sierra3-gpu/$(DEPDIR)
-	@: >>dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/sierra3-gpu/test_runner-0001_accept_raster_soft.$(OBJEXT):  \
 	dither/sierra3-gpu/$(am__dirstamp) \
 	dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -30730,12 +31010,6 @@ dither/sierra3-gpu/test_runner-0009_deadzone_scan_parity.$(OBJEXT):  \
 dither/sierra3-gpu/test_runner-0010_live_carry_changes_indexes.$(OBJEXT):  \
 	dither/sierra3-gpu/$(am__dirstamp) \
 	dither/sierra3-gpu/$(DEPDIR)/$(am__dirstamp)
-dither/stucki-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/stucki-gpu
-	@: >>dither/stucki-gpu/$(am__dirstamp)
-dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/stucki-gpu/$(DEPDIR)
-	@: >>dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/stucki-gpu/test_runner-0001_accept_raster_soft.$(OBJEXT):  \
 	dither/stucki-gpu/$(am__dirstamp) \
 	dither/stucki-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -38348,12 +38622,6 @@ encoder/indexed/test_runner-0162_gpu_rows_apply_failed.$(OBJEXT):  \
 encoder/indexed/test_runner-0128_gpu_rows_vptree_indexes.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
-dither/lso2-gpu/$(am__dirstamp):
-	@$(MKDIR_P) dither/lso2-gpu
-	@: >>dither/lso2-gpu/$(am__dirstamp)
-dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) dither/lso2-gpu/$(DEPDIR)
-	@: >>dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/lso2-gpu/test_runner-0015_cancel_before.$(OBJEXT):  \
 	dither/lso2-gpu/$(am__dirstamp) \
 	dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -48257,6 +48525,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/lso2-gpu/$(DEPDIR)/test_runner-latest.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/lso2-gpu/$(DEPDIR)/test_runner-playback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/lso2-gpu/$(DEPDIR)/test_runner-rendezvous.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/lso2-gpu/$(DEPDIR)/test_runner-sierra1_carry_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/lso2-gpu/$(DEPDIR)/test_runner-sierra2_carry_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/lso2-gpu/$(DEPDIR)/test_runner-sierra3_carry_common.Po@am__quote@ # am--include-marker
@@ -49611,6 +49880,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0008_positional_8bit_bluenoise_gpu_force_keep_offset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0023_blue_zero_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0024_blue_zero_linear.Po@am__quote@ # am--include-marker
@@ -49661,6 +49934,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Po@am__quote@ # am--include-marker
@@ -49774,6 +50051,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0001_parity_none.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0002_parity_a.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0003_parity_x.Po@am__quote@ # am--include-marker
@@ -49885,6 +50166,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/jajuni-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0001_standard_indexes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0002_small_error_indexes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0003_scratch_reset.Po@am__quote@ # am--include-marker
@@ -49966,6 +50251,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0080_queue_sample_live.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0082_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0083_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0084_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0085_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po@am__quote@ # am--include-marker
@@ -49982,6 +50271,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra1-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra1-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra1-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra1-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra1-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra1-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra1-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po@am__quote@ # am--include-marker
@@ -49992,6 +50285,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra2-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po@am__quote@ # am--include-marker
@@ -50002,6 +50299,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/sierra3-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po@am__quote@ # am--include-marker
@@ -50012,6 +50313,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0009_deadzone_scan_parity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0010_live_carry_changes_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/stucki-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0008_x_zero_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0009_x_zero_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/x-dither/$(DEPDIR)/test_runner-0010_x_zero_oklab.Po@am__quote@ # am--include-marker
@@ -53679,6 +53984,524 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+_support/lso2-gpu/test_runner-retained_common.o: _support/lso2-gpu/retained_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/lso2-gpu/test_runner-retained_common.o -MD -MP -MF _support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Tpo -c -o _support/lso2-gpu/test_runner-retained_common.o `test -f '_support/lso2-gpu/retained_common.c' || echo '$(srcdir)/'`_support/lso2-gpu/retained_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Tpo _support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/lso2-gpu/retained_common.c' object='_support/lso2-gpu/test_runner-retained_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/lso2-gpu/test_runner-retained_common.o `test -f '_support/lso2-gpu/retained_common.c' || echo '$(srcdir)/'`_support/lso2-gpu/retained_common.c
+
+_support/lso2-gpu/test_runner-retained_common.obj: _support/lso2-gpu/retained_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/lso2-gpu/test_runner-retained_common.obj -MD -MP -MF _support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Tpo -c -o _support/lso2-gpu/test_runner-retained_common.obj `if test -f '_support/lso2-gpu/retained_common.c'; then $(CYGPATH_W) '_support/lso2-gpu/retained_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/lso2-gpu/retained_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Tpo _support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/lso2-gpu/retained_common.c' object='_support/lso2-gpu/test_runner-retained_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/lso2-gpu/test_runner-retained_common.obj `if test -f '_support/lso2-gpu/retained_common.c'; then $(CYGPATH_W) '_support/lso2-gpu/retained_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/lso2-gpu/retained_common.c'; fi`
+
+dither/fs-gpu/test_runner-0011_retained_full_run.o: dither/fs-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0011_retained_full_run.o -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/fs-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/fs-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/fs-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0011_retained_full_run.c' object='dither/fs-gpu/test_runner-0011_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/fs-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/fs-gpu/0011_retained_full_run.c
+
+dither/fs-gpu/test_runner-0011_retained_full_run.obj: dither/fs-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0011_retained_full_run.obj -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/fs-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/fs-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/fs-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0011_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0011_retained_full_run.c' object='dither/fs-gpu/test_runner-0011_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/fs-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/fs-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0011_retained_full_run.c'; fi`
+
+dither/fs-gpu/test_runner-0012_retained_partial_run.o: dither/fs-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0012_retained_partial_run.o -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/fs-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/fs-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/fs-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0012_retained_partial_run.c' object='dither/fs-gpu/test_runner-0012_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/fs-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/fs-gpu/0012_retained_partial_run.c
+
+dither/fs-gpu/test_runner-0012_retained_partial_run.obj: dither/fs-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0012_retained_partial_run.obj -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/fs-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/fs-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/fs-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0012_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0012_retained_partial_run.c' object='dither/fs-gpu/test_runner-0012_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/fs-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/fs-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0012_retained_partial_run.c'; fi`
+
+dither/fs-gpu/test_runner-0013_retained_full_resolve.o: dither/fs-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0013_retained_full_resolve.o -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/fs-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/fs-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/fs-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0013_retained_full_resolve.c' object='dither/fs-gpu/test_runner-0013_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/fs-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/fs-gpu/0013_retained_full_resolve.c
+
+dither/fs-gpu/test_runner-0013_retained_full_resolve.obj: dither/fs-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0013_retained_full_resolve.obj -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/fs-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/fs-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/fs-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0013_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0013_retained_full_resolve.c' object='dither/fs-gpu/test_runner-0013_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/fs-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/fs-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0013_retained_full_resolve.c'; fi`
+
+dither/fs-gpu/test_runner-0014_retained_partial_resolve.o: dither/fs-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0014_retained_partial_resolve.o -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/fs-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/fs-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/fs-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0014_retained_partial_resolve.c' object='dither/fs-gpu/test_runner-0014_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/fs-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/fs-gpu/0014_retained_partial_resolve.c
+
+dither/fs-gpu/test_runner-0014_retained_partial_resolve.obj: dither/fs-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0014_retained_partial_resolve.obj -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/fs-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/fs-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/fs-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0014_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0014_retained_partial_resolve.c' object='dither/fs-gpu/test_runner-0014_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/fs-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/fs-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0014_retained_partial_resolve.c'; fi`
+
+dither/lso2-gpu/test_runner-0082_retained_full_run.o: dither/lso2-gpu/0082_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0082_retained_full_run.o -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0082_retained_full_run.Tpo -c -o dither/lso2-gpu/test_runner-0082_retained_full_run.o `test -f 'dither/lso2-gpu/0082_retained_full_run.c' || echo '$(srcdir)/'`dither/lso2-gpu/0082_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0082_retained_full_run.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0082_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0082_retained_full_run.c' object='dither/lso2-gpu/test_runner-0082_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0082_retained_full_run.o `test -f 'dither/lso2-gpu/0082_retained_full_run.c' || echo '$(srcdir)/'`dither/lso2-gpu/0082_retained_full_run.c
+
+dither/lso2-gpu/test_runner-0082_retained_full_run.obj: dither/lso2-gpu/0082_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0082_retained_full_run.obj -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0082_retained_full_run.Tpo -c -o dither/lso2-gpu/test_runner-0082_retained_full_run.obj `if test -f 'dither/lso2-gpu/0082_retained_full_run.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0082_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0082_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0082_retained_full_run.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0082_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0082_retained_full_run.c' object='dither/lso2-gpu/test_runner-0082_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0082_retained_full_run.obj `if test -f 'dither/lso2-gpu/0082_retained_full_run.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0082_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0082_retained_full_run.c'; fi`
+
+dither/lso2-gpu/test_runner-0083_retained_partial_run.o: dither/lso2-gpu/0083_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0083_retained_partial_run.o -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0083_retained_partial_run.Tpo -c -o dither/lso2-gpu/test_runner-0083_retained_partial_run.o `test -f 'dither/lso2-gpu/0083_retained_partial_run.c' || echo '$(srcdir)/'`dither/lso2-gpu/0083_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0083_retained_partial_run.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0083_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0083_retained_partial_run.c' object='dither/lso2-gpu/test_runner-0083_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0083_retained_partial_run.o `test -f 'dither/lso2-gpu/0083_retained_partial_run.c' || echo '$(srcdir)/'`dither/lso2-gpu/0083_retained_partial_run.c
+
+dither/lso2-gpu/test_runner-0083_retained_partial_run.obj: dither/lso2-gpu/0083_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0083_retained_partial_run.obj -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0083_retained_partial_run.Tpo -c -o dither/lso2-gpu/test_runner-0083_retained_partial_run.obj `if test -f 'dither/lso2-gpu/0083_retained_partial_run.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0083_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0083_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0083_retained_partial_run.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0083_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0083_retained_partial_run.c' object='dither/lso2-gpu/test_runner-0083_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0083_retained_partial_run.obj `if test -f 'dither/lso2-gpu/0083_retained_partial_run.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0083_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0083_retained_partial_run.c'; fi`
+
+dither/lso2-gpu/test_runner-0084_retained_full_resolve.o: dither/lso2-gpu/0084_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0084_retained_full_resolve.o -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0084_retained_full_resolve.Tpo -c -o dither/lso2-gpu/test_runner-0084_retained_full_resolve.o `test -f 'dither/lso2-gpu/0084_retained_full_resolve.c' || echo '$(srcdir)/'`dither/lso2-gpu/0084_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0084_retained_full_resolve.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0084_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0084_retained_full_resolve.c' object='dither/lso2-gpu/test_runner-0084_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0084_retained_full_resolve.o `test -f 'dither/lso2-gpu/0084_retained_full_resolve.c' || echo '$(srcdir)/'`dither/lso2-gpu/0084_retained_full_resolve.c
+
+dither/lso2-gpu/test_runner-0084_retained_full_resolve.obj: dither/lso2-gpu/0084_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0084_retained_full_resolve.obj -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0084_retained_full_resolve.Tpo -c -o dither/lso2-gpu/test_runner-0084_retained_full_resolve.obj `if test -f 'dither/lso2-gpu/0084_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0084_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0084_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0084_retained_full_resolve.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0084_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0084_retained_full_resolve.c' object='dither/lso2-gpu/test_runner-0084_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0084_retained_full_resolve.obj `if test -f 'dither/lso2-gpu/0084_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0084_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0084_retained_full_resolve.c'; fi`
+
+dither/lso2-gpu/test_runner-0085_retained_partial_resolve.o: dither/lso2-gpu/0085_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0085_retained_partial_resolve.o -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0085_retained_partial_resolve.Tpo -c -o dither/lso2-gpu/test_runner-0085_retained_partial_resolve.o `test -f 'dither/lso2-gpu/0085_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/lso2-gpu/0085_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0085_retained_partial_resolve.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0085_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0085_retained_partial_resolve.c' object='dither/lso2-gpu/test_runner-0085_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0085_retained_partial_resolve.o `test -f 'dither/lso2-gpu/0085_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/lso2-gpu/0085_retained_partial_resolve.c
+
+dither/lso2-gpu/test_runner-0085_retained_partial_resolve.obj: dither/lso2-gpu/0085_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0085_retained_partial_resolve.obj -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0085_retained_partial_resolve.Tpo -c -o dither/lso2-gpu/test_runner-0085_retained_partial_resolve.obj `if test -f 'dither/lso2-gpu/0085_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0085_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0085_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0085_retained_partial_resolve.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0085_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0085_retained_partial_resolve.c' object='dither/lso2-gpu/test_runner-0085_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0085_retained_partial_resolve.obj `if test -f 'dither/lso2-gpu/0085_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0085_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0085_retained_partial_resolve.c'; fi`
+
+dither/atkinson-gpu/test_runner-0011_retained_full_run.o: dither/atkinson-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/atkinson-gpu/test_runner-0011_retained_full_run.o -MD -MP -MF dither/atkinson-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/atkinson-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/atkinson-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/atkinson-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/atkinson-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/atkinson-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/atkinson-gpu/0011_retained_full_run.c' object='dither/atkinson-gpu/test_runner-0011_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/atkinson-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/atkinson-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/atkinson-gpu/0011_retained_full_run.c
+
+dither/atkinson-gpu/test_runner-0011_retained_full_run.obj: dither/atkinson-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/atkinson-gpu/test_runner-0011_retained_full_run.obj -MD -MP -MF dither/atkinson-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/atkinson-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/atkinson-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/atkinson-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/atkinson-gpu/0011_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/atkinson-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/atkinson-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/atkinson-gpu/0011_retained_full_run.c' object='dither/atkinson-gpu/test_runner-0011_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/atkinson-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/atkinson-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/atkinson-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/atkinson-gpu/0011_retained_full_run.c'; fi`
+
+dither/atkinson-gpu/test_runner-0012_retained_partial_run.o: dither/atkinson-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/atkinson-gpu/test_runner-0012_retained_partial_run.o -MD -MP -MF dither/atkinson-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/atkinson-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/atkinson-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/atkinson-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/atkinson-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/atkinson-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/atkinson-gpu/0012_retained_partial_run.c' object='dither/atkinson-gpu/test_runner-0012_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/atkinson-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/atkinson-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/atkinson-gpu/0012_retained_partial_run.c
+
+dither/atkinson-gpu/test_runner-0012_retained_partial_run.obj: dither/atkinson-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/atkinson-gpu/test_runner-0012_retained_partial_run.obj -MD -MP -MF dither/atkinson-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/atkinson-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/atkinson-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/atkinson-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/atkinson-gpu/0012_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/atkinson-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/atkinson-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/atkinson-gpu/0012_retained_partial_run.c' object='dither/atkinson-gpu/test_runner-0012_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/atkinson-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/atkinson-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/atkinson-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/atkinson-gpu/0012_retained_partial_run.c'; fi`
+
+dither/atkinson-gpu/test_runner-0013_retained_full_resolve.o: dither/atkinson-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/atkinson-gpu/test_runner-0013_retained_full_resolve.o -MD -MP -MF dither/atkinson-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/atkinson-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/atkinson-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/atkinson-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/atkinson-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/atkinson-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/atkinson-gpu/0013_retained_full_resolve.c' object='dither/atkinson-gpu/test_runner-0013_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/atkinson-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/atkinson-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/atkinson-gpu/0013_retained_full_resolve.c
+
+dither/atkinson-gpu/test_runner-0013_retained_full_resolve.obj: dither/atkinson-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/atkinson-gpu/test_runner-0013_retained_full_resolve.obj -MD -MP -MF dither/atkinson-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/atkinson-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/atkinson-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/atkinson-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/atkinson-gpu/0013_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/atkinson-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/atkinson-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/atkinson-gpu/0013_retained_full_resolve.c' object='dither/atkinson-gpu/test_runner-0013_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/atkinson-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/atkinson-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/atkinson-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/atkinson-gpu/0013_retained_full_resolve.c'; fi`
+
+dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.o: dither/atkinson-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.o -MD -MP -MF dither/atkinson-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/atkinson-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/atkinson-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/atkinson-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/atkinson-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/atkinson-gpu/0014_retained_partial_resolve.c' object='dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/atkinson-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/atkinson-gpu/0014_retained_partial_resolve.c
+
+dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.obj: dither/atkinson-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.obj -MD -MP -MF dither/atkinson-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/atkinson-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/atkinson-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/atkinson-gpu/0014_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/atkinson-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/atkinson-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/atkinson-gpu/0014_retained_partial_resolve.c' object='dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/atkinson-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/atkinson-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/atkinson-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/atkinson-gpu/0014_retained_partial_resolve.c'; fi`
+
+dither/jajuni-gpu/test_runner-0011_retained_full_run.o: dither/jajuni-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/jajuni-gpu/test_runner-0011_retained_full_run.o -MD -MP -MF dither/jajuni-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/jajuni-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/jajuni-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/jajuni-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/jajuni-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/jajuni-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/jajuni-gpu/0011_retained_full_run.c' object='dither/jajuni-gpu/test_runner-0011_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/jajuni-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/jajuni-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/jajuni-gpu/0011_retained_full_run.c
+
+dither/jajuni-gpu/test_runner-0011_retained_full_run.obj: dither/jajuni-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/jajuni-gpu/test_runner-0011_retained_full_run.obj -MD -MP -MF dither/jajuni-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/jajuni-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/jajuni-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/jajuni-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/jajuni-gpu/0011_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/jajuni-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/jajuni-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/jajuni-gpu/0011_retained_full_run.c' object='dither/jajuni-gpu/test_runner-0011_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/jajuni-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/jajuni-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/jajuni-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/jajuni-gpu/0011_retained_full_run.c'; fi`
+
+dither/jajuni-gpu/test_runner-0012_retained_partial_run.o: dither/jajuni-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/jajuni-gpu/test_runner-0012_retained_partial_run.o -MD -MP -MF dither/jajuni-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/jajuni-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/jajuni-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/jajuni-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/jajuni-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/jajuni-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/jajuni-gpu/0012_retained_partial_run.c' object='dither/jajuni-gpu/test_runner-0012_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/jajuni-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/jajuni-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/jajuni-gpu/0012_retained_partial_run.c
+
+dither/jajuni-gpu/test_runner-0012_retained_partial_run.obj: dither/jajuni-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/jajuni-gpu/test_runner-0012_retained_partial_run.obj -MD -MP -MF dither/jajuni-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/jajuni-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/jajuni-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/jajuni-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/jajuni-gpu/0012_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/jajuni-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/jajuni-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/jajuni-gpu/0012_retained_partial_run.c' object='dither/jajuni-gpu/test_runner-0012_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/jajuni-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/jajuni-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/jajuni-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/jajuni-gpu/0012_retained_partial_run.c'; fi`
+
+dither/jajuni-gpu/test_runner-0013_retained_full_resolve.o: dither/jajuni-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/jajuni-gpu/test_runner-0013_retained_full_resolve.o -MD -MP -MF dither/jajuni-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/jajuni-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/jajuni-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/jajuni-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/jajuni-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/jajuni-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/jajuni-gpu/0013_retained_full_resolve.c' object='dither/jajuni-gpu/test_runner-0013_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/jajuni-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/jajuni-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/jajuni-gpu/0013_retained_full_resolve.c
+
+dither/jajuni-gpu/test_runner-0013_retained_full_resolve.obj: dither/jajuni-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/jajuni-gpu/test_runner-0013_retained_full_resolve.obj -MD -MP -MF dither/jajuni-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/jajuni-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/jajuni-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/jajuni-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/jajuni-gpu/0013_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/jajuni-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/jajuni-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/jajuni-gpu/0013_retained_full_resolve.c' object='dither/jajuni-gpu/test_runner-0013_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/jajuni-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/jajuni-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/jajuni-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/jajuni-gpu/0013_retained_full_resolve.c'; fi`
+
+dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.o: dither/jajuni-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.o -MD -MP -MF dither/jajuni-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/jajuni-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/jajuni-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/jajuni-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/jajuni-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/jajuni-gpu/0014_retained_partial_resolve.c' object='dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/jajuni-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/jajuni-gpu/0014_retained_partial_resolve.c
+
+dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.obj: dither/jajuni-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.obj -MD -MP -MF dither/jajuni-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/jajuni-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/jajuni-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/jajuni-gpu/0014_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/jajuni-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/jajuni-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/jajuni-gpu/0014_retained_partial_resolve.c' object='dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/jajuni-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/jajuni-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/jajuni-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/jajuni-gpu/0014_retained_partial_resolve.c'; fi`
+
+dither/stucki-gpu/test_runner-0011_retained_full_run.o: dither/stucki-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/stucki-gpu/test_runner-0011_retained_full_run.o -MD -MP -MF dither/stucki-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/stucki-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/stucki-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/stucki-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/stucki-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/stucki-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/stucki-gpu/0011_retained_full_run.c' object='dither/stucki-gpu/test_runner-0011_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/stucki-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/stucki-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/stucki-gpu/0011_retained_full_run.c
+
+dither/stucki-gpu/test_runner-0011_retained_full_run.obj: dither/stucki-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/stucki-gpu/test_runner-0011_retained_full_run.obj -MD -MP -MF dither/stucki-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/stucki-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/stucki-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/stucki-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/stucki-gpu/0011_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/stucki-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/stucki-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/stucki-gpu/0011_retained_full_run.c' object='dither/stucki-gpu/test_runner-0011_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/stucki-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/stucki-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/stucki-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/stucki-gpu/0011_retained_full_run.c'; fi`
+
+dither/stucki-gpu/test_runner-0012_retained_partial_run.o: dither/stucki-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/stucki-gpu/test_runner-0012_retained_partial_run.o -MD -MP -MF dither/stucki-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/stucki-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/stucki-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/stucki-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/stucki-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/stucki-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/stucki-gpu/0012_retained_partial_run.c' object='dither/stucki-gpu/test_runner-0012_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/stucki-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/stucki-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/stucki-gpu/0012_retained_partial_run.c
+
+dither/stucki-gpu/test_runner-0012_retained_partial_run.obj: dither/stucki-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/stucki-gpu/test_runner-0012_retained_partial_run.obj -MD -MP -MF dither/stucki-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/stucki-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/stucki-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/stucki-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/stucki-gpu/0012_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/stucki-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/stucki-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/stucki-gpu/0012_retained_partial_run.c' object='dither/stucki-gpu/test_runner-0012_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/stucki-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/stucki-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/stucki-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/stucki-gpu/0012_retained_partial_run.c'; fi`
+
+dither/stucki-gpu/test_runner-0013_retained_full_resolve.o: dither/stucki-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/stucki-gpu/test_runner-0013_retained_full_resolve.o -MD -MP -MF dither/stucki-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/stucki-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/stucki-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/stucki-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/stucki-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/stucki-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/stucki-gpu/0013_retained_full_resolve.c' object='dither/stucki-gpu/test_runner-0013_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/stucki-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/stucki-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/stucki-gpu/0013_retained_full_resolve.c
+
+dither/stucki-gpu/test_runner-0013_retained_full_resolve.obj: dither/stucki-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/stucki-gpu/test_runner-0013_retained_full_resolve.obj -MD -MP -MF dither/stucki-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/stucki-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/stucki-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/stucki-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/stucki-gpu/0013_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/stucki-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/stucki-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/stucki-gpu/0013_retained_full_resolve.c' object='dither/stucki-gpu/test_runner-0013_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/stucki-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/stucki-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/stucki-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/stucki-gpu/0013_retained_full_resolve.c'; fi`
+
+dither/stucki-gpu/test_runner-0014_retained_partial_resolve.o: dither/stucki-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/stucki-gpu/test_runner-0014_retained_partial_resolve.o -MD -MP -MF dither/stucki-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/stucki-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/stucki-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/stucki-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/stucki-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/stucki-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/stucki-gpu/0014_retained_partial_resolve.c' object='dither/stucki-gpu/test_runner-0014_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/stucki-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/stucki-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/stucki-gpu/0014_retained_partial_resolve.c
+
+dither/stucki-gpu/test_runner-0014_retained_partial_resolve.obj: dither/stucki-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/stucki-gpu/test_runner-0014_retained_partial_resolve.obj -MD -MP -MF dither/stucki-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/stucki-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/stucki-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/stucki-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/stucki-gpu/0014_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/stucki-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/stucki-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/stucki-gpu/0014_retained_partial_resolve.c' object='dither/stucki-gpu/test_runner-0014_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/stucki-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/stucki-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/stucki-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/stucki-gpu/0014_retained_partial_resolve.c'; fi`
+
+dither/burkes-gpu/test_runner-0011_retained_full_run.o: dither/burkes-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/burkes-gpu/test_runner-0011_retained_full_run.o -MD -MP -MF dither/burkes-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/burkes-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/burkes-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/burkes-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/burkes-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/burkes-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/burkes-gpu/0011_retained_full_run.c' object='dither/burkes-gpu/test_runner-0011_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/burkes-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/burkes-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/burkes-gpu/0011_retained_full_run.c
+
+dither/burkes-gpu/test_runner-0011_retained_full_run.obj: dither/burkes-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/burkes-gpu/test_runner-0011_retained_full_run.obj -MD -MP -MF dither/burkes-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/burkes-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/burkes-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/burkes-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/burkes-gpu/0011_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/burkes-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/burkes-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/burkes-gpu/0011_retained_full_run.c' object='dither/burkes-gpu/test_runner-0011_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/burkes-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/burkes-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/burkes-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/burkes-gpu/0011_retained_full_run.c'; fi`
+
+dither/burkes-gpu/test_runner-0012_retained_partial_run.o: dither/burkes-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/burkes-gpu/test_runner-0012_retained_partial_run.o -MD -MP -MF dither/burkes-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/burkes-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/burkes-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/burkes-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/burkes-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/burkes-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/burkes-gpu/0012_retained_partial_run.c' object='dither/burkes-gpu/test_runner-0012_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/burkes-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/burkes-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/burkes-gpu/0012_retained_partial_run.c
+
+dither/burkes-gpu/test_runner-0012_retained_partial_run.obj: dither/burkes-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/burkes-gpu/test_runner-0012_retained_partial_run.obj -MD -MP -MF dither/burkes-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/burkes-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/burkes-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/burkes-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/burkes-gpu/0012_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/burkes-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/burkes-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/burkes-gpu/0012_retained_partial_run.c' object='dither/burkes-gpu/test_runner-0012_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/burkes-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/burkes-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/burkes-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/burkes-gpu/0012_retained_partial_run.c'; fi`
+
+dither/burkes-gpu/test_runner-0013_retained_full_resolve.o: dither/burkes-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/burkes-gpu/test_runner-0013_retained_full_resolve.o -MD -MP -MF dither/burkes-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/burkes-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/burkes-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/burkes-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/burkes-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/burkes-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/burkes-gpu/0013_retained_full_resolve.c' object='dither/burkes-gpu/test_runner-0013_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/burkes-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/burkes-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/burkes-gpu/0013_retained_full_resolve.c
+
+dither/burkes-gpu/test_runner-0013_retained_full_resolve.obj: dither/burkes-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/burkes-gpu/test_runner-0013_retained_full_resolve.obj -MD -MP -MF dither/burkes-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/burkes-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/burkes-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/burkes-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/burkes-gpu/0013_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/burkes-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/burkes-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/burkes-gpu/0013_retained_full_resolve.c' object='dither/burkes-gpu/test_runner-0013_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/burkes-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/burkes-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/burkes-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/burkes-gpu/0013_retained_full_resolve.c'; fi`
+
+dither/burkes-gpu/test_runner-0014_retained_partial_resolve.o: dither/burkes-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/burkes-gpu/test_runner-0014_retained_partial_resolve.o -MD -MP -MF dither/burkes-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/burkes-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/burkes-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/burkes-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/burkes-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/burkes-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/burkes-gpu/0014_retained_partial_resolve.c' object='dither/burkes-gpu/test_runner-0014_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/burkes-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/burkes-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/burkes-gpu/0014_retained_partial_resolve.c
+
+dither/burkes-gpu/test_runner-0014_retained_partial_resolve.obj: dither/burkes-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/burkes-gpu/test_runner-0014_retained_partial_resolve.obj -MD -MP -MF dither/burkes-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/burkes-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/burkes-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/burkes-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/burkes-gpu/0014_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/burkes-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/burkes-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/burkes-gpu/0014_retained_partial_resolve.c' object='dither/burkes-gpu/test_runner-0014_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/burkes-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/burkes-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/burkes-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/burkes-gpu/0014_retained_partial_resolve.c'; fi`
+
+dither/sierra1-gpu/test_runner-0011_retained_full_run.o: dither/sierra1-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra1-gpu/test_runner-0011_retained_full_run.o -MD -MP -MF dither/sierra1-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/sierra1-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/sierra1-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/sierra1-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra1-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/sierra1-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra1-gpu/0011_retained_full_run.c' object='dither/sierra1-gpu/test_runner-0011_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra1-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/sierra1-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/sierra1-gpu/0011_retained_full_run.c
+
+dither/sierra1-gpu/test_runner-0011_retained_full_run.obj: dither/sierra1-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra1-gpu/test_runner-0011_retained_full_run.obj -MD -MP -MF dither/sierra1-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/sierra1-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/sierra1-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/sierra1-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra1-gpu/0011_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra1-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/sierra1-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra1-gpu/0011_retained_full_run.c' object='dither/sierra1-gpu/test_runner-0011_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra1-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/sierra1-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/sierra1-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra1-gpu/0011_retained_full_run.c'; fi`
+
+dither/sierra1-gpu/test_runner-0012_retained_partial_run.o: dither/sierra1-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra1-gpu/test_runner-0012_retained_partial_run.o -MD -MP -MF dither/sierra1-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/sierra1-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/sierra1-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/sierra1-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra1-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/sierra1-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra1-gpu/0012_retained_partial_run.c' object='dither/sierra1-gpu/test_runner-0012_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra1-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/sierra1-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/sierra1-gpu/0012_retained_partial_run.c
+
+dither/sierra1-gpu/test_runner-0012_retained_partial_run.obj: dither/sierra1-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra1-gpu/test_runner-0012_retained_partial_run.obj -MD -MP -MF dither/sierra1-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/sierra1-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/sierra1-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/sierra1-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra1-gpu/0012_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra1-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/sierra1-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra1-gpu/0012_retained_partial_run.c' object='dither/sierra1-gpu/test_runner-0012_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra1-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/sierra1-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/sierra1-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra1-gpu/0012_retained_partial_run.c'; fi`
+
+dither/sierra1-gpu/test_runner-0013_retained_full_resolve.o: dither/sierra1-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra1-gpu/test_runner-0013_retained_full_resolve.o -MD -MP -MF dither/sierra1-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/sierra1-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/sierra1-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/sierra1-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra1-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/sierra1-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra1-gpu/0013_retained_full_resolve.c' object='dither/sierra1-gpu/test_runner-0013_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra1-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/sierra1-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/sierra1-gpu/0013_retained_full_resolve.c
+
+dither/sierra1-gpu/test_runner-0013_retained_full_resolve.obj: dither/sierra1-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra1-gpu/test_runner-0013_retained_full_resolve.obj -MD -MP -MF dither/sierra1-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/sierra1-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/sierra1-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/sierra1-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra1-gpu/0013_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra1-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/sierra1-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra1-gpu/0013_retained_full_resolve.c' object='dither/sierra1-gpu/test_runner-0013_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra1-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/sierra1-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/sierra1-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra1-gpu/0013_retained_full_resolve.c'; fi`
+
+dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.o: dither/sierra1-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.o -MD -MP -MF dither/sierra1-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/sierra1-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/sierra1-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra1-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/sierra1-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra1-gpu/0014_retained_partial_resolve.c' object='dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/sierra1-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/sierra1-gpu/0014_retained_partial_resolve.c
+
+dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.obj: dither/sierra1-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.obj -MD -MP -MF dither/sierra1-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/sierra1-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/sierra1-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra1-gpu/0014_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra1-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/sierra1-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra1-gpu/0014_retained_partial_resolve.c' object='dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra1-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/sierra1-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/sierra1-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra1-gpu/0014_retained_partial_resolve.c'; fi`
+
+dither/sierra2-gpu/test_runner-0011_retained_full_run.o: dither/sierra2-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra2-gpu/test_runner-0011_retained_full_run.o -MD -MP -MF dither/sierra2-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/sierra2-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/sierra2-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/sierra2-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra2-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/sierra2-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra2-gpu/0011_retained_full_run.c' object='dither/sierra2-gpu/test_runner-0011_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra2-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/sierra2-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/sierra2-gpu/0011_retained_full_run.c
+
+dither/sierra2-gpu/test_runner-0011_retained_full_run.obj: dither/sierra2-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra2-gpu/test_runner-0011_retained_full_run.obj -MD -MP -MF dither/sierra2-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/sierra2-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/sierra2-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/sierra2-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra2-gpu/0011_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra2-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/sierra2-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra2-gpu/0011_retained_full_run.c' object='dither/sierra2-gpu/test_runner-0011_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra2-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/sierra2-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/sierra2-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra2-gpu/0011_retained_full_run.c'; fi`
+
+dither/sierra2-gpu/test_runner-0012_retained_partial_run.o: dither/sierra2-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra2-gpu/test_runner-0012_retained_partial_run.o -MD -MP -MF dither/sierra2-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/sierra2-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/sierra2-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/sierra2-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra2-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/sierra2-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra2-gpu/0012_retained_partial_run.c' object='dither/sierra2-gpu/test_runner-0012_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra2-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/sierra2-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/sierra2-gpu/0012_retained_partial_run.c
+
+dither/sierra2-gpu/test_runner-0012_retained_partial_run.obj: dither/sierra2-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra2-gpu/test_runner-0012_retained_partial_run.obj -MD -MP -MF dither/sierra2-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/sierra2-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/sierra2-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/sierra2-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra2-gpu/0012_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra2-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/sierra2-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra2-gpu/0012_retained_partial_run.c' object='dither/sierra2-gpu/test_runner-0012_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra2-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/sierra2-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/sierra2-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra2-gpu/0012_retained_partial_run.c'; fi`
+
+dither/sierra2-gpu/test_runner-0013_retained_full_resolve.o: dither/sierra2-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra2-gpu/test_runner-0013_retained_full_resolve.o -MD -MP -MF dither/sierra2-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/sierra2-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/sierra2-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/sierra2-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra2-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/sierra2-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra2-gpu/0013_retained_full_resolve.c' object='dither/sierra2-gpu/test_runner-0013_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra2-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/sierra2-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/sierra2-gpu/0013_retained_full_resolve.c
+
+dither/sierra2-gpu/test_runner-0013_retained_full_resolve.obj: dither/sierra2-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra2-gpu/test_runner-0013_retained_full_resolve.obj -MD -MP -MF dither/sierra2-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/sierra2-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/sierra2-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/sierra2-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra2-gpu/0013_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra2-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/sierra2-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra2-gpu/0013_retained_full_resolve.c' object='dither/sierra2-gpu/test_runner-0013_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra2-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/sierra2-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/sierra2-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra2-gpu/0013_retained_full_resolve.c'; fi`
+
+dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.o: dither/sierra2-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.o -MD -MP -MF dither/sierra2-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/sierra2-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/sierra2-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra2-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/sierra2-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra2-gpu/0014_retained_partial_resolve.c' object='dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/sierra2-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/sierra2-gpu/0014_retained_partial_resolve.c
+
+dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.obj: dither/sierra2-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.obj -MD -MP -MF dither/sierra2-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/sierra2-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/sierra2-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra2-gpu/0014_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra2-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/sierra2-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra2-gpu/0014_retained_partial_resolve.c' object='dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra2-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/sierra2-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/sierra2-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra2-gpu/0014_retained_partial_resolve.c'; fi`
+
+dither/sierra3-gpu/test_runner-0011_retained_full_run.o: dither/sierra3-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra3-gpu/test_runner-0011_retained_full_run.o -MD -MP -MF dither/sierra3-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/sierra3-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/sierra3-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/sierra3-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra3-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/sierra3-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra3-gpu/0011_retained_full_run.c' object='dither/sierra3-gpu/test_runner-0011_retained_full_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra3-gpu/test_runner-0011_retained_full_run.o `test -f 'dither/sierra3-gpu/0011_retained_full_run.c' || echo '$(srcdir)/'`dither/sierra3-gpu/0011_retained_full_run.c
+
+dither/sierra3-gpu/test_runner-0011_retained_full_run.obj: dither/sierra3-gpu/0011_retained_full_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra3-gpu/test_runner-0011_retained_full_run.obj -MD -MP -MF dither/sierra3-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo -c -o dither/sierra3-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/sierra3-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/sierra3-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra3-gpu/0011_retained_full_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra3-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Tpo dither/sierra3-gpu/$(DEPDIR)/test_runner-0011_retained_full_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra3-gpu/0011_retained_full_run.c' object='dither/sierra3-gpu/test_runner-0011_retained_full_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra3-gpu/test_runner-0011_retained_full_run.obj `if test -f 'dither/sierra3-gpu/0011_retained_full_run.c'; then $(CYGPATH_W) 'dither/sierra3-gpu/0011_retained_full_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra3-gpu/0011_retained_full_run.c'; fi`
+
+dither/sierra3-gpu/test_runner-0012_retained_partial_run.o: dither/sierra3-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra3-gpu/test_runner-0012_retained_partial_run.o -MD -MP -MF dither/sierra3-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/sierra3-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/sierra3-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/sierra3-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra3-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/sierra3-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra3-gpu/0012_retained_partial_run.c' object='dither/sierra3-gpu/test_runner-0012_retained_partial_run.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra3-gpu/test_runner-0012_retained_partial_run.o `test -f 'dither/sierra3-gpu/0012_retained_partial_run.c' || echo '$(srcdir)/'`dither/sierra3-gpu/0012_retained_partial_run.c
+
+dither/sierra3-gpu/test_runner-0012_retained_partial_run.obj: dither/sierra3-gpu/0012_retained_partial_run.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra3-gpu/test_runner-0012_retained_partial_run.obj -MD -MP -MF dither/sierra3-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo -c -o dither/sierra3-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/sierra3-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/sierra3-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra3-gpu/0012_retained_partial_run.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra3-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Tpo dither/sierra3-gpu/$(DEPDIR)/test_runner-0012_retained_partial_run.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra3-gpu/0012_retained_partial_run.c' object='dither/sierra3-gpu/test_runner-0012_retained_partial_run.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra3-gpu/test_runner-0012_retained_partial_run.obj `if test -f 'dither/sierra3-gpu/0012_retained_partial_run.c'; then $(CYGPATH_W) 'dither/sierra3-gpu/0012_retained_partial_run.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra3-gpu/0012_retained_partial_run.c'; fi`
+
+dither/sierra3-gpu/test_runner-0013_retained_full_resolve.o: dither/sierra3-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra3-gpu/test_runner-0013_retained_full_resolve.o -MD -MP -MF dither/sierra3-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/sierra3-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/sierra3-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/sierra3-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra3-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/sierra3-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra3-gpu/0013_retained_full_resolve.c' object='dither/sierra3-gpu/test_runner-0013_retained_full_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra3-gpu/test_runner-0013_retained_full_resolve.o `test -f 'dither/sierra3-gpu/0013_retained_full_resolve.c' || echo '$(srcdir)/'`dither/sierra3-gpu/0013_retained_full_resolve.c
+
+dither/sierra3-gpu/test_runner-0013_retained_full_resolve.obj: dither/sierra3-gpu/0013_retained_full_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra3-gpu/test_runner-0013_retained_full_resolve.obj -MD -MP -MF dither/sierra3-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo -c -o dither/sierra3-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/sierra3-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/sierra3-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra3-gpu/0013_retained_full_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra3-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Tpo dither/sierra3-gpu/$(DEPDIR)/test_runner-0013_retained_full_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra3-gpu/0013_retained_full_resolve.c' object='dither/sierra3-gpu/test_runner-0013_retained_full_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra3-gpu/test_runner-0013_retained_full_resolve.obj `if test -f 'dither/sierra3-gpu/0013_retained_full_resolve.c'; then $(CYGPATH_W) 'dither/sierra3-gpu/0013_retained_full_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra3-gpu/0013_retained_full_resolve.c'; fi`
+
+dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.o: dither/sierra3-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.o -MD -MP -MF dither/sierra3-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/sierra3-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/sierra3-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra3-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/sierra3-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra3-gpu/0014_retained_partial_resolve.c' object='dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.o `test -f 'dither/sierra3-gpu/0014_retained_partial_resolve.c' || echo '$(srcdir)/'`dither/sierra3-gpu/0014_retained_partial_resolve.c
+
+dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.obj: dither/sierra3-gpu/0014_retained_partial_resolve.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.obj -MD -MP -MF dither/sierra3-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo -c -o dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/sierra3-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/sierra3-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra3-gpu/0014_retained_partial_resolve.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/sierra3-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Tpo dither/sierra3-gpu/$(DEPDIR)/test_runner-0014_retained_partial_resolve.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/sierra3-gpu/0014_retained_partial_resolve.c' object='dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/sierra3-gpu/test_runner-0014_retained_partial_resolve.obj `if test -f 'dither/sierra3-gpu/0014_retained_partial_resolve.c'; then $(CYGPATH_W) 'dither/sierra3-gpu/0014_retained_partial_resolve.c'; else $(CYGPATH_W) '$(srcdir)/dither/sierra3-gpu/0014_retained_partial_resolve.c'; fi`
 
 _support/processing/delta-refresh/test_runner-spatial_test_common.o: _support/processing/delta-refresh/spatial_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-spatial_test_common.o -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-spatial_test_common.o `test -f '_support/processing/delta-refresh/spatial_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/spatial_test_common.c

@@ -243,6 +243,15 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_RETAINED_COMMON \
+    -DBUILD_TEST_0011_RETAINED_FULL_RUN \
+    -DBUILD_TEST_0012_RETAINED_PARTIAL_RUN \
+    -DBUILD_TEST_0013_RETAINED_FULL_RESOLVE \
+    -DBUILD_TEST_0014_RETAINED_PARTIAL_RESOLVE \
+    -DBUILD_TEST_0082_RETAINED_FULL_RUN \
+    -DBUILD_TEST_0083_RETAINED_PARTIAL_RUN \
+    -DBUILD_TEST_0084_RETAINED_FULL_RESOLVE \
+    -DBUILD_TEST_0085_RETAINED_PARTIAL_RESOLVE \
     -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
     -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
     -DBUILD_TEST_0015_AUTO_NEGATIVE_EXPOSURE \
@@ -5849,6 +5858,43 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    _support/lso2-gpu/retained_common.c \
+    dither/fs-gpu/0011_retained_full_run.c \
+    dither/fs-gpu/0012_retained_partial_run.c \
+    dither/fs-gpu/0013_retained_full_resolve.c \
+    dither/fs-gpu/0014_retained_partial_resolve.c \
+    dither/lso2-gpu/0082_retained_full_run.c \
+    dither/lso2-gpu/0083_retained_partial_run.c \
+    dither/lso2-gpu/0084_retained_full_resolve.c \
+    dither/lso2-gpu/0085_retained_partial_resolve.c \
+    dither/atkinson-gpu/0011_retained_full_run.c \
+    dither/atkinson-gpu/0012_retained_partial_run.c \
+    dither/atkinson-gpu/0013_retained_full_resolve.c \
+    dither/atkinson-gpu/0014_retained_partial_resolve.c \
+    dither/jajuni-gpu/0011_retained_full_run.c \
+    dither/jajuni-gpu/0012_retained_partial_run.c \
+    dither/jajuni-gpu/0013_retained_full_resolve.c \
+    dither/jajuni-gpu/0014_retained_partial_resolve.c \
+    dither/stucki-gpu/0011_retained_full_run.c \
+    dither/stucki-gpu/0012_retained_partial_run.c \
+    dither/stucki-gpu/0013_retained_full_resolve.c \
+    dither/stucki-gpu/0014_retained_partial_resolve.c \
+    dither/burkes-gpu/0011_retained_full_run.c \
+    dither/burkes-gpu/0012_retained_partial_run.c \
+    dither/burkes-gpu/0013_retained_full_resolve.c \
+    dither/burkes-gpu/0014_retained_partial_resolve.c \
+    dither/sierra1-gpu/0011_retained_full_run.c \
+    dither/sierra1-gpu/0012_retained_partial_run.c \
+    dither/sierra1-gpu/0013_retained_full_resolve.c \
+    dither/sierra1-gpu/0014_retained_partial_resolve.c \
+    dither/sierra2-gpu/0011_retained_full_run.c \
+    dither/sierra2-gpu/0012_retained_partial_run.c \
+    dither/sierra2-gpu/0013_retained_full_resolve.c \
+    dither/sierra2-gpu/0014_retained_partial_resolve.c \
+    dither/sierra3-gpu/0011_retained_full_run.c \
+    dither/sierra3-gpu/0012_retained_partial_run.c \
+    dither/sierra3-gpu/0013_retained_full_resolve.c \
+    dither/sierra3-gpu/0014_retained_partial_resolve.c \
     _support/processing/delta-refresh/spatial_test_common.c \
     delta/refresh/0097_spatial_blue_gpu_unscheduled_keep.c \
     delta/refresh/0101_spatial_defaults.c \

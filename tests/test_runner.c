@@ -5871,7 +5871,116 @@ int test_delta_refresh_0101(int, char **);
 
 int test_delta_refresh_0098(int, char **);
 
+int test_dither_fs_gpu_0011(int, char **);
+int test_dither_fs_gpu_0012(int, char **);
+int test_dither_fs_gpu_0013(int, char **);
+int test_dither_fs_gpu_0014(int, char **);
+int test_dither_lso2_gpu_0082(int, char **);
+int test_dither_lso2_gpu_0083(int, char **);
+int test_dither_lso2_gpu_0084(int, char **);
+int test_dither_lso2_gpu_0085(int, char **);
+int test_dither_atkinson_gpu_0011(int, char **);
+int test_dither_atkinson_gpu_0012(int, char **);
+int test_dither_atkinson_gpu_0013(int, char **);
+int test_dither_atkinson_gpu_0014(int, char **);
+int test_dither_jajuni_gpu_0011(int, char **);
+int test_dither_jajuni_gpu_0012(int, char **);
+int test_dither_jajuni_gpu_0013(int, char **);
+int test_dither_jajuni_gpu_0014(int, char **);
+int test_dither_stucki_gpu_0011(int, char **);
+int test_dither_stucki_gpu_0012(int, char **);
+int test_dither_stucki_gpu_0013(int, char **);
+int test_dither_stucki_gpu_0014(int, char **);
+int test_dither_burkes_gpu_0011(int, char **);
+int test_dither_burkes_gpu_0012(int, char **);
+int test_dither_burkes_gpu_0013(int, char **);
+int test_dither_burkes_gpu_0014(int, char **);
+int test_dither_sierra1_gpu_0011(int, char **);
+int test_dither_sierra1_gpu_0012(int, char **);
+int test_dither_sierra1_gpu_0013(int, char **);
+int test_dither_sierra1_gpu_0014(int, char **);
+int test_dither_sierra2_gpu_0011(int, char **);
+int test_dither_sierra2_gpu_0012(int, char **);
+int test_dither_sierra2_gpu_0013(int, char **);
+int test_dither_sierra2_gpu_0014(int, char **);
+int test_dither_sierra3_gpu_0011(int, char **);
+int test_dither_sierra3_gpu_0012(int, char **);
+int test_dither_sierra3_gpu_0013(int, char **);
+int test_dither_sierra3_gpu_0014(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "dither/fs-gpu/0011_retained_full_run",
+      test_dither_fs_gpu_0011 },
+    { "dither/fs-gpu/0012_retained_partial_run",
+      test_dither_fs_gpu_0012 },
+    { "dither/fs-gpu/0013_retained_full_resolve",
+      test_dither_fs_gpu_0013 },
+    { "dither/fs-gpu/0014_retained_partial_resolve",
+      test_dither_fs_gpu_0014 },
+    { "dither/lso2-gpu/0082_retained_full_run",
+      test_dither_lso2_gpu_0082 },
+    { "dither/lso2-gpu/0083_retained_partial_run",
+      test_dither_lso2_gpu_0083 },
+    { "dither/lso2-gpu/0084_retained_full_resolve",
+      test_dither_lso2_gpu_0084 },
+    { "dither/lso2-gpu/0085_retained_partial_resolve",
+      test_dither_lso2_gpu_0085 },
+    { "dither/atkinson-gpu/0011_retained_full_run",
+      test_dither_atkinson_gpu_0011 },
+    { "dither/atkinson-gpu/0012_retained_partial_run",
+      test_dither_atkinson_gpu_0012 },
+    { "dither/atkinson-gpu/0013_retained_full_resolve",
+      test_dither_atkinson_gpu_0013 },
+    { "dither/atkinson-gpu/0014_retained_partial_resolve",
+      test_dither_atkinson_gpu_0014 },
+    { "dither/jajuni-gpu/0011_retained_full_run",
+      test_dither_jajuni_gpu_0011 },
+    { "dither/jajuni-gpu/0012_retained_partial_run",
+      test_dither_jajuni_gpu_0012 },
+    { "dither/jajuni-gpu/0013_retained_full_resolve",
+      test_dither_jajuni_gpu_0013 },
+    { "dither/jajuni-gpu/0014_retained_partial_resolve",
+      test_dither_jajuni_gpu_0014 },
+    { "dither/stucki-gpu/0011_retained_full_run",
+      test_dither_stucki_gpu_0011 },
+    { "dither/stucki-gpu/0012_retained_partial_run",
+      test_dither_stucki_gpu_0012 },
+    { "dither/stucki-gpu/0013_retained_full_resolve",
+      test_dither_stucki_gpu_0013 },
+    { "dither/stucki-gpu/0014_retained_partial_resolve",
+      test_dither_stucki_gpu_0014 },
+    { "dither/burkes-gpu/0011_retained_full_run",
+      test_dither_burkes_gpu_0011 },
+    { "dither/burkes-gpu/0012_retained_partial_run",
+      test_dither_burkes_gpu_0012 },
+    { "dither/burkes-gpu/0013_retained_full_resolve",
+      test_dither_burkes_gpu_0013 },
+    { "dither/burkes-gpu/0014_retained_partial_resolve",
+      test_dither_burkes_gpu_0014 },
+    { "dither/sierra1-gpu/0011_retained_full_run",
+      test_dither_sierra1_gpu_0011 },
+    { "dither/sierra1-gpu/0012_retained_partial_run",
+      test_dither_sierra1_gpu_0012 },
+    { "dither/sierra1-gpu/0013_retained_full_resolve",
+      test_dither_sierra1_gpu_0013 },
+    { "dither/sierra1-gpu/0014_retained_partial_resolve",
+      test_dither_sierra1_gpu_0014 },
+    { "dither/sierra2-gpu/0011_retained_full_run",
+      test_dither_sierra2_gpu_0011 },
+    { "dither/sierra2-gpu/0012_retained_partial_run",
+      test_dither_sierra2_gpu_0012 },
+    { "dither/sierra2-gpu/0013_retained_full_resolve",
+      test_dither_sierra2_gpu_0013 },
+    { "dither/sierra2-gpu/0014_retained_partial_resolve",
+      test_dither_sierra2_gpu_0014 },
+    { "dither/sierra3-gpu/0011_retained_full_run",
+      test_dither_sierra3_gpu_0011 },
+    { "dither/sierra3-gpu/0012_retained_partial_run",
+      test_dither_sierra3_gpu_0012 },
+    { "dither/sierra3-gpu/0013_retained_full_resolve",
+      test_dither_sierra3_gpu_0013 },
+    { "dither/sierra3-gpu/0014_retained_partial_resolve",
+      test_dither_sierra3_gpu_0014 },
     { "delta/refresh/0100_custom_band_periods", test_delta_refresh_0100 },
     { "delta/refresh/0102_spatial_explicit_disable", test_delta_refresh_0102 },
     { "delta/refresh/0101_spatial_defaults", test_delta_refresh_0101 },

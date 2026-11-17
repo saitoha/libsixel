@@ -53,6 +53,8 @@ layout(std430, set = 0, binding = 4) readonly buffer Params {
     float deadzone, clamp_lower, clamp_upper;
     uint variable;
     uint levels[1024];
+    uint retained_rgb_stride, retained_valid_stride;
+    uint retained_x, retained_y;
 } p;
 layout(std430, set = 0, binding = 5) readonly buffer Phase {
     uint8_t phase[];
@@ -225,16 +227,18 @@ uint sierra1_gpu_threshold(uint i, vec3 delta)
 
 uint sierra1_gpu_classify(uint i, vec3 query, uint best)
 {
-    uint code, threshold;
+    uint code, threshold, offset;
     vec3 old, gap, fresh;
     float old_distance, new_distance;
     bool within;
 
     code = 0u;
     fresh = sierra1_gpu_color(best);
-    old = vec3(float(uint(retained[3u * i])),
-        float(uint(retained[3u * i + 1u])),
-        float(uint(retained[3u * i + 2u])));
+    offset = (i / p.width + p.retained_y) * p.retained_rgb_stride
+        + (i % p.width + p.retained_x) * 3u;
+    old = vec3(float(uint(retained[offset])),
+        float(uint(retained[offset + 1u])),
+        float(uint(retained[offset + 2u])));
     gap = abs(query - old);
     threshold = sierra1_gpu_threshold(i, query - old);
     within = all(lessThanEqual(gap, vec3(float(threshold))));
@@ -250,6 +254,17 @@ uint sierra1_gpu_classify(uint i, vec3 query, uint best)
         code = 1u;
     }
     return code;
+}
+
+/* Device history is a full canvas; the CPU fallback is a packed rectangle.
+ * Keep validity addressing independent from the RGB byte stride. */
+bool sierra1_gpu_history_valid(uint i)
+{
+    uint offset;
+
+    offset = (i / p.width + p.retained_y) * p.retained_valid_stride
+        + i % p.width + p.retained_x;
+    return valid[offset] != uint8_t(0);
 }
 
 void sierra1_gpu_initialize(uint i)
@@ -342,7 +357,7 @@ void sierra1_gpu_finish(uint i)
     code = 0u;
     if (transparent[i] != uint8_t(0)) {
         code = 1u;
-    } else if (p.delta != 0u && valid[i] != uint8_t(0)) {
+    } else if (p.delta != 0u && sierra1_gpu_history_valid(i)) {
         /* Reconstruct the solved fractional query. Retained history is
          * consulted only now and never seeds a later frame's diffusion. */
         query = sierra1_gpu_solved_query(a[i]);
@@ -403,7 +418,7 @@ void sierra1_gpu_resolve(uint i)
     code = 0u;
     if (transparent[i] != uint8_t(0)) {
         code = 1u;
-    } else if (p.delta != 0u && valid[i] != uint8_t(0)) {
+    } else if (p.delta != 0u && sierra1_gpu_history_valid(i)) {
         /* The ready solution owns q and j; no lookup is needed here. */
         best = uint(b[i].w);
         code = sierra1_gpu_classify(i, b[i].xyz, best);

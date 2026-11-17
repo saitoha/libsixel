@@ -88,6 +88,8 @@ typedef struct sierra3_gpu_vk_params {
     float deadzone, clamp_lower, clamp_upper;
     uint32_t variable;
     uint32_t levels[1024];
+    uint32_t retained_rgb_stride, retained_valid_stride;
+    uint32_t retained_x, retained_y;
 } sierra3_gpu_vk_params_t;
 
 typedef struct sierra3_gpu_vk_push {
@@ -740,7 +742,9 @@ sierra3_gpu_vk_groups(sixel_vk_runtime_t const *runtime, uint64_t count,
  * for the workspace the module declares. */
 static void
 sierra3_gpu_vk_bind_locked(sixel_vk_runtime_t *runtime,
-    sierra3_gpu_vk_plan_t *plan, sixel_vk_buffer_t const *workspace)
+    sierra3_gpu_vk_plan_t *plan, sixel_vk_buffer_t const *workspace,
+    sixel_vk_buffer_t const *retained_rgb,
+    sixel_vk_buffer_t const *retained_valid)
 {
     sierra3_gpu_vk_state_t *state;
     sixel_vk_buffer_t const *bound[SIERRA3_GPU_VK_BINDINGS + 4];
@@ -757,6 +761,10 @@ sierra3_gpu_vk_bind_locked(sixel_vk_runtime_t *runtime,
     bound[7] = &state->phase;
     bound[SIERRA3_GPU_VK_WORKSPACE] = workspace != NULL ? workspace
         : &state->phase;
+    if (retained_rgb != NULL) {
+        bound[SIERRA3_GPU_VK_RETAINED] = retained_rgb;
+        bound[SIERRA3_GPU_VK_VALID] = retained_valid;
+    }
     bound[SIERRA3_GPU_VK_BINDINGS] =
         &plan->bundle.buffers[SIERRA3_GPU_VK_PALETTE];
     bound[SIERRA3_GPU_VK_BINDINGS + 1] =
@@ -831,11 +839,13 @@ sierra3_gpu_vk_run_impl(sierra3_gpu_vk_plan_t *plan,
     sixel_frame_pixels_view_t source;
     sixel_frame_transparency_t transparency;
     sixel_retained_read_view_t baseline;
+    sixel_retained_gpu_read_view_t retained;
     sixel_gpu_lookup_binding_interface_t *binding;
     sixel_gpu_lookup_binding_view_t binding_view;
     sixel_vk_runtime_t *runtime;
     sixel_vk_buffer_t *buffers;
     sixel_vk_buffer_t const *workspace;
+    sixel_vk_buffer_t const *retained_rgb, *retained_valid;
     sierra3_gpu_vk_params_t params;
     VkCommandBuffer command;
     uint64_t pixels, lanes;
@@ -888,9 +898,42 @@ sierra3_gpu_vk_run_impl(sierra3_gpu_vk_plan_t *plan,
             return SIXEL_BAD_ARGUMENT;
         }
     }
+    retained_rgb = retained_valid = NULL;
+    params.retained_rgb_stride = params.width * 3U;
+    params.retained_valid_stride = params.width;
+    params.retained_x = params.retained_y = 0;
     if (params.delta) {
         status = sixel_retained_read_get_view(request->baseline, &baseline);
         if (status != SIXEL_OK) {
+            return status;
+        }
+        /* The read lease pins the committed device canvas through submit.
+         * Reading its host-visible VRAM with memcpy can cost hundreds of
+         * milliseconds on a discrete GPU. Borrow it directly, including
+         * the full-plane strides and the submitted rectangle's origin. */
+        status = sixel_retained_read_get_gpu_view(request->baseline,
+            plan->device, &retained);
+        if (status == SIXEL_OK) {
+            retained_rgb = sixel_gpu_vulkan_buffer(plan->device,
+                retained.rgb);
+            retained_valid = sixel_gpu_vulkan_buffer(plan->device,
+                retained.valid);
+            if (retained_rgb == NULL || retained_valid == NULL ||
+                    retained.rgb_stride > UINT32_MAX /
+                        (size_t)baseline.description.height ||
+                    retained.valid_stride > UINT32_MAX /
+                        (size_t)baseline.description.height ||
+                    retained_rgb->capacity < retained.rgb_stride *
+                        baseline.description.height ||
+                    retained_valid->capacity < retained.valid_stride *
+                        baseline.description.height) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            params.retained_rgb_stride = (uint32_t)retained.rgb_stride;
+            params.retained_valid_stride = (uint32_t)retained.valid_stride;
+            params.retained_x = (uint32_t)plan->output.origin_x;
+            params.retained_y = (uint32_t)plan->output.origin_y;
+        } else if (status != SIXEL_FEATURE_ERROR) {
             return status;
         }
     }
@@ -943,7 +986,7 @@ sierra3_gpu_vk_run_impl(sierra3_gpu_vk_plan_t *plan,
                 (size_t)pixels);
         }
     }
-    if (params.delta) {
+    if (params.delta && retained_rgb == NULL) {
         for (y = 0; y < params.height; ++y) {
             offset = y + (size_t)plan->output.origin_y;
             memcpy((unsigned char *)buffers[SIERRA3_GPU_VK_RETAINED].mapped
@@ -961,7 +1004,8 @@ sierra3_gpu_vk_run_impl(sierra3_gpu_vk_plan_t *plan,
     memcpy(buffers[SIERRA3_GPU_VK_PARAMS].mapped, &params, sizeof(params));
     invalid = 0;
     memcpy(buffers[SIERRA3_GPU_VK_INVALID].mapped, &invalid, sizeof(invalid));
-    sierra3_gpu_vk_bind_locked(runtime, plan, workspace);
+    sierra3_gpu_vk_bind_locked(runtime, plan, workspace, retained_rgb,
+        retained_valid);
 
     staged = sixel_vk_now_ms();
     status = sixel_vk_command_begin(runtime, &command);
@@ -980,7 +1024,7 @@ sierra3_gpu_vk_run_impl(sierra3_gpu_vk_plan_t *plan,
         sixel_vk_buffer_record_upload(command, &buffers[SIERRA3_GPU_VK_COUNT],
             sizeof(count));
     }
-    if (params.delta) {
+    if (params.delta && retained_rgb == NULL) {
         sixel_vk_buffer_record_upload(command,
             &buffers[SIERRA3_GPU_VK_RETAINED], pixels * 3U);
         sixel_vk_buffer_record_upload(command, &buffers[SIERRA3_GPU_VK_VALID],
@@ -990,8 +1034,13 @@ sierra3_gpu_vk_run_impl(sierra3_gpu_vk_plan_t *plan,
         sizeof(params));
     sixel_vk_buffer_record_upload(command, &buffers[SIERRA3_GPU_VK_INVALID],
         sizeof(invalid));
-    sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    /* Include prior retained-canvas writes, not only this run's uploads. */
+    sixel_vk_record_barrier(command,
+        VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
+            VK_PIPELINE_STAGE_HOST_BIT,
+        VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT |
+            VK_ACCESS_HOST_WRITE_BIT,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
         VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT);
     if (binding_view.needs_build) {
         /* The builders read the palette just uploaded; their barriers
