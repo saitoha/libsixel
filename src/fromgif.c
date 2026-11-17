@@ -2177,31 +2177,38 @@ gif_reset_canvas_for_loop(gif_t *g,
                           size_t pcount,
                           unsigned char const *bgcolor)
 {
-    size_t i;
-    size_t pixel_offset;
+    size_t canvas_bytes;
+    size_t initialized;
+    size_t copy_bytes;
     unsigned char bg_rgb[3 * sizeof(float)];
     unsigned char bg_a;
 
-    i = 0u;
-    pixel_offset = 0u;
     memset(bg_rgb, 0, sizeof(bg_rgb));
     bg_a = 0u;
-    if (g == NULL || g->out == NULL) {
+    if (g == NULL || g->out == NULL || pcount == 0u) {
         return;
     }
 
     gif_canvas_background(g, bgcolor, bg_rgb, &bg_a);
-    for (i = 0u; i < pcount; ++i) {
-        pixel_offset = i * g->pixel_stride;
-        memcpy(g->out + pixel_offset, bg_rgb, g->pixel_stride);
-        if (g->prev_out != NULL) {
-            memcpy(g->prev_out + pixel_offset, bg_rgb, g->pixel_stride);
+    canvas_bytes = pcount * g->pixel_stride;
+    memcpy(g->out, bg_rgb, g->pixel_stride);
+    /* Expand whole pixels with disjoint bulk copies. Per-pixel memcpy
+     * dominates initialization of large canvases in instrumented builds. */
+    for (initialized = g->pixel_stride; initialized < canvas_bytes;
+         initialized += copy_bytes) {
+        copy_bytes = canvas_bytes - initialized;
+        if (copy_bytes > initialized) {
+            copy_bytes = initialized;
         }
-        if (g->alpha_out != NULL) {
-            g->alpha_out[i] = bg_a;
-            if (g->prev_alpha != NULL) {
-                g->prev_alpha[i] = bg_a;
-            }
+        memcpy(g->out + initialized, g->out, copy_bytes);
+    }
+    if (g->prev_out != NULL) {
+        memcpy(g->prev_out, g->out, canvas_bytes);
+    }
+    if (g->alpha_out != NULL) {
+        memset(g->alpha_out, bg_a, pcount);
+        if (g->prev_alpha != NULL) {
+            memset(g->prev_alpha, bg_a, pcount);
         }
     }
     gif_history_clear(g, pcount);
@@ -2690,7 +2697,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
         goto end;
     }
 
-    gif_reset_canvas_for_loop(g, pcount, bgcolor);
+    /* The first loop initializes the canvas along with its frame state. */
     sixel_frame_set_loop_count(frame, 0);
     *pg = g;
     *pframe = frame;
