@@ -4471,13 +4471,12 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                 memcpy(&sample, &legacy_sample, dst_stride);
                 break;
             }
-            if (!evaluated || uses_mpet ||
-                (legacy_index < n && !candidate->builtin_absolute)) {
+            if (legacy_index < n && !candidate->builtin_absolute) {
                 continue;
             }
             /* The presence of other mpet tags cannot change the PCS
              * encoding or rounding of an existing legacy path. */
-            if (!candidate->builtin_absolute && keep_legacy) {
+            if (evaluated && !candidate->builtin_absolute && keep_legacy) {
                 legacy_status = SIXEL_CMS_STATUS_OK;
                 if (sixel_cms_do_builtin_legacy(candidate, input, &sample, 1u,
                         &legacy_status, &rgba_scratch)) {
@@ -4489,8 +4488,9 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                 }
             }
             if (try_legacy_pair && !candidate->builtin_absolute) {
-                /* Preserve the legacy pair before accepting analytic
-                 * output, but give earlier intents their turn first. */
+                /* A candidate may fail when its reverse slot is absent.
+                 * Find the mixed pair before a later legacy candidate
+                 * commits, while still giving earlier MPE paths priority. */
                 legacy_index = sixel_cms_builtin_legacy_pair_index(transform,
                     candidates, i, n, input, &legacy_sample);
                 if (i == legacy_index) {
@@ -4501,8 +4501,8 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                     continue;
                 }
             }
-            if (sixel_cms_builtin_store_dst_unit(&sample, transform->dst_format,
-                    0u, device, alpha, float_rgb)) {
+            if (evaluated && sixel_cms_builtin_store_dst_unit(&sample,
+                    transform->dst_format, 0u, device, alpha, float_rgb)) {
                 break;
             }
         }

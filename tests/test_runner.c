@@ -484,6 +484,8 @@ int test_icc_0125(int argc, char **argv);
 int test_icc_0126(int argc, char **argv);
 int test_icc_0127(int argc, char **argv);
 int test_icc_0128(int argc, char **argv);
+int test_icc_0129(int argc, char **argv);
+int test_icc_0130(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10301,6 +10303,8 @@ static test_entry_t const test_entries[] = {
     { "icc/0126_mpet_absolute_reverse_gamut", test_icc_0126 },
     { "icc/0127_mpet_png_storage_fallback", test_icc_0127 },
     { "icc/0128_mpet_curve_small_residual", test_icc_0128 },
+    { "icc/0129_mpet_legacy_mixed_float", test_icc_0129 },
+    { "icc/0130_mpet_legacy_mixed_byte", test_icc_0130 },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },
     { "colorspace/0006_extended_oklab_forward", test_color_0006 },

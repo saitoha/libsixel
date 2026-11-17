@@ -3584,6 +3584,88 @@ icc_numeric_colorspace_legacy_float_pair_test(int byte_input)
 }
 
 int
+icc_numeric_mpet_legacy_mixed_precedence_test(int byte_input)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static unsigned char const rgb8[] = {64u, 96u, 128u};
+    static float const rgb_float[] = {0.25f, 0.375f, 0.5f};
+    unsigned char tables[312];
+    unsigned char src[380];
+    unsigned char dst[380];
+    unsigned char with_mpet[476];
+    unsigned char mpet[516];
+    unsigned char *tag;
+    unsigned char *matrix;
+    unsigned char output8[3];
+    float output_float[3];
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    sixel_cms_pixel_format_t format;
+    void const *input;
+    void *output;
+    size_t pixel_size;
+    int added;
+    int ok;
+
+    /* Both profiles have a perceptual LUT. Only the source has A2B1;
+     * pairing it with the destination's B2A0 gives the identity. */
+    iccn_absolute_lut_profile(tables, white, '0');
+    memcpy(src, tables, sizeof(tables));
+    memcpy(dst, tables, sizeof(tables));
+    iccn_be32(src, sizeof(src));
+    iccn_be32(dst, sizeof(dst));
+    memcpy(src + 144u, "A2B1", 4u);
+    iccn_be32(src + 148u, sizeof(tables));
+    iccn_be32(src + 152u, 68u);
+    iccn_identity_a2b(src + sizeof(tables));
+    memset(src + 232u, 0, 48u);
+    iccn_be32(dst + 136u, sizeof(tables));
+    iccn_be32(dst + 140u, 68u);
+    iccn_identity_a2b(dst + sizeof(tables));
+
+    /* Add a distinct saturation MPE that has no matching reverse path. */
+    tag = iccn_expand_tag_directory(with_mpet, src, sizeof(src), 1u);
+    iccn_be32(with_mpet, sizeof(with_mpet));
+    memcpy(tag, "D2B2", 4u);
+    iccn_be32(tag + 4u, sizeof(src) + 12u);
+    iccn_be32(tag + 8u, 84u);
+    iccn_mpet_transform_profile(mpet, 0, '2', 0, 65536u, 0);
+    matrix = mpet + 192u;
+    memset(matrix + 12u, 0, 36u);
+    iccn_mpe_write_float(matrix + 48u, 0.875f);
+    iccn_mpe_write_float(matrix + 52u, 0.875f);
+    iccn_mpe_write_float(matrix + 56u, 0.875f);
+    memcpy(with_mpet + sizeof(src) + 12u, mpet + 168u, 84u);
+
+    format = byte_input ? SIXEL_CMS_PIXELFORMAT_RGB_8
+                        : SIXEL_CMS_PIXELFORMAT_RGB_F32;
+    input = byte_input ? (void const *)rgb8 : rgb_float;
+    output = byte_input ? (void *)output8 : output_float;
+    pixel_size = byte_input ? sizeof(rgb8) : sizeof(rgb_float);
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    target = sixel_cms_open_profile_from_mem(dst, sizeof(dst));
+    ok = target != NULL;
+    for (added = 0; ok && added <= 1; ++added) {
+        source = added
+            ? sixel_cms_open_profile_from_mem(with_mpet, sizeof(with_mpet))
+            : sixel_cms_open_profile_from_mem(src, sizeof(src));
+        ok = iccn_transform_pixels(source, format, target, format,
+            "relative,perceptual,saturation!", input, output, 1u) &&
+            memcmp(input, output, pixel_size) == 0;
+        sixel_cms_close_profile(source);
+        if (!ok) {
+            fprintf(stderr, "legacy identity pair with D2B2=%d failed\n",
+                    added);
+        }
+    }
+    sixel_cms_close_profile(target);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 icc_numeric_mpet_before_later_legacy_test(void)
 {
     static float const input[] = {0.25f, 0.375f, 0.5f};
