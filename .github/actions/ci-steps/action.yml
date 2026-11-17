@@ -688,19 +688,13 @@ runs:
     - name: Build and test (Meson, bash)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
       shell: bash
-      env:
-        SIXEL_TEST_SHARD: ${{ fromJSON(inputs.matrix_json).test_shard || '' }}
       run: |
         set -exv
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         mkdir -p "$PWD/pgo"
-        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
         meson compile -C builddir -v
-        if test -n "$SIXEL_TEST_SHARD"; then
-          meson test -C builddir --slice "$SIXEL_TEST_SHARD" --print-errorlogs
-        else
-          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
-        fi
+        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
     - name: Build and test (Autotools, msys2)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}
@@ -721,8 +715,6 @@ runs:
     - name: Build and test (Meson, msys2)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}
       shell: msys2 {0}
-      env:
-        SIXEL_TEST_SHARD: ${{ fromJSON(inputs.matrix_json).test_shard || '' }}
       run: |
         set -exv
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
@@ -867,13 +859,9 @@ runs:
         else
           PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
         fi
-        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
         meson compile -C builddir -v
-        if test -n "$SIXEL_TEST_SHARD"; then
-          meson test -C builddir --slice "$SIXEL_TEST_SHARD" --print-errorlogs
-        else
-          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
-        fi
+        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
     - name: Build and test (Autotools, Cygwin)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
@@ -1006,7 +994,7 @@ runs:
       run: |
         set -exv
         PATH="$PWD/build-aux:$PATH"
-        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
         meson compile -C builddir -v
         if grep ^ac_cv_prog_ac_ct_CC=gcc$ config.log; then
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
@@ -1023,13 +1011,13 @@ runs:
         if errorlevel 1 exit /b !errorlevel!
         python -m pip install meson
         if errorlevel 1 exit /b !errorlevel!
-        python -m mesonbuild.mesonmain setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        python -m mesonbuild.mesonmain setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
         if errorlevel 1 exit /b !errorlevel!
         rem Build the non-default C tests too; collect independent failures.
         rem Dist builds its own test runner inside the extracted source tree.
         python -m mesonbuild.mesonmain compile -C builddir ${{ fromJSON(inputs.matrix_json).check_target != 'dist' && 'test_runner' || '' }} --ninja-args="['-k', '0', 'all']"
         if errorlevel 1 exit /b !errorlevel!
-        python -m mesonbuild.mesonmain ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir ${{ fromJSON(inputs.matrix_json).test_shard && format('--slice {0}', fromJSON(inputs.matrix_json).test_shard) || '' }}
+        python -m mesonbuild.mesonmain ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
         if errorlevel 1 exit /b !errorlevel!
         endlocal
 
@@ -1176,7 +1164,7 @@ runs:
         rem PGO use must collect the same complete set of compiler failures.
         python -m mesonbuild.mesonmain compile -C builddir test_runner --ninja-args="['-k', '0', 'all']"
         if errorlevel 1 exit /b !errorlevel!
-        python -m mesonbuild.mesonmain ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir ${{ fromJSON(inputs.matrix_json).test_shard && format('--slice {0}', fromJSON(inputs.matrix_json).test_shard) || '' }}
+        python -m mesonbuild.mesonmain ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
         if errorlevel 1 exit /b !errorlevel!
         endlocal
 
@@ -1208,7 +1196,7 @@ runs:
           adduser  -D -u '"$(id -u)"' -G hostgrp hostusr 2>/dev/null || true
           chown -R '"$(id -u):$(id -g)"' /src
           su hostusr -c "
-            ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+            ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
             meson compile -C builddir -v
             meson test -C builddir
           "
@@ -1241,21 +1229,23 @@ runs:
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
           meson compile -C builddir -v
           if test "${{ fromJSON(inputs.matrix_json).cp_os || '' }}" = "haiku"; then
-            # The runner is not a default target. Build it once before slices
-            # disable Meson's automatic test dependency rebuild.
+            # The runner is not a default target. Build it once before the
+            # partitioned runs disable automatic test dependency rebuild.
             meson compile -C builddir test_runner
             # Haiku occasionally raises EINVAL from Python asyncio subprocess
-            # creation in long meson test runs. Running slices keeps each mtest
-            # process shorter-lived while preserving full test coverage.
-            slice=1
-            slice_count=16
-            while test "${slice}" -le "${slice_count}"; do
+            # creation in long meson test runs. Register one partition at
+            # a time so each test process remains short-lived.
+            shard=1
+            shard_count=16
+            while test "${shard}" -le "${shard_count}"; do
+              meson setup --reconfigure builddir \
+                -Dtest_shard="${shard}/${shard_count}"
               meson test -C builddir --no-rebuild --num-processes 1 \
-                --slice "${slice}/${slice_count}" --print-errorlogs
-              slice=$((slice + 1))
+                --print-errorlogs
+              shard=$((shard + 1))
             done
           else
             meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
@@ -1383,7 +1373,7 @@ runs:
           sh tools/ci-vm-result.sh capture dragonflybsd-meson-1.result.log <<'SIXEL_VM_BUILD'
           echo "__DFBSD_PHASE_RUN__"
           pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
           SIXEL_VM_BUILD
@@ -1418,7 +1408,7 @@ runs:
           sh tools/ci-vm-result.sh capture dragonflybsd-meson-2.result.log <<'SIXEL_VM_BUILD'
           echo "__DFBSD_PHASE_RUN__"
           pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
           SIXEL_VM_BUILD
@@ -1456,7 +1446,7 @@ runs:
           sh tools/ci-vm-result.sh capture dragonflybsd-meson-3.result.log <<'SIXEL_VM_BUILD'
           echo "__DFBSD_PHASE_RUN__"
           pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
           SIXEL_VM_BUILD
@@ -1498,7 +1488,7 @@ runs:
           pkg install --accept --no-be ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}
         run: |
           cd "$GITHUB_WORKSPACE"
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
@@ -1529,7 +1519,7 @@ runs:
           pkg install --accept ${{ fromJSON(inputs.matrix_json).extra_packages || 'gnu-make gcc meson ninja' }}
         run: |
           cd "$GITHUB_WORKSPACE"
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
@@ -1563,7 +1553,7 @@ runs:
           cd "$GITHUB_WORKSPACE"
           export PATH="$HOME/.local/bin:$PATH"
           python3 -m pip install --user --upgrade pip meson ninja
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 

@@ -3,7 +3,7 @@ OPENVMS_TEST_JOBS	test-harness	docs/misc/platforms/openvms.md	tests/Makefile.am
 RUNTIME_ENV_IS_OPENVMS	test-harness	docs/misc/platforms/openvms.md	tests/Makefile.am
 RUNTIME_ENV_BUILD_OS	test-harness	docs/misc/platforms/haiku.md	tests/Makefile.am
 SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE	test-harness	docs/misc/platforms/haiku.md	.github/workflows/ci.yml
---slice	test-harness	docs/misc/platforms/haiku.md	.github/actions/ci-steps/action.yml
+-Dtest_shard=	test-harness	docs/misc/platforms/haiku.md	.github/actions/ci-steps/action.yml
 pkgman refresh	package-tool	docs/misc/platforms/haiku.md	.github/actions/ci-steps/action.yml
 MSYS2_ARG_CONV_EXCL	build-driver	docs/misc/platforms/windows-paths.md	.github/actions/ci-steps/action.yml
 SIXEL_RUNTIME	runtime-launch	docs/misc/platforms/windows-paths.md	.github/workflows/ci.yml

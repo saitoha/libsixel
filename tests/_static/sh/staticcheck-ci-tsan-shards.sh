@@ -1,5 +1,5 @@
 #!/bin/sh
-# Check macOS TSan shard wiring and Autotools test membership.
+# Check macOS TSan shard wiring and shared test membership.
 # Policy: docs/ci/design.md
 # Policy: docs/build/test-harness.md
 # Policy: docs/testing/staticcheck.md
@@ -7,6 +7,16 @@ set -eux
 echo '1..1'
 set -v
 awk '
+FILENAME ~ /action.yml$/ && /--slice|Ensure Meson test slicing/ { failed = 1 }
+/meson.*setup builddir.*setup_options/ {
+    if (!/-Dtest_shard=.*fromJSON\(inputs.matrix_json\).test_shard/) failed = 1
+    meson_setup++
+}
+FILENAME ~ /tests\/meson.build$/ {
+    if (/get_option\(.test_shard.\)/) meson_selected = 1
+    if (/^if tests.contains\(.build\/install\//) native_install = 1
+    if (/^  if tests.contains\(.tools\/child-time\//) native_timing++
+}
 /^  tsan:/ { active = 1; next }
 active && /^  [^ ]/ { active = 0 }
 active && /timeout-minutes: 360/ { bounded = 1 }
@@ -16,8 +26,6 @@ active && label ~ /^(Autotools|Meson)-macos-aarch64-TSan/ &&
     /- label:/ { labels[label]++ }
 active && /test_shard:/ { shards[label, $2]++ }
 /SIXEL_TEST_SHARD=.*fromJSON\(inputs.matrix_json\).test_shard/ { routed = 1 }
-/SIXEL_TEST_SHARD:.*fromJSON\(inputs.matrix_json\).test_shard/ { meson_env = 1 }
-/meson test -C builddir --slice "\$SIXEL_TEST_SHARD"/ { meson_slice = 1 }
 /read-check-test-list.sh.*include newline.*SIXEL_TEST_SHARD/ { selected = 1 }
 END {
     for (i = 1; i <= 10; i++) {
@@ -30,11 +38,12 @@ END {
     }
     for (label in labels) label_count++
     for (shard in shards) shard_count++
-    exit !(bounded && independent && label_count == 23 && shard_count == 23 &&
-           routed && selected && meson_env && meson_slice)
+    exit failed || !(bounded && independent && label_count == 23 &&
+        shard_count == 23 && routed && selected && meson_setup >= 4 &&
+        meson_selected && native_install && native_timing == 2)
 }
 ' "$1/.github/workflows/ci.yml" "$1/.github/actions/ci-steps/action.yml" \
-    "$1/tests/Makefile.am" || {
+    "$1/tests/Makefile.am" "$1/tests/meson.build" || {
     echo 'not ok 1 - macOS TSan routes every bounded shard to its test runner'
     exit 0
 }
