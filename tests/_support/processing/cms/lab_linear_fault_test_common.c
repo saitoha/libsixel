@@ -549,7 +549,46 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_cdef_export_icc(sixel_color_def_t const *definition,
                       unsigned char **bytes, size_t *length,
                       sixel_allocator_t *allocator);
+/* Isolate the private CMS copy in amalgamated test runners too. */
+#define sixel_cms_adapter_layout clf_cms_adapter_layout
+#define sixel_cms_adapter_read clf_cms_adapter_read
+#define sixel_cms_adapter_write clf_cms_adapter_write
+#define sixel_cms_apply_adapter clf_cms_apply_adapter
+#define sixel_cms_builtin_black_y clf_cms_builtin_black_y
+#define sixel_cms_builtin_pixel_stride clf_cms_builtin_pixel_stride
+#define sixel_cms_builtin_select_absolute clf_cms_builtin_select_absolute
+#define sixel_cms_create_adapter clf_cms_create_adapter
+#define sixel_cms_do_builtin_pcs clf_cms_do_builtin_pcs
+#define sixel_cms_has_absolute_endpoint clf_cms_has_absolute_endpoint
+#define sixel_cms_has_legacy_slot clf_cms_has_legacy_slot
+#define sixel_cms_has_matrix_trc clf_cms_has_matrix_trc
+#define sixel_cms_has_mpet clf_cms_has_mpet
+#define sixel_cms_has_prior_intent clf_cms_has_prior_intent
+#define sixel_cms_has_slot clf_cms_has_slot
+#define sixel_cms_media_white clf_cms_media_white
+#define sixel_cms_pcs_to_device clf_cms_pcs_to_device
+#define sixel_cms_pcs_white clf_cms_pcs_white
+#define sixel_cms_profile_has_mpet clf_cms_profile_has_mpet
 #include "src/cms.c"
+#undef sixel_cms_adapter_layout
+#undef sixel_cms_adapter_read
+#undef sixel_cms_adapter_write
+#undef sixel_cms_apply_adapter
+#undef sixel_cms_builtin_black_y
+#undef sixel_cms_builtin_pixel_stride
+#undef sixel_cms_builtin_select_absolute
+#undef sixel_cms_create_adapter
+#undef sixel_cms_do_builtin_pcs
+#undef sixel_cms_has_absolute_endpoint
+#undef sixel_cms_has_legacy_slot
+#undef sixel_cms_has_matrix_trc
+#undef sixel_cms_has_mpet
+#undef sixel_cms_has_prior_intent
+#undef sixel_cms_has_slot
+#undef sixel_cms_media_white
+#undef sixel_cms_pcs_to_device
+#undef sixel_cms_pcs_white
+#undef sixel_cms_profile_has_mpet
 #undef malloc
 #undef free
 #undef sixel_icc_apply_device_to_xyz_d50_with_a2b_slot
