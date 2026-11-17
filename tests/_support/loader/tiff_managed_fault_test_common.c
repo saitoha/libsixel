@@ -50,13 +50,13 @@ static int mf_remainder;
 static int mf_frame_ok;
 
 static void *
-mf_malloc(size_t n)
+mf_malloc(size_t n, int output_scratch)
 {
     void *p;
     size_t i;
 
     p = malloc(n);
-    if (n == mf_n * 3u * sizeof(float) && p != NULL) {
+    if (output_scratch && n == mf_n * 3u * sizeof(float) && p != NULL) {
         ++mf_allocated;
         mf_scratch = p;
         for (i = 0u; i < mf_n * 3u; ++i) {
@@ -531,7 +531,12 @@ SIXEL_INTERNAL_API void
 sixel_cxform_free(sixel_color_xform_t *transform);
 
 
-#define malloc mf_malloc
+/* Qualify the publication buffer by its owning function as well as size.
+ * A transform descriptor can have the same size as a small RGB image. */
+#define MF_STRING_IMPL(value) #value
+#define MF_STRING(value) MF_STRING_IMPL(value)
+#define malloc(n) mf_malloc((n), strcmp(__func__, \
+    MF_STRING(sixel_cms_convert_profile_to_linearrgb)) == 0)
 #define free mf_free
 #define sixel_icc_curve_device mf_curve
 #define ColorSyncTransformConvert mf_cs
@@ -546,6 +551,8 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
                       sixel_allocator_t *allocator);
 #include "src/cms.c"
 #undef malloc
+#undef MF_STRING
+#undef MF_STRING_IMPL
 #undef free
 #undef sixel_icc_curve_device
 #undef ColorSyncTransformConvert

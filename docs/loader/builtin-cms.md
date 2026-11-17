@@ -73,6 +73,10 @@ Profiles can also be synthesized from gamma and chromaticities. The builtin path
 
 A builtin transform records source/destination formats, flags, borrowed profile pointers, and the selected slot order. It does not clone or retain the profiles. Keep both profiles alive until the transform has been deleted; deleting the transform does not close those profiles. Curves, LUT tables, and `mpet` element lists and tag copies belong to the profiles and are released by profile destruction. These APIs are internal interfaces, not a separately installed stable CMS library ABI.
 
+The facade also accepts host-endian RGB16, Gray16 and RGBA16, straight RGBA float32, BGR8 and BGRA8 through a shared float adapter. Gray16 sources require a gray profile; RGB and RGBA layouts require RGB profiles. Adapter destinations are RGB8/16/float32, RGBA8/16/float32, BGR8 or BGRA8. Gray destinations and CMYK/Lab adapters are outside this layout extension. This does not add new installed `SIXEL_PIXELFORMAT_*` values; loaders that already retain normalized float color and separate alpha keep that representation.
+
+`SIXEL_CMS_TRANSFORM_SRC_PREMULTIPLIED` declares RGB multiplied by alpha in the source profile's encoded coordinates. A linear-light premultiplied source therefore needs a linear source profile. The adapter divides before the color transform, canonicalizes zero-alpha source color to zero, and returns straight color. `COPY_ALPHA` preserves alpha; otherwise RGBA output has alpha one. Alpha must be finite and within [0,1]. Float color retains finite extended coordinates; integer publication clips and rounds to the nearest code. Host samples may be unaligned. Adapters stage the complete result, support exact expanding aliases, and leave output unchanged on failure; these guarantees do not extend to every legacy direct path.
+
 Source and destination backend identities must agree. A builtin source profile and an lcms2 destination profile cannot be combined into one transform by the facade. Also, successful builtin transform construction mainly establishes an execution descriptor: some incompatible format/domain combinations are rejected during `sixel_cms_do_transform()`. Callers must check execution success as well as construction success, and must not assume failure leaves an output buffer untouched.
 
 ### Rendering paths and fallback
@@ -160,6 +164,20 @@ These tests establish selected implementation paths. They are not a complete con
 | BCMS-23 | Apply reports a source format mismatch before writes and reports success for a later compatible call. | [tests/color/icc/0029_status_incompatible_format.t](../../tests/color/icc/0029_status_incompatible_format.t) |
 | BCMS-24 | A profile can contain 256 tag entries. A 257th entry reports a resource limit. | [tests/color/icc/0031_resource_tag_boundary.t](../../tests/color/icc/0031_resource_tag_boundary.t), [tests/color/icc/0032_resource_tag_limit.t](../../tests/color/icc/0032_resource_tag_limit.t) |
 | BCMS-25 | Copies of shared curve and CLUT data count toward the cumulative limit. Parsing accepts exactly 16 MiB. Excess leaves the destination untouched and permits an immediate retry. | [tests/color/icc/0033_resource_alloc_boundary.t](../../tests/color/icc/0033_resource_alloc_boundary.t), [tests/color/icc/0034_resource_alloc_recovery.t](../../tests/color/icc/0034_resource_alloc_recovery.t) |
+
+| BCMS-26 | Rgb16 alias uses independent numeric or atomic-failure expectations. | [tests/color/cms/0140_rgb16_alias.t](../../tests/color/cms/0140_rgb16_alias.t) |
+| BCMS-27 | Rgba16 float uses independent numeric or atomic-failure expectations. | [tests/color/cms/0141_rgba16_float.t](../../tests/color/cms/0141_rgba16_float.t) |
+| BCMS-28 | Gray16 float uses independent numeric or atomic-failure expectations. | [tests/color/cms/0142_gray16_float.t](../../tests/color/cms/0142_gray16_float.t) |
+| BCMS-29 | Rgba float uses independent numeric or atomic-failure expectations. | [tests/color/cms/0143_rgba_float.t](../../tests/color/cms/0143_rgba_float.t) |
+| BCMS-30 | Premultiplied srgb uses independent numeric or atomic-failure expectations. | [tests/color/cms/0144_premultiplied_srgb.t](../../tests/color/cms/0144_premultiplied_srgb.t) |
+| BCMS-31 | Alpha nonfinite atomic uses independent numeric or atomic-failure expectations. | [tests/color/cms/0145_alpha_nonfinite_atomic.t](../../tests/color/cms/0145_alpha_nonfinite_atomic.t) |
+| BCMS-32 | Format size overflow uses independent numeric or atomic-failure expectations. | [tests/color/cms/0146_format_size_overflow.t](../../tests/color/cms/0146_format_size_overflow.t) |
+| BCMS-33 | Bgr8 float uses independent numeric or atomic-failure expectations. | [tests/color/cms/0147_bgr8_float.t](../../tests/color/cms/0147_bgr8_float.t) |
+| BCMS-34 | Bgra8 float uses independent numeric or atomic-failure expectations. | [tests/color/cms/0148_bgra8_float.t](../../tests/color/cms/0148_bgra8_float.t) |
+| BCMS-35 | Rgb16 word output uses independent numeric or atomic-failure expectations. | [tests/color/cms/0149_rgb16_word_output.t](../../tests/color/cms/0149_rgb16_word_output.t) |
+| BCMS-36 | Adapter input allocation uses independent numeric or atomic-failure expectations. | [tests/color/cms/0150_adapter_input_allocation.t](../../tests/color/cms/0150_adapter_input_allocation.t) |
+| BCMS-37 | Adapter output allocation uses independent numeric or atomic-failure expectations. | [tests/color/cms/0151_adapter_output_allocation.t](../../tests/color/cms/0151_adapter_output_allocation.t) |
+| BCMS-38 | Adapter publication allocation uses independent numeric or atomic-failure expectations. | [tests/color/cms/0152_adapter_publication_allocation.t](../../tests/color/cms/0152_adapter_publication_allocation.t) |
 
 ### Defensive and malformed-input tests
 

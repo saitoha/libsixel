@@ -14,4 +14,5 @@ int tiff_lab_failure_probe(int argc, char **argv, int mode);
 int cms_status_allocation_test(void);
 int cms_rgba_legacy_allocation_test(int inject);
 int cms_gray_legacy_allocation_test(void);
+int cms_adapter_allocation_test(int allocation);
 #endif

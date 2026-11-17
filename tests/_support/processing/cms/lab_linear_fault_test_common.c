@@ -30,6 +30,7 @@
 static sixel_cms_engine_t (*clf_public_engine)(void) = sixel_cms_get_engine;
 static int clf_arm;
 static int clf_fail_next_allocation;
+static int clf_fail_allocation_number;
 static int clf_measure_allocations;
 static size_t clf_measured_allocations;
 static size_t clf_measured_frees;
@@ -55,6 +56,10 @@ clf_malloc(size_t n)
 
     if (clf_measure_allocations) {
         ++clf_measured_allocations;
+    }
+    if (clf_fail_allocation_number > 0 &&
+        --clf_fail_allocation_number == 0) {
+        return NULL;
     }
     if (clf_fail_next_allocation) {
         clf_fail_next_allocation = 0;
@@ -572,6 +577,51 @@ cms_status_allocation_test(void)
     sixel_cms_close_profile(profile);
     sixel_cms_set_engine(previous);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+cms_adapter_allocation_test(int allocation)
+{
+    sixel_cms_profile_t *profile;
+    sixel_cms_transform_t *transform;
+    sixel_cms_engine_t previous;
+    sixel_cms_status_t status;
+    float input[8] = {0.5f, 0.25f, 0.125f, 0.75f,
+                      2.0f, -0.5f, 0.0f, 1.0f};
+    float output[8];
+    float original[8];
+    size_t i;
+    int applied;
+    int ok;
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    profile = sixel_cms_create_linear_srgb_profile();
+    transform = sixel_cms_create_transform(profile,
+        SIXEL_CMS_PIXELFORMAT_RGBA_F32, profile,
+        SIXEL_CMS_PIXELFORMAT_RGBA_F32, SIXEL_CMS_TRANSFORM_COPY_ALPHA);
+    memset(output, 0xa5, sizeof(output));
+    memcpy(original, output, sizeof(output));
+    clf_measured_allocations = clf_measured_frees = 0u;
+    clf_measure_allocations = 1;
+    clf_fail_allocation_number = allocation;
+    applied = sixel_cms_do_transform_ex(transform, input, output, 2u, &status);
+    clf_measure_allocations = 0;
+    ok = transform != NULL && !applied &&
+        status == SIXEL_CMS_STATUS_ALLOCATION &&
+        clf_fail_allocation_number == 0 &&
+        clf_measured_allocations == 3u && clf_measured_frees == 2u &&
+        memcmp(output, original, sizeof(output)) == 0;
+    clf_fail_allocation_number = 0;
+    applied = sixel_cms_do_transform_ex(transform, input, output, 2u, &status);
+    ok = ok && applied && status == SIXEL_CMS_STATUS_OK;
+    for (i = 0u; i < 8u; ++i) {
+        ok = ok && isfinite(output[i]) && fabs(output[i] - input[i]) < 4e-6;
+    }
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(profile);
+    sixel_cms_set_engine(previous);
+    return ok ? 0 : 1;
 }
 
 int

@@ -142,7 +142,9 @@ profile_format_unknown(void)
 static int
 profile_format_scope(int engine)
 {
-    int const invalid_formats[3] = { 0, 10, -1 };
+    int const invalid_formats[3] = {
+        0, SIXEL_CMS_PIXELFORMAT_BGRA_8 + 1, -1
+    };
     sixel_cms_engine_t previous;
     size_t specimen;
     size_t i;

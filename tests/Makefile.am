@@ -243,6 +243,19 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0140_RGB16_ALIAS \
+    -DBUILD_TEST_0141_RGBA16_FLOAT \
+    -DBUILD_TEST_0142_GRAY16_FLOAT \
+    -DBUILD_TEST_0143_RGBA_FLOAT \
+    -DBUILD_TEST_0144_PREMULTIPLIED_SRGB \
+    -DBUILD_TEST_0145_ALPHA_NONFINITE_ATOMIC \
+    -DBUILD_TEST_0146_FORMAT_SIZE_OVERFLOW \
+    -DBUILD_TEST_0147_BGR8_FLOAT \
+    -DBUILD_TEST_0148_BGRA8_FLOAT \
+    -DBUILD_TEST_0149_RGB16_WORD_OUTPUT \
+    -DBUILD_TEST_0150_ADAPTER_INPUT_ALLOCATION \
+    -DBUILD_TEST_0151_ADAPTER_OUTPUT_ALLOCATION \
+    -DBUILD_TEST_0152_ADAPTER_PUBLICATION_ALLOCATION \
     -DBUILD_SPATIAL_TEST_COMMON \
     -DBUILD_TEST_0084_SPATIAL_LOW_BAND_16_FRAMES \
     -DBUILD_TEST_0085_SPATIAL_LOW_BAND_32_FRAMES \
@@ -7192,6 +7205,20 @@ test_runner_SOURCES = test_runner.c \
     color/cms/0137_mixed_second_nonfinite.c \
     color/cms/0138_mixed_first_nonfinite.c \
     color/cms/0139_mixed_second_permutation_allocation.c \
+    color/cms/0140_rgb16_alias.c \
+    color/cms/0141_rgba16_float.c \
+    color/cms/0142_gray16_float.c \
+    color/cms/0143_rgba_float.c \
+    color/cms/0144_premultiplied_srgb.c \
+    color/cms/0145_alpha_nonfinite_atomic.c \
+    color/cms/0146_format_size_overflow.c \
+    color/cms/0147_bgr8_float.c \
+    color/cms/0148_bgra8_float.c \
+    color/cms/0149_rgb16_word_output.c \
+    color/cms/0150_adapter_input_allocation.c \
+    color/cms/0151_adapter_output_allocation.c \
+    color/cms/0152_adapter_publication_allocation.c \
+    _support/processing/cms/format_adapter_common.h \
     _support/processing/cms/mixed_domain_common.c \
     _support/processing/cms/mixed_domain_common.h \
     _support/processing/cms/mixed_domain_fault_common.c \

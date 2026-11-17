@@ -101,12 +101,23 @@ typedef enum sixel_cms_pixel_format {
     SIXEL_CMS_PIXELFORMAT_CMYK_F32,
     /* L/100, a/128, b/128, independently of the selected backend. */
     SIXEL_CMS_PIXELFORMAT_LAB_F32,
-    SIXEL_CMS_PIXELFORMAT_GRAY_F32
+    SIXEL_CMS_PIXELFORMAT_GRAY_F32,
+    /* Word samples use host byte order; float colors retain extended range. */
+    SIXEL_CMS_PIXELFORMAT_RGB_16,
+    SIXEL_CMS_PIXELFORMAT_GRAY_16,
+    SIXEL_CMS_PIXELFORMAT_RGBA_16,
+    SIXEL_CMS_PIXELFORMAT_RGBA_F32,
+    SIXEL_CMS_PIXELFORMAT_BGR_8,
+    SIXEL_CMS_PIXELFORMAT_BGRA_8
 } sixel_cms_pixel_format_t;
 
 enum {
     SIXEL_CMS_TRANSFORM_DEFAULT = 0,
-    SIXEL_CMS_TRANSFORM_COPY_ALPHA = 1
+    SIXEL_CMS_TRANSFORM_COPY_ALPHA = 1,
+    /* RGB is multiplied by alpha in the source profile's encoded domain.
+     * The adapter returns straight color; alpha zero has canonical RGB zero.
+     * Linear-light premultiplication requires a linear source profile. */
+    SIXEL_CMS_TRANSFORM_SRC_PREMULTIPLIED = 2
 };
 
 SIXEL_INTERNAL_API int

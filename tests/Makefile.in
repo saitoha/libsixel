@@ -1571,6 +1571,17 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/cms/0137_mixed_second_nonfinite.c \
 	color/cms/0138_mixed_first_nonfinite.c \
 	color/cms/0139_mixed_second_permutation_allocation.c \
+	color/cms/0140_rgb16_alias.c color/cms/0141_rgba16_float.c \
+	color/cms/0142_gray16_float.c color/cms/0143_rgba_float.c \
+	color/cms/0144_premultiplied_srgb.c \
+	color/cms/0145_alpha_nonfinite_atomic.c \
+	color/cms/0146_format_size_overflow.c \
+	color/cms/0147_bgr8_float.c color/cms/0148_bgra8_float.c \
+	color/cms/0149_rgb16_word_output.c \
+	color/cms/0150_adapter_input_allocation.c \
+	color/cms/0151_adapter_output_allocation.c \
+	color/cms/0152_adapter_publication_allocation.c \
+	_support/processing/cms/format_adapter_common.h \
 	_support/processing/cms/mixed_domain_common.c \
 	_support/processing/cms/mixed_domain_common.h \
 	_support/processing/cms/mixed_domain_fault_common.c \
@@ -7186,6 +7197,19 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0137_mixed_second_nonfinite.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0138_mixed_first_nonfinite.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0139_mixed_second_permutation_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0140_rgb16_alias.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0141_rgba16_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0142_gray16_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0143_rgba_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0144_premultiplied_srgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0145_alpha_nonfinite_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0146_format_size_overflow.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0147_bgr8_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0148_bgra8_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0149_rgb16_word_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0150_adapter_input_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0151_adapter_output_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0152_adapter_publication_allocation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/cms/test_runner-mixed_domain_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/cms/test_runner-mixed_domain_fault_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader-tiff/device-color/test_runner-0014_lab_float_linear_builtin.$(OBJEXT) \
@@ -12010,6 +12034,19 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/cms/$(DEPDIR)/test_runner-0137_mixed_second_nonfinite.Po \
 	color/cms/$(DEPDIR)/test_runner-0138_mixed_first_nonfinite.Po \
 	color/cms/$(DEPDIR)/test_runner-0139_mixed_second_permutation_allocation.Po \
+	color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Po \
+	color/cms/$(DEPDIR)/test_runner-0141_rgba16_float.Po \
+	color/cms/$(DEPDIR)/test_runner-0142_gray16_float.Po \
+	color/cms/$(DEPDIR)/test_runner-0143_rgba_float.Po \
+	color/cms/$(DEPDIR)/test_runner-0144_premultiplied_srgb.Po \
+	color/cms/$(DEPDIR)/test_runner-0145_alpha_nonfinite_atomic.Po \
+	color/cms/$(DEPDIR)/test_runner-0146_format_size_overflow.Po \
+	color/cms/$(DEPDIR)/test_runner-0147_bgr8_float.Po \
+	color/cms/$(DEPDIR)/test_runner-0148_bgra8_float.Po \
+	color/cms/$(DEPDIR)/test_runner-0149_rgb16_word_output.Po \
+	color/cms/$(DEPDIR)/test_runner-0150_adapter_input_allocation.Po \
+	color/cms/$(DEPDIR)/test_runner-0151_adapter_output_allocation.Po \
+	color/cms/$(DEPDIR)/test_runner-0152_adapter_publication_allocation.Po \
 	color/colorsync/$(DEPDIR)/test_runner-0001_colorsync_linear_primaries.Po \
 	color/colorsync/$(DEPDIR)/test_runner-0093_colorsync_rgb_profile_reuse.Po \
 	color/colorsync/$(DEPDIR)/test_runner-0094_colorsync_rgb_backend_mismatch.Po \
@@ -17606,6 +17643,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0140_RGB16_ALIAS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0141_RGBA16_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0142_GRAY16_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0143_RGBA_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0144_PREMULTIPLIED_SRGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0145_ALPHA_NONFINITE_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0146_FORMAT_SIZE_OVERFLOW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0147_BGR8_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0148_BGRA8_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0149_RGB16_WORD_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0150_ADAPTER_INPUT_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0151_ADAPTER_OUTPUT_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0152_ADAPTER_PUBLICATION_ALLOCATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SPATIAL_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_SPATIAL_LOW_BAND_16_FRAMES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_SPATIAL_LOW_BAND_32_FRAMES \
@@ -24587,6 +24637,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0137_mixed_second_nonfinite.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0138_mixed_first_nonfinite.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0139_mixed_second_permutation_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0140_rgb16_alias.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0141_rgba16_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0142_gray16_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0143_rgba_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0144_premultiplied_srgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0145_alpha_nonfinite_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0146_format_size_overflow.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0147_bgr8_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0148_bgra8_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0149_rgb16_word_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0150_adapter_input_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0151_adapter_output_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0152_adapter_publication_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/cms/format_adapter_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/cms/mixed_domain_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/cms/mixed_domain_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/cms/mixed_domain_fault_common.c \
@@ -33966,6 +34030,32 @@ color/cms/test_runner-0137_mixed_second_nonfinite.$(OBJEXT):  \
 color/cms/test_runner-0138_mixed_first_nonfinite.$(OBJEXT):  \
 	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
 color/cms/test_runner-0139_mixed_second_permutation_allocation.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0140_rgb16_alias.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0141_rgba16_float.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0142_gray16_float.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0143_rgba_float.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0144_premultiplied_srgb.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0145_alpha_nonfinite_atomic.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0146_format_size_overflow.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0147_bgr8_float.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0148_bgra8_float.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0149_rgb16_word_output.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0150_adapter_input_allocation.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0151_adapter_output_allocation.$(OBJEXT):  \
+	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/cms/test_runner-0152_adapter_publication_allocation.$(OBJEXT):  \
 	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
 _support/processing/cms/test_runner-mixed_domain_common.$(OBJEXT):  \
 	_support/processing/cms/$(am__dirstamp) \
@@ -47862,6 +47952,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0137_mixed_second_nonfinite.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0138_mixed_first_nonfinite.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0139_mixed_second_permutation_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0141_rgba16_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0142_gray16_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0143_rgba_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0144_premultiplied_srgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0145_alpha_nonfinite_atomic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0146_format_size_overflow.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0147_bgr8_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0148_bgra8_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0149_rgb16_word_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0150_adapter_input_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0151_adapter_output_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0152_adapter_publication_allocation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/colorsync/$(DEPDIR)/test_runner-0001_colorsync_linear_primaries.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/colorsync/$(DEPDIR)/test_runner-0093_colorsync_rgb_profile_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/colorsync/$(DEPDIR)/test_runner-0094_colorsync_rgb_backend_mismatch.Po@am__quote@ # am--include-marker
@@ -72789,6 +72892,188 @@ color/cms/test_runner-0139_mixed_second_permutation_allocation.obj: color/cms/01
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0139_mixed_second_permutation_allocation.c' object='color/cms/test_runner-0139_mixed_second_permutation_allocation.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0139_mixed_second_permutation_allocation.obj `if test -f 'color/cms/0139_mixed_second_permutation_allocation.c'; then $(CYGPATH_W) 'color/cms/0139_mixed_second_permutation_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0139_mixed_second_permutation_allocation.c'; fi`
+
+color/cms/test_runner-0140_rgb16_alias.o: color/cms/0140_rgb16_alias.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0140_rgb16_alias.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Tpo -c -o color/cms/test_runner-0140_rgb16_alias.o `test -f 'color/cms/0140_rgb16_alias.c' || echo '$(srcdir)/'`color/cms/0140_rgb16_alias.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Tpo color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0140_rgb16_alias.c' object='color/cms/test_runner-0140_rgb16_alias.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0140_rgb16_alias.o `test -f 'color/cms/0140_rgb16_alias.c' || echo '$(srcdir)/'`color/cms/0140_rgb16_alias.c
+
+color/cms/test_runner-0140_rgb16_alias.obj: color/cms/0140_rgb16_alias.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0140_rgb16_alias.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Tpo -c -o color/cms/test_runner-0140_rgb16_alias.obj `if test -f 'color/cms/0140_rgb16_alias.c'; then $(CYGPATH_W) 'color/cms/0140_rgb16_alias.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0140_rgb16_alias.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Tpo color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0140_rgb16_alias.c' object='color/cms/test_runner-0140_rgb16_alias.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0140_rgb16_alias.obj `if test -f 'color/cms/0140_rgb16_alias.c'; then $(CYGPATH_W) 'color/cms/0140_rgb16_alias.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0140_rgb16_alias.c'; fi`
+
+color/cms/test_runner-0141_rgba16_float.o: color/cms/0141_rgba16_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0141_rgba16_float.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0141_rgba16_float.Tpo -c -o color/cms/test_runner-0141_rgba16_float.o `test -f 'color/cms/0141_rgba16_float.c' || echo '$(srcdir)/'`color/cms/0141_rgba16_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0141_rgba16_float.Tpo color/cms/$(DEPDIR)/test_runner-0141_rgba16_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0141_rgba16_float.c' object='color/cms/test_runner-0141_rgba16_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0141_rgba16_float.o `test -f 'color/cms/0141_rgba16_float.c' || echo '$(srcdir)/'`color/cms/0141_rgba16_float.c
+
+color/cms/test_runner-0141_rgba16_float.obj: color/cms/0141_rgba16_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0141_rgba16_float.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0141_rgba16_float.Tpo -c -o color/cms/test_runner-0141_rgba16_float.obj `if test -f 'color/cms/0141_rgba16_float.c'; then $(CYGPATH_W) 'color/cms/0141_rgba16_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0141_rgba16_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0141_rgba16_float.Tpo color/cms/$(DEPDIR)/test_runner-0141_rgba16_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0141_rgba16_float.c' object='color/cms/test_runner-0141_rgba16_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0141_rgba16_float.obj `if test -f 'color/cms/0141_rgba16_float.c'; then $(CYGPATH_W) 'color/cms/0141_rgba16_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0141_rgba16_float.c'; fi`
+
+color/cms/test_runner-0142_gray16_float.o: color/cms/0142_gray16_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0142_gray16_float.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0142_gray16_float.Tpo -c -o color/cms/test_runner-0142_gray16_float.o `test -f 'color/cms/0142_gray16_float.c' || echo '$(srcdir)/'`color/cms/0142_gray16_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0142_gray16_float.Tpo color/cms/$(DEPDIR)/test_runner-0142_gray16_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0142_gray16_float.c' object='color/cms/test_runner-0142_gray16_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0142_gray16_float.o `test -f 'color/cms/0142_gray16_float.c' || echo '$(srcdir)/'`color/cms/0142_gray16_float.c
+
+color/cms/test_runner-0142_gray16_float.obj: color/cms/0142_gray16_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0142_gray16_float.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0142_gray16_float.Tpo -c -o color/cms/test_runner-0142_gray16_float.obj `if test -f 'color/cms/0142_gray16_float.c'; then $(CYGPATH_W) 'color/cms/0142_gray16_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0142_gray16_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0142_gray16_float.Tpo color/cms/$(DEPDIR)/test_runner-0142_gray16_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0142_gray16_float.c' object='color/cms/test_runner-0142_gray16_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0142_gray16_float.obj `if test -f 'color/cms/0142_gray16_float.c'; then $(CYGPATH_W) 'color/cms/0142_gray16_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0142_gray16_float.c'; fi`
+
+color/cms/test_runner-0143_rgba_float.o: color/cms/0143_rgba_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0143_rgba_float.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0143_rgba_float.Tpo -c -o color/cms/test_runner-0143_rgba_float.o `test -f 'color/cms/0143_rgba_float.c' || echo '$(srcdir)/'`color/cms/0143_rgba_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0143_rgba_float.Tpo color/cms/$(DEPDIR)/test_runner-0143_rgba_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0143_rgba_float.c' object='color/cms/test_runner-0143_rgba_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0143_rgba_float.o `test -f 'color/cms/0143_rgba_float.c' || echo '$(srcdir)/'`color/cms/0143_rgba_float.c
+
+color/cms/test_runner-0143_rgba_float.obj: color/cms/0143_rgba_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0143_rgba_float.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0143_rgba_float.Tpo -c -o color/cms/test_runner-0143_rgba_float.obj `if test -f 'color/cms/0143_rgba_float.c'; then $(CYGPATH_W) 'color/cms/0143_rgba_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0143_rgba_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0143_rgba_float.Tpo color/cms/$(DEPDIR)/test_runner-0143_rgba_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0143_rgba_float.c' object='color/cms/test_runner-0143_rgba_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0143_rgba_float.obj `if test -f 'color/cms/0143_rgba_float.c'; then $(CYGPATH_W) 'color/cms/0143_rgba_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0143_rgba_float.c'; fi`
+
+color/cms/test_runner-0144_premultiplied_srgb.o: color/cms/0144_premultiplied_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0144_premultiplied_srgb.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0144_premultiplied_srgb.Tpo -c -o color/cms/test_runner-0144_premultiplied_srgb.o `test -f 'color/cms/0144_premultiplied_srgb.c' || echo '$(srcdir)/'`color/cms/0144_premultiplied_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0144_premultiplied_srgb.Tpo color/cms/$(DEPDIR)/test_runner-0144_premultiplied_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0144_premultiplied_srgb.c' object='color/cms/test_runner-0144_premultiplied_srgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0144_premultiplied_srgb.o `test -f 'color/cms/0144_premultiplied_srgb.c' || echo '$(srcdir)/'`color/cms/0144_premultiplied_srgb.c
+
+color/cms/test_runner-0144_premultiplied_srgb.obj: color/cms/0144_premultiplied_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0144_premultiplied_srgb.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0144_premultiplied_srgb.Tpo -c -o color/cms/test_runner-0144_premultiplied_srgb.obj `if test -f 'color/cms/0144_premultiplied_srgb.c'; then $(CYGPATH_W) 'color/cms/0144_premultiplied_srgb.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0144_premultiplied_srgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0144_premultiplied_srgb.Tpo color/cms/$(DEPDIR)/test_runner-0144_premultiplied_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0144_premultiplied_srgb.c' object='color/cms/test_runner-0144_premultiplied_srgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0144_premultiplied_srgb.obj `if test -f 'color/cms/0144_premultiplied_srgb.c'; then $(CYGPATH_W) 'color/cms/0144_premultiplied_srgb.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0144_premultiplied_srgb.c'; fi`
+
+color/cms/test_runner-0145_alpha_nonfinite_atomic.o: color/cms/0145_alpha_nonfinite_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0145_alpha_nonfinite_atomic.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0145_alpha_nonfinite_atomic.Tpo -c -o color/cms/test_runner-0145_alpha_nonfinite_atomic.o `test -f 'color/cms/0145_alpha_nonfinite_atomic.c' || echo '$(srcdir)/'`color/cms/0145_alpha_nonfinite_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0145_alpha_nonfinite_atomic.Tpo color/cms/$(DEPDIR)/test_runner-0145_alpha_nonfinite_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0145_alpha_nonfinite_atomic.c' object='color/cms/test_runner-0145_alpha_nonfinite_atomic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0145_alpha_nonfinite_atomic.o `test -f 'color/cms/0145_alpha_nonfinite_atomic.c' || echo '$(srcdir)/'`color/cms/0145_alpha_nonfinite_atomic.c
+
+color/cms/test_runner-0145_alpha_nonfinite_atomic.obj: color/cms/0145_alpha_nonfinite_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0145_alpha_nonfinite_atomic.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0145_alpha_nonfinite_atomic.Tpo -c -o color/cms/test_runner-0145_alpha_nonfinite_atomic.obj `if test -f 'color/cms/0145_alpha_nonfinite_atomic.c'; then $(CYGPATH_W) 'color/cms/0145_alpha_nonfinite_atomic.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0145_alpha_nonfinite_atomic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0145_alpha_nonfinite_atomic.Tpo color/cms/$(DEPDIR)/test_runner-0145_alpha_nonfinite_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0145_alpha_nonfinite_atomic.c' object='color/cms/test_runner-0145_alpha_nonfinite_atomic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0145_alpha_nonfinite_atomic.obj `if test -f 'color/cms/0145_alpha_nonfinite_atomic.c'; then $(CYGPATH_W) 'color/cms/0145_alpha_nonfinite_atomic.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0145_alpha_nonfinite_atomic.c'; fi`
+
+color/cms/test_runner-0146_format_size_overflow.o: color/cms/0146_format_size_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0146_format_size_overflow.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0146_format_size_overflow.Tpo -c -o color/cms/test_runner-0146_format_size_overflow.o `test -f 'color/cms/0146_format_size_overflow.c' || echo '$(srcdir)/'`color/cms/0146_format_size_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0146_format_size_overflow.Tpo color/cms/$(DEPDIR)/test_runner-0146_format_size_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0146_format_size_overflow.c' object='color/cms/test_runner-0146_format_size_overflow.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0146_format_size_overflow.o `test -f 'color/cms/0146_format_size_overflow.c' || echo '$(srcdir)/'`color/cms/0146_format_size_overflow.c
+
+color/cms/test_runner-0146_format_size_overflow.obj: color/cms/0146_format_size_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0146_format_size_overflow.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0146_format_size_overflow.Tpo -c -o color/cms/test_runner-0146_format_size_overflow.obj `if test -f 'color/cms/0146_format_size_overflow.c'; then $(CYGPATH_W) 'color/cms/0146_format_size_overflow.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0146_format_size_overflow.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0146_format_size_overflow.Tpo color/cms/$(DEPDIR)/test_runner-0146_format_size_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0146_format_size_overflow.c' object='color/cms/test_runner-0146_format_size_overflow.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0146_format_size_overflow.obj `if test -f 'color/cms/0146_format_size_overflow.c'; then $(CYGPATH_W) 'color/cms/0146_format_size_overflow.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0146_format_size_overflow.c'; fi`
+
+color/cms/test_runner-0147_bgr8_float.o: color/cms/0147_bgr8_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0147_bgr8_float.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0147_bgr8_float.Tpo -c -o color/cms/test_runner-0147_bgr8_float.o `test -f 'color/cms/0147_bgr8_float.c' || echo '$(srcdir)/'`color/cms/0147_bgr8_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0147_bgr8_float.Tpo color/cms/$(DEPDIR)/test_runner-0147_bgr8_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0147_bgr8_float.c' object='color/cms/test_runner-0147_bgr8_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0147_bgr8_float.o `test -f 'color/cms/0147_bgr8_float.c' || echo '$(srcdir)/'`color/cms/0147_bgr8_float.c
+
+color/cms/test_runner-0147_bgr8_float.obj: color/cms/0147_bgr8_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0147_bgr8_float.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0147_bgr8_float.Tpo -c -o color/cms/test_runner-0147_bgr8_float.obj `if test -f 'color/cms/0147_bgr8_float.c'; then $(CYGPATH_W) 'color/cms/0147_bgr8_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0147_bgr8_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0147_bgr8_float.Tpo color/cms/$(DEPDIR)/test_runner-0147_bgr8_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0147_bgr8_float.c' object='color/cms/test_runner-0147_bgr8_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0147_bgr8_float.obj `if test -f 'color/cms/0147_bgr8_float.c'; then $(CYGPATH_W) 'color/cms/0147_bgr8_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0147_bgr8_float.c'; fi`
+
+color/cms/test_runner-0148_bgra8_float.o: color/cms/0148_bgra8_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0148_bgra8_float.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0148_bgra8_float.Tpo -c -o color/cms/test_runner-0148_bgra8_float.o `test -f 'color/cms/0148_bgra8_float.c' || echo '$(srcdir)/'`color/cms/0148_bgra8_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0148_bgra8_float.Tpo color/cms/$(DEPDIR)/test_runner-0148_bgra8_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0148_bgra8_float.c' object='color/cms/test_runner-0148_bgra8_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0148_bgra8_float.o `test -f 'color/cms/0148_bgra8_float.c' || echo '$(srcdir)/'`color/cms/0148_bgra8_float.c
+
+color/cms/test_runner-0148_bgra8_float.obj: color/cms/0148_bgra8_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0148_bgra8_float.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0148_bgra8_float.Tpo -c -o color/cms/test_runner-0148_bgra8_float.obj `if test -f 'color/cms/0148_bgra8_float.c'; then $(CYGPATH_W) 'color/cms/0148_bgra8_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0148_bgra8_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0148_bgra8_float.Tpo color/cms/$(DEPDIR)/test_runner-0148_bgra8_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0148_bgra8_float.c' object='color/cms/test_runner-0148_bgra8_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0148_bgra8_float.obj `if test -f 'color/cms/0148_bgra8_float.c'; then $(CYGPATH_W) 'color/cms/0148_bgra8_float.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0148_bgra8_float.c'; fi`
+
+color/cms/test_runner-0149_rgb16_word_output.o: color/cms/0149_rgb16_word_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0149_rgb16_word_output.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0149_rgb16_word_output.Tpo -c -o color/cms/test_runner-0149_rgb16_word_output.o `test -f 'color/cms/0149_rgb16_word_output.c' || echo '$(srcdir)/'`color/cms/0149_rgb16_word_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0149_rgb16_word_output.Tpo color/cms/$(DEPDIR)/test_runner-0149_rgb16_word_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0149_rgb16_word_output.c' object='color/cms/test_runner-0149_rgb16_word_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0149_rgb16_word_output.o `test -f 'color/cms/0149_rgb16_word_output.c' || echo '$(srcdir)/'`color/cms/0149_rgb16_word_output.c
+
+color/cms/test_runner-0149_rgb16_word_output.obj: color/cms/0149_rgb16_word_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0149_rgb16_word_output.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0149_rgb16_word_output.Tpo -c -o color/cms/test_runner-0149_rgb16_word_output.obj `if test -f 'color/cms/0149_rgb16_word_output.c'; then $(CYGPATH_W) 'color/cms/0149_rgb16_word_output.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0149_rgb16_word_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0149_rgb16_word_output.Tpo color/cms/$(DEPDIR)/test_runner-0149_rgb16_word_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0149_rgb16_word_output.c' object='color/cms/test_runner-0149_rgb16_word_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0149_rgb16_word_output.obj `if test -f 'color/cms/0149_rgb16_word_output.c'; then $(CYGPATH_W) 'color/cms/0149_rgb16_word_output.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0149_rgb16_word_output.c'; fi`
+
+color/cms/test_runner-0150_adapter_input_allocation.o: color/cms/0150_adapter_input_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0150_adapter_input_allocation.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0150_adapter_input_allocation.Tpo -c -o color/cms/test_runner-0150_adapter_input_allocation.o `test -f 'color/cms/0150_adapter_input_allocation.c' || echo '$(srcdir)/'`color/cms/0150_adapter_input_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0150_adapter_input_allocation.Tpo color/cms/$(DEPDIR)/test_runner-0150_adapter_input_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0150_adapter_input_allocation.c' object='color/cms/test_runner-0150_adapter_input_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0150_adapter_input_allocation.o `test -f 'color/cms/0150_adapter_input_allocation.c' || echo '$(srcdir)/'`color/cms/0150_adapter_input_allocation.c
+
+color/cms/test_runner-0150_adapter_input_allocation.obj: color/cms/0150_adapter_input_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0150_adapter_input_allocation.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0150_adapter_input_allocation.Tpo -c -o color/cms/test_runner-0150_adapter_input_allocation.obj `if test -f 'color/cms/0150_adapter_input_allocation.c'; then $(CYGPATH_W) 'color/cms/0150_adapter_input_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0150_adapter_input_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0150_adapter_input_allocation.Tpo color/cms/$(DEPDIR)/test_runner-0150_adapter_input_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0150_adapter_input_allocation.c' object='color/cms/test_runner-0150_adapter_input_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0150_adapter_input_allocation.obj `if test -f 'color/cms/0150_adapter_input_allocation.c'; then $(CYGPATH_W) 'color/cms/0150_adapter_input_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0150_adapter_input_allocation.c'; fi`
+
+color/cms/test_runner-0151_adapter_output_allocation.o: color/cms/0151_adapter_output_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0151_adapter_output_allocation.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0151_adapter_output_allocation.Tpo -c -o color/cms/test_runner-0151_adapter_output_allocation.o `test -f 'color/cms/0151_adapter_output_allocation.c' || echo '$(srcdir)/'`color/cms/0151_adapter_output_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0151_adapter_output_allocation.Tpo color/cms/$(DEPDIR)/test_runner-0151_adapter_output_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0151_adapter_output_allocation.c' object='color/cms/test_runner-0151_adapter_output_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0151_adapter_output_allocation.o `test -f 'color/cms/0151_adapter_output_allocation.c' || echo '$(srcdir)/'`color/cms/0151_adapter_output_allocation.c
+
+color/cms/test_runner-0151_adapter_output_allocation.obj: color/cms/0151_adapter_output_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0151_adapter_output_allocation.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0151_adapter_output_allocation.Tpo -c -o color/cms/test_runner-0151_adapter_output_allocation.obj `if test -f 'color/cms/0151_adapter_output_allocation.c'; then $(CYGPATH_W) 'color/cms/0151_adapter_output_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0151_adapter_output_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0151_adapter_output_allocation.Tpo color/cms/$(DEPDIR)/test_runner-0151_adapter_output_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0151_adapter_output_allocation.c' object='color/cms/test_runner-0151_adapter_output_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0151_adapter_output_allocation.obj `if test -f 'color/cms/0151_adapter_output_allocation.c'; then $(CYGPATH_W) 'color/cms/0151_adapter_output_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0151_adapter_output_allocation.c'; fi`
+
+color/cms/test_runner-0152_adapter_publication_allocation.o: color/cms/0152_adapter_publication_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0152_adapter_publication_allocation.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0152_adapter_publication_allocation.Tpo -c -o color/cms/test_runner-0152_adapter_publication_allocation.o `test -f 'color/cms/0152_adapter_publication_allocation.c' || echo '$(srcdir)/'`color/cms/0152_adapter_publication_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0152_adapter_publication_allocation.Tpo color/cms/$(DEPDIR)/test_runner-0152_adapter_publication_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0152_adapter_publication_allocation.c' object='color/cms/test_runner-0152_adapter_publication_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0152_adapter_publication_allocation.o `test -f 'color/cms/0152_adapter_publication_allocation.c' || echo '$(srcdir)/'`color/cms/0152_adapter_publication_allocation.c
+
+color/cms/test_runner-0152_adapter_publication_allocation.obj: color/cms/0152_adapter_publication_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0152_adapter_publication_allocation.obj -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0152_adapter_publication_allocation.Tpo -c -o color/cms/test_runner-0152_adapter_publication_allocation.obj `if test -f 'color/cms/0152_adapter_publication_allocation.c'; then $(CYGPATH_W) 'color/cms/0152_adapter_publication_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0152_adapter_publication_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/cms/$(DEPDIR)/test_runner-0152_adapter_publication_allocation.Tpo color/cms/$(DEPDIR)/test_runner-0152_adapter_publication_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0152_adapter_publication_allocation.c' object='color/cms/test_runner-0152_adapter_publication_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0152_adapter_publication_allocation.obj `if test -f 'color/cms/0152_adapter_publication_allocation.c'; then $(CYGPATH_W) 'color/cms/0152_adapter_publication_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0152_adapter_publication_allocation.c'; fi`
 
 _support/processing/cms/test_runner-mixed_domain_common.o: _support/processing/cms/mixed_domain_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/cms/test_runner-mixed_domain_common.o -MD -MP -MF _support/processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Tpo -c -o _support/processing/cms/test_runner-mixed_domain_common.o `test -f '_support/processing/cms/mixed_domain_common.c' || echo '$(srcdir)/'`_support/processing/cms/mixed_domain_common.c

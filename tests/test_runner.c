@@ -4725,6 +4725,19 @@ int test_cms_0362_mixed(int argc, char **argv);
 int test_cms_0363_mixed(int argc, char **argv);
 int test_cms_0364_mixed(int argc, char **argv);
 int test_cms_0365_mixed(int argc, char **argv);
+int test_cms_format_00(int argc, char **argv);
+int test_cms_format_01(int argc, char **argv);
+int test_cms_format_02(int argc, char **argv);
+int test_cms_format_03(int argc, char **argv);
+int test_cms_format_04(int argc, char **argv);
+int test_cms_format_05(int argc, char **argv);
+int test_cms_format_06(int argc, char **argv);
+int test_cms_format_07(int argc, char **argv);
+int test_cms_format_08(int argc, char **argv);
+int test_cms_format_09(int argc, char **argv);
+int test_cms_format_fault_1(int argc, char **argv);
+int test_cms_format_fault_2(int argc, char **argv);
+int test_cms_format_fault_3(int argc, char **argv);
 int test_cms_0366_mixed(int argc, char **argv);
 int test_cms_0367_mixed(int argc, char **argv);
 int test_loader_0184_lab_linear(int argc, char **argv);
@@ -14037,6 +14050,19 @@ static test_entry_t const test_entries[] = {
       test_cms_0364_mixed },
     { "cms/0365_mixed_second_nonfinite",
       test_cms_0365_mixed },
+    { "cms/0140_rgb16_alias", test_cms_format_00 },
+    { "cms/0141_rgba16_float", test_cms_format_01 },
+    { "cms/0142_gray16_float", test_cms_format_02 },
+    { "cms/0143_rgba_float", test_cms_format_03 },
+    { "cms/0144_premultiplied_srgb", test_cms_format_04 },
+    { "cms/0145_alpha_nonfinite_atomic", test_cms_format_05 },
+    { "cms/0146_format_size_overflow", test_cms_format_06 },
+    { "cms/0147_bgr8_float", test_cms_format_07 },
+    { "cms/0148_bgra8_float", test_cms_format_08 },
+    { "cms/0149_rgb16_word_output", test_cms_format_09 },
+    { "cms/0150_adapter_input_allocation", test_cms_format_fault_1 },
+    { "cms/0151_adapter_output_allocation", test_cms_format_fault_2 },
+    { "cms/0152_adapter_publication_allocation", test_cms_format_fault_3 },
     { "cms/0366_mixed_first_nonfinite",
       test_cms_0366_mixed },
     { "cms/0367_mixed_second_permutation_allocation",
