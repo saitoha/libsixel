@@ -3584,7 +3584,8 @@ icc_numeric_colorspace_legacy_float_pair_test(int byte_input)
 }
 
 int
-icc_numeric_mpet_legacy_mixed_precedence_test(int byte_input)
+icc_numeric_mpet_legacy_mixed_precedence_test(int byte_input,
+                                                int saturation_first)
 {
     static unsigned int const white[] = {63190u, 65536u, 54061u};
     static unsigned char const rgb8[] = {64u, 96u, 128u};
@@ -3608,14 +3609,15 @@ icc_numeric_mpet_legacy_mixed_precedence_test(int byte_input)
     int added;
     int ok;
 
-    /* Both profiles have a perceptual LUT. Only the source has A2B1;
-     * pairing it with the destination's B2A0 gives the identity. */
+    /* Both profiles have a perceptual LUT. Only the source has the first
+     * requested slot; pairing it with destination B2A0 gives identity.
+     * BPC must leave this pairing intact when relative is not requested. */
     iccn_absolute_lut_profile(tables, white, '0');
     memcpy(src, tables, sizeof(tables));
     memcpy(dst, tables, sizeof(tables));
     iccn_be32(src, sizeof(src));
     iccn_be32(dst, sizeof(dst));
-    memcpy(src + 144u, "A2B1", 4u);
+    memcpy(src + 144u, saturation_first ? "A2B2" : "A2B1", 4u);
     iccn_be32(src + 148u, sizeof(tables));
     iccn_be32(src + 152u, 68u);
     iccn_identity_a2b(src + sizeof(tables));
@@ -3652,7 +3654,10 @@ icc_numeric_mpet_legacy_mixed_precedence_test(int byte_input)
             ? sixel_cms_open_profile_from_mem(with_mpet, sizeof(with_mpet))
             : sixel_cms_open_profile_from_mem(src, sizeof(src));
         ok = iccn_transform_pixels(source, format, target, format,
-            "relative,perceptual,saturation!", input, output, 1u) &&
+            saturation_first == 2 ? "saturation,perceptual,relative!"
+            : saturation_first ? "saturation,perceptual!"
+                        : "relative,perceptual,saturation!",
+            input, output, 1u) &&
             memcmp(input, output, pixel_size) == 0;
         sixel_cms_close_profile(source);
         if (!ok) {

@@ -253,6 +253,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_SIZE_OVERFLOW \
     -DBUILD_TEST_0009_REFERENCE_WHITE_ALIAS \
     -DBUILD_TEST_0010_ALLOCATION_RETRY \
+    -DBUILD_TEST_0011_AUTO_FINITE_EXPOSURE \
+    -DBUILD_TEST_0012_REINHARD_FINITE_EXPOSURE \
+    -DBUILD_TEST_0013_EXPOSURE_OVERFLOW \
+    -DBUILD_TEST_0014_REINHARD_SAMPLES \
     -DBUILD_TEST_0001_DEFAULT_OFF \
     -DBUILD_TEST_0002_RELATIVE_ENDPOINTS \
     -DBUILD_TEST_0003_RGB8 \
@@ -267,6 +271,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_LCMS2_ABSOLUTE \
     -DBUILD_TEST_0014_COLORSYNC_RELATIVE \
     -DBUILD_TEST_0015_COLORSYNC_ABSOLUTE \
+    -DBUILD_TEST_0016_NONRELATIVE_MIXED_FLOAT \
+    -DBUILD_TEST_0017_NONRELATIVE_MIXED_BYTE \
+    -DBUILD_TEST_0018_MIXED_BEFORE_RELATIVE_FLOAT \
+    -DBUILD_TEST_0019_MIXED_BEFORE_RELATIVE_BYTE \
     -DBUILD_TEST_0009_PERCEPTUAL_UNCHANGED \
     -DBUILD_TEST_0001_BUILTIN_PQ16_ALPHA \
     -DBUILD_TEST_0002_LIBPNG_PQ16_ALPHA \
@@ -284,6 +292,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0014_LIBPNG_HLG_DISPLAY_PARAMETERS \
     -DBUILD_TEST_0015_BUILTIN_CMS_DISABLED \
     -DBUILD_TEST_0016_LIBPNG_CMS_DISABLED \
+    -DBUILD_TEST_0017_BUILTIN_BMP_PQ8_ALPHA \
     -DBUILD_HDR_FAULT_COMMON \
     -DBUILD_TEST_0140_RGB16_ALIAS \
     -DBUILD_TEST_0141_RGBA16_FLOAT \
@@ -7288,6 +7297,16 @@ test_runner_SOURCES = test_runner.c \
     loader-png/hdr/0014_libpng_hlg_display_parameters.c \
     loader-png/hdr/0015_builtin_cms_disabled.c \
     loader-png/hdr/0016_libpng_cms_disabled.c \
+    color/bpc/0016_nonrelative_mixed_float.c \
+    color/bpc/0017_nonrelative_mixed_byte.c \
+    color/bpc/0018_mixed_before_relative_float.c \
+    color/bpc/0019_mixed_before_relative_byte.c \
+    color/hdr/0011_auto_finite_exposure.c \
+    color/hdr/0012_reinhard_finite_exposure.c \
+    color/hdr/0013_exposure_overflow.c \
+    color/hdr/0014_reinhard_samples.c \
+    loader-png/hdr/0017_builtin_bmp_pq8_alpha.c \
+    _support/processing/cms/hdr_finish_common.h \
     _support/processing/cms/hdr_numeric_common.h \
     _support/processing/cms/hdr_fault_common.c \
     color/cms/0140_rgb16_alias.c \

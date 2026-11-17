@@ -2469,19 +2469,23 @@ sixel_cms_create_transform_builtin(sixel_cms_profile_t const *src_profile,
     transform->backend = SIXEL_CMS_PROFILE_BACKEND_BUILTIN;
     transform->src_format = src_format;
     transform->dst_format = dst_format;
-    transform->flags = flags;
     transform->src_profile = src_profile;
     transform->dst_profile = dst_profile;
     transform->builtin_intent_count =
         sixel_cms_build_intent_order(transform->builtin_intents);
+    /* An inactive BPC request must not suppress mixed legacy LUT pairs,
+     * even when an MPE tag requires the ordered PCS evaluator. */
+    if (!sixel_cms_intent_contains(transform->builtin_intents,
+            transform->builtin_intent_count,
+            SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
+        flags &= ~SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION;
+    }
+    transform->flags = flags;
     transform->builtin_a2b_slot_count = sixel_cms_build_builtin_a2b_order(
         transform->builtin_a2b_slots, transform->builtin_intents,
         transform->builtin_intent_count);
     transform->builtin_pcs_ordered =
-        ((flags & SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) != 0 &&
-         sixel_cms_intent_contains(transform->builtin_intents,
-             transform->builtin_intent_count,
-             SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) ||
+        (flags & SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) != 0 ||
         sixel_cms_builtin_needs_ordered_pcs(transform);
     if (!transform->builtin_pcs_ordered) {
         sixel_cms_builtin_select_absolute(transform, transform->builtin_intents,
@@ -4538,7 +4542,9 @@ sixel_cms_builtin_legacy_pair_index(
     prefix.builtin_a2b_slot_count = 0u;
     status = SIXEL_CMS_STATUS_OK;
     for (i = 0u; i < count; ++i) {
-        if (candidates[i].builtin_absolute) {
+        /* Relative BPC must pass through the compensated PCS evaluator;
+         * unrelated intents can still use their original mixed LUT pair. */
+        if (candidates[i].builtin_absolute || candidates[i].builtin_bpc) {
             continue;
         }
         prefix.builtin_a2b_slots[prefix.builtin_a2b_slot_count++] =
@@ -4622,7 +4628,6 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
          !target->builtin_profile.lut_only));
     try_legacy_pair = transform->builtin_pcs_ordered &&
         transform->builtin_a2b_slot_count > 1u && !float_rgb &&
-        !(transform->flags & SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) &&
         !sixel_cms_builtin_profile_is_srgb(target);
     inverse_rgb = NULL;
     if (target->rgb_definition == NULL &&
@@ -4666,7 +4671,8 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                 memcpy(&sample, &legacy_sample, dst_stride);
                 break;
             }
-            if (legacy_index < n && !candidate->builtin_absolute) {
+            if (legacy_index < n && !candidate->builtin_absolute &&
+                !candidate->builtin_bpc) {
                 continue;
             }
             /* The presence of other mpet tags cannot change the PCS
@@ -4683,7 +4689,8 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                     goto done;
                 }
             }
-            if (try_legacy_pair && !candidate->builtin_absolute) {
+            if (try_legacy_pair && !candidate->builtin_absolute &&
+                !candidate->builtin_bpc) {
                 /* A candidate may fail when its reverse slot is absent.
                  * Find the mixed pair before a later legacy candidate
                  * commits, while still giving earlier MPE paths priority. */
@@ -4706,8 +4713,12 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
         if (i == n) {
             /* Legacy device-to-device conversions can pair the first
              * usable slot on each endpoint independently. Give them the
-             * full slot order after all paired intent candidates fail. */
+             * full slot order after all paired intent candidates fail.
+             * With BPC, only the filtered prefixes above are safe: the
+             * full order could bypass compensation through a relative LUT. */
             if (!try_legacy_pair ||
+                (transform->flags &
+                 SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) != 0 ||
                 !sixel_cms_do_transform_builtin_device_to_device(
                     transform, input, &sample, 1u, status)) {
                 goto done;

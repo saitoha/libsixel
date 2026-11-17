@@ -159,13 +159,25 @@ loader_hdr_finish(float *pixels, size_t count)
             0.07219231536073371 * pixels[i * 3u + 2u];
         scale = exposure;
         if (mode == SIXEL_BUILTIN_HDR_TONEMAP_AUTO) {
-            scale /= 1.0 + fmax(luminance, 0.0) * exposure;
+            /* Divide by exposure first at high EV: Y * exposure can
+             * overflow even though the rendered result is bounded.
+             * Keep the product form below unity to avoid 1 / tiny E. */
+            scale = exposure >= 1.0
+                ? 1.0 / (1.0 / exposure + fmax(luminance, 0.0))
+                : exposure / (1.0 + fmax(luminance, 0.0) * exposure);
         }
         for (c = 0; c < 3; ++c) {
-            value = pixels[i * 3u + c] * scale;
+            value = pixels[i * 3u + c];
             if (mode == SIXEL_BUILTIN_HDR_TONEMAP_REINHARD) {
                 value = fmax(value, 0.0);
-                value /= 1.0 + value;
+                if (exposure >= 1.0) {
+                    value /= 1.0 / exposure + value;
+                } else {
+                    value *= exposure;
+                    value /= 1.0 + value;
+                }
+            } else {
+                value *= scale;
             }
             if (!isfinite(value) || fabs(value) > FLT_MAX) {
                 return 0;

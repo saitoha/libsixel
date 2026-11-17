@@ -6344,7 +6344,13 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 bmp_png_payload_is_16bit = stbi_is_16_bit_from_memory(
                     sixel_chunk_get_buffer(payload_chunk),
                     (int)sixel_chunk_get_size(payload_chunk));
-                if (bmp_png_payload_is_16bit != 0) {
+                /* HDR needs unbounded linear samples through background
+                 * composition, also for eight-bit embedded PNGs. The
+                 * legacy RGBA8 fallback renders before BMP alpha blending. */
+                if (bmp_png_payload_is_16bit != 0 ||
+                    (enable_cms && loader_hdr_is_source(loader_hdr_source(
+                        "builtin", sixel_frompng_cicp_name(bmp_payload,
+                            bmp_payload_size))))) {
                     status = sixel_frompng_load_nonindexed(
                         payload_chunk,
                         allocator,

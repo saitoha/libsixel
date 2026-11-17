@@ -151,6 +151,9 @@ png_cicp_test(int specimen, int native)
         {-0.0420569547096882, 1.0420569547096882, 0.0},
         {-0.0196375545903344, -0.0786360455506319, 1.0982736001409663}
     };
+    static double const hdr_bmp[3] = {
+        0.1923748733, 0.2307454133, 0.3021600963
+    };
     static double const xy[8] = {
         0.3127, 0.3290, 0.64, 0.33, 0.30, 0.60, 0.15, 0.06
     };
@@ -236,7 +239,8 @@ png_cicp_test(int specimen, int native)
     gray = specimen == 6 || specimen == 7 || specimen == 8;
     has_alpha = specimen == 3 || specimen == 4 || specimen == 8 ||
         specimen == 9 || specimen == 10 || specimen == 30 ||
-        specimen == 32 || specimen == 33 || specimen == 34 || specimen == 37;
+        specimen == 32 || specimen == 33 || specimen == 34 || specimen == 37 ||
+        specimen == 42;
     adam7 = specimen == 31;
     apng = specimen == 29 || specimen == 37;
     srgb = (specimen >= 13 && specimen <= 15) || specimen == 33;
@@ -365,7 +369,8 @@ png_cicp_test(int specimen, int native)
             for (c = 0u; c < (size_t)channels; ++c) {
                 k = has_alpha && c == (size_t)channels - 1u ? 3u :
                     gray ? 0u : c;
-                sample = source[i][k];
+                /* Embedded HDR uses neutral RGBA8 = 128 throughout. */
+                sample = specimen == 42 ? 32896u : source[i][k];
                 raw[raw_size++] = (unsigned char)(sample >> 8);
                 if (depth == 16) {
                     raw[raw_size++] = (unsigned char)sample;
@@ -387,6 +392,24 @@ png_cicp_test(int specimen, int native)
         offset += cicp_chunk(png + offset, "cICP", codes, 4u);
     }
     offset += cicp_chunk(png + offset, "IEND", NULL, 0u);
+    if (specimen == 42) {
+        /* BI_PNG must use the same linear composition as a standalone PNG. */
+        memmove(png + 54u, png, offset);
+        memset(png, 0, 54u);
+        png[0] = 'B';
+        png[1] = 'M';
+        png[2] = (unsigned char)(offset + 54u);
+        png[3] = (unsigned char)((offset + 54u) >> 8);
+        png[10] = 54u;
+        png[14] = 40u;
+        png[18] = 4u;
+        png[22] = 1u;
+        png[26] = 1u;
+        png[30] = 5u;
+        png[34] = (unsigned char)offset;
+        png[35] = (unsigned char)(offset >> 8);
+        offset += 54u;
+    }
     status = sixel_chunk_create_from_memory(&chunk, png, offset, NULL,
                                              allocator);
     if (SIXEL_FAILED(status)) {
@@ -426,7 +449,7 @@ png_cicp_test(int specimen, int native)
         goto cleanup;
     }
     if (specimen == 10 || specimen == 30 ||
-        specimen == 34 || specimen == 37) {
+        specimen == 34 || specimen == 37 || specimen == 42) {
         bg[0] = 51u;
         bg[1] = 102u;
         bg[2] = 153u;
@@ -473,7 +496,12 @@ png_cicp_test(int specimen, int native)
             for (k = 0u; k < 3u; ++k) {
                 value += matrix[c][k] * lin[k];
             }
-            if (specimen == 16) {
+            if (specimen == 42) {
+                /* Independent PQ decode of 128/255 gives 0.4634216707996413.
+                 * Blend with sRGB background (51,102,153) at alpha 128/255,
+                 * then divide each linear component by 1 + luminance. */
+                value = hdr_bmp[c];
+            } else if (specimen == 16) {
                 value = png_hdr_expected[0][i][c];
             } else if (specimen >= 34 && specimen <= 40) {
                 value = png_hdr_expected[specimen - 33][i][c];
@@ -522,7 +550,7 @@ png_cicp_test(int specimen, int native)
         }
     }
     if (has_alpha && specimen != 9 && specimen != 10 && specimen != 30 &&
-        specimen != 34 && specimen != 37 &&
+        specimen != 34 && specimen != 37 && specimen != 42 &&
         (!probe.alpha_zero || (!probe.palette &&
          memcmp(probe.mask, "\0\0\1\0", 4u)))) {
         fprintf(stderr, "cICP zero alpha coverage mismatch\n");

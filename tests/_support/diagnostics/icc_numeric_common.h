@@ -70,7 +70,8 @@ int icc_numeric_mpet_simplex_cancellation_test(int amplify);
 size_t icc_numeric_gray_legacy_profile(unsigned char bytes[260]);
 int icc_numeric_colorspace_legacy_float_pair_test(int byte_input);
 int icc_numeric_mpet_before_later_legacy_test(void);
-int icc_numeric_mpet_legacy_mixed_precedence_test(int byte_input);
+int icc_numeric_mpet_legacy_mixed_precedence_test(int byte_input,
+                                                int saturation_first);
 int icc_numeric_mpet_tag_share_budget_test(int distinct);
 int icc_numeric_mpet_downstream_fallback_test(int absolute);
 int icc_numeric_mpet_small_residual_test(unsigned int clut_axes);
