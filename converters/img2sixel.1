@@ -1259,6 +1259,8 @@ The delta suboption \fB:residual=0|1\fP (:Rvalue, default 0) lowers the early-ke
 Experimental \fB:refresh=0..10000\fP (:Jvalue, default 0/off) periodically lowers T at blue-noise-distributed pixel positions. With default modifiers, :T8:J5 re-evaluates every pixel at T0 once per 5 encoded frames. The schedule counts encoded frames, not time. Post-lookup keeps still apply; re-evaluation does not guarantee repainting. Requires an opaque gamma RGB8 target; incompatible with R1 and progressive.
 .br
 Experimental \fB:refresh_floor=0..255\fP (:Lvalue, default 0) permits early keeps for errors at or below this floor on a refresh deadline. \fB:refresh_curve=0|1|2\fP (:Avalue, default 0) selects uniform, inverse or inverse-square periods. For errors <=8, <=16, <=32 and >32, A1 uses 8J,4J,2J,J frames; A2 uses 64J,16J,4J,J. A1/A2 and spatial refresh support all RGB8 dither methods. Ordinary T and runtime caps remain authoritative. L/A do not enable refresh by themselves. These are engineering curves, not calibrated visibility limits. See docs/encoder/output/delta-encoding.md.
+The \fB:refresh_mask=bluenoise|horizontal8\fP selector (:Bvalue) defaults to bluenoise. Horizontal8 shares refresh phases within horizontal groups of eight pixels. Active horizontal8 supports A0/A1 and G0 with option-selected periods. CPU and supported GPU applications use the same mask. A2, G1 through G4 and caller-selected period arrays are rejected. The selector does not enable refresh or change its period or threshold.
+.br
 Experimental \fB:refresh_spatial=0..4\fP (:Gvalue, default 0) uses an independent CPU producer for a broad activity map. \fB-Zdelta:T48:G1\fP supplies omitted J1:L4:A1. J0 disables refresh. With threads enabled, G1/G2 extend error 5..8 periods to 16J/32J frames in active regions. G3 uses the G1 low-band period and extends errors 9..16 to 8J. G4 applies the same extension for errors 9..16 with a Rec.709 Y' difference of at most four RGB8 code values. Missing or stale maps fall back to A1. Completion timing can change output bytes. This is not a calibrated perceptual preset; see docs/encoder/output/delta-encoding.md.
 The R1 mask uses sigma 4 pixels, radius 12, and up to 64 by 64 screen cells. History commits only after successful output. Source drops do not count; frame numbers need not be consecutive. No extra work runs after the last input.
 R1 requires full-plane opaque gamma RGB8 targets, RGB output and none, a_dither, x_dither or bluenoise application; CPU and Metal use the same mask. R1 conflicts with P1 and explicit max metric. Other workspaces, float targets, alpha holes and partial updates are unsupported. With periodic refresh disabled, R0 preserves ordinary delta behavior.
@@ -2262,6 +2264,9 @@ Invalid values keep defaults; explicit suboptions take precedence.
 .TP
 .B SIXEL_UPDATE_DELTA_REFRESH
 Default delta:refresh period (0..10000 encoded frames, default 0/off).
+.TP
+.B SIXEL_UPDATE_DELTA_REFRESH_MASK
+Set delta:refresh_mask (bluenoise|horizontal8, default bluenoise). Does not enable delta or refresh. Explicit suboptions take precedence.
 .TP
 .B SIXEL_UPDATE_DELTA_REFRESH_FLOOR
 Default delta:refresh_floor (0..255, default 0). Does not enable refresh.

@@ -6000,6 +6000,56 @@ int test_dither_sierra3_gpu_0012(int, char **);
 int test_dither_sierra3_gpu_0013(int, char **);
 int test_dither_sierra3_gpu_0014(int, char **);
 
+int test_delta_refresh_0104(int, char **);
+
+int test_delta_refresh_0105(int, char **);
+
+int test_delta_refresh_0106(int, char **);
+
+int test_delta_refresh_0107(int, char **);
+
+int test_delta_refresh_0108(int, char **);
+
+int test_delta_refresh_0109(int, char **);
+
+int test_delta_refresh_0110(int, char **);
+
+int test_delta_refresh_0111(int, char **);
+
+int test_delta_refresh_0112(int, char **);
+
+int test_delta_refresh_0113(int, char **);
+
+int test_delta_refresh_0114(int, char **);
+
+int test_delta_refresh_0115(int, char **);
+
+int test_delta_refresh_0116(int, char **);
+
+int test_delta_refresh_0117(int, char **);
+
+int test_delta_refresh_0118(int, char **);
+
+int test_delta_refresh_0119(int, char **);
+
+int test_delta_refresh_0120(int, char **);
+
+int test_delta_refresh_0121(int, char **);
+
+int test_delta_refresh_0122(int, char **);
+
+int test_delta_refresh_0123(int, char **);
+
+int test_delta_refresh_0124(int, char **);
+
+int test_delta_refresh_0125(int, char **);
+
+int test_delta_refresh_0126(int, char **);
+
+int test_delta_refresh_0127(int, char **);
+
+int test_delta_refresh_0128(int, char **);
+
 static test_entry_t const test_entries[] = {
     { "dither/fs-gpu/0011_retained_full_run",
       test_dither_fs_gpu_0011 },
@@ -6077,6 +6127,39 @@ static test_entry_t const test_entries[] = {
       test_dither_sierra3_gpu_0013 },
     { "dither/sierra3-gpu/0014_retained_partial_resolve",
       test_dither_sierra3_gpu_0014 },
+    { "delta/refresh/0128_horizontal_lso2_gpu_dispatch",
+      test_delta_refresh_0128 },
+    { "delta/refresh/0127_horizontal_gpu_a1_mask", test_delta_refresh_0127 },
+    { "delta/refresh/0126_horizontal_gpu_a0_mask", test_delta_refresh_0126 },
+    { "delta/refresh/0125_horizontal_output_failure", test_delta_refresh_0125 },
+    { "delta/refresh/0124_horizontal_fs_gpu_dispatch",
+      test_delta_refresh_0124 },
+    { "delta/refresh/0123_horizontal_force_after_accepted",
+      test_delta_refresh_0123 },
+    { "delta/refresh/0122_horizontal_force_first_accepted",
+      test_delta_refresh_0122 },
+    { "delta/refresh/0121_horizontal_periods_rejected",
+      test_delta_refresh_0121 },
+    { "delta/refresh/0120_horizontal_spatial_rejected",
+      test_delta_refresh_0120 },
+    { "delta/refresh/0119_horizontal_a2_rejected", test_delta_refresh_0119 },
+    { "delta/refresh/0118_horizontal_policy_reset", test_delta_refresh_0118 },
+    { "delta/refresh/0117_horizontal_noop_age", test_delta_refresh_0117 },
+    { "delta/refresh/0116_horizontal_history_restart",
+      test_delta_refresh_0116 },
+    { "delta/refresh/0115_bluenoise_explicit_output", test_delta_refresh_0115 },
+    { "delta/refresh/0114_horizontal_gpu_positional", test_delta_refresh_0114 },
+    { "delta/refresh/0113_horizontal_playback_config",
+      test_delta_refresh_0113 },
+    { "delta/refresh/0112_horizontal_dormant", test_delta_refresh_0112 },
+    { "delta/refresh/0111_horizontal_invalid_atomic", test_delta_refresh_0111 },
+    { "delta/refresh/0110_bluenoise_a1_phases", test_delta_refresh_0110 },
+    { "delta/refresh/0109_bluenoise_a0_phases", test_delta_refresh_0109 },
+    { "delta/refresh/0108_horizontal_a1_j4", test_delta_refresh_0108 },
+    { "delta/refresh/0107_horizontal_a1_j2", test_delta_refresh_0107 },
+    { "delta/refresh/0106_horizontal_a0_j65", test_delta_refresh_0106 },
+    { "delta/refresh/0105_horizontal_a0_j5", test_delta_refresh_0105 },
+    { "delta/refresh/0104_horizontal_a0_j1", test_delta_refresh_0104 },
     { "delta/refresh/0100_custom_band_periods", test_delta_refresh_0100 },
     { "delta/refresh/0102_spatial_explicit_disable", test_delta_refresh_0102 },
     { "delta/refresh/0101_spatial_defaults", test_delta_refresh_0101 },

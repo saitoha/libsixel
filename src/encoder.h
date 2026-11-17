@@ -493,6 +493,8 @@ struct sixel_encoder {
     int residual_frames_override;
     unsigned int refresh_frames; /* encoded frames per refresh cycle */
     int refresh_frames_override;
+    int refresh_mask;              /* instance-owned refresh phase policy */
+    int refresh_mask_override;
     unsigned int refresh_periods[4]; /* caller-selected error-band periods */
     unsigned int refresh_floor;
     int refresh_floor_override;

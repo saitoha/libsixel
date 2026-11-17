@@ -2184,6 +2184,22 @@ sixel_encoder_set_6delta_refresh_periods(
     sixel_encoder_t *encoder,
     unsigned int const periods[4]);
 
+/* Select the spatial refresh phase tile. Horizontal8 shares phases within
+ * absolute horizontal groups of eight pixels. Active horizontal8 refresh
+ * supports A0/A1, G0 and option-selected periods on CPU and supported GPU
+ * applications. GPU admission follows its normal policy. Default bluenoise.
+ * Configure before attaching playback. Invalid values preserve state.
+ * Changing the mask restarts refresh age, preserving retained RGB.
+ * Setting UPDATE_POLICY restores bluenoise. This does not enable refresh. */
+#define SIXEL_HAVE_ENCODER_6DELTA_REFRESH_MASK 1
+#define SIXEL_REFRESH_MASK_BLUENOISE 0
+#define SIXEL_REFRESH_MASK_HORIZONTAL8 1
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_refresh_mask(
+    sixel_encoder_t *encoder,
+    int mask);
+
 /* Limit the effective delta threshold without changing its configured maximum
  * or the retained plane. 0 requests exact-threshold refinement; 255 removes
  * the runtime limit (the default). Values above 255 are rejected. The limit

@@ -3020,6 +3020,8 @@ sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
     encoder->residual_frames_override = 0;
     encoder->refresh_frames = 0U;
     encoder->refresh_frames_override = 0;
+    encoder->refresh_mask = SIXEL_REFRESH_MASK_BLUENOISE;
+    encoder->refresh_mask_override = 0;
     memset(encoder->refresh_periods, 0, sizeof(encoder->refresh_periods));
     encoder->refresh_floor = 0U;
     encoder->refresh_floor_override = 0;
@@ -3049,6 +3051,15 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
 #else
     spatial_supported = 0;
 #endif
+    if (encoder->refresh_mask == SIXEL_REFRESH_MASK_HORIZONTAL8 &&
+            sixel_encoder_refresh_enabled(encoder) &&
+            (encoder->refresh_curve > 1U || encoder->refresh_spatial != 0U ||
+             encoder->refresh_periods[3] != 0U)) {
+        sixel_helper_set_additional_message(
+            "refresh_mask=horizontal8 requires A0/A1, G0 and "
+            "option-selected periods.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (encoder->refresh_spatial && sixel_encoder_refresh_enabled(encoder) &&
             !spatial_supported) {
         sixel_helper_set_additional_message(
@@ -3184,6 +3195,7 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
         periods = encoder->refresh_periods[3] ?
             encoder->refresh_periods : NULL;
         period = periods != NULL ? periods[3] : encoder->refresh_frames;
+        encoder->residual_state.refresh_mask = encoder->refresh_mask;
         sixel_delta_refresh_prepare(&encoder->residual_state,
             width, height, origin_x, origin_y, period, history_valid);
         sixel_delta_refresh_adapt(&encoder->residual_state,
@@ -16718,6 +16730,7 @@ end:
                 encoder->refresh_frames != destination->refresh_frames ||
                 memcmp(encoder->refresh_periods, destination->refresh_periods,
                     sizeof(encoder->refresh_periods)) != 0 ||
+                encoder->refresh_mask != destination->refresh_mask ||
                 encoder->refresh_floor != destination->refresh_floor ||
                 encoder->refresh_curve != destination->refresh_curve ||
                 encoder->refresh_spatial != destination->refresh_spatial ||
@@ -20904,6 +20917,42 @@ sixel_encoder_set_6delta_threshold_limit(sixel_encoder_t *encoder,
         return status;
     }
     status = sixel_encoder_set_6delta_threshold_limit_owned(encoder, threshold);
+    sixel_encoder_operation_leave(encoder);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_refresh_mask(sixel_encoder_t *encoder, int mask)
+{
+    SIXELSTATUS status;
+    int previous;
+
+    if (mask != SIXEL_REFRESH_MASK_BLUENOISE &&
+            mask != SIXEL_REFRESH_MASK_HORIZONTAL8) {
+        sixel_helper_set_additional_message(
+            "refresh mask must be bluenoise or horizontal8.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_encoder_operation_enter(encoder, 0);
+    if (status != SIXEL_OK) return status;
+    previous = encoder->refresh_mask;
+    encoder->refresh_mask = mask;
+    status = sixel_encoder_validate_residual(encoder,
+        encoder->progressive_context != NULL);
+    if (status == SIXEL_OK) {
+        encoder->refresh_mask_override = 1;
+        if (previous != mask) {
+            /* The display remains valid; the next rectangle is reevaluated
+             * at T0 before deadlines start in the new spatial phase map. */
+            memset(&encoder->residual_state, 0,
+                sizeof(encoder->residual_state));
+            sixel_encoder_revision_advance(encoder,
+                &encoder->configuration_revision);
+            sixel_encoder_clear_dither_cache(encoder);
+        }
+    } else {
+        encoder->refresh_mask = previous;
+    }
     sixel_encoder_operation_leave(encoder);
     return status;
 }

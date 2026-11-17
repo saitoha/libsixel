@@ -1519,6 +1519,11 @@ static sixel_suboption_choice_t const g_update_metric_choices[] = {
     {"rgb241", SIXEL_DELTA_METRIC_RGB241}
 };
 
+static sixel_suboption_choice_t const g_refresh_mask_choices[] = {
+    { "bluenoise", SIXEL_REFRESH_MASK_BLUENOISE },
+    { "horizontal8", SIXEL_REFRESH_MASK_HORIZONTAL8 }
+};
+
 static sixel_suboption_choice_t const g_update_compare_choices[] = {
     { "target", SIXEL_DELTA_COMPARE_TARGET },
     { "query", SIXEL_DELTA_COMPARE_QUERY }
@@ -1917,6 +1922,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         0.0, 10000.0, 1,
         "refresh must be an integer in range 0..10000.",
         refresh_frames, refresh_frames_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "refresh_mask", 'B', "SIXEL_UPDATE_DELTA_REFRESH_MASK", NULL, NULL,
+        g_refresh_mask_choices,
+        refresh_mask, refresh_mask_override),
     SIXEL_REGISTRY_ENCODER_UINT(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "refresh_floor", 'L', "SIXEL_UPDATE_DELTA_REFRESH_FLOOR", NULL, NULL,

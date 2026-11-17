@@ -391,9 +391,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-carry.h $(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
 	$(srcdir)/gpu-dequant.h $(srcdir)/delta-residual.c \
-	$(srcdir)/delta-residual.h $(srcdir)/refresh-spatial.c \
-	$(srcdir)/refresh-spatial.h $(srcdir)/dither-policy-gpu.c \
-	$(srcdir)/dither-policy-gpu.h \
+	$(srcdir)/delta-residual.h $(srcdir)/refresh-horizontal8.h \
+	$(srcdir)/refresh-spatial.c $(srcdir)/refresh-spatial.h \
+	$(srcdir)/dither-policy-gpu.c $(srcdir)/dither-policy-gpu.h \
 	$(srcdir)/dither-policy-none-gpu.c \
 	$(srcdir)/dither-policy-none-gpu.h \
 	$(srcdir)/dither-policy-a-dither-gpu.c \
@@ -1954,6 +1954,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/delta-residual.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/refresh-horizontal8.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/refresh-spatial.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/refresh-spatial.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-gpu.c \

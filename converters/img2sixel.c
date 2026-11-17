@@ -1043,6 +1043,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "    Frame-based refresh (delta only, off by default):\n"
         "      -Zdelta:T48:G1    spatial refresh, defaults to J1:L4:A1\n"
         "      refresh=0..10000 (:Jvalue, encoded frames, 0 disables)\n"
+        "      refresh_mask=bluenoise|horizontal8"
+        " (:Bvalue, default bluenoise)\n"
+        "        horizontal8 uses A0/A1, G0; no custom periods.\n"
         "      refresh_floor=0..255 (:Lvalue, small-error keep floor)\n"
         "      refresh_curve=0|1|2 (:Avalue, uniform/inverse/inverse square)\n"
         "      refresh_spatial=0..4 (:Gvalue, 0 disables spatial adjustment)\n"
@@ -1631,6 +1634,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_UPDATE_DELTA_REFRESH",
         "set delta:refresh (0..10000 frames, default 0/off).\n"
         "Does not enable delta. Experimental staggered T0 re-evaluation."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_REFRESH_MASK",
+        "set delta:refresh_mask (bluenoise|horizontal8, default bluenoise).\n"
+        "Does not enable refresh or delta. Explicit suboptions take precedence."
     },
     {
         "SIXEL_UPDATE_DELTA_REFRESH_FLOOR",

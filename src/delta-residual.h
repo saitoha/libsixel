@@ -66,6 +66,7 @@ typedef struct sixel_delta_residual {
     size_t selected_pixels;
     /* Periodic refresh counts encoded frames since its last restart and
      * publishes that count only with successful output. */
+    int refresh_mask;              /* phase policy copied by the owner */
     uint64_t refresh_frame;
     uint64_t refresh_next_frame;
     int refresh_origin_x;

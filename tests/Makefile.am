@@ -350,6 +350,32 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0150_ADAPTER_INPUT_ALLOCATION \
     -DBUILD_TEST_0151_ADAPTER_OUTPUT_ALLOCATION \
     -DBUILD_TEST_0152_ADAPTER_PUBLICATION_ALLOCATION \
+    -DBUILD_TEST_0104_HORIZONTAL_A0_J1 \
+    -DBUILD_TEST_0105_HORIZONTAL_A0_J5 \
+    -DBUILD_TEST_0106_HORIZONTAL_A0_J65 \
+    -DBUILD_TEST_0107_HORIZONTAL_A1_J2 \
+    -DBUILD_TEST_0108_HORIZONTAL_A1_J4 \
+    -DBUILD_TEST_0109_BLUENOISE_A0_PHASES \
+    -DBUILD_TEST_0110_BLUENOISE_A1_PHASES \
+    -DBUILD_TEST_0111_HORIZONTAL_INVALID_ATOMIC \
+    -DBUILD_TEST_0112_HORIZONTAL_DORMANT \
+    -DBUILD_TEST_0113_HORIZONTAL_PLAYBACK_CONFIG \
+    -DBUILD_TEST_0114_HORIZONTAL_GPU_POSITIONAL \
+    -DBUILD_TEST_0115_BLUENOISE_EXPLICIT_OUTPUT \
+    -DBUILD_TEST_0116_HORIZONTAL_HISTORY_RESTART \
+    -DBUILD_TEST_0117_HORIZONTAL_NOOP_AGE \
+    -DBUILD_TEST_0118_HORIZONTAL_POLICY_RESET \
+    -DBUILD_TEST_0119_HORIZONTAL_A2_REJECTED \
+    -DBUILD_TEST_0120_HORIZONTAL_SPATIAL_REJECTED \
+    -DBUILD_TEST_0121_HORIZONTAL_PERIODS_REJECTED \
+    -DBUILD_TEST_0122_HORIZONTAL_FORCE_FIRST_ACCEPTED \
+    -DBUILD_TEST_0123_HORIZONTAL_FORCE_AFTER_ACCEPTED \
+    -DBUILD_TEST_0124_HORIZONTAL_FS_GPU_DISPATCH \
+    -DBUILD_TEST_0125_HORIZONTAL_OUTPUT_FAILURE \
+    -DBUILD_TEST_0126_HORIZONTAL_GPU_A0_MASK \
+    -DBUILD_TEST_0127_HORIZONTAL_GPU_A1_MASK \
+    -DBUILD_TEST_0128_HORIZONTAL_LSO2_GPU_DISPATCH \
+    -DBUILD_HORIZONTAL_TEST_COMMON \
     -DBUILD_SPATIAL_TEST_COMMON \
     -DBUILD_TEST_0084_SPATIAL_LOW_BAND_16_FRAMES \
     -DBUILD_TEST_0085_SPATIAL_LOW_BAND_32_FRAMES \
@@ -5968,6 +5994,31 @@ test_runner_SOURCES = \
     encoder/highcolor/0095_byte_x_dither_coordinates.c \
     encoder/highcolor/0096_byte_fs_saturation.c \
     _support/lso2-gpu/retained_common.c \
+    delta/refresh/0128_horizontal_lso2_gpu_dispatch.c \
+    delta/refresh/0127_horizontal_gpu_a1_mask.c \
+    delta/refresh/0126_horizontal_gpu_a0_mask.c \
+    delta/refresh/0125_horizontal_output_failure.c \
+    delta/refresh/0124_horizontal_fs_gpu_dispatch.c \
+    delta/refresh/0123_horizontal_force_after_accepted.c \
+    delta/refresh/0122_horizontal_force_first_accepted.c \
+    delta/refresh/0121_horizontal_periods_rejected.c \
+    delta/refresh/0120_horizontal_spatial_rejected.c \
+    delta/refresh/0119_horizontal_a2_rejected.c \
+    delta/refresh/0118_horizontal_policy_reset.c \
+    delta/refresh/0117_horizontal_noop_age.c \
+    delta/refresh/0116_horizontal_history_restart.c \
+    delta/refresh/0115_bluenoise_explicit_output.c \
+    delta/refresh/0114_horizontal_gpu_positional.c \
+    delta/refresh/0113_horizontal_playback_config.c \
+    delta/refresh/0112_horizontal_dormant.c \
+    delta/refresh/0111_horizontal_invalid_atomic.c \
+    delta/refresh/0110_bluenoise_a1_phases.c \
+    delta/refresh/0109_bluenoise_a0_phases.c \
+    delta/refresh/0108_horizontal_a1_j4.c \
+    delta/refresh/0107_horizontal_a1_j2.c \
+    delta/refresh/0106_horizontal_a0_j65.c \
+    delta/refresh/0105_horizontal_a0_j5.c \
+    delta/refresh/0104_horizontal_a0_j1.c \
     _support/processing/delta-refresh/spatial_test_common.c \
     delta/refresh/0100_custom_band_periods.c \
     _support/lso2-gpu/atkinson_carry_common.c \
@@ -6607,6 +6658,7 @@ test_runner_SOURCES = \
     _support/processing/gpu-palette/rectangle_common.c \
     _support/processing/delta-refresh/partial_test_common.c \
     _support/processing/delta-refresh/refresh_test_common.c \
+    _support/processing/delta-refresh/horizontal_test_common.c \
     _support/processing/delta-residual/gate_test_common.c \
     _support/processing/delta-residual/residual_test_common.c \
     lookup/dispatch/0002_gpu_palette_threshold_strtoul.c \

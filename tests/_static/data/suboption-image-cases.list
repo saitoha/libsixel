@@ -200,3 +200,4 @@ tests/cli/dither-options/0043_diffusion_lso2_gain_image_regression.t
 tests/cli/output-options/0026_update_delta_refresh_floor_image_regression.t
 tests/cli/output-options/0027_update_delta_refresh_curve_image_regression.t
 tests/cli/output-options/0028_update_delta_refresh_spatial_image_regression.t
+tests/cli/output-options/0029_update_delta_refresh_mask_image_regression.t

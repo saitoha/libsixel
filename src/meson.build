@@ -190,6 +190,7 @@ srcs = [
   'dither-common-pipeline.c',
   'delta-residual.c',
   'delta-residual.h',
+  'refresh-horizontal8.h',
   'refresh-spatial.c',
   'refresh-spatial.h',
   'dither-policy-gpu.c',

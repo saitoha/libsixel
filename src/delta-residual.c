@@ -30,6 +30,7 @@
 #include <sixel.h>
 #include "delta-residual.h"
 #include "bluenoise_64x64.h"
+#include "refresh-horizontal8.h"
 
 /* Filter signed components before measuring distance: alternating dither
  * errors cancel, while persistent low-frequency color offsets survive.
@@ -233,16 +234,22 @@ sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
                                   (previous - offset) / period);
         if (selected) phases[phase / 32U] |= (uint32_t)1 << (phase % 32U);
     }
-    /* A pixel-scale blue-noise tile avoids coherent block boundaries on
-     * smooth fades. Fixed phases keep the deadline bound; independently
-     * rerandomizing each frame could indefinitely miss individual pixels.
-     * Translate the tile to avoid sharing phases with color dithering. */
+    /* Default blue-noise phases avoid coherent blocks on smooth fades;
+     * horizontal8 instead shares each phase over eight neighboring pixels.
+     * Both fixed maps bound deadlines without random starvation. Translate
+     * the maps relative to color dithering and anchor to absolute pixels. */
     for (gy = 0U; gy < 64U; ++gy) {
         ny = (size_t)height / 64U + (gy < (unsigned int)height % 64U);
         for (gx = 0U; gx < 64U; ++gx) {
-            phase = sixel_bn64[
-                ((gy + (unsigned int)origin_y + 17U) & 63U) * 64U +
-                ((gx + (unsigned int)origin_x + 37U) & 63U)] >> 2;
+            if (state->refresh_mask == SIXEL_REFRESH_MASK_HORIZONTAL8) {
+                cell = ((gy + (unsigned int)origin_y + 17U) & 63U) * 8U +
+                    (((gx + (unsigned int)origin_x + 37U) & 63U) / 8U);
+                phase = sixel_refresh_h8_base[cell];
+            } else {
+                phase = sixel_bn64[
+                    ((gy + (unsigned int)origin_y + 17U) & 63U) * 64U +
+                    ((gx + (unsigned int)origin_x + 37U) & 63U)] >> 2;
+            }
             if (!(phases[phase / 32U] & ((uint32_t)1 << (phase % 32U))))
                 continue;
             cell = (size_t)gy * 64U + gx;
@@ -312,12 +319,21 @@ sixel_delta_refresh_adapt(sixel_delta_residual_t *state,
         ny = (size_t)state->mask.height / 64U +
             (gy < (unsigned int)state->mask.height % 64U);
         for (gx = 0U; gx < 64U; ++gx) {
-            phase = sixel_bn64[
-                ((gy + (unsigned int)origin_y + 17U) & 63U) * 64U +
-                ((gx + (unsigned int)origin_x + 37U) & 63U)] >> 2;
-            cycle = sixel_bn64[
-                ((gy + (unsigned int)origin_y + 43U) & 63U) * 64U +
-                ((gx + (unsigned int)origin_x + 11U) & 63U)] >> 2;
+            if (state->refresh_mask == SIXEL_REFRESH_MASK_HORIZONTAL8) {
+                /* Align both phases with the same absolute groups. Using
+                 * the blue-noise cycle translation would split the groups. */
+                cell = ((gy + (unsigned int)origin_y + 17U) & 63U) * 8U +
+                    (((gx + (unsigned int)origin_x + 37U) & 63U) / 8U);
+                phase = sixel_refresh_h8_base[cell];
+                cycle = sixel_refresh_h8_cycle[cell];
+            } else {
+                phase = sixel_bn64[
+                    ((gy + (unsigned int)origin_y + 17U) & 63U) * 64U +
+                    ((gx + (unsigned int)origin_x + 37U) & 63U)] >> 2;
+                cycle = sixel_bn64[
+                    ((gy + (unsigned int)origin_y + 43U) & 63U) * 64U +
+                    ((gx + (unsigned int)origin_x + 11U) & 63U)] >> 2;
+            }
             selected = due[phase] ? cutoffs[cycle] : 255U;
             cell = (size_t)gy * 64U + gx;
             state->mask.levels[cell] = (unsigned char)selected;

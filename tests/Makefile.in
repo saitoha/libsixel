@@ -153,6 +153,31 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/highcolor/0095_byte_x_dither_coordinates.c \
 	encoder/highcolor/0096_byte_fs_saturation.c \
 	_support/lso2-gpu/retained_common.c \
+	delta/refresh/0128_horizontal_lso2_gpu_dispatch.c \
+	delta/refresh/0127_horizontal_gpu_a1_mask.c \
+	delta/refresh/0126_horizontal_gpu_a0_mask.c \
+	delta/refresh/0125_horizontal_output_failure.c \
+	delta/refresh/0124_horizontal_fs_gpu_dispatch.c \
+	delta/refresh/0123_horizontal_force_after_accepted.c \
+	delta/refresh/0122_horizontal_force_first_accepted.c \
+	delta/refresh/0121_horizontal_periods_rejected.c \
+	delta/refresh/0120_horizontal_spatial_rejected.c \
+	delta/refresh/0119_horizontal_a2_rejected.c \
+	delta/refresh/0118_horizontal_policy_reset.c \
+	delta/refresh/0117_horizontal_noop_age.c \
+	delta/refresh/0116_horizontal_history_restart.c \
+	delta/refresh/0115_bluenoise_explicit_output.c \
+	delta/refresh/0114_horizontal_gpu_positional.c \
+	delta/refresh/0113_horizontal_playback_config.c \
+	delta/refresh/0112_horizontal_dormant.c \
+	delta/refresh/0111_horizontal_invalid_atomic.c \
+	delta/refresh/0110_bluenoise_a1_phases.c \
+	delta/refresh/0109_bluenoise_a0_phases.c \
+	delta/refresh/0108_horizontal_a1_j4.c \
+	delta/refresh/0107_horizontal_a1_j2.c \
+	delta/refresh/0106_horizontal_a0_j65.c \
+	delta/refresh/0105_horizontal_a0_j5.c \
+	delta/refresh/0104_horizontal_a0_j1.c \
 	_support/processing/delta-refresh/spatial_test_common.c \
 	delta/refresh/0100_custom_band_periods.c \
 	_support/lso2-gpu/atkinson_carry_common.c \
@@ -790,6 +815,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/processing/gpu-palette/rectangle_common.c \
 	_support/processing/delta-refresh/partial_test_common.c \
 	_support/processing/delta-refresh/refresh_test_common.c \
+	_support/processing/delta-refresh/horizontal_test_common.c \
 	_support/processing/delta-residual/gate_test_common.c \
 	_support/processing/delta-residual/residual_test_common.c \
 	lookup/dispatch/0002_gpu_palette_threshold_strtoul.c \
@@ -1591,6 +1617,31 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/highcolor/test_runner-0095_byte_x_dither_coordinates.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/highcolor/test_runner-0096_byte_fs_saturation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-retained_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0125_horizontal_output_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0123_horizontal_force_after_accepted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0122_horizontal_force_first_accepted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0121_horizontal_periods_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0120_horizontal_spatial_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0119_horizontal_a2_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0118_horizontal_policy_reset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0117_horizontal_noop_age.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0116_horizontal_history_restart.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0115_bluenoise_explicit_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0114_horizontal_gpu_positional.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0113_horizontal_playback_config.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0112_horizontal_dormant.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0111_horizontal_invalid_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0110_bluenoise_a1_phases.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0109_bluenoise_a0_phases.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0108_horizontal_a1_j4.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0107_horizontal_a1_j2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0106_horizontal_a0_j65.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0105_horizontal_a0_j5.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0104_horizontal_a0_j1.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0100_custom_band_periods.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-atkinson_carry_common.$(OBJEXT) \
@@ -2175,6 +2226,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-rectangle_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-partial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-refresh_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-horizontal_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-residual/test_runner-gate_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-residual/test_runner-residual_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/dispatch/test_runner-0002_gpu_palette_threshold_strtoul.$(OBJEXT) \
@@ -4433,6 +4485,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	_support/processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	_support/processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
+	_support/processing/delta-refresh/$(DEPDIR)/test_runner-horizontal_test_common.Po \
 	_support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Po \
 	_support/processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po \
 	_support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Po \
@@ -4839,6 +4892,31 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/palette/$(DEPDIR)/test_runner-0120_delta_delta_then_or.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0104_horizontal_a0_j1.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0105_horizontal_a0_j5.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0106_horizontal_a0_j65.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0107_horizontal_a1_j2.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0108_horizontal_a1_j4.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0109_bluenoise_a0_phases.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0110_bluenoise_a1_phases.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0111_horizontal_invalid_atomic.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0112_horizontal_dormant.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0113_horizontal_playback_config.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0114_horizontal_gpu_positional.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0115_bluenoise_explicit_output.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0116_horizontal_history_restart.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0117_horizontal_noop_age.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0118_horizontal_policy_reset.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0119_horizontal_a2_rejected.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0120_horizontal_spatial_rejected.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0121_horizontal_periods_rejected.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0122_horizontal_force_first_accepted.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0123_horizontal_force_after_accepted.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0124_horizontal_fs_gpu_dispatch.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0125_horizontal_output_failure.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0126_horizontal_gpu_a0_mask.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0127_horizontal_gpu_a1_mask.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0128_horizontal_lso2_gpu_dispatch.Po \
 	diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Po \
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po \
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po \
@@ -6183,6 +6261,32 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0150_ADAPTER_INPUT_ALLOCATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0151_ADAPTER_OUTPUT_ALLOCATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0152_ADAPTER_PUBLICATION_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0104_HORIZONTAL_A0_J1 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0105_HORIZONTAL_A0_J5 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0106_HORIZONTAL_A0_J65 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_HORIZONTAL_A1_J2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0108_HORIZONTAL_A1_J4 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0109_BLUENOISE_A0_PHASES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0110_BLUENOISE_A1_PHASES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0111_HORIZONTAL_INVALID_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0112_HORIZONTAL_DORMANT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0113_HORIZONTAL_PLAYBACK_CONFIG \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0114_HORIZONTAL_GPU_POSITIONAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0115_BLUENOISE_EXPLICIT_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0116_HORIZONTAL_HISTORY_RESTART \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0117_HORIZONTAL_NOOP_AGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0118_HORIZONTAL_POLICY_RESET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0119_HORIZONTAL_A2_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0120_HORIZONTAL_SPATIAL_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0121_HORIZONTAL_PERIODS_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0122_HORIZONTAL_FORCE_FIRST_ACCEPTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0123_HORIZONTAL_FORCE_AFTER_ACCEPTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0124_HORIZONTAL_FS_GPU_DISPATCH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0125_HORIZONTAL_OUTPUT_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0126_HORIZONTAL_GPU_A0_MASK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0127_HORIZONTAL_GPU_A1_MASK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0128_HORIZONTAL_LSO2_GPU_DISPATCH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HORIZONTAL_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SPATIAL_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_SPATIAL_LOW_BAND_16_FRAMES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_SPATIAL_LOW_BAND_32_FRAMES \
@@ -11829,6 +11933,31 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/highcolor/0095_byte_x_dither_coordinates.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/highcolor/0096_byte_fs_saturation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/retained_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0128_horizontal_lso2_gpu_dispatch.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0127_horizontal_gpu_a1_mask.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0126_horizontal_gpu_a0_mask.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0125_horizontal_output_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0124_horizontal_fs_gpu_dispatch.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0123_horizontal_force_after_accepted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0122_horizontal_force_first_accepted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0121_horizontal_periods_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0120_horizontal_spatial_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0119_horizontal_a2_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0118_horizontal_policy_reset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0117_horizontal_noop_age.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0116_horizontal_history_restart.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0115_bluenoise_explicit_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0114_horizontal_gpu_positional.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0113_horizontal_playback_config.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0112_horizontal_dormant.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0111_horizontal_invalid_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0110_bluenoise_a1_phases.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0109_bluenoise_a0_phases.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0108_horizontal_a1_j4.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0107_horizontal_a1_j2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0106_horizontal_a0_j65.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0105_horizontal_a0_j5.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0104_horizontal_a0_j1.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/spatial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0100_custom_band_periods.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/atkinson_carry_common.c \
@@ -12468,6 +12597,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/rectangle_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/partial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/refresh_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/horizontal_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-residual/gate_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-residual/residual_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/dispatch/0002_gpu_palette_threshold_strtoul.c \
@@ -20004,6 +20134,87 @@ _support/lso2-gpu/$(DEPDIR)/$(am__dirstamp):
 _support/lso2-gpu/test_runner-retained_common.$(OBJEXT):  \
 	_support/lso2-gpu/$(am__dirstamp) \
 	_support/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/$(am__dirstamp):
+	@$(MKDIR_P) delta/refresh
+	@: >>delta/refresh/$(am__dirstamp)
+delta/refresh/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) delta/refresh/$(DEPDIR)
+	@: >>delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0125_horizontal_output_failure.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0123_horizontal_force_after_accepted.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0122_horizontal_force_first_accepted.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0121_horizontal_periods_rejected.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0120_horizontal_spatial_rejected.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0119_horizontal_a2_rejected.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0118_horizontal_policy_reset.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0117_horizontal_noop_age.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0116_horizontal_history_restart.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0115_bluenoise_explicit_output.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0114_horizontal_gpu_positional.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0113_horizontal_playback_config.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0112_horizontal_dormant.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0111_horizontal_invalid_atomic.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0110_bluenoise_a1_phases.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0109_bluenoise_a0_phases.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0108_horizontal_a1_j4.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0107_horizontal_a1_j2.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0106_horizontal_a0_j65.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0105_horizontal_a0_j5.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0104_horizontal_a0_j1.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
 _support/processing/delta-refresh/$(am__dirstamp):
 	@$(MKDIR_P) _support/processing/delta-refresh
 	@: >>_support/processing/delta-refresh/$(am__dirstamp)
@@ -20013,12 +20224,6 @@ _support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp):
 _support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT):  \
 	_support/processing/delta-refresh/$(am__dirstamp) \
 	_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
-delta/refresh/$(am__dirstamp):
-	@$(MKDIR_P) delta/refresh
-	@: >>delta/refresh/$(am__dirstamp)
-delta/refresh/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) delta/refresh/$(DEPDIR)
-	@: >>delta/refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0100_custom_band_periods.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
@@ -22251,6 +22456,9 @@ _support/processing/delta-refresh/test_runner-partial_test_common.$(OBJEXT):  \
 	_support/processing/delta-refresh/$(am__dirstamp) \
 	_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
 _support/processing/delta-refresh/test_runner-refresh_test_common.$(OBJEXT):  \
+	_support/processing/delta-refresh/$(am__dirstamp) \
+	_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+_support/processing/delta-refresh/test_runner-horizontal_test_common.$(OBJEXT):  \
 	_support/processing/delta-refresh/$(am__dirstamp) \
 	_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
 _support/processing/delta-residual/$(am__dirstamp):
@@ -27723,6 +27931,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-horizontal_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Po@am__quote@ # am--include-marker
@@ -28129,6 +28338,31 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/palette/$(DEPDIR)/test_runner-0120_delta_delta_then_or.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0104_horizontal_a0_j1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0105_horizontal_a0_j5.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0106_horizontal_a0_j65.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0107_horizontal_a1_j2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0108_horizontal_a1_j4.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0109_bluenoise_a0_phases.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0110_bluenoise_a1_phases.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0111_horizontal_invalid_atomic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0112_horizontal_dormant.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0113_horizontal_playback_config.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0114_horizontal_gpu_positional.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0115_bluenoise_explicit_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0116_horizontal_history_restart.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0117_horizontal_noop_age.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0118_horizontal_policy_reset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0119_horizontal_a2_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0120_horizontal_spatial_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0121_horizontal_periods_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0122_horizontal_force_first_accepted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0123_horizontal_force_after_accepted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0124_horizontal_fs_gpu_dispatch.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0125_horizontal_output_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0126_horizontal_gpu_a0_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0127_horizontal_gpu_a1_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0128_horizontal_lso2_gpu_dispatch.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po@am__quote@ # am--include-marker
@@ -28952,6 +29186,356 @@ _support/lso2-gpu/test_runner-retained_common.obj: _support/lso2-gpu/retained_co
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/lso2-gpu/retained_common.c' object='_support/lso2-gpu/test_runner-retained_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/lso2-gpu/test_runner-retained_common.obj `if test -f '_support/lso2-gpu/retained_common.c'; then $(CYGPATH_W) '_support/lso2-gpu/retained_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/lso2-gpu/retained_common.c'; fi`
+
+delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.o: delta/refresh/0128_horizontal_lso2_gpu_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0128_horizontal_lso2_gpu_dispatch.Tpo -c -o delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.o `test -f 'delta/refresh/0128_horizontal_lso2_gpu_dispatch.c' || echo '$(srcdir)/'`delta/refresh/0128_horizontal_lso2_gpu_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0128_horizontal_lso2_gpu_dispatch.Tpo delta/refresh/$(DEPDIR)/test_runner-0128_horizontal_lso2_gpu_dispatch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0128_horizontal_lso2_gpu_dispatch.c' object='delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.o `test -f 'delta/refresh/0128_horizontal_lso2_gpu_dispatch.c' || echo '$(srcdir)/'`delta/refresh/0128_horizontal_lso2_gpu_dispatch.c
+
+delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.obj: delta/refresh/0128_horizontal_lso2_gpu_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0128_horizontal_lso2_gpu_dispatch.Tpo -c -o delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.obj `if test -f 'delta/refresh/0128_horizontal_lso2_gpu_dispatch.c'; then $(CYGPATH_W) 'delta/refresh/0128_horizontal_lso2_gpu_dispatch.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0128_horizontal_lso2_gpu_dispatch.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0128_horizontal_lso2_gpu_dispatch.Tpo delta/refresh/$(DEPDIR)/test_runner-0128_horizontal_lso2_gpu_dispatch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0128_horizontal_lso2_gpu_dispatch.c' object='delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0128_horizontal_lso2_gpu_dispatch.obj `if test -f 'delta/refresh/0128_horizontal_lso2_gpu_dispatch.c'; then $(CYGPATH_W) 'delta/refresh/0128_horizontal_lso2_gpu_dispatch.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0128_horizontal_lso2_gpu_dispatch.c'; fi`
+
+delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.o: delta/refresh/0127_horizontal_gpu_a1_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0127_horizontal_gpu_a1_mask.Tpo -c -o delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.o `test -f 'delta/refresh/0127_horizontal_gpu_a1_mask.c' || echo '$(srcdir)/'`delta/refresh/0127_horizontal_gpu_a1_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0127_horizontal_gpu_a1_mask.Tpo delta/refresh/$(DEPDIR)/test_runner-0127_horizontal_gpu_a1_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0127_horizontal_gpu_a1_mask.c' object='delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.o `test -f 'delta/refresh/0127_horizontal_gpu_a1_mask.c' || echo '$(srcdir)/'`delta/refresh/0127_horizontal_gpu_a1_mask.c
+
+delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.obj: delta/refresh/0127_horizontal_gpu_a1_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0127_horizontal_gpu_a1_mask.Tpo -c -o delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.obj `if test -f 'delta/refresh/0127_horizontal_gpu_a1_mask.c'; then $(CYGPATH_W) 'delta/refresh/0127_horizontal_gpu_a1_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0127_horizontal_gpu_a1_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0127_horizontal_gpu_a1_mask.Tpo delta/refresh/$(DEPDIR)/test_runner-0127_horizontal_gpu_a1_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0127_horizontal_gpu_a1_mask.c' object='delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0127_horizontal_gpu_a1_mask.obj `if test -f 'delta/refresh/0127_horizontal_gpu_a1_mask.c'; then $(CYGPATH_W) 'delta/refresh/0127_horizontal_gpu_a1_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0127_horizontal_gpu_a1_mask.c'; fi`
+
+delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.o: delta/refresh/0126_horizontal_gpu_a0_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0126_horizontal_gpu_a0_mask.Tpo -c -o delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.o `test -f 'delta/refresh/0126_horizontal_gpu_a0_mask.c' || echo '$(srcdir)/'`delta/refresh/0126_horizontal_gpu_a0_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0126_horizontal_gpu_a0_mask.Tpo delta/refresh/$(DEPDIR)/test_runner-0126_horizontal_gpu_a0_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0126_horizontal_gpu_a0_mask.c' object='delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.o `test -f 'delta/refresh/0126_horizontal_gpu_a0_mask.c' || echo '$(srcdir)/'`delta/refresh/0126_horizontal_gpu_a0_mask.c
+
+delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.obj: delta/refresh/0126_horizontal_gpu_a0_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0126_horizontal_gpu_a0_mask.Tpo -c -o delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.obj `if test -f 'delta/refresh/0126_horizontal_gpu_a0_mask.c'; then $(CYGPATH_W) 'delta/refresh/0126_horizontal_gpu_a0_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0126_horizontal_gpu_a0_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0126_horizontal_gpu_a0_mask.Tpo delta/refresh/$(DEPDIR)/test_runner-0126_horizontal_gpu_a0_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0126_horizontal_gpu_a0_mask.c' object='delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0126_horizontal_gpu_a0_mask.obj `if test -f 'delta/refresh/0126_horizontal_gpu_a0_mask.c'; then $(CYGPATH_W) 'delta/refresh/0126_horizontal_gpu_a0_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0126_horizontal_gpu_a0_mask.c'; fi`
+
+delta/refresh/test_runner-0125_horizontal_output_failure.o: delta/refresh/0125_horizontal_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0125_horizontal_output_failure.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0125_horizontal_output_failure.Tpo -c -o delta/refresh/test_runner-0125_horizontal_output_failure.o `test -f 'delta/refresh/0125_horizontal_output_failure.c' || echo '$(srcdir)/'`delta/refresh/0125_horizontal_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0125_horizontal_output_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0125_horizontal_output_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0125_horizontal_output_failure.c' object='delta/refresh/test_runner-0125_horizontal_output_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0125_horizontal_output_failure.o `test -f 'delta/refresh/0125_horizontal_output_failure.c' || echo '$(srcdir)/'`delta/refresh/0125_horizontal_output_failure.c
+
+delta/refresh/test_runner-0125_horizontal_output_failure.obj: delta/refresh/0125_horizontal_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0125_horizontal_output_failure.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0125_horizontal_output_failure.Tpo -c -o delta/refresh/test_runner-0125_horizontal_output_failure.obj `if test -f 'delta/refresh/0125_horizontal_output_failure.c'; then $(CYGPATH_W) 'delta/refresh/0125_horizontal_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0125_horizontal_output_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0125_horizontal_output_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0125_horizontal_output_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0125_horizontal_output_failure.c' object='delta/refresh/test_runner-0125_horizontal_output_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0125_horizontal_output_failure.obj `if test -f 'delta/refresh/0125_horizontal_output_failure.c'; then $(CYGPATH_W) 'delta/refresh/0125_horizontal_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0125_horizontal_output_failure.c'; fi`
+
+delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.o: delta/refresh/0124_horizontal_fs_gpu_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0124_horizontal_fs_gpu_dispatch.Tpo -c -o delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.o `test -f 'delta/refresh/0124_horizontal_fs_gpu_dispatch.c' || echo '$(srcdir)/'`delta/refresh/0124_horizontal_fs_gpu_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0124_horizontal_fs_gpu_dispatch.Tpo delta/refresh/$(DEPDIR)/test_runner-0124_horizontal_fs_gpu_dispatch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0124_horizontal_fs_gpu_dispatch.c' object='delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.o `test -f 'delta/refresh/0124_horizontal_fs_gpu_dispatch.c' || echo '$(srcdir)/'`delta/refresh/0124_horizontal_fs_gpu_dispatch.c
+
+delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.obj: delta/refresh/0124_horizontal_fs_gpu_dispatch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0124_horizontal_fs_gpu_dispatch.Tpo -c -o delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.obj `if test -f 'delta/refresh/0124_horizontal_fs_gpu_dispatch.c'; then $(CYGPATH_W) 'delta/refresh/0124_horizontal_fs_gpu_dispatch.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0124_horizontal_fs_gpu_dispatch.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0124_horizontal_fs_gpu_dispatch.Tpo delta/refresh/$(DEPDIR)/test_runner-0124_horizontal_fs_gpu_dispatch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0124_horizontal_fs_gpu_dispatch.c' object='delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0124_horizontal_fs_gpu_dispatch.obj `if test -f 'delta/refresh/0124_horizontal_fs_gpu_dispatch.c'; then $(CYGPATH_W) 'delta/refresh/0124_horizontal_fs_gpu_dispatch.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0124_horizontal_fs_gpu_dispatch.c'; fi`
+
+delta/refresh/test_runner-0123_horizontal_force_after_accepted.o: delta/refresh/0123_horizontal_force_after_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0123_horizontal_force_after_accepted.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0123_horizontal_force_after_accepted.Tpo -c -o delta/refresh/test_runner-0123_horizontal_force_after_accepted.o `test -f 'delta/refresh/0123_horizontal_force_after_accepted.c' || echo '$(srcdir)/'`delta/refresh/0123_horizontal_force_after_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0123_horizontal_force_after_accepted.Tpo delta/refresh/$(DEPDIR)/test_runner-0123_horizontal_force_after_accepted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0123_horizontal_force_after_accepted.c' object='delta/refresh/test_runner-0123_horizontal_force_after_accepted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0123_horizontal_force_after_accepted.o `test -f 'delta/refresh/0123_horizontal_force_after_accepted.c' || echo '$(srcdir)/'`delta/refresh/0123_horizontal_force_after_accepted.c
+
+delta/refresh/test_runner-0123_horizontal_force_after_accepted.obj: delta/refresh/0123_horizontal_force_after_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0123_horizontal_force_after_accepted.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0123_horizontal_force_after_accepted.Tpo -c -o delta/refresh/test_runner-0123_horizontal_force_after_accepted.obj `if test -f 'delta/refresh/0123_horizontal_force_after_accepted.c'; then $(CYGPATH_W) 'delta/refresh/0123_horizontal_force_after_accepted.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0123_horizontal_force_after_accepted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0123_horizontal_force_after_accepted.Tpo delta/refresh/$(DEPDIR)/test_runner-0123_horizontal_force_after_accepted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0123_horizontal_force_after_accepted.c' object='delta/refresh/test_runner-0123_horizontal_force_after_accepted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0123_horizontal_force_after_accepted.obj `if test -f 'delta/refresh/0123_horizontal_force_after_accepted.c'; then $(CYGPATH_W) 'delta/refresh/0123_horizontal_force_after_accepted.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0123_horizontal_force_after_accepted.c'; fi`
+
+delta/refresh/test_runner-0122_horizontal_force_first_accepted.o: delta/refresh/0122_horizontal_force_first_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0122_horizontal_force_first_accepted.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0122_horizontal_force_first_accepted.Tpo -c -o delta/refresh/test_runner-0122_horizontal_force_first_accepted.o `test -f 'delta/refresh/0122_horizontal_force_first_accepted.c' || echo '$(srcdir)/'`delta/refresh/0122_horizontal_force_first_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0122_horizontal_force_first_accepted.Tpo delta/refresh/$(DEPDIR)/test_runner-0122_horizontal_force_first_accepted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0122_horizontal_force_first_accepted.c' object='delta/refresh/test_runner-0122_horizontal_force_first_accepted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0122_horizontal_force_first_accepted.o `test -f 'delta/refresh/0122_horizontal_force_first_accepted.c' || echo '$(srcdir)/'`delta/refresh/0122_horizontal_force_first_accepted.c
+
+delta/refresh/test_runner-0122_horizontal_force_first_accepted.obj: delta/refresh/0122_horizontal_force_first_accepted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0122_horizontal_force_first_accepted.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0122_horizontal_force_first_accepted.Tpo -c -o delta/refresh/test_runner-0122_horizontal_force_first_accepted.obj `if test -f 'delta/refresh/0122_horizontal_force_first_accepted.c'; then $(CYGPATH_W) 'delta/refresh/0122_horizontal_force_first_accepted.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0122_horizontal_force_first_accepted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0122_horizontal_force_first_accepted.Tpo delta/refresh/$(DEPDIR)/test_runner-0122_horizontal_force_first_accepted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0122_horizontal_force_first_accepted.c' object='delta/refresh/test_runner-0122_horizontal_force_first_accepted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0122_horizontal_force_first_accepted.obj `if test -f 'delta/refresh/0122_horizontal_force_first_accepted.c'; then $(CYGPATH_W) 'delta/refresh/0122_horizontal_force_first_accepted.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0122_horizontal_force_first_accepted.c'; fi`
+
+delta/refresh/test_runner-0121_horizontal_periods_rejected.o: delta/refresh/0121_horizontal_periods_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0121_horizontal_periods_rejected.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0121_horizontal_periods_rejected.Tpo -c -o delta/refresh/test_runner-0121_horizontal_periods_rejected.o `test -f 'delta/refresh/0121_horizontal_periods_rejected.c' || echo '$(srcdir)/'`delta/refresh/0121_horizontal_periods_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0121_horizontal_periods_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0121_horizontal_periods_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0121_horizontal_periods_rejected.c' object='delta/refresh/test_runner-0121_horizontal_periods_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0121_horizontal_periods_rejected.o `test -f 'delta/refresh/0121_horizontal_periods_rejected.c' || echo '$(srcdir)/'`delta/refresh/0121_horizontal_periods_rejected.c
+
+delta/refresh/test_runner-0121_horizontal_periods_rejected.obj: delta/refresh/0121_horizontal_periods_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0121_horizontal_periods_rejected.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0121_horizontal_periods_rejected.Tpo -c -o delta/refresh/test_runner-0121_horizontal_periods_rejected.obj `if test -f 'delta/refresh/0121_horizontal_periods_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0121_horizontal_periods_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0121_horizontal_periods_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0121_horizontal_periods_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0121_horizontal_periods_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0121_horizontal_periods_rejected.c' object='delta/refresh/test_runner-0121_horizontal_periods_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0121_horizontal_periods_rejected.obj `if test -f 'delta/refresh/0121_horizontal_periods_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0121_horizontal_periods_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0121_horizontal_periods_rejected.c'; fi`
+
+delta/refresh/test_runner-0120_horizontal_spatial_rejected.o: delta/refresh/0120_horizontal_spatial_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0120_horizontal_spatial_rejected.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0120_horizontal_spatial_rejected.Tpo -c -o delta/refresh/test_runner-0120_horizontal_spatial_rejected.o `test -f 'delta/refresh/0120_horizontal_spatial_rejected.c' || echo '$(srcdir)/'`delta/refresh/0120_horizontal_spatial_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0120_horizontal_spatial_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0120_horizontal_spatial_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0120_horizontal_spatial_rejected.c' object='delta/refresh/test_runner-0120_horizontal_spatial_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0120_horizontal_spatial_rejected.o `test -f 'delta/refresh/0120_horizontal_spatial_rejected.c' || echo '$(srcdir)/'`delta/refresh/0120_horizontal_spatial_rejected.c
+
+delta/refresh/test_runner-0120_horizontal_spatial_rejected.obj: delta/refresh/0120_horizontal_spatial_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0120_horizontal_spatial_rejected.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0120_horizontal_spatial_rejected.Tpo -c -o delta/refresh/test_runner-0120_horizontal_spatial_rejected.obj `if test -f 'delta/refresh/0120_horizontal_spatial_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0120_horizontal_spatial_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0120_horizontal_spatial_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0120_horizontal_spatial_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0120_horizontal_spatial_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0120_horizontal_spatial_rejected.c' object='delta/refresh/test_runner-0120_horizontal_spatial_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0120_horizontal_spatial_rejected.obj `if test -f 'delta/refresh/0120_horizontal_spatial_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0120_horizontal_spatial_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0120_horizontal_spatial_rejected.c'; fi`
+
+delta/refresh/test_runner-0119_horizontal_a2_rejected.o: delta/refresh/0119_horizontal_a2_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0119_horizontal_a2_rejected.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0119_horizontal_a2_rejected.Tpo -c -o delta/refresh/test_runner-0119_horizontal_a2_rejected.o `test -f 'delta/refresh/0119_horizontal_a2_rejected.c' || echo '$(srcdir)/'`delta/refresh/0119_horizontal_a2_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0119_horizontal_a2_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0119_horizontal_a2_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0119_horizontal_a2_rejected.c' object='delta/refresh/test_runner-0119_horizontal_a2_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0119_horizontal_a2_rejected.o `test -f 'delta/refresh/0119_horizontal_a2_rejected.c' || echo '$(srcdir)/'`delta/refresh/0119_horizontal_a2_rejected.c
+
+delta/refresh/test_runner-0119_horizontal_a2_rejected.obj: delta/refresh/0119_horizontal_a2_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0119_horizontal_a2_rejected.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0119_horizontal_a2_rejected.Tpo -c -o delta/refresh/test_runner-0119_horizontal_a2_rejected.obj `if test -f 'delta/refresh/0119_horizontal_a2_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0119_horizontal_a2_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0119_horizontal_a2_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0119_horizontal_a2_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0119_horizontal_a2_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0119_horizontal_a2_rejected.c' object='delta/refresh/test_runner-0119_horizontal_a2_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0119_horizontal_a2_rejected.obj `if test -f 'delta/refresh/0119_horizontal_a2_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0119_horizontal_a2_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0119_horizontal_a2_rejected.c'; fi`
+
+delta/refresh/test_runner-0118_horizontal_policy_reset.o: delta/refresh/0118_horizontal_policy_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0118_horizontal_policy_reset.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0118_horizontal_policy_reset.Tpo -c -o delta/refresh/test_runner-0118_horizontal_policy_reset.o `test -f 'delta/refresh/0118_horizontal_policy_reset.c' || echo '$(srcdir)/'`delta/refresh/0118_horizontal_policy_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0118_horizontal_policy_reset.Tpo delta/refresh/$(DEPDIR)/test_runner-0118_horizontal_policy_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0118_horizontal_policy_reset.c' object='delta/refresh/test_runner-0118_horizontal_policy_reset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0118_horizontal_policy_reset.o `test -f 'delta/refresh/0118_horizontal_policy_reset.c' || echo '$(srcdir)/'`delta/refresh/0118_horizontal_policy_reset.c
+
+delta/refresh/test_runner-0118_horizontal_policy_reset.obj: delta/refresh/0118_horizontal_policy_reset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0118_horizontal_policy_reset.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0118_horizontal_policy_reset.Tpo -c -o delta/refresh/test_runner-0118_horizontal_policy_reset.obj `if test -f 'delta/refresh/0118_horizontal_policy_reset.c'; then $(CYGPATH_W) 'delta/refresh/0118_horizontal_policy_reset.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0118_horizontal_policy_reset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0118_horizontal_policy_reset.Tpo delta/refresh/$(DEPDIR)/test_runner-0118_horizontal_policy_reset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0118_horizontal_policy_reset.c' object='delta/refresh/test_runner-0118_horizontal_policy_reset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0118_horizontal_policy_reset.obj `if test -f 'delta/refresh/0118_horizontal_policy_reset.c'; then $(CYGPATH_W) 'delta/refresh/0118_horizontal_policy_reset.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0118_horizontal_policy_reset.c'; fi`
+
+delta/refresh/test_runner-0117_horizontal_noop_age.o: delta/refresh/0117_horizontal_noop_age.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0117_horizontal_noop_age.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0117_horizontal_noop_age.Tpo -c -o delta/refresh/test_runner-0117_horizontal_noop_age.o `test -f 'delta/refresh/0117_horizontal_noop_age.c' || echo '$(srcdir)/'`delta/refresh/0117_horizontal_noop_age.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0117_horizontal_noop_age.Tpo delta/refresh/$(DEPDIR)/test_runner-0117_horizontal_noop_age.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0117_horizontal_noop_age.c' object='delta/refresh/test_runner-0117_horizontal_noop_age.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0117_horizontal_noop_age.o `test -f 'delta/refresh/0117_horizontal_noop_age.c' || echo '$(srcdir)/'`delta/refresh/0117_horizontal_noop_age.c
+
+delta/refresh/test_runner-0117_horizontal_noop_age.obj: delta/refresh/0117_horizontal_noop_age.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0117_horizontal_noop_age.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0117_horizontal_noop_age.Tpo -c -o delta/refresh/test_runner-0117_horizontal_noop_age.obj `if test -f 'delta/refresh/0117_horizontal_noop_age.c'; then $(CYGPATH_W) 'delta/refresh/0117_horizontal_noop_age.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0117_horizontal_noop_age.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0117_horizontal_noop_age.Tpo delta/refresh/$(DEPDIR)/test_runner-0117_horizontal_noop_age.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0117_horizontal_noop_age.c' object='delta/refresh/test_runner-0117_horizontal_noop_age.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0117_horizontal_noop_age.obj `if test -f 'delta/refresh/0117_horizontal_noop_age.c'; then $(CYGPATH_W) 'delta/refresh/0117_horizontal_noop_age.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0117_horizontal_noop_age.c'; fi`
+
+delta/refresh/test_runner-0116_horizontal_history_restart.o: delta/refresh/0116_horizontal_history_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0116_horizontal_history_restart.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0116_horizontal_history_restart.Tpo -c -o delta/refresh/test_runner-0116_horizontal_history_restart.o `test -f 'delta/refresh/0116_horizontal_history_restart.c' || echo '$(srcdir)/'`delta/refresh/0116_horizontal_history_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0116_horizontal_history_restart.Tpo delta/refresh/$(DEPDIR)/test_runner-0116_horizontal_history_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0116_horizontal_history_restart.c' object='delta/refresh/test_runner-0116_horizontal_history_restart.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0116_horizontal_history_restart.o `test -f 'delta/refresh/0116_horizontal_history_restart.c' || echo '$(srcdir)/'`delta/refresh/0116_horizontal_history_restart.c
+
+delta/refresh/test_runner-0116_horizontal_history_restart.obj: delta/refresh/0116_horizontal_history_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0116_horizontal_history_restart.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0116_horizontal_history_restart.Tpo -c -o delta/refresh/test_runner-0116_horizontal_history_restart.obj `if test -f 'delta/refresh/0116_horizontal_history_restart.c'; then $(CYGPATH_W) 'delta/refresh/0116_horizontal_history_restart.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0116_horizontal_history_restart.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0116_horizontal_history_restart.Tpo delta/refresh/$(DEPDIR)/test_runner-0116_horizontal_history_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0116_horizontal_history_restart.c' object='delta/refresh/test_runner-0116_horizontal_history_restart.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0116_horizontal_history_restart.obj `if test -f 'delta/refresh/0116_horizontal_history_restart.c'; then $(CYGPATH_W) 'delta/refresh/0116_horizontal_history_restart.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0116_horizontal_history_restart.c'; fi`
+
+delta/refresh/test_runner-0115_bluenoise_explicit_output.o: delta/refresh/0115_bluenoise_explicit_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0115_bluenoise_explicit_output.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0115_bluenoise_explicit_output.Tpo -c -o delta/refresh/test_runner-0115_bluenoise_explicit_output.o `test -f 'delta/refresh/0115_bluenoise_explicit_output.c' || echo '$(srcdir)/'`delta/refresh/0115_bluenoise_explicit_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0115_bluenoise_explicit_output.Tpo delta/refresh/$(DEPDIR)/test_runner-0115_bluenoise_explicit_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0115_bluenoise_explicit_output.c' object='delta/refresh/test_runner-0115_bluenoise_explicit_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0115_bluenoise_explicit_output.o `test -f 'delta/refresh/0115_bluenoise_explicit_output.c' || echo '$(srcdir)/'`delta/refresh/0115_bluenoise_explicit_output.c
+
+delta/refresh/test_runner-0115_bluenoise_explicit_output.obj: delta/refresh/0115_bluenoise_explicit_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0115_bluenoise_explicit_output.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0115_bluenoise_explicit_output.Tpo -c -o delta/refresh/test_runner-0115_bluenoise_explicit_output.obj `if test -f 'delta/refresh/0115_bluenoise_explicit_output.c'; then $(CYGPATH_W) 'delta/refresh/0115_bluenoise_explicit_output.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0115_bluenoise_explicit_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0115_bluenoise_explicit_output.Tpo delta/refresh/$(DEPDIR)/test_runner-0115_bluenoise_explicit_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0115_bluenoise_explicit_output.c' object='delta/refresh/test_runner-0115_bluenoise_explicit_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0115_bluenoise_explicit_output.obj `if test -f 'delta/refresh/0115_bluenoise_explicit_output.c'; then $(CYGPATH_W) 'delta/refresh/0115_bluenoise_explicit_output.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0115_bluenoise_explicit_output.c'; fi`
+
+delta/refresh/test_runner-0114_horizontal_gpu_positional.o: delta/refresh/0114_horizontal_gpu_positional.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0114_horizontal_gpu_positional.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0114_horizontal_gpu_positional.Tpo -c -o delta/refresh/test_runner-0114_horizontal_gpu_positional.o `test -f 'delta/refresh/0114_horizontal_gpu_positional.c' || echo '$(srcdir)/'`delta/refresh/0114_horizontal_gpu_positional.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0114_horizontal_gpu_positional.Tpo delta/refresh/$(DEPDIR)/test_runner-0114_horizontal_gpu_positional.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0114_horizontal_gpu_positional.c' object='delta/refresh/test_runner-0114_horizontal_gpu_positional.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0114_horizontal_gpu_positional.o `test -f 'delta/refresh/0114_horizontal_gpu_positional.c' || echo '$(srcdir)/'`delta/refresh/0114_horizontal_gpu_positional.c
+
+delta/refresh/test_runner-0114_horizontal_gpu_positional.obj: delta/refresh/0114_horizontal_gpu_positional.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0114_horizontal_gpu_positional.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0114_horizontal_gpu_positional.Tpo -c -o delta/refresh/test_runner-0114_horizontal_gpu_positional.obj `if test -f 'delta/refresh/0114_horizontal_gpu_positional.c'; then $(CYGPATH_W) 'delta/refresh/0114_horizontal_gpu_positional.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0114_horizontal_gpu_positional.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0114_horizontal_gpu_positional.Tpo delta/refresh/$(DEPDIR)/test_runner-0114_horizontal_gpu_positional.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0114_horizontal_gpu_positional.c' object='delta/refresh/test_runner-0114_horizontal_gpu_positional.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0114_horizontal_gpu_positional.obj `if test -f 'delta/refresh/0114_horizontal_gpu_positional.c'; then $(CYGPATH_W) 'delta/refresh/0114_horizontal_gpu_positional.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0114_horizontal_gpu_positional.c'; fi`
+
+delta/refresh/test_runner-0113_horizontal_playback_config.o: delta/refresh/0113_horizontal_playback_config.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0113_horizontal_playback_config.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0113_horizontal_playback_config.Tpo -c -o delta/refresh/test_runner-0113_horizontal_playback_config.o `test -f 'delta/refresh/0113_horizontal_playback_config.c' || echo '$(srcdir)/'`delta/refresh/0113_horizontal_playback_config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0113_horizontal_playback_config.Tpo delta/refresh/$(DEPDIR)/test_runner-0113_horizontal_playback_config.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0113_horizontal_playback_config.c' object='delta/refresh/test_runner-0113_horizontal_playback_config.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0113_horizontal_playback_config.o `test -f 'delta/refresh/0113_horizontal_playback_config.c' || echo '$(srcdir)/'`delta/refresh/0113_horizontal_playback_config.c
+
+delta/refresh/test_runner-0113_horizontal_playback_config.obj: delta/refresh/0113_horizontal_playback_config.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0113_horizontal_playback_config.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0113_horizontal_playback_config.Tpo -c -o delta/refresh/test_runner-0113_horizontal_playback_config.obj `if test -f 'delta/refresh/0113_horizontal_playback_config.c'; then $(CYGPATH_W) 'delta/refresh/0113_horizontal_playback_config.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0113_horizontal_playback_config.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0113_horizontal_playback_config.Tpo delta/refresh/$(DEPDIR)/test_runner-0113_horizontal_playback_config.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0113_horizontal_playback_config.c' object='delta/refresh/test_runner-0113_horizontal_playback_config.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0113_horizontal_playback_config.obj `if test -f 'delta/refresh/0113_horizontal_playback_config.c'; then $(CYGPATH_W) 'delta/refresh/0113_horizontal_playback_config.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0113_horizontal_playback_config.c'; fi`
+
+delta/refresh/test_runner-0112_horizontal_dormant.o: delta/refresh/0112_horizontal_dormant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0112_horizontal_dormant.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0112_horizontal_dormant.Tpo -c -o delta/refresh/test_runner-0112_horizontal_dormant.o `test -f 'delta/refresh/0112_horizontal_dormant.c' || echo '$(srcdir)/'`delta/refresh/0112_horizontal_dormant.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0112_horizontal_dormant.Tpo delta/refresh/$(DEPDIR)/test_runner-0112_horizontal_dormant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0112_horizontal_dormant.c' object='delta/refresh/test_runner-0112_horizontal_dormant.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0112_horizontal_dormant.o `test -f 'delta/refresh/0112_horizontal_dormant.c' || echo '$(srcdir)/'`delta/refresh/0112_horizontal_dormant.c
+
+delta/refresh/test_runner-0112_horizontal_dormant.obj: delta/refresh/0112_horizontal_dormant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0112_horizontal_dormant.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0112_horizontal_dormant.Tpo -c -o delta/refresh/test_runner-0112_horizontal_dormant.obj `if test -f 'delta/refresh/0112_horizontal_dormant.c'; then $(CYGPATH_W) 'delta/refresh/0112_horizontal_dormant.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0112_horizontal_dormant.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0112_horizontal_dormant.Tpo delta/refresh/$(DEPDIR)/test_runner-0112_horizontal_dormant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0112_horizontal_dormant.c' object='delta/refresh/test_runner-0112_horizontal_dormant.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0112_horizontal_dormant.obj `if test -f 'delta/refresh/0112_horizontal_dormant.c'; then $(CYGPATH_W) 'delta/refresh/0112_horizontal_dormant.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0112_horizontal_dormant.c'; fi`
+
+delta/refresh/test_runner-0111_horizontal_invalid_atomic.o: delta/refresh/0111_horizontal_invalid_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0111_horizontal_invalid_atomic.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0111_horizontal_invalid_atomic.Tpo -c -o delta/refresh/test_runner-0111_horizontal_invalid_atomic.o `test -f 'delta/refresh/0111_horizontal_invalid_atomic.c' || echo '$(srcdir)/'`delta/refresh/0111_horizontal_invalid_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0111_horizontal_invalid_atomic.Tpo delta/refresh/$(DEPDIR)/test_runner-0111_horizontal_invalid_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0111_horizontal_invalid_atomic.c' object='delta/refresh/test_runner-0111_horizontal_invalid_atomic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0111_horizontal_invalid_atomic.o `test -f 'delta/refresh/0111_horizontal_invalid_atomic.c' || echo '$(srcdir)/'`delta/refresh/0111_horizontal_invalid_atomic.c
+
+delta/refresh/test_runner-0111_horizontal_invalid_atomic.obj: delta/refresh/0111_horizontal_invalid_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0111_horizontal_invalid_atomic.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0111_horizontal_invalid_atomic.Tpo -c -o delta/refresh/test_runner-0111_horizontal_invalid_atomic.obj `if test -f 'delta/refresh/0111_horizontal_invalid_atomic.c'; then $(CYGPATH_W) 'delta/refresh/0111_horizontal_invalid_atomic.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0111_horizontal_invalid_atomic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0111_horizontal_invalid_atomic.Tpo delta/refresh/$(DEPDIR)/test_runner-0111_horizontal_invalid_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0111_horizontal_invalid_atomic.c' object='delta/refresh/test_runner-0111_horizontal_invalid_atomic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0111_horizontal_invalid_atomic.obj `if test -f 'delta/refresh/0111_horizontal_invalid_atomic.c'; then $(CYGPATH_W) 'delta/refresh/0111_horizontal_invalid_atomic.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0111_horizontal_invalid_atomic.c'; fi`
+
+delta/refresh/test_runner-0110_bluenoise_a1_phases.o: delta/refresh/0110_bluenoise_a1_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0110_bluenoise_a1_phases.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0110_bluenoise_a1_phases.Tpo -c -o delta/refresh/test_runner-0110_bluenoise_a1_phases.o `test -f 'delta/refresh/0110_bluenoise_a1_phases.c' || echo '$(srcdir)/'`delta/refresh/0110_bluenoise_a1_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0110_bluenoise_a1_phases.Tpo delta/refresh/$(DEPDIR)/test_runner-0110_bluenoise_a1_phases.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0110_bluenoise_a1_phases.c' object='delta/refresh/test_runner-0110_bluenoise_a1_phases.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0110_bluenoise_a1_phases.o `test -f 'delta/refresh/0110_bluenoise_a1_phases.c' || echo '$(srcdir)/'`delta/refresh/0110_bluenoise_a1_phases.c
+
+delta/refresh/test_runner-0110_bluenoise_a1_phases.obj: delta/refresh/0110_bluenoise_a1_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0110_bluenoise_a1_phases.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0110_bluenoise_a1_phases.Tpo -c -o delta/refresh/test_runner-0110_bluenoise_a1_phases.obj `if test -f 'delta/refresh/0110_bluenoise_a1_phases.c'; then $(CYGPATH_W) 'delta/refresh/0110_bluenoise_a1_phases.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0110_bluenoise_a1_phases.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0110_bluenoise_a1_phases.Tpo delta/refresh/$(DEPDIR)/test_runner-0110_bluenoise_a1_phases.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0110_bluenoise_a1_phases.c' object='delta/refresh/test_runner-0110_bluenoise_a1_phases.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0110_bluenoise_a1_phases.obj `if test -f 'delta/refresh/0110_bluenoise_a1_phases.c'; then $(CYGPATH_W) 'delta/refresh/0110_bluenoise_a1_phases.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0110_bluenoise_a1_phases.c'; fi`
+
+delta/refresh/test_runner-0109_bluenoise_a0_phases.o: delta/refresh/0109_bluenoise_a0_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0109_bluenoise_a0_phases.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0109_bluenoise_a0_phases.Tpo -c -o delta/refresh/test_runner-0109_bluenoise_a0_phases.o `test -f 'delta/refresh/0109_bluenoise_a0_phases.c' || echo '$(srcdir)/'`delta/refresh/0109_bluenoise_a0_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0109_bluenoise_a0_phases.Tpo delta/refresh/$(DEPDIR)/test_runner-0109_bluenoise_a0_phases.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0109_bluenoise_a0_phases.c' object='delta/refresh/test_runner-0109_bluenoise_a0_phases.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0109_bluenoise_a0_phases.o `test -f 'delta/refresh/0109_bluenoise_a0_phases.c' || echo '$(srcdir)/'`delta/refresh/0109_bluenoise_a0_phases.c
+
+delta/refresh/test_runner-0109_bluenoise_a0_phases.obj: delta/refresh/0109_bluenoise_a0_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0109_bluenoise_a0_phases.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0109_bluenoise_a0_phases.Tpo -c -o delta/refresh/test_runner-0109_bluenoise_a0_phases.obj `if test -f 'delta/refresh/0109_bluenoise_a0_phases.c'; then $(CYGPATH_W) 'delta/refresh/0109_bluenoise_a0_phases.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0109_bluenoise_a0_phases.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0109_bluenoise_a0_phases.Tpo delta/refresh/$(DEPDIR)/test_runner-0109_bluenoise_a0_phases.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0109_bluenoise_a0_phases.c' object='delta/refresh/test_runner-0109_bluenoise_a0_phases.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0109_bluenoise_a0_phases.obj `if test -f 'delta/refresh/0109_bluenoise_a0_phases.c'; then $(CYGPATH_W) 'delta/refresh/0109_bluenoise_a0_phases.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0109_bluenoise_a0_phases.c'; fi`
+
+delta/refresh/test_runner-0108_horizontal_a1_j4.o: delta/refresh/0108_horizontal_a1_j4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0108_horizontal_a1_j4.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0108_horizontal_a1_j4.Tpo -c -o delta/refresh/test_runner-0108_horizontal_a1_j4.o `test -f 'delta/refresh/0108_horizontal_a1_j4.c' || echo '$(srcdir)/'`delta/refresh/0108_horizontal_a1_j4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0108_horizontal_a1_j4.Tpo delta/refresh/$(DEPDIR)/test_runner-0108_horizontal_a1_j4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0108_horizontal_a1_j4.c' object='delta/refresh/test_runner-0108_horizontal_a1_j4.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0108_horizontal_a1_j4.o `test -f 'delta/refresh/0108_horizontal_a1_j4.c' || echo '$(srcdir)/'`delta/refresh/0108_horizontal_a1_j4.c
+
+delta/refresh/test_runner-0108_horizontal_a1_j4.obj: delta/refresh/0108_horizontal_a1_j4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0108_horizontal_a1_j4.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0108_horizontal_a1_j4.Tpo -c -o delta/refresh/test_runner-0108_horizontal_a1_j4.obj `if test -f 'delta/refresh/0108_horizontal_a1_j4.c'; then $(CYGPATH_W) 'delta/refresh/0108_horizontal_a1_j4.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0108_horizontal_a1_j4.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0108_horizontal_a1_j4.Tpo delta/refresh/$(DEPDIR)/test_runner-0108_horizontal_a1_j4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0108_horizontal_a1_j4.c' object='delta/refresh/test_runner-0108_horizontal_a1_j4.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0108_horizontal_a1_j4.obj `if test -f 'delta/refresh/0108_horizontal_a1_j4.c'; then $(CYGPATH_W) 'delta/refresh/0108_horizontal_a1_j4.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0108_horizontal_a1_j4.c'; fi`
+
+delta/refresh/test_runner-0107_horizontal_a1_j2.o: delta/refresh/0107_horizontal_a1_j2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0107_horizontal_a1_j2.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0107_horizontal_a1_j2.Tpo -c -o delta/refresh/test_runner-0107_horizontal_a1_j2.o `test -f 'delta/refresh/0107_horizontal_a1_j2.c' || echo '$(srcdir)/'`delta/refresh/0107_horizontal_a1_j2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0107_horizontal_a1_j2.Tpo delta/refresh/$(DEPDIR)/test_runner-0107_horizontal_a1_j2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0107_horizontal_a1_j2.c' object='delta/refresh/test_runner-0107_horizontal_a1_j2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0107_horizontal_a1_j2.o `test -f 'delta/refresh/0107_horizontal_a1_j2.c' || echo '$(srcdir)/'`delta/refresh/0107_horizontal_a1_j2.c
+
+delta/refresh/test_runner-0107_horizontal_a1_j2.obj: delta/refresh/0107_horizontal_a1_j2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0107_horizontal_a1_j2.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0107_horizontal_a1_j2.Tpo -c -o delta/refresh/test_runner-0107_horizontal_a1_j2.obj `if test -f 'delta/refresh/0107_horizontal_a1_j2.c'; then $(CYGPATH_W) 'delta/refresh/0107_horizontal_a1_j2.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0107_horizontal_a1_j2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0107_horizontal_a1_j2.Tpo delta/refresh/$(DEPDIR)/test_runner-0107_horizontal_a1_j2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0107_horizontal_a1_j2.c' object='delta/refresh/test_runner-0107_horizontal_a1_j2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0107_horizontal_a1_j2.obj `if test -f 'delta/refresh/0107_horizontal_a1_j2.c'; then $(CYGPATH_W) 'delta/refresh/0107_horizontal_a1_j2.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0107_horizontal_a1_j2.c'; fi`
+
+delta/refresh/test_runner-0106_horizontal_a0_j65.o: delta/refresh/0106_horizontal_a0_j65.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0106_horizontal_a0_j65.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0106_horizontal_a0_j65.Tpo -c -o delta/refresh/test_runner-0106_horizontal_a0_j65.o `test -f 'delta/refresh/0106_horizontal_a0_j65.c' || echo '$(srcdir)/'`delta/refresh/0106_horizontal_a0_j65.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0106_horizontal_a0_j65.Tpo delta/refresh/$(DEPDIR)/test_runner-0106_horizontal_a0_j65.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0106_horizontal_a0_j65.c' object='delta/refresh/test_runner-0106_horizontal_a0_j65.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0106_horizontal_a0_j65.o `test -f 'delta/refresh/0106_horizontal_a0_j65.c' || echo '$(srcdir)/'`delta/refresh/0106_horizontal_a0_j65.c
+
+delta/refresh/test_runner-0106_horizontal_a0_j65.obj: delta/refresh/0106_horizontal_a0_j65.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0106_horizontal_a0_j65.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0106_horizontal_a0_j65.Tpo -c -o delta/refresh/test_runner-0106_horizontal_a0_j65.obj `if test -f 'delta/refresh/0106_horizontal_a0_j65.c'; then $(CYGPATH_W) 'delta/refresh/0106_horizontal_a0_j65.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0106_horizontal_a0_j65.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0106_horizontal_a0_j65.Tpo delta/refresh/$(DEPDIR)/test_runner-0106_horizontal_a0_j65.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0106_horizontal_a0_j65.c' object='delta/refresh/test_runner-0106_horizontal_a0_j65.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0106_horizontal_a0_j65.obj `if test -f 'delta/refresh/0106_horizontal_a0_j65.c'; then $(CYGPATH_W) 'delta/refresh/0106_horizontal_a0_j65.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0106_horizontal_a0_j65.c'; fi`
+
+delta/refresh/test_runner-0105_horizontal_a0_j5.o: delta/refresh/0105_horizontal_a0_j5.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0105_horizontal_a0_j5.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0105_horizontal_a0_j5.Tpo -c -o delta/refresh/test_runner-0105_horizontal_a0_j5.o `test -f 'delta/refresh/0105_horizontal_a0_j5.c' || echo '$(srcdir)/'`delta/refresh/0105_horizontal_a0_j5.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0105_horizontal_a0_j5.Tpo delta/refresh/$(DEPDIR)/test_runner-0105_horizontal_a0_j5.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0105_horizontal_a0_j5.c' object='delta/refresh/test_runner-0105_horizontal_a0_j5.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0105_horizontal_a0_j5.o `test -f 'delta/refresh/0105_horizontal_a0_j5.c' || echo '$(srcdir)/'`delta/refresh/0105_horizontal_a0_j5.c
+
+delta/refresh/test_runner-0105_horizontal_a0_j5.obj: delta/refresh/0105_horizontal_a0_j5.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0105_horizontal_a0_j5.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0105_horizontal_a0_j5.Tpo -c -o delta/refresh/test_runner-0105_horizontal_a0_j5.obj `if test -f 'delta/refresh/0105_horizontal_a0_j5.c'; then $(CYGPATH_W) 'delta/refresh/0105_horizontal_a0_j5.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0105_horizontal_a0_j5.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0105_horizontal_a0_j5.Tpo delta/refresh/$(DEPDIR)/test_runner-0105_horizontal_a0_j5.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0105_horizontal_a0_j5.c' object='delta/refresh/test_runner-0105_horizontal_a0_j5.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0105_horizontal_a0_j5.obj `if test -f 'delta/refresh/0105_horizontal_a0_j5.c'; then $(CYGPATH_W) 'delta/refresh/0105_horizontal_a0_j5.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0105_horizontal_a0_j5.c'; fi`
+
+delta/refresh/test_runner-0104_horizontal_a0_j1.o: delta/refresh/0104_horizontal_a0_j1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0104_horizontal_a0_j1.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0104_horizontal_a0_j1.Tpo -c -o delta/refresh/test_runner-0104_horizontal_a0_j1.o `test -f 'delta/refresh/0104_horizontal_a0_j1.c' || echo '$(srcdir)/'`delta/refresh/0104_horizontal_a0_j1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0104_horizontal_a0_j1.Tpo delta/refresh/$(DEPDIR)/test_runner-0104_horizontal_a0_j1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0104_horizontal_a0_j1.c' object='delta/refresh/test_runner-0104_horizontal_a0_j1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0104_horizontal_a0_j1.o `test -f 'delta/refresh/0104_horizontal_a0_j1.c' || echo '$(srcdir)/'`delta/refresh/0104_horizontal_a0_j1.c
+
+delta/refresh/test_runner-0104_horizontal_a0_j1.obj: delta/refresh/0104_horizontal_a0_j1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0104_horizontal_a0_j1.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0104_horizontal_a0_j1.Tpo -c -o delta/refresh/test_runner-0104_horizontal_a0_j1.obj `if test -f 'delta/refresh/0104_horizontal_a0_j1.c'; then $(CYGPATH_W) 'delta/refresh/0104_horizontal_a0_j1.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0104_horizontal_a0_j1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0104_horizontal_a0_j1.Tpo delta/refresh/$(DEPDIR)/test_runner-0104_horizontal_a0_j1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0104_horizontal_a0_j1.c' object='delta/refresh/test_runner-0104_horizontal_a0_j1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0104_horizontal_a0_j1.obj `if test -f 'delta/refresh/0104_horizontal_a0_j1.c'; then $(CYGPATH_W) 'delta/refresh/0104_horizontal_a0_j1.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0104_horizontal_a0_j1.c'; fi`
 
 _support/processing/delta-refresh/test_runner-spatial_test_common.o: _support/processing/delta-refresh/spatial_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-spatial_test_common.o -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-spatial_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-spatial_test_common.o `test -f '_support/processing/delta-refresh/spatial_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/spatial_test_common.c
@@ -37128,6 +37712,20 @@ _support/processing/delta-refresh/test_runner-refresh_test_common.obj: _support/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/delta-refresh/refresh_test_common.c' object='_support/processing/delta-refresh/test_runner-refresh_test_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/delta-refresh/test_runner-refresh_test_common.obj `if test -f '_support/processing/delta-refresh/refresh_test_common.c'; then $(CYGPATH_W) '_support/processing/delta-refresh/refresh_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/delta-refresh/refresh_test_common.c'; fi`
+
+_support/processing/delta-refresh/test_runner-horizontal_test_common.o: _support/processing/delta-refresh/horizontal_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-horizontal_test_common.o -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-horizontal_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-horizontal_test_common.o `test -f '_support/processing/delta-refresh/horizontal_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/horizontal_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/delta-refresh/$(DEPDIR)/test_runner-horizontal_test_common.Tpo _support/processing/delta-refresh/$(DEPDIR)/test_runner-horizontal_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/delta-refresh/horizontal_test_common.c' object='_support/processing/delta-refresh/test_runner-horizontal_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/delta-refresh/test_runner-horizontal_test_common.o `test -f '_support/processing/delta-refresh/horizontal_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/horizontal_test_common.c
+
+_support/processing/delta-refresh/test_runner-horizontal_test_common.obj: _support/processing/delta-refresh/horizontal_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-horizontal_test_common.obj -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-horizontal_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-horizontal_test_common.obj `if test -f '_support/processing/delta-refresh/horizontal_test_common.c'; then $(CYGPATH_W) '_support/processing/delta-refresh/horizontal_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/delta-refresh/horizontal_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/delta-refresh/$(DEPDIR)/test_runner-horizontal_test_common.Tpo _support/processing/delta-refresh/$(DEPDIR)/test_runner-horizontal_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/delta-refresh/horizontal_test_common.c' object='_support/processing/delta-refresh/test_runner-horizontal_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/delta-refresh/test_runner-horizontal_test_common.obj `if test -f '_support/processing/delta-refresh/horizontal_test_common.c'; then $(CYGPATH_W) '_support/processing/delta-refresh/horizontal_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/delta-refresh/horizontal_test_common.c'; fi`
 
 _support/processing/delta-residual/test_runner-gate_test_common.o: _support/processing/delta-residual/gate_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-residual/test_runner-gate_test_common.o -MD -MP -MF _support/processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Tpo -c -o _support/processing/delta-residual/test_runner-gate_test_common.o `test -f '_support/processing/delta-residual/gate_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-residual/gate_test_common.c

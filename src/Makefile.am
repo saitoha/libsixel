@@ -550,6 +550,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/gpu-dequant.h \
                 $(srcdir)/delta-residual.c \
                 $(srcdir)/delta-residual.h \
+                $(srcdir)/refresh-horizontal8.h \
                 $(srcdir)/refresh-spatial.c \
                 $(srcdir)/refresh-spatial.h \
                 $(srcdir)/dither-policy-gpu.c \
