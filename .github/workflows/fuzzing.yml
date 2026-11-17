@@ -1391,7 +1391,7 @@ jobs:
       - name: Disable Windows Search Indexer (Windows)
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Configure git EOL
         shell: bash
@@ -1667,7 +1667,7 @@ jobs:
       - name: Disable Windows Search Indexer (Windows)
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Configure git EOL
         shell: bash

@@ -81,7 +81,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -284,7 +284,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -512,7 +512,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -625,7 +625,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -727,7 +727,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -828,7 +828,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -914,7 +914,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -1021,7 +1021,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -1112,7 +1112,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -1216,7 +1216,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -1305,7 +1305,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -1364,7 +1364,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -3049,7 +3049,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -3825,7 +3825,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -3910,7 +3910,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -4023,7 +4023,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -4088,7 +4088,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -4299,7 +4299,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -4367,7 +4367,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -4469,7 +4469,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -4539,7 +4539,105 @@ jobs:
               make
             exec_type: msys2
 
-          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib
+          # Setup and the MSVC test runner build take about 26 minutes.
+          # Split the remaining 33 minutes of tests into six shards.
+          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib-1-of-6
+            test_shard: 1/6
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-amalgamated-lib
+            extra_packages: make
+            exec_type: msys2
+
+          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib-2-of-6
+            test_shard: 2/6
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-amalgamated-lib
+            extra_packages: make
+            exec_type: msys2
+
+          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib-3-of-6
+            test_shard: 3/6
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-amalgamated-lib
+            extra_packages: make
+            exec_type: msys2
+
+          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib-4-of-6
+            test_shard: 4/6
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-amalgamated-lib
+            extra_packages: make
+            exec_type: msys2
+
+          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib-5-of-6
+            test_shard: 5/6
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-amalgamated-lib
+            extra_packages: make
+            exec_type: msys2
+
+          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib-6-of-6
+            test_shard: 6/6
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
@@ -4844,7 +4942,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -4969,7 +5067,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -5028,7 +5126,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -5116,7 +5214,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -5190,7 +5288,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -5256,7 +5354,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -5452,7 +5550,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -5771,7 +5869,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -6005,7 +6103,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -6099,7 +6197,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -6175,7 +6273,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -6636,7 +6734,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -6816,7 +6914,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -6926,7 +7024,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -7812,7 +7910,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8080,7 +8178,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8328,7 +8426,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8426,7 +8524,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8500,7 +8598,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8576,7 +8674,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8709,7 +8807,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8781,7 +8879,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8852,7 +8950,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -8969,7 +9067,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -9039,7 +9137,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
@@ -9104,7 +9202,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Stop-Service WSearch
+          Stop-Service WSearch -ErrorAction Continue
 
       - name: Disable Spotlight (macOS)
         if: runner.os == 'macOS'
