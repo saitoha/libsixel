@@ -37,6 +37,14 @@ The authoritative definitions are in [`icc-parse.h`](../../src/icc-parse.h), wit
 
 The `mpet` reader retains the position table's element order, channel counts, and a shared copy of the tag bytes. The pipeline evaluates `cvst`, `matf`, and `clut` in position-table order, with pass-through `bACS` and `eACS` placeholders. Each stage supports up to 16 channels. Coefficients and samples enter the evaluators at their encoded precision, and arithmetic uses double precision. CLUT interpolation limits each input to the unit interval. Tables with up to four input axes use multilinear interpolation. Larger tables use simplex interpolation and read at most one more vertex than the number of input axes. Matrix inputs and all element results retain their float coordinates. At a floating-point PCS boundary, the coordinates are XYZ or L*, a*, b* directly. The Lab float facade scales L*, a*, and b* directly at an `mpet` device boundary. Its signed chroma stays centered at zero, preserving small values around the neutral point.
 
+### HDR transfer evaluation
+
+[`cms-hdr.c`](../../src/cms-hdr.c) evaluates BT.2100 PQ and HLG independently of ICC profiles and rendering intents. The input is normalized RGB in [0,1], with BT.709/sRGB, Display P3 or BT.2020 primaries and D65 white. The result is extended linear sRGB; one unit represents the configured reference-white luminance in cd/m². This numerical API does not select container metadata, apply exposure or tone mapping, or change ordinary SIXEL output semantics.
+
+PQ decoding retains its absolute 0–10,000 cd/m² scale before dividing by reference white. HLG first decodes scene-relative light, then applies the reference-display OOTF using source luminance, zero display black, and system gamma `1.2 + 0.42 log10(peak/1000)`. Peak luminance must be 400–10,000 cd/m²; reference white must be finite and positive. Source-luminance weighting precedes conversion to sRGB primaries, so HLG is not three independent channel powers. Negative and above-one output coordinates remain available for later gamut and dynamic-range mapping.
+
+The scalar operation publishes all three channels together and permits an exact input/output alias. The float-buffer operation stages the complete result; invalid input, allocation failure or a value beyond float range leaves the caller's buffer unchanged. These guarantees cover transfer evaluation, not every legacy CMS transform.
+
 ## Architecture and data flow
 
 ```mermaid
@@ -178,6 +186,17 @@ These tests establish selected implementation paths. They are not a complete con
 | BCMS-36 | Adapter input allocation uses independent numeric or atomic-failure expectations. | [tests/color/cms/0150_adapter_input_allocation.t](../../tests/color/cms/0150_adapter_input_allocation.t) |
 | BCMS-37 | Adapter output allocation uses independent numeric or atomic-failure expectations. | [tests/color/cms/0151_adapter_output_allocation.t](../../tests/color/cms/0151_adapter_output_allocation.t) |
 | BCMS-38 | Adapter publication allocation uses independent numeric or atomic-failure expectations. | [tests/color/cms/0152_adapter_publication_allocation.t](../../tests/color/cms/0152_adapter_publication_allocation.t) |
+
+| BCMS-39 | Pq neutral has an independent numeric or failure oracle. | [tests/color/hdr/0001_pq_neutral.t](../../tests/color/hdr/0001_pq_neutral.t) |
+| BCMS-40 | Hlg neutral has an independent numeric or failure oracle. | [tests/color/hdr/0002_hlg_neutral.t](../../tests/color/hdr/0002_hlg_neutral.t) |
+| BCMS-41 | Hlg color ootf has an independent numeric or failure oracle. | [tests/color/hdr/0003_hlg_color_ootf.t](../../tests/color/hdr/0003_hlg_color_ootf.t) |
+| BCMS-42 | Pq bt2020 red has an independent numeric or failure oracle. | [tests/color/hdr/0004_pq_bt2020_red.t](../../tests/color/hdr/0004_pq_bt2020_red.t) |
+| BCMS-43 | Pq p3 red has an independent numeric or failure oracle. | [tests/color/hdr/0005_pq_p3_red.t](../../tests/color/hdr/0005_pq_p3_red.t) |
+| BCMS-44 | Float atomic retry has an independent numeric or failure oracle. | [tests/color/hdr/0006_float_atomic_retry.t](../../tests/color/hdr/0006_float_atomic_retry.t) |
+| BCMS-45 | Invalid parameters has an independent numeric or failure oracle. | [tests/color/hdr/0007_invalid_parameters.t](../../tests/color/hdr/0007_invalid_parameters.t) |
+| BCMS-46 | Size overflow has an independent numeric or failure oracle. | [tests/color/hdr/0008_size_overflow.t](../../tests/color/hdr/0008_size_overflow.t) |
+| BCMS-47 | Reference white alias has an independent numeric or failure oracle. | [tests/color/hdr/0009_reference_white_alias.t](../../tests/color/hdr/0009_reference_white_alias.t) |
+| BCMS-48 | Allocation retry has an independent numeric or failure oracle. | [tests/color/hdr/0010_allocation_retry.t](../../tests/color/hdr/0010_allocation_retry.t) |
 
 ### Defensive and malformed-input tests
 

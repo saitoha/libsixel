@@ -459,8 +459,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/scale.h $(srcdir)/chunk.c $(srcdir)/chunk.h \
 	$(srcdir)/chunk-factory.h $(srcdir)/chunk-view.h \
 	$(srcdir)/gamut.c $(srcdir)/gamut.h $(srcdir)/color-option.c \
-	$(srcdir)/color-option.h $(srcdir)/cms.c \
-	$(srcdir)/png-chrm-arithmetic.c \
+	$(srcdir)/color-option.h $(srcdir)/cms.c $(srcdir)/cms-hdr.c \
+	$(srcdir)/cms-hdr.h $(srcdir)/png-chrm-arithmetic.c \
 	$(srcdir)/png-chrm-arithmetic.h $(srcdir)/cms.h \
 	$(srcdir)/named-color.h $(srcdir)/cms-curv.h \
 	$(srcdir)/icc-parse.c $(srcdir)/icc-parse.h \
@@ -742,6 +742,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gamut.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-color-option.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-cms.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-cms-hdr.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-png-chrm-arithmetic.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-icc-parse.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-icc-apply.lo \
@@ -846,6 +847,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-clipboard.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard_macos.Plo \
+	./$(DEPDIR)/libsixel_la-cms-hdr.Plo \
 	./$(DEPDIR)/libsixel_la-cms.Plo \
 	./$(DEPDIR)/libsixel_la-color-option.Plo \
 	./$(DEPDIR)/libsixel_la-colorspace-hls.Plo \
@@ -1332,6 +1334,7 @@ SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
 SIXEL_TEST_DEPRECATED_CFLAGS = @SIXEL_TEST_DEPRECATED_CFLAGS@
 SIXEL_TEST_GZIP = @SIXEL_TEST_GZIP@
+SIXEL_TEST_PRINTF_CFLAGS = @SIXEL_TEST_PRINTF_CFLAGS@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
@@ -1997,6 +2000,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/color-option.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/color-option.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms-hdr.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms-hdr.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/png-chrm-arithmetic.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/png-chrm-arithmetic.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms.h \
@@ -2399,6 +2404,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard_macos.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-cms-hdr.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-cms.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-color-option.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-colorspace-hls.Plo@am__quote@ # am--include-marker
@@ -3779,6 +3785,13 @@ libsixel_la-cms.lo: cms.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-cms.lo `test -f 'cms.c' || echo '$(srcdir)/'`cms.c
 
+libsixel_la-cms-hdr.lo: cms-hdr.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-cms-hdr.lo -MD -MP -MF $(DEPDIR)/libsixel_la-cms-hdr.Tpo -c -o libsixel_la-cms-hdr.lo `test -f 'cms-hdr.c' || echo '$(srcdir)/'`cms-hdr.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-cms-hdr.Tpo $(DEPDIR)/libsixel_la-cms-hdr.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cms-hdr.c' object='libsixel_la-cms-hdr.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-cms-hdr.lo `test -f 'cms-hdr.c' || echo '$(srcdir)/'`cms-hdr.c
+
 libsixel_la-png-chrm-arithmetic.lo: png-chrm-arithmetic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-png-chrm-arithmetic.lo -MD -MP -MF $(DEPDIR)/libsixel_la-png-chrm-arithmetic.Tpo -c -o libsixel_la-png-chrm-arithmetic.lo `test -f 'png-chrm-arithmetic.c' || echo '$(srcdir)/'`png-chrm-arithmetic.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-png-chrm-arithmetic.Tpo $(DEPDIR)/libsixel_la-png-chrm-arithmetic.Plo
@@ -4634,6 +4647,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_macos.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-cms-hdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-cms.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-color-option.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace-hls.Plo
@@ -4928,6 +4942,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_macos.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-cms-hdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-cms.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-color-option.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace-hls.Plo

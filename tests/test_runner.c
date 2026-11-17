@@ -4725,6 +4725,16 @@ int test_cms_0362_mixed(int argc, char **argv);
 int test_cms_0363_mixed(int argc, char **argv);
 int test_cms_0364_mixed(int argc, char **argv);
 int test_cms_0365_mixed(int argc, char **argv);
+int test_hdr_numeric_00(int argc, char **argv);
+int test_hdr_numeric_01(int argc, char **argv);
+int test_hdr_numeric_02(int argc, char **argv);
+int test_hdr_numeric_03(int argc, char **argv);
+int test_hdr_numeric_04(int argc, char **argv);
+int test_hdr_numeric_05(int argc, char **argv);
+int test_hdr_numeric_06(int argc, char **argv);
+int test_hdr_numeric_07(int argc, char **argv);
+int test_hdr_numeric_08(int argc, char **argv);
+int test_hdr_numeric_09(int argc, char **argv);
 int test_cms_format_00(int argc, char **argv);
 int test_cms_format_01(int argc, char **argv);
 int test_cms_format_02(int argc, char **argv);
@@ -14050,6 +14060,16 @@ static test_entry_t const test_entries[] = {
       test_cms_0364_mixed },
     { "cms/0365_mixed_second_nonfinite",
       test_cms_0365_mixed },
+    { "hdr/0001_pq_neutral", test_hdr_numeric_00 },
+    { "hdr/0002_hlg_neutral", test_hdr_numeric_01 },
+    { "hdr/0003_hlg_color_ootf", test_hdr_numeric_02 },
+    { "hdr/0004_pq_bt2020_red", test_hdr_numeric_03 },
+    { "hdr/0005_pq_p3_red", test_hdr_numeric_04 },
+    { "hdr/0006_float_atomic_retry", test_hdr_numeric_05 },
+    { "hdr/0007_invalid_parameters", test_hdr_numeric_06 },
+    { "hdr/0008_size_overflow", test_hdr_numeric_07 },
+    { "hdr/0009_reference_white_alias", test_hdr_numeric_08 },
+    { "hdr/0010_allocation_retry", test_hdr_numeric_09 },
     { "cms/0140_rgb16_alias", test_cms_format_00 },
     { "cms/0141_rgba16_float", test_cms_format_01 },
     { "cms/0142_gray16_float", test_cms_format_02 },

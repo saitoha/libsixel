@@ -1571,6 +1571,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/cms/0137_mixed_second_nonfinite.c \
 	color/cms/0138_mixed_first_nonfinite.c \
 	color/cms/0139_mixed_second_permutation_allocation.c \
+	color/hdr/0001_pq_neutral.c color/hdr/0002_hlg_neutral.c \
+	color/hdr/0003_hlg_color_ootf.c color/hdr/0004_pq_bt2020_red.c \
+	color/hdr/0005_pq_p3_red.c color/hdr/0006_float_atomic_retry.c \
+	color/hdr/0007_invalid_parameters.c \
+	color/hdr/0008_size_overflow.c \
+	color/hdr/0009_reference_white_alias.c \
+	color/hdr/0010_allocation_retry.c \
+	_support/processing/cms/hdr_numeric_common.h \
+	_support/processing/cms/hdr_fault_common.c \
 	color/cms/0140_rgb16_alias.c color/cms/0141_rgba16_float.c \
 	color/cms/0142_gray16_float.c color/cms/0143_rgba_float.c \
 	color/cms/0144_premultiplied_srgb.c \
@@ -7197,6 +7206,17 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0137_mixed_second_nonfinite.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0138_mixed_first_nonfinite.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0139_mixed_second_permutation_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0001_pq_neutral.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0002_hlg_neutral.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0003_hlg_color_ootf.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0004_pq_bt2020_red.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0005_pq_p3_red.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0006_float_atomic_retry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0007_invalid_parameters.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0008_size_overflow.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0009_reference_white_alias.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0010_allocation_retry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/cms/test_runner-hdr_fault_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0140_rgb16_alias.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0141_rgba16_float.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/cms/test_runner-0142_gray16_float.$(OBJEXT) \
@@ -11754,6 +11774,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/cms/$(DEPDIR)/test_runner-0181_gamma_option.Po \
 	_support/processing/cms/$(DEPDIR)/test_runner-0195_native_gamma.Po \
 	_support/processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Po \
+	_support/processing/cms/$(DEPDIR)/test_runner-hdr_fault_common.Po \
 	_support/processing/cms/$(DEPDIR)/test_runner-lab_linear_fault_test_common.Po \
 	_support/processing/cms/$(DEPDIR)/test_runner-lab_linear_test_common.Po \
 	_support/processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Po \
@@ -12156,6 +12177,16 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/gamut/$(DEPDIR)/test_runner-0066_pipeline_fallback.Po \
 	color/gamut/$(DEPDIR)/test_runner-0067_pipeline_mask.Po \
 	color/gamut/$(DEPDIR)/test_runner-0068_filter_dag.Po \
+	color/hdr/$(DEPDIR)/test_runner-0001_pq_neutral.Po \
+	color/hdr/$(DEPDIR)/test_runner-0002_hlg_neutral.Po \
+	color/hdr/$(DEPDIR)/test_runner-0003_hlg_color_ootf.Po \
+	color/hdr/$(DEPDIR)/test_runner-0004_pq_bt2020_red.Po \
+	color/hdr/$(DEPDIR)/test_runner-0005_pq_p3_red.Po \
+	color/hdr/$(DEPDIR)/test_runner-0006_float_atomic_retry.Po \
+	color/hdr/$(DEPDIR)/test_runner-0007_invalid_parameters.Po \
+	color/hdr/$(DEPDIR)/test_runner-0008_size_overflow.Po \
+	color/hdr/$(DEPDIR)/test_runner-0009_reference_white_alias.Po \
+	color/hdr/$(DEPDIR)/test_runner-0010_allocation_retry.Po \
 	color/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	color/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
 	color/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po \
@@ -17643,6 +17674,17 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PQ_NEUTRAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HLG_NEUTRAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_HLG_COLOR_OOTF \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_PQ_BT2020_RED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_PQ_P3_RED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_FLOAT_ATOMIC_RETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_INVALID_PARAMETERS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_SIZE_OVERFLOW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_REFERENCE_WHITE_ALIAS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_ALLOCATION_RETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HDR_FAULT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0140_RGB16_ALIAS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0141_RGBA16_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0142_GRAY16_FLOAT \
@@ -24637,6 +24679,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0137_mixed_second_nonfinite.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0138_mixed_first_nonfinite.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0139_mixed_second_permutation_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0001_pq_neutral.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0002_hlg_neutral.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0003_hlg_color_ootf.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0004_pq_bt2020_red.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0005_pq_p3_red.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0006_float_atomic_retry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0007_invalid_parameters.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0008_size_overflow.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0009_reference_white_alias.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0010_allocation_retry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/cms/hdr_numeric_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/cms/hdr_fault_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0140_rgb16_alias.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0141_rgba16_float.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/cms/0142_gray16_float.c \
@@ -34031,6 +34085,35 @@ color/cms/test_runner-0138_mixed_first_nonfinite.$(OBJEXT):  \
 	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
 color/cms/test_runner-0139_mixed_second_permutation_allocation.$(OBJEXT):  \
 	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
+color/hdr/$(am__dirstamp):
+	@$(MKDIR_P) color/hdr
+	@: >>color/hdr/$(am__dirstamp)
+color/hdr/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) color/hdr/$(DEPDIR)
+	@: >>color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0001_pq_neutral.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0002_hlg_neutral.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0003_hlg_color_ootf.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0004_pq_bt2020_red.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0005_pq_p3_red.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0006_float_atomic_retry.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0007_invalid_parameters.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0008_size_overflow.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0009_reference_white_alias.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+color/hdr/test_runner-0010_allocation_retry.$(OBJEXT):  \
+	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
+_support/processing/cms/test_runner-hdr_fault_common.$(OBJEXT):  \
+	_support/processing/cms/$(am__dirstamp) \
+	_support/processing/cms/$(DEPDIR)/$(am__dirstamp)
 color/cms/test_runner-0140_rgb16_alias.$(OBJEXT):  \
 	color/cms/$(am__dirstamp) color/cms/$(DEPDIR)/$(am__dirstamp)
 color/cms/test_runner-0141_rgba16_float.$(OBJEXT):  \
@@ -47193,6 +47276,7 @@ mostlyclean-compile:
 	-rm -f color/cms/*.$(OBJEXT)
 	-rm -f color/colorsync/*.$(OBJEXT)
 	-rm -f color/gamut/*.$(OBJEXT)
+	-rm -f color/hdr/*.$(OBJEXT)
 	-rm -f color/icc/*.$(OBJEXT)
 	-rm -f color/lcms2/*.$(OBJEXT)
 	-rm -f color/space/*.$(OBJEXT)
@@ -47672,6 +47756,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/cms/$(DEPDIR)/test_runner-0181_gamma_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/cms/$(DEPDIR)/test_runner-0195_native_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/cms/$(DEPDIR)/test_runner-0231_tiff_icc_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/cms/$(DEPDIR)/test_runner-hdr_fault_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/cms/$(DEPDIR)/test_runner-lab_linear_fault_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/cms/$(DEPDIR)/test_runner-lab_linear_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/cms/$(DEPDIR)/test_runner-mixed_domain_common.Po@am__quote@ # am--include-marker
@@ -48074,6 +48159,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/gamut/$(DEPDIR)/test_runner-0066_pipeline_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/gamut/$(DEPDIR)/test_runner-0067_pipeline_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/gamut/$(DEPDIR)/test_runner-0068_filter_dag.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0001_pq_neutral.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0002_hlg_neutral.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0003_hlg_color_ootf.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0004_pq_bt2020_red.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0005_pq_p3_red.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0006_float_atomic_retry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0007_invalid_parameters.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0008_size_overflow.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0009_reference_white_alias.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/hdr/$(DEPDIR)/test_runner-0010_allocation_retry.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/icc/$(DEPDIR)/test_runner-0003_icc_builtin_a2b_intent_paths.Po@am__quote@ # am--include-marker
@@ -72892,6 +72987,160 @@ color/cms/test_runner-0139_mixed_second_permutation_allocation.obj: color/cms/01
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/cms/0139_mixed_second_permutation_allocation.c' object='color/cms/test_runner-0139_mixed_second_permutation_allocation.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/cms/test_runner-0139_mixed_second_permutation_allocation.obj `if test -f 'color/cms/0139_mixed_second_permutation_allocation.c'; then $(CYGPATH_W) 'color/cms/0139_mixed_second_permutation_allocation.c'; else $(CYGPATH_W) '$(srcdir)/color/cms/0139_mixed_second_permutation_allocation.c'; fi`
+
+color/hdr/test_runner-0001_pq_neutral.o: color/hdr/0001_pq_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0001_pq_neutral.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0001_pq_neutral.Tpo -c -o color/hdr/test_runner-0001_pq_neutral.o `test -f 'color/hdr/0001_pq_neutral.c' || echo '$(srcdir)/'`color/hdr/0001_pq_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0001_pq_neutral.Tpo color/hdr/$(DEPDIR)/test_runner-0001_pq_neutral.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0001_pq_neutral.c' object='color/hdr/test_runner-0001_pq_neutral.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0001_pq_neutral.o `test -f 'color/hdr/0001_pq_neutral.c' || echo '$(srcdir)/'`color/hdr/0001_pq_neutral.c
+
+color/hdr/test_runner-0001_pq_neutral.obj: color/hdr/0001_pq_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0001_pq_neutral.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0001_pq_neutral.Tpo -c -o color/hdr/test_runner-0001_pq_neutral.obj `if test -f 'color/hdr/0001_pq_neutral.c'; then $(CYGPATH_W) 'color/hdr/0001_pq_neutral.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0001_pq_neutral.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0001_pq_neutral.Tpo color/hdr/$(DEPDIR)/test_runner-0001_pq_neutral.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0001_pq_neutral.c' object='color/hdr/test_runner-0001_pq_neutral.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0001_pq_neutral.obj `if test -f 'color/hdr/0001_pq_neutral.c'; then $(CYGPATH_W) 'color/hdr/0001_pq_neutral.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0001_pq_neutral.c'; fi`
+
+color/hdr/test_runner-0002_hlg_neutral.o: color/hdr/0002_hlg_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0002_hlg_neutral.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0002_hlg_neutral.Tpo -c -o color/hdr/test_runner-0002_hlg_neutral.o `test -f 'color/hdr/0002_hlg_neutral.c' || echo '$(srcdir)/'`color/hdr/0002_hlg_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0002_hlg_neutral.Tpo color/hdr/$(DEPDIR)/test_runner-0002_hlg_neutral.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0002_hlg_neutral.c' object='color/hdr/test_runner-0002_hlg_neutral.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0002_hlg_neutral.o `test -f 'color/hdr/0002_hlg_neutral.c' || echo '$(srcdir)/'`color/hdr/0002_hlg_neutral.c
+
+color/hdr/test_runner-0002_hlg_neutral.obj: color/hdr/0002_hlg_neutral.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0002_hlg_neutral.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0002_hlg_neutral.Tpo -c -o color/hdr/test_runner-0002_hlg_neutral.obj `if test -f 'color/hdr/0002_hlg_neutral.c'; then $(CYGPATH_W) 'color/hdr/0002_hlg_neutral.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0002_hlg_neutral.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0002_hlg_neutral.Tpo color/hdr/$(DEPDIR)/test_runner-0002_hlg_neutral.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0002_hlg_neutral.c' object='color/hdr/test_runner-0002_hlg_neutral.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0002_hlg_neutral.obj `if test -f 'color/hdr/0002_hlg_neutral.c'; then $(CYGPATH_W) 'color/hdr/0002_hlg_neutral.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0002_hlg_neutral.c'; fi`
+
+color/hdr/test_runner-0003_hlg_color_ootf.o: color/hdr/0003_hlg_color_ootf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0003_hlg_color_ootf.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0003_hlg_color_ootf.Tpo -c -o color/hdr/test_runner-0003_hlg_color_ootf.o `test -f 'color/hdr/0003_hlg_color_ootf.c' || echo '$(srcdir)/'`color/hdr/0003_hlg_color_ootf.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0003_hlg_color_ootf.Tpo color/hdr/$(DEPDIR)/test_runner-0003_hlg_color_ootf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0003_hlg_color_ootf.c' object='color/hdr/test_runner-0003_hlg_color_ootf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0003_hlg_color_ootf.o `test -f 'color/hdr/0003_hlg_color_ootf.c' || echo '$(srcdir)/'`color/hdr/0003_hlg_color_ootf.c
+
+color/hdr/test_runner-0003_hlg_color_ootf.obj: color/hdr/0003_hlg_color_ootf.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0003_hlg_color_ootf.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0003_hlg_color_ootf.Tpo -c -o color/hdr/test_runner-0003_hlg_color_ootf.obj `if test -f 'color/hdr/0003_hlg_color_ootf.c'; then $(CYGPATH_W) 'color/hdr/0003_hlg_color_ootf.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0003_hlg_color_ootf.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0003_hlg_color_ootf.Tpo color/hdr/$(DEPDIR)/test_runner-0003_hlg_color_ootf.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0003_hlg_color_ootf.c' object='color/hdr/test_runner-0003_hlg_color_ootf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0003_hlg_color_ootf.obj `if test -f 'color/hdr/0003_hlg_color_ootf.c'; then $(CYGPATH_W) 'color/hdr/0003_hlg_color_ootf.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0003_hlg_color_ootf.c'; fi`
+
+color/hdr/test_runner-0004_pq_bt2020_red.o: color/hdr/0004_pq_bt2020_red.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0004_pq_bt2020_red.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0004_pq_bt2020_red.Tpo -c -o color/hdr/test_runner-0004_pq_bt2020_red.o `test -f 'color/hdr/0004_pq_bt2020_red.c' || echo '$(srcdir)/'`color/hdr/0004_pq_bt2020_red.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0004_pq_bt2020_red.Tpo color/hdr/$(DEPDIR)/test_runner-0004_pq_bt2020_red.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0004_pq_bt2020_red.c' object='color/hdr/test_runner-0004_pq_bt2020_red.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0004_pq_bt2020_red.o `test -f 'color/hdr/0004_pq_bt2020_red.c' || echo '$(srcdir)/'`color/hdr/0004_pq_bt2020_red.c
+
+color/hdr/test_runner-0004_pq_bt2020_red.obj: color/hdr/0004_pq_bt2020_red.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0004_pq_bt2020_red.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0004_pq_bt2020_red.Tpo -c -o color/hdr/test_runner-0004_pq_bt2020_red.obj `if test -f 'color/hdr/0004_pq_bt2020_red.c'; then $(CYGPATH_W) 'color/hdr/0004_pq_bt2020_red.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0004_pq_bt2020_red.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0004_pq_bt2020_red.Tpo color/hdr/$(DEPDIR)/test_runner-0004_pq_bt2020_red.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0004_pq_bt2020_red.c' object='color/hdr/test_runner-0004_pq_bt2020_red.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0004_pq_bt2020_red.obj `if test -f 'color/hdr/0004_pq_bt2020_red.c'; then $(CYGPATH_W) 'color/hdr/0004_pq_bt2020_red.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0004_pq_bt2020_red.c'; fi`
+
+color/hdr/test_runner-0005_pq_p3_red.o: color/hdr/0005_pq_p3_red.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0005_pq_p3_red.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0005_pq_p3_red.Tpo -c -o color/hdr/test_runner-0005_pq_p3_red.o `test -f 'color/hdr/0005_pq_p3_red.c' || echo '$(srcdir)/'`color/hdr/0005_pq_p3_red.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0005_pq_p3_red.Tpo color/hdr/$(DEPDIR)/test_runner-0005_pq_p3_red.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0005_pq_p3_red.c' object='color/hdr/test_runner-0005_pq_p3_red.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0005_pq_p3_red.o `test -f 'color/hdr/0005_pq_p3_red.c' || echo '$(srcdir)/'`color/hdr/0005_pq_p3_red.c
+
+color/hdr/test_runner-0005_pq_p3_red.obj: color/hdr/0005_pq_p3_red.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0005_pq_p3_red.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0005_pq_p3_red.Tpo -c -o color/hdr/test_runner-0005_pq_p3_red.obj `if test -f 'color/hdr/0005_pq_p3_red.c'; then $(CYGPATH_W) 'color/hdr/0005_pq_p3_red.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0005_pq_p3_red.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0005_pq_p3_red.Tpo color/hdr/$(DEPDIR)/test_runner-0005_pq_p3_red.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0005_pq_p3_red.c' object='color/hdr/test_runner-0005_pq_p3_red.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0005_pq_p3_red.obj `if test -f 'color/hdr/0005_pq_p3_red.c'; then $(CYGPATH_W) 'color/hdr/0005_pq_p3_red.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0005_pq_p3_red.c'; fi`
+
+color/hdr/test_runner-0006_float_atomic_retry.o: color/hdr/0006_float_atomic_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0006_float_atomic_retry.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0006_float_atomic_retry.Tpo -c -o color/hdr/test_runner-0006_float_atomic_retry.o `test -f 'color/hdr/0006_float_atomic_retry.c' || echo '$(srcdir)/'`color/hdr/0006_float_atomic_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0006_float_atomic_retry.Tpo color/hdr/$(DEPDIR)/test_runner-0006_float_atomic_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0006_float_atomic_retry.c' object='color/hdr/test_runner-0006_float_atomic_retry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0006_float_atomic_retry.o `test -f 'color/hdr/0006_float_atomic_retry.c' || echo '$(srcdir)/'`color/hdr/0006_float_atomic_retry.c
+
+color/hdr/test_runner-0006_float_atomic_retry.obj: color/hdr/0006_float_atomic_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0006_float_atomic_retry.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0006_float_atomic_retry.Tpo -c -o color/hdr/test_runner-0006_float_atomic_retry.obj `if test -f 'color/hdr/0006_float_atomic_retry.c'; then $(CYGPATH_W) 'color/hdr/0006_float_atomic_retry.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0006_float_atomic_retry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0006_float_atomic_retry.Tpo color/hdr/$(DEPDIR)/test_runner-0006_float_atomic_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0006_float_atomic_retry.c' object='color/hdr/test_runner-0006_float_atomic_retry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0006_float_atomic_retry.obj `if test -f 'color/hdr/0006_float_atomic_retry.c'; then $(CYGPATH_W) 'color/hdr/0006_float_atomic_retry.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0006_float_atomic_retry.c'; fi`
+
+color/hdr/test_runner-0007_invalid_parameters.o: color/hdr/0007_invalid_parameters.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0007_invalid_parameters.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0007_invalid_parameters.Tpo -c -o color/hdr/test_runner-0007_invalid_parameters.o `test -f 'color/hdr/0007_invalid_parameters.c' || echo '$(srcdir)/'`color/hdr/0007_invalid_parameters.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0007_invalid_parameters.Tpo color/hdr/$(DEPDIR)/test_runner-0007_invalid_parameters.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0007_invalid_parameters.c' object='color/hdr/test_runner-0007_invalid_parameters.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0007_invalid_parameters.o `test -f 'color/hdr/0007_invalid_parameters.c' || echo '$(srcdir)/'`color/hdr/0007_invalid_parameters.c
+
+color/hdr/test_runner-0007_invalid_parameters.obj: color/hdr/0007_invalid_parameters.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0007_invalid_parameters.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0007_invalid_parameters.Tpo -c -o color/hdr/test_runner-0007_invalid_parameters.obj `if test -f 'color/hdr/0007_invalid_parameters.c'; then $(CYGPATH_W) 'color/hdr/0007_invalid_parameters.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0007_invalid_parameters.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0007_invalid_parameters.Tpo color/hdr/$(DEPDIR)/test_runner-0007_invalid_parameters.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0007_invalid_parameters.c' object='color/hdr/test_runner-0007_invalid_parameters.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0007_invalid_parameters.obj `if test -f 'color/hdr/0007_invalid_parameters.c'; then $(CYGPATH_W) 'color/hdr/0007_invalid_parameters.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0007_invalid_parameters.c'; fi`
+
+color/hdr/test_runner-0008_size_overflow.o: color/hdr/0008_size_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0008_size_overflow.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0008_size_overflow.Tpo -c -o color/hdr/test_runner-0008_size_overflow.o `test -f 'color/hdr/0008_size_overflow.c' || echo '$(srcdir)/'`color/hdr/0008_size_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0008_size_overflow.Tpo color/hdr/$(DEPDIR)/test_runner-0008_size_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0008_size_overflow.c' object='color/hdr/test_runner-0008_size_overflow.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0008_size_overflow.o `test -f 'color/hdr/0008_size_overflow.c' || echo '$(srcdir)/'`color/hdr/0008_size_overflow.c
+
+color/hdr/test_runner-0008_size_overflow.obj: color/hdr/0008_size_overflow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0008_size_overflow.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0008_size_overflow.Tpo -c -o color/hdr/test_runner-0008_size_overflow.obj `if test -f 'color/hdr/0008_size_overflow.c'; then $(CYGPATH_W) 'color/hdr/0008_size_overflow.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0008_size_overflow.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0008_size_overflow.Tpo color/hdr/$(DEPDIR)/test_runner-0008_size_overflow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0008_size_overflow.c' object='color/hdr/test_runner-0008_size_overflow.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0008_size_overflow.obj `if test -f 'color/hdr/0008_size_overflow.c'; then $(CYGPATH_W) 'color/hdr/0008_size_overflow.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0008_size_overflow.c'; fi`
+
+color/hdr/test_runner-0009_reference_white_alias.o: color/hdr/0009_reference_white_alias.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0009_reference_white_alias.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0009_reference_white_alias.Tpo -c -o color/hdr/test_runner-0009_reference_white_alias.o `test -f 'color/hdr/0009_reference_white_alias.c' || echo '$(srcdir)/'`color/hdr/0009_reference_white_alias.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0009_reference_white_alias.Tpo color/hdr/$(DEPDIR)/test_runner-0009_reference_white_alias.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0009_reference_white_alias.c' object='color/hdr/test_runner-0009_reference_white_alias.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0009_reference_white_alias.o `test -f 'color/hdr/0009_reference_white_alias.c' || echo '$(srcdir)/'`color/hdr/0009_reference_white_alias.c
+
+color/hdr/test_runner-0009_reference_white_alias.obj: color/hdr/0009_reference_white_alias.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0009_reference_white_alias.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0009_reference_white_alias.Tpo -c -o color/hdr/test_runner-0009_reference_white_alias.obj `if test -f 'color/hdr/0009_reference_white_alias.c'; then $(CYGPATH_W) 'color/hdr/0009_reference_white_alias.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0009_reference_white_alias.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0009_reference_white_alias.Tpo color/hdr/$(DEPDIR)/test_runner-0009_reference_white_alias.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0009_reference_white_alias.c' object='color/hdr/test_runner-0009_reference_white_alias.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0009_reference_white_alias.obj `if test -f 'color/hdr/0009_reference_white_alias.c'; then $(CYGPATH_W) 'color/hdr/0009_reference_white_alias.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0009_reference_white_alias.c'; fi`
+
+color/hdr/test_runner-0010_allocation_retry.o: color/hdr/0010_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0010_allocation_retry.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0010_allocation_retry.Tpo -c -o color/hdr/test_runner-0010_allocation_retry.o `test -f 'color/hdr/0010_allocation_retry.c' || echo '$(srcdir)/'`color/hdr/0010_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0010_allocation_retry.Tpo color/hdr/$(DEPDIR)/test_runner-0010_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0010_allocation_retry.c' object='color/hdr/test_runner-0010_allocation_retry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0010_allocation_retry.o `test -f 'color/hdr/0010_allocation_retry.c' || echo '$(srcdir)/'`color/hdr/0010_allocation_retry.c
+
+color/hdr/test_runner-0010_allocation_retry.obj: color/hdr/0010_allocation_retry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0010_allocation_retry.obj -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0010_allocation_retry.Tpo -c -o color/hdr/test_runner-0010_allocation_retry.obj `if test -f 'color/hdr/0010_allocation_retry.c'; then $(CYGPATH_W) 'color/hdr/0010_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0010_allocation_retry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/hdr/$(DEPDIR)/test_runner-0010_allocation_retry.Tpo color/hdr/$(DEPDIR)/test_runner-0010_allocation_retry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/hdr/0010_allocation_retry.c' object='color/hdr/test_runner-0010_allocation_retry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/hdr/test_runner-0010_allocation_retry.obj `if test -f 'color/hdr/0010_allocation_retry.c'; then $(CYGPATH_W) 'color/hdr/0010_allocation_retry.c'; else $(CYGPATH_W) '$(srcdir)/color/hdr/0010_allocation_retry.c'; fi`
+
+_support/processing/cms/test_runner-hdr_fault_common.o: _support/processing/cms/hdr_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/cms/test_runner-hdr_fault_common.o -MD -MP -MF _support/processing/cms/$(DEPDIR)/test_runner-hdr_fault_common.Tpo -c -o _support/processing/cms/test_runner-hdr_fault_common.o `test -f '_support/processing/cms/hdr_fault_common.c' || echo '$(srcdir)/'`_support/processing/cms/hdr_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/cms/$(DEPDIR)/test_runner-hdr_fault_common.Tpo _support/processing/cms/$(DEPDIR)/test_runner-hdr_fault_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/cms/hdr_fault_common.c' object='_support/processing/cms/test_runner-hdr_fault_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/cms/test_runner-hdr_fault_common.o `test -f '_support/processing/cms/hdr_fault_common.c' || echo '$(srcdir)/'`_support/processing/cms/hdr_fault_common.c
+
+_support/processing/cms/test_runner-hdr_fault_common.obj: _support/processing/cms/hdr_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/cms/test_runner-hdr_fault_common.obj -MD -MP -MF _support/processing/cms/$(DEPDIR)/test_runner-hdr_fault_common.Tpo -c -o _support/processing/cms/test_runner-hdr_fault_common.obj `if test -f '_support/processing/cms/hdr_fault_common.c'; then $(CYGPATH_W) '_support/processing/cms/hdr_fault_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/cms/hdr_fault_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/cms/$(DEPDIR)/test_runner-hdr_fault_common.Tpo _support/processing/cms/$(DEPDIR)/test_runner-hdr_fault_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/cms/hdr_fault_common.c' object='_support/processing/cms/test_runner-hdr_fault_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/cms/test_runner-hdr_fault_common.obj `if test -f '_support/processing/cms/hdr_fault_common.c'; then $(CYGPATH_W) '_support/processing/cms/hdr_fault_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/cms/hdr_fault_common.c'; fi`
 
 color/cms/test_runner-0140_rgb16_alias.o: color/cms/0140_rgb16_alias.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/cms/test_runner-0140_rgb16_alias.o -MD -MP -MF color/cms/$(DEPDIR)/test_runner-0140_rgb16_alias.Tpo -c -o color/cms/test_runner-0140_rgb16_alias.o `test -f 'color/cms/0140_rgb16_alias.c' || echo '$(srcdir)/'`color/cms/0140_rgb16_alias.c
@@ -131373,6 +131622,8 @@ distclean-generic:
 	-$(am__rm_f) color/colorsync/$(am__dirstamp)
 	-$(am__rm_f) color/gamut/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) color/gamut/$(am__dirstamp)
+	-$(am__rm_f) color/hdr/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) color/hdr/$(am__dirstamp)
 	-$(am__rm_f) color/icc/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) color/icc/$(am__dirstamp)
 	-$(am__rm_f) color/lcms2/$(DEPDIR)/$(am__dirstamp)

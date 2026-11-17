@@ -654,6 +654,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/color-option.c \
                 $(srcdir)/color-option.h \
                 $(srcdir)/cms.c \
+                $(srcdir)/cms-hdr.c \
+                $(srcdir)/cms-hdr.h \
                 $(srcdir)/png-chrm-arithmetic.c \
                 $(srcdir)/png-chrm-arithmetic.h \
                 $(srcdir)/cms.h \

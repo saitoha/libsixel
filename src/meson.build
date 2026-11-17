@@ -306,6 +306,8 @@ srcs = [
   'color-option.c',
   'color-option.h',
   'cms.c',
+  'cms-hdr.c',
+  'cms-hdr.h',
   'png-chrm-arithmetic.c',
   'png-chrm-arithmetic.h',
   'cms.h',

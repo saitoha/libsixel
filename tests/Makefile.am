@@ -243,6 +243,17 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0001_PQ_NEUTRAL \
+    -DBUILD_TEST_0002_HLG_NEUTRAL \
+    -DBUILD_TEST_0003_HLG_COLOR_OOTF \
+    -DBUILD_TEST_0004_PQ_BT2020_RED \
+    -DBUILD_TEST_0005_PQ_P3_RED \
+    -DBUILD_TEST_0006_FLOAT_ATOMIC_RETRY \
+    -DBUILD_TEST_0007_INVALID_PARAMETERS \
+    -DBUILD_TEST_0008_SIZE_OVERFLOW \
+    -DBUILD_TEST_0009_REFERENCE_WHITE_ALIAS \
+    -DBUILD_TEST_0010_ALLOCATION_RETRY \
+    -DBUILD_HDR_FAULT_COMMON \
     -DBUILD_TEST_0140_RGB16_ALIAS \
     -DBUILD_TEST_0141_RGBA16_FLOAT \
     -DBUILD_TEST_0142_GRAY16_FLOAT \
@@ -7205,6 +7216,18 @@ test_runner_SOURCES = test_runner.c \
     color/cms/0137_mixed_second_nonfinite.c \
     color/cms/0138_mixed_first_nonfinite.c \
     color/cms/0139_mixed_second_permutation_allocation.c \
+    color/hdr/0001_pq_neutral.c \
+    color/hdr/0002_hlg_neutral.c \
+    color/hdr/0003_hlg_color_ootf.c \
+    color/hdr/0004_pq_bt2020_red.c \
+    color/hdr/0005_pq_p3_red.c \
+    color/hdr/0006_float_atomic_retry.c \
+    color/hdr/0007_invalid_parameters.c \
+    color/hdr/0008_size_overflow.c \
+    color/hdr/0009_reference_white_alias.c \
+    color/hdr/0010_allocation_retry.c \
+    _support/processing/cms/hdr_numeric_common.h \
+    _support/processing/cms/hdr_fault_common.c \
     color/cms/0140_rgb16_alias.c \
     color/cms/0141_rgba16_float.c \
     color/cms/0142_gray16_float.c \
