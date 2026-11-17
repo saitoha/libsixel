@@ -2765,6 +2765,10 @@ sixel_cms_builtin_apply_gray_u8_intent(
             return 1;
         }
     }
+    if (sixel_cms_has_colorspace_fallback(profile, 0)) {
+        return sixel_icc_apply_gray_u8_with_a2b_slot(
+            pixels, pixel_count, profile, 0u, 0);
+    }
 
     return sixel_icc_apply_gray_u8_with_a2b_slot(
         pixels,
@@ -4325,7 +4329,7 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
     unsigned char alpha;
     int float_rgb;
     int uses_mpet;
-    int legacy_rgb8_pair;
+    int legacy_byte_pair;
     int keep_legacy;
     int try_legacy_pair;
     int ok;
@@ -4346,12 +4350,16 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
     }
     float_rgb = target->rgb_definition != NULL &&
         transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_F32;
-    /* Keep the legacy byte encoding for ColorSpace RGB. The explicit
-     * floating-point ColorSpace paths evaluate through physical PCS. */
-    legacy_rgb8_pair = transform->src_format == transform->dst_format &&
+    /* Keep the legacy byte encoding for ColorSpace RGB and for gray
+     * output through the builtin sRGB conversion. */
+    legacy_byte_pair = transform->src_format == transform->dst_format &&
         (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
          transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGBA_8);
-    keep_legacy = !float_rgb && (legacy_rgb8_pair ||
+    legacy_byte_pair |= target->is_srgb_profile &&
+        transform->src_format == SIXEL_CMS_PIXELFORMAT_GRAY_8 &&
+        (transform->dst_format == SIXEL_CMS_PIXELFORMAT_RGB_8 ||
+         transform->dst_format == SIXEL_CMS_PIXELFORMAT_GRAY_8);
+    keep_legacy = !float_rgb && (legacy_byte_pair ||
         (!transform->src_profile->builtin_profile.lut_only &&
          !target->builtin_profile.lut_only));
     try_legacy_pair = transform->builtin_pcs_ordered &&
@@ -4399,6 +4407,14 @@ sixel_cms_do_builtin_pcs(sixel_cms_transform_t const *transform,
                 if (legacy_status == SIXEL_CMS_STATUS_ALLOCATION) {
                     *status = legacy_status;
                     goto done;
+                }
+                /* Before accepting an analytic endpoint in this
+                 * candidate, honor the independently selected legacy
+                 * slots that a transform without mpet would use. */
+                if (try_legacy_pair &&
+                    sixel_cms_do_transform_builtin_device_to_device(
+                        transform, input, &sample, 1u, &legacy_status)) {
+                    break;
                 }
             }
             if (sixel_cms_builtin_store_dst_unit(&sample, transform->dst_format,
@@ -6757,18 +6773,17 @@ sixel_cdef_to_xyz(sixel_color_def_t const *definition,
             return 1;
         }
         count = sixel_cdef_slots(slots, &definition->icc, intent, 0);
-        if (count > 0) {
-            for (i = 0; i < count; ++i) {
-                if (sixel_icc_apply_device_to_physical_xyz(
-                        result, rgb, 3u, &definition->icc, slots[i])) {
-                    break;
-                }
+        for (i = 0; i < count; ++i) {
+            if (sixel_icc_apply_device_to_physical_xyz(
+                    result, rgb, 3u, &definition->icc, slots[i])) {
+                break;
             }
-            if (i == count) {
-                return 0;
-            }
-        } else {
-            if (!definition->matrix_valid) {
+        }
+        if (i == count) {
+            /* A tag can be present and still fail for this sample.
+             * Use the retained matrix unless the profile requires a LUT. */
+            if (!definition->matrix_valid ||
+                (count > 0 && definition->icc.lut_only)) {
                 return 0;
             }
             for (i = 0; i < 3; ++i) {
@@ -6833,18 +6848,15 @@ sixel_cdef_from_xyz(sixel_color_def_t const *definition,
             xyz = relative;
         }
         count = sixel_cdef_slots(slots, &definition->icc, intent, 1);
-        if (count > 0) {
-            for (i = 0; i < count; ++i) {
-                if (sixel_icc_apply_physical_xyz_to_device(
-                        result, 3u, xyz, &definition->icc, slots[i])) {
-                    break;
-                }
+        for (i = 0; i < count; ++i) {
+            if (sixel_icc_apply_physical_xyz_to_device(
+                    result, 3u, xyz, &definition->icc, slots[i])) {
+                break;
             }
-            if (i == count) {
-                return 0;
-            }
-        } else {
-            if (!definition->matrix_valid) {
+        }
+        if (i == count) {
+            if (!definition->matrix_valid ||
+                (count > 0 && definition->icc.lut_only)) {
                 return 0;
             }
             sixel_cdef_matrix(definition->from_xyz, xyz, linear);

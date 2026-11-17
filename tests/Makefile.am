@@ -2429,6 +2429,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0103_MPET_SIMPLEX_ZERO_WEIGHT \
     -DBUILD_TEST_0104_MPET_LAB_PCS_NEUTRAL_FORWARD \
     -DBUILD_TEST_0105_MPET_LAB_PCS_NEUTRAL_REVERSE \
+    -DBUILD_TEST_0106_COLORSPACE_LEGACY_GRAY8 \
+    -DBUILD_TEST_0107_MPET_LEGACY_REVERSE_PRECEDENCE \
+    -DBUILD_TEST_0108_OWNED_MPET_MATRIX_FALLBACK_FORWARD \
+    -DBUILD_TEST_0109_OWNED_MPET_MATRIX_FALLBACK_REVERSE \
     -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
     -DBUILD_ICC_NUMERIC_COMMON \
     -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -7805,6 +7809,10 @@ test_runner_SOURCES = test_runner.c \
     color/icc/0103_mpet_simplex_zero_weight.c \
     color/icc/0104_mpet_lab_pcs_neutral_forward.c \
     color/icc/0105_mpet_lab_pcs_neutral_reverse.c \
+    color/icc/0106_colorspace_legacy_gray8.c \
+    color/icc/0107_mpet_legacy_reverse_precedence.c \
+    color/icc/0108_owned_mpet_matrix_fallback_forward.c \
+    color/icc/0109_owned_mpet_matrix_fallback_reverse.c \
     color/icc/0062_mpet_pcs_lab_forward.c \
     _support/diagnostics/icc_numeric_common.c \
     _support/diagnostics/icc_numeric_common.h \

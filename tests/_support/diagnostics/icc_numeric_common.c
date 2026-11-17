@@ -3156,3 +3156,193 @@ icc_numeric_mpet_lab_pcs_neutral_test(int reverse)
     return iccn_check_mpet_transform(src, src_length, dst, dst_length,
         "relative!", input[reverse], expected);
 }
+
+int
+icc_numeric_colorspace_legacy_gray8_test(void)
+{
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    static char const *const intents[] = {"perceptual!", "relative!"};
+    static unsigned char const input[] = {64u};
+    /* The legacy D50 ramp produces linear gray 64/255. The sRGB
+     * transfer function rounds that to 137 in each channel. */
+    static unsigned char const expected[] = {137u, 137u, 137u};
+    unsigned char bytes[224];
+    unsigned char output[3];
+    unsigned char *lut;
+    unsigned char *p;
+    sixel_cms_profile_t *source;
+    sixel_cms_profile_t *target;
+    sixel_cms_engine_t previous;
+    size_t i;
+    int ok;
+
+    memset(bytes, 0, sizeof(bytes));
+    iccn_be32(bytes, sizeof(bytes));
+    bytes[8] = 4u;
+    memcpy(bytes + 12u, "spacGRAYXYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(bytes + 68u + i * 4u, white[i]);
+    }
+    iccn_be32(bytes + 128u, 1u);
+    memcpy(bytes + 132u, "A2B0", 4u);
+    iccn_be32(bytes + 136u, 144u);
+    iccn_be32(bytes + 140u, 80u);
+    lut = bytes + 144u;
+    memcpy(lut, "mft2", 4u);
+    lut[8] = 1u;
+    lut[9] = 3u;
+    lut[10] = lut[49] = lut[51] = 2u;
+    for (i = 0u; i < 3u; ++i) {
+        iccn_be32(lut + 12u + i * 16u, 65536u);
+    }
+    lut[54] = lut[55] = 255u;
+    p = lut + 62u;
+    for (i = 0u; i < 3u; ++i) {
+        p[i * 2u] = (unsigned char)((white[i] - (i == 1u)) >> 8);
+        p[i * 2u + 1u] = (unsigned char)(white[i] - (i == 1u));
+    }
+    p = lut + 68u;
+    for (i = 0u; i < 3u; ++i) {
+        iccn_reverse_sample(&p, 1, 0u);
+        iccn_reverse_sample(&p, 1, 255u);
+    }
+
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, sizeof(bytes));
+    target = sixel_cms_create_srgb_profile();
+    ok = source != NULL && target != NULL;
+    for (i = 0u; ok && i < sizeof(intents) / sizeof(intents[0]); ++i) {
+        ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_GRAY_8,
+            target, SIXEL_CMS_PIXELFORMAT_RGB_8, intents[i], input,
+            output, 1u);
+        if (ok && memcmp(output, expected, sizeof(expected)) != 0) {
+            fprintf(stderr, "%s: expected RGB (137,137,137), got (%u,%u,%u)\n",
+                intents[i], (unsigned int)output[0], (unsigned int)output[1],
+                (unsigned int)output[2]);
+            ok = 0;
+        }
+    }
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static void
+iccn_identity_matrix_with_b2a0(unsigned char bytes[412])
+{
+    static char const channels[] = "rgb";
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    unsigned char tables[312];
+    unsigned char *tag;
+    unsigned char *xyz;
+    size_t i;
+
+    iccn_absolute_lut_profile(tables, white, '0');
+    memset(bytes, 0, 412u);
+    memcpy(bytes, tables, 128u);
+    memcpy(bytes + 12u, "mntr", 4u);
+    iccn_be32(bytes, 412u);
+    iccn_be32(bytes + 128u, 7u);
+    for (i = 0u; i < 3u; ++i) {
+        tag = bytes + 132u + i * 12u;
+        xyz = bytes + 216u + i * 20u;
+        memcpy(tag, "rXYZ", 4u);
+        tag[0] = (unsigned char)channels[i];
+        iccn_be32(tag + 4u, (unsigned int)(216u + i * 20u));
+        iccn_be32(tag + 8u, 20u);
+        memcpy(xyz, "XYZ ", 4u);
+        iccn_be32(xyz + 8u + i * 4u, 65536u);
+
+        tag += 36u;
+        memcpy(tag, "rTRC", 4u);
+        tag[0] = (unsigned char)channels[i];
+        iccn_be32(tag + 4u, 276u);
+        iccn_be32(tag + 8u, 12u);
+    }
+    memcpy(bytes + 276u, "curv", 4u);
+    memcpy(bytes + 204u, "B2A0", 4u);
+    iccn_be32(bytes + 208u, 288u);
+    iccn_be32(bytes + 212u, 124u);
+    memcpy(bytes + 288u, tables + 168u, 124u);
+    for (i = 352u; i < 400u; i += 2u) {
+        bytes[i] = 0x20u;
+        bytes[i + 1u] = 0u;
+    }
+}
+
+int
+icc_numeric_mpet_legacy_reverse_precedence_test(void)
+{
+    static float const input[] = {0.25f, 0.375f, 0.5f};
+    /* The reverse LUT returns this constant at every corner. */
+    static double const expected[] = {
+        8192.0 / 65535.0, 8192.0 / 65535.0, 8192.0 / 65535.0
+    };
+    unsigned char src[516];
+    unsigned char dst[412];
+    size_t length;
+
+    length = iccn_mpet_transform_profile(src, 0, '1', 0, 65536u, 1);
+    src[135] = '2';
+    iccn_identity_matrix_with_b2a0(dst);
+    return iccn_check_mpet_transform(src, length, dst, sizeof(dst),
+        "relative,perceptual,saturation!", input, expected);
+}
+
+int
+icc_numeric_owned_mpet_matrix_fallback_test(int reverse)
+{
+    static double const input[] = {0.25, 0.375, 0.5};
+    unsigned char bytes[sizeof(color_icc) + 12u + 84u];
+    unsigned char mpet[516];
+    unsigned char *tag;
+    sixel_color_def_t *reference;
+    sixel_color_def_t *definition;
+    double expected[3];
+    double actual[3];
+    size_t tags;
+    size_t i;
+    size_t directory_end;
+    int ok;
+
+    /* Add one relative MPE to the existing Display P3 matrix/TRC
+     * fixture without changing its colorant or curve payloads. */
+    tags = iccn_read32(color_icc + 128u);
+    directory_end = 132u + tags * 12u;
+    memcpy(bytes, color_icc, directory_end);
+    memcpy(bytes + directory_end + 12u, color_icc + directory_end,
+           sizeof(color_icc) - directory_end);
+    for (i = 0u; i < tags; ++i) {
+        tag = bytes + 132u + i * 12u;
+        iccn_be32(tag + 4u, iccn_read32(tag + 4u) + 12u);
+    }
+    iccn_be32(bytes, sizeof(bytes));
+    iccn_be32(bytes + 128u, (unsigned int)tags + 1u);
+    tag = bytes + directory_end;
+    memcpy(tag, reverse ? "B2D1" : "D2B1", 4u);
+    iccn_be32(tag + 4u, sizeof(color_icc) + 12u);
+    iccn_be32(tag + 8u, 84u);
+    iccn_mpet_transform_profile(mpet, reverse, '1', 0, 65536u, 0);
+    iccn_mpet_overflow_matrix(mpet + 168u + 24u);
+    memcpy(bytes + sizeof(color_icc) + 12u, mpet + 168u, 84u);
+
+    reference = sixel_cdef_icc(color_icc, sizeof(color_icc));
+    definition = sixel_cdef_icc(bytes, sizeof(bytes));
+    ok = reference != NULL && definition != NULL;
+    if (ok && reverse) {
+        ok = sixel_cdef_from_xyz(reference, input, expected, 1) &&
+             sixel_cdef_from_xyz(definition, input, actual, 1);
+    } else if (ok) {
+        ok = sixel_cdef_to_xyz(reference, input, expected, 1) &&
+             sixel_cdef_to_xyz(definition, input, actual, 1);
+    }
+    /* Output profile admission also probes both relative directions. */
+    ok = ok && memcmp(expected, actual, sizeof(actual)) == 0 &&
+        sixel_cdef_output_ready(definition, 1, 1);
+    sixel_cdef_free(definition);
+    sixel_cdef_free(reference);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
