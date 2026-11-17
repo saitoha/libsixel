@@ -78,6 +78,7 @@ sixel_output_new(
     (*output)->pos = 0;
     (*output)->penetrate_multiplexer = 0;
     (*output)->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
+    (*output)->ormode = 0;
     (*output)->allocator = allocator;
 
     status = SIXEL_OK;
@@ -190,6 +191,13 @@ SIXELAPI void
 sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 {
     output->palette_type = palettetype;
+}
+
+
+SIXELAPI void
+sixel_output_set_ormode(sixel_output_t *output, int ormode)
+{
+    output->ormode = ormode;
 }
 
 
