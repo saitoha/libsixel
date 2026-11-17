@@ -48,6 +48,8 @@ option('register_dll', type: 'boolean', value: false, description: 'Deprecated: 
 option('winhttp', type: 'feature', value: 'auto', description: 'Use WinHTTP library')
 option('winpthread', type: 'feature', value: 'disabled', description: 'Link with winpthread')
 option('threads', type: 'feature', value: 'auto', description: 'Enable internal threadpool support')
+option('test_shard', type: 'string', value: '1/1',
+       description: 'Register runtime test partition index/count')
 option('bashcompletiondir', type: 'string', value: 'disabled', description: 'Directory for bash completion files (set to auto for default path)')
 option('zshcompletiondir', type: 'string', value: 'disabled', description: 'Directory for zsh completion files (set to auto for default path)')
 option('simd', type: 'feature', value: 'enabled', description: 'Use SIMD')

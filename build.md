@@ -331,6 +331,7 @@ meson setup builddir
 | `-Dwinhttp=` | feature, `auto` | Use WinHTTP on Windows for network operations. |
 | `-Dwinpthread=` | feature, `disabled` | Link against `libwinpthread`. |
 | `-Dthreads=` | feature, `auto` | Control internal threadpool support. |
+| `-Dtest_shard=` | string, `1/1` | Register one `index/count` partition of the shared runtime test inventory during setup. |
 | `-Dbashcompletiondir=` | string, `disabled` | Install the bash completion script (`auto` selects the system default path). |
 | `-Dzshcompletiondir=` | string, `disabled` | Install the zsh completion script (`auto` selects the system default path). |
 | `-Dsimd=` | feature, `enabled` | Control SIMD acceleration; `auto` defers to detection, `disabled` forces off. |

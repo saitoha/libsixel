@@ -410,10 +410,10 @@ require_fixed 'encoding = _resolve_locale_encoding(default="ascii")' python/libs
 require_fixed "build_os=\"\${RUNTIME_ENV_BUILD_OS-unknown}\"" tests/loader/webp/0164_loader_libwebp_sigint_pipeline_stop_trace.t
 require_fixed 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' tests/loader-psd/cmyk/0016_loader_builtin_psd_cmyk8_values_named_cmyk_trace.t
 require_fixed 'meson test -C builddir --no-rebuild --num-processes 1' .github/actions/ci-steps/action.yml
-require_fixed "--slice \"\${slice}/\${slice_count}\" --print-errorlogs" .github/actions/ci-steps/action.yml
+require_fixed "-Dtest_shard=\"\${shard}/\${shard_count}\"" .github/actions/ci-steps/action.yml
 require_fixed 'if pkgman install -y' .github/actions/ci-steps/action.yml
 require_fixed 'pkgman refresh || true' .github/actions/ci-steps/action.yml
-require_fixed 'slice_count=16' .github/actions/ci-steps/action.yml
+require_fixed 'shard_count=16' .github/actions/ci-steps/action.yml
 require_fixed 'for attempt in 1 2 3; do' .github/actions/ci-steps/action.yml
 haiku_psd_skip_count=$(grep -lF 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' \
     "$src_root"/tests/loader-psd/*/*.t | awk 'END { print NR }')

@@ -411,6 +411,9 @@ tests_text = run_command(
   meson.project_source_root() / 'build-aux/read-check-test-list.sh',
   'tests',
   meson.current_source_dir(),
+  'include',
+  'space',
+  get_option('test_shard'),
   check: true,
 ).stdout().strip()
 tests = []
@@ -522,7 +525,7 @@ foreach t : tests
       ['tap', 'quicklook-installed'] : ['tap'])
 endforeach
 
-if python_for_tests.found() and not meson.is_cross_build() and cc.get_id() != 'msvc' and cc.get_id() != 'clang-cl'
+if tests.contains('build/install/0001_pkgconfig_headers.py') and python_for_tests.found() and not meson.is_cross_build() and cc.get_id() != 'msvc' and cc.get_id() != 'clang-cl'
   test('build/install/0001_pkgconfig_headers.py', python_for_tests,
     args: [files('build/install/0001_pkgconfig_headers.py'), 'meson',
            meson.project_build_root(), find_program('meson').full_path(),
@@ -535,18 +538,23 @@ if python_for_tests.found() and not meson.is_cross_build() and cc.get_id() != 'm
 endif
 
 if have_child_time_executor and python_for_tests.found()
-  # This supervisor test uses only the Python standard library, independently
-  # of optional language bindings and their package environments.
-  test('tools/child-time/0001_marker_backpressure.py', python_for_tests,
-    args: [files('tools/child-time/0001_marker_backpressure.py'),
-           child_time_executor.full_path()],
-    depends: child_time_executor,
-    protocol: 'tap', timeout: 15, suite: ['tap', 'child-time'])
-  test('tools/child-time/0002_binding_run_identity.py', python_for_tests,
-    args: [files('tools/child-time/0002_binding_run_identity.py'),
-           child_time_executor.full_path()],
-    depends: child_time_executor,
-    protocol: 'tap', timeout: 15, suite: ['tap', 'child-time'])
+  # These supervisor tests use only the Python standard library, independently
+  # of optional language bindings and their package environments. Keep each
+  # native registration in the same partition as its discovered path.
+  if tests.contains('tools/child-time/0001_marker_backpressure.py')
+    test('tools/child-time/0001_marker_backpressure.py', python_for_tests,
+      args: [files('tools/child-time/0001_marker_backpressure.py'),
+             child_time_executor.full_path()],
+      depends: child_time_executor,
+      protocol: 'tap', timeout: 15, suite: ['tap', 'child-time'])
+  endif
+  if tests.contains('tools/child-time/0002_binding_run_identity.py')
+    test('tools/child-time/0002_binding_run_identity.py', python_for_tests,
+      args: [files('tools/child-time/0002_binding_run_identity.py'),
+             child_time_executor.full_path()],
+      depends: child_time_executor,
+      protocol: 'tap', timeout: 15, suite: ['tap', 'child-time'])
+  endif
 endif
 
 add_test_setup('ci',
