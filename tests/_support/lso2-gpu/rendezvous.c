@@ -4,12 +4,22 @@
 #include <stdlib.h>
 #include <string.h>
 #if SIXEL_ENABLE_THREADS
-/* Called with the fixture lock. The deadline only catches broken gates. */
+/* Called with the fixture lock. Cold GPU preparation and instrumented
+ * encoding share the first-frame path. Allow a 30-second condition wait
+ * within the outer test timeout while the gates assert ordering. */
 static int
-lso2_gpu_rendezvous_wait_locked(struct lso2_gpu_rendezvous_fixture *s, int *value)
+lso2_gpu_rendezvous_wait_locked(struct lso2_gpu_rendezvous_fixture *s,
+                               int *value)
 {
     while (!*value) {
-        if (sixel_cond_timedwait(&s->cond, &s->mutex, 5000)) {
+        /* A timed-out waiter can reacquire the mutex after the producer
+         * satisfied the predicate. Report only an unsatisfied gate. */
+        if (sixel_cond_timedwait(&s->cond, &s->mutex, 30000) && !*value) {
+            fprintf(stderr, "lso2 GPU gate timeout: writer=%d helper=%d "
+                "resolve=%d encode=%d completed=%d first_status=0x%x\n",
+                s->writer_entered, s->helper_complete,
+                s->resolve_entered, s->encode_entered, s->count,
+                (unsigned int)s->completed[0]);
             s->gate_failed = 1;
             return 0;
         }
