@@ -581,8 +581,11 @@ static int color_tty_child(char const *name, int command, int report)
                                            ? IMG2SIXEL_COLOR_POLICY
                                            : IMG2SIXEL_COLOR_CAPABILITY,
                                        COLOR_TTY_REPLY_TIMEOUT_MS, &exchange);
-    if (color_tty_now() - started >
-        COLOR_TTY_REPLY_TIMEOUT_MS / 1000.0 + 0.25) {
+    /* The late peer waits for the query to finish before sending its reply.
+     * Keep that ordering check independent of how much CPU the child gets.
+     * The silent and flood scripts separately test elapsed time. */
+    if (strcmp(name, "late") != 0 &&
+        color_tty_now() - started > COLOR_TTY_REPLY_TIMEOUT_MS / 1000.0 + 0.25) {
         return color_tty_error("reply exceeded absolute deadline");
     }
     if (strcmp(name, "silent") == 0 || strcmp(name, "late") == 0) {

@@ -28637,7 +28637,6 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-refresh-spatial-clang-analyzer.sh \
 	_static/sh/staticcheck-refresh-spatial-rpc-macro.sh \
 	_static/sh/staticcheck-pty-coverage-exec.sh \
-	_support/cli/pty-child-exec.h \
 	dither/gpu-direct/0017_gpu_none_snapshot.t \
 	dither/gpu-direct/0018_gpu_none_reject_method.t \
 	dither/gpu-direct/0019_gpu_none_isolation.t \

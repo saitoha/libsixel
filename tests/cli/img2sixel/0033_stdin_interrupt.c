@@ -25,7 +25,6 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
-#include "../../_support/cli/pty-child-exec.h"
 #endif
 
 #if HAVE_CLI_COLOR_PTY && defined(FIONREAD)
@@ -39,6 +38,7 @@ static double stdin_interrupt_now(void)
 
 int test_cli_stdin_interrupt(int argc, char **argv)
 {
+    int (*volatile interrupt_exec)(char const *, char *const[]) = execv;
     int master;
     int slave;
     int null_fd;
@@ -126,7 +126,9 @@ int test_cli_stdin_interrupt(int argc, char **argv)
         if (worker == 0) {
             close(output[1]);
             signal(SIGINT, SIG_DFL);
-            test_pty_child_exec(argv[1], argv + 1);
+            /* Keep gcov from writing the runner's profile before exec,
+             * while the parent is waiting for the input to be consumed. */
+            interrupt_exec(argv[1], argv + 1);
             _exit(121);
         }
         if (worker < 0) {

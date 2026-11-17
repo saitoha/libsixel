@@ -27,7 +27,6 @@
 # include <termios.h>
 # include <time.h>
 # include <unistd.h>
-# include "pty-child-exec.h"
 
 #define COLOR_AUTO_CAP "\033[?1./r"
 #define COLOR_AUTO_QUERY "\033P$q1./p\033\\"
@@ -234,6 +233,7 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
                  int baseline, int slave, int errors, int output,
                  char *file_path)
 {
+    int (*volatile color_auto_exec)(char const *, char *const[]) = execv;
     char *arguments[48];
     int count;
     int input;
@@ -510,7 +510,9 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
         _exit(121);
     }
     arguments[count] = NULL;
-    test_pty_child_exec(binary, arguments);
+    /* A direct call lets gcov write the runner's profile before the
+     * converter starts, inside the parent's protocol deadline. */
+    color_auto_exec(binary, arguments);
     _exit(122);
 }
 
