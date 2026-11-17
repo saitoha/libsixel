@@ -53,6 +53,11 @@ typedef enum fuzz_builtin_force_format {
 
 static fuzz_builtin_force_format_t g_force_format = FUZZ_FORCE_FORMAT_AUTO;
 
+/* Each worker invokes this harness serially. Keep the callback context NULL
+ * because component cancellation interprets it as loader callback state. */
+static size_t g_frame_pixels_remaining;
+static unsigned int g_frames_remaining;
+
 static fuzz_builtin_force_format_t
 fuzz_parse_force_format(char const *value)
 {
@@ -496,10 +501,30 @@ fuzz_pick_loader_options(uint8_t const *data, size_t size,
 static SIXELSTATUS
 fuzz_frame_callback(sixel_frame_t *frame, void *context)
 {
+    size_t width;
+    size_t height;
+    size_t pixels;
+
     (void)context;
-    if (frame == NULL) {
+    if (frame == NULL || sixel_frame_get_width(frame) <= 0 ||
+        sixel_frame_get_height(frame) <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
+    width = (size_t)sixel_frame_get_width(frame);
+    height = (size_t)sixel_frame_get_height(frame);
+    if (width > SIZE_MAX / height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixels = width * height;
+    /* A small compressed animation can request gigapixels of valid output.
+     * Bound aggregate decoded output as well as compressed input size. The
+     * decoder still handles the frame that crosses the budget, and callback
+     * interruption exercises its normal cleanup path. */
+    if (pixels >= g_frame_pixels_remaining || g_frames_remaining <= 1u) {
+        return SIXEL_INTERRUPTED;
+    }
+    g_frame_pixels_remaining -= pixels;
+    --g_frames_remaining;
     /*
      * Fuzz harness equivalent of --ignore-delay: do not preserve animation
      * pacing metadata between frames.
@@ -686,6 +711,8 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
         return 0;
     }
 
+    g_frame_pixels_remaining = 16u * 1024u * 1024u;
+    g_frames_remaining = 256u;
     (void)sixel_loader_component_load(g_component,
                                       chunk,
                                       fuzz_frame_callback,

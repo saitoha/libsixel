@@ -4089,6 +4089,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/loader/builtin/loader_builtin_pic_test_common.h \
 	_support/loader/builtin/0071_loader_builtin_gif87a_numeric.c \
 	_support/loader/builtin/0072_loader_builtin_gif_interlace_four_pass_numeric.c \
+	loader/gif/0084_selected_frame_export.c \
 	_support/loader/builtin/0073_loader_builtin_gif_rectangle_offset_numeric.c \
 	_support/loader/builtin/0074_loader_builtin_gif_rectangle_oob_reject.c \
 	_support/loader/builtin/0075_loader_builtin_gif_extension_subblocks_numeric.c \
@@ -9779,6 +9780,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/loader/builtin/test_runner-loader_builtin_pic_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/loader/builtin/test_runner-0071_loader_builtin_gif87a_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/loader/builtin/test_runner-0072_loader_builtin_gif_interlace_four_pass_numeric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/gif/test_runner-0084_selected_frame_export.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/loader/builtin/test_runner-0073_loader_builtin_gif_rectangle_offset_numeric.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/loader/builtin/test_runner-0074_loader_builtin_gif_rectangle_oob_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/loader/builtin/test_runner-0075_loader_builtin_gif_extension_subblocks_numeric.$(OBJEXT) \
@@ -15809,6 +15811,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	loader/gif/$(DEPDIR)/test_runner-0072_gif_icc_local_only_numeric.Po \
 	loader/gif/$(DEPDIR)/test_runner-0073_gif_icc_explicit_no_global_numeric.Po \
 	loader/gif/$(DEPDIR)/test_runner-0074_gif_icc_gamma_replay_numeric.Po \
+	loader/gif/$(DEPDIR)/test_runner-0084_selected_frame_export.Po \
 	loader/hdr-color/$(DEPDIR)/test_runner-0139_hdr_xyze_signed_raw.Po \
 	loader/hdr-color/$(DEPDIR)/test_runner-0140_hdr_xyze_signed_rle.Po \
 	loader/hdr-color/$(DEPDIR)/test_runner-0141_hdr_xyze_signed_exposure.Po \
@@ -17996,6 +17999,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_RETAINED_PARTIAL_RUN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_RETAINED_FULL_RESOLVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_RETAINED_PARTIAL_RESOLVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_SELECTED_FRAME_EXPORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_AUTO_NEGATIVE_EXPOSURE \
@@ -27609,6 +27613,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/loader/builtin/loader_builtin_pic_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/loader/builtin/0071_loader_builtin_gif87a_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/loader/builtin/0072_loader_builtin_gif_interlace_four_pass_numeric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/gif/0084_selected_frame_export.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/loader/builtin/0073_loader_builtin_gif_rectangle_offset_numeric.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/loader/builtin/0074_loader_builtin_gif_rectangle_oob_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/loader/builtin/0075_loader_builtin_gif_extension_subblocks_numeric.c \
@@ -29897,7 +29902,9 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	data/color-numeric/cli-hdr-peak_luminance-reference.png \
 	_support/processing/cms/bpc_common.h \
 	data/color-numeric/cli-bpc.png \
-	data/color-numeric/cli-bpc-reference.png
+	data/color-numeric/cli-bpc-reference.png \
+	loader/gif/0084_selected_frame_export.c \
+	loader/gif/0084_selected_frame_export.t
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -42230,6 +42237,9 @@ _support/loader/builtin/test_runner-0071_loader_builtin_gif87a_numeric.$(OBJEXT)
 _support/loader/builtin/test_runner-0072_loader_builtin_gif_interlace_four_pass_numeric.$(OBJEXT):  \
 	_support/loader/builtin/$(am__dirstamp) \
 	_support/loader/builtin/$(DEPDIR)/$(am__dirstamp)
+loader/gif/test_runner-0084_selected_frame_export.$(OBJEXT):  \
+	loader/gif/$(am__dirstamp) \
+	loader/gif/$(DEPDIR)/$(am__dirstamp)
 _support/loader/builtin/test_runner-0073_loader_builtin_gif_rectangle_offset_numeric.$(OBJEXT):  \
 	_support/loader/builtin/$(am__dirstamp) \
 	_support/loader/builtin/$(DEPDIR)/$(am__dirstamp)
@@ -52383,6 +52393,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gif/$(DEPDIR)/test_runner-0072_gif_icc_local_only_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gif/$(DEPDIR)/test_runner-0073_gif_icc_explicit_no_global_numeric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/gif/$(DEPDIR)/test_runner-0074_gif_icc_gamma_replay_numeric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/gif/$(DEPDIR)/test_runner-0084_selected_frame_export.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/hdr-color/$(DEPDIR)/test_runner-0139_hdr_xyze_signed_raw.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/hdr-color/$(DEPDIR)/test_runner-0140_hdr_xyze_signed_rle.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/hdr-color/$(DEPDIR)/test_runner-0141_hdr_xyze_signed_exposure.Po@am__quote@ # am--include-marker
@@ -108444,6 +108455,20 @@ _support/loader/builtin/test_runner-0072_loader_builtin_gif_interlace_four_pass_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/loader/builtin/0072_loader_builtin_gif_interlace_four_pass_numeric.c' object='_support/loader/builtin/test_runner-0072_loader_builtin_gif_interlace_four_pass_numeric.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/loader/builtin/test_runner-0072_loader_builtin_gif_interlace_four_pass_numeric.obj `if test -f '_support/loader/builtin/0072_loader_builtin_gif_interlace_four_pass_numeric.c'; then $(CYGPATH_W) '_support/loader/builtin/0072_loader_builtin_gif_interlace_four_pass_numeric.c'; else $(CYGPATH_W) '$(srcdir)/_support/loader/builtin/0072_loader_builtin_gif_interlace_four_pass_numeric.c'; fi`
+
+loader/gif/test_runner-0084_selected_frame_export.o: loader/gif/0084_selected_frame_export.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/gif/test_runner-0084_selected_frame_export.o -MD -MP -MF loader/gif/$(DEPDIR)/test_runner-0084_selected_frame_export.Tpo -c -o loader/gif/test_runner-0084_selected_frame_export.o `test -f 'loader/gif/0084_selected_frame_export.c' || echo '$(srcdir)/'`loader/gif/0084_selected_frame_export.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/gif/$(DEPDIR)/test_runner-0084_selected_frame_export.Tpo loader/gif/$(DEPDIR)/test_runner-0084_selected_frame_export.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gif/0084_selected_frame_export.c' object='loader/gif/test_runner-0084_selected_frame_export.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gif/test_runner-0084_selected_frame_export.o `test -f 'loader/gif/0084_selected_frame_export.c' || echo '$(srcdir)/'`loader/gif/0084_selected_frame_export.c
+
+loader/gif/test_runner-0084_selected_frame_export.obj: loader/gif/0084_selected_frame_export.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/gif/test_runner-0084_selected_frame_export.obj -MD -MP -MF loader/gif/$(DEPDIR)/test_runner-0084_selected_frame_export.Tpo -c -o loader/gif/test_runner-0084_selected_frame_export.obj `if test -f 'loader/gif/0084_selected_frame_export.c'; then $(CYGPATH_W) 'loader/gif/0084_selected_frame_export.c'; else $(CYGPATH_W) '$(srcdir)/loader/gif/0084_selected_frame_export.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/gif/$(DEPDIR)/test_runner-0084_selected_frame_export.Tpo loader/gif/$(DEPDIR)/test_runner-0084_selected_frame_export.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/gif/0084_selected_frame_export.c' object='loader/gif/test_runner-0084_selected_frame_export.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/gif/test_runner-0084_selected_frame_export.obj `if test -f 'loader/gif/0084_selected_frame_export.c'; then $(CYGPATH_W) 'loader/gif/0084_selected_frame_export.c'; else $(CYGPATH_W) '$(srcdir)/loader/gif/0084_selected_frame_export.c'; fi`
 
 _support/loader/builtin/test_runner-0073_loader_builtin_gif_rectangle_offset_numeric.o: _support/loader/builtin/0073_loader_builtin_gif_rectangle_offset_numeric.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/loader/builtin/test_runner-0073_loader_builtin_gif_rectangle_offset_numeric.o -MD -MP -MF _support/loader/builtin/$(DEPDIR)/test_runner-0073_loader_builtin_gif_rectangle_offset_numeric.Tpo -c -o _support/loader/builtin/test_runner-0073_loader_builtin_gif_rectangle_offset_numeric.o `test -f '_support/loader/builtin/0073_loader_builtin_gif_rectangle_offset_numeric.c' || echo '$(srcdir)/'`_support/loader/builtin/0073_loader_builtin_gif_rectangle_offset_numeric.c
