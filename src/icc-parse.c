@@ -390,21 +390,33 @@ sixel_icc_mab_pipeline_destroy(sixel_icc_mab_pipeline_t *pipeline)
 }
 
 static void
+sixel_icc_mpe_curve_destroy(sixel_icc_mpe_curve_t *curve)
+{
+    double *samples;
+    size_t segment;
+
+    /* Each curve owns its initialized segment array, including partially
+     * decoded segments. Detach each allocation before releasing it so
+     * later iterations cannot retain a stale owner in the array. */
+    for (segment = 0u; segment < curve->segment_count; ++segment) {
+        samples = curve->segments[segment].samples;
+        curve->segments[segment].samples = NULL;
+        free(samples);
+    }
+    free(curve->segments);
+    memset(curve, 0, sizeof(*curve));
+}
+
+static void
 sixel_icc_mpe_curves_destroy(sixel_icc_mpe_t *mpe)
 {
-    sixel_icc_mpe_curve_t *curve;
     size_t channel;
-    size_t segment;
 
     if (mpe->curves == NULL) {
         return;
     }
     for (channel = 0u; channel < mpe->input_channels; ++channel) {
-        curve = &mpe->curves[channel];
-        for (segment = 0u; segment < curve->segment_count; ++segment) {
-            free(curve->segments[segment].samples);
-        }
-        free(curve->segments);
+        sixel_icc_mpe_curve_destroy(&mpe->curves[channel]);
     }
     free(mpe->curves);
 }
@@ -412,12 +424,15 @@ sixel_icc_mpe_curves_destroy(sixel_icc_mpe_t *mpe)
 static void
 sixel_icc_mpet_destroy(sixel_icc_mpet_t *mpet)
 {
+    double *values;
     size_t i;
 
     if (!mpet->shared_payload) {
         for (i = 0u; i < mpet->element_count; ++i) {
             sixel_icc_mpe_curves_destroy(&mpet->elements[i]);
-            free(mpet->elements[i].values);
+            values = mpet->elements[i].values;
+            mpet->elements[i].values = NULL;
+            free(values);
         }
         free(mpet->elements);
         free(mpet->data);
@@ -2042,13 +2057,20 @@ sixel_icc_parse_mpe_curve(unsigned char const *data, size_t length,
     if (count > (length - offset) / 12u) {
         goto malformed;
     }
-    curve->segments = (sixel_icc_mpe_segment_t *)sixel_icc_parse_alloc(
-        budget, count * sizeof(*curve->segments), issue);
-    if (curve->segments == NULL) {
+    /* Every segment must already own a null sample pointer if parsing
+     * stops at a breakpoint or in an earlier segment. Use zeroed storage
+     * before publishing the count consumed by partial-parse cleanup. */
+    if (!sixel_icc_parse_fits(budget, count, sizeof(*curve->segments), issue)) {
         return 0;
     }
+    curve->segments = (sixel_icc_mpe_segment_t *)calloc(
+        count, sizeof(*curve->segments));
+    if (curve->segments == NULL) {
+        sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_ALLOCATION);
+        return 0;
+    }
+    budget->remaining -= count * sizeof(*curve->segments);
     curve->segment_count = count;
-    memset(curve->segments, 0, count * sizeof(*curve->segments));
     for (i = 0u; i + 1u < count; ++i) {
         if (!sixel_icc_mpe_read_float(data + 12u + i * 4u,
                                        &curve->segments[i].end) ||
@@ -2281,7 +2303,9 @@ sixel_icc_parse_mpet(unsigned char const *data, size_t length,
     table_end = 16u + count * 8u;
     channels = input_channels;
     unsupported_element = 0;
-    memset(elements, 0, count * sizeof(*elements));
+    /* Keep the complete scratch array initialized across header parsing
+     * and the later transfer of ownership to the allocated descriptors. */
+    memset(elements, 0, sizeof(elements));
     for (i = 0u; i < count; ++i) {
         mpe = &elements[i];
         mpe->offset = sixel_icc_read_be32(data + 16u + i * 8u);

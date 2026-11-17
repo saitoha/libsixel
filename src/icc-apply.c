@@ -504,7 +504,10 @@ sixel_icc_apply_mpet(double *out, size_t output_channels,
     size_t i;
     size_t next;
 
-    if (mpet->element_count == 0u || channels != mpet->input_channels ||
+    /* ACS-only pipelines do not visit an element evaluator, so validate
+     * their buffers here as well as at the public entry points. */
+    if (out == NULL || in == NULL || mpet == NULL ||
+        mpet->element_count == 0u || channels != mpet->input_channels ||
         output_channels != mpet->output_channels) {
         return 0;
     }
@@ -523,7 +526,9 @@ sixel_icc_apply_mpet(double *out, size_t output_channels,
         in = stage;
         channels = next;
     }
-    if (channels != output_channels) {
+    /* ACS can leave the original input as the final buffer. Check the
+     * selected buffer at the read boundary after all stage transitions. */
+    if (in == NULL || channels != output_channels) {
         return 0;
     }
     for (i = 0u; i < channels; ++i) {

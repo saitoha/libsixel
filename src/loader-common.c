@@ -115,7 +115,8 @@ loader_hdr_decode(char const *base, float *pixels, size_t count,
         return 0;
     }
     libpng = strcmp(base, "libpng") == 0;
-    options.transfer = source % 2 ? SIXEL_CMS_HDR_PQ : SIXEL_CMS_HDR_HLG;
+    options.transfer = (source % 2) != 0
+        ? SIXEL_CMS_HDR_PQ : SIXEL_CMS_HDR_HLG;
     options.primaries = (source - 1) / 2;
     options.reference_white = loader_resolve_double_suboption(base,
         libpng ? SIXEL_SUBOPTION_BINDING_ID_1(libpng_hdr_reference_white)

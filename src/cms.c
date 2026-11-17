@@ -4251,6 +4251,8 @@ sixel_cms_builtin_pixel_stride(sixel_cms_pixel_format_t format,
     };
     unsigned int index;
 
+    /* Define both outputs even when the format has no supported layout. */
+    *space = SIXEL_CMS_COLORSPACE_UNKNOWN;
     if (format < SIXEL_CMS_PIXELFORMAT_GRAY_8 ||
         format > SIXEL_CMS_PIXELFORMAT_GRAY_F32) {
         return 0u;
@@ -7198,7 +7200,9 @@ sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                    double const rgb[3], double xyz[3], int intent)
 {
     double linear[3];
-    double result[3];
+    /* A successful evaluator replaces all components. Keep an incomplete
+     * result invalid rather than allowing it to masquerade as black. */
+    double result[3] = {NAN, NAN, NAN};
     double const *white;
     unsigned int slots[2];
     int count;
