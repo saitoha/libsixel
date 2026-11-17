@@ -3845,6 +3845,7 @@ int test_loader_0070_loader_gif_bgcolor_canvas_fill_explicit_first(
     int argc,
     char **argv);
 int test_loader_0071_loader_builtin_gif87a_numeric(int argc, char **argv);
+int test_gif_selected_frame_export(int argc, char **argv);
 int test_loader_0072_loader_builtin_gif_interlace_four_pass_numeric(
     int argc,
     char **argv);
@@ -13041,6 +13042,7 @@ static test_entry_t const test_entries[] = {
       test_loader_0070_loader_gif_bgcolor_canvas_fill_explicit_first },
     { "loader/0071_loader_builtin_gif87a_numeric",
       test_loader_0071_loader_builtin_gif87a_numeric },
+    { "gif/selected_frame_export", test_gif_selected_frame_export },
     { "loader/0072_loader_builtin_gif_interlace_four_pass_numeric",
       test_loader_0072_loader_builtin_gif_interlace_four_pass_numeric },
     { "loader/0073_loader_builtin_gif_rectangle_offset_numeric",

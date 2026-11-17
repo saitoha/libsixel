@@ -918,11 +918,13 @@ gif_export_pal8_frame(
     int found;
     int lookup_index;
     unsigned int key;
+    unsigned int previous_key;
     unsigned int mixed;
     unsigned int probe;
     unsigned char r;
     unsigned char g;
     unsigned char b;
+    unsigned char previous_index;
     unsigned char *indices;
     unsigned char *palette;
     unsigned int *keys;
@@ -944,6 +946,8 @@ gif_export_pal8_frame(
     found = 0;
     lookup_index = 0;
     key = 0u;
+    previous_key = GIF_HASH_EMPTY_KEY;
+    previous_index = 0u;
     mixed = 0u;
     probe = 0u;
     r = 0u;
@@ -1051,6 +1055,13 @@ gif_export_pal8_frame(
         key = ((unsigned int)r << 16)
             | ((unsigned int)g << 8)
             | (unsigned int)b;
+        /* GIF canvases often have long runs of unchanged background. Palette
+         * entries are append-only, so the last opaque lookup stays valid
+         * across transparent pixels as well. */
+        if (key == previous_key) {
+            indices[pixel_index] = previous_index;
+            continue;
+        }
         mixed = key;
         mixed ^= mixed >> 13;
         /*
@@ -1123,6 +1134,8 @@ gif_export_pal8_frame(
         }
 
         indices[pixel_index] = (unsigned char)lookup_index;
+        previous_key = key;
+        previous_index = (unsigned char)lookup_index;
     }
 
     if (has_transparent_pixels) {
@@ -2779,6 +2792,19 @@ gif_decode_one_frame(gif_context_t *s,
             GIF_TRACE_TOPIC,
             "gif_decode_one_frame: enabling multiframe buffers decoded=%d",
             progress->decoded_frame_no);
+    }
+
+    /* Composition and disposal still consume every source frame. A skipped
+     * frame needs a full-screen pixel export only when a later loop will
+     * replay it from the cache. Tail selection can otherwise export a large
+     * logical screen hundreds of times before the first visible frame. */
+    emit_frame = gif_should_emit_decoded_frame(request->start_frame_no,
+                                               loop_no,
+                                               progress->decoded_frame_no);
+    if (!emit_frame && request->replay_cache == NULL) {
+        gif_update_frame_progress(frame, 0, &progress->decoded_frame_no,
+                                  &progress->emitted_frame_no);
+        return SIXEL_OK;
     }
 
     /*

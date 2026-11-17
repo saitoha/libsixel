@@ -243,6 +243,7 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0084_SELECTED_FRAME_EXPORT \
     -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
     -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
     -DBUILD_TEST_0015_AUTO_NEGATIVE_EXPOSURE \
@@ -9787,6 +9788,7 @@ test_runner_SOURCES = test_runner.c \
     _support/loader/builtin/loader_builtin_pic_test_common.h \
     _support/loader/builtin/0071_loader_builtin_gif87a_numeric.c \
     _support/loader/builtin/0072_loader_builtin_gif_interlace_four_pass_numeric.c \
+    loader/gif/0084_selected_frame_export.c \
     _support/loader/builtin/0073_loader_builtin_gif_rectangle_offset_numeric.c \
     _support/loader/builtin/0074_loader_builtin_gif_rectangle_oob_reject.c \
     _support/loader/builtin/0075_loader_builtin_gif_extension_subblocks_numeric.c \
@@ -14090,3 +14092,6 @@ EXTRA_DIST += _support/processing/cms/bpc_common.h
 
 EXTRA_DIST += data/color-numeric/cli-bpc.png \
     data/color-numeric/cli-bpc-reference.png
+
+EXTRA_DIST += loader/gif/0084_selected_frame_export.c \
+    loader/gif/0084_selected_frame_export.t
