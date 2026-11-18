@@ -20040,18 +20040,20 @@ sixel_encoder_encode_bytes_owned(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        normalized_pixelformat = pixelformat;
-        status = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                    &normalized_pixelformat,
-                                                    owned_pixels,
-                                                    pixelformat,
-                                                    width,
-                                                    height);
-        if (SIXEL_FAILED(status)) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode_bytes: "
-                "sixel_helper_normalize_pixelformat() failed.");
-            goto end;
+        if (pixelformat & SIXEL_FORMATTYPE_GRAYSCALE) {
+            sixel_pixelformat_expand_gray8(normalized_pixels, owned_pixels,
+                                           width, height, pixelformat);
+            normalized_pixelformat = SIXEL_PIXELFORMAT_G8;
+        } else {
+            status = sixel_helper_normalize_pixelformat(normalized_pixels,
+                &normalized_pixelformat, owned_pixels, pixelformat,
+                width, height);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_encode_bytes: "
+                    "sixel_helper_normalize_pixelformat() failed.");
+                goto end;
+            }
         }
 
         /*

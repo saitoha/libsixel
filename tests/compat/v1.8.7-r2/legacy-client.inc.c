@@ -292,7 +292,7 @@ decoded_rgb_channel(unsigned int sample)
 
 static void
 expected_rgb(pixel_fixture_t const *fixture, size_t parity,
-             int scale_gray, unsigned int *channels)
+             unsigned int *channels)
 {
     unsigned char const *sample = fixture->normalized[parity];
     size_t channel;
@@ -302,11 +302,8 @@ expected_rgb(pixel_fixture_t const *fixture, size_t parity,
         sample = fixture_palette + (size_t)sample[0] * 3U;
     }
     if (fixture->bits_per_pixel < 8 && palette_size(fixture) < 0) {
-        gray = sample[0];
-        if (scale_gray) {
-            gray = gray * 255U /
-                ((1U << (unsigned int)fixture->bits_per_pixel) - 1U);
-        }
+        gray = sample[0] * 255U /
+            ((1U << (unsigned int)fixture->bits_per_pixel) - 1U);
         gray = decoded_rgb_channel(gray);
         for (channel = 0; channel < 3; ++channel) {
             channels[channel] = gray;
@@ -322,7 +319,7 @@ expected_rgb(pixel_fixture_t const *fixture, size_t parity,
 static size_t
 first_wrong_pixel(pixel_fixture_t const *fixture,
                   unsigned char const *indices, unsigned char const *palette,
-                  int colors, int scale_gray)
+                  int colors)
 {
     unsigned char const *rgb;
     unsigned int expected[3];
@@ -333,7 +330,7 @@ first_wrong_pixel(pixel_fixture_t const *fixture,
             return i;
         }
         rgb = palette + (size_t)indices[i] * 3U;
-        expected_rgb(fixture, i % 2U, scale_gray, expected);
+        expected_rgb(fixture, i % 2U, expected);
         if (rgb[0] != expected[0] || rgb[1] != expected[1] ||
                 rgb[2] != expected[2]) {
             return i;
@@ -368,8 +365,6 @@ check_encode_bytes(pixel_fixture_t const *fixture, char const *path,
     int gray_alpha = fixture->format == SIXEL_PIXELFORMAT_AG88 ||
                      fixture->format == SIXEL_PIXELFORMAT_GA88;
     int packed_gray = fixture->bits_per_pixel < 8 && palette_colors < 0;
-    unsigned int scaled[2][3];
-    unsigned int unscaled[2][3];
     SIXELSTATUS status;
 
     size = make_source(fixture, source);
@@ -436,7 +431,7 @@ check_encode_bytes(pixel_fixture_t const *fixture, char const *path,
             height != fixture_height || indices == NULL || decoded == NULL) {
         goto end;
     }
-    i = first_wrong_pixel(fixture, indices, decoded, colors, 1);
+    i = first_wrong_pixel(fixture, indices, decoded, colors);
     if (i == fixture_pixels) {
         if (gray_alpha || packed_gray ||
                 fixture->format == SIXEL_PIXELFORMAT_BGR888) {
@@ -444,18 +439,6 @@ check_encode_bytes(pixel_fixture_t const *fixture, char const *path,
                    historical ? "legacy" : "current", fixture->name);
         }
         result = probe_pass;
-    } else if (!historical && packed_gray &&
-               first_wrong_pixel(fixture, indices, decoded, colors, 0)
-                   == fixture_pixels) {
-        expected_rgb(fixture, 0, 1, scaled[0]);
-        expected_rgb(fixture, 1, 1, scaled[1]);
-        expected_rgb(fixture, 0, 0, unscaled[0]);
-        expected_rgb(fixture, 1, 0, unscaled[1]);
-        printf("KNOWN REGRESSION current encode-bytes %s: 8-bit grayscale "
-               "%u/%u instead of %u/%u across all %d pixels\n",
-               fixture->name, unscaled[0][0], unscaled[1][0],
-               scaled[0][0], scaled[1][0], fixture_pixels);
-        result = probe_known_regression;
     } else {
         fprintf(stderr, "unexpected decoded RGB at pixel %zu\n", i);
     }

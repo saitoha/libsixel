@@ -69,6 +69,9 @@ set -- \
     color/bpc/0037_output_bpc_libpng_on_indices.t \
     color/bpc/0038_output_bpc_builtin_off_float.t \
     color/bpc/0039_output_bpc_libpng_off_float.t \
+    encoder/pipeline/0124_encode_bytes_g1_levels.t \
+    encoder/pipeline/0125_encode_bytes_g2_levels.t \
+    encoder/pipeline/0126_encode_bytes_g4_levels.t \
     frame/alpha/0005_frame_alpha_clone.t \
     frame/alpha/0012_frame_alpha_resolve_allocation_atomic.t \
     frame/alpha/0016_frame_float_clone_color.t \

@@ -11,9 +11,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
+#include "src/compat_stub.h"
+#include "src/encoder.h"
+#include "src/stdio_stub.h"
 #include "src/filter-encode.h"
 #include "src/filter-factory.h"
 #include "src/filter.h"
@@ -367,13 +371,120 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
+/* Each row has 17 samples followed by padding. Alternate an ascending
+ * ramp with its reverse so that both the full bytes and the final sample
+ * on every row are observable. The expected colors are the 16 gray levels
+ * after rounding to SIXEL percentages and decoding back to bytes.
+ */
+static int
+test_encode_packed_gray(char const *name)
+{
+    static struct {
+        char const *name;
+        int format;
+        int levels;
+        size_t row_bytes;
+        unsigned char rows[2][9];
+    } const cases[] = {
+        {"g1", SIXEL_PIXELFORMAT_G1, 2, 3,
+         {{0x55, 0x55, 0x7f}, {0xaa, 0xaa, 0x80}}},
+        {"g2", SIXEL_PIXELFORMAT_G2, 4, 5,
+         {{0x1b, 0x1b, 0x1b, 0x1b, 0x3f},
+          {0xe4, 0xe4, 0xe4, 0xe4, 0xc0}}},
+        {"g4", SIXEL_PIXELFORMAT_G4, 16, 9,
+         {{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x0f},
+          {0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10, 0xf0}}}
+    };
+    static unsigned char const gray[] = {
+        0, 18, 33, 51, 69, 84, 102, 120, 135, 153, 171, 186, 204, 222, 237, 255
+    };
+    unsigned char source[6 * 9];
+    unsigned char wire[8192];
+    unsigned char *indices = NULL;
+    unsigned char *palette = NULL;
+    unsigned char const *rgb;
+    sixel_encoder_t *encoder = NULL;
+    FILE *capture = NULL;
+    size_t mode;
+    size_t size;
+    int width, height, colors, x, y, code, expected;
+    int result = EXIT_FAILURE;
+    SIXELSTATUS status;
+
+    for (mode = 0; mode < sizeof(cases) / sizeof(cases[0]); ++mode) {
+        if (strcmp(name, cases[mode].name) == 0) {
+            break;
+        }
+    }
+    if (mode == sizeof(cases) / sizeof(cases[0])) {
+        return EXIT_FAILURE;
+    }
+    for (y = 0; y < 6; ++y) {
+        memcpy(source + (size_t)y * cases[mode].row_bytes,
+               cases[mode].rows[y % 2], cases[mode].row_bytes);
+    }
+    capture = sixel_compat_tmpfile();
+    if (capture == NULL || sixel_encoder_new(&encoder, NULL) != SIXEL_OK ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") !=
+            SIXEL_OK ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_PALETTE_TYPE, "rgb") !=
+            SIXEL_OK) {
+        goto end;
+    }
+    encoder->outfd = sixel_fileno(capture);
+    status = sixel_encoder_encode_bytes(encoder, source, 17, 6,
+                                        cases[mode].format, NULL, -1);
+    encoder->outfd = 1;  /* The stream owns its descriptor. */
+    if (status != SIXEL_OK || fseek(capture, 0, SEEK_SET) != 0) {
+        goto end;
+    }
+    size = fread(wire, 1, sizeof(wire), capture);
+    if (size == 0 || size == sizeof(wire) ||
+        sixel_decode_raw(wire, (int)size, &indices, &width, &height,
+                         &palette, &colors, NULL) != SIXEL_OK ||
+        width != 17 || height != 6 || indices == NULL || palette == NULL) {
+        goto end;
+    }
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            code = x % cases[mode].levels;
+            if (y % 2 != 0) {
+                code = cases[mode].levels - 1 - code;
+            }
+            expected = gray[code * 15 / (cases[mode].levels - 1)];
+            if (indices[y * width + x] >= colors) {
+                goto end;
+            }
+            rgb = palette + 3 * indices[y * width + x];
+            if (rgb[0] != expected || rgb[1] != expected ||
+                rgb[2] != expected) {
+                fprintf(stderr, "%s (%d,%d) code %d: %u,%u,%u expected %d\n",
+                        name, x, y, code, (unsigned)rgb[0], (unsigned)rgb[1],
+                        (unsigned)rgb[2], expected);
+                goto end;
+            }
+        }
+    }
+    result = EXIT_SUCCESS;
+
+end:
+    free(indices);
+    free(palette);
+    if (capture != NULL) {
+        fclose(capture);
+    }
+    sixel_encoder_unref(encoder);
+    return result;
+}
+
 int
 test_filter_0010_filter_encode(int argc, char **argv)
 {
     int success;
 
-    (void) argc;
-    (void) argv;
+    if (argc == 2) {
+        return test_encode_packed_gray(argv[1]);
+    }
 
     success = 1;
 
