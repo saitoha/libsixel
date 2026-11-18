@@ -7,7 +7,7 @@ WPATH-01	Autotools-cygwin64-clangcl	autotools	windows-latest	cygwin	-	CC=clang-c
 WPATH-01	Autotools-cygwin64-clang_msvc_abi	autotools	windows-latest	cygwin	-	CC="clang --driver-mode=cl"	--host=x86_64-pc-windows-msvc
 WPATH-01	Autotools-msys2-clang64	autotools	windows-latest	msys2	CLANG64	CC=clang	mingw-w64-clang-x86_64-toolchain
 WPATH-01	Autotools-msys2-mingw32	autotools	windows-latest	msys2	MINGW32	mingw-w64-i686-toolchain	-
-WPATH-01	Autotools-msys2-ucrt64-coverage	autotools	windows-latest	msys2	UCRT64	mingw-w64-ucrt-x86_64-toolchain	--enable-gcov
+WPATH-01	Autotools-msys2-ucrt64-coverage-1-of-9	autotools	windows-latest	msys2	UCRT64	mingw-w64-ucrt-x86_64-toolchain	--enable-gcov
 WPATH-01	Autotools-msys2-msys-gcc-coverage-1-of-13	autotools	windows-latest	msys2	MSYS	gcc	--enable-gcov
 WPATH-01	Meson-cygwin64-gcc-unity	meson	windows-latest	cygwin	-	-Dunity=on	-
 WPATH-01	Autotools-ubuntu-x86_64-mingw-w64-x86_64-win32-wine64-static	autotools	ubuntu-latest	bash	-	SIXEL_RUNTIME=wine	--host=x86_64-w64-mingw32
