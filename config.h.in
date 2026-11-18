@@ -632,6 +632,9 @@
 /* whether WinHTTP is available */
 #undef HAVE_WINHTTP
 
+/* Define to 1 if fma preserves product residuals. */
+#undef HAVE_WORKING_FMA
+
 /* Define to 1 if _xgetbv is available without extra flags */
 #undef HAVE_XGETBV_INTRIN
 

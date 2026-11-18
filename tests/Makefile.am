@@ -13621,6 +13621,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin tools/compa
     _static/sh/staticcheck-test-macro-isolation.sh \
     _static/awk/c-conditional-operand.awk \
     _static/sh/staticcheck-c-conditional-operand.sh \
+    _static/awk/hdr-exposure-rounding.awk \
+    _static/sh/staticcheck-hdr-exposure-rounding.sh \
     _static/awk/c-octal-escape-boundary.awk \
     _static/sh/staticcheck-c-octal-escape-boundary.sh \
     _static/awk/c-size-format.awk \
@@ -13959,6 +13961,7 @@ EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
     _static/sh/staticcheck-cosmocc-cache-digest.sh \
     _static/sh/staticcheck-ci-msvc-complete-build.sh \
     _static/sh/staticcheck-ci-haiku-test-deps.sh \
+    _static/sh/staticcheck-ci-msys-meson-gcov.sh \
     _static/sh/staticcheck-configure-wic-scope.sh \
     _static/sh/staticcheck-test-unity-feature-namespace.sh \
     _static/sh/staticcheck-pty-open-flags.sh \
@@ -14141,3 +14144,12 @@ EXTRA_DIST += data/color-numeric/cli-bpc.png \
 
 EXTRA_DIST += loader/gif/0084_selected_frame_export.c \
     loader/gif/0084_selected_frame_export.t
+
+EXTRA_DIST += _static/awk/fuzz-triage-registration.awk \
+    _static/awk/ruby-test-scope.awk \
+    _static/sh/staticcheck-fuzz-triage-registration.sh \
+    _static/sh/staticcheck-fuzz-triage-artifacts.sh
+
+EXTRA_DIST += _static/awk/c-configured-features.awk \
+    _static/data/c-configured-features-legacy.tsv \
+    _static/sh/staticcheck-c-configured-features.sh

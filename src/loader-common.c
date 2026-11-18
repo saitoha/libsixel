@@ -137,6 +137,7 @@ loader_hdr_finish(float *pixels, size_t count)
     size_t i;
     int c;
     int mode;
+    volatile double rounded_exposure;
     double exposure;
     double value;
     double luminance;
@@ -147,7 +148,11 @@ loader_hdr_finish(float *pixels, size_t count)
         SIXEL_BUILTIN_HDR_TONEMAP_AUTO);
     exposure = loader_resolve_double_suboption(NULL,
         SIXEL_SUBOPTION_BINDING_ID_1(hdr_exposure_ev), 0.0);
-    exposure = pow(2.0, exposure);
+    /* Round the libm result to double before classifying it. An x87 return
+     * register can retain finite 2^1024 even though double overflows. Reject
+     * that exposure before changing any pixels. */
+    rounded_exposure = pow(2.0, exposure);
+    exposure = rounded_exposure;
     if (!isfinite(exposure) || exposure <= 0.0 || pixels == NULL ||
         count > SIZE_MAX / (3u * sizeof(float))) {
         return 0;

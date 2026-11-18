@@ -2469,7 +2469,8 @@ jobs:
               mingw-w64-x86_64-lcov
             exec_type: msys2
 
-          - label: Autotools-msys2-mingw64-no-threads-coverage
+          - label: Autotools-msys2-mingw64-no-threads-coverage-1-of-5
+            test_shard: 1/5
             buildtool: autotools
             runner: windows-latest
             msystem: MINGW64
@@ -2482,7 +2483,168 @@ jobs:
               mingw-w64-x86_64-lcov
             exec_type: msys2
 
-          - label: Autotools-msys2-ucrt64-coverage
+          - label: Autotools-msys2-mingw64-no-threads-coverage-2-of-5
+            test_shard: 2/5
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-threads-coverage-3-of-5
+            test_shard: 3/5
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-threads-coverage-4-of-5
+            test_shard: 4/5
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-threads-coverage-5-of-5
+            test_shard: 5/5
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-1-of-9
+            test_shard: 1/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-2-of-9
+            test_shard: 2/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-3-of-9
+            test_shard: 3/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-4-of-9
+            test_shard: 4/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-5-of-9
+            test_shard: 5/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-6-of-9
+            test_shard: 6/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-7-of-9
+            test_shard: 7/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-8-of-9
+            test_shard: 8/9
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage-9-of-9
+            test_shard: 9/9
             buildtool: autotools
             runner: windows-latest
             msystem: UCRT64
@@ -3330,7 +3492,44 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Meson-macos-aarch64-GD-coverage
+          - label: Meson-macos-aarch64-GD-coverage-1-of-3
+            test_shard: 1/3
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgd=enabled
+            extra_packages: >-
+              meson
+              gd
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-GD-coverage-2-of-3
+            test_shard: 2/3
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgd=enabled
+            extra_packages: >-
+              meson
+              gd
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-GD-coverage-3-of-3
+            test_shard: 3/3
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -3735,8 +3934,10 @@ jobs:
               mingw-w64-clang-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-1-of-5
-            test_shard: 1/5
+          # MSYS GCC tests share .gcda files within a build. Run one test
+          # at a time and use separate shard builds for parallelism.
+          - label: Meson-msys2-msys-gcc-coverage-1-of-19
+            test_shard: 1/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3748,10 +3949,11 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-2-of-5
-            test_shard: 2/5
+          - label: Meson-msys2-msys-gcc-coverage-2-of-19
+            test_shard: 2/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3763,10 +3965,11 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-3-of-5
-            test_shard: 3/5
+          - label: Meson-msys2-msys-gcc-coverage-3-of-19
+            test_shard: 3/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3778,10 +3981,11 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-4-of-5
-            test_shard: 4/5
+          - label: Meson-msys2-msys-gcc-coverage-4-of-19
+            test_shard: 4/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3793,10 +3997,11 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-5-of-5
-            test_shard: 5/5
+          - label: Meson-msys2-msys-gcc-coverage-5-of-19
+            test_shard: 5/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3808,6 +4013,231 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-6-of-19
+            test_shard: 6/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-7-of-19
+            test_shard: 7/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-8-of-19
+            test_shard: 8/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-9-of-19
+            test_shard: 9/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-10-of-19
+            test_shard: 10/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-11-of-19
+            test_shard: 11/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-12-of-19
+            test_shard: 12/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-13-of-19
+            test_shard: 13/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-14-of-19
+            test_shard: 14/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-15-of-19
+            test_shard: 15/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-16-of-19
+            test_shard: 16/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-17-of-19
+            test_shard: 17/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-18-of-19
+            test_shard: 18/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-19-of-19
+            test_shard: 19/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
     steps:
@@ -6977,7 +7407,170 @@ jobs:
               nodejs
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-emscripten-ubsan-static
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-1-of-10
+            test_shard: 1/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-2-of-10
+            test_shard: 2/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-3-of-10
+            test_shard: 3/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-4-of-10
+            test_shard: 4/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-5-of-10
+            test_shard: 5/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-6-of-10
+            test_shard: 6/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-7-of-10
+            test_shard: 7/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-8-of-10
+            test_shard: 8/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-9-of-10
+            test_shard: 9/10
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=undefined
+              --disable-shared
+              --without-libfetch
+            extra_packages: >-
+              node
+            exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make_jobs: 1
+
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static-10-of-10
+            test_shard: 10/10
             buildtool: autotools
             runner: macos-latest
             setup_options: >-

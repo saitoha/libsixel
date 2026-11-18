@@ -148,6 +148,18 @@ else
 fi
 
 echo "Checking shell test policy rules"
+sh "$source_files_helper" "${repo_root}/tests" \
+    --name '*.t' --name '*.sh' --name '*.rb' \
+    --exclude-path '*/data/*' \
+    --exec awk '
+        tolower($0) ~ /ruby/ || (FNR == 1 && FILENAME ~ /\.rb$/) {
+            if (!seen[FILENAME]++) printf "%s%c", FILENAME, 0
+        }
+    ' > "$tmpdir/ruby-candidates" || failed=1
+test ! -s "$tmpdir/ruby-candidates" ||
+    xargs -0 awk -f "$repo_root/tests/_static/awk/shell-words.awk" \
+        -f "$repo_root/tests/_static/awk/ruby-test-scope.awk" \
+        < "$tmpdir/ruby-candidates" || failed=1
 if_hits=$(
     sh "$source_files_helper" "${repo_root}/tests" --name '*.t' --exec grep -l '^if '|| true
 )

@@ -617,6 +617,9 @@ jobs:
       matrix:
         buildtool: [autotools, meson]
     env:
+      FUZZ_REPLAY_HARNESS: fuzz-cms-builtin-libfuzzer
+      FUZZ_REPLAY_CORPUS: fuzz/corpus/cms-builtin
+      FUZZ_REPLAY_ARTIFACT_DIR: .tmp/fuzz-artifacts-cms-builtin
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
     steps:
@@ -651,7 +654,10 @@ jobs:
       - name: Build raw ICC harness and replay seeds
         if: ${{ steps.cms_scope.outputs.run_target == '1' }}
         shell: bash
-        run: bash .github/scripts/replay-cms-builtin.sh "${{ matrix.buildtool }}"
+        run: |
+          bash .github/scripts/replay-libfuzzer-corpus.sh \
+            "${{ matrix.buildtool }}" "$FUZZ_REPLAY_HARNESS" \
+            "$FUZZ_REPLAY_CORPUS" "$FUZZ_REPLAY_ARTIFACT_DIR"
 
       - name: Upload raw ICC replay artifacts
         if: ${{ always() && steps.cms_scope.outputs.run_target == '1' }}

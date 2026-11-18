@@ -1214,6 +1214,14 @@ run_case_tap "staticcheck-platform-header-guards" \
     sh "$src_root/tests/_static/sh/staticcheck-platform-header-guards.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-c-configured-features" \
+    sh "$src_root/tests/_static/sh/staticcheck-c-configured-features.sh" \
+    "$src_root"
+
+run_case_tap "staticcheck-hdr-exposure-rounding" \
+    sh "$src_root/tests/_static/sh/staticcheck-hdr-exposure-rounding.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-amalgamation-metal-guards" \
     sh "$src_root/tests/_static/sh/staticcheck-amalgamation-metal-guards.sh" \
     "$src_root"
@@ -1269,6 +1277,10 @@ run_case_tap "staticcheck-ci-vm-concurrency" \
 run_case_tap "staticcheck-ci-tsan-shards" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-tsan-shards.sh" \
     "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-ci-msys-meson-gcov" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-msys-meson-gcov.sh" \
+    "$src_root"
 
 run_case_tap "staticcheck-cosmocc-cache-digest" \
     sh "$src_root/tests/_static/sh/staticcheck-cosmocc-cache-digest.sh" \
@@ -1392,6 +1404,14 @@ run_case_tap "staticcheck-test-distribution" \
 
 run_case_tap "staticcheck-shell-field-delimiters" \
     "$src_root/tests/_static/sh/staticcheck-shell-field-delimiters.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-fuzz-triage-registration" \
+    "$src_root/tests/_static/sh/staticcheck-fuzz-triage-registration.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-fuzz-triage-artifacts" \
+    "$src_root/tests/_static/sh/staticcheck-fuzz-triage-artifacts.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-source-inventory" \
