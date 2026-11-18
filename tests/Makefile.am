@@ -14100,3 +14100,7 @@ EXTRA_DIST += _static/awk/fuzz-triage-registration.awk \
     _static/awk/ruby-test-scope.awk \
     _static/sh/staticcheck-fuzz-triage-registration.sh \
     _static/sh/staticcheck-fuzz-triage-artifacts.sh
+
+EXTRA_DIST += _static/awk/c-configured-features.awk \
+    _static/data/c-configured-features-legacy.tsv \
+    _static/sh/staticcheck-c-configured-features.sh

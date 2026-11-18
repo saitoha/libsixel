@@ -29751,7 +29751,10 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/awk/fuzz-triage-registration.awk \
 	_static/awk/ruby-test-scope.awk \
 	_static/sh/staticcheck-fuzz-triage-registration.sh \
-	_static/sh/staticcheck-fuzz-triage-artifacts.sh
+	_static/sh/staticcheck-fuzz-triage-artifacts.sh \
+	_static/awk/c-configured-features.awk \
+	_static/data/c-configured-features-legacy.tsv \
+	_static/sh/staticcheck-c-configured-features.sh
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it

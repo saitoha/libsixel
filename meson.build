@@ -1086,6 +1086,26 @@ if m_dep.found()
   conf.set('HAVE_LIBM', 1)
 endif
 
+# Test the cancellation behavior needed to recover a product's roundoff.
+# FP_FAST_FMA describes speed, not whether a particular libm is correct.
+# A cross build without an executable wrapper uses compensated arithmetic.
+if meson.can_run_host_binaries()
+  fma_probe = cc.run('''
+    #include <math.h>
+    int main(void)
+    {
+      volatile double a = 1.0 + 0x1p-23;
+      volatile double b = 0.5 + 0x1p-31;
+      volatile double product = a * b;
+      return fma(a, b, -product) != 0x1p-54 ||
+          fma(-a, b, product) != -0x1p-54;
+    }
+    ''', dependencies: m_dep, name: 'fma preserves product residuals')
+  if fma_probe.compiled() and fma_probe.returncode() == 0
+    conf.set('HAVE_WORKING_FMA', 1)
+  endif
+endif
+
 png_opt = get_option('png')
 png_dep = disabler()
 

@@ -2951,6 +2951,30 @@ AS_IF([test "x$ac_cv_lib_m_floor" = xyes], [
   LIBS="-lm $LIBS"
 ])
 
+# Test the cancellation behavior needed to recover a product's roundoff.
+# FP_FAST_FMA describes speed, not whether a particular libm is correct.
+AC_CACHE_CHECK([whether fma preserves product residuals],
+               [sixel_cv_working_fma], [
+  sixel_fma_save_CFLAGS="$CFLAGS"
+  sixel_fma_save_CPPFLAGS="$CPPFLAGS"
+  CFLAGS="$CPPFLAGS $CFLAGS"
+  CPPFLAGS=""
+  AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <math.h>]], [[
+    volatile double a = 1.0 + 0x1p-23;
+    volatile double b = 0.5 + 0x1p-31;
+    volatile double product = a * b;
+    return fma(a, b, -product) != 0x1p-54 ||
+        fma(-a, b, product) != -0x1p-54;
+  ]])], [sixel_cv_working_fma=yes], [sixel_cv_working_fma=no],
+        [sixel_cv_working_fma=no])
+  CFLAGS="$sixel_fma_save_CFLAGS"
+  CPPFLAGS="$sixel_fma_save_CPPFLAGS"
+])
+AS_IF([test "x$sixel_cv_working_fma" = xyes], [
+  AC_DEFINE([HAVE_WORKING_FMA], [1],
+            [Define to 1 if fma preserves product residuals.])
+])
+
 # Checks for header files.
 AC_CHECK_HEADERS_PARALLEL([assert.h \
                            math.h \

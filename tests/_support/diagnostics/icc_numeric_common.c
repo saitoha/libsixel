@@ -4061,7 +4061,8 @@ icc_numeric_mpet_matrix_product_residual_test(void)
     unsigned char *tag;
     unsigned char *matrix;
     sixel_icc_profile_t profile;
-    double result[3];
+    double result[3] = {0.0, 0.0, 0.0};
+    int path;
     int ok;
 
     iccn_be32(bytes, sizeof(bytes));
@@ -4104,9 +4105,14 @@ icc_numeric_mpet_matrix_product_residual_test(void)
     if (!sixel_icc_parse_profile(bytes, sizeof(bytes), &profile)) {
         return EXIT_FAILURE;
     }
-    ok = sixel_icc_device_to_pcs(result, input, 3u, &profile, 1u, 0)
-            == SIXEL_ICC_PATH_MPET &&
+    path = sixel_icc_device_to_pcs(result, input, 3u, &profile, 1u, 0);
+    ok = path == SIXEL_ICC_PATH_MPET &&
         result[0] == 1.0 && result[1] == 0.0 && result[2] == 0.0;
+    if (!ok) {
+        fprintf(stderr, "matrix product: path=%d, result=(%.17g, %.17g, "
+            "%.17g), expected=(1, 0, 0)\n", path,
+            result[0], result[1], result[2]);
+    }
     sixel_icc_profile_destroy(&profile);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

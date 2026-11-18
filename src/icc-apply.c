@@ -146,18 +146,98 @@ sixel_icc_mpe_formula(sixel_icc_mpe_segment_t const *segment, double x)
     }
 }
 
+/* Retain rounding error when terms of very different sizes cancel. */
+static void
+sixel_icc_add_compensated(double *sum, double *residual, double term)
+{
+    double next;
+
+    next = *sum + term;
+    *residual += fabs(*sum) >= fabs(term) ? (*sum - next) + term
+                                        : (term - next) + *sum;
+    *sum = next;
+}
+
+/* Recover the rounding error of the product as well as of the sum. */
+static void
+sixel_icc_add_product(double *sum, double *residual, double a, double b)
+{
+    volatile double product;
+#if !HAVE_WORKING_FMA
+    double a_high;
+    double a_low;
+    double b_high;
+    double b_low;
+    double error;
+    double scale;
+    volatile double rounded;
+#endif
+
+    product = a * b;
+    sixel_icc_add_compensated(sum, residual, product);
+#if HAVE_WORKING_FMA
+    *residual += fma(a, b, -product);
+#else
+    /* Some libm implementations, including MSYS newlib, implement fma as
+     * a separately rounded multiply and add. Split each double into high
+     * and low parts instead, then recover the product's rounding error.
+     * MPE operands are at most 2 * FLT_MAX (interpolation differences),
+     * so multiplying by 2^27 + 1 cannot overflow double. Volatile stores
+     * keep the split and partial products separately rounded even when
+     * the compiler contracts surrounding multiply-add expressions. */
+    if (fabs(product) < DBL_MIN) {
+        /* In round-to-nearest, a subnormal product's error rounds to zero. */
+        return;
+    }
+    scale = 1.0;
+    if (fabs(product) < 0x1p-900) {
+        /* Keep the partial products normal, then scale only their error
+         * back down. The sum already contains the original product. */
+        if (fabs(a) < fabs(b)) {
+            a *= 0x1p128;
+        } else {
+            b *= 0x1p128;
+        }
+        product *= 0x1p128;
+        scale = 0x1p-128;
+    }
+    rounded = a * 0x1.0000002p27;
+    a_high = rounded;
+    rounded = a_high - a;
+    a_high -= rounded;
+    a_low = a - a_high;
+    rounded = b * 0x1.0000002p27;
+    b_high = rounded;
+    rounded = b_high - b;
+    b_high -= rounded;
+    b_low = b - b_high;
+    rounded = a_high * b_high;
+    error = rounded - product;
+    rounded = a_high * b_low;
+    error += rounded;
+    rounded = a_low * b_high;
+    error += rounded;
+    rounded = a_low * b_low;
+    *residual += (error + rounded) * scale;
+#endif
+}
+
 static double
 sixel_icc_mpe_lerp(double from, double to, double fraction)
 {
     double difference;
     double residual;
+    double sum;
 
     difference = to - from;
     residual = fabs(to) >= fabs(from) ? (to - difference) - from
                                     : (-from - difference) + to;
-    /* Fuse the product and addition, then restore the part of the
-     * endpoint difference that would otherwise be lost to rounding. */
-    return fma(fraction, difference, from) + fraction * residual;
+    /* Preserve the product, sum and endpoint-difference residuals even
+     * when libm does not provide a correctly fused multiply-add. */
+    residual *= fraction;
+    sum = from;
+    sixel_icc_add_product(&sum, &residual, fraction, difference);
+    return sum + residual;
 }
 
 static double
@@ -256,29 +336,6 @@ sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,
         out[channel] = y;
     }
     return 1;
-}
-
-/* Retain rounding error when terms of very different sizes cancel. */
-static void
-sixel_icc_add_compensated(double *sum, double *residual, double term)
-{
-    double next;
-
-    next = *sum + term;
-    *residual += fabs(*sum) >= fabs(term) ? (*sum - next) + term
-                                        : (term - next) + *sum;
-    *sum = next;
-}
-
-/* Recover the rounding error of the product as well as of the sum. */
-static void
-sixel_icc_add_product(double *sum, double *residual, double a, double b)
-{
-    double product;
-
-    product = a * b;
-    sixel_icc_add_compensated(sum, residual, product);
-    *residual += fma(a, b, -product);
 }
 
 static int
@@ -408,7 +465,8 @@ sixel_icc_mpe_clut_simplex(double *out, size_t channels,
             low = sample < low ? sample : low;
             high = sample > high ? sample : high;
             sixel_icc_add_product(&sum, &residual, weights[i], sample);
-            residual = fma(weight_residuals[i], sample, residual);
+            sixel_icc_add_product(&sum, &residual,
+                weight_residuals[i], sample);
         }
         out[channel] = fmin(high, fmax(low, sum + residual));
     }

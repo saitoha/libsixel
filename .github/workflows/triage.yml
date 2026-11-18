@@ -296,14 +296,13 @@ jobs:
             label.match(/\A(.+)-[1-9]\d*-of-([1-9]\d*)\z/)&.captures || [label, nil]
           end
 
-          def failed_ci_entry?(label, failed_jobs, failed_partitions)
+          def failed_ci_entry?(label, failed_partitions)
             return false unless label
-            return true if failed_jobs.include?(label)
 
-            # An edited partition can move tests between shards. Replay the
-            # whole failed configuration if its shard count changed.
-            base, count = ci_test_partition(label)
-            failed_partitions.fetch(base, []).any? { |_, old_count| old_count != count }
+            # Adding or removing tests can move failures between shards even
+            # when the shard count is unchanged. Replay every shard of the
+            # failed configuration so its original tests remain covered.
+            failed_partitions.key?(ci_test_partition(label).first)
           end
 
           def buildtool_prefix(entry, autotools_prefix, meson_prefix)
@@ -583,7 +582,7 @@ jobs:
 
             matrix_entries(job).each do |entry|
               next unless entry.is_a?(Hash)
-              next unless failed_ci_entry?(entry['label'], failed_jobs, failed_partitions)
+              next unless failed_ci_entry?(entry['label'], failed_partitions)
 
               replay_entry = entry.dup
               replay_entry['job_env'] = (job['env'] || {}).dup
