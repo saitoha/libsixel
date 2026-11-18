@@ -2,6 +2,7 @@
 #ifndef CMS_HDR_FINISH_COMMON_H
 #define CMS_HDR_FINISH_COMMON_H
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 #include "src/loader-common.h"
 
@@ -25,7 +26,14 @@ cms_hdr_finish_test(int mode)
     memcpy(saved, pixels, sizeof(saved));
     ok = loader_hdr_finish(pixels, 1u);
     if (mode == 2) {
-        return !ok && memcmp(saved, pixels, sizeof(saved)) == 0 ? 0 : 1;
+        if (ok || memcmp(saved, pixels, sizeof(saved)) != 0) {
+            fprintf(stderr, "overflow exposure: accepted=%d, "
+                "RGB=(%.9g, %.9g, %.9g), expected unchanged %.9g\n",
+                ok, (double)pixels[0], (double)pixels[1],
+                (double)pixels[2], (double)saved[0]);
+            return 1;
+        }
+        return 0;
     }
     /* With finite 2^1023 exposure, either neutral Reinhard formulation
      * tends to one. No production formula computes the expected value. */
