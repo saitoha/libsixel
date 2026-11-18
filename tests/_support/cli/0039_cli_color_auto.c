@@ -769,6 +769,7 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
 
     saved = strncmp(name, "save-", 5u) == 0 ? name[5] - '0' : 0;
     selected = color_auto_is(name, "srgb") ||
+        color_auto_is(name, "srgb-wire") ||
         color_auto_is(name, "loader-bpc") ||
         color_auto_is(name, "gamut") || color_auto_is(name, "edge") ||
         color_auto_is(name, "ray") ||
@@ -965,6 +966,7 @@ test_cli_0039_color_auto(int argc, char **argv)
         "save-2",
         "save-3",
         "srgb",
+        "srgb-wire",
         "loader-bpc",
         "legacy",
         "silent",
@@ -1071,7 +1073,7 @@ test_cli_0039_color_auto(int argc, char **argv)
             !color_auto_is(argv[1], "restore-timeout") &&
             !color_auto_is(argv[1], "restore-sigint");
     }
-    if (p3) {
+    if (p3 || color_auto_is(argv[1], "srgb-wire")) {
         if (color_auto_is(argv[1], "multiple")) {
             next_trace = strstr(peer.trace, "libsixel: path probe begin:");
             if (next_trace == NULL || (next_trace = strstr(next_trace + 1,
@@ -1099,7 +1101,7 @@ test_cli_0039_color_auto(int argc, char **argv)
             return color_auto_error("RGB oracle input exceeds buffer");
         }
         wire_arguments[0] = "cli/0036_cli_color_wire";
-        wire_arguments[1] = "libpng-p3-16";
+        wire_arguments[1] = p3 ? "libpng-p3-16" : "libpng-srgb-16";
         wire_arguments[2] = combined;
         return test_cli_0036_color_wire(3, wire_arguments);
     }

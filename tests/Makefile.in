@@ -29504,6 +29504,8 @@ TEST_DATA_DIRS = data
 # Optional ctypes differential runner; never part of the default test suite.
 
 # Optional segmented/reference equivalence runner.
+
+# The released-client checks are run explicitly with two shared libraries.
 EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	tools/compare/data/empty \
 	tools/compare/data/octet-different.bin \
@@ -29935,7 +29937,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-c-configured-features.sh \
 	data/color-numeric/output-bpc.icc \
 	data/color-numeric/output-bpc-rgba16.png \
-	data/color-numeric/output-bpc-rgba16-reference.png
+	data/color-numeric/output-bpc-rgba16-reference.png \
+	compat/v1.8.7-r2
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it

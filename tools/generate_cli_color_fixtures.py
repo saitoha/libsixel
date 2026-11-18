@@ -212,6 +212,13 @@ def build(inputs):
                           cluster_distance_margins=cluster_margins,
                           fs_lookup_distance_margins=fs_margins,
                           linear=source['linear'], wire=painted))
+        # The negotiated sRGB route clips the same stored P3 ICC witness
+        # in linear sRGB before applying its transfer function.
+        cases.append(dict(name='png-p3-16-rgb-output-srgb',
+                          source=source['source'], width=4, height=2,
+                          source_width=4, scale=1, hidden=[0] * 8, p2=0,
+                          linear=source['linear'],
+                          wire=[wire_color(rgb) for rgb in source['linear']]))
 
     header = ('/* Generated independently; do not copy encoder output here. */\n'
               'static struct {\n'

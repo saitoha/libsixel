@@ -80,6 +80,54 @@ cli_wire_params(char const **position, char const *end, int values[6])
     return count;
 }
 
+static int
+cli_wire_bpc_registers(int bpc, int count, unsigned char const defined[256],
+                       unsigned char palette[256][3])
+{
+    /* For each input word w and coverage a, set x=(a*w+(1-a)*4096)/65535
+     * with a normalized by 65535. The input ICC produces (1+3*x)/4;
+     * enabling BPC changes it to (1+x)/2. The two seed-1 cluster means
+     * average samples 0..3 and 4..5 in sRGB transfer coordinates. Undo
+     * that transfer on each mean, then apply the destination ICC inverse
+     * max(0, 2*Y-1). In register order the resulting percentages are
+     * 66.60958 and 0 (off), or 12.63410 and 78.17860 (on). The nearest
+     * half-step margin exceeds 0.109, versus 0.009 from propagating the
+     * fixture's 3e-5 linear sample budget through the monotone transfers
+     * and the destination scale over these two cluster ranges. */
+    static unsigned char const expected[2][2][3] = {
+        {{67, 67, 67}, {0, 0, 0}},
+        {{13, 13, 13}, {78, 78, 78}},
+    };
+
+    if (count != 2 || !defined[0] || !defined[1] ||
+        memcmp(palette, expected[bpc], sizeof(expected[bpc])) != 0) {
+        return cli_wire_error("output BPC RGB101 register definitions");
+    }
+    return 0;
+}
+
+static int
+cli_wire_bpc_indices(int bpc, unsigned char const painted[96],
+                     unsigned char const indices[96])
+{
+    /* Seed 1 puts the darker four samples in register 1 with BPC off and
+     * register 0 with BPC on. The squared-distance gap between both gamma
+     * cluster means is greater than 0.013 in each scalar gray coordinate
+     * for every sample. Check the actual paint-time register IDs. */
+    static unsigned char const expected[2][6] = {
+        {1, 1, 1, 1, 0, 0},
+        {0, 0, 0, 0, 1, 1},
+    };
+    int x;
+
+    for (x = 0; x < 6; ++x) {
+        if (!painted[x] || indices[x] != expected[bpc][x]) {
+            return cli_wire_error("output BPC paint-time register index");
+        }
+    }
+    return 0;
+}
+
 int
 test_cli_0036_color_wire(int argc, char **argv)
 {
@@ -87,6 +135,7 @@ test_cli_0036_color_wire(int argc, char **argv)
     unsigned char defined[256];
     unsigned char pixels[96][3];
     unsigned char painted[96];
+    unsigned char indices[96];
     char loader_record[96];
     char const *trace;
     char const *loader;
@@ -108,9 +157,26 @@ test_cli_0036_color_wire(int argc, char **argv)
     int c;
     int source;
     int cms_expected;
+    int bpc;
+    int check_registers;
+    int register_count;
 
-    if (argc != 3) {
+    if (argc != 3 && argc != 4) {
         return cli_wire_error("expected loader name and captured CLI output");
+    }
+    bpc = -1;
+    check_registers = 0;
+    if (argc == 4) {
+        if (strcmp(argv[3], "bpc-off-registers") == 0 ||
+            strcmp(argv[3], "bpc-off-indices") == 0) {
+            bpc = 0;
+        } else if (strcmp(argv[3], "bpc-on-registers") == 0 ||
+                   strcmp(argv[3], "bpc-on-indices") == 0) {
+            bpc = 1;
+        } else {
+            return cli_wire_error("unknown wire observation");
+        }
+        check_registers = strstr(argv[3], "-registers") != NULL;
     }
     specimen = strcmp(argv[1], "libtiff-ycbcr") == 0 ? 2
              : strcmp(argv[1], "libtiff") == 0 ? 1 : 0;
@@ -132,6 +198,10 @@ test_cli_0036_color_wire(int argc, char **argv)
         specimen = 7;
         loader = "libpng";
     }
+    if (strcmp(argv[1], "libpng-srgb-16") == 0) {
+        specimen = 8;
+        loader = "libpng";
+    }
     cms_expected = specimen == 5 ? 0 : 1;
     if (specimen == 0 && strcmp(argv[1], "libpng") != 0 &&
         strcmp(argv[1], "builtin") != 0) {
@@ -151,12 +221,15 @@ test_cli_0036_color_wire(int argc, char **argv)
              "LSXLOAD1|event=ok|loader=%s|code=L_OK", loader);
     if (cli_wire_count(trace, "LSXLOAD1|event=try|") != 1 ||
         cli_wire_count(trace, "LSXLOAD1|event=ok|") != 1 ||
-        !cli_wire_record(trace, loader_record) ||
-        cli_wire_count(trace, "LSXCMS2|event=apply|") != cms_expected ||
-        (cms_expected != 0 && !cli_wire_record(trace,
+        !cli_wire_record(trace, loader_record)) {
+        return cli_wire_error("wrong actual loader");
+    }
+    if (bpc < 0 &&
+        (cli_wire_count(trace, "LSXCMS2|event=apply|") != cms_expected ||
+         (cms_expected != 0 && !cli_wire_record(trace,
             "LSXCMS2|event=apply|engine=builtin|"
-            "path=extended-rgb|src=4|dst=4|ok=1"))) {
-        return cli_wire_error("wrong actual loader or CMS application");
+            "path=extended-rgb|src=4|dst=4|ok=1")))) {
+        return cli_wire_error("wrong actual CMS application");
     }
     p = strstr(trace, "\033P");
     if (p == NULL || cli_wire_count(trace, "\033P") != 1) {
@@ -172,15 +245,16 @@ test_cli_0036_color_wire(int argc, char **argv)
     /* Missing DCS parameters have their standard zero defaults. Opaque
      * output omits P2; the PNG mask requires explicit keep semantics. */
     if (count < 0 || count > 3 || p == end || *p++ != 'q' ||
-        values[1] != color_cli_wire[specimen].p2) {
+        values[1] != (bpc >= 0 ? 0 : color_cli_wire[specimen].p2)) {
         return cli_wire_error("DCS parameters or P2");
     }
-    width = color_cli_wire[specimen].width;
-    height = color_cli_wire[specimen].height;
+    width = bpc >= 0 ? 6 : color_cli_wire[specimen].width;
+    height = bpc >= 0 ? 1 : color_cli_wire[specimen].height;
     memset(defined, 0, sizeof(defined));
     memset(painted, 0, sizeof(painted));
     memset(pixels, 0, sizeof(pixels));
     raster = 0;
+    register_count = 0;
     color = -1;
     x = 0;
     y = 0;
@@ -203,6 +277,7 @@ test_cli_0036_color_wire(int argc, char **argv)
             }
             color = values[0];
             if (count == 5) {
+                ++register_count;
                 if (values[1] != 2) {
                     return cli_wire_error("expected RGB palette");
                 }
@@ -249,11 +324,19 @@ test_cli_0036_color_wire(int argc, char **argv)
                  * must not retroactively recolor previously drawn pixels. */
                 memcpy(pixels[(y + bit) * width + x], palette[color], 3u);
                 painted[(y + bit) * width + x] = 1;
+                indices[(y + bit) * width + x] = (unsigned char)color;
             }
         }
     }
     if (!raster) {
         return cli_wire_error("missing raster attributes");
+    }
+    if (bpc >= 0) {
+        if (check_registers) {
+            return cli_wire_bpc_registers(bpc, register_count, defined,
+                                          palette);
+        }
+        return cli_wire_bpc_indices(bpc, painted, indices);
     }
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {

@@ -14163,3 +14163,6 @@ EXTRA_DIST += _static/awk/c-configured-features.awk \
 EXTRA_DIST += data/color-numeric/output-bpc.icc \
     data/color-numeric/output-bpc-rgba16.png \
     data/color-numeric/output-bpc-rgba16-reference.png
+
+# The released-client checks are run explicitly with two shared libraries.
+EXTRA_DIST += compat/v1.8.7-r2
