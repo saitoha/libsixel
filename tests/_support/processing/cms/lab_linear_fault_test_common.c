@@ -218,6 +218,8 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cdef_name clf_local_19
 #define sixel_cdef_named_name clf_local_19_identity
 #define sixel_named_colors clf_local_19_registry
+#define sixel_cdef_black_y clf_output_black_y
+#define sixel_cms_rgb_output_bpc clf_output_bpc
 #define sixel_cdef_output_ready clf_local_20
 #define sixel_cdef_parse clf_local_21
 #define sixel_cdef_pcs_scale clf_local_22
@@ -860,6 +862,8 @@ cms_gray_legacy_allocation_test(void)
 #undef sixel_cdef_name
 #undef sixel_cdef_named_name
 #undef sixel_named_colors
+#undef sixel_cdef_black_y
+#undef sixel_cms_rgb_output_bpc
 #undef sixel_cdef_output_ready
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale

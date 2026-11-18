@@ -115,6 +115,7 @@ struct sixel_cms_transform {
     size_t builtin_a2b_slot_count;
     int builtin_absolute;
     int builtin_pcs_ordered;
+    int builtin_relative_only;
     int builtin_bpc;
     double builtin_bpc_scale;
     double builtin_bpc_offset;
@@ -4135,7 +4136,8 @@ sixel_cms_float_source_xyz(double xyz[3], double const source[4],
         }
     }
     if (icc->lut_only) {
-        if (sixel_cms_has_colorspace_fallback(icc, 0)) {
+        if (!transform->builtin_relative_only &&
+            sixel_cms_has_colorspace_fallback(icc, 0)) {
             return sixel_icc_device_to_pcs(xyz, source, channels, icc, 0u, 1);
         }
         return SIXEL_ICC_PATH_NONE;
@@ -4171,6 +4173,29 @@ sixel_cms_float_source_xyz(double xyz[3], double const source[4],
     }
     return sixel_icc_device_to_pcs(xyz, source, channels, icc,
                                    SIXEL_ICC_MPET_SLOT_COUNT, 1);
+}
+
+static void
+sixel_cms_prepare_bpc(sixel_cms_transform_t *transform,
+                        double source, double target)
+{
+    transform->builtin_bpc = 1;
+    transform->builtin_bpc_scale = (1.0 - target) / (1.0 - source);
+    transform->builtin_bpc_offset = target -
+        source * transform->builtin_bpc_scale;
+}
+
+static void
+sixel_cms_apply_bpc(sixel_cms_transform_t const *transform, double xyz[3])
+{
+    size_t i;
+
+    /* Map neutral black and D50 white once in PCS, independently of
+     * chromatic adaptation and the encoding of the working RGB buffer. */
+    for (i = 0u; i < 3u; ++i) {
+        xyz[i] = xyz[i] * transform->builtin_bpc_scale +
+            sixel_cms_pcs_white[i] * transform->builtin_bpc_offset;
+    }
 }
 
 static int
@@ -4212,8 +4237,13 @@ sixel_cms_float_rgb(sixel_cms_transform_t const *transform,
                        transform->src_format, src, pixel, 0)) {
             return 0;
         }
-        if (!sixel_cms_float_source_xyz(xyz, source, channels, transform, 0) ||
-            !sixel_cdef_from_xyz(transform->dst_profile->rgb_definition,
+        if (!sixel_cms_float_source_xyz(xyz, source, channels, transform, 0)) {
+            return 0;
+        }
+        if (transform->builtin_bpc) {
+            sixel_cms_apply_bpc(transform, xyz);
+        }
+        if (!sixel_cdef_from_xyz(transform->dst_profile->rgb_definition,
                                    xyz, rgb, 1)) {
             return 0;
         }
@@ -4411,13 +4441,7 @@ sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
             }
         }
         if (transform->builtin_bpc) {
-            /* Map neutral black and D50 white together, once in PCS.
-             * This is independent of media-white absolute conversion and
-             * must not be folded into chromatic adaptation matrices. */
-            for (i = 0u; i < 3u; ++i) {
-                xyz[i] = xyz[i] * transform->builtin_bpc_scale +
-                    sixel_cms_pcs_white[i] * transform->builtin_bpc_offset;
-            }
+            sixel_cms_apply_bpc(transform, xyz);
         }
         reverse = sixel_cms_pcs_to_device(device, xyz, transform, inverse_rgb);
         *uses_mpet = forward == SIXEL_ICC_PATH_MPET ||
@@ -4430,7 +4454,8 @@ sixel_cms_eval_builtin_pcs(double device[4], int *uses_mpet,
 }
 
 static int
-sixel_cms_builtin_black_y(double *black, sixel_cms_profile_t const *profile)
+sixel_cms_builtin_black_y(double *black, sixel_cms_profile_t const *profile,
+                          int relative_only)
 {
     sixel_cms_transform_t endpoint;
     double source[4] = {0.0, 0.0, 0.0, 0.0};
@@ -4446,6 +4471,7 @@ sixel_cms_builtin_black_y(double *black, sixel_cms_profile_t const *profile)
     }
     memset(&endpoint, 0, sizeof(endpoint));
     endpoint.src_profile = profile;
+    endpoint.builtin_relative_only = relative_only;
     endpoint.builtin_a2b_slots[0] = 1u;
     endpoint.builtin_a2b_slot_count = 1u;
     if (sixel_cms_float_source_xyz(xyz, source, channels, &endpoint, 0) ==
@@ -4455,6 +4481,67 @@ sixel_cms_builtin_black_y(double *black, sixel_cms_profile_t const *profile)
     }
     *black = xyz[1];
     return 1;
+}
+
+int
+sixel_cms_rgb_output_bpc(float *pixels, int width, int height,
+                         sixel_cms_profile_t const *source,
+                         double output_black)
+{
+    sixel_cms_profile_t *linear;
+    sixel_cms_transform_t transform;
+    float *result;
+    size_t count;
+    double source_black;
+    int ok;
+
+    if (source == NULL ||
+        source->backend != SIXEL_CMS_PROFILE_BACKEND_BUILTIN ||
+        sixel_cms_get_engine() != SIXEL_CMS_ENGINE_BUILTIN ||
+        source->colorspace != SIXEL_CMS_COLORSPACE_RGB) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires a builtin CMS RGB input profile.");
+        return 0;
+    }
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        (size_t)width > SIZE_MAX / (size_t)height / (3u * sizeof(float))) {
+        return 0;
+    }
+    if (!isfinite(output_black) || output_black < 0.0 || output_black >= 1.0 ||
+        !sixel_cms_builtin_black_y(&source_black, source, 1)) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires a usable relative input black.");
+        return 0;
+    }
+    count = (size_t)width * (size_t)height;
+    result = malloc(count * 3u * sizeof(float));
+    linear = sixel_cms_create_linear_srgb_profile();
+    ok = 0;
+    if (result != NULL && linear != NULL && linear->rgb_definition != NULL) {
+        /* The source and black use only the relative slot and analytic
+         * fallback. The synthetic working RGB endpoint has no BPC policy. */
+        memset(&transform, 0, sizeof(transform));
+        transform.src_profile = source;
+        transform.dst_profile = linear;
+        transform.src_format = SIXEL_CMS_PIXELFORMAT_RGB_F32;
+        transform.builtin_relative_only = 1;
+        transform.builtin_a2b_slots[0] = 1u;
+        transform.builtin_a2b_slot_count = 1u;
+        sixel_cms_prepare_bpc(&transform, source_black, output_black);
+        ok = sixel_cms_float_rgb(&transform, pixels, result, count);
+        if (ok) {
+            memcpy(pixels, result, count * 3u * sizeof(float));
+            loader_trace_message("LSXBPC1|scope=output-icc|applied=1|"
+                "source=%.9g|destination=%.9g", source_black, output_black);
+        }
+    }
+    if (!ok) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 could not convert input via relative PCS.");
+    }
+    sixel_cms_close_profile(linear);
+    free(result);
+    return ok;
 }
 
 static size_t
@@ -4488,18 +4575,14 @@ sixel_cms_builtin_pcs_candidates(sixel_cms_transform_t candidates[4],
             (transform->flags &
              SIXEL_CMS_TRANSFORM_BLACK_POINT_COMPENSATION) != 0) {
             if (!sixel_cms_builtin_black_y(&source_black,
-                    transform->src_profile) ||
+                    transform->src_profile, 0) ||
                 !sixel_cms_builtin_black_y(&target_black,
-                    transform->dst_profile)) {
+                    transform->dst_profile, 0)) {
                 loader_trace_message("LSXBPC1|engine=builtin|"
                     "applied=0|reason=unsupported-black-point");
                 continue;
             }
-            candidate->builtin_bpc = 1;
-            candidate->builtin_bpc_scale =
-                (1.0 - target_black) / (1.0 - source_black);
-            candidate->builtin_bpc_offset = target_black -
-                source_black * candidate->builtin_bpc_scale;
+            sixel_cms_prepare_bpc(candidate, source_black, target_black);
             loader_trace_message("LSXBPC1|engine=builtin|prepared=1|"
                 "source=%.9g|destination=%.9g", source_black, target_black);
         }
@@ -7326,6 +7409,21 @@ sixel_cdef_from_xyz(sixel_color_def_t const *definition,
         return 0;
     }
     memcpy(rgb, result, sizeof(result));
+    return 1;
+}
+
+int
+sixel_cdef_black_y(sixel_color_def_t const *definition, double *black)
+{
+    static double const zero[3] = {0.0, 0.0, 0.0};
+    double xyz[3];
+
+    if (!sixel_cdef_to_xyz(definition, zero, xyz,
+                           SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) ||
+        xyz[1] < 0.0 || xyz[1] >= 1.0) {
+        return 0;
+    }
+    *black = xyz[1];
     return 1;
 }
 

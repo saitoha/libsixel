@@ -563,6 +563,8 @@ struct sixel_encoder {
     /* Owned endpoint; frame coordinates retain their independent tag. */
     struct sixel_color_def *output_icc;
     int output_gamut;
+    int output_bpc;
+    double output_bpc_black;
     struct sixel_gamut *gamut_mapper;
     /* Keep an explicit byte request distinct from automatic selection. */
     int precision_requested;

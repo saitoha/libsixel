@@ -255,8 +255,10 @@ pmfi_apply_icc(unsigned char *pixels, int width, int height, int format,
 #define sixel_cms_convert_to_linearrgb_with_profile_bytes pmfi_apply_icc
 
 /* Keep the included diagnostic helper private in static runner builds. */
+#define sixel_frompng_supports_output_bpc pmfi_supports_output_bpc
 #define sixel_frompng_cicp_name pmfi_cicp_name
 #include "src/frompng.c"
+#undef sixel_frompng_supports_output_bpc
 #undef sixel_frompng_cicp_name
 
 #undef sixel_frompng_extract_icc

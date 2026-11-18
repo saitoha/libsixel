@@ -5400,7 +5400,7 @@ sixel_builtin_load_png_single_frame(
      * partial alpha, and the alpha-zero mask are resolved together.
      * Display P3 also needs this path: a byte sRGB palette loses its gamut.
      */
-    if (has_bkgd_chunk != 0 ||
+    if (loader_cms_output_black() != NULL || has_bkgd_chunk != 0 ||
         (cicp_name != NULL && strcmp(cicp_name, "srgb") != 0)) {
         return sixel_frompng_load_nonindexed(chunk,
                                              allocator,

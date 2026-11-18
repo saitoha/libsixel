@@ -4774,6 +4774,7 @@ int test_hdr_numeric_12(int argc, char **argv);
 int test_hdr_numeric_13(int argc, char **argv);
 int test_png_hdr_17(int argc, char **argv);
 int test_bpc_00(int argc, char **argv);
+int test_output_bpc_float(int argc, char **argv);
 int test_bpc_01(int argc, char **argv);
 int test_bpc_02(int argc, char **argv);
 int test_bpc_03(int argc, char **argv);
@@ -14292,6 +14293,7 @@ static test_entry_t const test_entries[] = {
     { "hdr/0014_reinhard_samples", test_hdr_numeric_13 },
     { "png-hdr/0017_builtin_bmp_pq8_alpha", test_png_hdr_17 },
     { "bpc/0001_default_off", test_bpc_00 },
+    { "bpc/output_float", test_output_bpc_float },
     { "bpc/0002_relative_endpoints", test_bpc_01 },
     { "bpc/0003_rgb8", test_bpc_02 },
     { "bpc/0004_rgba16_once", test_bpc_03 },

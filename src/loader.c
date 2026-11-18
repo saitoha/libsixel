@@ -83,6 +83,8 @@
 #endif
 
 #include <sixel.h>
+#include "cms.h"
+#include "frompng.h"
 #include "loader.h"
 #include "loader-builtin.h"
 #include "loader-common.h"
@@ -133,6 +135,8 @@ struct sixel_loader {
     int loop_control;
     int finsecure;
     int prefer_float32;
+    int output_bpc;
+    double output_bpc_black;
     int thumbnail_size_hint;
     int has_start_frame_no;
     int start_frame_no;
@@ -916,6 +920,8 @@ sixel_loader_new(
     loader->loop_control = SIXEL_LOOP_AUTO;
     loader->finsecure = 0;
     loader->prefer_float32 = 0;
+    loader->output_bpc = 0;
+    loader->output_bpc_black = 0.0;
     loader->thumbnail_size_hint = 0;
     loader->has_start_frame_no = 0;
     loader->start_frame_no = INT_MIN;
@@ -1205,6 +1211,13 @@ sixel_loader_set_prefer_float32(sixel_loader_t *loader, int prefer_float32)
 }
 
 SIXEL_INTERNAL_API void
+sixel_loader_set_output_bpc(sixel_loader_t *loader, double black)
+{
+    loader->output_bpc_black = black;
+    loader->output_bpc = 1;
+}
+
+SIXEL_INTERNAL_API void
 sixel_loader_set_thumbnail_size_hint(sixel_loader_t *loader, int size)
 {
     if (loader == NULL) {
@@ -1256,6 +1269,40 @@ loader_resolution_assigns_binding(
 }
 
 static SIXELSTATUS
+loader_validate_output_bpc(sixel_chunk_t const *chunk)
+{
+    unsigned int order;
+    int intent;
+
+    if (loader_cms_black_point_compensation()) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 conflicts with loader cms_bpc=1.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    order = loader_cms_rendering_intent_order();
+    if (order != 0u &&
+        (sixel_option_choice_list_count(order) != 1u ||
+         !sixel_option_choice_list_value_at(order, 0u, &intent) ||
+         intent != SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires relative cms_intent.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (loader_cms_prefer_8bit()) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires float pixels (prefer_8bit=0).");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_frompng_supports_output_bpc(sixel_chunk_get_buffer(chunk),
+                                          sixel_chunk_get_size(chunk))) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires static RGB or RGBA PNG.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 loader_load_source(sixel_loader_t *loader, char const *filename,
                     sixel_chunk_t *input_chunk,
                     sixel_load_image_function fn_load)
@@ -1273,6 +1320,7 @@ loader_load_source(sixel_loader_t *loader, char const *filename,
     sixel_option_argument_list_resolution_t order_resolution;
     sixel_loader_suboptions_t active_suboptions;
     sixel_loader_suboptions_t const *previous_active_suboptions;
+    double const *previous_output_black;
     sixel_loader_manager_build_request_t build_request;
     sixel_loader_osc11_bg_query_job_t osc11_query_job;
     int osc11_timeout_ms;
@@ -1293,6 +1341,7 @@ loader_load_source(sixel_loader_t *loader, char const *filename,
     chunk_source_path = NULL;
     active_order_resolution = NULL;
     previous_active_suboptions = NULL;
+    previous_output_black = NULL;
     osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
     osc11_bgcolor_applied = 0;
     thread_status = SIXEL_FALSE;
@@ -1473,7 +1522,13 @@ loader_load_source(sixel_loader_t *loader, char const *filename,
     if (sixel_chunk_get_size(pchunk) == 0 ||
             (sixel_chunk_get_size(pchunk) == 1 &&
              *sixel_chunk_get_buffer(pchunk) == '\n')) {
-        status = SIXEL_OK;
+        if (loader->output_bpc) {
+            sixel_helper_set_additional_message(
+                "ICC output bpc=1 requires static RGB or RGBA PNG.");
+            status = SIXEL_BAD_ARGUMENT;
+        } else {
+            status = SIXEL_OK;
+        }
         goto end;
     }
 
@@ -1494,7 +1549,15 @@ loader_load_source(sixel_loader_t *loader, char const *filename,
     status = SIXEL_FALSE;
     previous_active_suboptions =
         sixel_loader_activate_suboptions(&active_suboptions);
+    previous_output_black = loader_cms_set_output_black(loader->output_bpc
+        ? &loader->output_bpc_black : NULL);
     suboptions_active = 1;
+    if (loader->output_bpc) {
+        status = loader_validate_output_bpc(pchunk);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     /*
      * Resolve OSC11 before build_chain so component options are finalized
      * once during chain construction.
@@ -1597,6 +1660,7 @@ loader_load_source(sixel_loader_t *loader, char const *filename,
 end:
     if (suboptions_active != 0) {
         sixel_loader_restore_suboptions(previous_active_suboptions);
+        (void)loader_cms_set_output_black(previous_output_black);
     }
     if (osc11_bgcolor_applied != 0) {
         sixel_helper_set_loader_background_colorspace(-1);

@@ -1306,6 +1306,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "      dci-p3 -> P3 primaries, DCI white, power 2.6\n"
         "      icc[:path=FILE] -> RGB ICC endpoint (compact :PFILE)\n"
         "    icc: path=P; SIXEL_OUTPUT_COLORSPACE_ICC_PATH supplies default\n"
+        "    icc: bpc=B accepts 0 (default) or 1.\n"
+        "    SIXEL_OUTPUT_COLORSPACE_ICC_BPC supplies its default.\n"
+        "    bpc=1 matches the input ICC black to the output ICC black\n"
+        "    before palette construction. Requires relative builtin CMS,\n"
+        "    static RGB/RGBA PNG with ICC, float, and cms_bpc=0.\n"
         "    all: gamut=G accepts auto(default), clip, local-minde,\n"
         "         edge-seeker, ray-trace;\n"
         "    SIXEL_OUTPUT_COLORSPACE_GAMUT supplies its default.\n"
@@ -1473,6 +1478,11 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_OUTPUT_COLORSPACE_ICC_PATH",
         "ICC file path for -U icc. Explicit icc:path=FILE (icc:PFILE) wins."
+    },
+    {
+        "SIXEL_OUTPUT_COLORSPACE_ICC_BPC",
+        "Default for explicit ICC output black point compensation. "
+        "Use icc:bpc=0 or icc:bpc=1 to override."
     },
     {
         "SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH",

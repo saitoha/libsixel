@@ -107,6 +107,12 @@ sixel_loader_suboptions_t const *sixel_loader_active_suboptions(void);
 
 SIXEL_INTERNAL_API int loader_cms_black_point_compensation(void);
 
+SIXEL_INTERNAL_API double const *
+loader_cms_output_black(void);
+
+SIXEL_INTERNAL_API double const *
+loader_cms_set_output_black(double const *black);
+
 /* HDR source selection is separate from ICC profile evaluation. */
 SIXEL_INTERNAL_API char const *
 loader_hdr_source(char const *base, char const *metadata);

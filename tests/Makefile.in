@@ -1657,6 +1657,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/processing/cms/hdr_finish_common.h \
 	color/bpc/0020_relative_before_cached_float.c \
 	color/bpc/0021_relative_before_cached_byte.c \
+	color/bpc/0022_output_bpc_builtin_float.c \
 	color/hdr/0015_auto_negative_exposure.c \
 	color/hdr/0016_reinhard_negative_exposure.c \
 	color/hdr/0017_auto_signed_colors.c \
@@ -7407,6 +7408,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader-png/hdr/test_runner-0017_builtin_bmp_pq8_alpha.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0020_relative_before_cached_float.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0021_relative_before_cached_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/bpc/test_runner-0022_output_bpc_builtin_float.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0015_auto_negative_exposure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0016_reinhard_negative_exposure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/hdr/test_runner-0017_auto_signed_colors.$(OBJEXT) \
@@ -12222,6 +12224,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/bpc/$(DEPDIR)/test_runner-0019_mixed_before_relative_byte.Po \
 	color/bpc/$(DEPDIR)/test_runner-0020_relative_before_cached_float.Po \
 	color/bpc/$(DEPDIR)/test_runner-0021_relative_before_cached_byte.Po \
+	color/bpc/$(DEPDIR)/test_runner-0022_output_bpc_builtin_float.Po \
 	color/cms/$(DEPDIR)/test_runner-0007_named_xyz.Po \
 	color/cms/$(DEPDIR)/test_runner-0008_simple_power.Po \
 	color/cms/$(DEPDIR)/test_runner-0009_icc_source_lifetime.Po \
@@ -18011,6 +18014,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_SELECTED_FRAME_EXPORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_OUTPUT_BPC_BUILTIN_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_AUTO_NEGATIVE_EXPOSURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_REINHARD_NEGATIVE_EXPOSURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_AUTO_SIGNED_COLORS \
@@ -25174,6 +25178,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/cms/hdr_finish_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0020_relative_before_cached_float.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0021_relative_before_cached_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/bpc/0022_output_bpc_builtin_float.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0015_auto_negative_exposure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0016_reinhard_negative_exposure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/hdr/0017_auto_signed_colors.c \
@@ -29927,7 +29932,10 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-fuzz-triage-artifacts.sh \
 	_static/awk/c-configured-features.awk \
 	_static/data/c-configured-features-legacy.tsv \
-	_static/sh/staticcheck-c-configured-features.sh
+	_static/sh/staticcheck-c-configured-features.sh \
+	data/color-numeric/output-bpc.icc \
+	data/color-numeric/output-bpc-rgba16.png \
+	data/color-numeric/output-bpc-rgba16-reference.png
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -34883,6 +34891,8 @@ loader-png/hdr/test_runner-0017_builtin_bmp_pq8_alpha.$(OBJEXT):  \
 color/bpc/test_runner-0020_relative_before_cached_float.$(OBJEXT):  \
 	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
 color/bpc/test_runner-0021_relative_before_cached_byte.$(OBJEXT):  \
+	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
+color/bpc/test_runner-0022_output_bpc_builtin_float.$(OBJEXT):  \
 	color/bpc/$(am__dirstamp) color/bpc/$(DEPDIR)/$(am__dirstamp)
 color/hdr/test_runner-0015_auto_negative_exposure.$(OBJEXT):  \
 	color/hdr/$(am__dirstamp) color/hdr/$(DEPDIR)/$(am__dirstamp)
@@ -48830,6 +48840,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0019_mixed_before_relative_byte.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0020_relative_before_cached_float.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0021_relative_before_cached_byte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/bpc/$(DEPDIR)/test_runner-0022_output_bpc_builtin_float.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0007_named_xyz.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0008_simple_power.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/cms/$(DEPDIR)/test_runner-0009_icc_source_lifetime.Po@am__quote@ # am--include-marker
@@ -75226,6 +75237,20 @@ color/bpc/test_runner-0021_relative_before_cached_byte.obj: color/bpc/0021_relat
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0021_relative_before_cached_byte.c' object='color/bpc/test_runner-0021_relative_before_cached_byte.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0021_relative_before_cached_byte.obj `if test -f 'color/bpc/0021_relative_before_cached_byte.c'; then $(CYGPATH_W) 'color/bpc/0021_relative_before_cached_byte.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0021_relative_before_cached_byte.c'; fi`
+
+color/bpc/test_runner-0022_output_bpc_builtin_float.o: color/bpc/0022_output_bpc_builtin_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0022_output_bpc_builtin_float.o -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0022_output_bpc_builtin_float.Tpo -c -o color/bpc/test_runner-0022_output_bpc_builtin_float.o `test -f 'color/bpc/0022_output_bpc_builtin_float.c' || echo '$(srcdir)/'`color/bpc/0022_output_bpc_builtin_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0022_output_bpc_builtin_float.Tpo color/bpc/$(DEPDIR)/test_runner-0022_output_bpc_builtin_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0022_output_bpc_builtin_float.c' object='color/bpc/test_runner-0022_output_bpc_builtin_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0022_output_bpc_builtin_float.o `test -f 'color/bpc/0022_output_bpc_builtin_float.c' || echo '$(srcdir)/'`color/bpc/0022_output_bpc_builtin_float.c
+
+color/bpc/test_runner-0022_output_bpc_builtin_float.obj: color/bpc/0022_output_bpc_builtin_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/bpc/test_runner-0022_output_bpc_builtin_float.obj -MD -MP -MF color/bpc/$(DEPDIR)/test_runner-0022_output_bpc_builtin_float.Tpo -c -o color/bpc/test_runner-0022_output_bpc_builtin_float.obj `if test -f 'color/bpc/0022_output_bpc_builtin_float.c'; then $(CYGPATH_W) 'color/bpc/0022_output_bpc_builtin_float.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0022_output_bpc_builtin_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/bpc/$(DEPDIR)/test_runner-0022_output_bpc_builtin_float.Tpo color/bpc/$(DEPDIR)/test_runner-0022_output_bpc_builtin_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/bpc/0022_output_bpc_builtin_float.c' object='color/bpc/test_runner-0022_output_bpc_builtin_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/bpc/test_runner-0022_output_bpc_builtin_float.obj `if test -f 'color/bpc/0022_output_bpc_builtin_float.c'; then $(CYGPATH_W) 'color/bpc/0022_output_bpc_builtin_float.c'; else $(CYGPATH_W) '$(srcdir)/color/bpc/0022_output_bpc_builtin_float.c'; fi`
 
 color/hdr/test_runner-0015_auto_negative_exposure.o: color/hdr/0015_auto_negative_exposure.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/hdr/test_runner-0015_auto_negative_exposure.o -MD -MP -MF color/hdr/$(DEPDIR)/test_runner-0015_auto_negative_exposure.Tpo -c -o color/hdr/test_runner-0015_auto_negative_exposure.o `test -f 'color/hdr/0015_auto_negative_exposure.c' || echo '$(srcdir)/'`color/hdr/0015_auto_negative_exposure.c

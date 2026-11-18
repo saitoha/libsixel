@@ -335,6 +335,11 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     arguments[count++] = "-z0";
     arguments[count++] =
         "-Llibpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!";
+    if (color_auto_is(name, "loader-bpc")) {
+        /* Input BPC is active; the ICC-output default has no auto scope. */
+        setenv("SIXEL_OUTPUT_COLORSPACE_ICC_BPC", "1", 1);
+        arguments[count - 1] = "-Llibpng:Ebuiltin:L1:Rrelative!!";
+    }
     arguments[count++] = "-jscalar:resize_precision=float";
     arguments[count++] = "--precision-policy=auto";
     arguments[count++] = "-Qkmeans:seed=1";
@@ -764,6 +769,7 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
 
     saved = strncmp(name, "save-", 5u) == 0 ? name[5] - '0' : 0;
     selected = color_auto_is(name, "srgb") ||
+        color_auto_is(name, "loader-bpc") ||
         color_auto_is(name, "gamut") || color_auto_is(name, "edge") ||
         color_auto_is(name, "ray") ||
         color_auto_is(name, "unsupported") ||
@@ -959,6 +965,7 @@ test_cli_0039_color_auto(int argc, char **argv)
         "save-2",
         "save-3",
         "srgb",
+        "loader-bpc",
         "legacy",
         "silent",
         "unsupported",
@@ -1095,6 +1102,11 @@ test_cli_0039_color_auto(int argc, char **argv)
         wire_arguments[1] = "libpng-p3-16";
         wire_arguments[2] = combined;
         return test_cli_0036_color_wire(3, wire_arguments);
+    }
+    if (color_auto_is(argv[1], "loader-bpc") &&
+        strstr(peer.trace, "LSXBPC1|engine=builtin|prepared=1|"
+            "source=0.25|destination=0") == NULL) {
+        return color_auto_error("loader black point adjustment missing");
     }
     if (!color_auto_start(&baseline, argv[1], argv[2], argv[3], 1)) {
         return 1;
