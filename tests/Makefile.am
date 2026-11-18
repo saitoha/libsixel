@@ -13915,6 +13915,7 @@ EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
     _static/sh/staticcheck-cosmocc-cache-digest.sh \
     _static/sh/staticcheck-ci-msvc-complete-build.sh \
     _static/sh/staticcheck-ci-haiku-test-deps.sh \
+    _static/sh/staticcheck-ci-msys-meson-gcov.sh \
     _static/sh/staticcheck-configure-wic-scope.sh \
     _static/sh/staticcheck-test-unity-feature-namespace.sh \
     _static/sh/staticcheck-pty-open-flags.sh \

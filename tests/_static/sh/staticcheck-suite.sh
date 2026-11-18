@@ -1278,6 +1278,10 @@ run_case_tap "staticcheck-ci-tsan-shards" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-tsan-shards.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-ci-msys-meson-gcov" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-msys-meson-gcov.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-cosmocc-cache-digest" \
     sh "$src_root/tests/_static/sh/staticcheck-cosmocc-cache-digest.sh" \
     "$src_root" || fail_and_exit $?

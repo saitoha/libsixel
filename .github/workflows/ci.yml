@@ -3934,8 +3934,10 @@ jobs:
               mingw-w64-clang-x86_64-lcov
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-1-of-5
-            test_shard: 1/5
+          # MSYS GCC tests share .gcda files within a build. Run one test
+          # at a time and use separate shard builds for parallelism.
+          - label: Meson-msys2-msys-gcc-coverage-1-of-19
+            test_shard: 1/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3947,10 +3949,11 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-2-of-5
-            test_shard: 2/5
+          - label: Meson-msys2-msys-gcc-coverage-2-of-19
+            test_shard: 2/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3962,10 +3965,11 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-3-of-5
-            test_shard: 3/5
+          - label: Meson-msys2-msys-gcc-coverage-3-of-19
+            test_shard: 3/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3977,10 +3981,11 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-4-of-5
-            test_shard: 4/5
+          - label: Meson-msys2-msys-gcc-coverage-4-of-19
+            test_shard: 4/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -3992,10 +3997,11 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
-          - label: Meson-msys2-msys-gcc-coverage-5-of-5
-            test_shard: 5/5
+          - label: Meson-msys2-msys-gcc-coverage-5-of-19
+            test_shard: 5/19
             buildtool: meson
             runner: windows-latest
             msystem: MSYS
@@ -4007,6 +4013,231 @@ jobs:
               meson
               gcc
               lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-6-of-19
+            test_shard: 6/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-7-of-19
+            test_shard: 7/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-8-of-19
+            test_shard: 8/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-9-of-19
+            test_shard: 9/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-10-of-19
+            test_shard: 10/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-11-of-19
+            test_shard: 11/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-12-of-19
+            test_shard: 12/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-13-of-19
+            test_shard: 13/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-14-of-19
+            test_shard: 14/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-15-of-19
+            test_shard: 15/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-16-of-19
+            test_shard: 16/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-17-of-19
+            test_shard: 17/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-18-of-19
+            test_shard: 18/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage-19-of-19
+            test_shard: 19/19
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            check_target: test --num-processes 1
             exec_type: msys2
 
     steps:
