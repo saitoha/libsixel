@@ -108,7 +108,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CHECKOUT_REF: ${{ inputs.checkout_ref || (github.event_name == 'push' && github.ref) || '' }}
           CHECKOUT_SHA: ${{ inputs.checkout_sha || (github.event_name == 'push' && github.sha) || '' }}
-          MAX_JOBS: ${{ inputs.max_jobs || (github.event_name == 'push' && '32') || '8' }}
+          MAX_JOBS: ${{ inputs.max_jobs || (github.event_name == 'push' && '64') || '8' }}
           SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch || inputs.source_branch || 'develop' }}
           SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id || '' }}
           SOURCE_WORKFLOW_NAME: ${{ github.event.workflow_run.name || '' }}
