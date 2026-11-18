@@ -14095,3 +14095,8 @@ EXTRA_DIST += data/color-numeric/cli-bpc.png \
 
 EXTRA_DIST += loader/gif/0084_selected_frame_export.c \
     loader/gif/0084_selected_frame_export.t
+
+EXTRA_DIST += _static/awk/fuzz-triage-registration.awk \
+    _static/awk/ruby-test-scope.awk \
+    _static/sh/staticcheck-fuzz-triage-registration.sh \
+    _static/sh/staticcheck-fuzz-triage-artifacts.sh

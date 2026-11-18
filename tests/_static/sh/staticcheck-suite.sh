@@ -1394,6 +1394,14 @@ run_case_tap "staticcheck-shell-field-delimiters" \
     "$src_root/tests/_static/sh/staticcheck-shell-field-delimiters.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-fuzz-triage-registration" \
+    "$src_root/tests/_static/sh/staticcheck-fuzz-triage-registration.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-fuzz-triage-artifacts" \
+    "$src_root/tests/_static/sh/staticcheck-fuzz-triage-artifacts.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-source-inventory" \
     "$src_root/tests/_static/sh/staticcheck-source-inventory.sh" \
     "$src_root" || fail_and_exit $?

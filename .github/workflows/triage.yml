@@ -424,15 +424,23 @@ jobs:
           end
 
           def fuzzing_replay_entry(job_id, job, entry, source)
-            case job_id
-            when 'fuzz_push_cms_builtin'
+            # Corpus replays declare their inputs in the source job. Keep
+            # target-specific paths out of the replay dispatcher.
+            replay = job.fetch('env', {})
+            if replay.key?('FUZZ_REPLAY_HARNESS')
+              harness = replay.fetch('FUZZ_REPLAY_HARNESS')
               label = buildtool_prefix(
                 entry,
                 'Autotools-ubuntu-x86_64-clang',
                 'Meson-ubuntu-x86_64-clang'
-              ) + '-fuzz-cms-builtin'
-              fuzzing_entry('cms_builtin', label, job.fetch('runs-on'),
-                entry.fetch('buildtool'), 'cms-builtin', source)
+              ) + '-' + harness.sub(/-libfuzzer\z/, '')
+              return fuzzing_entry('corpus', label, job.fetch('runs-on'),
+                entry.fetch('buildtool'), harness, source).merge(
+                  'corpus_path' => replay.fetch('FUZZ_REPLAY_CORPUS'),
+                  'artifact_path' => replay.fetch('FUZZ_REPLAY_ARTIFACT_DIR'))
+            end
+
+            case job_id
             when 'fuzz_push_full', 'fuzz_push_encode_helpers'
               kind = job_id == 'fuzz_push_full' ? 'struct' : 'image_api'
               buildtool = entry.fetch('buildtool')
@@ -844,7 +852,7 @@ jobs:
             || matrix.kind == 'loader_format'
             || matrix.kind == 'loader_autodetect'
             || matrix.kind == 'image_api'
-            || matrix.kind == 'cms_builtin'
+            || matrix.kind == 'corpus'
           }}
         shell: bash
         run: |
@@ -895,10 +903,17 @@ jobs:
         run: |
           & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch x64
 
-      - name: Run raw ICC seed replay
-        if: ${{ matrix.kind == 'cms_builtin' }}
+      - name: Run libFuzzer corpus replay
+        if: ${{ matrix.kind == 'corpus' }}
         shell: bash
-        run: bash .github/scripts/replay-cms-builtin.sh "${{ matrix.buildtool }}"
+        env:
+          FUZZ_REPLAY_HARNESS: ${{ matrix.target }}
+          FUZZ_REPLAY_CORPUS: ${{ matrix.corpus_path }}
+          FUZZ_REPLAY_ARTIFACT_DIR: ${{ matrix.artifact_path }}
+        run: |
+          bash .github/scripts/replay-libfuzzer-corpus.sh \
+            "${{ matrix.buildtool }}" "$FUZZ_REPLAY_HARNESS" \
+            "$FUZZ_REPLAY_CORPUS" "$FUZZ_REPLAY_ARTIFACT_DIR"
 
       - name: Run Ubuntu libFuzzer replay
         if: >-

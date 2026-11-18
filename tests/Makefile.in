@@ -29747,7 +29747,11 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	data/color-numeric/cli-bpc.png \
 	data/color-numeric/cli-bpc-reference.png \
 	loader/gif/0084_selected_frame_export.c \
-	loader/gif/0084_selected_frame_export.t
+	loader/gif/0084_selected_frame_export.t \
+	_static/awk/fuzz-triage-registration.awk \
+	_static/awk/ruby-test-scope.awk \
+	_static/sh/staticcheck-fuzz-triage-registration.sh \
+	_static/sh/staticcheck-fuzz-triage-artifacts.sh
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
