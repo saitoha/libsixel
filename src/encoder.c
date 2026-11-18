@@ -6568,6 +6568,7 @@ sixel_encoder_sample_frame(
     config.quality_mode = encoder->quality_mode;
     config.palette_sample_override = encoder->palette_sample_override;
     config.palette_sample_target = encoder->palette_sample_target;
+    config.skip_solid = encoder->palette_sample_solid == 0;
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_SAMPLE,
                                                  &config,
@@ -12564,6 +12565,8 @@ sixel_encoder_new(
         SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
     (*ppencoder)->palette_sample_target = 0u;
     (*ppencoder)->palette_sample_override = 0;
+    (*ppencoder)->palette_sample_solid = 1;
+    (*ppencoder)->palette_sample_solid_override = 0;
     (*ppencoder)->force_palette         = 0;
     (*ppencoder)->mapfile               = NULL;
     (*ppencoder)->palette_output        = NULL;

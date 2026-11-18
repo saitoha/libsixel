@@ -190,6 +190,8 @@ struct sixel_encoder {
     int palette_binning_origin;   /* source of the configured policy */
     size_t palette_sample_target;   /* target sample count for palette */
     int palette_sample_override;    /* non-zero when env requested target */
+    int palette_sample_solid;       /* solid-region augmentation on/off */
+    int palette_sample_solid_override; /* non-zero when configured */
     int force_palette;              /* force palette size when non-zero */
     int color_option;
     char *mapfile;

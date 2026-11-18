@@ -94,6 +94,7 @@
 #include "compat_stub.h"
 #include "pthread-once.h"
 #include "threading.h"
+#include "sixel_atomic.h"
 #include "options.h"
 #include "options-registry.h"
 
@@ -1081,6 +1082,13 @@ sixel_threads_normalize(int requested)
 }
 
 static sixel_thread_budget_scope_t *g_thread_budget_scopes;
+/*
+ * Scopes in the list whose policy carries a work hook. Writers hold the
+ * config lock; sixel_thread_work_event() reads it without the lock. A hook
+ * matches only scopes owned by the calling thread, and that thread's own
+ * enter is ordered before its events, so a zero read can skip the lookup.
+ */
+static sixel_atomic_i32_t g_thread_work_hooks;
 
 void
 sixel_threading_policy_enter(sixel_thread_budget_scope_t *scope,
@@ -1096,6 +1104,10 @@ sixel_threading_policy_enter(sixel_thread_budget_scope_t *scope,
     sixel_thread_config_lock();
     scope->next = g_thread_budget_scopes;
     g_thread_budget_scopes = scope;
+    if (scope->policy.work != NULL) {
+        sixel_atomic_store_relaxed_i32(&g_thread_work_hooks,
+            sixel_atomic_load_relaxed_i32(&g_thread_work_hooks) + 1);
+    }
     sixel_thread_config_unlock();
 }
 
@@ -1134,6 +1146,10 @@ sixel_thread_budget_leave(sixel_thread_budget_scope_t *scope)
             link = &(*link)->next) {
         if (*link == scope) {
             *link = scope->next;
+            if (scope->policy.work != NULL) {
+                sixel_atomic_store_relaxed_i32(&g_thread_work_hooks,
+                    sixel_atomic_load_relaxed_i32(&g_thread_work_hooks) - 1);
+            }
             break;
         }
     }
@@ -1359,7 +1375,12 @@ sixel_thread_work_event(int begin)
     sixel_thread_identity_t owner;
 
     /* No active operation means no hook. Do not resolve defaults or probe
-     * topology at a serial solver checkpoint outside an encoder scope. */
+     * topology at a serial solver checkpoint outside an encoder scope.
+     * Pool pushes and drains call this on every job; without any hooked
+     * scope, avoid serializing all workers on the config lock. */
+    if (sixel_atomic_load_relaxed_i32(&g_thread_work_hooks) == 0) {
+        return;
+    }
     owner = sixel_thread_identity_current();
     memset(&policy, 0, sizeof(policy));
     sixel_thread_config_lock();

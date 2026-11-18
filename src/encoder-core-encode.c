@@ -134,6 +134,12 @@ typedef struct sixel_band_state {
      */
     int fill_mask;
     int active_color_count;
+    /*
+     * Set when compose consumed (and zeroed) every active color's occupancy
+     * and emit zeroed every node span of the map. Only the active-color
+     * flags then remain for finish; otherwise finish clears everything.
+     */
+    int spans_cleared;
 } sixel_band_state_t;
 
 static int
@@ -1510,19 +1516,11 @@ sixel_parallel_worker_one(sixel_thread_pool_job_t job,
         goto cleanup;
     }
 
+    /* context_begin resets every band before the writer starts, and the
+     * dispatched flag admits each band once per frame. The writer reads a
+     * band only after ready is published below, so no reset (and no lock
+     * round trip per band) is needed here. */
     band = &ctx->bands[band_index];
-    if (ctx->mutex_ready) {
-        /* Synchronize band state reset with the writer thread. */
-        sixel_mutex_lock(&ctx->mutex);
-        band->used = 0;
-        band->status = SIXEL_OK;
-        band->ready = 0;
-        sixel_mutex_unlock(&ctx->mutex);
-    } else {
-        band->used = 0;
-        band->status = SIXEL_OK;
-        band->ready = 0;
-    }
 
     sixel_fence_acquire();
 
@@ -3444,6 +3442,7 @@ sixel_band_state_reset(sixel_band_state_t *state)
     state->fillable = 0;
     state->fill_mask = 0;
     state->active_color_count = 0;
+    state->spans_cleared = 0;
 }
 
 static void
@@ -3462,6 +3461,29 @@ sixel_band_finish(sixel_encode_work_t *work, sixel_band_state_t *state,
     if (work->active_colors == NULL
         || work->active_color_index == NULL) {
         state->active_color_count = 0;
+        return;
+    }
+
+    /* A completed band already returned its map spans and occupancy words
+     * to zero while they were hot in cache. */
+    if (state->spans_cleared) {
+        for (c = 0; c < state->active_color_count; c++) {
+            work->active_colors[work->active_color_index[c]] = 0;
+        }
+        state->active_color_count = 0;
+        state->spans_cleared = 0;
+        return;
+    }
+
+    /* Compose may have consumed some occupancy words before a failure, so
+     * the range search below cannot be trusted: clear the whole area. */
+    if (state->spans_cleared < 0) {
+        memset(work->map, 0, work->map_size);
+        memset(work->occupancy, 0, work->active_colors_size *
+               work->occupancy_words * sizeof(uint64_t));
+        memset(work->active_colors, 0, work->active_colors_size);
+        state->active_color_count = 0;
+        state->spans_cleared = 0;
         return;
     }
 
@@ -3801,7 +3823,9 @@ sixel_band_compose(sixel_encode_work_t *work,
     int next_column;
     size_t word_index;
     uint64_t bits;
-    uint64_t const *occupancy;
+    uint64_t *occupancy;
+    size_t first_word;
+    int last_column;
     sixel_node_t *np;
     sixel_node_t *column_head;
     sixel_node_t *column_tail;
@@ -3814,7 +3838,12 @@ sixel_band_compose(sixel_encode_work_t *work,
     column_tail = NULL;
 
     /* Successful emission empties every bucket and its start bit. Failure
-     * destroys the work area before another band can be admitted. */
+     * destroys the work area before another band can be admitted.
+     * Occupancy words are zeroed as each color is consumed; from here on
+     * finish must not search them unless emission completes. */
+    if (state->active_color_count > 0) {
+        state->spans_cleared = -1;
+    }
 
     for (color_index = 0;
          color_index < state->active_color_count;
@@ -3826,6 +3855,8 @@ sixel_band_compose(sixel_encode_work_t *work,
         bits = occupancy[0];
         sx = sixel_compose_next_column(occupancy, work->occupancy_words,
                                        &word_index, &bits, width);
+        first_word = (size_t)(unsigned int)sx / 64U;
+        last_column = sx;
         while (sx < width) {
             mx = sx + 1;
             next_column = sixel_compose_next_column(occupancy,
@@ -3872,7 +3903,14 @@ sixel_band_compose(sixel_encode_work_t *work,
                 column_tail->next = np;
             }
 
+            last_column = mx - 1;
             sx = next_column;
+        }
+        /* Every set bit lies between the first and last occupied column. */
+        if (last_column < width) {
+            memset(occupancy + first_word, 0,
+                   ((size_t)(unsigned int)last_column / 64U - first_word
+                    + 1U) * sizeof(uint64_t));
         }
     }
 
@@ -3945,6 +3983,9 @@ sixel_band_emit(sixel_encode_work_t *work,
             }
             status = sixel_put_node(output, &x, node, ncolors, keycolor);
             if (SIXEL_FAILED(status)) return status;
+            /* Classify set only occupied columns, and composed spans cover
+             * all of them: zeroing the span restores this color's row. */
+            memset(node->map + node->sx, 0, (size_t)(node->mx - node->sx));
 
             /* Transfer ownership only after emission. Remaining ties stay
              * in the bucket; clear its bit only when the last node leaves. */
@@ -3959,6 +4000,9 @@ sixel_band_emit(sixel_encode_work_t *work,
         } while (sx < width);
         /* Size policy underpaints only its first nonoverlapping sweep. */
         state->fillable = 0;
+    }
+    if (state->spans_cleared < 0) {
+        state->spans_cleared = 1;
     }
     return SIXEL_OK;
 }
@@ -4094,6 +4138,7 @@ sixel_encode_body(
         band.fillable = 0;
         band.fill_mask = 0;
         band.active_color_count = 0;
+        band.spans_cleared = 0;
 
         if (logging_active) {
             sixel_timeline_logger_logf(logger,

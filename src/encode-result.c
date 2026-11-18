@@ -370,8 +370,16 @@ sixel_indexed_frame_publish_internal(sixel_indexed_frame_t *image, int rows,
     int previous;
     size_t i;
     size_t end;
+    size_t count;
     unsigned int code;
-    SIXELSTATUS status;
+    unsigned int index;
+    unsigned int key;
+    unsigned int paint;
+    unsigned int opaque;
+    unsigned int normalize;
+    unsigned int bad;
+    unsigned char *skip;
+    sixel_index_t const *indexes;
 
     if (image == NULL || rows < 0 || rows > image->description.height) {
         return SIXEL_BAD_ARGUMENT;
@@ -381,34 +389,45 @@ sixel_indexed_frame_publish_internal(sixel_indexed_frame_t *image, int rows,
             rows < previous) {
         return SIXEL_LOGIC_ERROR;
     }
-    status = SIXEL_OK;
     end = (size_t)rows * (size_t)image->description.width;
+    skip = image->skip;
+    indexes = image->indexes;
+    /* Without a palette every painted pixel is out of range. */
+    count = image->description.palette != NULL ?
+        (size_t)image->description.palette->view.count : 0u;
+    /* An index never equals a key outside 0..255, so 256 matches nothing. */
+    key = image->description.keycolor >= 0 &&
+        image->description.keycolor <= 255 ?
+        (unsigned int)image->description.keycolor : 256u;
+    opaque = image->description.transparent_background ? 0u : 1u;
+    normalize = applied ? 1u : 0u;
+    bad = 0u;
+    /*
+     * A video frame is a megapixel scan whose paint/keep pattern follows the
+     * picture, so per-pixel branches mispredicted for up to about 3 ms per
+     * frame on the serial resolve path.  Accumulate violations with flag
+     * arithmetic instead; a rejected frame fails as a whole, so stopping at
+     * the first violation buys nothing.
+     *
+     * A non-reserved transparent palette entry can be selected by the legacy
+     * kernel.  Applied output normalizes it to KEEP in this same scan.
+     */
     for (i = (size_t)previous * image->description.width; i < end; ++i) {
-        code = image->skip[i];
-        /* A non-reserved transparent palette entry can be selected by the
-         * legacy kernel. Normalize it before publication, in this same scan. */
-        if (applied && (int)image->indexes[i] == image->description.keycolor &&
-                code == SIXEL_INDEXED_PAINT) {
-            code = SIXEL_INDEXED_KEEP;
-            image->skip[i] = (unsigned char)code;
-        }
-        if (code != SIXEL_INDEXED_PAINT) {
-            if (!image->description.transparent_background ||
-                    (code != SIXEL_INDEXED_KEEP &&
-                     code != SIXEL_INDEXED_KEEP_APPROXIMATE)) {
-                status = SIXEL_BAD_ARGUMENT;
-                break;
-            }
-        } else if ((size_t)image->indexes[i] >=
-                image->description.palette->view.count ||
-                (int)image->indexes[i] == image->description.keycolor) {
-            status = SIXEL_BAD_ARGUMENT;
-            break;
-        }
+        code = skip[i];
+        index = indexes[i];
+        paint = (code == SIXEL_INDEXED_PAINT);
+        code = (normalize & paint & (index == key)) ?
+            (unsigned int)SIXEL_INDEXED_KEEP : code;
+        skip[i] = (unsigned char)code;
+        paint = (code == SIXEL_INDEXED_PAINT);
+        bad |= paint & (((size_t)index >= count) | (index == key));
+        bad |= (paint ^ 1u) & (opaque |
+            ((code != SIXEL_INDEXED_KEEP) &
+             (code != SIXEL_INDEXED_KEEP_APPROXIMATE)));
     }
-    if (SIXEL_FAILED(status)) {
+    if (bad) {
         sixel_indexed_frame_fail(image);
-        return status;
+        return SIXEL_BAD_ARGUMENT;
     }
     sixel_fence_release();
     sixel_atomic_store_relaxed_i32(&image->rows, rows);

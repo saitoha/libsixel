@@ -30,6 +30,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
 
 #include <sixel.h>
 
@@ -42,6 +45,7 @@
 #include "pixelformat.h"
 #include "timeline-logger.h"
 #include "threading.h"
+#include "sixel_atomic.h"
 #include <6cells.h>
 
 typedef struct sixel_filter_sample_state {
@@ -387,6 +391,126 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
     return SIXEL_OK;
 }
 
+#if SIXEL_ENABLE_THREADS
+/*
+ * Sampling runs twice per encoded frame (solid scan and grid copy). Creating
+ * and joining a pool for each call cost about 6% of playback cycles, so one
+ * idle pool is retained process-wide and resumed, as the indexed encoder
+ * core retains its band pool. A caller that finds it busy builds a private
+ * pool exactly as before. The pool's userdata is a fixed slot naming the
+ * owner's job, written only while the owner holds the cache. After fork()
+ * the child discards the inherited pool without touching its threads.
+ */
+static sixel_atomic_u32_t g_sample_pool_busy;
+static sixel_thread_pool_t *g_sample_pool;
+static sixel_filter_sample_job_t *g_sample_pool_job;
+static int g_sample_pool_jobs;
+#if !defined(_WIN32)
+static pid_t g_sample_pool_pid;
+#endif
+
+static int
+sixel_filter_sample_pooled_worker(sixel_thread_pool_job_t job,
+                                  void *userdata, void *workspace)
+{
+    return sixel_filter_sample_worker(job,
+        *(sixel_filter_sample_job_t **)userdata, workspace);
+}
+
+static sixel_thread_pool_t *
+sixel_filter_sample_pool_create(int jobs, void *userdata,
+                                sixel_thread_pool_worker_function_t worker)
+{
+    sixel_threadpool_service_t *service;
+    sixel_thread_pool_create_request_t request;
+    sixel_thread_pool_t *pool;
+    void *object;
+    SIXELSTATUS status;
+
+    pool = NULL;
+    object = NULL;
+    status = sixel_components_getservice("services/threadpool", &object);
+    if (SIXEL_SUCCEEDED(status) && object != NULL) {
+        service = (sixel_threadpool_service_t *)object;
+        memset(&request, 0, sizeof(request));
+        request.threads = jobs - 1;
+        request.queue_size = jobs;
+        request.worker = worker;
+        request.userdata = userdata;
+        status = service->vtbl->create_pool(service, &request, &pool);
+        service->vtbl->unref(service);
+    }
+    if (SIXEL_FAILED(status)) {
+        if (pool != NULL) {
+            pool->vtbl->unref(pool);
+        }
+        return NULL;
+    }
+    return pool;
+}
+
+/* Take the retained pool for JOBS partitions, resumed and ready for
+ * pushes. Returns NULL, without holding the cache, when it is busy or no
+ * retained pool can be made. */
+static sixel_thread_pool_t *
+sixel_filter_sample_pool_acquire(sixel_filter_sample_job_t *ctx)
+{
+    sixel_thread_pool_t *pool;
+
+    if (sixel_atomic_fetch_add_u32(&g_sample_pool_busy, 1u) != 0u) {
+        (void)sixel_atomic_fetch_sub_u32(&g_sample_pool_busy, 1u);
+        return NULL;
+    }
+    pool = g_sample_pool;
+#if !defined(_WIN32)
+    if (pool != NULL && g_sample_pool_pid != getpid()) {
+        /* Inherited across fork: its workers do not exist here. */
+        pool = NULL;
+        g_sample_pool = NULL;
+    }
+#endif
+    if (pool != NULL && (g_sample_pool_jobs != ctx->jobs
+            || pool->vtbl->resume(pool) != SIXEL_OK)) {
+        pool->vtbl->unref(pool);
+        pool = NULL;
+        g_sample_pool = NULL;
+    }
+    if (pool == NULL) {
+        pool = sixel_filter_sample_pool_create(ctx->jobs,
+            &g_sample_pool_job, sixel_filter_sample_pooled_worker);
+        if (pool != NULL && (pool->vtbl->drain == NULL
+                || pool->vtbl->resume == NULL)) {
+            pool->vtbl->unref(pool);
+            pool = NULL;
+        }
+        if (pool == NULL) {
+            (void)sixel_atomic_fetch_sub_u32(&g_sample_pool_busy, 1u);
+            return NULL;
+        }
+        g_sample_pool = pool;
+        g_sample_pool_jobs = ctx->jobs;
+#if !defined(_WIN32)
+        g_sample_pool_pid = getpid();
+#endif
+    }
+    g_sample_pool_job = ctx;
+    return pool;
+}
+
+/* Wait for every accepted job, then park the pool and release the cache.
+ * A pool that reports an error is discarded rather than retained. */
+static void
+sixel_filter_sample_pool_release(sixel_thread_pool_t *pool)
+{
+    if (pool->vtbl->drain(pool) != SIXEL_OK) {
+        pool->vtbl->unref(pool);
+        g_sample_pool = NULL;
+    }
+    g_sample_pool_job = NULL;
+    (void)sixel_atomic_fetch_sub_u32(&g_sample_pool_busy, 1u);
+}
+#endif
+
 /* The caller executes the last partition, using at most budget - 1 extra
  * threads. A failed pool creation falls back before any output is written;
  * rejected submissions run on the caller, disjoint from accepted jobs. */
@@ -396,41 +520,27 @@ sixel_filter_sample_dispatch(sixel_filter_sample_job_t *ctx)
     sixel_thread_pool_job_t job;
     sixel_timeline_logger_t *logger;
 #if SIXEL_ENABLE_THREADS
-    sixel_threadpool_service_t *service;
-    sixel_thread_pool_create_request_t request;
     sixel_thread_pool_t *pool;
-    void *object;
-    SIXELSTATUS status;
+    int retained;
 #endif
 
     job.band_index = 0;
 #if SIXEL_ENABLE_THREADS
     pool = NULL;
-    object = NULL;
-    status = SIXEL_FALSE;
+    retained = 0;
     if (ctx->jobs > 1) {
-        status = sixel_components_getservice("services/threadpool", &object);
-        if (SIXEL_SUCCEEDED(status) && object != NULL) {
-            service = (sixel_threadpool_service_t *)object;
-            memset(&request, 0, sizeof(request));
-            request.threads = ctx->jobs - 1;
-            request.queue_size = ctx->jobs;
-            request.worker = sixel_filter_sample_worker;
-            request.userdata = ctx;
-            status = service->vtbl->create_pool(service, &request, &pool);
-            service->vtbl->unref(service);
+        pool = sixel_filter_sample_pool_acquire(ctx);
+        retained = pool != NULL;
+        if (pool == NULL) {
+            pool = sixel_filter_sample_pool_create(ctx->jobs, ctx,
+                sixel_filter_sample_worker);
         }
     }
-    if (SIXEL_FAILED(status) || pool == NULL) {
+    if (pool == NULL) {
         ctx->jobs = 1;
     }
 #endif
     if (ctx->jobs == 1) {
-#if SIXEL_ENABLE_THREADS
-        if (pool != NULL) {
-            pool->vtbl->unref(pool);
-        }
-#endif
         /* The outer sample interval already measures serial extraction.
          * Avoid per-phase log I/O when there is no parallel work to show. */
         logger = ctx->logger;
@@ -443,11 +553,9 @@ sixel_filter_sample_dispatch(sixel_filter_sample_job_t *ctx)
         -1, -1, 0, ctx->rows, 0, ctx->rows, "threads=%d %s", ctx->jobs,
         ctx->cells != NULL ? "solid" : "grid");
 #if SIXEL_ENABLE_THREADS
-    if (pool != NULL) {
-        for (; job.band_index + 1 < ctx->jobs; ++job.band_index) {
-            if (pool->vtbl->push(pool, job) != SIXEL_OK) {
-                break;
-            }
+    for (; job.band_index + 1 < ctx->jobs; ++job.band_index) {
+        if (pool->vtbl->push(pool, job) != SIXEL_OK) {
+            break;
         }
     }
 #endif
@@ -455,7 +563,9 @@ sixel_filter_sample_dispatch(sixel_filter_sample_job_t *ctx)
         (void)sixel_filter_sample_worker(job, ctx, NULL);
     }
 #if SIXEL_ENABLE_THREADS
-    if (pool != NULL) {
+    if (retained) {
+        sixel_filter_sample_pool_release(pool);
+    } else {
         pool->vtbl->finish(pool);
         pool->vtbl->unref(pool);
     }
@@ -519,11 +629,14 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
     unsigned int *nearest;
     unsigned int index;
     unsigned char rgb[4];
-    unsigned int best_cell;
+    unsigned int *live;
+    unsigned char *means;
+    unsigned int nlive;
+    unsigned int k;
+    unsigned int best;
     unsigned int best_score;
     int have_best;
     unsigned int score;
-    unsigned char other[4];
     unsigned int d;
 
     found = 0u;
@@ -608,35 +721,46 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
      * most of what this stage costs.
      */
     {
-        nearest = (unsigned int *)sixel_allocator_calloc(
-            allocator, (size_t)SIXEL_SAMPLE_SOLID_CELLS, sizeof(unsigned int));
+        /* Rounds visit only occupied cells, in ascending cell order so ties
+         * still go to the lowest index, with each mean divided out once. */
+        nearest = (unsigned int *)sixel_allocator_malloc(
+            allocator, (size_t)SIXEL_SAMPLE_SOLID_CELLS
+                * (2u * sizeof(unsigned int) + 4u));
         if (nearest == NULL) {
             sixel_allocator_free(allocator, cells);
             return 0u;
         }
+        live = nearest + SIXEL_SAMPLE_SOLID_CELLS;
+        means = (unsigned char *)(live + SIXEL_SAMPLE_SOLID_CELLS);
+        nlive = 0u;
         for (index = 0u; index < SIXEL_SAMPLE_SOLID_CELLS; ++index) {
-            nearest[index] = ~0u;
+            if (cells[index].count == 0u) {
+                continue;
+            }
+            for (c = 0; c < depth; ++c) {
+                means[(size_t)nlive * 4u + (size_t)c] = (unsigned char)(
+                    cells[index].sum[c] / cells[index].count);
+            }
+            nearest[nlive] = ~0u;
+            live[nlive++] = index;
         }
         while (found < out_max) {
-            best_cell = 0u;
+            best = 0u;
             best_score = 0u;
             have_best = 0;
-            for (index = 0u; index < SIXEL_SAMPLE_SOLID_CELLS; ++index) {
-                if (cells[index].count == 0u) {
-                    continue;
-                }
+            for (k = 0u; k < nlive; ++k) {
                 if (found == 0u) {
-                    score = cells[index].count;
+                    score = cells[live[k]].count;
                 } else {
-                    if (nearest[index]
+                    if (nearest[k]
                             <= (unsigned int)SIXEL_SAMPLE_SOLID_SEPARATION_SQ) {
                         continue;
                     }
-                    score = nearest[index];
+                    score = nearest[k];
                 }
                 if (score > best_score) {
                     best_score = score;
-                    best_cell = index;
+                    best = k;
                     have_best = 1;
                 }
             }
@@ -644,22 +768,15 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
                 break;
             }
             for (c = 0; c < depth; ++c) {
-                rgb[c] = (unsigned char)(cells[best_cell].sum[c]
-                                         / cells[best_cell].count);
+                rgb[c] = means[(size_t)best * 4u + (size_t)c];
                 out[(size_t)found * (size_t)depth + (size_t)c] = rgb[c];
             }
             found++;
-            for (index = 0u; index < SIXEL_SAMPLE_SOLID_CELLS; ++index) {
-                if (cells[index].count == 0u) {
-                    continue;
-                }
-                for (c = 0; c < depth; ++c) {
-                    other[c] = (unsigned char)(cells[index].sum[c]
-                                               / cells[index].count);
-                }
-                d = sixel_filter_sample_color_distance_sq(other, rgb, depth);
-                if (d < nearest[index]) {
-                    nearest[index] = d;
+            for (k = 0u; k < nlive; ++k) {
+                d = sixel_filter_sample_color_distance_sq(
+                    means + (size_t)k * 4u, rgb, depth);
+                if (d < nearest[k]) {
+                    nearest[k] = d;
                 }
             }
         }
@@ -933,18 +1050,21 @@ sixel_filter_sample_copy_frame(
      * Find the solid regions before sizing the sample, because their colors
      * are appended to it and the extra rows have to be accounted for here.
      */
-    solid_count = sixel_filter_sample_collect_solid(src_pixels,
-                                                   src_width,
-                                                   src_height,
-                                                   depth,
-                                                   src_mask,
-                                                   clip_x,
-                                                   clip_y,
-                                                   width,
-                                                   height,
-                                                   solid,
-                                                   SIXEL_SAMPLE_SOLID_MAX,
-                                                   allocator, logger);
+    solid_count = 0u;
+    if (config == NULL || !config->skip_solid) {
+        solid_count = sixel_filter_sample_collect_solid(src_pixels,
+                                                       src_width,
+                                                       src_height,
+                                                       depth,
+                                                       src_mask,
+                                                       clip_x,
+                                                       clip_y,
+                                                       width,
+                                                       height,
+                                                       solid,
+                                                       SIXEL_SAMPLE_SOLID_MAX,
+                                                       allocator, logger);
+    }
     if (solid_count > 0u) {
         grid_count = (size_t)sample_width * (size_t)sample_height;
         /*

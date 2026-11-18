@@ -428,6 +428,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "    Thread availability may overlap adaptive sampling with other "
         "work,\n"
         "    but does not select the sampling policy.\n"
+        "    suboption: solid=on|off (S, default on). off skips the\n"
+        "    solid-region scan: faster, but thin solid features may enter\n"
+        "    the palette only when the grid lands on them.\n"
     },
     {
         '5',
@@ -1748,6 +1751,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "select pixels used for palette construction. Accepts auto,\n"
         "full-frame, or adaptive-grid. The -4/--sampling-policy option\n"
         "takes precedence."
+    },
+    {
+        "SIXEL_SAMPLING_SOLID",
+        "default for -4 *:solid. Accepts on or off. The command-line\n"
+        "suboption takes precedence."
     },
     {
         "SIXEL_BINNING_POLICY",

@@ -1523,6 +1523,13 @@ static sixel_suboption_choice_t const g_update_compare_choices[] = {
     { "query", SIXEL_DELTA_COMPARE_QUERY }
 };
 
+/* Solid-region augmentation for adaptive-grid sampling. Off trades the
+ * protection of thin solid features for the cost of the full-source scan. */
+static sixel_suboption_choice_t const g_sampling_solid_choices[] = {
+    { "on", 1 },
+    { "off", 0 }
+};
+
 static sixel_suboption_choice_t const g_update_error_choices[] = {
     { "diffuse", SIXEL_6DELTA_ERROR_DIFFUSE },
     { "skip", SIXEL_6DELTA_ERROR_SKIP }
@@ -1837,6 +1844,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         0.0, 100.0, 1,
         "binning strength must be an integer in range 0..100.",
         palette_range_strength, palette_range_strength_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_SAMPLING_POLICY, NULL,
+        "solid", 'S', "SIXEL_SAMPLING_SOLID", NULL, NULL,
+        g_sampling_solid_choices,
+        palette_sample_solid, palette_sample_solid_override),
     SIXEL_REGISTRY_OUTPUT_COLOR_CHOICE(
         SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE, NULL,
         "gamut", 'G', "SIXEL_OUTPUT_COLORSPACE_GAMUT", NULL, NULL,
