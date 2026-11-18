@@ -634,8 +634,8 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	docs/build/configure-macros.md docs/build/meson.md \
 	docs/build/meson-history.md docs/build/support-scripts.md \
 	docs/build/test-harness.md docs/assets/javascripts/mathjax.js \
-	docs/platform-support.md docs/project-history.md \
-	docs/sixel-format/README.md \
+	docs/compatibility.md docs/platform-support.md \
+	docs/project-history.md docs/sixel-format/README.md \
 	docs/sixel-format/patents-and-royalties.md \
 	docs/misc/algorithm-patents.md \
 	docs/sixel-format/specification-layers.md \

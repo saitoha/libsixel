@@ -19,6 +19,7 @@ docs/cli/prefix-matching.md	reference	both	choice syntax + contributor algorithm
 docs/cli/threading-policy.md	reference	user	option reference + usage examples
 docs/cli/runtime-policy.md	reference	both	runtime option contracts + contributor implementation map and test ledger
 docs/cli/suboptions.md	reference	both	public grammar + contributor registry architecture and test ledger
+docs/compatibility.md	reference	both	C API migration reference and reproducible release comparisons
 docs/concepts/color-management/README.md	explanation	user	
 docs/concepts/colorspace/README.md	explanation	user	
 docs/concepts/colorspace/primaries-and-white-points.md	explanation	user	

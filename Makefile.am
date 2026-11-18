@@ -122,6 +122,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/build/support-scripts.md \
 	docs/build/test-harness.md \
 	docs/assets/javascripts/mathjax.js \
+	docs/compatibility.md \
 	docs/platform-support.md \
 	docs/project-history.md \
 	docs/sixel-format/README.md \
