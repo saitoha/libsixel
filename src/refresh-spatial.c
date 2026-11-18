@@ -23,6 +23,21 @@ struct sixel_refresh_spatial {
     uint32_t result[128], snapshot[128];
 };
 
+static inline unsigned char
+sixel_refresh_spatial_sobel(unsigned char const *above,
+    unsigned char const *row, unsigned char const *below,
+    int xm, int x, int xp)
+{
+    int dx, dy, sum;
+
+    dx = -above[xm] - 2 * row[xm] - below[xm]
+        + above[xp] + 2 * row[xp] + below[xp];
+    dy = above[xm] + 2 * above[x] + above[xp]
+        - below[xm] - 2 * below[x] - below[xp];
+    sum = (abs(dx) + abs(dy) + 4) / 8;
+    return (unsigned char)(sum > 255 ? 255 : sum);
+}
+
 /* Average magnitudes, not signed derivatives: opposite edges must not
  * cancel. Y' uses integer Rec.709 weights and is not physical luminance.
  * The separable 9-tap box at quarter resolution covers about 36 pixels. */
@@ -30,9 +45,10 @@ void
 sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
     unsigned char *scratch, uint32_t activity[128])
 {
-    unsigned char *luma, *fine, *coarse, *blur;
+    unsigned char *luma, *fine, *coarse, *blur, *out;
+    unsigned char const *above, *row, *below;
     size_t n, p, q;
-    int sw, sh, x, y, xx, yy, xm, xp, ym, yp, dx, dy;
+    int sw, sh, x, y, xx, yy, ym, yp;
     int i, j, sum, count, gx, gy, x0, x1, y0, y1;
 
     n = (size_t)w * h;
@@ -45,21 +61,23 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
     for (p = 0; p < n; ++p)
         luma[p] = (unsigned char)((54U * rgb[p * 3] +
             183U * rgb[p * 3 + 1] + 19U * rgb[p * 3 + 2] + 128U) >> 8);
+    /* Edge columns clamp their neighbours; the interior needs no clamp,
+     * so its loop is straight-line and vectorizes. */
     for (y = 0; y < h; ++y) {
         ym = y ? y - 1 : y;
         yp = y + 1 < h ? y + 1 : y;
-        for (x = 0; x < w; ++x) {
-            xm = x ? x - 1 : x;
-            xp = x + 1 < w ? x + 1 : x;
-            dx = -luma[(size_t)ym * w + xm] - 2 * luma[(size_t)y * w + xm]
-                - luma[(size_t)yp * w + xm] + luma[(size_t)ym * w + xp]
-                + 2 * luma[(size_t)y * w + xp] + luma[(size_t)yp * w + xp];
-            dy = luma[(size_t)ym * w + xm] + 2 * luma[(size_t)ym * w + x]
-                + luma[(size_t)ym * w + xp] - luma[(size_t)yp * w + xm]
-                - 2 * luma[(size_t)yp * w + x] - luma[(size_t)yp * w + xp];
-            sum = (abs(dx) + abs(dy) + 4) / 8;
-            fine[(size_t)y * w + x] = (unsigned char)(sum > 255 ? 255 : sum);
-        }
+        above = luma + (size_t)ym * w;
+        row = luma + (size_t)y * w;
+        below = luma + (size_t)yp * w;
+        out = fine + (size_t)y * w;
+        out[0] = sixel_refresh_spatial_sobel(above, row, below, 0, 0,
+            w > 1 ? 1 : 0);
+        for (x = 1; x < w - 1; ++x)
+            out[x] = sixel_refresh_spatial_sobel(above, row, below,
+                x - 1, x, x + 1);
+        if (w > 1)
+            out[w - 1] = sixel_refresh_spatial_sobel(above, row, below,
+                w - 2, w - 1, w - 1);
     }
     /* The origin of every tile is inside the image, even at an edge. */
     for (y = 0; y < sh; ++y) {
