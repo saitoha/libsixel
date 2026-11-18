@@ -1,8 +1,17 @@
 #!/bin/sh
-# Run from the current source root with the r2 checkout and a build directory.
+# Run from the current source root with the r2 checkout, a build directory
+# and optionally the original v1.8.7 checkout. CI supplies both releases.
 set -eu
 
+if test "$#" -lt 2 || test "$#" -gt 3; then
+    echo "Usage: $0 R2_SOURCE BUILD_DIR [V1_8_7_SOURCE]" >&2
+    exit 2
+fi
 baseline=$(cd "$1" && pwd -P)
+original=
+if test "$#" -eq 3; then
+    original=$(cd "$3" && pwd -P)
+fi
 current=$(pwd -P)
 export PATH="$current/.local/bin:$PATH"
 mkdir -p "$2"
@@ -11,12 +20,20 @@ jobs=${JOBS:-$(nproc)}
 
 # Only the release header and shared library are needed for the old client.
 # Use the pre-C23 C dialect expected by the release even on recent GCC.
-mkdir -p "$build/legacy" "$build/current"
-cd "$build/legacy"
-"$baseline/configure" --disable-static --without-jpeg --without-png \
-    CFLAGS="-O2 -std=gnu11"
-make -j"$jobs" -C src
+check_release()
+(
+    mkdir -p "$2"
+    cd "$2"
+    "$1/configure" --disable-static --without-jpeg --without-png \
+        CFLAGS="-O2 -std=gnu11"
+    make -j"$jobs" -C src
+    sh "$current/tests/compat/v1.8.7-r2/check.sh" \
+        "$2/include/sixel.h" "$2/src/.libs/libsixel.so" \
+        "$build/current/src/.libs/libsixel.so" "$build/current/include/sixel.h" \
+        "$3"
+)
 
+mkdir -p "$build/current"
 cd "$build/current"
 "$current/configure" --enable-shared --without-lcms2 --without-coregraphics \
     --with-png
@@ -26,9 +43,10 @@ if grep -Eq '^#define HAVE_(LCMS2|COREGRAPHICS) 1$' config.h; then
     exit 1
 fi
 make -j"$jobs"
-sh "$current/tests/compat/v1.8.7-r2/check.sh" \
-    "$build/legacy/include/sixel.h" "$build/legacy/src/.libs/libsixel.so" \
-    "$build/current/src/.libs/libsixel.so" "$build/current/include/sixel.h"
+check_release "$baseline" "$build/legacy" 1.8.7-r2
+if test -n "$original"; then
+    check_release "$original" "$build/original" 1.8.7
+fi
 
 # Name each mandatory observation so deleting or skipping one fails this job.
 set -- \
@@ -51,7 +69,23 @@ set -- \
     color/bpc/0037_output_bpc_libpng_on_indices.t \
     color/bpc/0038_output_bpc_builtin_off_float.t \
     color/bpc/0039_output_bpc_libpng_off_float.t \
-    palette/snap-destination/0003_p3_unsnapped_palette_lookup.t
+    frame/alpha/0005_frame_alpha_clone.t \
+    frame/alpha/0012_frame_alpha_resolve_allocation_atomic.t \
+    frame/alpha/0016_frame_float_clone_color.t \
+    frame/crop/0010_frame_float_clip_right_atomic.t \
+    frame/crop/0077_frame_float_clip_color.t \
+    frame/resize/0151_frame_alpha_resize_reject.t \
+    frame/resize/0175_frame_float_resize_color.t \
+    frame/resize/0176_frame_float_resize_color_retry.t \
+    frame/storage/0003_frame_clone_float_canonical.t \
+    palette/output-color/0103_profile_reuse.t \
+    palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
+    palette/working-space/0146_cli_cluster_gamma_centroid.t \
+    palette/working-space/0147_cli_cluster_linear_centroid.t \
+    palette/working-space/0148_cli_work_gamma_lookup.t \
+    palette/working-space/0149_cli_work_linear_lookup.t \
+    palette/working-space/0150_cli_work_gamma_fs.t \
+    palette/working-space/0151_cli_work_linear_fs.t
 make -j"$jobs" -C tests check TESTS="$*"
 for test_name do
     awk '

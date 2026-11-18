@@ -25,7 +25,7 @@ check_elf_exports()
         > "$work/current-nm"
     LC_ALL=C awk '
         FILENAME == ARGV[1] {
-            # The r2 header puts public function names on their own lines.
+            # The legacy header puts public function names on their own lines.
             if (match($0, /^sixel_[[:alnum:]_]+\(/)) {
                 public[substr($0, 1, RLENGTH - 1)] = 1
             }
@@ -48,26 +48,40 @@ check_elf_exports()
             print "PASS legacy public ELF exports (" checked ")"
         }
     ' "$old_header" "$work/old-nm" "$work/current-nm" ||
-        fail "The current library must export the v1.8.7-r2 public symbols"
+        fail "The current library must export the v$legacy_version symbols"
 }
 
 run_cases()
 {
     result=0
-    for test_case in rgb565 bgr888 pal8; do
-        if LD_LIBRARY_PATH=${2%/*} DYLD_LIBRARY_PATH=${2%/*} \
-                "$work/client" "$2" "$test_case"; then
-            printf 'PASS %s %s\n' "$1" "$test_case"
-        else
-            printf 'FAIL %s %s\n' "$1" "$test_case" >&2
-            result=1
-        fi
+    for test_case in rgb565 bgr888 pal8 pal8-partial-band \
+            frame normalize dither encode-bytes; do
+        probe_status=0
+        LD_LIBRARY_PATH=${2%/*} DYLD_LIBRARY_PATH=${2%/*} \
+            "$work/client" "$2" "$test_case" "$work/encoded.six" "$1" ||
+                probe_status=$?
+        case "$1:$test_case:$probe_status" in
+            *:0) printf 'PASS %s %s\n' "$1" "$test_case" ;;
+            current:encode-bytes:2)
+                printf 'KNOWN REGRESSIONS %s %s\n' "$1" "$test_case"
+                ;;
+            *)
+                printf 'FAIL %s %s\n' "$1" "$test_case" >&2
+                result=1
+                ;;
+        esac
     done
     return "$result"
 }
 
-test "$#" -eq 4 ||
-    fail "Usage: $0 OLD_SIXEL_H OLD_LIBRARY CURRENT_LIBRARY CURRENT_SIXEL_H"
+test "$#" -eq 4 || test "$#" -eq 5 ||
+    fail "Usage: $0 OLD_SIXEL_H OLD_LIBRARY CURRENT_LIBRARY CURRENT_SIXEL_H [OLD_VERSION]"
+
+legacy_version=${5:-1.8.7-r2}
+case "$legacy_version" in
+    1.8.7|1.8.7-r2) ;;
+    *) fail "Unsupported legacy version: $legacy_version" ;;
+esac
 
 test_dir=$(CDPATH='' cd "$(dirname "$0")" && pwd -P)
 old_header=$(file_path "$1")
@@ -120,6 +134,7 @@ trap 'exit 1' HUP INT TERM
 # Compile the runtime client only once. PIC gives dladdr the address of the
 # imported library symbol rather than a possible executable linkage stub.
 "$CC" -std=c99 -fPIC -D_GNU_SOURCE -I"${old_header%/*}" \
+    -DLEGACY_VERSION="\"$legacy_version\"" \
     "$test_dir/legacy-client.inc.c" "$old_library" "$@" -o "$work/client"
 case "$loader_name" in
     libsixel.so.1)
@@ -150,5 +165,5 @@ diff -u "$work/old-values" "$work/current-values" ||
     fail "Legacy pixel-format constants changed"
 
 unset LD_PRELOAD LD_AUDIT DYLD_INSERT_LIBRARIES DYLD_VERSIONED_LIBRARY_PATH
-run_cases v1.8.7-r2 "$old_library"
+run_cases "v$legacy_version" "$old_library"
 run_cases current "$current_library"

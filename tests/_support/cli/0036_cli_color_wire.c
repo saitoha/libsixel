@@ -136,6 +136,7 @@ test_cli_0036_color_wire(int argc, char **argv)
     unsigned char pixels[96][3];
     unsigned char painted[96];
     unsigned char indices[96];
+    size_t pnm_case;
     char loader_record[96];
     char const *trace;
     char const *loader;
@@ -205,7 +206,18 @@ test_cli_0036_color_wire(int argc, char **argv)
     cms_expected = specimen == 5 ? 0 : 1;
     if (specimen == 0 && strcmp(argv[1], "libpng") != 0 &&
         strcmp(argv[1], "builtin") != 0) {
-        return cli_wire_error("unknown loader");
+        for (pnm_case = CLI_WIRE_PNM_FIRST;
+             pnm_case < sizeof(color_cli_wire) / sizeof(color_cli_wire[0]);
+             ++pnm_case) {
+            if (strcmp(argv[1], color_cli_wire[pnm_case].name) == 0) {
+                break;
+            }
+        }
+        if (pnm_case == sizeof(color_cli_wire) / sizeof(color_cli_wire[0])) {
+            return cli_wire_error("unknown loader or wire fixture");
+        }
+        specimen = (int)pnm_case;
+        loader = "builtin";
     }
     trace = argv[2];
     if (specimen == 7 && (cli_wire_count(trace, "LSXDTH1|") != 1 ||
@@ -224,7 +236,7 @@ test_cli_0036_color_wire(int argc, char **argv)
         !cli_wire_record(trace, loader_record)) {
         return cli_wire_error("wrong actual loader");
     }
-    if (bpc < 0 &&
+    if (bpc < 0 && specimen < CLI_WIRE_PNM_FIRST &&
         (cli_wire_count(trace, "LSXCMS2|event=apply|") != cms_expected ||
          (cms_expected != 0 && !cli_wire_record(trace,
             "LSXCMS2|event=apply|engine=builtin|"

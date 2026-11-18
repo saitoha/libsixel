@@ -107,7 +107,7 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   color-compat:
-    name: Linux ${{ matrix.cc }} color and v1.8.7-r2 compatibility
+    name: Linux ${{ matrix.cc }} color and v1.8.7 compatibility
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -122,13 +122,19 @@ jobs:
           # The released headers and library must come from the same revision.
           ref: 764f4e618c8bbc427fb74622e3227243fe6762fb # v1.8.7-r2
           path: baseline
+      - uses: actions/checkout@v6
+        with:
+          ref: 24c34a23461a7d5034a43a365723ceda04eecdf5 # v1.8.7
+          path: original
       - name: Install PNG and ELF build dependencies
         run: bash current/.github/scripts/install-ubuntu-packages.sh libpng-dev binutils
       - name: Check release client and builtin CMS output
         working-directory: current
         env:
           CC: ${{ matrix.cc }}
-        run: sh .github/scripts/check-color-compat.sh "$GITHUB_WORKSPACE/baseline" "$RUNNER_TEMP/color-compat"
+        run: |
+          sh .github/scripts/check-color-compat.sh \
+            "$GITHUB_WORKSPACE/baseline" "$RUNNER_TEMP/color-compat" "$GITHUB_WORKSPACE/original"
 
   tcc:
     name: ${{ matrix.label }}
