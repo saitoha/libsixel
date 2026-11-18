@@ -1218,6 +1218,10 @@ run_case_tap "staticcheck-c-configured-features" \
     sh "$src_root/tests/_static/sh/staticcheck-c-configured-features.sh" \
     "$src_root"
 
+run_case_tap "staticcheck-hdr-exposure-rounding" \
+    sh "$src_root/tests/_static/sh/staticcheck-hdr-exposure-rounding.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-amalgamation-metal-guards" \
     sh "$src_root/tests/_static/sh/staticcheck-amalgamation-metal-guards.sh" \
     "$src_root"
