@@ -41,12 +41,13 @@ static unsigned char frame_borrowed_rgb_pixels[] = {
 static unsigned char *frame_owned_reinit_palette;
 static unsigned char *frame_owned_reinit_pixels;
 static int frame_borrowed_bad_free_count;
+static int frame_refuse_malloc;
 static int frame_owned_reinit_free_count;
 
 static void *
 frame_borrowed_malloc(size_t size)
 {
-    return malloc(size);
+    return frame_refuse_malloc ? NULL : malloc(size);
 }
 
 static void *
@@ -344,11 +345,85 @@ end:
     return SIXEL_SUCCEEDED(status);
 }
 
+/* Owned triplets fit the result in place. Borrowed triplets need separate
+ * storage, and must still be available for retry if that allocation fails. */
+static int
+test_frame_bgr888_storage(int borrowed)
+{
+    static unsigned char const original[] = {208, 80, 16, 104, 32, 208};
+    static unsigned char const expected[] = {16, 80, 208, 208, 32, 104};
+    unsigned char external[sizeof(original)];
+    unsigned char *pixels;
+    sixel_frame_t *frame = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+    int result = EXIT_FAILURE;
+
+    if (sixel_allocator_new(&allocator, frame_borrowed_malloc, NULL,
+                            NULL, NULL) != SIXEL_OK ||
+            sixel_frame_new(&frame, allocator) != SIXEL_OK) {
+        goto end;
+    }
+    if (borrowed) {
+        memcpy(external, original, sizeof(external));
+        status = sixel_frame_init_borrowed(frame, external, 2, 1,
+                                           SIXEL_PIXELFORMAT_BGR888, NULL, -1);
+    } else {
+        pixels = sixel_allocator_malloc(allocator, sizeof(original));
+        if (pixels == NULL) {
+            goto end;
+        }
+        memcpy(pixels, original, sizeof(original));
+        status = sixel_frame_init(frame, pixels, 2, 1,
+                                  SIXEL_PIXELFORMAT_BGR888, NULL, -1);
+        if (status != SIXEL_OK) {
+            sixel_allocator_free(allocator, pixels);
+        }
+    }
+    if (status != SIXEL_OK) {
+        goto end;
+    }
+    frame_refuse_malloc = 1;
+    status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+    frame_refuse_malloc = 0;
+    if (borrowed) {
+        if (status != SIXEL_BAD_ALLOCATION ||
+                sixel_frame_get_pixels(frame) != external ||
+                sixel_frame_get_pixelformat(frame) !=
+                    SIXEL_PIXELFORMAT_BGR888 ||
+                memcmp(external, original, sizeof(external)) != 0) {
+            goto end;
+        }
+        status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+        if (sixel_frame_get_pixels(frame) == external ||
+                memcmp(external, original, sizeof(external)) != 0) {
+            goto end;
+        }
+    }
+    pixels = sixel_frame_get_pixels(frame);
+    if (status == SIXEL_OK && pixels != NULL &&
+            sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 &&
+            memcmp(pixels, expected, sizeof(expected)) == 0) {
+        result = EXIT_SUCCESS;
+    }
+
+end:
+    sixel_frame_unref(frame);
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return result;
+}
+
 int
 test_frame_0001_frame_factory(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
+    if (argc == 2 && strcmp(argv[1], "bgr888-owned") == 0) {
+        return test_frame_bgr888_storage(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "bgr888-borrowed") == 0) {
+        return test_frame_bgr888_storage(1);
+    }
 
     if (!test_frame_factory_creates_default_frame()) {
         fprintf(stderr, "frame factory create failed\n");

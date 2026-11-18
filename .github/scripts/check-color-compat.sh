@@ -74,6 +74,7 @@ set -- \
     encoder/pipeline/0124_encode_bytes_g1_levels.t \
     encoder/pipeline/0125_encode_bytes_g2_levels.t \
     encoder/pipeline/0126_encode_bytes_g4_levels.t \
+    encoder/pipeline/0127_encode_bytes_bgr888_pixels.t \
     frame/alpha/0005_frame_alpha_clone.t \
     frame/alpha/0012_frame_alpha_resolve_allocation_atomic.t \
     frame/alpha/0016_frame_float_clone_color.t \
@@ -83,6 +84,8 @@ set -- \
     frame/resize/0175_frame_float_resize_color.t \
     frame/resize/0176_frame_float_resize_color_retry.t \
     frame/storage/0003_frame_clone_float_canonical.t \
+    frame/storage/0011_bgr888_owned.t \
+    frame/storage/0012_bgr888_borrowed.t \
     palette/output-color/0103_profile_reuse.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \

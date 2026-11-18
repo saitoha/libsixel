@@ -57,20 +57,13 @@ run_cases()
     for test_case in rgb565 bgr888 pal8 pal8-partial-band \
             frame clip normalize scale dither encode-bytes registers allocator \
             builtins option-choices selector-order low-level complexion; do
-        probe_status=0
-        LD_LIBRARY_PATH=${2%/*} DYLD_LIBRARY_PATH=${2%/*} \
-            "$work/client" "$2" "$test_case" "$work/encoded.six" "$1" ||
-                probe_status=$?
-        case "$1:$test_case:$probe_status" in
-            *:0) printf 'PASS %s %s\n' "$1" "$test_case" ;;
-            current:encode-bytes:2)
-                printf 'KNOWN REGRESSIONS %s %s\n' "$1" "$test_case"
-                ;;
-            *)
-                printf 'FAIL %s %s\n' "$1" "$test_case" >&2
-                result=1
-                ;;
-        esac
+        if LD_LIBRARY_PATH=${2%/*} DYLD_LIBRARY_PATH=${2%/*} \
+                "$work/client" "$2" "$test_case" "$work/encoded.six" "$1"; then
+            printf 'PASS %s %s\n' "$1" "$test_case"
+        else
+            printf 'FAIL %s %s\n' "$1" "$test_case" >&2
+            result=1
+        fi
     done
     return "$result"
 }

@@ -25,8 +25,7 @@ enum {
 
 enum {
     probe_pass,
-    probe_fail,
-    probe_known_regression
+    probe_fail
 };
 
 typedef struct {
@@ -417,7 +416,6 @@ check_encode_bytes(pixel_fixture_t const *fixture, char const *path,
     unsigned char *indices = NULL;
     unsigned char *decoded = NULL;
     sixel_encoder_t *encoder = NULL;
-    char const *message;
     struct stat wire_file;
     size_t size;
     size_t i;
@@ -460,27 +458,18 @@ check_encode_bytes(pixel_fixture_t const *fixture, char const *path,
         fprintf(stderr, "encode_bytes changed caller-owned input\n");
         goto end;
     }
-    message = sixel_helper_get_additional_message();
     sixel_encoder_unref(encoder);
     encoder = NULL;
-    if (status != SIXEL_OK || (historical && gray_alpha)) {
-        if (status != SIXEL_LOGIC_ERROR ||
-                stat(path, &wire_file) != 0 || wire_file.st_size != 0) {
-            goto end;
-        }
-        if (historical && gray_alpha) {
+    if (historical && gray_alpha) {
+        if (status == SIXEL_LOGIC_ERROR && stat(path, &wire_file) == 0 &&
+                wire_file.st_size == 0) {
             printf("PASS legacy encode-bytes %s rejects gray with alpha\n",
                    fixture->name);
             result = probe_pass;
-        } else if (!historical &&
-                   fixture->format == SIXEL_PIXELFORMAT_BGR888 &&
-                   message != NULL &&
-                   strcmp(message, "sixel_frame_convert_to_rgb888: "
-                                   "invalid pixelformat.") == 0) {
-            printf("KNOWN REGRESSION current encode-bytes bgr888 "
-                   "(0x%x, no bytes, %s)\n", (unsigned int)status, message);
-            result = probe_known_regression;
         }
+        goto end;
+    }
+    if (status != SIXEL_OK) {
         goto end;
     }
     fd = open(path, O_RDONLY);
@@ -551,12 +540,9 @@ check_fixtures(char const *case_name, char const *path, int historical)
         } else {
             observation = check_encode_bytes(fixture, path, historical);
         }
-        if (observation == probe_fail) {
+        if (observation != probe_pass) {
             fprintf(stderr, "FAIL %s %s\n", case_name, fixture->name);
             result = probe_fail;
-        } else if (observation == probe_known_regression &&
-                   result == probe_pass) {
-            result = probe_known_regression;
         }
     }
     return result;

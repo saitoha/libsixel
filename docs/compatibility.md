@@ -8,7 +8,7 @@ Which previously successful calls can fail after an upgrade? Which buffers, comm
 
 ## Conditions
 
-On Linux arm64, a C client compiled and linked against each release's own header and shared library ran first with that library, then with `develop` at `cc1d092444` and the library containing the packed grayscale fix (`d6fa3d3fd3`). The probe verified the loaded library. Both release tags produced the same observations below. The 81 release function declarations and ELF exports, public typedefs, 13 enum layouts, 81 enum members and 20 pixel-format constants remained compatible on this target. Of 147 public object-like integer macros, only `SIXEL_ALLOCATE_BYTES_MAX` changed.
+On Linux arm64, a C client compiled and linked against each release's own header and shared library ran first with that library, then with `develop` at `cc1d092444` and with the current library. Revision `d6fa3d3fd3` corrected packed grayscale and still exhibited the BGR888 regression. The probe verified the loaded library. Both release tags produced the same observations below. The 81 release function declarations and ELF exports, public typedefs, 13 enum layouts, 81 enum members and 20 pixel-format constants remained compatible on this target. Of 147 public object-like integer macros, only `SIXEL_ALLOCATE_BYTES_MAX` changed.
 
 For `sixel_encoder_encode_bytes()`, the input was a 9×6 checkerboard with two alternating samples, packed separately on each row. The encoder used RGB palette registers and no dithering. The comparison resolved each of the 54 output pixels to its RGB color. SIXEL stores each register component as a whole percentage, so a decoded 8-bit value can differ slightly from the original sample.
 
@@ -20,7 +20,7 @@ The `G1`, `G2`, and `G4` rows give decoded brightness on a 0–255 scale. The cu
 
 | Input format and alternating samples | v1.8.7 and v1.8.7-r2 | `develop` at `71dc7cc159` | Current encoder |
 | --- | --- | --- | --- |
-| `BGR888` bytes (208, 80, 16) and (104, 32, 208) | Success. Decoded RGB (15, 79, 209) and (209, 33, 105) | `SIXEL_LOGIC_ERROR` (`0x1200`), zero output bytes | Same error and zero output bytes |
+| `BGR888` bytes (208, 80, 16) and (104, 32, 208) | Success. Decoded RGB (15, 79, 209) and (209, 33, 105) | `SIXEL_LOGIC_ERROR` (`0x1200`), zero output bytes | Success. Both decoded colors match the releases. |
 | `G1` codes 0 and 1 | 0 and 255 | 0 and 0 | 0 and 255 |
 | `G2` codes 1 and 2 | 84 and 171 | 0 and 3 | 84 and 171 |
 | `G4` codes 5 and 10 | 84 and 171 | 5 and 10 | 84 and 171 |
@@ -53,7 +53,7 @@ The decoder probe paints three registers from a literal SIXEL stream. HLS (150°
 
 ## Interpretation
 
-For `BGR888`, the recorded diagnostic is `sixel_frame_convert_to_rgb888: invalid pixelformat.` Swap the red and blue bytes in each pixel and pass the resulting buffer as `SIXEL_PIXELFORMAT_RGB888`. The release image and the converted input produced the same 54 decoded pixels.
+Pass BGR triplets directly with `SIXEL_PIXELFORMAT_BGR888` to the current encoder. Each of the 54 decoded pixels matched the corresponding RGB888 input and the release colors. Applications targeting an affected revision can swap red and blue before passing `SIXEL_PIXELFORMAT_RGB888` to work around the `sixel_frame_convert_to_rgb888: invalid pixelformat.` error.
 
 Pass packed `G1`, `G2`, or `G4` directly to the current `sixel_encoder_encode_bytes()`. It expands each sample to full-range `G8` while unpacking its row. Code zero maps to black and the maximum code maps to white.
 
@@ -91,4 +91,4 @@ for tag in v1.8.7 v1.8.7-r2; do
 done
 ```
 
-The probe requires release-correct grayscale pixels. To reproduce the failures, set `revision=71dc7cc15960345ea8ba759f177e3aba30449ab0`. That comparison fails for all three packed grayscale formats. Only the recorded `BGR888` error is accepted as a known regression. The [Linux CI driver](../.github/scripts/check-color-compat.sh) also runs 17×6 ascending and descending grayscale ramps covering every code, including the last pixel of each padded row.
+The probe requires successful BGR888 encoding and release-correct decoded colors for BGR888 and all three packed grayscale formats. To reproduce all four failures, set `revision=71dc7cc15960345ea8ba759f177e3aba30449ab0`. At `revision=d6fa3d3fd3` only BGR888 fails. The [Linux CI driver](../.github/scripts/check-color-compat.sh) also checks every pixel of a 5×7 four-color image supplied in both RGB and BGR order, including the partial final SIXEL band. Its 17×6 grayscale ramps cover every code and the last pixel of each padded row.
