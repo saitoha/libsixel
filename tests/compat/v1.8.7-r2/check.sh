@@ -55,7 +55,8 @@ run_cases()
 {
     result=0
     for test_case in rgb565 bgr888 pal8 pal8-partial-band \
-            frame normalize dither encode-bytes; do
+            frame clip normalize scale dither encode-bytes registers allocator \
+            builtins option-choices selector-order low-level complexion; do
         probe_status=0
         LD_LIBRARY_PATH=${2%/*} DYLD_LIBRARY_PATH=${2%/*} \
             "$work/client" "$2" "$test_case" "$work/encoded.six" "$1" ||
@@ -153,16 +154,7 @@ case "$loader_name" in
         ;;
 esac
 
-# Each executable sees a single header. The current header never enters the
-# runtime client's compilation.
-"$CC" -std=c99 -I"${old_header%/*}" \
-    "$test_dir/pixel-format-values.inc.c" -o "$work/old-formats"
-"$CC" -std=c99 -I"${current_header%/*}" \
-    "$test_dir/pixel-format-values.inc.c" -o "$work/current-formats"
-"$work/old-formats" > "$work/old-values"
-"$work/current-formats" > "$work/current-values"
-diff -u "$work/old-values" "$work/current-values" ||
-    fail "Legacy pixel-format constants changed"
+CC="$CC" sh "$test_dir/check-header.sh" "$old_header" "$current_header" "$work"
 
 unset LD_PRELOAD LD_AUDIT DYLD_INSERT_LIBRARIES DYLD_VERSIONED_LIBRARY_PATH
 run_cases "v$legacy_version" "$old_library"

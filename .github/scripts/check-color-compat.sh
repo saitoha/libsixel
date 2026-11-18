@@ -50,6 +50,8 @@ fi
 
 # Name each mandatory observation so deleting or skipping one fails this job.
 set -- \
+    cli/quantizer-options/0156_select_color_histgram_retired.t \
+    cli/quantizer-options/0157_select_color_histogram_encode.t \
     cli/terminal-color/0040_save_0.t \
     cli/terminal-color/0044_srgb.t \
     cli/terminal-color/0145_srgb_wire.t \

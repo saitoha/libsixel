@@ -2441,7 +2441,6 @@ static sixel_option_choice_t const g_option_choices_select_color[] = {
     { "auto", SIXEL_REP_AUTO },
     { "center", SIXEL_REP_CENTER_BOX },
     { "average", SIXEL_REP_AVERAGE_COLORS },
-    { "histogram", SIXEL_REP_AVERAGE_PIXELS },
     { "histogram", SIXEL_REP_AVERAGE_PIXELS }
 };
 

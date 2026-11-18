@@ -13,7 +13,7 @@
 #endif
 
 typedef struct {
-    unsigned char bytes[1024];
+    unsigned char bytes[8192];
     int length;
 } capture_t;
 
@@ -131,8 +131,74 @@ make_source(pixel_fixture_t const *fixture, unsigned char *pixels)
 }
 
 
+/* Crop the last seven columns of three rows. For sub-byte formats the
+ * rectangle crosses a byte boundary and excludes each row's padding. */
 static int
-check_frame(pixel_fixture_t const *fixture)
+check_clip(sixel_frame_t *frame, pixel_fixture_t const *fixture,
+           int historical)
+{
+    unsigned char const *pixels;
+    unsigned char const *pixel;
+    unsigned char const *palette = sixel_frame_get_palette(frame);
+    int format = fixture->format;
+    int depth = fixture->bits_per_pixel / 8;
+    int packed = depth == 0;
+    int sample;
+    int gray_scale = 1;
+    int x;
+    int y;
+    SIXELSTATUS status;
+
+    if (packed) {
+        format = palette_size(fixture) > 0 ? SIXEL_PIXELFORMAT_PAL8
+                                           : SIXEL_PIXELFORMAT_G8;
+        depth = 1;
+    }
+    status = sixel_frame_clip(frame, 2, 1, 7, 3);
+    if (historical && format != SIXEL_PIXELFORMAT_RGB888 &&
+            format != SIXEL_PIXELFORMAT_G8 &&
+            format != SIXEL_PIXELFORMAT_PAL8) {
+        return status != SIXEL_BAD_ARGUMENT ||
+            sixel_frame_get_width(frame) != fixture_width ||
+            sixel_frame_get_height(frame) != fixture_height;
+    }
+    pixels = sixel_frame_get_pixels(frame);
+    if (status != SIXEL_OK || pixels == NULL ||
+            sixel_frame_get_width(frame) != 7 ||
+            sixel_frame_get_height(frame) != 3 ||
+            sixel_frame_get_pixelformat(frame) != format ||
+            sixel_frame_get_palette(frame) != palette ||
+            sixel_frame_get_ncolors(frame) != palette_size(fixture)) {
+        return 1;
+    }
+    /* In both releases a packed gray crop exposes unscaled codes tagged
+     * as G8. Also allow a consistent full-range G8 representation so that a
+     * brightness correction will not have to preserve the legacy defect. */
+    if (!historical && packed && format == SIXEL_PIXELFORMAT_G8 &&
+            pixels[0] != fixture->normalized[1][0]) {
+        gray_scale = 255 / ((1 << fixture->bits_per_pixel) - 1);
+    }
+    for (y = 0; y < 3; ++y) {
+        for (x = 0; x < 7; ++x) {
+            sample = (2 + x + 1 + y) % 2;
+            pixel = packed ? fixture->normalized[sample]
+                           : fixture->source[sample];
+            if (gray_scale > 1) {
+                if (pixels[y * 7 + x] != pixel[0] * gray_scale) {
+                    return 1;
+                }
+            } else if (memcmp(pixels + (y * 7 + x) * depth,
+                              pixel, (size_t)depth) != 0) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+
+static int
+check_frame(pixel_fixture_t const *fixture, int crop, int historical)
 {
     unsigned char source[fixture_pixels * 4];
     unsigned char *pixels = NULL;
@@ -181,7 +247,7 @@ check_frame(pixel_fixture_t const *fixture)
             memcmp(pixels, source, size) == 0 &&
             (colors_size == 0 ||
              memcmp(palette, fixture_palette, colors_size) == 0)) {
-        result = 0;
+        result = crop ? check_clip(frame, fixture, historical) : 0;
     }
     pixels = NULL;
     palette = NULL;
@@ -470,8 +536,9 @@ check_fixtures(char const *case_name, char const *path, int historical)
 
     for (i = 0; i < sizeof(fixtures) / sizeof(fixtures[0]); ++i) {
         fixture = &fixtures[i];
-        if (strcmp(case_name, "frame") == 0) {
-            observation = check_frame(fixture);
+        if (strcmp(case_name, "frame") == 0 || strcmp(case_name, "clip") == 0) {
+            observation = check_frame(fixture, strcmp(case_name, "clip") == 0,
+                                      historical);
         } else if (strcmp(case_name, "normalize") == 0) {
             observation = check_fixture_normalization(fixture);
         } else if (strcmp(case_name, "dither") == 0) {
@@ -681,11 +748,15 @@ end:
     return result;
 }
 
+#include "public-operations.inc.c"
+
 
 int
 main(int argc, char **argv)
 {
     int historical;
+    size_t i;
+    int result = 0;
 
     if (argc != 5 || strcmp(LIBSIXEL_VERSION, LEGACY_VERSION) != 0) {
         fprintf(stderr, "expected a client built against v%s\n",
@@ -708,7 +779,43 @@ main(int argc, char **argv)
     if (strcmp(argv[2], "pal8-partial-band") == 0) {
         return check_pal8(1, historical);
     }
-    if (strcmp(argv[2], "frame") == 0 ||
+    if (strcmp(argv[2], "low-level") == 0) {
+        for (i = 0; i < sizeof(fixtures) / sizeof(fixtures[0]); ++i) {
+            /* The release treats interleaved gray/alpha as palette indices
+             * in this API. High-level gray/alpha is checked separately. */
+            if (fixtures[i].format == SIXEL_PIXELFORMAT_AG88 ||
+                    fixtures[i].format == SIXEL_PIXELFORMAT_GA88) {
+                continue;
+            }
+            if (check_low_level(&fixtures[i]) != 0) {
+                fprintf(stderr, "low-level: %s\n", fixtures[i].name);
+                result = 1;
+            }
+        }
+        return result;
+    }
+    if (strcmp(argv[2], "complexion") == 0) {
+        return check_complexion(historical);
+    }
+    if (strcmp(argv[2], "builtins") == 0) {
+        return check_builtin_palettes();
+    }
+    if (strcmp(argv[2], "scale") == 0) {
+        return check_scale(historical);
+    }
+    if (strcmp(argv[2], "registers") == 0) {
+        return check_registers();
+    }
+    if (strcmp(argv[2], "allocator") == 0) {
+        return check_allocator_limit(historical);
+    }
+    if (strcmp(argv[2], "option-choices") == 0) {
+        return check_option_choices(historical);
+    }
+    if (strcmp(argv[2], "selector-order") == 0) {
+        return check_selector_order(historical);
+    }
+    if (strcmp(argv[2], "frame") == 0 || strcmp(argv[2], "clip") == 0 ||
             strcmp(argv[2], "normalize") == 0 ||
             strcmp(argv[2], "dither") == 0 ||
             strcmp(argv[2], "encode-bytes") == 0) {
