@@ -564,6 +564,8 @@ typedef int SIXELSTATUS;
                                                      auto
                                                      full-frame
                                                      adaptive-grid
+                                                   suboption:
+                                                     solid=on|off (S)
                                                 */
 #define SIXEL_OPTFLAG_BINNING_POLICY    ('5')  /*
                                                    -5 POLICY,

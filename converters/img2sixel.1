@@ -465,6 +465,11 @@ availability may overlap adaptive sampling with other work, but does not
 select the sampling policy. \fBauto\fP resolves to
 \fBadaptive\-grid\fP at every thread count, including one thread.
 The \fBSIXEL_SAMPLING_POLICY\fP environment provides the default.
+Suboption \fBsolid\fP=\fBon\fP|\fBoff\fP (short \fBS\fP, default
+\fBon\fP) controls solid-region augmentation of adaptive samples.
+\fBoff\fP skips the source scan for solid regions, which saves CPU time,
+but a thin solid feature then enters the palette only when the sampling grid
+lands on it. \fBSIXEL_SAMPLING_SOLID\fP provides its default.
 .TP 5
 .B \-5 \fIPOLICY\fP, \-\-binning\-policy=\fIPOLICY\fP
 choose how sampled colors become weighted quantizer input.
@@ -2477,6 +2482,11 @@ precedence.
 .br
 select pixels used for palette construction. Accepts auto, full-frame, or
 adaptive-grid. The \fB\-4/\-\-sampling\-policy\fP option takes precedence.
+.TP 5
+.B SIXEL_SAMPLING_SOLID
+.br
+default for \fB\-4\fP \fI*\fP:\fBsolid\fP. Accepts on or off. The
+command-line suboption takes precedence.
 .TP 5
 .B SIXEL_BINNING_POLICY
 .br

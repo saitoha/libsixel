@@ -60,6 +60,9 @@ typedef struct sixel_filter_sample_config {
     int quality_mode;
     int palette_sample_override;
     size_t palette_sample_target;
+    /* Non-zero skips solid-region augmentation (sampling solid=off): the
+     * adaptive sample is the grid alone. Zero keeps the default scan. */
+    int skip_solid;
 } sixel_filter_sample_config_t;
 
 SIXELSTATUS

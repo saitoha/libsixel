@@ -1050,18 +1050,21 @@ sixel_filter_sample_copy_frame(
      * Find the solid regions before sizing the sample, because their colors
      * are appended to it and the extra rows have to be accounted for here.
      */
-    solid_count = sixel_filter_sample_collect_solid(src_pixels,
-                                                   src_width,
-                                                   src_height,
-                                                   depth,
-                                                   src_mask,
-                                                   clip_x,
-                                                   clip_y,
-                                                   width,
-                                                   height,
-                                                   solid,
-                                                   SIXEL_SAMPLE_SOLID_MAX,
-                                                   allocator, logger);
+    solid_count = 0u;
+    if (config == NULL || !config->skip_solid) {
+        solid_count = sixel_filter_sample_collect_solid(src_pixels,
+                                                       src_width,
+                                                       src_height,
+                                                       depth,
+                                                       src_mask,
+                                                       clip_x,
+                                                       clip_y,
+                                                       width,
+                                                       height,
+                                                       solid,
+                                                       SIXEL_SAMPLE_SOLID_MAX,
+                                                       allocator, logger);
+    }
     if (solid_count > 0u) {
         grid_count = (size_t)sample_width * (size_t)sample_height;
         /*
