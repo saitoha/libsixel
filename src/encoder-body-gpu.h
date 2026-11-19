@@ -17,6 +17,10 @@
  * CPU tie order between equal spans.
  */
 
+/* Readable bytes past the end of every map, GPU or CPU, so emission may
+ * load a short span as whole vectors. */
+#define SIXEL_BODY_MAP_TAIL 32
+
 /* One span: register, first column, one past the last column, and the
  * offset of its first column value in sixel_body_gpu_result_t.map. */
 typedef struct sixel_body_gpu_node {
