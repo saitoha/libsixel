@@ -138,6 +138,13 @@ sixel_gpu_device_shares_frames(sixel_gpu_device_interface_t *device)
 }
 
 SIXELSTATUS
+sixel_gpu_device_create_frame_buffer(sixel_gpu_device_interface_t *device,
+    size_t bytes, sixel_gpu_buffer_interface_t **result)
+{
+    return device->vtbl->create_buffer(device, bytes, result);
+}
+
+SIXELSTATUS
 sixel_gpu_device_acquire(sixel_gpu_device_interface_t **result)
 {
     int available;

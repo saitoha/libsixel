@@ -847,6 +847,7 @@ sierra2_gpu_vk_run_impl(sierra2_gpu_vk_plan_t *plan,
     sixel_vk_buffer_t *buffers;
     sixel_vk_buffer_t const *workspace;
     sixel_vk_buffer_t const *retained_rgb, *retained_valid;
+    sixel_vk_buffer_t const *frame_indexes, *frame_skip;
     sierra2_gpu_vk_params_t params;
     VkCommandBuffer command;
     uint64_t pixels, lanes;
@@ -1072,7 +1073,24 @@ sierra2_gpu_vk_run_impl(sierra2_gpu_vk_plan_t *plan,
         VK_ACCESS_TRANSFER_READ_BIT);
     sixel_vk_buffer_record_download(command, &buffers[SIERRA2_GPU_VK_INVALID],
         sizeof(invalid));
+    /* Shared frame planes receive both results by transfer copies. */
+    frame_indexes = frame_skip = NULL;
     if (mode != SIERRA2_GPU_VK_SOLVE) {
+        frame_indexes = sixel_gpu_vulkan_frame_buffer(
+            request->result->gpu_indexes, request->result->indexes,
+            (size_t)pixels);
+        frame_skip = sixel_gpu_vulkan_frame_buffer(
+            request->result->gpu_skip, request->result->skip,
+            (size_t)pixels);
+        if (frame_indexes == NULL || frame_skip == NULL)
+            frame_indexes = frame_skip = NULL;
+    }
+    if (frame_indexes != NULL) {
+        sixel_vk_record_copy(command, &buffers[SIERRA2_GPU_VK_RESULT],
+            frame_indexes, 0, pixels);
+        sixel_vk_record_copy(command, &buffers[SIERRA2_GPU_VK_SKIP],
+            frame_skip, 0, pixels);
+    } else if (mode != SIERRA2_GPU_VK_SOLVE) {
         sixel_vk_buffer_record_download(command,
             &buffers[SIERRA2_GPU_VK_RESULT], pixels);
         sixel_vk_buffer_record_download(command, &buffers[SIERRA2_GPU_VK_SKIP],
@@ -1097,7 +1115,7 @@ sierra2_gpu_vk_run_impl(sierra2_gpu_vk_plan_t *plan,
         status = SIXEL_INTERRUPTED;
         goto end;
     }
-    if (mode != SIERRA2_GPU_VK_SOLVE) {
+    if (mode != SIERRA2_GPU_VK_SOLVE && frame_indexes == NULL) {
         status = sixel_vk_buffer_invalidate(runtime,
             &buffers[SIERRA2_GPU_VK_RESULT], (size_t)pixels);
         if (SIXEL_SUCCEEDED(status))

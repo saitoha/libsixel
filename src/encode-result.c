@@ -9,6 +9,7 @@
 #include <pthread.h>
 #endif
 #include "encode-result.h"
+#include "gpu-program.h"
 #include "cpu.h"
 #include "colorspace.h"
 #include "palette.h"
@@ -252,10 +253,10 @@ sixel_indexed_frame_allocate_device(sixel_indexed_frame_t *image,
     void *skip;
 
     if (!sixel_indexed_frame_borrow_device(image, device)) {
-        if (device->vtbl->create_buffer(device,
+        if (sixel_gpu_device_create_frame_buffer(device,
                     image->pixels * sizeof(*image->indexes),
                     &image->gpu_indexes) != SIXEL_OK ||
-                device->vtbl->create_buffer(device, image->pixels,
+                sixel_gpu_device_create_frame_buffer(device, image->pixels,
                     &image->gpu_skip) != SIXEL_OK) {
             goto fail;
         }

@@ -643,13 +643,66 @@ sixel_gpu_palette_vulkan_is_available(void)
     return available;
 }
 
-/* No Vulkan consumer binds frame storage, and host-visible device memory
- * can be uncached; frames stay in allocator memory and are copied. */
+/* Frames live in coherent cached host memory, and Vulkan consumers move
+ * them to and from device storage with transfer copies instead of host
+ * copies. Without such memory (some integrated GPUs pair cached memory with
+ * explicit flushes) frames stay in allocator memory. */
 int
 sixel_gpu_device_shares_frames(sixel_gpu_device_interface_t *device)
 {
-    (void)device;
-    return 0;
+    sixel_vk_runtime_t *runtime;
+    int shares;
+
+    if (device != &g_sixel_vk_device) return 0;
+    sixel_vk_lock();
+    runtime = sixel_vk_runtime_get_locked();
+    shares = runtime != NULL && sixel_vk_has_cached_coherent(runtime);
+    sixel_vk_unlock();
+    return shares;
+}
+
+SIXELSTATUS
+sixel_gpu_device_create_frame_buffer(sixel_gpu_device_interface_t *device,
+    size_t bytes, sixel_gpu_buffer_interface_t **result)
+{
+    sixel_gpu_vulkan_native_buffer_t *buffer;
+    sixel_vk_runtime_t *runtime;
+    SIXELSTATUS status;
+
+    *result = NULL;
+    if (device != &g_sixel_vk_device || bytes == 0) return SIXEL_BAD_ARGUMENT;
+    buffer = (sixel_gpu_vulkan_native_buffer_t *)calloc(1, sizeof(*buffer));
+    if (buffer == NULL) return SIXEL_BAD_ALLOCATION;
+    sixel_vk_lock();
+    runtime = sixel_vk_runtime_get_locked();
+    status = runtime == NULL ? SIXEL_FEATURE_ERROR
+        : sixel_vk_buffer_reserve_host(runtime, &buffer->storage,
+            (VkDeviceSize)bytes);
+    sixel_vk_unlock();
+    if (SIXEL_FAILED(status)) {
+        free(buffer);
+        return status;
+    }
+    buffer->iface.vtbl = &g_sixel_vk_buffer_vtbl;
+    buffer->refs = 1U;
+    buffer->runtime = runtime;
+    buffer->size = bytes;
+    *result = &buffer->iface;
+    return SIXEL_OK;
+}
+
+sixel_vk_buffer_t const *
+sixel_gpu_vulkan_frame_buffer(sixel_gpu_buffer_interface_t *buffer,
+    void const *memory, size_t bytes)
+{
+    sixel_vk_buffer_t const *storage;
+
+    storage = sixel_gpu_vulkan_buffer(&g_sixel_vk_device, buffer);
+    if (storage == NULL || storage->staging != VK_NULL_HANDLE ||
+            storage->mapped == NULL || storage->mapped != memory ||
+            storage->capacity < bytes)
+        return NULL;
+    return storage;
 }
 
 SIXELSTATUS
@@ -1057,6 +1110,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     sixel_gpu_lookup_binding_interface_t *binding;
     sixel_gpu_lookup_binding_view_t binding_view;
     sixel_vk_buffer_t const *workspace;
+    sixel_vk_buffer_t const *frame_dest;
+    sixel_vk_buffer_t const *frame_accumulation;
     sixel_vk_buffer_t const *bound[SIXEL_VK_BINDINGS];
     sixel_vk_buffer_t const *builder_bound[4];
     VkDescriptorBufferInfo infos[SIXEL_VK_BINDINGS + 4];
@@ -1160,6 +1215,13 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     has_accumulation = params.has_6delta != 0;
     has_valid = has_accumulation && request->accumulation_valid_mask != NULL;
 
+    /* Shared frame planes take the results by transfer copies. */
+    frame_dest = sixel_gpu_vulkan_frame_buffer(request->dest_buffer,
+        request->dest, pixel_count);
+    frame_accumulation = request->accumulation_result_mask != NULL
+        ? sixel_gpu_vulkan_frame_buffer(request->accumulation_result_buffer,
+            request->accumulation_result_mask,
+            request->accumulation_result_mask_size) : NULL;
     status = sixel_vk_buffer_reserve_readback(runtime,
         &state->buffers[SIXEL_VK_RESULT], pixel_count);
     if (SIXEL_SUCCEEDED(status)) {
@@ -1236,8 +1298,10 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             state->upload[SIXEL_VK_ACCUMULATION_VALID];
     }
     if (SIXEL_SUCCEEDED(status) && request->accumulation_result_mask != NULL) {
+        /* A shared plane is copied in on the device below. */
         status = sixel_gpu_vulkan_upload(runtime,
-            SIXEL_VK_ACCUMULATION_RESULT, request->accumulation_result_mask,
+            SIXEL_VK_ACCUMULATION_RESULT, frame_accumulation != NULL
+                ? NULL : request->accumulation_result_mask,
             request->accumulation_result_mask_size);
     }
     if (SIXEL_SUCCEEDED(status) && request->test_hooks != NULL &&
@@ -1353,6 +1417,11 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
                 }
                 sixel_vk_buffer_record_upload(command, &state->count,
                     sizeof(count));
+                if (frame_accumulation != NULL) {
+                    sixel_vk_record_copy(command, frame_accumulation,
+                        &state->buffers[SIXEL_VK_ACCUMULATION_RESULT], 0,
+                        request->accumulation_result_mask_size);
+                }
                 sixel_vk_record_barrier(command,
                     VK_PIPELINE_STAGE_TRANSFER_BIT,
                     VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -1421,12 +1490,21 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
                 VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_ACCESS_TRANSFER_READ_BIT);
-            sixel_vk_buffer_record_download_range(command,
-                &state->buffers[SIXEL_VK_RESULT], offset, length);
+            if (frame_dest != NULL)
+                sixel_vk_record_copy(command,
+                    &state->buffers[SIXEL_VK_RESULT], frame_dest, offset,
+                    length);
+            else
+                sixel_vk_buffer_record_download_range(command,
+                    &state->buffers[SIXEL_VK_RESULT], offset, length);
             sixel_vk_buffer_record_download_range(command,
                 &state->buffers[SIXEL_VK_INVALID],
                 (VkDeviceSize)slot * sizeof(uint32_t), sizeof(uint32_t));
-            if (request->accumulation_result_mask != NULL) {
+            if (frame_accumulation != NULL) {
+                sixel_vk_record_copy(command,
+                    &state->buffers[SIXEL_VK_ACCUMULATION_RESULT],
+                    frame_accumulation, offset, length);
+            } else if (request->accumulation_result_mask != NULL) {
                 sixel_vk_buffer_record_download_range(command,
                     &state->buffers[SIXEL_VK_ACCUMULATION_RESULT], offset,
                     length);
@@ -1482,9 +1560,10 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         }
         offset = (size_t)chunk->first * request->width;
         length = (size_t)chunk->rows * request->width;
-        status = sixel_vk_buffer_invalidate_range(runtime,
-            &state->buffers[SIXEL_VK_RESULT], offset, length);
-        if (SIXEL_SUCCEEDED(status) &&
+        if (frame_dest == NULL)
+            status = sixel_vk_buffer_invalidate_range(runtime,
+                &state->buffers[SIXEL_VK_RESULT], offset, length);
+        if (SIXEL_SUCCEEDED(status) && frame_accumulation == NULL &&
                 request->accumulation_result_mask != NULL) {
             status = sixel_vk_buffer_invalidate_range(runtime,
                 &state->buffers[SIXEL_VK_ACCUMULATION_RESULT], offset,
@@ -1493,10 +1572,12 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        memcpy(request->dest + offset,
-            (unsigned char *)state->buffers[SIXEL_VK_RESULT].mapped + offset,
-            length);
-        if (request->accumulation_result_mask != NULL) {
+        if (frame_dest == NULL)
+            memcpy(request->dest + offset,
+                (unsigned char *)state->buffers[SIXEL_VK_RESULT].mapped +
+                    offset, length);
+        if (frame_accumulation == NULL &&
+                request->accumulation_result_mask != NULL) {
             memcpy(request->accumulation_result_mask + offset,
                 (unsigned char *)
                     state->buffers[SIXEL_VK_ACCUMULATION_RESULT].mapped +

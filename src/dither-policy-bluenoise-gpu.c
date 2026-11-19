@@ -390,6 +390,8 @@ d_bluenoise_execute(d_bluenoise_plan_t *plan,
     request.sixdelta_comparison_palette = plan->comparison;
     request.sixdelta_comparison_palette_size = request.palette_size;
     request.accumulation_result_mask = run->result->skip;
+    request.dest_buffer = run->result->gpu_indexes;
+    request.accumulation_result_buffer = run->result->gpu_skip;
     request.accumulation_result_mask_size = run->result->pixels;
     request.bluenoise_strength_override = 1;
     request.bluenoise_strength = plan->configuration.options.bluenoise_strength;

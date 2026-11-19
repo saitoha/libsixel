@@ -35,6 +35,10 @@ SIXEL_INTERNAL_API int sixel_gpu_vulkan_is_device(
 SIXEL_INTERNAL_API sixel_vk_buffer_t const *sixel_gpu_vulkan_buffer(
     sixel_gpu_device_interface_t *device,
     sixel_gpu_buffer_interface_t *buffer);
+/* The host storage of a shared frame plane whose mapping is memory and
+ * holds at least bytes, or NULL; device work copies to and from it. */
+SIXEL_INTERNAL_API sixel_vk_buffer_t const *sixel_gpu_vulkan_frame_buffer(
+    sixel_gpu_buffer_interface_t *buffer, void const *memory, size_t bytes);
 /* Verify a view against the ABI and the consumer's query kind. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_gpu_vulkan_view_check(
     sixel_gpu_lookup_program_view_t const *view,

@@ -636,6 +636,68 @@ sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
         host_written ? 1 : 0);
 }
 
+int
+sixel_vk_has_cached_coherent(sixel_vk_runtime_t const *runtime)
+{
+    VkMemoryPropertyFlags wanted;
+    uint32_t index;
+
+    wanted = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
+        VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+    for (index = 0; index < runtime->memory.memoryTypeCount; ++index) {
+        if ((runtime->memory.memoryTypes[index].propertyFlags & wanted)
+                == wanted)
+            return 1;
+    }
+    return 0;
+}
+
+SIXELSTATUS
+sixel_vk_buffer_reserve_host(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t *buffer, VkDeviceSize size)
+{
+    VkMemoryPropertyFlags flags;
+    SIXELSTATUS status;
+
+    size = size == 0 ? 4 : (size + 3U) & ~(VkDeviceSize)3U;
+    if (buffer->buffer != VK_NULL_HANDLE && buffer->capacity >= size) {
+        return SIXEL_OK;
+    }
+    sixel_vk_buffer_release(runtime, buffer);
+    status = sixel_vk_allocate(runtime, size,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
+        VK_MEMORY_PROPERTY_HOST_CACHED_BIT, 0, &buffer->buffer,
+        &buffer->memory, &flags);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (vkMapMemory(runtime->device, buffer->memory, 0, VK_WHOLE_SIZE, 0,
+            &buffer->mapped) != VK_SUCCESS) {
+        buffer->mapped = NULL;
+        sixel_vk_buffer_release(runtime, buffer);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    buffer->capacity = size;
+    return SIXEL_OK;
+}
+
+void
+sixel_vk_record_copy(VkCommandBuffer command, sixel_vk_buffer_t const *source,
+    sixel_vk_buffer_t const *target, VkDeviceSize offset, VkDeviceSize size)
+{
+    VkBufferCopy region;
+
+    if (size == 0) return;
+    region.srcOffset = region.dstOffset = offset;
+    region.size = size;
+    vkCmdCopyBuffer(command, source->buffer, target->buffer, 1, &region);
+}
+
 SIXELSTATUS
 sixel_vk_buffer_reserve_readback(sixel_vk_runtime_t *runtime,
     sixel_vk_buffer_t *buffer, VkDeviceSize size)

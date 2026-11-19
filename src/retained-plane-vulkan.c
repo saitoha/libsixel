@@ -178,9 +178,9 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     sixel_gpu_buffer_interface_t *skip_buffer,
     unsigned char *paint, sixel_retained_update_stats_t *stats, int fault)
 {
-    (void)indexes_buffer;
-    (void)skip_buffer;
     sixel_vk_runtime_t *runtime;
+    sixel_vk_buffer_t const *frame_indexes;
+    sixel_vk_buffer_t const *frame_skip;
     sixel_vk_buffer_t const *bound[9];
     VkCommandBuffer command;
     VkBufferCopy copy;
@@ -201,9 +201,16 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     bound[2] = sixel_gpu_vulkan_buffer(gpu->device, gpu->rgb[1-current]);
     bound[3] = sixel_gpu_vulkan_buffer(gpu->device, gpu->valid[1-current]);
     for (i = 0; i < 5; ++i) bound[4 + i] = &gpu->scratch[i];
-    memcpy(gpu->scratch[0].mapped, indexes, pixels);
-    if (skip != NULL) memcpy(gpu->scratch[1].mapped, skip, pixels);
-    else memset(gpu->scratch[1].mapped, 0, pixels);
+    /* Shared frame planes reach device storage by transfer copies. */
+    frame_indexes = sixel_gpu_vulkan_frame_buffer(indexes_buffer, indexes,
+        pixels);
+    frame_skip = skip != NULL
+        ? sixel_gpu_vulkan_frame_buffer(skip_buffer, skip, pixels) : NULL;
+    if (frame_indexes == NULL) memcpy(gpu->scratch[0].mapped, indexes, pixels);
+    if (frame_skip == NULL) {
+        if (skip != NULL) memcpy(gpu->scratch[1].mapped, skip, pixels);
+        else memset(gpu->scratch[1].mapped, 0, pixels);
+    }
     memcpy(gpu->scratch[4].mapped, &gpu->params, sizeof(gpu->params));
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
@@ -233,8 +240,14 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
                 1, &copy);
         }
     }
-    sixel_vk_buffer_record_upload(command, bound[4], pixels);
-    sixel_vk_buffer_record_upload(command, bound[5], pixels);
+    if (frame_indexes != NULL)
+        sixel_vk_record_copy(command, frame_indexes, bound[4], 0, pixels);
+    else
+        sixel_vk_buffer_record_upload(command, bound[4], pixels);
+    if (frame_skip != NULL)
+        sixel_vk_record_copy(command, frame_skip, bound[5], 0, pixels);
+    else
+        sixel_vk_buffer_record_upload(command, bound[5], pixels);
     sixel_vk_buffer_record_upload(command, bound[8], sizeof(gpu->params));
     sixel_vk_compute_barrier(command);
     sixel_vk_compute_dispatch(command, &retained_stage, gpu->groups);

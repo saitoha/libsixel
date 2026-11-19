@@ -521,6 +521,16 @@ sixel_gpu_device_shares_frames(sixel_gpu_device_interface_t *device)
 }
 
 SIXELSTATUS
+sixel_gpu_device_create_frame_buffer(sixel_gpu_device_interface_t *device,
+    size_t bytes, sixel_gpu_buffer_interface_t **result)
+{
+    (void)device;
+    (void)bytes;
+    *result = NULL;
+    return SIXEL_FEATURE_ERROR;
+}
+
+SIXELSTATUS
 sixel_gpu_device_acquire(sixel_gpu_device_interface_t **device)
 {
     if (device == NULL) return SIXEL_BAD_ARGUMENT;

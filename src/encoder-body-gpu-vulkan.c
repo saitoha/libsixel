@@ -10,6 +10,7 @@
 #include <string.h>
 #include "encoder-body-gpu.h"
 #include "gpu-compute-vulkan.h"
+#include "gpu-palette-vulkan.h"
 
 static char const *const body_source[] = {
 #include "generated-vulkan/encoder-body-gpu-shader.inc.h"
@@ -139,6 +140,8 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
     sixel_body_gpu_params_t *params, sixel_body_gpu_result_t *result)
 {
     sixel_vk_buffer_t *buffers;
+    sixel_vk_buffer_t const *frame_indexes;
+    sixel_vk_buffer_t const *frame_mask;
     VkCommandBuffer command;
     size_t pixels;
     size_t pairs;
@@ -179,8 +182,14 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
         status = sixel_body_gpu_reserve(runtime, context, BODY_MAP, 16);
     if (status != SIXEL_OK) return status;
 
-    memcpy(buffers[BODY_INDEXES].mapped, request->indexes, pixels);
-    if (request->mask != NULL)
+    /* Shared frame planes reach device storage by transfer copies. */
+    frame_indexes = sixel_gpu_vulkan_frame_buffer(request->indexes_buffer,
+        request->indexes, pixels);
+    frame_mask = request->mask != NULL ? sixel_gpu_vulkan_frame_buffer(
+        request->mask_buffer, request->mask, pixels) : NULL;
+    if (frame_indexes == NULL)
+        memcpy(buffers[BODY_INDEXES].mapped, request->indexes, pixels);
+    if (request->mask != NULL && frame_mask == NULL)
         memcpy(buffers[BODY_MASK].mapped, request->mask, pixels);
     params->write_pass = 0;
     memcpy(buffers[BODY_PARAMS].mapped, params, sizeof(*params));
@@ -188,8 +197,16 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
     if (status != SIXEL_OK) return status;
     status = sixel_vk_command_begin(runtime, &command);
     if (status != SIXEL_OK) return status;
-    sixel_vk_buffer_record_upload(command, &buffers[BODY_INDEXES], pixels);
-    if (request->mask != NULL)
+    if (frame_indexes != NULL)
+        sixel_vk_record_copy(command, frame_indexes, &buffers[BODY_INDEXES],
+            0, pixels);
+    else
+        sixel_vk_buffer_record_upload(command, &buffers[BODY_INDEXES],
+            pixels);
+    if (frame_mask != NULL)
+        sixel_vk_record_copy(command, frame_mask, &buffers[BODY_MASK], 0,
+            pixels);
+    else if (request->mask != NULL)
         sixel_vk_buffer_record_upload(command, &buffers[BODY_MASK], pixels);
     sixel_vk_buffer_record_upload(command, &buffers[BODY_PARAMS],
         sizeof(*params));
