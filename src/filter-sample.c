@@ -37,6 +37,12 @@
 #include <sixel.h>
 
 #include "filter-sample.h"
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+# include <arm_neon.h>
+# define SIXEL_SAMPLE_NEON 1
+#else
+# define SIXEL_SAMPLE_NEON 0
+#endif
 #include "compat_stub.h"
 #include "filter.h"
 #include "frame-factory.h"
@@ -213,6 +219,91 @@ sixel_filter_sample_line_spread(unsigned char const *pixels,
     return worst;
 }
 
+#if SIXEL_SAMPLE_NEON
+/* Solid test for up to 16 points x0, x0 + 3, ...: both[k] is nonzero when
+ * the horizontal and the vertical five-pixel lines through point k each
+ * have a channel more than the tolerance away from the centre, exactly as
+ * two line_spread() calls decide. One pass of byte maxima covers every
+ * pixel between the points, so the loads are contiguous and branch-free.
+ * Every line must lie inside the image: 2 <= x0, the last point plus two
+ * is below width, and 2 <= y < height - 2. */
+static void
+sixel_filter_sample_vary_points(unsigned char const *pixels,
+                                int width,
+                                int depth,
+                                int x0,
+                                int y,
+                                int points,
+                                unsigned char *both)
+{
+    unsigned char horizontal[(3 * 15 + 1) * 4];
+    unsigned char vertical[(3 * 15 + 1) * 4];
+    unsigned char const *centre;
+    size_t row;
+    size_t bytes;
+    size_t b;
+    int k;
+    int c;
+    unsigned char h;
+    unsigned char v;
+
+    row = (size_t)width * (size_t)depth;
+    centre = pixels + ((size_t)y * (size_t)width + (size_t)x0)
+                      * (size_t)depth;
+    bytes = (size_t)(3 * (points - 1) + 1) * (size_t)depth;
+    for (b = 0; b + 16 <= bytes; b += 16) {
+        uint8x16_t middle;
+        uint8x16_t across;
+        uint8x16_t down;
+
+        middle = vld1q_u8(centre + b);
+        across = vmaxq_u8(
+            vmaxq_u8(vabdq_u8(middle, vld1q_u8(centre + b - depth)),
+                     vabdq_u8(middle, vld1q_u8(centre + b + depth))),
+            vmaxq_u8(vabdq_u8(middle, vld1q_u8(centre + b - 2 * depth)),
+                     vabdq_u8(middle, vld1q_u8(centre + b + 2 * depth))));
+        down = vmaxq_u8(
+            vmaxq_u8(vabdq_u8(middle, vld1q_u8(centre + b - row)),
+                     vabdq_u8(middle, vld1q_u8(centre + b + row))),
+            vmaxq_u8(vabdq_u8(middle, vld1q_u8(centre + b - 2 * row)),
+                     vabdq_u8(middle, vld1q_u8(centre + b + 2 * row))));
+        vst1q_u8(horizontal + b, across);
+        vst1q_u8(vertical + b, down);
+    }
+    for (; b < bytes; ++b) {
+        int m;
+        int d;
+        int i;
+
+        m = centre[b];
+        h = 0;
+        v = 0;
+        for (i = 1; i <= 2; ++i) {
+            d = abs((int)centre[b - (size_t)(i * depth)] - m);
+            if (d > h) h = (unsigned char)d;
+            d = abs((int)centre[b + (size_t)(i * depth)] - m);
+            if (d > h) h = (unsigned char)d;
+            d = abs((int)centre[b - (size_t)i * row] - m);
+            if (d > v) v = (unsigned char)d;
+            d = abs((int)centre[b + (size_t)i * row] - m);
+            if (d > v) v = (unsigned char)d;
+        }
+        horizontal[b] = h;
+        vertical[b] = v;
+    }
+    for (k = 0; k < points; ++k) {
+        b = (size_t)(3 * k) * (size_t)depth;
+        h = 0;
+        v = 0;
+        for (c = 0; c < depth; ++c) {
+            h |= (unsigned char)(horizontal[b + c] > SIXEL_SAMPLE_SOLID_TOL);
+            v |= (unsigned char)(vertical[b + c] > SIXEL_SAMPLE_SOLID_TOL);
+        }
+        both[k] = (unsigned char)(h & v);
+    }
+}
+#endif
+
 static unsigned int
 sixel_filter_sample_color_distance_sq(unsigned char const *a,
                                       unsigned char const *b,
@@ -294,6 +385,13 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
     int clip_width;
     int stride;
     int sample_width;
+#if SIXEL_SAMPLE_NEON
+    unsigned char varies[16];
+    int chunk_x;
+    int chunk_points;
+    int vector_row;
+    int last_inner;
+#endif
 
     (void)workspace;
     ctx = (sixel_filter_sample_job_t *)userdata;
@@ -348,6 +446,18 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
             * SIXEL_SAMPLE_SOLID_CELLS;
         for (row = first; row < end; ++row) {
             y = clip_y + row * SIXEL_SAMPLE_SOLID_STRIDE;
+#if SIXEL_SAMPLE_NEON
+            chunk_x = 0;
+            chunk_points = 0;
+            /* Points whose both lines stay inside the image take the
+             * vector test; edge points keep the scalar spreads. */
+            vector_row = y >= SIXEL_SAMPLE_SOLID_HALF
+                && y + SIXEL_SAMPLE_SOLID_HALF < height;
+            last_inner = clip_x + clip_width - 1;
+            if (last_inner > width - 1 - SIXEL_SAMPLE_SOLID_HALF) {
+                last_inner = width - 1 - SIXEL_SAMPLE_SOLID_HALF;
+            }
+#endif
             for (x = clip_x;
                  x < clip_x + clip_width;
                  x += SIXEL_SAMPLE_SOLID_STRIDE) {
@@ -356,6 +466,26 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
                                      + (size_t)x] != 0) {
                     continue;
                 }
+#if SIXEL_SAMPLE_NEON
+                if (vector_row && x >= SIXEL_SAMPLE_SOLID_HALF
+                        && x <= last_inner) {
+                    if (chunk_points == 0
+                            || x >= chunk_x
+                                + SIXEL_SAMPLE_SOLID_STRIDE * chunk_points) {
+                        chunk_x = x;
+                        chunk_points = (last_inner - x)
+                            / SIXEL_SAMPLE_SOLID_STRIDE + 1;
+                        if (chunk_points > 16) {
+                            chunk_points = 16;
+                        }
+                        sixel_filter_sample_vary_points(pixels, width, depth,
+                            chunk_x, y, chunk_points, varies);
+                    }
+                    if (varies[(x - chunk_x) / SIXEL_SAMPLE_SOLID_STRIDE]) {
+                        continue;
+                    }
+                } else
+#endif
                 /*
                  * Either axis qualifies.  A horizontal run is a scrub bar or an
                  * underline; a vertical run is a scrollbar or window edge.
