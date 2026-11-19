@@ -293,6 +293,9 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
     request.offset_top = desc->encoded_y;
     request.ncolors = ncolors;
     request.keycolor = desc->keycolor;
+    request.device = core->image->gpu_device;
+    request.indexes_buffer = core->image->gpu_indexes;
+    request.mask_buffer = core->image->gpu_skip;
     status = sixel_body_gpu_run(core->gpu, &request, &core->gpu_result);
     if (SIXEL_FAILED(status)) {
         core->gpu_unavailable = 1;

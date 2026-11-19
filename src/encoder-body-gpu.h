@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <sixel.h>
+#include <6cells.h>
 
 /*
  * GPU band composition for the SIXEL body.  For a fully published indexed
@@ -41,6 +42,11 @@ typedef struct sixel_body_gpu_request {
     int offset_top;
     int ncolors;
     int keycolor;
+    /* Optional shared storage behind indexes and mask; a run on the same
+     * device binds it instead of copying. All may be NULL. */
+    sixel_gpu_device_interface_t *device;
+    sixel_gpu_buffer_interface_t *indexes_buffer;
+    sixel_gpu_buffer_interface_t *mask_buffer;
 } sixel_body_gpu_request_t;
 
 /* Borrowed views into the context's buffers, valid until the next run or

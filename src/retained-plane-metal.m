@@ -233,11 +233,15 @@ sixel_retained_gpu_prepare(sixel_retained_gpu_t *gpu,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     unsigned char const *indexes, unsigned char const *skip,
+    sixel_gpu_buffer_interface_t *indexes_buffer,
+    sixel_gpu_buffer_interface_t *skip_buffer,
     unsigned char *paint, sixel_retained_update_stats_t *stats, int fault)
 {
     id<MTLCommandBuffer> command;
     id<MTLComputeCommandEncoder> encoder;
     id<MTLBlitCommandEncoder> blit;
+    id<MTLBuffer> bound_indexes;
+    id<MTLBuffer> bound_skip;
     NSUInteger offset;
     NSUInteger length;
     NSUInteger aligned;
@@ -254,9 +258,20 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     if (fault == 1) return SIXEL_RUNTIME_ERROR;
     current = gpu->committed;
     pixels = (size_t)gpu->params.width * gpu->params.height;
-    memcpy([gpu->indexes contents], indexes, pixels);
-    if (skip != NULL) memcpy([gpu->skip contents], skip, pixels);
-    else memset([gpu->skip contents], 0, pixels);
+    /* Frame planes already in shared storage of this device are bound in
+     * place; other frames are staged into the owned buffers. */
+    bound_indexes = sixel_gpu_metal_buffer(gpu->device, indexes_buffer);
+    bound_skip = sixel_gpu_metal_buffer(gpu->device, skip_buffer);
+    if (bound_indexes == nil || bound_skip == nil || skip == NULL ||
+            [bound_indexes contents] != (void *)indexes ||
+            [bound_skip contents] != (void *)skip ||
+            [bound_indexes length] < pixels || [bound_skip length] < pixels) {
+        bound_indexes = gpu->indexes;
+        bound_skip = gpu->skip;
+        memcpy([gpu->indexes contents], indexes, pixels);
+        if (skip != NULL) memcpy([gpu->skip contents], skip, pixels);
+        else memset([gpu->skip contents], 0, pixels);
+    }
     status = SIXEL_RUNTIME_ERROR;
     @autoreleasepool {
         command = [gpu->queue commandBuffer];
@@ -306,8 +321,8 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
             gpu->rgb[1-current]) offset:0 atIndex:2];
         [encoder setBuffer:sixel_gpu_metal_buffer(gpu->device,
             gpu->valid[1-current]) offset:0 atIndex:3];
-        [encoder setBuffer:gpu->indexes offset:0 atIndex:4];
-        [encoder setBuffer:gpu->skip offset:0 atIndex:5];
+        [encoder setBuffer:bound_indexes offset:0 atIndex:4];
+        [encoder setBuffer:bound_skip offset:0 atIndex:5];
         [encoder setBuffer:gpu->paint offset:0 atIndex:6];
         [encoder setBuffer:gpu->stats offset:0 atIndex:7];
         [encoder setBytes:&gpu->params length:sizeof(gpu->params) atIndex:8];

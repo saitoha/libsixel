@@ -514,7 +514,13 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-    status = sixel_indexed_frame_new(&image, &description, dither->allocator);
+    /* GPU applies write and consumers read the planes in shared storage. */
+    status = apply->vtbl->get_device(apply, &retained_device);
+    if (status != SIXEL_OK) goto end;
+    status = sixel_indexed_frame_new_on_device(&image, &description,
+        dither->allocator,
+        sixel_gpu_device_shares_frames(retained_device)
+            ? retained_device : NULL);
     if (status != SIXEL_OK) goto end;
     pixels = (size_t)request->width * request->height;
 #if SIXEL_ENABLE_THREADS
@@ -532,8 +538,6 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     memset(&header, 0, sizeof(header));
     memset(&update_request, 0, sizeof(update_request));
     if (session != NULL) {
-        status = apply->vtbl->get_device(apply, &retained_device);
-        if (status != SIXEL_OK) goto end;
         status = session->plane->vtbl->set_device(session->plane,
             retained_device);
         if (status != SIXEL_OK && status != SIXEL_FEATURE_ERROR) goto end;

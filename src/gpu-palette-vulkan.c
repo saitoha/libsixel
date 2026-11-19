@@ -643,6 +643,15 @@ sixel_gpu_palette_vulkan_is_available(void)
     return available;
 }
 
+/* No Vulkan consumer binds frame storage, and host-visible device memory
+ * can be uncached; frames stay in allocator memory and are copied. */
+int
+sixel_gpu_device_shares_frames(sixel_gpu_device_interface_t *device)
+{
+    (void)device;
+    return 0;
+}
+
 SIXELSTATUS
 sixel_gpu_device_acquire(sixel_gpu_device_interface_t **result)
 {

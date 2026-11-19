@@ -225,11 +225,12 @@ static void
 sixel_body_gpu_encode_spans(id<MTLComputeCommandEncoder> encoder,
                             sixel_body_gpu_t *context,
                             sixel_body_gpu_params_t const *params,
-                            uint32_t write_pass)
+                            uint32_t write_pass,
+                            id<MTLBuffer> indexes, id<MTLBuffer> mask)
 {
     static int const slots[] = {
         BODY_OCCUPANCY, BODY_COUNTS, BODY_WIDTHS, BODY_NODE_FIRST,
-        BODY_MAP_FIRST, BODY_NODES, BODY_MAP, BODY_INDEXES, BODY_MASK
+        BODY_MAP_FIRST, BODY_NODES, BODY_MAP
     };
     NSUInteger i;
     NSUInteger threads;
@@ -242,6 +243,8 @@ sixel_body_gpu_encode_spans(id<MTLComputeCommandEncoder> encoder,
         [encoder setBuffer:(__bridge id<MTLBuffer>)context->buffers[slots[i]]
                     offset:0 atIndex:i];
     }
+    [encoder setBuffer:indexes offset:0 atIndex:7];
+    [encoder setBuffer:mask offset:0 atIndex:8];
     [encoder setBytes:params length:sizeof(*params) atIndex:9];
     [encoder setBytes:&write_pass length:sizeof(write_pass) atIndex:10];
     [encoder setBuffer:(__bridge id<MTLBuffer>)
@@ -308,10 +311,37 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         id<MTLComputePipelineState> classify;
         id<MTLBuffer> indexes;
         id<MTLBuffer> mask;
+        int staged;
 
-        indexes = sixel_body_gpu_buffer(context, BODY_INDEXES, pixels);
-        mask = sixel_body_gpu_buffer(context, BODY_MASK,
-            request->mask != NULL ? pixels : 16);
+        /* Bind shared frame storage when it lives on this context's
+         * device; otherwise stage both planes into owned buffers. */
+        indexes = nil;
+        mask = nil;
+        if (request->device != NULL &&
+                sixel_gpu_metal_device(request->device) ==
+                    (__bridge id<MTLDevice>)context->device) {
+            indexes = sixel_gpu_metal_buffer(request->device,
+                request->indexes_buffer);
+            mask = request->mask != NULL
+                ? sixel_gpu_metal_buffer(request->device,
+                    request->mask_buffer) : nil;
+            if (indexes == nil || [indexes length] < pixels ||
+                    [indexes contents] != (void *)request->indexes ||
+                    (request->mask != NULL && (mask == nil ||
+                        [mask length] < pixels ||
+                        [mask contents] != (void *)request->mask))) {
+                indexes = nil;
+                mask = nil;
+            }
+        }
+        staged = indexes == nil;
+        if (staged) {
+            indexes = sixel_body_gpu_buffer(context, BODY_INDEXES, pixels);
+        }
+        if (mask == nil) {
+            mask = sixel_body_gpu_buffer(context, BODY_MASK,
+                staged && request->mask != NULL ? pixels : 16);
+        }
         if (indexes == nil || mask == nil ||
                 sixel_body_gpu_buffer(context, BODY_OCCUPANCY,
                     occupancy_words * 4U) == nil ||
@@ -327,9 +357,11 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
                 sixel_body_gpu_buffer(context, BODY_MAP, 16) == nil) {
             return SIXEL_BAD_ALLOCATION;
         }
-        memcpy([indexes contents], request->indexes, pixels);
-        if (request->mask != NULL) {
-            memcpy([mask contents], request->mask, pixels);
+        if (staged) {
+            memcpy([indexes contents], request->indexes, pixels);
+            if (request->mask != NULL) {
+                memcpy([mask contents], request->mask, pixels);
+            }
         }
 
         queue = (__bridge id<MTLCommandQueue>)context->queue;
@@ -349,7 +381,8 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         [encoder setBytes:&params length:sizeof(params) atIndex:3];
         [encoder dispatchThreads:MTLSizeMake(params.width, params.height, 1)
            threadsPerThreadgroup:MTLSizeMake(32, 8, 1)];
-        sixel_body_gpu_encode_spans(encoder, context, &params, 0U);
+        sixel_body_gpu_encode_spans(encoder, context, &params, 0U,
+            indexes, mask);
         [encoder endEncoding];
         [command commit];
         [command waitUntilCompleted];
@@ -403,7 +436,8 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
 
         command = [queue commandBuffer];
         encoder = [command computeCommandEncoder];
-        sixel_body_gpu_encode_spans(encoder, context, &params, 1U);
+        sixel_body_gpu_encode_spans(encoder, context, &params, 1U,
+            indexes, mask);
         [encoder endEncoding];
         [command commit];
         [command waitUntilCompleted];

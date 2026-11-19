@@ -58,11 +58,15 @@ sixel_retained_gpu_prepare(sixel_retained_gpu_t *gpu,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     unsigned char const *indexes, unsigned char const *skip,
+    sixel_gpu_buffer_interface_t *indexes_buffer,
+    sixel_gpu_buffer_interface_t *skip_buffer,
     unsigned char *paint, sixel_retained_update_stats_t *stats, int fault)
 {
     (void)gpu;
     (void)indexes;
     (void)skip;
+    (void)indexes_buffer;
+    (void)skip_buffer;
     (void)paint;
     (void)stats;
     (void)fault;

@@ -420,6 +420,9 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
     sixel_retained_gpu_read_view_t retained;
     id<MTLBuffer> retained_rgb;
     id<MTLBuffer> retained_valid;
+    id<MTLBuffer> frame_indexes;
+    id<MTLBuffer> frame_skip;
+    int direct;
     int in_place;
     sixel_gpu_lookup_binding_interface_t *binding;
     sixel_gpu_lookup_binding_view_t binding_view;
@@ -527,6 +530,18 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
             goto end;
         }
     }
+    /* Frames in shared storage of this device receive the final planes in
+     * place; both kernels overwrite every pixel of the result and skip. */
+    frame_indexes = nil;
+    frame_skip = nil;
+    if (mode != 1) {
+        frame_indexes = sixel_gpu_metal_buffer(plan->device,
+            request->result->gpu_indexes);
+        frame_skip = sixel_gpu_metal_buffer(plan->device,
+            request->result->gpu_skip);
+    }
+    direct = frame_indexes != nil && frame_skip != nil &&
+        [frame_indexes length] >= pixels && [frame_skip length] >= pixels;
     commands = [plan->queue commandBuffer];
     if (commands == nil) { status = SIXEL_BAD_ALLOCATION; goto end; }
     ncolors = params.ncolors;
@@ -566,6 +581,9 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
                 } else if (y == 9 || y == 10) {
                     [encoder setBuffer:y == 9 ? retained_rgb : retained_valid
                                 offset:0 atIndex:y];
+                } else if ((y == 11 || y == 15) && direct) {
+                    [encoder setBuffer:y == 11 ? frame_indexes : frame_skip
+                                offset:0 atIndex:y];
                 } else {
                     [encoder setBuffer:plan->buffers[y] offset:0 atIndex:y];
                 }
@@ -593,7 +611,7 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
     if (status == SIXEL_OK && request->cancel != NULL &&
             request->cancel(request->cancel_context))
         status = SIXEL_INTERRUPTED;
-    if (status == SIXEL_OK && mode != 1) {
+    if (status == SIXEL_OK && mode != 1 && !direct) {
         memcpy(request->result->indexes, [plan->buffers[11] contents], pixels);
         memcpy(request->result->skip, [plan->buffers[15] contents], pixels);
     }

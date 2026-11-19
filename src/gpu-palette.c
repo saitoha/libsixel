@@ -513,6 +513,13 @@ sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request)
 }
 
 #if !defined(HAVE_METAL) && !defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+int
+sixel_gpu_device_shares_frames(sixel_gpu_device_interface_t *device)
+{
+    (void)device;
+    return 0;
+}
+
 SIXELSTATUS
 sixel_gpu_device_acquire(sixel_gpu_device_interface_t **device)
 {
