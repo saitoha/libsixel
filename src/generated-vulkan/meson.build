@@ -51,6 +51,7 @@ vulkan_stages = [
   '../gpu-dequant-fast4.glsl',
   '../palette-kmeans-gpu.glsl',
   '../retained-plane-gpu.glsl',
+  '../encoder-body-gpu.glsl',
   '../progressive-gpu-scan.glsl',
   '../progressive-gpu-lookup.glsl',
 ]

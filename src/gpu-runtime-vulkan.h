@@ -67,6 +67,8 @@ typedef struct sixel_vk_buffer {
     VkDeviceMemory staging_memory;
     void *mapped;
     VkDeviceSize capacity;
+    /* The mapping needs sixel_vk_buffer_invalidate() before host reads. */
+    int noncoherent;
 } sixel_vk_buffer_t;
 
 SIXEL_INTERNAL_API void sixel_vk_lock(void);
@@ -83,6 +85,15 @@ SIXEL_INTERNAL_API sixel_vk_runtime_t *sixel_vk_runtime_get_locked(void);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     VkDeviceSize size, int host_written);
+/* A buffer the shader writes and the host reads in place. It prefers
+ * cached host memory even without coherence; call invalidate after the
+ * fence wait and before reading the first size bytes. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_readback(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    VkDeviceSize size);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_invalidate(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t const *buffer,
+    VkDeviceSize size);
 /* Promote an existing allocation to directly shared coherent storage,
  * preserving its bytes. Prefer host-visible VRAM; never expose a staging
  * pointer as shared memory because host writes must reach future kernels. */

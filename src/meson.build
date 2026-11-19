@@ -461,6 +461,7 @@ if have_vulkan
            'gpu-compute-vulkan.c', 'gpu-dequant-vulkan.c',
            'progressive-gpu-vulkan.c',
            'retained-plane-vulkan.c',
+           'encoder-body-gpu-vulkan.c',
            'dither-policy-lso2-gpu-vulkan.c',
            'dither-policy-fs-gpu-vulkan.c',
            'dither-policy-atkinson-gpu-vulkan.c',
