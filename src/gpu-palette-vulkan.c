@@ -1019,17 +1019,23 @@ sixel_gpu_vulkan_upload(sixel_vk_runtime_t *runtime, int slot,
     SIXELSTATUS status;
 
     buffer = &g_sixel_vk_palette.buffers[slot];
-    /* The accumulation result mask is also read back after the dispatch. */
-    status = sixel_vk_buffer_reserve(runtime, buffer, size,
-        slot != SIXEL_VK_ACCUMULATION_RESULT);
+    /* The accumulation result mask is also read back after the dispatch,
+     * which keeps only the pixels the shader marks; read it from cached
+     * memory and flush the initial mask when that memory is not coherent. */
+    status = slot == SIXEL_VK_ACCUMULATION_RESULT
+        ? sixel_vk_buffer_reserve_readback(runtime, buffer, size)
+        : sixel_vk_buffer_reserve(runtime, buffer, size, 1);
     if (SIXEL_FAILED(status)) {
         return status;
     }
     if (bytes != NULL && size != 0) {
         memcpy(buffer->mapped, bytes, size);
         g_sixel_vk_palette.upload[slot] = size;
+        if (slot == SIXEL_VK_ACCUMULATION_RESULT) {
+            status = sixel_vk_buffer_flush(runtime, buffer, size);
+        }
     }
-    return SIXEL_OK;
+    return status;
 }
 
 /* Run the fused kernel of a prepared program. The plan's binding leases
@@ -1478,6 +1484,12 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         length = (size_t)chunk->rows * request->width;
         status = sixel_vk_buffer_invalidate_range(runtime,
             &state->buffers[SIXEL_VK_RESULT], offset, length);
+        if (SIXEL_SUCCEEDED(status) &&
+                request->accumulation_result_mask != NULL) {
+            status = sixel_vk_buffer_invalidate_range(runtime,
+                &state->buffers[SIXEL_VK_ACCUMULATION_RESULT], offset,
+                length);
+        }
         if (SIXEL_FAILED(status)) {
             goto end;
         }
