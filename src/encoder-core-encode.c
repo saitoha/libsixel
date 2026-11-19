@@ -2963,7 +2963,37 @@ sixel_put_node(
         }
         row = (unsigned char const *)np->map;
         mx = np->mx;
-        for (i = *x; i < mx; i = end) {
+        i = *x;
+#if SIXEL_ENCODE_NEON_MASK
+        /* Most nodes are a few cells. Runs of at most three cells spell as
+         * their own symbols, so a short node with no four equal neighbors
+         * is row + '?' and takes one store. Lane j is set when cells j..j+3
+         * match; lanes reaching past mx are ignored. Maps keep
+         * SIXEL_BODY_MAP_TAIL readable bytes past every span, and the
+         * reservation above covers the 16-byte store. */
+        if (mx - i <= 16) {
+            uint8x16_t cells;
+            uint8x16_t same;
+            uint64_t lanes;
+            int windows;
+
+            cells = vld1q_u8(row + i);
+            same = vandq_u8(vandq_u8(
+                vceqq_u8(cells, vld1q_u8(row + i + 1)),
+                vceqq_u8(cells, vld1q_u8(row + i + 2))),
+                vceqq_u8(cells, vld1q_u8(row + i + 3)));
+            lanes = vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(
+                vreinterpretq_u16_u8(same), 4)), 0);
+            windows = mx - i - 3;
+            if (windows <= 0 ||
+                    (lanes & (~UINT64_C(0) >> (64 - 4 * windows))) == 0) {
+                vst1q_u8(p, vaddq_u8(cells, vdupq_n_u8('?')));
+                p += mx - i;
+                i = mx;
+            }
+        }
+#endif
+        for (; i < mx; i = end) {
             value = row[i];
             /* These private maps contain only the six classified row bits,
              * including size-policy underpaint. Zero is an empty cell. */
@@ -3388,7 +3418,8 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
     }
     len = ncolors * width;
     work->map = (char *)sixel_allocator_calloc(allocator,
-                                               (size_t)len,
+                                               (size_t)len
+                                                   + SIXEL_BODY_MAP_TAIL,
                                                sizeof(char));
     if (work->map == NULL && len > 0) {
         sixel_helper_set_additional_message(

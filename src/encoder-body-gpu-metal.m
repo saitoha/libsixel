@@ -396,8 +396,8 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         if (sixel_body_gpu_buffer(context, BODY_NODES,
                     (size_t)nodes_total * sizeof(sixel_body_gpu_node_t))
                     == nil ||
-                sixel_body_gpu_buffer(context, BODY_MAP, (size_t)map_total)
-                    == nil) {
+                sixel_body_gpu_buffer(context, BODY_MAP,
+                    (size_t)map_total + SIXEL_BODY_MAP_TAIL) == nil) {
             return SIXEL_BAD_ALLOCATION;
         }
 
