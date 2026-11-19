@@ -1902,7 +1902,7 @@ sixel_lookup_fhedt_mark_boundaries_8bit(sixel_lookup_fhedt_shared_8bit_t *shared
     int const *below_y;
     int const *above_y;
     unsigned char *out;
-    unsigned char flags[256];
+    unsigned char flags[256] = {0};
     unsigned int packed;
 
     res = shared->resolution;

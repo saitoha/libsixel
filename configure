@@ -29372,6 +29372,141 @@ printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
     message_simd=neon
 fi
 
+# These vector implementations rely on the native x86 or AArch64 ABI.
+if test "x$have_sse2" = xyes &&
+       test "x$ac_cv_header_emmintrin_h" = xyes
+then :
+
+    case $host_cpu in #(
+  x86_64|amd64|i?86) :
+
+
+printf "%s\n" "#define HAVE_X86_SSE2 1" >>confdefs.h
+
+     ;; #(
+  *) :
+     ;;
+esac
+
+fi
+if test "x$have_neon" = xyes
+then :
+
+    case $host_cpu in #(
+  aarch64|aarch64_be|arm64) :
+
+
+printf "%s\n" "#define HAVE_AARCH64_NEON 1" >>confdefs.h
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if defined(__ARM_BIG_ENDIAN)
+#error NEON nibble layout requires little-endian lanes
+#endif
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+
+printf "%s\n" "#define HAVE_AARCH64_NEON_LE 1" >>confdefs.h
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+     ;; #(
+  *) :
+     ;;
+esac
+
+fi
+
+if test "x$ac_cv_header_immintrin_h" = xyes
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a function-local AVX2 target" >&5
+printf %s "checking for a function-local AVX2 target... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <immintrin.h>
+static __attribute__((target("avx2"))) int
+test_avx2(unsigned char const *input)
+{
+    return _mm256_extract_epi32(
+    _mm256_cvtepu8_epi16(_mm_loadu_si128((__m128i const *)input)), 4);
+}
+
+int
+main (void)
+{
+unsigned char input[16] = {0}; return test_avx2(input);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+printf "%s\n" "#define HAVE_AVX2_TARGET 1" >>confdefs.h
+
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for getpid declared in unistd.h" >&5
+printf %s "checking for getpid declared in unistd.h... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <unistd.h>
+
+int
+main (void)
+{
+
+    pid_t (*current_pid)(void) = getpid;
+    return current_pid() == (pid_t)-1;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+printf "%s\n" "#define HAVE_GETPID 1" >>confdefs.h
+
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
 if test "x$enable_xsave_probe" = xno; then
     message_xsave_probe=disabled
 elif test "x$have_xgetbv_intrin" = xyes; then

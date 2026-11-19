@@ -5604,6 +5604,58 @@ if test "x$have_neon" = xyes; then
     message_simd=neon
 fi
 
+# These vector implementations rely on the native x86 or AArch64 ABI.
+AS_IF([test "x$have_sse2" = xyes &&
+       test "x$ac_cv_header_emmintrin_h" = xyes], [
+    AS_CASE([$host_cpu], [x86_64|amd64|i?86], [
+        AC_DEFINE([HAVE_X86_SSE2], [1],
+                  [Define if native x86 SSE2 is available])
+    ])
+])
+AS_IF([test "x$have_neon" = xyes], [
+    AS_CASE([$host_cpu], [aarch64|aarch64_be|arm64], [
+        AC_DEFINE([HAVE_AARCH64_NEON], [1],
+                  [Define if AArch64 NEON is available])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if defined(__ARM_BIG_ENDIAN)
+#error NEON nibble layout requires little-endian lanes
+#endif
+        ]], [[]])], [
+            AC_DEFINE([HAVE_AARCH64_NEON_LE], [1],
+                      [Define if little-endian AArch64 NEON is available])
+        ])
+    ])
+])
+
+AS_IF([test "x$ac_cv_header_immintrin_h" = xyes], [
+    AC_MSG_CHECKING([for a function-local AVX2 target])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <immintrin.h>
+static __attribute__((target("avx2"))) int
+test_avx2(unsigned char const *input)
+{
+    return _mm256_extract_epi32(
+    _mm256_cvtepu8_epi16(_mm_loadu_si128((__m128i const *)input)), 4);
+}
+    ]], [[unsigned char input[16] = {0}; return test_avx2(input);]])], [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([HAVE_AVX2_TARGET], [1],
+                  [Define if functions can opt in to AVX2])
+    ], [AC_MSG_RESULT([no])])
+])
+
+AC_MSG_CHECKING([for getpid declared in unistd.h])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <unistd.h>
+]], [[
+    pid_t (*current_pid)(void) = getpid;
+    return current_pid() == (pid_t)-1;
+]])], [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([HAVE_GETPID], [1], [Define if unistd.h declares getpid])
+], [AC_MSG_RESULT([no])])
+
 if test "x$enable_xsave_probe" = xno; then
     message_xsave_probe=disabled
 elif test "x$have_xgetbv_intrin" = xyes; then

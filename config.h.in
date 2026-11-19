@@ -3,6 +3,12 @@
 /* Define to 1 to enable XGETBV probing for AVX support */
 #undef ENABLE_XSAVE_PROBE
 
+/* Define if AArch64 NEON is available */
+#undef HAVE_AARCH64_NEON
+
+/* Define if little-endian AArch64 NEON is available */
+#undef HAVE_AARCH64_NEON_LE
+
 /* whether AppKit clipboard backend is available */
 #undef HAVE_APPKIT
 
@@ -14,6 +20,9 @@
 
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
+
+/* Define if functions can opt in to AVX2 */
+#undef HAVE_AVX2_TARGET
 
 /* Define to 1 if you have the 'backtrace' function. */
 #undef HAVE_BACKTRACE
@@ -278,6 +287,9 @@
 
 /* Define to 1 if you have the `getopt_long' function. */
 #undef HAVE_GETOPT_LONG
+
+/* Define if unistd.h declares getpid */
+#undef HAVE_GETPID
 
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
@@ -634,6 +646,9 @@
 
 /* Define to 1 if fma preserves product residuals. */
 #undef HAVE_WORKING_FMA
+
+/* Define if native x86 SSE2 is available */
+#undef HAVE_X86_SSE2
 
 /* Define to 1 if _xgetbv is available without extra flags */
 #undef HAVE_XGETBV_INTRIN

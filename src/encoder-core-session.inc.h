@@ -727,7 +727,9 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     }
     ++output->indexed_count;
 end:
-    if (graph.consumed) (void)output->core->vtbl->abort(output->core);
+    if (graph.consumed && output->core != NULL) {
+        (void)output->core->vtbl->abort(output->core);
+    }
     if (graph.opened) (void)output->writer->vtbl->abort_image(output->writer);
     sixel_retained_read_unref(read);
     sixel_retained_update_unref(update);

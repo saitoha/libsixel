@@ -11,7 +11,7 @@
 #include "loader-common.h"
 #include "cpu.h"
 
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if HAVE_AARCH64_NEON
 #define SIXEL_REFRESH_SPATIAL_NEON 1
 #include <arm_neon.h>
 #else
@@ -19,9 +19,7 @@
 #endif
 /* GCC and Clang compile the AVX2 passes for their own functions only; the
  * CPU check at run time decides whether they are called. */
-#if defined(HAVE_IMMINTRIN_H) && \
-    (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__) && \
-    (defined(__x86_64__) || defined(__i386__))
+#if HAVE_AVX2_TARGET
 #define SIXEL_REFRESH_SPATIAL_AVX2 1
 #define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __attribute__((target("avx2")))
 #include <immintrin.h>
@@ -167,6 +165,12 @@ sixel_refresh_spatial_luma_avx2(unsigned char const *rgb,
     return p;
 }
 
+static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __m256i
+sixel_refresh_spatial_load16_avx2(unsigned char const *p)
+{
+    return _mm256_cvtepu8_epi16(_mm_loadu_si128((__m128i const *)p));
+}
+
 /* Sixteen interior outputs of the scalar operator in 16-bit lanes; both
  * weighted sums of a derivative are nonnegative, so |dx| is their larger
  * minus their smaller, and the total is at most 2040. */
@@ -174,20 +178,17 @@ static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __m256i
 sixel_refresh_spatial_sobel16_avx2(unsigned char const *above,
     unsigned char const *row, unsigned char const *below)
 {
-#define SIXEL_REFRESH_SPATIAL_LOAD16(p) \
-    _mm256_cvtepu8_epi16(_mm_loadu_si128((__m128i const *)(p)))
     __m256i am, a, ap, rm, rp, bm, b, bp;
     __m256i left, right, top, bottom, sum;
 
-    am = SIXEL_REFRESH_SPATIAL_LOAD16(above - 1);
-    a = SIXEL_REFRESH_SPATIAL_LOAD16(above);
-    ap = SIXEL_REFRESH_SPATIAL_LOAD16(above + 1);
-    rm = SIXEL_REFRESH_SPATIAL_LOAD16(row - 1);
-    rp = SIXEL_REFRESH_SPATIAL_LOAD16(row + 1);
-    bm = SIXEL_REFRESH_SPATIAL_LOAD16(below - 1);
-    b = SIXEL_REFRESH_SPATIAL_LOAD16(below);
-    bp = SIXEL_REFRESH_SPATIAL_LOAD16(below + 1);
-#undef SIXEL_REFRESH_SPATIAL_LOAD16
+    am = sixel_refresh_spatial_load16_avx2(above - 1);
+    a = sixel_refresh_spatial_load16_avx2(above);
+    ap = sixel_refresh_spatial_load16_avx2(above + 1);
+    rm = sixel_refresh_spatial_load16_avx2(row - 1);
+    rp = sixel_refresh_spatial_load16_avx2(row + 1);
+    bm = sixel_refresh_spatial_load16_avx2(below - 1);
+    b = sixel_refresh_spatial_load16_avx2(below);
+    bp = sixel_refresh_spatial_load16_avx2(below + 1);
     left = _mm256_add_epi16(_mm256_add_epi16(am, bm),
         _mm256_slli_epi16(rm, 1));
     right = _mm256_add_epi16(_mm256_add_epi16(ap, bp),

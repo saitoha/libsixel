@@ -2238,6 +2238,40 @@ else
   simd_message = 'no'
 endif
 
+if simd_message == 'sse2' and (cpu == 'x86' or cpu == 'x86_64')
+  conf.set('HAVE_X86_SSE2', 1)
+endif
+if simd_message == 'neon' and cpu == 'aarch64'
+  conf.set('HAVE_AARCH64_NEON', 1)
+  if host_machine.endian() == 'little'
+    conf.set('HAVE_AARCH64_NEON_LE', 1)
+  endif
+endif
+
+if conf.has('HAVE_IMMINTRIN_H') and cc.compiles('''
+    #include <immintrin.h>
+    static __attribute__((target("avx2"))) int test_avx2(unsigned char const *input) {
+      return _mm256_extract_epi32(
+    _mm256_cvtepu8_epi16(_mm_loadu_si128((__m128i const *)input)), 4);
+    }
+    int main(void) {
+      unsigned char input[16] = {0}; return test_avx2(input);
+    }
+  ''', name: 'function-local AVX2 target')
+  conf.set('HAVE_AVX2_TARGET', 1)
+endif
+
+if cc.links('''
+    #include <sys/types.h>
+    #include <unistd.h>
+    int main(void) {
+      pid_t (*current_pid)(void) = getpid;
+      return current_pid() == (pid_t)-1;
+    }
+  ''', name: 'getpid declared in unistd.h')
+  conf.set('HAVE_GETPID', 1)
+endif
+
 # Meson can report false positives for a few GNU/MSVC probes when the compiler
 # identity is wrapped for pcc detection.  Force these probes off so Linux+pcc
 # links use the same code paths as autotools+pcc.

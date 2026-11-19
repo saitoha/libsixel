@@ -52,17 +52,14 @@
 #include <stdint.h>
 /* Nibble order below assumes little-endian AArch64 lanes. Other targets
  * retain the scalar classifier, including builds with NEON disabled. */
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__) && \
-        !defined(__ARM_BIG_ENDIAN)
+#if HAVE_AARCH64_NEON_LE
 # include <arm_neon.h>
 # define SIXEL_ENCODE_NEON_MASK 1
 #else
 # define SIXEL_ENCODE_NEON_MASK 0
 #endif
 /* The same lane scans in SSE2, one movemask bit per byte lane. */
-#if !SIXEL_ENCODE_NEON_MASK && defined(HAVE_SSE2) && \
-        (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
-         (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#if !SIXEL_ENCODE_NEON_MASK && HAVE_X86_SSE2
 # include <emmintrin.h>
 # define SIXEL_ENCODE_SSE2_MASK 1
 #else

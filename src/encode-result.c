@@ -514,16 +514,14 @@ sixel_indexed_frame_get_rows(sixel_indexed_frame_t const *image,
     return SIXEL_OK;
 }
 
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if HAVE_AARCH64_NEON
 #define SIXEL_PUBLISH_NEON 1
 #include <arm_neon.h>
 #else
 #define SIXEL_PUBLISH_NEON 0
 #endif
 
-#if !SIXEL_PUBLISH_NEON && defined(HAVE_SSE2) && \
-    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
-     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#if !SIXEL_PUBLISH_NEON && HAVE_X86_SSE2
 #define SIXEL_PUBLISH_SSE2 1
 #include <emmintrin.h>
 #else
@@ -587,7 +585,7 @@ sixel_indexed_frame_publish_sse2(unsigned char *skip,
     unsigned int *bad)
 {
     __m128i const zero = _mm_setzero_si128();
-    __m128i const ones = _mm_set1_epi8((char)0xff);
+    __m128i const ones = _mm_cmpeq_epi8(zero, zero);
     __m128i const keep = _mm_set1_epi8((char)SIXEL_INDEXED_KEEP);
     __m128i const approximate =
         _mm_set1_epi8((char)SIXEL_INDEXED_KEEP_APPROXIMATE);
