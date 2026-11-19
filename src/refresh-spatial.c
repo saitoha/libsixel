@@ -9,6 +9,14 @@
 #include "threading.h"
 #include "bluenoise_64x64.h"
 #include "loader-common.h"
+#include "cpu.h"
+
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#define SIXEL_REFRESH_SPATIAL_NEON 1
+#include <arm_neon.h>
+#else
+#define SIXEL_REFRESH_SPATIAL_NEON 0
+#endif
 
 struct sixel_refresh_spatial {
     sixel_allocator_t *allocator;
@@ -38,6 +46,55 @@ sixel_refresh_spatial_sobel(unsigned char const *above,
     return (unsigned char)(sum > 255 ? 255 : sum);
 }
 
+#if SIXEL_REFRESH_SPATIAL_NEON
+/* Eight interior outputs of the scalar operator: both weighted sums of a
+ * derivative are nonnegative, so |dx| is their absolute difference and the
+ * total (at most 2040) stays in 16-bit lanes. A rounding shift by 3 is the
+ * scalar (sum + 4) / 8, which never exceeds 255. */
+static inline uint16x8_t
+sixel_refresh_spatial_sobel8(uint8x8_t am, uint8x8_t a, uint8x8_t ap,
+    uint8x8_t rm, uint8x8_t rp, uint8x8_t bm, uint8x8_t b, uint8x8_t bp)
+{
+    uint16x8_t left, right, top, bottom;
+
+    left = vaddq_u16(vaddl_u8(am, bm), vshll_n_u8(rm, 1));
+    right = vaddq_u16(vaddl_u8(ap, bp), vshll_n_u8(rp, 1));
+    top = vaddq_u16(vaddl_u8(am, ap), vshll_n_u8(a, 1));
+    bottom = vaddq_u16(vaddl_u8(bm, bp), vshll_n_u8(b, 1));
+    return vaddq_u16(vabdq_u16(right, left), vabdq_u16(top, bottom));
+}
+
+static int
+sixel_refresh_spatial_sobel_neon(unsigned char const *above,
+    unsigned char const *row, unsigned char const *below,
+    unsigned char *out, int x, int end)
+{
+    uint8x16_t am, a, ap, rm, rp, bm, b, bp;
+    uint16x8_t low, high;
+
+    for (; x + 16 <= end; x += 16) {
+        am = vld1q_u8(above + x - 1);
+        a = vld1q_u8(above + x);
+        ap = vld1q_u8(above + x + 1);
+        rm = vld1q_u8(row + x - 1);
+        rp = vld1q_u8(row + x + 1);
+        bm = vld1q_u8(below + x - 1);
+        b = vld1q_u8(below + x);
+        bp = vld1q_u8(below + x + 1);
+        low = sixel_refresh_spatial_sobel8(vget_low_u8(am), vget_low_u8(a),
+            vget_low_u8(ap), vget_low_u8(rm), vget_low_u8(rp),
+            vget_low_u8(bm), vget_low_u8(b), vget_low_u8(bp));
+        high = sixel_refresh_spatial_sobel8(vget_high_u8(am),
+            vget_high_u8(a), vget_high_u8(ap), vget_high_u8(rm),
+            vget_high_u8(rp), vget_high_u8(bm), vget_high_u8(b),
+            vget_high_u8(bp));
+        vst1q_u8(out + x, vcombine_u8(vrshrn_n_u16(low, 3),
+            vrshrn_n_u16(high, 3)));
+    }
+    return x;
+}
+#endif
+
 /* Average magnitudes, not signed derivatives: opposite edges must not
  * cancel. Y' uses integer Rec.709 weights and is not physical luminance.
  * The separable 9-tap box at quarter resolution covers about 36 pixels. */
@@ -50,6 +107,11 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
     size_t n, p, q;
     int sw, sh, x, y, xx, yy, ym, yp;
     int i, j, sum, count, gx, gy, x0, x1, y0, y1;
+#if SIXEL_REFRESH_SPATIAL_NEON
+    int neon;
+
+    neon = sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON;
+#endif
 
     n = (size_t)w * h;
     sw = (w + 3) / 4;
@@ -72,7 +134,13 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
         out = fine + (size_t)y * w;
         out[0] = sixel_refresh_spatial_sobel(above, row, below, 0, 0,
             w > 1 ? 1 : 0);
-        for (x = 1; x < w - 1; ++x)
+        x = 1;
+#if SIXEL_REFRESH_SPATIAL_NEON
+        if (neon)
+            x = sixel_refresh_spatial_sobel_neon(above, row, below, out, x,
+                w - 1);
+#endif
+        for (; x < w - 1; ++x)
             out[x] = sixel_refresh_spatial_sobel(above, row, below,
                 x - 1, x, x + 1);
         if (w > 1)
@@ -96,24 +164,45 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
                 ((sum + count / 2) / count);
         }
     }
+    /* Only taps within four samples of an edge clamp; the interior of
+     * each pass is straight-line and vectorizes, as above. */
     for (y = 0; y < sh; ++y) {
+        row = coarse + (size_t)y * sw;
+        out = blur + (size_t)y * sw;
         for (x = 0; x < sw; ++x) {
+            if (x == 4 && sw > 8) {
+                for (; x < sw - 4; ++x)
+                    out[x] = (unsigned char)((row[x - 4] + row[x - 3] +
+                        row[x - 2] + row[x - 1] + row[x] + row[x + 1] +
+                        row[x + 2] + row[x + 3] + row[x + 4] + 4) / 9);
+            }
             sum = 0;
             for (i = -4; i <= 4; ++i) {
                 xx = x + i < 0 ? 0 : x + i >= sw ? sw - 1 : x + i;
-                sum += coarse[(size_t)y * sw + xx];
+                sum += row[xx];
             }
-            blur[(size_t)y * sw + x] = (unsigned char)((sum + 4)/9);
+            out[x] = (unsigned char)((sum + 4)/9);
         }
     }
     for (y = 0; y < sh; ++y) {
+        out = coarse + (size_t)y * sw;
+        if (y >= 4 && y + 4 < sh) {
+            row = blur + (size_t)(y - 4) * sw;
+            for (x = 0; x < sw; ++x)
+                out[x] = (unsigned char)((row[x] + row[x + sw] +
+                    row[x + 2 * (size_t)sw] + row[x + 3 * (size_t)sw] +
+                    row[x + 4 * (size_t)sw] + row[x + 5 * (size_t)sw] +
+                    row[x + 6 * (size_t)sw] + row[x + 7 * (size_t)sw] +
+                    row[x + 8 * (size_t)sw] + 4) / 9);
+            continue;
+        }
         for (x = 0; x < sw; ++x) {
             sum = 0;
             for (j = -4; j <= 4; ++j) {
                 yy = y + j < 0 ? 0 : y + j >= sh ? sh - 1 : y + j;
                 sum += blur[(size_t)yy * sw + x];
             }
-            coarse[(size_t)y * sw + x] = (unsigned char)((sum + 4)/9);
+            out[x] = (unsigned char)((sum + 4)/9);
         }
     }
     /* A fixed 64x64 classification bounds publication/upload to 512 bytes.
