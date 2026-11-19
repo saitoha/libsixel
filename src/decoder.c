@@ -3104,6 +3104,8 @@ static SIXELSTATUS sixel_decoder_decode_pixels_gpu_fast4_try(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    /* Dequantization rewrites the pixels; let conversion classify them. */
+    *result_flags &= ~SIXEL_DECODE_PIXELS_RESULT_INTERNAL_MASK;
 
     if (*out_width <= 0 || *out_height <= 0) {
         status = SIXEL_BAD_INPUT;

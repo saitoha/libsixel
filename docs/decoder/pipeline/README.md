@@ -136,7 +136,7 @@ The direct painter stores the RGB value in effect when each pixel was painted. U
 
 ### Packed caller formats
 
-`sixel_decode_pixels()` accepts all documented 24-bit RGB/BGR and 32-bit RGBA/ARGB/BGRA/ABGR/XRGB/RGBX/XBGR/BGRX layouts. Alpha-bearing formats preserve decoded alpha. RGB and X-channel formats cannot express transparency, so the decoder composites over `options->bgcolor`; every X byte is set to `0xff`. `SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE` tells a caller when the result can be used through an opaque fast path.
+`sixel_decode_pixels()` accepts all documented 24-bit RGB/BGR and 32-bit RGBA/ARGB/BGRA/ABGR/XRGB/RGBX/XBGR/BGRX layouts. Alpha-bearing formats preserve decoded alpha. RGB and X-channel formats cannot express transparency, so the decoder composites over `options->bgcolor`; every X byte is set to `0xff`. `SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE` tells a caller when the result can be used through an opaque fast path. The decoder's final pass writes every RGBA pixel of the ordinary column painter, serial or gathered by parallel workers, so it establishes this flag as it writes them; a separate alpha scan runs only for results that pass did not produce, such as OR mode.
 
 The returned stride is part of the contract. Consumers must not infer it from width alone, even though current packed results are tightly laid out.
 
@@ -317,6 +317,7 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-48 | RGBA output of a transparent stream whose runs cover sixteen-column blocks partially, fully and not at all is identical at both SIMD levels. | [tests/decoder/parser/0118_simd_level_transparent.t](../../../tests/decoder/parser/0118_simd_level_transparent.t) |
 | DP-49 | Selections, repeats and carriage returns consumed inside band runs decode as the general parser decodes them, including abandoned selections, wide registers, width edges, trusted clipping, extents and tokens cut by the end of input, in ordinary and OR mode. | [tests/decoder/parser/0119_token_fast_lane.t](../../../tests/decoder/parser/0119_token_fast_lane.t) |
 | DP-50 | The shared NEON helper header excludes GNU-only scalar builtins. | [tests/_static/sh/staticcheck-decoder-neon-portability.sh](../../../tests/_static/sh/staticcheck-decoder-neon-portability.sh) |
+| DP-51 | The opaque flag the final pass establishes agrees with the returned alpha bytes for full and partial bands, holes inside and past a SIMD block, carriage returns, grown canvases and trusted clipping, serially and with threaded gathers. | [tests/decoder/parser/0123_final_pass_alpha.t](../../../tests/decoder/parser/0123_final_pass_alpha.t) |
 
 ### Coverage boundary
 

@@ -109,6 +109,10 @@ typedef struct sixel_decoder_worker_context {
     sixel_decoder_direct_mode_t direct_mode_kind;
     sixel_decoder_undither_context_t *undither;
     int body_local_start;
+    /* Gather result: bands written and their alpha, as returned by
+     * image_buffer_finalize_normal_columns(). */
+    int gather_bands;
+    int gather_alpha_opaque;
 } sixel_decoder_worker_context_t;
 
 typedef struct sixel_decoder_local_chunk {
@@ -1016,6 +1020,40 @@ SIXEL_DECODER_PARALLEL_PARSER(sixel_decoder_parallel_direct_parse, 0)
 SIXEL_DECODER_PARALLEL_PARSER(sixel_decoder_parallel_capture_parse, 1)
 #undef SIXEL_DECODER_PARALLEL_PARSER
 
+/*
+ * The gather spans own distinct bands.  When together they wrote every band,
+ * every pixel passed through one of them and their answers are the image's.
+ * One nonopaque band settles it either way, since nothing paints after gather.
+ */
+static int
+sixel_decoder_parallel_gather_alpha(
+    sixel_decoder_worker_context_t const *contexts, int threads,
+    image_buffer_t const *image)
+{
+    int bands;
+    int opaque;
+    int i;
+
+    bands = 0;
+    opaque = 1;
+    for (i = 0; i < threads; ++i) {
+        if (contexts[i].gather_bands <= 0) {
+            continue;
+        }
+        if (contexts[i].gather_alpha_opaque == 0) {
+            return 0;
+        }
+        if (contexts[i].gather_alpha_opaque < 0) {
+            opaque = (-1);
+        }
+        bands += contexts[i].gather_bands;
+    }
+    if (bands != (image->height + 5) / 6) {
+        return (-1);
+    }
+    return opaque;
+}
+
 static int
 sixel_decoder_parallel_direct_worker(void *arg)
 {
@@ -1056,8 +1094,10 @@ sixel_decoder_parallel_direct_worker(void *arg)
             if (end > (context->height + 5) / 6) {
                 end = (context->height + 5) / 6;
             }
-            image_buffer_finalize_normal_columns(context->image,
-                context->columns, first, end);
+            context->gather_bands = end > first ? end - first : 0;
+            context->gather_alpha_opaque =
+                image_buffer_finalize_normal_columns(context->image,
+                    context->columns, first, end);
             if (context->logger != NULL) {
                 sixel_timeline_logger_logf(context->logger,
                     "gather", "decoder", "finish", context->index);
@@ -2432,6 +2472,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
              */
             for (i = 0; i < threads; ++i) {
                 contexts[i].result = (-1);
+                contexts[i].gather_bands = 0;
+                contexts[i].gather_alpha_opaque = (-1);
                 contexts[i].direct_mode_kind = SIXEL_DECODER_DIRECT_GATHER;
                 if (sixel_decoder_parallel_inject_failure("gather", i)) {
                     status = SIXEL_RUNTIME_ERROR;
@@ -2489,6 +2531,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
             status = SIXEL_FALSE;
         } else {
             status = SIXEL_OK;
+            image->alpha_opaque =
+                sixel_decoder_parallel_gather_alpha(contexts, threads, image);
         }
         goto cleanup;
     }

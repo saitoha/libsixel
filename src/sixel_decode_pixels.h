@@ -35,6 +35,18 @@
 /* The packed-pixel decoder's existing per-axis resource limit. */
 #define SIXEL_DECODE_PIXELS_MAX_SIZE 6000
 
+/*
+ * Internal result bits from sixel_decode_direct_mapped().  The decoder's final
+ * pass writes every RGBA pixel, and when it can vouch for all of them it says
+ * whether every alpha byte is 255, so conversion needs no scan of its own.
+ * Conversion consumes both bits; they never reach a public result.
+ */
+#define SIXEL_DECODE_PIXELS_RESULT_ALPHA_KNOWN_INTERNAL  0x40000000u
+#define SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL 0x80000000u
+#define SIXEL_DECODE_PIXELS_RESULT_INTERNAL_MASK \
+    (SIXEL_DECODE_PIXELS_RESULT_ALPHA_KNOWN_INTERNAL | \
+     SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL)
+
 /* Pull one complete paint into a retained canvas. Input bytes are borrowed
  * until close; returned RGBA is borrowed until the next call. Offsets include
  * inter-packet framing, so a caller can account for every transmitted byte.

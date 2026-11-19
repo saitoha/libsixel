@@ -267,6 +267,7 @@ int test_decoder_0102(int argc, char **argv);
 int test_decoder_0103(int argc, char **argv);
 int test_decoder_0104(int argc, char **argv);
 int test_decoder_0109(int argc, char **argv);
+int test_decoder_0110(int argc, char **argv);
 int test_decoder_aspect_0001(int argc, char **argv);
 int test_decoder_aspect_0002(int argc, char **argv);
 int test_decoder_aspect_0003(int argc, char **argv);
@@ -10233,6 +10234,7 @@ static test_entry_t const test_entries[] = {
     { "decoder/0103_parallel_early_st_compatibility", test_decoder_0103 },
     { "decoder/0104_simd_band_words", test_decoder_0104 },
     { "decoder/0109_token_fast_lane", test_decoder_0109 },
+    { "decoder/0110_final_pass_alpha", test_decoder_0110 },
     { "decoder/aspect/0001_integer_rows",
       test_decoder_aspect_0001 },
     { "decoder/aspect/0002_unit_rows",
