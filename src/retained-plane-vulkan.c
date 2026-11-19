@@ -161,9 +161,12 @@ sixel_retained_gpu_prepare(sixel_retained_gpu_t *gpu,
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     status = SIXEL_OK;
+    /* Paint and reductions are only read by the host, from cached memory. */
     for (i = 0; i < 5 && status == SIXEL_OK; ++i)
-        status = sixel_vk_buffer_reserve(runtime, &gpu->scratch[i], sizes[i],
-            i < 2 || i == 4);
+        status = i == 2 || i == 3
+            ? sixel_vk_buffer_reserve_readback(runtime, &gpu->scratch[i],
+                sizes[i])
+            : sixel_vk_buffer_reserve(runtime, &gpu->scratch[i], sizes[i], 1);
     sixel_vk_unlock();
     return status;
 }
@@ -257,6 +260,11 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     gpu->dirty_width = right - gpu->dirty_x;
     gpu->dirty_height = bottom - gpu->dirty_y;
     status = sixel_vk_submit_and_wait(runtime, command);
+    if (status == SIXEL_OK)
+        status = sixel_vk_buffer_invalidate(runtime, &gpu->scratch[3],
+            (size_t)gpu->groups * 8);
+    if (status == SIXEL_OK && paint != NULL)
+        status = sixel_vk_buffer_invalidate(runtime, &gpu->scratch[2], pixels);
     if (status != SIXEL_OK) goto end;
     if (fault == 2) {
         status = SIXEL_RUNTIME_ERROR;
