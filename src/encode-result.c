@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <string.h>
 #include "encode-result.h"
+#include "cpu.h"
 #include "colorspace.h"
 #include "palette.h"
 
@@ -363,6 +364,60 @@ sixel_indexed_frame_get_rows(sixel_indexed_frame_t const *image,
     return SIXEL_OK;
 }
 
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#define SIXEL_PUBLISH_NEON 1
+#include <arm_neon.h>
+#else
+#define SIXEL_PUBLISH_NEON 0
+#endif
+
+#if SIXEL_PUBLISH_NEON
+/* The scalar scan below, sixteen pixels per step in byte lanes.  Indexes
+ * are bytes, so a count above 255 rejects none and a key of 256 matches
+ * none; both comparisons are masked instead of widened. */
+static size_t
+sixel_indexed_frame_publish_neon(unsigned char *skip,
+    sixel_index_t const *indexes, size_t i, size_t end, size_t count,
+    unsigned int key, unsigned int opaque, unsigned int normalize,
+    unsigned int *bad)
+{
+    uint8x16_t const zero = vdupq_n_u8(0u);
+    uint8x16_t const keep = vdupq_n_u8(SIXEL_INDEXED_KEEP);
+    uint8x16_t const approximate = vdupq_n_u8(SIXEL_INDEXED_KEEP_APPROXIMATE);
+    uint8x16_t const limit = vdupq_n_u8((uint8_t)(count < 256u ? count : 0u));
+    uint8x16_t const range = vdupq_n_u8(count < 256u ? 0xffu : 0u);
+    uint8x16_t const keyv = vdupq_n_u8((uint8_t)(key & 0xffu));
+    uint8x16_t const keyed = vdupq_n_u8(key < 256u ? 0xffu : 0u);
+    uint8x16_t const opaquev = vdupq_n_u8(opaque ? 0xffu : 0u);
+    uint8x16_t const normalizev = vdupq_n_u8(normalize ? 0xffu : 0u);
+    uint8x16_t acc;
+    uint8x16_t code;
+    uint8x16_t index;
+    uint8x16_t paint;
+    uint8x16_t is_key;
+    uint8x16_t kept;
+
+    acc = zero;
+    for (; i + 16u <= end; i += 16u) {
+        code = vld1q_u8(skip + i);
+        index = vld1q_u8(indexes + i);
+        is_key = vandq_u8(vceqq_u8(index, keyv), keyed);
+        paint = vceqq_u8(code, zero);
+        code = vbslq_u8(vandq_u8(vandq_u8(paint, is_key), normalizev),
+            keep, code);
+        vst1q_u8(skip + i, code);
+        paint = vceqq_u8(code, zero);
+        acc = vorrq_u8(acc, vandq_u8(paint, vorrq_u8(is_key,
+            vandq_u8(vcgeq_u8(index, limit), range))));
+        kept = vorrq_u8(vceqq_u8(code, keep), vceqq_u8(code, approximate));
+        acc = vorrq_u8(acc, vbicq_u8(vorrq_u8(opaquev, vmvnq_u8(kept)),
+            paint));
+    }
+    *bad |= vmaxvq_u8(acc) != 0u;
+    return i;
+}
+#endif
+
 static SIXELSTATUS
 sixel_indexed_frame_publish_internal(sixel_indexed_frame_t *image, int rows,
     int applied)
@@ -412,7 +467,14 @@ sixel_indexed_frame_publish_internal(sixel_indexed_frame_t *image, int rows,
      * A non-reserved transparent palette entry can be selected by the legacy
      * kernel.  Applied output normalizes it to KEEP in this same scan.
      */
-    for (i = (size_t)previous * image->description.width; i < end; ++i) {
+    i = (size_t)previous * image->description.width;
+#if SIXEL_PUBLISH_NEON
+    if (sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON) {
+        i = sixel_indexed_frame_publish_neon(skip, indexes, i, end, count,
+            key, opaque, normalize, &bad);
+    }
+#endif
+    for (; i < end; ++i) {
         code = skip[i];
         index = indexes[i];
         paint = (code == SIXEL_INDEXED_PAINT);
