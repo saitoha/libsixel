@@ -94,6 +94,9 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_readback(
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_invalidate(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t const *buffer,
     VkDeviceSize size);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_invalidate_range(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t const *buffer,
+    VkDeviceSize offset, VkDeviceSize size);
 /* Promote an existing allocation to directly shared coherent storage,
  * preserving its bytes. Prefer host-visible VRAM; never expose a staging
  * pointer as shared memory because host writes must reach future kernels. */
