@@ -1413,6 +1413,7 @@ static sixel_option_value_schema_t const g_runtime_policy_values[] = {
     { "none", SIXEL_SIMD_LEVEL_SCALAR, 0u },
     { "sse2", SIXEL_SIMD_LEVEL_SSE2, 0u },
     { "avx", SIXEL_SIMD_LEVEL_AVX, 0u },
+    { "avx2", SIXEL_SIMD_LEVEL_AVX2, 0u },
     { "neon", SIXEL_SIMD_LEVEL_NEON, 0u }
 };
 

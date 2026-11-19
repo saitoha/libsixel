@@ -216,7 +216,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "runtime-policy",
         "-j POLICY[:KEY=VALUE], --runtime-policy=POLICY[:KEY=VALUE]\n"
         "                           select the SIMD ceiling: auto,\n"
-        "                           none/scalar, sse2, avx, or neon.\n"
+        "                           none/scalar, sse2, avx, avx2, or neon.\n"
         "                           decoder sub-option:\n"
         "                             :parallel_skew=-20..20\n"
         "                             (:KVALUE) biases worker spans\n"

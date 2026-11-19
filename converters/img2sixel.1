@@ -223,7 +223,7 @@ for palette application only, without gating GPU k-means.
 .TP 5
 .B \-j \fIPOLICY[:KEY=VALUE]\fP, \-\-runtime\-policy=\fIPOLICY[:KEY=VALUE]\fP
 choose process-wide runtime tuning.  \fIPOLICY\fP is \fBauto\fP,
-\fBnone/scalar\fP, \fBsse2\fP, \fBavx\fP, or \fBneon\fP and limits the SIMD
+\fBnone/scalar\fP, \fBsse2\fP, \fBavx\fP, \fBavx2\fP, or \fBneon\fP and limits the SIMD
 implementation selected at runtime.
 Encoder suboptions are \fB:colorspace_min=PIXELS\fP
 (short form \fB:CPIXELS\fP), \fB:sample_min=PIXELS\fP
@@ -2175,7 +2175,7 @@ Defaults to 0 (balanced). Overridden by
 .TP 5
 .B SIXEL_SIMD_LEVEL
 .br
-force SIMD selection. Accepts auto, none/scalar, sse2, avx, or neon.
+force SIMD selection. Accepts auto, none/scalar, sse2, avx, avx2, or neon.
 Overridden by the \fB\-j\fP runtime policy base.
 .TP 5
 .B SIXEL_THUMBNAILER_HINT_SIZE

@@ -655,7 +655,7 @@ _img2sixel()
             done
             return 0
         fi
-        COMPREPLY=( $( compgen -W 'auto scalar none sse2 avx neon' \
+        COMPREPLY=( $( compgen -W 'auto scalar none sse2 avx avx2 neon' \
             -- "${base}" ) )
     }
 
