@@ -198,11 +198,22 @@ jobs:
           # Fetch on the host so the guest can install without mirror lookup.
           mkdir -p .tmp/netbsd-sparc64
           cd .tmp/netbsd-sparc64
-          curl --fail --location --retry 3 --connect-timeout 15 --max-time 60 \
-            https://ftp.netbsd.org/pub/pkgsrc/packages/NetBSD/sparc64/11.0_2026Q2/All/gmake-4.4.1.tgz \
-            --output gmake-4.4.1.tgz
-          echo 'd10d53aac64a9a5e75c9c19c24be211dce8177ebef6ffc5821d07e1d4d691d8e  gmake-4.4.1.tgz' |
-            sha256sum --check
+          package=gmake-4.4.1.tgz
+          package_path=packages/NetBSD/sparc64/11.0_2026Q2/All/$package
+          package_sha=d10d53aac64a9a5e75c9c19c24be211dce8177ebef6ffc5821d07e1d4d691d8e
+          # Use independent HTTPS endpoints. Only publish verified bytes.
+          for mirror in https://cdn.netbsd.org/pub/pkgsrc \
+                        https://ftp.netbsd.org/pub/pkgsrc \
+                        https://ftp.jaist.ac.jp/pub/pkgsrc; do
+            if curl --fail --location --connect-timeout 15 --max-time 60 \
+                "$mirror/$package_path" --output "$package.part" &&
+                printf '%s  %s\n' "$package_sha" "$package.part" | sha256sum -c -; then
+              mv "$package.part" "$package"
+              exit 0
+            fi
+          done
+          printf 'Could not fetch a verified NetBSD/sparc64 %s\n' "$package" >&2
+          exit 1
 
       # Retry provisioning only; the build below is outside both attempts.
       - name: Prepare NetBSD/sparc64 (attempt 1)
