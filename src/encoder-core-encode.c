@@ -59,6 +59,15 @@
 #else
 # define SIXEL_ENCODE_NEON_MASK 0
 #endif
+/* The same lane scans in SSE2, one movemask bit per byte lane. */
+#if !SIXEL_ENCODE_NEON_MASK && defined(HAVE_SSE2) && \
+        (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
+         (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+# include <emmintrin.h>
+# define SIXEL_ENCODE_SSE2_MASK 1
+#else
+# define SIXEL_ENCODE_SSE2_MASK 0
+#endif
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -3023,6 +3032,59 @@ sixel_put_node(
                 output->has_gri_arg_limit);
             i = end;
         }
+#elif SIXEL_ENCODE_SSE2_MASK
+        /* The NEON loop above with one movemask bit per lane. */
+        while (i < mx) {
+            __m128i cells;
+            __m128i same;
+            unsigned int lanes;
+            int windows;
+            int skip;
+
+            cells = _mm_loadu_si128((__m128i const *)(row + i));
+            same = _mm_and_si128(_mm_and_si128(
+                _mm_cmpeq_epi8(cells,
+                    _mm_loadu_si128((__m128i const *)(row + i + 1))),
+                _mm_cmpeq_epi8(cells,
+                    _mm_loadu_si128((__m128i const *)(row + i + 2)))),
+                _mm_cmpeq_epi8(cells,
+                    _mm_loadu_si128((__m128i const *)(row + i + 3))));
+            lanes = (unsigned int)_mm_movemask_epi8(same);
+            windows = mx - i - 3;
+            if (windows < 16) {
+                lanes = windows > 0 ? lanes & ((1u << windows) - 1u) : 0u;
+            }
+            _mm_storeu_si128((__m128i *)p,
+                _mm_add_epi8(cells, _mm_set1_epi8('?')));
+            if (lanes == 0u) {
+                skip = mx - i < 16 ? mx - i : 16;
+                p += skip;
+                i += skip;
+                continue;
+            }
+            skip = sixel_encode_trailing_zeros(lanes);
+            p += skip;
+            i += skip;
+            /* Cells i..i+3 match; find where the run ends. */
+            value = row[i];
+            end = i + 4;
+            while (end < mx) {
+                lanes = (unsigned int)_mm_movemask_epi8(_mm_cmpeq_epi8(
+                    _mm_loadu_si128((__m128i const *)(row + end)),
+                    _mm_set1_epi8((char)value))) ^ 0xffffu;
+                if (lanes != 0u) {
+                    end += sixel_encode_trailing_zeros(lanes);
+                    break;
+                }
+                end += 16;
+            }
+            if (end > mx) {
+                end = mx;
+            }
+            p = sixel_put_run_reserved(p, '?' + value, end - i,
+                output->has_gri_arg_limit);
+            i = end;
+        }
 #else
         for (; i < mx; i = end) {
             value = row[i];
@@ -3875,6 +3937,9 @@ sixel_band_classify(sixel_encode_work_t *work,
     uint64_t paint_lanes;
     uint8x16_t paint;
     int selected_x;
+#elif SIXEL_ENCODE_SSE2_MASK
+    uint64_t paint_lanes;
+    int selected_x;
 #endif
 
     map = work->map;
@@ -3921,21 +3986,34 @@ sixel_band_classify(sixel_encode_work_t *work,
         x = 0;
         while (x < width) {
             scalar_end = source_mask == NULL ? width : x + 1;
-#if SIXEL_ENCODE_NEON_MASK
+#if SIXEL_ENCODE_NEON_MASK || SIXEL_ENCODE_SSE2_MASK
             if (source_mask != NULL && width - x >= 16) {
                 /* A zero mask byte paints; every nonzero value skips.
-                 * Narrow each byte pair to two nibbles, then retain one
-                 * bit per lane. Consume low bits first to preserve the
-                 * first-seen color order used by equal-span nodes. */
+                 * NEON narrows each byte pair to two nibbles, then retains
+                 * one bit per lane; SSE2 takes one movemask bit per lane.
+                 * Consume low bits first to preserve the first-seen color
+                 * order used by equal-span nodes. */
+#if SIXEL_ENCODE_NEON_MASK
                 paint = vceqq_u8(vld1q_u8(source_mask + x), vdupq_n_u8(0));
                 paint_lanes = vget_lane_u64(vreinterpret_u64_u8(
                     vshrn_n_u16(vreinterpretq_u16_u8(paint), 4)), 0) &
                     UINT64_C(0x1111111111111111);
-                if (paint_lanes != UINT64_C(0x1111111111111111)) {
+#define SIXEL_ENCODE_PAINT_DENSE UINT64_C(0x1111111111111111)
+#define SIXEL_ENCODE_PAINT_SHIFT 2
+#else
+                paint_lanes = (uint64_t)(unsigned int)_mm_movemask_epi8(
+                    _mm_cmpeq_epi8(_mm_loadu_si128(
+                        (__m128i const *)(source_mask + x)),
+                        _mm_setzero_si128()));
+#define SIXEL_ENCODE_PAINT_DENSE UINT64_C(0xffff)
+#define SIXEL_ENCODE_PAINT_SHIFT 0
+#endif
+                if (paint_lanes != SIXEL_ENCODE_PAINT_DENSE) {
                     state->fillable = 0;
                     while (paint_lanes != 0) {
                         selected_x = x +
-                            sixel_encode_trailing_zeros(paint_lanes) / 4;
+                            (sixel_encode_trailing_zeros(paint_lanes) >>
+                             SIXEL_ENCODE_PAINT_SHIFT);
                         paint_lanes &= paint_lanes - 1;
                         pix = source[selected_x];
                         if (pix >= ncolors || pix == keycolor) {
