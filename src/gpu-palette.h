@@ -154,6 +154,11 @@ typedef struct sixel_gpu_palette_request {
     size_t sixdelta_comparison_palette_size;
     unsigned char *accumulation_result_mask;
     size_t accumulation_result_mask_size;
+    /* Optional device storage behind dest and accumulation_result_mask
+     * (shared indexed frame planes); a backend that recognizes it moves
+     * results by device copies instead of host copies. May be NULL. */
+    sixel_gpu_buffer_interface_t *dest_buffer;
+    sixel_gpu_buffer_interface_t *accumulation_result_buffer;
     /* Resolved with the selected arithmetic method's registry defaults. */
     int positional_strength_override;
     float positional_strength;

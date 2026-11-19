@@ -101,6 +101,20 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_flush(
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_invalidate_range(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t const *buffer,
     VkDeviceSize offset, VkDeviceSize size);
+/* Nonzero when a host-visible memory type is both coherent and cached, so
+ * one allocation serves host reads and device transfers without syncs. */
+SIXEL_INTERNAL_API int sixel_vk_has_cached_coherent(
+    sixel_vk_runtime_t const *runtime);
+/* One buffer in coherent cached host memory and nothing on the device:
+ * the host uses mapped and device work reaches it by transfer copies.
+ * SIXEL_FEATURE_ERROR without such memory. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_host(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    VkDeviceSize size);
+/* Copy size bytes at the same offset of two buffers' device storage. */
+SIXEL_INTERNAL_API void sixel_vk_record_copy(VkCommandBuffer command,
+    sixel_vk_buffer_t const *source, sixel_vk_buffer_t const *target,
+    VkDeviceSize offset, VkDeviceSize size);
 /* Promote an existing allocation to directly shared coherent storage,
  * preserving its bytes. Prefer host-visible VRAM; never expose a staging
  * pointer as shared memory because host writes must reach future kernels. */
