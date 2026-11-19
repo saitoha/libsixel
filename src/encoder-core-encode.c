@@ -2841,6 +2841,35 @@ sixel_put_run_reserved_long(unsigned char *p, int symbol, int count,
     return p;
 }
 
+/* Write lead, the decimal digits of 0 <= value < 1000 and, unless tail is
+ * negative, one tail byte, as one 5-byte store whose digit count selects
+ * the advance. Nodes mix one-, two- and three-digit numbers, so this avoids
+ * a mispredicted branch per digit. Callers reserve the 5 bytes. */
+static inline unsigned char *
+sixel_put_count_reserved(unsigned char *p, int lead, int value, int tail)
+{
+    uint64_t digits;
+    uint64_t word;
+    unsigned int ndigits;
+
+    ndigits = 1U + (value >= 10) + (value >= 100);
+    digits = (uint64_t)('0' + value / 100) |
+        (uint64_t)('0' + value / 10 % 10) << 8 |
+        (uint64_t)('0' + value % 10) << 16;
+    /* Drop leading zero digits; byte 0 then holds the first digit. */
+    digits >>= 8U * (3U - ndigits);
+    word = (uint64_t)(unsigned char)lead | digits << 8;
+    if (tail >= 0) {
+        word |= (uint64_t)(unsigned char)tail << (8U * (1U + ndigits));
+    }
+    p[0] = (unsigned char)word;
+    p[1] = (unsigned char)(word >> 8);
+    p[2] = (unsigned char)(word >> 16);
+    p[3] = (unsigned char)(word >> 24);
+    p[4] = (unsigned char)(word >> 32);
+    return p + 1 + ndigits + (tail >= 0);
+}
+
 static inline unsigned char *
 sixel_put_run_reserved(unsigned char *p, int symbol, int count, int limited)
 {
@@ -2854,12 +2883,19 @@ sixel_put_run_reserved(unsigned char *p, int symbol, int count, int limited)
     if (count >= 1000 || (limited && count > 255)) {
         return sixel_put_run_reserved_long(p, symbol, count, limited);
     }
-    *p++ = '!';
-    if (count >= 100) *p++ = (unsigned char)('0' + count / 100);
-    if (count >= 10) *p++ = (unsigned char)('0' + count / 10 % 10);
-    *p++ = (unsigned char)('0' + count % 10);
-    *p++ = (unsigned char)symbol;
-    return p;
+    return sixel_put_count_reserved(p, '!', count, symbol);
+}
+
+/* Write "#" and a register number. The caller reserves at least the int
+ * formatter bound, which covers the 5-byte store for registers below 1000. */
+static inline unsigned char *
+sixel_put_selector_reserved(unsigned char *p, int value)
+{
+    if (value < 0 || value >= 1000) {
+        *p++ = '#';
+        return p + sixel_putnum((char *)p, value);
+    }
+    return sixel_put_count_reserved(p, '#', value, -1);
 }
 
 
@@ -2892,8 +2928,7 @@ sixel_put_node(
         p = output->buffer + output->pos;
         if (ncolors != 2 || keycolor == -1 || output->keycolor_reserved) {
             if (output->active_palette != np->pal) {
-                *p++ = '#';
-                p += sixel_putnum((char *)p,
+                p = sixel_put_selector_reserved(p,
                     output->wire_colors != NULL
                         ? (int)output->wire_colors[np->pal].definition
                             .register_index : np->pal);
