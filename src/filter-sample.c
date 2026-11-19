@@ -43,6 +43,16 @@
 #else
 # define SIXEL_SAMPLE_NEON 0
 #endif
+#if !SIXEL_SAMPLE_NEON && defined(HAVE_SSE2) && \
+    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
+     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+# include <emmintrin.h>
+# define SIXEL_SAMPLE_SSE2 1
+#else
+# define SIXEL_SAMPLE_SSE2 0
+#endif
+/* Either vector unit runs the chunked solid test below. */
+#define SIXEL_SAMPLE_VECTOR (SIXEL_SAMPLE_NEON || SIXEL_SAMPLE_SSE2)
 #include "compat_stub.h"
 #include "filter.h"
 #include "frame-factory.h"
@@ -219,7 +229,7 @@ sixel_filter_sample_line_spread(unsigned char const *pixels,
     return worst;
 }
 
-#if SIXEL_SAMPLE_NEON
+#if SIXEL_SAMPLE_VECTOR
 /* Solid test for up to 16 points x0, x0 + 3, ...: both[k] is nonzero when
  * the horizontal and the vertical five-pixel lines through point k each
  * have a channel more than the tolerance away from the centre, exactly as
@@ -252,6 +262,7 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
                       * (size_t)depth;
     bytes = (size_t)(3 * (points - 1) + 1) * (size_t)depth;
     for (b = 0; b + 16 <= bytes; b += 16) {
+#if SIXEL_SAMPLE_NEON
         uint8x16_t middle;
         uint8x16_t across;
         uint8x16_t down;
@@ -269,6 +280,33 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
                      vabdq_u8(middle, vld1q_u8(centre + b + 2 * row))));
         vst1q_u8(horizontal + b, across);
         vst1q_u8(vertical + b, down);
+#else
+        /* |a - b| on unsigned bytes is the OR of both saturating
+         * differences, one of which is zero. */
+#define SIXEL_SAMPLE_ABD(a, p) \
+        _mm_or_si128(_mm_subs_epu8((a), \
+                         _mm_loadu_si128((__m128i const *)(p))), \
+                     _mm_subs_epu8(_mm_loadu_si128((__m128i const *)(p)), \
+                         (a)))
+        __m128i middle;
+        __m128i across;
+        __m128i down;
+
+        middle = _mm_loadu_si128((__m128i const *)(centre + b));
+        across = _mm_max_epu8(
+            _mm_max_epu8(SIXEL_SAMPLE_ABD(middle, centre + b - depth),
+                         SIXEL_SAMPLE_ABD(middle, centre + b + depth)),
+            _mm_max_epu8(SIXEL_SAMPLE_ABD(middle, centre + b - 2 * depth),
+                         SIXEL_SAMPLE_ABD(middle, centre + b + 2 * depth)));
+        down = _mm_max_epu8(
+            _mm_max_epu8(SIXEL_SAMPLE_ABD(middle, centre + b - row),
+                         SIXEL_SAMPLE_ABD(middle, centre + b + row)),
+            _mm_max_epu8(SIXEL_SAMPLE_ABD(middle, centre + b - 2 * row),
+                         SIXEL_SAMPLE_ABD(middle, centre + b + 2 * row)));
+#undef SIXEL_SAMPLE_ABD
+        _mm_storeu_si128((__m128i *)(horizontal + b), across);
+        _mm_storeu_si128((__m128i *)(vertical + b), down);
+#endif
     }
     for (; b < bytes; ++b) {
         int m;
@@ -302,6 +340,9 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
         both[k] = (unsigned char)(h & v);
     }
 }
+#endif
+
+#if SIXEL_SAMPLE_NEON
 
 /* The same test for 15 RGB points x0, x0 + 3, ..., x0 + 42, computing only
  * at the points. Each row's 48 pixels from x0 - 2 split into channel
@@ -494,7 +535,7 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
     int clip_width;
     int stride;
     int sample_width;
-#if SIXEL_SAMPLE_NEON
+#if SIXEL_SAMPLE_VECTOR
     unsigned char varies[16];
     unsigned char solid[16];
     int chunk_points;
@@ -557,7 +598,7 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
             * SIXEL_SAMPLE_SOLID_CELLS;
         for (row = first; row < end; ++row) {
             y = clip_y + row * SIXEL_SAMPLE_SOLID_STRIDE;
-#if SIXEL_SAMPLE_NEON
+#if SIXEL_SAMPLE_VECTOR
             /* Points whose both lines stay inside the image take the
              * vector test; edge points keep the scalar spreads. */
             vector_row = y >= SIXEL_SAMPLE_SOLID_HALF
@@ -570,17 +611,20 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
             for (x = clip_x;
                  x < clip_x + clip_width;
                  x += SIXEL_SAMPLE_SOLID_STRIDE) {
-#if SIXEL_SAMPLE_NEON
+#if SIXEL_SAMPLE_VECTOR
                 if (vector_row && x >= SIXEL_SAMPLE_SOLID_HALF
                         && x <= last_inner) {
                     chunk_points = (last_inner - x)
                         / SIXEL_SAMPLE_SOLID_STRIDE + 1;
+#if SIXEL_SAMPLE_NEON
                     if (depth == 3 && chunk_points >= 15
                             && x + 46 < width) {
                         chunk_points = 15;
                         sixel_filter_sample_vary_points_rgb15(pixels, width,
                             x, y, varies);
-                    } else {
+                    } else
+#endif
+                    {
                         if (chunk_points > 16) {
                             chunk_points = 16;
                         }
