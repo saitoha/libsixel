@@ -141,6 +141,12 @@ typedef struct sixel_band_state {
      * flags then remain for finish; otherwise finish clears everything.
      */
     int spans_cleared;
+    /*
+     * Set when the nodes point into the GPU span buffer. The GPU rewrites
+     * every span byte for each frame and nothing else reads that buffer,
+     * so emit leaves the spans as they are instead of zeroing them.
+     */
+    int spans_rewritten;
 } sixel_band_state_t;
 
 static int
@@ -1664,6 +1670,7 @@ sixel_parallel_worker_one(sixel_thread_pool_job_t job,
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
+        state->band.spans_rewritten = 1;
         goto emit;
     }
 
@@ -3564,6 +3571,7 @@ sixel_band_state_reset(sixel_band_state_t *state)
     state->fill_mask = 0;
     state->active_color_count = 0;
     state->spans_cleared = 0;
+    state->spans_rewritten = 0;
 }
 
 static void
@@ -4106,7 +4114,10 @@ sixel_band_emit(sixel_encode_work_t *work,
             if (SIXEL_FAILED(status)) return status;
             /* Classify set only occupied columns, and composed spans cover
              * all of them: zeroing the span restores this color's row. */
-            memset(node->map + node->sx, 0, (size_t)(node->mx - node->sx));
+            if (!state->spans_rewritten) {
+                memset(node->map + node->sx, 0,
+                    (size_t)(node->mx - node->sx));
+            }
 
             /* Transfer ownership only after emission. Remaining ties stay
              * in the bucket; clear its bit only when the last node leaves. */
@@ -4260,6 +4271,7 @@ sixel_encode_body(
         band.fill_mask = 0;
         band.active_color_count = 0;
         band.spans_cleared = 0;
+        band.spans_rewritten = 0;
 
         if (logging_active) {
             sixel_timeline_logger_logf(logger,
