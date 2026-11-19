@@ -27,6 +27,7 @@
  */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 #include <stdint.h>
@@ -42,14 +43,12 @@
 #include "status.h"
 
 /* A shared config.h can describe a different cosmocc compiler target. */
-#if HAVE_SSE2 && HAVE_EMMINTRIN_H && \
-    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
-     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#if SIXEL_SIMD_SSE2
 # define SIXEL_VPTREE_FLOAT_SSE2 1
 #endif
 
 /* Require compiler headers even when the target CPU supports SIMD. */
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
 #include <arm_neon.h>
 #elif defined(SIXEL_VPTREE_FLOAT_SSE2)
 #include <emmintrin.h>
@@ -60,7 +59,7 @@
  * gate; amalgamation and unknown arithmetic settings keep scalar lookup.
  * Neither pragmas nor an explicit fma may change the surrounding sources. */
 #if defined(SIXEL_FLOAT_LOOKUP_EXACT_SIMD) && !defined(__FAST_MATH__) \
-    && ((HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)) \
+    && ((SIXEL_SIMD_NEON_A64) \
         || (defined(SIXEL_VPTREE_FLOAT_SSE2)))
 #define SIXEL_FLOAT_LOOKUP_SIMD 1
 #else
@@ -801,7 +800,7 @@ sixel_lookup_vptree_float32_workspace_size(
 }
 
 #if SIXEL_FLOAT_LOOKUP_SIMD
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
 typedef float64x2_t sixel_float_distance2_t;
 #else
 typedef __m128d sixel_float_distance2_t;
@@ -820,7 +819,7 @@ sixel_float_distance2(sixel_lookup_vptree_float32_t const *tree,
     sixel_float_distance2_t d, sum;
 
     p = tree->palette_wide + index * 3;
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
     sum = vdupq_n_f64(0.0);
     d = vsubq_f64(r, vdupq_n_f64(p[0]));
     sum = vaddq_f64(sum, vmulq_n_f64(vmulq_f64(d, d),
@@ -857,7 +856,7 @@ sixel_lookup_vptree_float32_map_cold8(
     sixel_float_distance2_t r[4], g[4], b[4], best[4], idx[4];
     sixel_float_distance2_t distance, index;
     int i, j, c;
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
     uint64x2_t mask;
 #else
     __m128d mask;
@@ -869,7 +868,7 @@ sixel_lookup_vptree_float32_map_cold8(
         }
     }
     for (j = 0; j < 4; ++j) {
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
         r[j] = vld1q_f64(channels[0] + j * 2);
         g[j] = vld1q_f64(channels[1] + j * 2);
         b[j] = vld1q_f64(channels[2] + j * 2);
@@ -884,14 +883,14 @@ sixel_lookup_vptree_float32_map_cold8(
 #endif
     }
     for (i = 0; i < tree->ncolors; ++i) {
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
         index = vdupq_n_f64((double)i);
 #else
         index = _mm_set1_pd((double)i);
 #endif
         for (j = 0; j < 4; ++j) {
             distance = sixel_float_distance2(tree, r[j], g[j], b[j], i);
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
             mask = vcltq_f64(distance, best[j]);
             best[j] = vbslq_f64(mask, distance, best[j]);
             idx[j] = vbslq_f64(mask, index, idx[j]);
@@ -905,7 +904,7 @@ sixel_lookup_vptree_float32_map_cold8(
         }
     }
     for (j = 0; j < 4; ++j) {
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
         vst1q_f64(out + j * 2, idx[j]);
 #else
         _mm_storeu_pd(out + j * 2, idx[j]);

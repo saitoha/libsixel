@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 #include <limits.h>
@@ -514,16 +515,14 @@ sixel_indexed_frame_get_rows(sixel_indexed_frame_t const *image,
     return SIXEL_OK;
 }
 
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
 #define SIXEL_PUBLISH_NEON 1
 #include <arm_neon.h>
 #else
 #define SIXEL_PUBLISH_NEON 0
 #endif
 
-#if !SIXEL_PUBLISH_NEON && defined(HAVE_SSE2) && \
-    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
-     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#if !SIXEL_PUBLISH_NEON && SIXEL_SIMD_SSE2
 #define SIXEL_PUBLISH_SSE2 1
 #include <emmintrin.h>
 #else

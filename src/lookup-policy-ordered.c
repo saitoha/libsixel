@@ -24,6 +24,7 @@
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 #include <limits.h>
@@ -34,7 +35,7 @@
 #include "lookup-policy-ordered.h"
 #include "sixel_atomic.h"
 
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
 #include <arm_neon.h>
 #endif
 
@@ -287,7 +288,7 @@ sixel_lookup_policy_ordered_map_pixel_hint_8bit(
     sixel_lookup_policy_ordered_object_t const *object;
     uint32_t best, key, limit;
     int cell, center, at;
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
     uint32x4_t packed, scores, mask;
     int32x4_t dr, dg, db, distance;
 #else
@@ -323,7 +324,7 @@ sixel_lookup_policy_ordered_map_pixel_hint_8bit(
         if ((object->keys[center][at] >> 8) > limit) {
             break;
         }
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
         packed = vld1q_u32(object->colors[center] + at);
         mask = vdupq_n_u32(255U);
         dr = vsubq_s32(vreinterpretq_s32_u32(vandq_u32(packed, mask)),

@@ -24,6 +24,7 @@
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 /* STDC_HEADERS */
@@ -86,19 +87,9 @@
 # include <immintrin.h>
 #endif
 
-#if defined(HAVE_SSE2)
-/*
- * MSVC does not define __SSE2__ on x86/x64.  Instead, rely on the
- * architecture macros it provides so SIMD paths stay enabled after the
- * configure probe has validated SSE2 support.
- */
-# if defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
-    (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
-#  if defined(HAVE_EMMINTRIN_H)
-#   include <emmintrin.h>
-#   define SIXEL_USE_SSE2 1
-#  endif
-# endif
+#if SIXEL_SIMD_SSE2
+# include <emmintrin.h>
+# define SIXEL_USE_SSE2 1
 #endif
 
 #if defined(SIXEL_HAS_X86_INTRIN)
@@ -137,13 +128,9 @@
 # undef SIXEL_USE_AVX
 #endif
 
-#if defined(HAVE_NEON)
-# if (defined(__ARM_NEON) || defined(__ARM_NEON__))
-#  if defined(HAVE_ARM_NEON_H)
-#   include <arm_neon.h>
-#   define SIXEL_USE_NEON 1
-#  endif
-# endif
+#if SIXEL_SIMD_NEON
+# include <arm_neon.h>
+# define SIXEL_USE_NEON 1
 #endif
 
 #if !defined(MAX)

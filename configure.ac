@@ -3052,18 +3052,39 @@ AC_CHECK_HEADERS_PARALLEL([assert.h \
                            windows.h \
                           ])
 
+# AVX2 kernels are compiled per function and chosen at run time. GCC and
+# clang need a target attribute; MSVC accepts the intrinsics in any function.
 AS_CASE([$host_cpu], [x86_64 | amd64 | i*86], [
-  AC_CACHE_CHECK([whether a function can target AVX2],
-                 [sixel_cv_x86_avx2_target], [
+  AC_CACHE_CHECK([how a function can use AVX2], [sixel_cv_avx2_kernels], [
+    sixel_cv_avx2_kernels=no
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#define SIXEL_PROBE_TARGET_AVX2 __attribute__((target("avx2")))
 #include "$srcdir/build-aux/avx2-target-probe.c"
-]])], [sixel_cv_x86_avx2_target=yes], [sixel_cv_x86_avx2_target=no])
+]])], [sixel_cv_avx2_kernels=attribute], [
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#define SIXEL_PROBE_TARGET_AVX2
+#include "$srcdir/build-aux/avx2-target-probe.c"
+]])], [sixel_cv_avx2_kernels=plain])])
   ])
-  AS_IF([test "x$sixel_cv_x86_avx2_target" = xyes], [
-    AC_DEFINE([HAVE_X86_AVX2_TARGET], [1],
-              [Define if functions can target AVX2 independently])
-  ])
+  AS_CASE([$sixel_cv_avx2_kernels],
+    [attribute], [
+      AC_DEFINE([HAVE_AVX2_KERNELS], [1],
+                [Define if AVX2 kernels compile for run-time dispatch])
+      AC_DEFINE([SIXEL_TARGET_AVX2], [__attribute__((target("avx2")))],
+                [Function attribute that enables AVX2 intrinsics])],
+    [plain], [
+      AC_DEFINE([HAVE_AVX2_KERNELS], [1],
+                [Define if AVX2 kernels compile for run-time dispatch])
+      AC_DEFINE([SIXEL_TARGET_AVX2], [],
+                [Function attribute that enables AVX2 intrinsics])])
 ])
+# Kernels that view vector lanes as packed bytes need the byte order.
+AC_C_BIGENDIAN(
+  [AC_DEFINE([WORDS_BIGENDIAN], [1],
+             [Define if the host stores multibyte words big-endian])],
+  [],
+  [AC_MSG_WARN([unknown byte order; assuming little-endian])],
+  [])
 
 AC_MSG_CHECKING([for __builtin_cpu_supports])
 AC_LINK_IFELSE([
@@ -5621,10 +5642,26 @@ else
                               [have_neon=no])
             AC_MSG_RESULT([$have_neon])
         fi
+        if test "x$have_neon" = xyes; then
+            AC_MSG_CHECKING([whether the compiler supports AArch64 NEON intrinsics])
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                                #include <arm_neon.h>
+                              ]], [[
+                                float64x2_t d = vdupq_n_f64(1.0);
+                                uint64x2_t m = vcltq_f64(d, d);
+                                int32_t low = vminvq_s32(vdupq_n_s32(0));
+                                uint32_t sum = vaddvq_u32(vdupq_n_u32(1));
+                                (void)m;
+                                return (int)(low + (int32_t)sum);
+                              ]])],
+                              [have_neon_a64=yes],
+                              [have_neon_a64=no])
+            AC_MSG_RESULT([$have_neon_a64])
+        fi
         ;;
 
     arm*|aarch32)
-        if x$ac_cv_header_arm_neon_h = xyes; then
+        if test x$ac_cv_header_arm_neon_h = xyes; then
             AC_MSG_CHECKING([whether the compiler supports -mfpu=neon and <arm_neon.h>])
             saved_CFLAGS="$CFLAGS"
             CFLAGS="$CFLAGS -mfpu=neon"
@@ -5660,6 +5697,10 @@ fi
 if test "x$have_neon" = xyes; then
     AC_DEFINE([HAVE_NEON], [1], [Define if NEON is available])
     message_simd=neon
+fi
+if test "x$have_neon_a64" = xyes; then
+    AC_DEFINE([HAVE_NEON_A64], [1],
+              [Define if AArch64 NEON intrinsics are available])
 fi
 
 if test "x$enable_xsave_probe" = xno; then

@@ -1,16 +1,14 @@
 /* SPDX-License-Identifier: MIT */
-/* Compile an isolated AVX2 function without changing the baseline ISA. */
-#if (!defined(__GNUC__) && !defined(__clang__)) || defined(__PCC__)
-# error No supported per-function target attribute
-#endif
-#if defined(__has_attribute)
-# if !__has_attribute(target)
-#  error No per-function target attribute
-# endif
+/* Compile an isolated AVX2 function without changing the baseline ISA.
+ * The build system defines SIXEL_PROBE_TARGET_AVX2 as the function
+ * attribute under test: GCC and clang need target("avx2"), while MSVC
+ * accepts AVX2 intrinsics in any function and needs none. */
+#if defined(__PCC__)
+# error pcc does not ship usable x86 intrinsic headers
 #endif
 #include <immintrin.h>
 
-__attribute__((target("avx2"))) void
+SIXEL_PROBE_TARGET_AVX2 void
 sixel_probe_avx2(void *dst, void const *src)
 {
     __m128i low;

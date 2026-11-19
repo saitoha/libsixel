@@ -2116,10 +2116,19 @@ endif
 if (cpu == 'x86' or cpu == 'x86_64') and not is_pcc_backend
   if cc.has_header('immintrin.h')
     conf.set('HAVE_IMMINTRIN_H', 1)
-    if cc.compiles(files('build-aux/avx2-target-probe.c')[0],
-                   name: 'per-function AVX2 target')
-      conf.set('HAVE_X86_AVX2_TARGET', 1)
-    endif
+    # AVX2 kernels are compiled per function and chosen at run time. GCC
+    # and clang need a target attribute; MSVC accepts the intrinsics in any
+    # function. SIXEL_TARGET_AVX2 records the attribute the probe needed.
+    avx2_probe = fs.read('build-aux/avx2-target-probe.c')
+    foreach avx2_attribute : ['__attribute__((target("avx2")))', '']
+      if cc.compiles('#define SIXEL_PROBE_TARGET_AVX2 ' + avx2_attribute +
+                     '\n' + avx2_probe,
+                     name: 'AVX2 kernel attribute "' + avx2_attribute + '"')
+        conf.set('HAVE_AVX2_KERNELS', 1)
+        conf.set('SIXEL_TARGET_AVX2', avx2_attribute)
+        break
+      endif
+    endforeach
   endif
   if cc.has_header('cpuid.h')
     conf.set('HAVE_CPUID_H', 1)
@@ -2160,8 +2169,14 @@ if is_pcc_backend
   xsave_probe_message = 'no (pcc)'
 elif cpu == 'x86' or cpu == 'x86_64'
   if not xsave_probe_opt.disabled()
-    if cc.has_header('immintrin.h') and cc.has_function('_xgetbv',
-        prefix: '#include <immintrin.h>')
+    # MSVC provides _xgetbv as an intrinsic, which has_function cannot
+    # see; link a call instead, as configure does.
+    if cc.has_header('immintrin.h') and cc.links('''#include <immintrin.h>
+int main(void) {
+  unsigned long long xcr0 = _xgetbv(0);
+  return (int)(xcr0 & 1u);
+}
+''', name: '_xgetbv(0) without extra flags')
       conf.set('HAVE_XGETBV_INTRIN', 1)
       have_xgetbv_intrin = true
     endif
@@ -2178,6 +2193,11 @@ elif cpu == 'x86' or cpu == 'x86_64'
   endif
 else
   xsave_probe_message = 'no (arch)'
+endif
+
+# Kernels that view vector lanes as packed bytes need the byte order.
+if host_machine.endian() == 'big'
+  conf.set('WORDS_BIGENDIAN', 1)
 endif
 
 simd_opt = get_option('simd')
@@ -2244,6 +2264,17 @@ elif cpu == 'aarch64'
         }''')
       conf.set('HAVE_NEON', 1)
       simd_message = 'neon'
+      if cc.compiles('''
+          #include <arm_neon.h>
+          int main(void){
+            float64x2_t d = vdupq_n_f64(1.0);
+            uint64x2_t m = vcltq_f64(d, d);
+            int32_t low = vminvq_s32(vdupq_n_s32(0));
+            uint32_t sum = vaddvq_u32(vdupq_n_u32(1));
+            (void)m; return (int)(low + (int32_t)sum);
+          }''', name: 'AArch64 NEON intrinsics')
+        conf.set('HAVE_NEON_A64', 1)
+      endif
     else
       simd_message = 'no 2'
     endif

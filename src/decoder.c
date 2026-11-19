@@ -23,6 +23,7 @@
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 /* STDC_HEADERS */
@@ -77,9 +78,7 @@ decoder_apply_gpu_policy_argument(sixel_decoder_t *decoder,
                                   char *diagnostic,
                                   size_t diagnostic_size);
 
-#if defined(HAVE_NEON) && HAVE_NEON && \
-    defined(HAVE_ARM_NEON_H) && HAVE_ARM_NEON_H && \
-    (defined(__ARM_NEON) || defined(__ARM_NEON__))
+#if SIXEL_SIMD_NEON
 # include <arm_neon.h>
 # define SIXEL_KUNDITHER_USE_NEON 1
 #endif
