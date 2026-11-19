@@ -209,6 +209,19 @@ sixel_apply_deferred_solve(sixel_palette_apply_deferred_interface_t *self,
     return status;
 }
 
+/* Fixed GPU kernels paint only lookup results of the plan's palette, which
+ * the plan matched to this frame before running, and write canonical skip
+ * codes. Without a selectable key their rows publish without a per-pixel
+ * scan; an unreserved key still needs the applied scan to normalize it. */
+static SIXELSTATUS
+sixel_palette_apply_publish_fixed(sixel_indexed_frame_t *image, int rows)
+{
+    return image->description.keycolor < 0 ||
+            image->description.keycolor_reserved
+        ? sixel_indexed_frame_publish_gpu_rows(image, rows)
+        : sixel_indexed_frame_publish_applied(image, rows);
+}
+
 static SIXELSTATUS
 sixel_apply_solution_resolve(sixel_palette_apply_solution_interface_t *self,
     sixel_palette_apply_resolve_request_t const *request)
@@ -299,9 +312,8 @@ sixel_apply_solution_resolve(sixel_palette_apply_solution_interface_t *self,
     if (status == SIXEL_OK && request->cancel != NULL &&
             request->cancel(request->cancel_context))
         status = SIXEL_INTERRUPTED;
-    /* Validate producer indexes before publishing any rows. */
     if (status == SIXEL_OK)
-        status = sixel_indexed_frame_publish_applied(request->result,
+        status = sixel_palette_apply_publish_fixed(request->result,
             desc->height);
     if (status == SIXEL_OK)
         status = sixel_indexed_frame_complete(request->result);
@@ -685,10 +697,7 @@ sixel_palette_apply_gpu_rows(void *context, int rows)
             apply->run->cancel(apply->run->cancel_context)) {
         return SIXEL_INTERRUPTED;
     }
-    status = apply->plan.output.keycolor < 0 ||
-            apply->plan.output.keycolor_reserved
-        ? sixel_indexed_frame_publish_gpu_rows(apply->run->result, rows)
-        : sixel_indexed_frame_publish_applied(apply->run->result, rows);
+    status = sixel_palette_apply_publish_fixed(apply->run->result, rows);
     if (status != SIXEL_OK) return status;
     apply->prefix = rows;
     if (apply->run->rows_ready != NULL) {
@@ -865,7 +874,7 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
         /* A streaming producer has already published its completed prefix.
          * Other producers are validated and published once on completion. */
         if (status == SIXEL_OK && apply->prefix < desc->height) {
-            status = sixel_indexed_frame_publish_applied(request->result,
+            status = sixel_palette_apply_publish_fixed(request->result,
                 desc->height);
             if (status == SIXEL_OK && request->rows_ready != NULL)
                 status = request->rows_ready(request->result, desc->height,
