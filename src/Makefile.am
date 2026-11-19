@@ -328,6 +328,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/retained-plane-gpu.c \
                 $(srcdir)/retained-plane-gpu.h \
                 $(srcdir)/gpu-runtime-metal.h \
+                $(srcdir)/encoder-body-gpu.h \
                 $(srcdir)/gpu-runtime-vulkan.h \
                 $(srcdir)/gpu-compute-vulkan.h \
                 $(srcdir)/gpu-palette-vulkan.h \
@@ -822,6 +823,7 @@ $(srcdir)/dither-policy-sierra1-gpu-metal.m \
 $(srcdir)/dither-policy-sierra2-gpu-metal.m \
 $(srcdir)/dither-policy-sierra3-gpu-metal.m \
 $(srcdir)/gpu-palette-metal.m \
+$(srcdir)/encoder-body-gpu-metal.m \
 $(srcdir)/retained-plane-metal.m \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/progressive-gpu-metal.m

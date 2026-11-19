@@ -5377,6 +5377,7 @@ int test_0180_reuse_release_storage(int, char **);
 int test_0181_reuse_abort_storage(int, char **);
 int test_0182_reuse_allocation_failure(int, char **);
 int test_0183_reuse_scratch_allocations(int, char **);
+int test_0184_core_gpu_body(int, char **);
 
 int test_schedule_0001_cold_single(int, char **);
 int test_schedule_0002_light_once(int, char **);
@@ -6974,6 +6975,8 @@ static test_entry_t const test_entries[] = {
       test_0182_reuse_allocation_failure },
     { "encoder/indexed/0183_reuse_scratch_allocations",
       test_0183_reuse_scratch_allocations },
+    { "encoder/indexed/0184_core_gpu_body",
+      test_0184_core_gpu_body },
 
     { "delta/comparison/0069_query_encode_cpu", test_delta_compare_0069 },
     { "delta/comparison/0070_target_encode_cpu", test_delta_compare_0070 },

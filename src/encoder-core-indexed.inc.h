@@ -18,6 +18,12 @@ typedef struct sixel_indexed_core {
     double (*test_clock)(void *);
     void *test_clock_context;
     SIXELSTATUS status;
+    /* GPU band composition: requested per frame by the session, created on
+     * first use, and disabled for this core after the device fails once. */
+    int gpu_body;
+    int gpu_unavailable;
+    sixel_body_gpu_t *gpu;
+    sixel_body_gpu_result_t gpu_result;
 #if SIXEL_ENABLE_THREADS
     sixel_parallel_context_t parallel;
     int parallel_active;
@@ -92,6 +98,7 @@ sixel_indexed_core_unref(sixel_encoder_core_t *self)
     }
     allocator = core->allocator;
     (void)sixel_indexed_core_release(core, 1);
+    sixel_body_gpu_destroy(core->gpu);
     sixel_output_storage_unref(core->body);
     sixel_allocator_free(allocator, core);
     sixel_allocator_unref(allocator);
@@ -188,6 +195,7 @@ sixel_indexed_core_prepare(sixel_encoder_core_t *self,
         if (SIXEL_FAILED(status)) {
             sixel_parallel_context_cleanup(&core->parallel);
         } else {
+            core->parallel.gpu_result = NULL;
             core->parallel.clock = core->test_clock;
             core->parallel.clock_context = core->test_clock_context;
             core->parallel.adaptive_bands = 1;
@@ -251,6 +259,52 @@ sixel_indexed_core_palette(sixel_indexed_core_t *core)
     return SIXEL_OK;
 }
 
+#if SIXEL_ENABLE_THREADS
+/* Compose every band on the GPU when the whole frame is published before
+ * its first band is submitted. Any failure leaves the CPU compose in place;
+ * a missing device or failed run stops further attempts on this core. */
+static void
+sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
+{
+    sixel_indexed_frame_description_t const *desc;
+    sixel_body_gpu_request_t request;
+    SIXELSTATUS status;
+
+    core->parallel.gpu_result = NULL;
+    if (!core->gpu_body || core->gpu_unavailable || core->options.ormode ||
+            core->options.encode_policy == SIXEL_ENCODEPOLICY_SIZE) {
+        return;
+    }
+    if (core->gpu == NULL) {
+        status = sixel_body_gpu_new(&core->gpu);
+        if (SIXEL_FAILED(status)) {
+            core->gpu_unavailable = 1;
+            return;
+        }
+    }
+    desc = &core->image->description;
+    request.indexes = core->image->indexes;
+    request.mask = core->image->skip;
+    request.width = desc->width;
+    request.height = desc->height;
+    request.encoded_width = desc->encoded_width;
+    request.encoded_height = desc->encoded_height;
+    request.offset_left = desc->encoded_x;
+    request.offset_top = desc->encoded_y;
+    request.ncolors = ncolors;
+    request.keycolor = desc->keycolor;
+    status = sixel_body_gpu_run(core->gpu, &request, &core->gpu_result);
+    if (SIXEL_FAILED(status)) {
+        core->gpu_unavailable = 1;
+        return;
+    }
+    if (core->gpu_result.band_count != core->parallel.band_count) {
+        return;
+    }
+    core->parallel.gpu_result = &core->gpu_result;
+}
+#endif
+
 static SIXELSTATUS
 sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
 {
@@ -305,6 +359,10 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
             break;
         }
 #if SIXEL_ENABLE_THREADS
+        if (core->parallel_active && core->band == 0 &&
+                published_rows == desc->height) {
+            sixel_indexed_core_compose_gpu(core, (int)palette.count);
+        }
         if (core->parallel_active) {
             ready_bands = published_rows == desc->height
                 ? core->parallel.band_count : ready / 6;
@@ -442,6 +500,17 @@ sixel_encoder_core_test_clock(sixel_encoder_core_t *self,
     core->test_clock = clock;
     core->test_clock_context = context;
     return SIXEL_OK;
+}
+
+/* Internal: request GPU band composition for the next prepared frames.
+ * Other core implementations ignore it. */
+SIXEL_INTERNAL_API void
+sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *self, int enabled)
+{
+    if (self == NULL || self->vtbl != &g_indexed_core_vtbl) {
+        return;
+    }
+    ((sixel_indexed_core_t *)self)->gpu_body = enabled != 0;
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
