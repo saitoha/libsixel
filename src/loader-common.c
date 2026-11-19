@@ -200,6 +200,10 @@ loader_hdr_finish(float *pixels, size_t count)
 # define SIXEL_LOADER_NO_TLS_COMPILER 0
 #endif
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_LOADER_TLS
+# define SIXEL_LOADER_TLS_AVAILABLE 0
+#else
 #if defined(_MSC_VER)
 # define SIXEL_LOADER_TLS __declspec(thread)
 # define SIXEL_LOADER_TLS_AVAILABLE 1
@@ -214,6 +218,7 @@ loader_hdr_finish(float *pixels, size_t count)
 #else
 # define SIXEL_LOADER_TLS
 # define SIXEL_LOADER_TLS_AVAILABLE 0
+#endif
 #endif
 
 static int wic_ico_minsize_default;

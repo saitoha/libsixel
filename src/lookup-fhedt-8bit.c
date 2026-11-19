@@ -60,6 +60,7 @@
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "lookup-fhedt-8bit.h"
+#include "lookup-fhedt-distances.h"
 #include "lookup-policy-fhedt.h"
 #include "timeline-logger.h"
 #include "threading.h"
@@ -68,7 +69,7 @@
 #include "status.h"
 
 #ifndef SIXEL_FHEDT_TLS
-# if defined(SIXEL_ENABLE_THREADS)
+# if defined(SIXEL_ENABLE_THREADS) && !defined(SIXEL_DISABLE_TLS)
    /*
     * TinyCC reports TLS keywords but does not provide stable semantics for
     * the FHEDT worker scratch buffers. Keep it on the non-TLS fallback path
@@ -352,7 +353,7 @@ typedef struct sixel_lookup_fhedt_line_buffer_8bit {
 } sixel_lookup_fhedt_line_buffer_8bit_t;
 
 typedef struct sixel_lookup_fhedt_first_touch_plan_8bit {
-    double *distances;
+    sixel_fhedt_distances_t *distances;
     int *sources;
     size_t stride_y;
     size_t stride_z;
@@ -608,7 +609,7 @@ sixel_lookup_fhedt_line_buffer_get_8bit(void)
  * tools/timeline.py can visualize where prefetching happens.
  */
 static void
-sixel_lookup_fhedt_prefetch_line_8bit(double *distances,
+sixel_lookup_fhedt_prefetch_line_8bit(sixel_fhedt_distances_t *distances,
                                 int *sources,
                                 size_t offset,
                                 sixel_lookup_fhedt_timeline_8bit_t *timeline,
@@ -621,7 +622,8 @@ sixel_lookup_fhedt_prefetch_line_8bit(double *distances,
     char message[64];
 #endif
 #if HAVE_BUILTIN_PREFETCH
-    __builtin_prefetch(distances + offset, 0, 3);
+    __builtin_prefetch(sixel_fhedt_distance_at(distances, offset),
+                       0, 3);
     __builtin_prefetch(sources + offset, 0, 3);
 #else
     (void)distances;
@@ -906,7 +908,8 @@ sixel_lookup_fhedt_first_touch_worker_8bit(sixel_thread_pool_job_t job,
             offset = ((size_t)z * plan->stride_z)
                    + ((size_t)y * plan->stride_y);
             for (x = 0; x < plan->res; ++x) {
-                plan->distances[offset + (size_t)x] = DBL_MAX / 4.0;
+                *sixel_fhedt_distance_at(plan->distances,
+                                        offset + (size_t)x) = DBL_MAX / 4.0;
                 plan->sources[offset + (size_t)x] = -1;
             }
         }
@@ -916,7 +919,7 @@ sixel_lookup_fhedt_first_touch_worker_8bit(sixel_thread_pool_job_t job,
 }
 
 static void
-sixel_lookup_fhedt_first_touch_8bit(double *distances,
+sixel_lookup_fhedt_first_touch_8bit(sixel_fhedt_distances_t *distances,
                               int *sources,
                               int res,
                               int threads,
@@ -955,7 +958,7 @@ sixel_lookup_fhedt_seed_grid_8bit(int resolution,
                             int depth,
                             int ncolors,
                             unsigned char const *palette,
-                            double *distances,
+                            sixel_fhedt_distances_t *distances,
                             int *sources)
 {
     size_t plane;
@@ -969,7 +972,7 @@ sixel_lookup_fhedt_seed_grid_8bit(int resolution,
 
     grid = (size_t)resolution * (size_t)resolution * (size_t)resolution;
     for (offset = 0; offset < grid; ++offset) {
-        distances[offset] = DBL_MAX / 4.0;
+        *sixel_fhedt_distance_at(distances, offset) = DBL_MAX / 4.0;
         sources[offset] = -1;
     }
 
@@ -980,7 +983,7 @@ sixel_lookup_fhedt_seed_grid_8bit(int resolution,
         plane = (size_t)resolution * (size_t)resolution;
         offset = ((size_t)z * plane) + ((size_t)y * (size_t)resolution)
                + (size_t)x;
-        distances[offset] = 0.0;
+        *sixel_fhedt_distance_at(distances, offset) = 0.0;
         sources[offset] = index;
         /*
          * Cells that collide pick the last palette entry.  This stable choice
@@ -1093,7 +1096,7 @@ sixel_lookup_fhedt_edt1d_resolve_8bit(void)
 typedef struct sixel_lookup_fhedt_pass_x_plan_8bit {
     unsigned char const *seeded_columns;
     sixel_lookup_fhedt_shared_8bit_t *shared;
-    double *distances;
+    sixel_fhedt_distances_t *distances;
     int *sources;
     sixel_lookup_fhedt_timeline_8bit_t *timeline;
     sixel_lookup_fhedt_edt1d_fn_8bit edt1d;
@@ -1110,7 +1113,7 @@ typedef struct sixel_lookup_fhedt_pass_x_plan_8bit {
 
 typedef struct sixel_lookup_fhedt_pass_y_plan_8bit {
     sixel_lookup_fhedt_shared_8bit_t *shared;
-    double *distances;
+    sixel_fhedt_distances_t *distances;
     int *sources;
     sixel_lookup_fhedt_timeline_8bit_t *timeline;
     sixel_lookup_fhedt_edt1d_fn_8bit edt1d;
@@ -1127,7 +1130,7 @@ typedef struct sixel_lookup_fhedt_pass_y_plan_8bit {
 
 typedef struct sixel_lookup_fhedt_pass_z_plan_8bit {
     sixel_lookup_fhedt_shared_8bit_t *shared;
-    double *distances;
+    sixel_fhedt_distances_t *distances;
     int *sources;
     sixel_lookup_fhedt_timeline_8bit_t *timeline;
     sixel_lookup_fhedt_edt1d_fn_8bit edt1d;
@@ -1216,7 +1219,9 @@ sixel_lookup_fhedt_pass_x_worker_8bit(sixel_thread_pool_job_t job,
                                                     y + 1);
                 }
                 for (x = 0; x < plan->res; ++x) {
-                    line_buffer->dist[x] = plan->distances[offset + (size_t)x];
+                    line_buffer->dist[x] =
+                        *sixel_fhedt_distance_at(plan->distances,
+                                            offset + (size_t)x);
                     line_buffer->src[x] = plan->sources[offset + (size_t)x];
                 }
                 plan->edt1d(line_buffer->dist,
@@ -1224,7 +1229,9 @@ sixel_lookup_fhedt_pass_x_worker_8bit(sixel_thread_pool_job_t job,
                             plan->res,
                             plan->weight);
                 for (x = 0; x < plan->res; ++x) {
-                    plan->distances[offset + (size_t)x] = line_buffer->dist[x];
+                    *sixel_fhedt_distance_at(plan->distances,
+                                            offset + (size_t)x) =
+                        line_buffer->dist[x];
                     plan->sources[offset + (size_t)x] = line_buffer->src[x];
                 }
             }
@@ -1249,7 +1256,8 @@ sixel_lookup_fhedt_pass_x_worker_8bit(sixel_thread_pool_job_t job,
  * The diagnostic path below retains the original per-line event ordering. */
 static void
 sixel_lookup_fhedt_pass_columns_8bit(
-    double *grid_distances, int *grid_sources, size_t base, size_t stride,
+    sixel_fhedt_distances_t *grid_distances, int *grid_sources,
+    size_t base, size_t stride,
     int length, int count, double weight,
     sixel_lookup_fhedt_edt1d_fn_8bit edt1d)
 {
@@ -1262,7 +1270,8 @@ sixel_lookup_fhedt_pass_columns_8bit(
     for (coord = 0; coord < length; ++coord) {
         offset = base + (size_t)coord * stride;
         for (lane = 0; lane < count; ++lane) {
-            distances[lane][coord] = grid_distances[offset + (size_t)lane];
+            distances[lane][coord] = *sixel_fhedt_distance_at(grid_distances,
+                                         offset + (size_t)lane);
             sources[lane][coord] = grid_sources[offset + (size_t)lane];
         }
     }
@@ -1272,7 +1281,9 @@ sixel_lookup_fhedt_pass_columns_8bit(
     for (coord = 0; coord < length; ++coord) {
         offset = base + (size_t)coord * stride;
         for (lane = 0; lane < count; ++lane) {
-            grid_distances[offset + (size_t)lane] = distances[lane][coord];
+            *sixel_fhedt_distance_at(grid_distances,
+                                         offset + (size_t)lane) =
+                distances[lane][coord];
             grid_sources[offset + (size_t)lane] = sources[lane][coord];
         }
     }
@@ -1359,7 +1370,8 @@ sixel_lookup_fhedt_pass_y_worker_8bit(sixel_thread_pool_job_t job,
                                                     z,
                                                     x);
                 }
-                line_buffer->dist[y] = plan->distances[offset];
+                line_buffer->dist[y] =
+                    *sixel_fhedt_distance_at(plan->distances, offset);
                 line_buffer->src[y] = plan->sources[offset];
             }
             plan->edt1d(line_buffer->dist,
@@ -1370,7 +1382,8 @@ sixel_lookup_fhedt_pass_y_worker_8bit(sixel_thread_pool_job_t job,
                 offset = ((size_t)z * plan->stride_z)
                        + ((size_t)y * plan->stride_y)
                        + (size_t)x;
-                plan->distances[offset] = line_buffer->dist[y];
+                *sixel_fhedt_distance_at(plan->distances, offset) =
+                    line_buffer->dist[y];
                 plan->sources[offset] = line_buffer->src[y];
             }
             if (plan->log_lines != 0) {
@@ -1468,7 +1481,8 @@ sixel_lookup_fhedt_pass_z_worker_8bit(sixel_thread_pool_job_t job,
                                                     y,
                                                     x);
                 }
-                line_buffer->dist[z] = plan->distances[offset];
+                line_buffer->dist[z] =
+                    *sixel_fhedt_distance_at(plan->distances, offset);
                 line_buffer->src[z] = plan->sources[offset];
             }
             plan->edt1d(line_buffer->dist,
@@ -1479,7 +1493,8 @@ sixel_lookup_fhedt_pass_z_worker_8bit(sixel_thread_pool_job_t job,
                 offset = ((size_t)z * plan->stride_z)
                        + ((size_t)y * plan->stride_y)
                        + (size_t)x;
-                plan->distances[offset] = line_buffer->dist[z];
+                *sixel_fhedt_distance_at(plan->distances, offset) =
+                    line_buffer->dist[z];
                 plan->sources[offset] = line_buffer->src[z];
             }
             if (plan->log_lines != 0) {
@@ -1713,7 +1728,7 @@ sixel_lookup_fhedt_dispatch_tiles_8bit(
 
 static void
 sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
-                            double *distances,
+                            sixel_fhedt_distances_t *distances,
                             int *sources,
                             sixel_lookup_fhedt_timeline_8bit_t *timeline,
                             int threads,
@@ -1955,7 +1970,8 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
                         int depth)
 {
     sixel_lookup_fhedt_shared_8bit_t *shared;
-    double *distances;
+    sixel_fhedt_distances_t distances;
+    int distances_ok;
     int *sources;
     size_t total;
     size_t palette_size;
@@ -2060,13 +2076,12 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
         return SIXEL_BAD_ALLOCATION;
     }
 
-    distances = (double *)sixel_allocator_malloc(
-        fhedt->allocator,
-        total * sizeof(double));
+    distances_ok = sixel_fhedt_distances_alloc(&distances,
+                                               fhedt->allocator, total);
     sources = (int *)sixel_allocator_malloc(fhedt->allocator,
                                             total * sizeof(int));
-    if (distances == NULL || sources == NULL) {
-        sixel_allocator_free(fhedt->allocator, distances);
+    if (!distances_ok || sources == NULL) {
+        sixel_fhedt_distances_free(&distances, fhedt->allocator);
         sixel_allocator_free(fhedt->allocator, sources);
         sixel_lookup_fhedt_shared_destroy_8bit(fhedt->allocator, shared);
         sixel_helper_set_additional_message(
@@ -2092,7 +2107,7 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
                                    ncolors,
                                    timeline_message);
     if (first_touch != 0) {
-        sixel_lookup_fhedt_first_touch_8bit(distances,
+        sixel_lookup_fhedt_first_touch_8bit(&distances,
                                       sources,
                                       resolution,
                                       threads,
@@ -2104,10 +2119,10 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
                                 shared->depth,
                                 shared->ncolors,
                                 shared->palette,
-                                distances,
+                                &distances,
                                 sources);
     sixel_lookup_fhedt_apply_edt_8bit(shared,
-                                distances,
+                                &distances,
                                 sources,
                                 &timeline,
                                 threads,
@@ -2120,7 +2135,8 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
     }
     if (shared->dist2 != NULL) {
         for (offset = 0U; offset < total; ++offset) {
-            shared->dist2[offset] = (float)distances[offset];
+            shared->dist2[offset] =
+                (float)*sixel_fhedt_distance_at(&distances, offset);
         }
     }
 
@@ -2130,7 +2146,7 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
                                    resolution,
                                    ncolors,
                                    timeline_message);
-    sixel_allocator_free(fhedt->allocator, distances);
+    sixel_fhedt_distances_free(&distances, fhedt->allocator);
     sixel_allocator_free(fhedt->allocator, sources);
     sixel_lookup_fhedt_timeline_close_8bit(&timeline);
 

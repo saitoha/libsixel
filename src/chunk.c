@@ -1069,14 +1069,14 @@ end:
     }
     return status;
 #else
-#if defined(__NetBSD__)
+#if HAVE_LIBFETCH_FETCHIO
     fetchIO *fetch_stream = NULL;
 #else
     FILE *fetch_stream = NULL;
 #endif
     unsigned char bucket[4096];
     size_t nread;
-#if defined(__NetBSD__)
+#if HAVE_LIBFETCH_FETCHIO
     ssize_t fetched;
 #endif
     int use_insecure;
@@ -1138,7 +1138,7 @@ end:
     }
 
     for (;;) {
-#if defined(__NetBSD__)
+#if HAVE_LIBFETCH_FETCHIO
         fetched = fetchIO_read(fetch_stream, bucket, sizeof(bucket));
         if (fetched < 0) {
             status = SIXEL_RUNTIME_ERROR;
@@ -1170,7 +1170,7 @@ end:
         pchunk->size += nread;
     }
 
-#if !defined(__NetBSD__)
+#if !HAVE_LIBFETCH_FETCHIO
     if (ferror(fetch_stream)) {
         status = SIXEL_RUNTIME_ERROR;
         sixel_helper_set_additional_message(
@@ -1183,7 +1183,7 @@ end:
 
 end:
     if (fetch_stream != NULL) {
-#if defined(__NetBSD__)
+#if HAVE_LIBFETCH_FETCHIO
         fetchIO_close(fetch_stream);
 #else
         fclose(fetch_stream);

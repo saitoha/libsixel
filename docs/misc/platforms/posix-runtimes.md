@@ -12,7 +12,7 @@ These macros are declaration controls, not capability proof. Continue to gate ca
 
 ## Runtime-specific contracts
 
-NetBSD libfetch exposes `fetchIO *` with `fetchIO_read` and `fetchIO_close`; it must not be treated as a `FILE *` consumed by `fread` and `fclose`. FreeBSD and DragonFly retain their `gettimeofday` declaration accommodation and avoid the `posix_spawnp` thumbnailer path because the shared-library link cannot rely on an exported `environ` under the project's no-undefined policy.
+The builds probe the libfetch header for `fetchIO`. NetBSD and MINIX use the `fetchIO_read` and `fetchIO_close` operations on that stream type. The `FILE *` interface uses `fread` and `fclose`. FreeBSD and DragonFly retain their `gettimeofday` declaration accommodation and avoid the `posix_spawnp` thumbnailer path because the shared-library link cannot rely on an exported `environ` under the project's no-undefined policy.
 
 OpenBSD needs the BSD namespace for sysctl types and avoids assumptions around generic prototypes and x86 intrinsic headers. DragonFly x86 AVX selection retains the operating-system-state guard before using AVX state. Linux uses `_GNU_SOURCE` where GNU pthread affinity or the GNU `strerror_r` result contract is selected. Android participates in the signal-context branch used by abort tracing but must not be assumed to provide every glibc extension.
 

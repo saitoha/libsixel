@@ -380,6 +380,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/components.c \
                 $(srcdir)/lookup-fhedt-8bit.c \
                 $(srcdir)/lookup-fhedt-8bit.h \
+                $(srcdir)/lookup-fhedt-distances.h \
                 $(srcdir)/lookup-fhedt-float32.c \
                 $(srcdir)/lookup-fhedt-float32.h \
                 $(srcdir)/lookup-vptree-8bit.c \

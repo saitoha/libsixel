@@ -141,6 +141,10 @@ struct sixel_cms_transform {
 # define SIXEL_CMS_NO_TLS_COMPILER 0
 #endif
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_CMS_TLS
+# define SIXEL_CMS_TLS_AVAILABLE 0
+#else
 #if defined(_MSC_VER)
 # if defined(_MT)
 #  define SIXEL_CMS_TLS __declspec(thread)
@@ -160,6 +164,7 @@ struct sixel_cms_transform {
 #else
 # define SIXEL_CMS_TLS
 # define SIXEL_CMS_TLS_AVAILABLE 0
+#endif
 #endif
 
 static SIXEL_CMS_TLS sixel_cms_engine_t g_sixel_cms_engine

@@ -888,19 +888,23 @@ int sixel_response_probe(void) { return 0; }
       mv conftest.$ac_objext conftest-response.$ac_objext
       printf '%s\n' "conftest-response.$ac_objext" > conftest-response.objects
       sixel_response_save_LIBS=$LIBS
-      sixel_response_flag=@
-      # clang-cl otherwise expands @file and repacks all objects onto one
-      # linker response line, exceeding link.exe's response-line length limit.
-      # Forward the original one-object-per-line file to the linker instead.
+      # A compiler may expand its response file into an oversized argv for
+      # the linker. Prefer forwarding the list directly when it links.
+      sixel_response_flags="-Wl,@ @"
+      # clang-cl needs special forwarding to preserve linker response lines.
       AS_IF([test "x$using_clangcl" = xyes], [
         sixel_response_flag=-clang:-Wl,@
+        sixel_response_flags=$sixel_response_flag
       ])
-      LIBS="${sixel_response_flag}conftest-response.objects $LIBS"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+      for sixel_response_flag in $sixel_response_flags; do
+        LIBS="${sixel_response_flag}conftest-response.objects $sixel_response_save_LIBS"
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 extern int sixel_response_probe(void);
 ]], [[return sixel_response_probe();]])], [
-        sixel_cv_cc_object_response_flag=$sixel_response_flag
-      ])
+          sixel_cv_cc_object_response_flag=$sixel_response_flag
+          break
+        ])
+      done
       LIBS=$sixel_response_save_LIBS
       rm -f conftest-response.$ac_objext conftest-response.objects
     ])
@@ -2101,20 +2105,9 @@ if test "x$enable_threads" != "xno"; then
           [pthread_check_cflags="$pthread_check_cflags $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"])
     CFLAGS="$pthread_check_cflags"
     LIBS="$LIBS -pthread"
-    AC_LINK_IFELSE(
-      [AC_LANG_PROGRAM([[#include <pthread.h>
-static void *dummy(void *arg)
-{
-    (void)arg;
-    return NULL;
-}]],
-                      [[pthread_t thread;
-int rc;
-rc = pthread_create(&thread, NULL, dummy, NULL);
-if (rc == 0) {
-    pthread_join(thread, NULL);
-}
-return rc;]])],
+    AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#include "$srcdir/build-aux/pthread-probe.c"
+]])],
       [have_threads="yes"
        THREAD_CFLAGS="-pthread"
        THREAD_LIBS="-pthread"],
@@ -2123,10 +2116,15 @@ return rc;]])],
     LIBS="$save_LIBS"
     AC_MSG_RESULT([$have_threads])
     if test "x$have_threads" != "xyes"; then
-      AC_CHECK_LIB([pthread], [pthread_create],
-                   [have_threads="yes"
-                    THREAD_LIBS="-lpthread"],
-                   [])
+      AC_MSG_CHECKING([for pthreads with -lpthread])
+      LIBS="$save_LIBS -lpthread"
+      AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#include "$srcdir/build-aux/pthread-probe.c"
+]])],
+        [have_threads="yes"
+         THREAD_LIBS="-lpthread"])
+      LIBS="$save_LIBS"
+      AC_MSG_RESULT([$have_threads])
     fi
     if test "x$have_threads" != "xyes"; then
       if test "x$enable_threads" = "xyes"; then
@@ -2817,6 +2815,41 @@ else
         [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 fi
 
+# A compiler may accept TLS syntax even when the executable cannot access
+# its TLS segment. Use the same compiler flags as the production objects.
+AC_CACHE_CHECK([whether executable thread-local storage works],
+               [sixel_cv_working_tls], [
+  sixel_tls_saved_cflags="$CFLAGS"
+  CFLAGS="$AM_CFLAGS $CFLAGS"
+  AC_RUN_IFELSE([AC_LANG_SOURCE([[
+#include "$srcdir/build-aux/native-tls-probe.c"
+]])],
+    [sixel_cv_working_tls=yes],
+    [sixel_cv_working_tls=no],
+    [AS_CASE([$host_os], [minix*], [sixel_cv_working_tls=no],
+             [sixel_cv_working_tls=unknown])])
+  CFLAGS="$sixel_tls_saved_cflags"
+])
+AS_IF([test "x$sixel_cv_working_tls" = xno], [
+  AC_DEFINE([SIXEL_DISABLE_TLS], [1],
+            [Use fallbacks when executable thread-local storage is unusable])
+])
+
+# Preserve one contiguous distance grid where the native heap supports it.
+AC_CACHE_CHECK([whether malloc can reserve the R=256 FHEDT distance grid],
+               [sixel_cv_fhedt_heap], [
+  AC_RUN_IFELSE([AC_LANG_SOURCE([[
+#include "$srcdir/build-aux/fhedt-heap-probe.c"
+]])], [sixel_cv_fhedt_heap=yes], [sixel_cv_fhedt_heap=no], [
+    AS_CASE([$host_os], [minix*], [sixel_cv_fhedt_heap=no],
+            [sixel_cv_fhedt_heap=unknown])
+  ])
+])
+AS_IF([test "x$sixel_cv_fhedt_heap" = xno], [
+  AC_DEFINE([SIXEL_SPLIT_FHEDT_DISTANCE_GRID], [1],
+            [Split the FHEDT distance grid for limited native heaps])
+])
+
 # Check the active printf format dialect without running target code.
 AC_CACHE_CHECK([whether snprintf and fprintf accept %zu],
   [sixel_cv_printf_size_t_format], [
@@ -3018,6 +3051,19 @@ AC_CHECK_HEADERS_PARALLEL([assert.h \
                            execinfo.h \
                            windows.h \
                           ])
+
+AS_CASE([$host_cpu], [x86_64 | amd64 | i*86], [
+  AC_CACHE_CHECK([whether a function can target AVX2],
+                 [sixel_cv_x86_avx2_target], [
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include "$srcdir/build-aux/avx2-target-probe.c"
+]])], [sixel_cv_x86_avx2_target=yes], [sixel_cv_x86_avx2_target=no])
+  ])
+  AS_IF([test "x$sixel_cv_x86_avx2_target" = xyes], [
+    AC_DEFINE([HAVE_X86_AVX2_TARGET], [1],
+              [Define if functions can target AVX2 independently])
+  ])
+])
 
 AC_MSG_CHECKING([for __builtin_cpu_supports])
 AC_LINK_IFELSE([
@@ -3461,6 +3507,7 @@ case "${host_os}" in
         nanosleep \
         usleep \
         fork \
+        getpgid \
         waitpid \
         posix_spawnp \
         execvp \
@@ -3629,8 +3676,8 @@ case "${host_cpu}" in
   x86_64|amd64|i*86)
     if test "x$enable_xsave_probe" != xno && \
        test "x$ac_cv_header_immintrin_h" = xyes; then
-        AC_MSG_CHECKING([whether _xgetbv(0) builds without extra flags])
-        AC_COMPILE_IFELSE([
+        AC_MSG_CHECKING([whether _xgetbv(0) links without extra flags])
+        AC_LINK_IFELSE([
             AC_LANG_PROGRAM([[#include <immintrin.h>]],
                             [[unsigned long long xcr0;
                               xcr0 = _xgetbv(0);
@@ -4592,6 +4639,16 @@ if test x$with_libfetch != xno; then
     fi
 
     if test x$have_fetch = xyes; then
+        AS_CASE([$host_os], [emscripten*], [], [
+          sixel_saved_fetch_cflags="$CFLAGS"
+          CFLAGS="$CFLAGS $LIBFETCH_CFLAGS"
+          AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <fetch.h>
+typedef fetchIO sixel_fetch_probe_type;
+]])], [AC_DEFINE([HAVE_LIBFETCH_FETCHIO], [1],
+                 [Define to 1 if libfetch exposes the fetchIO API])])
+          CFLAGS="$sixel_saved_fetch_cflags"
+        ])
         if test x${net} = x; then
             net="libfetch"
         else
@@ -5522,30 +5579,31 @@ else
         ;;
 
     i*86)
-        if test x$ac_cv_header_emmintrin_h = xyes; then
-            AC_MSG_CHECKING([whether the compiler supports SSE2 flags and
-                             <emmintrin.h>])
-            saved_CFLAGS="$CFLAGS"
-            if test "x$using_cl" = xyes; then
-                simd_flag="-arch:SSE2"
-            else
-                simd_flag="-msse2"
-            fi
-            CFLAGS="$CFLAGS $simd_flag"
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-                                #include <emmintrin.h>
-                              ]], [[
-                                __m128i a = _mm_setzero_si128();
-                                (void)a;
-                                return 0;
-                              ]])],
-                              [have_sse2=yes],
-                              [have_sse2=no])
-            CFLAGS="$saved_CFLAGS"
-            AC_MSG_RESULT([$have_sse2])
-            if test "x$have_sse2" = xyes; then
-                AM_CFLAGS="$AM_CFLAGS $simd_flag"
-            fi
+        # Some x86 compilers reject emmintrin.h unless SSE2 is enabled.
+        AC_MSG_CHECKING([whether the compiler supports SSE2 flags and
+                         <emmintrin.h>])
+        saved_CFLAGS="$CFLAGS"
+        if test "x$using_cl" = xyes; then
+            simd_flag="-arch:SSE2"
+        else
+            simd_flag="-msse2"
+        fi
+        CFLAGS="$CFLAGS $simd_flag"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                            #include <emmintrin.h>
+                          ]], [[
+                            __m128i a = _mm_setzero_si128();
+                            (void)a;
+                            return 0;
+                          ]])],
+                          [have_sse2=yes],
+                          [have_sse2=no])
+        CFLAGS="$saved_CFLAGS"
+        AC_MSG_RESULT([$have_sse2])
+        if test "x$have_sse2" = xyes; then
+            AM_CFLAGS="$AM_CFLAGS $simd_flag"
+            AC_DEFINE([HAVE_EMMINTRIN_H], [1],
+                      [Define to 1 if you have the <emmintrin.h> header file.])
         fi
         ;;
 
@@ -6104,22 +6162,28 @@ AC_SUBST([CODESPELL])
 AC_SUBST([PYTHON_STATICCHECK])
 AC_SUBST([HAVE_TREE_SITTER_C])
 
-dnl Choose a fast POSIX shell for TAP tests and keep /bin/sh as fallback.
+dnl Choose a POSIX shell that drops the optional empty runtime prefix.
 AC_ARG_VAR([SIXEL_TEST_SHELL],
-           [Shell path used to run TAP test scripts (default: detect dash, sh, then fallback /bin/sh)])
+           [Shell path used to run TAP test scripts (default: detect a usable dash, sh, or bash)])
 AS_IF([test "x$SIXEL_TEST_SHELL" = x], [
-  dnl Use separate cache variables for each lookup to avoid keeping
-  dnl an earlier "no" result when probing the next candidate.
   AC_PATH_PROG([LS_DASH_PATH], [dash], [no])
-  AS_IF([test "x$LS_DASH_PATH" != x -a "x$LS_DASH_PATH" != xno], [
-    SIXEL_TEST_SHELL="$LS_DASH_PATH"
-  ], [
-    AC_PATH_PROG([LS_SH_PATH], [sh], [no])
-    AS_IF([test "x$LS_SH_PATH" != x -a "x$LS_SH_PATH" != xno], [
-      SIXEL_TEST_SHELL="$LS_SH_PATH"
-    ], [
-      SIXEL_TEST_SHELL="/bin/sh"
+  AC_PATH_PROG([LS_SH_PATH], [sh], [no])
+  AC_MSG_CHECKING([for a shell that drops an unset TAP runtime prefix])
+  for sixel_test_shell in "$LS_DASH_PATH" "$LS_SH_PATH" "$BASH" /bin/sh; do
+    AS_IF([test "x$sixel_test_shell" != xno && test -n "$sixel_test_shell" &&
+           "$sixel_test_shell" -c 'unset sixel_test_empty
+             set -- ${sixel_test_empty-}
+             test "$[]#" -eq 0' >/dev/null 2>&1], [
+      SIXEL_TEST_SHELL=$sixel_test_shell
+      break
     ])
+  done
+  AC_MSG_RESULT([${SIXEL_TEST_SHELL:-none}])
+  AS_IF([test -z "$SIXEL_TEST_SHELL"], [
+    AS_IF([test "x$enable_tests" = xyes], [
+      AC_MSG_ERROR([a POSIX-compatible shell is required to run TAP tests])
+    ])
+    SIXEL_TEST_SHELL=/bin/sh
   ])
 ], [
   AC_MSG_NOTICE([SIXEL_TEST_SHELL preset to ${SIXEL_TEST_SHELL}])

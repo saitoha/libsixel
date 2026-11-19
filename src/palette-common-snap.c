@@ -62,6 +62,9 @@ static SIXELSTATUS
 sixel_palette_snap_float_entries(float *entries, unsigned int colors,
                                   int pixelformat);
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_SNAP_TLS
+#else
 #if defined(_MSC_VER)
 # define SIXEL_SNAP_TLS __declspec(thread)
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
@@ -71,6 +74,7 @@ sixel_palette_snap_float_entries(float *entries, unsigned int colors,
 # define SIXEL_SNAP_TLS __thread
 #else
 # define SIXEL_SNAP_TLS
+#endif
 #endif
 
 static SIXEL_SNAP_TLS sixel_palette_snap_options_t g_snap_options;

@@ -13,12 +13,14 @@
 # Policy: docs/misc/platforms/posix-runtimes.md
 # Policy: docs/misc/platforms/haiku.md
 # Policy: docs/misc/platforms/solaris.md
+# Policy: docs/misc/platforms/minix.md
 # Coverage: PL-01 PL-02 PL-03 PL-04 PL-05 OV-06 WIN-01 WIN-02 MSVC-01
 # Coverage: MSVC-02
 # Coverage: MW-01 MW-02 CYG-01 CYG-02 EM-01 EM-02 COSMO-01
 # Coverage: HURD-01 HURD-02
 # Coverage: MAC-01 MAC-02 POSIX-01 POSIX-02 HAIKU-01 HAIKU-02
 # Coverage: SOL-01 SOL-02 SOL-03 SOL-04
+# Coverage: MINIX-01 MINIX-02 MINIX-03
 
 # Named tests pin platform compatibility seams (Haiku skips, Solaris binary
 # probes, and builtin round trips), not a behavioral coverage inventory.
@@ -364,6 +366,19 @@ require_fixed '# define _BSD_SOURCE' src/threading.c
 require_fixed '# define _NETBSD_SOURCE' src/threading.c
 require_fixed 'fetchIO *fetch_stream = NULL;' src/chunk.c
 require_fixed 'fetched = fetchIO_read(fetch_stream, bucket, sizeof(bucket));' src/chunk.c
+require_fixed "#include \"\$srcdir/build-aux/native-tls-probe.c\"" configure.ac
+require_fixed "cc.run(files('build-aux/native-tls-probe.c')[0]" meson.build
+require_fixed 'probe_value = 5;' build-aux/native-tls-probe.c
+require_fixed "#include \"\$srcdir/build-aux/avx2-target-probe.c\"" configure.ac
+require_fixed "cc.compiles(files('build-aux/avx2-target-probe.c')[0]" meson.build
+require_fixed '#if defined(HAVE_X86_AVX2_TARGET)' src/refresh-spatial.c
+require_fixed "#include \"\$srcdir/build-aux/fhedt-heap-probe.c\"" configure.ac
+require_fixed "cc.run(files('build-aux/fhedt-heap-probe.c')[0]" meson.build
+require_fixed '#if defined(SIXEL_SPLIT_FHEDT_DISTANCE_GRID)' \
+    src/lookup-fhedt-distances.h
+require_fixed "#include \"\$srcdir/build-aux/pthread-probe.c\"" configure.ac
+require_fixed "files('build-aux/pthread-probe.c')[0], dependencies: threads_dep" meson.build
+require_fixed '#elif SIXEL_ENABLE_THREADS' src/threading.h
 require_fixed 'HAVE_POSIX_SPAWNP && !defined(__FreeBSD__) && !defined(__DragonFly__)' src/loader-gnome-thumbnailer.c
 require_fixed '#if defined(__OpenBSD__)' src/threading.c
 require_fixed '#if defined(__FreeBSD__) || defined(__DragonFly__)' \

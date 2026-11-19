@@ -113,6 +113,7 @@ docs/misc/platforms/gnu-hurd.md	reference	contributor	""
 docs/misc/platforms/haiku.md	reference	contributor	""
 docs/misc/platforms/macos.md	reference	contributor	""
 docs/misc/platforms/mingw.md	reference	contributor	""
+docs/misc/platforms/minix.md	reference	contributor	""
 docs/misc/platforms/msvc.md	reference	contributor	""
 docs/misc/platforms/openvms.md	reference	contributor	compatibility contracts + historical bring-up and engineering explanation
 docs/misc/platforms/posix-runtimes.md	reference	contributor	""

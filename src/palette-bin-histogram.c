@@ -37,6 +37,9 @@
 #include "loader-common.h"
 #include "palette-common-snap.h"
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_RANGE_TLS
+#else
 #if defined(_MSC_VER)
 # define SIXEL_RANGE_TLS __declspec(thread)
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
@@ -47,6 +50,7 @@
 #else
 /* The encoder's quantizer override lock serializes non-TLS workers. */
 # define SIXEL_RANGE_TLS
+#endif
 #endif
 
 static SIXEL_RANGE_TLS int range_strength_override;

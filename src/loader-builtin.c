@@ -105,12 +105,19 @@ static SIXELSTATUS
 sixel_builtin_load_with_builtin_impl(
     sixel_builtin_load_with_builtin_args_t const *args);
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_BUILTIN_NO_TLS_COMPILER 1
+#else
 #if defined(__PCC__) || defined(__TINYC__)
 # define SIXEL_BUILTIN_NO_TLS_COMPILER 1
 #else
 # define SIXEL_BUILTIN_NO_TLS_COMPILER 0
 #endif
+#endif
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_STBI_TLS
+#else
 #if defined(_MSC_VER)
 # define SIXEL_STBI_TLS __declspec(thread)
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
@@ -121,6 +128,7 @@ sixel_builtin_load_with_builtin_impl(
 # define SIXEL_STBI_TLS __thread
 #else
 # define SIXEL_STBI_TLS
+#endif
 #endif
 
 static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;

@@ -74,7 +74,7 @@ AM_TESTS_ENVIRONMENT += CKSUM='$(CKSUM)'; export CKSUM;
 AM_TESTS_ENVIRONMENT += AWK='$(AWK)'; export AWK;
 AM_TESTS_ENVIRONMENT += SED='$(SED)'; export SED;
 AM_TESTS_ENVIRONMENT += SIXEL_TEST_PKG_CONFIG='$(PKG_CONFIG)'; export SIXEL_TEST_PKG_CONFIG;
-AM_TESTS_ENVIRONMENT += SIXEL_TEST_CONFIG_SHELL='$(SHELL)'; export SIXEL_TEST_CONFIG_SHELL;
+AM_TESTS_ENVIRONMENT += SIXEL_TEST_CONFIG_SHELL='$(SIXEL_TEST_SHELL)'; export SIXEL_TEST_CONFIG_SHELL;
 # The static suite and nested helpers need the same configured utility.
 export CKSUM
 # Native Windows programs need drive paths inside compound icc:... options.

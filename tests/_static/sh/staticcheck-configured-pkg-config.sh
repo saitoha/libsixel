@@ -13,7 +13,7 @@ function valid(meson, makefile, tap, install) {
         index(meson, "test_pkg_config_path = test_pkg_config.full_path()") &&
         index(meson, "[\047SIXEL_TEST_PKG_CONFIG\047, test_pkg_config_path]") &&
         index(makefile, "SIXEL_TEST_PKG_CONFIG=\047$(PKG_CONFIG)\047; export SIXEL_TEST_PKG_CONFIG;") &&
-        index(makefile, "SIXEL_TEST_CONFIG_SHELL=\047$(SHELL)\047; export SIXEL_TEST_CONFIG_SHELL;") &&
+        index(makefile, "SIXEL_TEST_CONFIG_SHELL=\047$(SIXEL_TEST_SHELL)\047; export SIXEL_TEST_CONFIG_SHELL;") &&
         index(meson, "env: {\047SIXEL_TEST_PKG_CONFIG\047: test_pkg_config_path,") &&
         index(meson, "\047SIXEL_TEST_CONFIG_SHELL\047: sh.full_path()}") &&
         index(install, "pkgconfig = os.environ.get(\047SIXEL_TEST_PKG_CONFIG\047)") &&

@@ -36,7 +36,7 @@
 #ifndef SIXEL_FHEDT_TLS
 /* Select a thread-local qualifier only when the active language standard */
 /* promises support; this avoids pedantic warnings under strict C99. */
-# if defined(SIXEL_ENABLE_THREADS)
+# if defined(SIXEL_ENABLE_THREADS) && !defined(SIXEL_DISABLE_TLS)
 #  if defined(_MSC_VER)
 #   define SIXEL_FHEDT_TLS __declspec(thread)
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1

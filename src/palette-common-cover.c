@@ -67,6 +67,9 @@ sixel_palette_cover_anchors[SIXEL_PALETTE_COVER_ANCHOR_MAX][3] = {
 static unsigned int
 sixel_palette_cover_anchor_count(int policy);
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_COVER_TLS
+#else
 #if defined(_MSC_VER)
 # define SIXEL_COVER_TLS __declspec(thread)
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
@@ -76,6 +79,7 @@ sixel_palette_cover_anchor_count(int policy);
 # define SIXEL_COVER_TLS __thread
 #else
 # define SIXEL_COVER_TLS
+#endif
 #endif
 
 /* Encoder overrides must remain local to the concurrent encode operation. */

@@ -325,6 +325,7 @@ amalgamation_headers = files(
   '../src/gpu-statistics.h',
   '../src/progressive-gpu.h',
   '../src/lookup-fhedt-8bit.h',
+  '../src/lookup-fhedt-distances.h',
   '../src/lookup-fhedt-float32.h',
   '../src/lookup-vptree-8bit.h',
   '../src/lookup-delaunay-8bit.h',

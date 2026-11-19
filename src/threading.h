@@ -26,6 +26,11 @@
 #ifndef LIBSIXEL_THREADING_H
 #define LIBSIXEL_THREADING_H
 
+/* Keep the backend layout consistent even when included before other headers. */
+#if defined(HAVE_CONFIG_H) && !defined(SIXEL_ENABLE_THREADS)
+# include "config.h"
+#endif
+
 #include <sixel.h>
 #include "options.h"
 
@@ -62,7 +67,7 @@ struct sixel_thread {
     int result;            /* callback result */
     int started;           /* thread start flag */
 };
-#else
+#elif SIXEL_ENABLE_THREADS
 #include <pthread.h>
 
 typedef pthread_t sixel_thread_identity_t;
@@ -80,6 +85,21 @@ struct sixel_thread {
     sixel_thread_fn fn;
     void *arg;
     int result;
+    int started;
+};
+#else
+/* Serial builds provide the same internal API without pthread headers. */
+typedef int sixel_thread_identity_t;
+
+struct sixel_mutex {
+    int unused;
+};
+
+struct sixel_cond {
+    int unused;
+};
+
+struct sixel_thread {
     int started;
 };
 #endif

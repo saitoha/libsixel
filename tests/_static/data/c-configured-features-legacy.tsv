@@ -93,12 +93,10 @@ fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c	2	#ifdefined(__clang__)
 fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c	1	#ifndef__AFL_LOOP
 fuzz/fuzz-loader-builtin-struct-sixel-stream-libfuzzer.c	1	#ifdefined(__GNUC__)||defined(__clang__)
 include/sixel.h.in	1	#ifdef_WIN32
-src/chunk.c	1	#if!defined(__NetBSD__)
 src/chunk.c	1	#ifHAVE_SYS_SELECT_H&&!defined(__EMSCRIPTEN__)
 src/chunk.c	4	#ifHAVE_UNISTD_H&&HAVE_FCNTL_H&&HAVE_SYS_SELECT_H&&!defined(_WIN32)&&!defined(__EMSCRIPTEN__)
 src/chunk.c	2	#ifdefined(__EMSCRIPTEN__)
 src/chunk.c	2	#ifdefined(__GNUC__)&&!defined(__PCC__)
-src/chunk.c	4	#ifdefined(__NetBSD__)
 src/classid-factory.h	1	#ifdef__GNUC__
 src/classid-service.h	1	#ifdef__GNUC__
 src/clipboard.c	1	#ifdefined(HAVE_CLIPBOARD_LINUX)&&!defined(_POSIX_C_SOURCE)

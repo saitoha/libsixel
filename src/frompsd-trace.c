@@ -38,6 +38,10 @@
 #include "loader-common.h"
 #include "options.h"
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_PSD_TRACE_TLS
+# define SIXEL_PSD_TRACE_TLS_AVAILABLE 0
+#else
 #if defined(_MSC_VER)
 # define SIXEL_PSD_TRACE_TLS __declspec(thread)
 # define SIXEL_PSD_TRACE_TLS_AVAILABLE 1
@@ -51,6 +55,7 @@
 #else
 # define SIXEL_PSD_TRACE_TLS
 # define SIXEL_PSD_TRACE_TLS_AVAILABLE 0
+#endif
 #endif
 
 #define SIXEL_PSD_TRACE_SEEN_MAX 256u
