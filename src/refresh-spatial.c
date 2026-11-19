@@ -17,6 +17,17 @@
 #else
 #define SIXEL_REFRESH_SPATIAL_NEON 0
 #endif
+/* GCC and Clang compile the AVX2 passes for their own functions only; the
+ * CPU check at run time decides whether they are called. */
+#if defined(HAVE_IMMINTRIN_H) && \
+    (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__) && \
+    (defined(__x86_64__) || defined(__i386__))
+#define SIXEL_REFRESH_SPATIAL_AVX2 1
+#define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __attribute__((target("avx2")))
+#include <immintrin.h>
+#else
+#define SIXEL_REFRESH_SPATIAL_AVX2 0
+#endif
 
 struct sixel_refresh_spatial {
     sixel_allocator_t *allocator;
@@ -95,6 +106,157 @@ sixel_refresh_spatial_sobel_neon(unsigned char const *above,
 }
 #endif
 
+#if SIXEL_REFRESH_SPATIAL_AVX2
+/* Y' of 32 pixels at a time, as the scalar loop: the weighted sum plus 128
+ * is at most 65408, so it stays in 16-bit lanes. Each 128-bit lane holds 16
+ * pixels; shuffles split their 48 bytes into channel planes, and the final
+ * pack restores pixel order lane by lane. Returns the pixels done. */
+static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 size_t
+sixel_refresh_spatial_luma_avx2(unsigned char const *rgb,
+    unsigned char *luma, size_t n)
+{
+    signed char shuffle[3][3][16];
+    __m256i mask[3][3];
+    __m256i weight[3];
+    __m256i zero, round, v[3], plane[3], low, high;
+    size_t p;
+    int c, k, i;
+
+    /* Byte i of block k goes to lane (3k*16 + i - c) / 3 of plane c. */
+    memset(shuffle, 0x80, sizeof(shuffle));
+    for (c = 0; c < 3; ++c) {
+        for (k = 0; k < 3; ++k) {
+            for (i = 0; i < 16; ++i) {
+                if ((k * 16 + i) % 3 == c) {
+                    shuffle[c][k][(k * 16 + i) / 3] = (signed char)i;
+                }
+            }
+            mask[c][k] = _mm256_broadcastsi128_si256(
+                _mm_loadu_si128((__m128i const *)shuffle[c][k]));
+        }
+    }
+    weight[0] = _mm256_set1_epi16(54);
+    weight[1] = _mm256_set1_epi16(183);
+    weight[2] = _mm256_set1_epi16(19);
+    round = _mm256_set1_epi16(128);
+    zero = _mm256_setzero_si256();
+    for (p = 0; p + 32 <= n; p += 32) {
+        for (k = 0; k < 3; ++k) {
+            v[k] = _mm256_inserti128_si256(_mm256_castsi128_si256(
+                _mm_loadu_si128((__m128i const *)(rgb + p * 3 + k * 16))),
+                _mm_loadu_si128((__m128i const *)(rgb + p * 3 + 48
+                                                  + k * 16)), 1);
+        }
+        for (c = 0; c < 3; ++c) {
+            plane[c] = _mm256_or_si256(_mm256_or_si256(
+                _mm256_shuffle_epi8(v[0], mask[c][0]),
+                _mm256_shuffle_epi8(v[1], mask[c][1])),
+                _mm256_shuffle_epi8(v[2], mask[c][2]));
+        }
+        low = round;
+        high = round;
+        for (c = 0; c < 3; ++c) {
+            low = _mm256_add_epi16(low, _mm256_mullo_epi16(
+                _mm256_unpacklo_epi8(plane[c], zero), weight[c]));
+            high = _mm256_add_epi16(high, _mm256_mullo_epi16(
+                _mm256_unpackhi_epi8(plane[c], zero), weight[c]));
+        }
+        _mm256_storeu_si256((__m256i *)(luma + p), _mm256_packus_epi16(
+            _mm256_srli_epi16(low, 8), _mm256_srli_epi16(high, 8)));
+    }
+    return p;
+}
+
+/* Sixteen interior outputs of the scalar operator in 16-bit lanes; both
+ * weighted sums of a derivative are nonnegative, so |dx| is their larger
+ * minus their smaller, and the total is at most 2040. */
+static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __m256i
+sixel_refresh_spatial_sobel16_avx2(unsigned char const *above,
+    unsigned char const *row, unsigned char const *below)
+{
+#define SIXEL_REFRESH_SPATIAL_LOAD16(p) \
+    _mm256_cvtepu8_epi16(_mm_loadu_si128((__m128i const *)(p)))
+    __m256i am, a, ap, rm, rp, bm, b, bp;
+    __m256i left, right, top, bottom, sum;
+
+    am = SIXEL_REFRESH_SPATIAL_LOAD16(above - 1);
+    a = SIXEL_REFRESH_SPATIAL_LOAD16(above);
+    ap = SIXEL_REFRESH_SPATIAL_LOAD16(above + 1);
+    rm = SIXEL_REFRESH_SPATIAL_LOAD16(row - 1);
+    rp = SIXEL_REFRESH_SPATIAL_LOAD16(row + 1);
+    bm = SIXEL_REFRESH_SPATIAL_LOAD16(below - 1);
+    b = SIXEL_REFRESH_SPATIAL_LOAD16(below);
+    bp = SIXEL_REFRESH_SPATIAL_LOAD16(below + 1);
+#undef SIXEL_REFRESH_SPATIAL_LOAD16
+    left = _mm256_add_epi16(_mm256_add_epi16(am, bm),
+        _mm256_slli_epi16(rm, 1));
+    right = _mm256_add_epi16(_mm256_add_epi16(ap, bp),
+        _mm256_slli_epi16(rp, 1));
+    top = _mm256_add_epi16(_mm256_add_epi16(am, ap),
+        _mm256_slli_epi16(a, 1));
+    bottom = _mm256_add_epi16(_mm256_add_epi16(bm, bp),
+        _mm256_slli_epi16(b, 1));
+    sum = _mm256_add_epi16(
+        _mm256_sub_epi16(_mm256_max_epu16(left, right),
+                         _mm256_min_epu16(left, right)),
+        _mm256_sub_epi16(_mm256_max_epu16(top, bottom),
+                         _mm256_min_epu16(top, bottom)));
+    /* (sum + 4) / 8 never exceeds 255. */
+    return _mm256_srli_epi16(_mm256_add_epi16(sum, _mm256_set1_epi16(4)), 3);
+}
+
+static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 int
+sixel_refresh_spatial_sobel_avx2(unsigned char const *above,
+    unsigned char const *row, unsigned char const *below,
+    unsigned char *out, int x, int end)
+{
+    __m256i low, high;
+
+    for (; x + 32 <= end; x += 32) {
+        low = sixel_refresh_spatial_sobel16_avx2(above + x, row + x,
+            below + x);
+        high = sixel_refresh_spatial_sobel16_avx2(above + x + 16,
+            row + x + 16, below + x + 16);
+        /* The pack interleaves the two halves by lane; 0xd8 undoes it. */
+        _mm256_storeu_si256((__m256i *)(out + x), _mm256_permute4x64_epi64(
+            _mm256_packus_epi16(low, high), 0xd8));
+    }
+    return x;
+}
+
+/* Full 4x4 tiles of one tile row, eight at a time: (sum + 8) / 16 as the
+ * scalar loop computes for a count of 16. Returns the tiles done. */
+static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 int
+sixel_refresh_spatial_coarse_avx2(unsigned char const *fine, int w,
+    unsigned char *out, int tiles)
+{
+    __m256i ones8, ones16, round, pairs, sums;
+    __m128i packed;
+    int x, j;
+
+    ones8 = _mm256_set1_epi8(1);
+    ones16 = _mm256_set1_epi16(1);
+    round = _mm256_set1_epi32(8);
+    for (x = 0; x + 8 <= tiles; x += 8) {
+        pairs = _mm256_setzero_si256();
+        for (j = 0; j < 4; ++j) {
+            pairs = _mm256_add_epi16(pairs, _mm256_maddubs_epi16(
+                _mm256_loadu_si256((__m256i const *)(fine
+                    + (size_t)j * w + (size_t)x * 4)), ones8));
+        }
+        sums = _mm256_srli_epi32(_mm256_add_epi32(
+            _mm256_madd_epi16(pairs, ones16), round), 4);
+        /* Lane 0 holds tiles 0-3, lane 1 tiles 4-7. */
+        sums = _mm256_packus_epi16(_mm256_packus_epi32(sums, sums),
+            _mm256_setzero_si256());
+        packed = _mm_unpacklo_epi32(_mm256_castsi256_si128(sums),
+            _mm256_extracti128_si256(sums, 1));
+        _mm_storel_epi64((__m128i *)(out + x), packed);
+    }
+    return x;
+}
+#endif
+
 /* Average magnitudes, not signed derivatives: opposite edges must not
  * cancel. Y' uses integer Rec.709 weights and is not physical luminance.
  * The separable 9-tap box at quarter resolution covers about 36 pixels. */
@@ -112,6 +274,11 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
 
     neon = sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON;
 #endif
+#if SIXEL_REFRESH_SPATIAL_AVX2
+    int avx2;
+
+    avx2 = sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_AVX2;
+#endif
 
     n = (size_t)w * h;
     sw = (w + 3) / 4;
@@ -120,7 +287,12 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
     fine = luma + n;
     coarse = fine + n;
     blur = coarse + (size_t)sw * sh;
-    for (p = 0; p < n; ++p)
+    p = 0;
+#if SIXEL_REFRESH_SPATIAL_AVX2
+    if (avx2)
+        p = sixel_refresh_spatial_luma_avx2(rgb, luma, n);
+#endif
+    for (; p < n; ++p)
         luma[p] = (unsigned char)((54U * rgb[p * 3] +
             183U * rgb[p * 3 + 1] + 19U * rgb[p * 3 + 2] + 128U) >> 8);
     /* Edge columns clamp their neighbours; the interior needs no clamp,
@@ -140,6 +312,11 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
             x = sixel_refresh_spatial_sobel_neon(above, row, below, out, x,
                 w - 1);
 #endif
+#if SIXEL_REFRESH_SPATIAL_AVX2
+        if (avx2)
+            x = sixel_refresh_spatial_sobel_avx2(above, row, below, out, x,
+                w - 1);
+#endif
         for (; x < w - 1; ++x)
             out[x] = sixel_refresh_spatial_sobel(above, row, below,
                 x - 1, x, x + 1);
@@ -149,7 +326,14 @@ sixel_refresh_spatial_build(unsigned char const *rgb, int w, int h,
     }
     /* The origin of every tile is inside the image, even at an edge. */
     for (y = 0; y < sh; ++y) {
-        for (x = 0; x < sw; ++x) {
+        x = 0;
+#if SIXEL_REFRESH_SPATIAL_AVX2
+        /* Tiles whose four rows and columns are all inside the image. */
+        if (avx2 && y * 4 + 3 < h)
+            x = sixel_refresh_spatial_coarse_avx2(fine + (size_t)y * 4 * w,
+                w, coarse + (size_t)y * sw, w / 4);
+#endif
+        for (; x < sw; ++x) {
             sum = 0;
             count = 0;
             j = 0;
