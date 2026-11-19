@@ -2965,17 +2965,21 @@ sixel_put_node(
         mx = np->mx;
         i = *x;
 #if SIXEL_ENCODE_NEON_MASK
-        /* Most nodes are a few cells. Runs of at most three cells spell as
-         * their own symbols, so a short node with no four equal neighbors
-         * is row + '?' and takes one store. Lane j is set when cells j..j+3
-         * match; lanes reaching past mx are ignored. Maps keep
-         * SIXEL_BODY_MAP_TAIL readable bytes past every span, and the
-         * reservation above covers the 16-byte store. */
-        if (mx - i <= 16) {
+        /* Runs of at most three cells spell as their own symbols, so cells
+         * outside runs of four or more copy as row + '?', 16 at a time.
+         * Lane j is set when cells j..j+3 match; lanes reaching past mx are
+         * ignored. The first set lane starts a run (its left neighbor would
+         * set the lane before it), and a stretch cut at a chunk end has no
+         * run of four, so the copies split no run. Maps keep
+         * SIXEL_BODY_MAP_TAIL readable bytes past every span, and output
+         * never outgrows the cells consumed, so the reservation above
+         * covers every 16-byte store. */
+        while (i < mx) {
             uint8x16_t cells;
             uint8x16_t same;
             uint64_t lanes;
             int windows;
+            int skip;
 
             cells = vld1q_u8(row + i);
             same = vandq_u8(vandq_u8(
@@ -2985,14 +2989,41 @@ sixel_put_node(
             lanes = vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(
                 vreinterpretq_u16_u8(same), 4)), 0);
             windows = mx - i - 3;
-            if (windows <= 0 ||
-                    (lanes & (~UINT64_C(0) >> (64 - 4 * windows))) == 0) {
-                vst1q_u8(p, vaddq_u8(cells, vdupq_n_u8('?')));
-                p += mx - i;
-                i = mx;
+            if (windows < 16) {
+                lanes = windows > 0
+                    ? lanes & (~UINT64_C(0) >> (64 - 4 * windows)) : 0;
             }
+            vst1q_u8(p, vaddq_u8(cells, vdupq_n_u8('?')));
+            if (lanes == 0) {
+                skip = mx - i < 16 ? mx - i : 16;
+                p += skip;
+                i += skip;
+                continue;
+            }
+            skip = sixel_encode_trailing_zeros(lanes) / 4;
+            p += skip;
+            i += skip;
+            /* Cells i..i+3 match; find where the run ends. */
+            value = row[i];
+            end = i + 4;
+            while (end < mx) {
+                lanes = vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(
+                    vreinterpretq_u16_u8(vmvnq_u8(vceqq_u8(
+                        vld1q_u8(row + end), vdupq_n_u8(value)))), 4)), 0);
+                if (lanes != 0) {
+                    end += sixel_encode_trailing_zeros(lanes) / 4;
+                    break;
+                }
+                end += 16;
+            }
+            if (end > mx) {
+                end = mx;
+            }
+            p = sixel_put_run_reserved(p, '?' + value, end - i,
+                output->has_gri_arg_limit);
+            i = end;
         }
-#endif
+#else
         for (; i < mx; i = end) {
             value = row[i];
             /* These private maps contain only the six classified row bits,
@@ -3002,6 +3033,7 @@ sixel_put_node(
             p = sixel_put_run_reserved(p, '?' + value, end - i,
                 output->has_gri_arg_limit);
         }
+#endif
         output->pos = (int)(p - output->buffer);
         if (output->pos == SIXEL_OUTPUT_PACKET_SIZE) {
             sixel_advance(output, 0);
