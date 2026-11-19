@@ -934,6 +934,9 @@ test_delta_hls_cache(int mode)
     unsigned int count;
     int ok;
 
+    /* A failed lookup must clear both outputs, even if they held a view. */
+    codes = expected;
+    count = 3;
     dither = second = NULL;
     ok = 0;
     if (!hd_palette(&dither) ||
@@ -963,6 +966,8 @@ test_delta_hls_cache(int mode)
                 dither->palette, &request))) {
             goto end;
         }
+        codes = expected;
+        count = 3;
         if (SIXEL_SUCCEEDED(sixel_palette_prepare_hls(dither->palette)) ||
                 SIXEL_SUCCEEDED(sixel_palette_get_hls_rgb101(dither->palette,
                     &codes, &count)) || codes != NULL || count != 0 ||

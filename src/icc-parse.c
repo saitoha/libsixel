@@ -27,6 +27,7 @@
 #endif
 
 #include "icc-parse.h"
+#include "loader-builtin.h"
 #include "loader-common.h"
 
 #if HAVE_MATH_H
@@ -44,13 +45,6 @@
 #ifndef SIZE_MAX
 #define SIZE_MAX ((size_t)-1)
 #endif
-
-char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
-                                                   int len,
-                                                   int initial_size,
-                                                   int *outlen,
-                                                   int parse_header);
-void stbi_image_free(void *retval_from_stbi_load);
 
 #define SIXEL_ICC_PARAMETRIC_TABLE_SIZE 4096u
 #define SIXEL_ICC_MAX_TAGS 256u
