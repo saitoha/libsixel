@@ -562,6 +562,7 @@ typedef struct sixel_color_file_options {
     char const *path;
     int path_override;
     int gamut;
+    int bpc;
 } sixel_color_file_options_t;
 
 typedef struct sixel_clipboard_policy_options {

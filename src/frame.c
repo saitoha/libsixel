@@ -2210,6 +2210,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     unsigned char *src;
     unsigned char *p;
     unsigned char *raw_pixels;
+    unsigned char blue;
     unsigned char const *source_pixels;
     float *float_pixels;
 
@@ -2289,6 +2290,20 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         break;
     case SIXEL_PIXELFORMAT_RGB888:
         break;
+    case SIXEL_PIXELFORMAT_BGR888:
+        /* encode_bytes already copied these triplets. Reorder owned
+         * storage in place and keep the transfer function unchanged. */
+        if (frame->owns_pixels) {
+            for (p = raw_pixels; p != raw_pixels + pixel_count * 3u; p += 3) {
+                blue = p[0];
+                p[0] = p[2];
+                p[2] = blue;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        }
+        /* Borrowed storage uses the out-of-place normalizer below. */
+        /* FALLTHROUGH */
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:

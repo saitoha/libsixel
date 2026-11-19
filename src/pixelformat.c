@@ -1320,6 +1320,64 @@ end:
     return status;
 }
 
+/* Expand a packed row directly into G8. Each valid code times scale is
+ * an exact byte value. Stop at width so row padding never becomes a pixel.
+ */
+static inline void
+expand_gray8(unsigned char *restrict dst, unsigned char const *restrict src,
+             int width, int height, int bits)
+{
+    int const group = 8 / bits;
+    unsigned int const mask = (1U << bits) - 1U;
+    unsigned int const scale = 255U / mask;
+    unsigned int byte;
+    int x, y, i;
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x <= width - group; x += group) {
+            byte = *src++;
+            if (bits == 2) {
+                /* Four explicit lanes let GCC vectorize interleaved stores
+                 * across input bytes as well as unroll this single byte. */
+                dst[0] = (unsigned char)((byte >> 6) * scale);
+                dst[1] = (unsigned char)(((byte >> 4) & 3U) * scale);
+                dst[2] = (unsigned char)(((byte >> 2) & 3U) * scale);
+                dst[3] = (unsigned char)((byte & 3U) * scale);
+            } else {
+                for (i = 0; i < group; ++i) {
+                    dst[i] = (unsigned char)(
+                        ((byte >> (8 - (i + 1) * bits)) & mask) * scale);
+                }
+            }
+            dst += group;
+        }
+        if (x < width) {
+            byte = *src++;
+            for (i = 0; x + i < width; ++i) {
+                *dst++ = (unsigned char)(
+                    ((byte >> (8 - (i + 1) * bits)) & mask) * scale);
+            }
+        }
+    }
+}
+
+void
+sixel_pixelformat_expand_gray8(unsigned char *dst, unsigned char const *src,
+                               int width, int height, int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_G1:
+        expand_gray8(dst, src, width, height, 1);
+        break;
+    case SIXEL_PIXELFORMAT_G2:
+        expand_gray8(dst, src, width, height, 2);
+        break;
+    case SIXEL_PIXELFORMAT_G4:
+        expand_gray8(dst, src, width, height, 4);
+        break;
+    }
+}
+
 
 SIXELAPI SIXELSTATUS
 sixel_helper_normalize_pixelformat(

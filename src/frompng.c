@@ -124,6 +124,33 @@ sixel_frompng_parse_ihdr(unsigned char const *buffer,
     return 1;
 }
 
+int
+sixel_frompng_supports_output_bpc(unsigned char const *buffer, size_t size)
+{
+    unsigned char depth;
+    unsigned char type;
+    size_t offset;
+    size_t length;
+
+    if (!sixel_frompng_parse_ihdr(buffer, size, &depth, &type) ||
+        (depth != 8u && depth != 16u) || (type != 2u && type != 6u)) {
+        return 0;
+    }
+    /* A valid APNG declares acTL before IDAT. Check the container before
+     * a decoder can reduce an animation to a single delivered frame. */
+    for (offset = 33u; size - offset >= 12u; offset += length + 12u) {
+        length = sixel_frompng_read_be32(buffer + offset);
+        if (length > size - offset - 12u ||
+            memcmp(buffer + offset + 4u, "acTL", 4u) == 0) {
+            return 0;
+        }
+        if (memcmp(buffer + offset + 4u, "IDAT", 4u) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 char const *
 sixel_frompng_cicp_name(unsigned char const *buffer, size_t size)
 {
@@ -1282,6 +1309,7 @@ sixel_frompng_build_chrm_to_srgb_matrix(uint32_t const chrm_xy[8],
 typedef struct {
     sixel_cms_profile_t *profile;
     int required_profile;
+    int embedded_icc;
     char const *hdr_source;
     int transfer_mode;
     double file_gamma;
@@ -1339,6 +1367,7 @@ sixel_frompng_select_source(unsigned char const *buffer, size_t size,
         if (flag_iccp && sixel_frompng_extract_icc(buffer, size,
                                                     &icc, &icc_size)) {
             source->profile = sixel_cms_open_profile_from_mem(icc, icc_size);
+            source->embedded_icc = source->profile != NULL;
         } else if (!flag_iccp && !flag_srgb && flag_gama) {
             (void)sixel_frompng_build_profile_from_chunks(buffer, size,
                                                           &source->profile,
@@ -1500,10 +1529,12 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
     size_t i;
     int c;
     double alpha;
+    double const *output_black;
 
     if (pchunk == NULL || allocator == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    output_black = loader_cms_output_black();
     buffer = sixel_chunk_get_buffer(pchunk);
     size = sixel_chunk_get_size(pchunk);
     if (size > INT_MAX) {
@@ -1558,6 +1589,12 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;
     }
+    if (output_black != NULL && !source.embedded_icc) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires a selected embedded PNG ICC.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
     /* Alpha without a composition background needs only a zero mask.
      * Keep RGB bytes until a real transfer/profile transform is required. */
     linear = composition != NULL || (has_alpha && has_background) ||
@@ -1578,19 +1615,29 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
                 : (float)((double)background8[c] / 255.0);
         }
         if (source.profile != NULL) {
-            converted = sixel_cms_convert_profile_to_linearrgb(
-                (unsigned char *)pixels, frame->width, frame->height,
-                SIXEL_PIXELFORMAT_RGBFLOAT32, source.profile);
-            if (from_file && (has_alpha || composition != NULL) &&
-                has_background) {
+            converted = output_black != NULL
+                ? sixel_cms_rgb_output_bpc(pixels, frame->width, frame->height,
+                                            source.profile, *output_black)
+                : sixel_cms_convert_profile_to_linearrgb(
+                    (unsigned char *)pixels, frame->width, frame->height,
+                    SIXEL_PIXELFORMAT_RGBFLOAT32, source.profile);
+            if ((converted || output_black == NULL) && from_file &&
+                (has_alpha || composition != NULL) && has_background) {
                 /* Both applications use the same selected source profile.
                  * Neither result is published until both have succeeded. */
-                background_converted = sixel_cms_convert_profile_to_linearrgb(
-                    (unsigned char *)background, 1, 1,
-                    SIXEL_PIXELFORMAT_RGBFLOAT32, source.profile);
+                background_converted = output_black != NULL
+                    ? sixel_cms_rgb_output_bpc(background, 1, 1,
+                                                source.profile, *output_black)
+                    : sixel_cms_convert_profile_to_linearrgb(
+                        (unsigned char *)background, 1, 1,
+                        SIXEL_PIXELFORMAT_RGBFLOAT32, source.profile);
             }
             converted = converted && background_converted;
             if (!converted) {
+                if (output_black != NULL) {
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto cleanup;
+                }
                 if (source.required_profile) {
                     sixel_helper_set_additional_message(
                         "PNG: selected cICP transform failed");
@@ -1743,7 +1790,7 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
         }
         alpha_values = NULL;
     }
-    if (composition == NULL &&
+    if (composition == NULL && output_black == NULL &&
         (converted || source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA)) {
         target = loader_cms_target_pixelformat();
         /* The setter keeps gamma in double until the final byte rounding.

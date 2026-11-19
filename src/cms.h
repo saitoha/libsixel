@@ -170,6 +170,12 @@ sixel_cms_convert_profile_to_linearrgb(unsigned char *pixels,
                                        int pixelformat,
                                        sixel_cms_profile_t *src_profile);
 
+/* Normalize an RGB ICC source with the final output's relative PCS black. */
+SIXEL_INTERNAL_API int
+sixel_cms_rgb_output_bpc(float *pixels, int width, int height,
+                         sixel_cms_profile_t const *source,
+                         double output_black);
+
 SIXEL_INTERNAL_API int
 sixel_cms_convert_to_linearrgb_with_profile_bytes(
     unsigned char *pixels,
@@ -379,6 +385,10 @@ sixel_cdef_to_xyz(sixel_color_def_t const *definition,
 SIXEL_INTERNAL_API int
 sixel_cdef_from_xyz(sixel_color_def_t const *definition,
                      double const xyz[3], double rgb[3], int intent);
+
+/* Evaluate RGB device zero in relative PCS and return its usable Y. */
+SIXEL_INTERNAL_API int
+sixel_cdef_black_y(sixel_color_def_t const *definition, double *black);
 
 /* This checks actual apply in both directions, not mathematical inversion. */
 SIXEL_INTERNAL_API int

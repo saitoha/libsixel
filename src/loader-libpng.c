@@ -592,6 +592,8 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     size_t count;
     size_t i;
     sixel_cms_profile_t *cicp_profile;
+    sixel_cms_profile_t *input_profile;
+    double const *output_black;
     sixel_png_transfer_memo_t memo;
 
     count = (size_t)width * (size_t)height;
@@ -600,6 +602,23 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     has_matrix = 0;
     gamma = 0.0;
     reason = !enable_cms ? "cms-disabled" : "no-selected-chrm";
+    output_black = loader_cms_output_black();
+    if (output_black != NULL) {
+        if (!enable_cms || cicp_name != NULL ||
+            (color_chunks & (PNG_INFO_sRGB | PNG_INFO_cHRM)) ==
+                (PNG_INFO_sRGB | PNG_INFO_cHRM) ||
+            png_get_iCCP(png_ptr, info_ptr, &name, &compression,
+                        &profile, &profile_size) != PNG_INFO_iCCP) {
+            sixel_helper_set_additional_message(
+                "ICC output bpc=1 requires a selected embedded PNG ICC.");
+            return -SIXEL_BAD_ARGUMENT;
+        }
+        input_profile = sixel_cms_open_profile_from_mem(profile, profile_size);
+        converted = sixel_cms_rgb_output_bpc(pixels, width, height,
+                                              input_profile, *output_black);
+        sixel_cms_close_profile(input_profile);
+        return converted ? 1 : -SIXEL_RUNTIME_ERROR;
+    }
     if (enable_cms && cicp_name != NULL) {
         loader_trace_message("PNGCICP1|source=%s|role=%s", cicp_name, role);
         if (loader_hdr_is_source(cicp_name)) {
@@ -1010,7 +1029,8 @@ load_png(unsigned char      /* out */ **result,
         color_chunks = 0u;
     }
     source_color_work = color_chunks != 0u ||
-        (cicp_name != NULL && !cicp_identity);
+        (cicp_name != NULL && !cicp_identity) ||
+        loader_cms_output_black() != NULL;
     width = png_get_image_width(png_ptr, info_ptr);
     height = png_get_image_height(png_ptr, info_ptr);
 
@@ -3372,6 +3392,11 @@ load_with_libpng(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (loader_cms_output_black() != NULL && !enable_cms) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires builtin CMS.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     status = libpng_classify_stream(pchunk, &animated);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -3479,7 +3504,9 @@ load_with_libpng(
             && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)) {
         /* Working coordinates and an explicit byte request apply only after
          * source interpretation and linear-light alpha composition. */
-        cms_target_pixelformat = loader_cms_target_pixelformat();
+        cms_target_pixelformat = loader_cms_output_black() != NULL
+            ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+            : loader_cms_target_pixelformat();
         /* The setter keeps gamma in double until the final byte rounding.
          * An intermediate gamma float store could cross a half-byte tie. */
         status = sixel_frame_set_pixelformat(frame, cms_target_pixelformat);

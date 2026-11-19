@@ -1,6 +1,6 @@
 {
   "generator": "tools/generate_cli_color_fixtures.py",
-  "method": "Existing independent PNG frame values; original TIFF UINT16/F32 and stored-ICC rational/Decimal oracle; linear black composition, nearest sample replication, sRGB transfer and nearest integer percent; selected P3 cases use the independently derived ideal P3/D65 matrix before the final output gamut clamp.",
+  "method": "Existing independent PNG frame values; original TIFF UINT16/F32 and stored-ICC rational/Decimal oracle; linear black composition, nearest sample replication, sRGB transfer and nearest integer percent; selected P3 cases use the independently derived ideal P3/D65 matrix before the final output gamut clamp. Inline PNM cases use independent centroid means, exact nearest-color references and one raster FS tap.",
   "scope": "Selected CLI wire values, not a perceptual guarantee or complete coverage of intermediate precision.",
   "input_sha256": {
     "png-samples.json": "a09e42a1034f20e5aeec03c72c493a90c5868863835b7e57fdce6c0a37d04262",
@@ -815,6 +815,393 @@
           48,
           64,
           74
+        ]
+      ]
+    },
+    {
+      "name": "png-p3-16-rgb-output-srgb",
+      "source": "png-p3-16-rgb.png",
+      "width": 4,
+      "height": 2,
+      "source_width": 4,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "linear": [
+        [
+          "1.224939473660301",
+          "-0.04204725979332884",
+          "-0.019642226052377188"
+        ],
+        [
+          "-0.22494839430085337",
+          "1.0420607933552946",
+          "-0.0786276443733939"
+        ],
+        [
+          "-9.374403308437908e-06",
+          "1.3065016359593872e-05",
+          "1.0982741683297639"
+        ],
+        [
+          "0.21404833832345282",
+          "0.2140579479044908",
+          "0.21405317439487484"
+        ],
+        [
+          "-0.013938017815757259",
+          "0.07119374929146978",
+          "0.8935938404775122"
+        ],
+        [
+          "0.9999817049561391",
+          "1.0000265985783252",
+          "1.0000042979039927"
+        ],
+        [
+          "0.0",
+          "0.0",
+          "0.0"
+        ],
+        [
+          "0.09479854098323172",
+          "0.31859476469025405",
+          "0.574556144707872"
+        ]
+      ],
+      "wire": [
+        [
+          100,
+          0,
+          0
+        ],
+        [
+          0,
+          100,
+          0
+        ],
+        [
+          0,
+          0,
+          100
+        ],
+        [
+          50,
+          50,
+          50
+        ],
+        [
+          0,
+          30,
+          95
+        ],
+        [
+          100,
+          100,
+          100
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          34,
+          60,
+          78
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-gamma",
+      "source": "inline PNM",
+      "samples": [
+        [
+          223,
+          31,
+          25
+        ],
+        [
+          72,
+          57,
+          29
+        ],
+        [
+          16,
+          169,
+          221
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "cluster_distance_margins": [
+        "1.45229911572472126105344098423683198769703960015378700499808",
+        "0.717735486351403306420607458669742406766628219915417147251056",
+        "1.08501730103806228373702422145328719723183391003460207612457"
+      ],
+      "wire": [
+        [
+          58,
+          17,
+          11
+        ],
+        [
+          58,
+          17,
+          11
+        ],
+        [
+          6,
+          66,
+          87
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-linear",
+      "source": "inline PNM",
+      "samples": [
+        [
+          223,
+          31,
+          25
+        ],
+        [
+          72,
+          57,
+          29
+        ],
+        [
+          16,
+          169,
+          221
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "cluster_distance_margins": [
+        "1.07901152293693920907947444345070330228987456205327569085711",
+        "0.521913853425703517443705574384553687591320095829678578273284",
+        "0.800462688181321363261590008917628494940597328941477134565195"
+      ],
+      "wire": [
+        [
+          67,
+          18,
+          11
+        ],
+        [
+          67,
+          18,
+          11
+        ],
+        [
+          6,
+          66,
+          87
+        ]
+      ]
+    },
+    {
+      "name": "pnm-lookup-gamma",
+      "source": "inline PNM",
+      "samples": [
+        [
+          47,
+          195,
+          161
+        ],
+        [
+          70,
+          56,
+          192
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "lookup_distance_margins": [
+        "0.066928104575163398692810457516339869281045751633986928104575",
+        "0.021668589004229142637447135717031910803537101114955786236063"
+      ],
+      "wire": [
+        [
+          0,
+          50,
+          50
+        ],
+        [
+          50,
+          0,
+          50
+        ]
+      ]
+    },
+    {
+      "name": "pnm-fs-gamma",
+      "source": "inline PNM",
+      "samples": [
+        [
+          47,
+          195,
+          161
+        ],
+        [
+          70,
+          56,
+          192
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "lookup_distance_margins": [
+        "0.066928104575163398692810457516339869281045751633986928104575",
+        "0.083906189926951172625913110342176086120722798923490965013457"
+      ],
+      "second_candidate": [
+        "0.355147058823529411764705882352941176470588235294117647058824",
+        "0.334558823529411764705882352941176470588235294117647058823529",
+        "0.809558823529411764705882352941176470588235294117647058823530"
+      ],
+      "wire": [
+        [
+          0,
+          50,
+          50
+        ],
+        [
+          50,
+          50,
+          50
+        ]
+      ]
+    },
+    {
+      "name": "pnm-lookup-linear",
+      "source": "inline PNM",
+      "samples": [
+        [
+          47,
+          195,
+          161
+        ],
+        [
+          70,
+          56,
+          192
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "lookup_distance_margins": [
+        "0.034323637302059209500998223728024593000864766435009904096131",
+        "0.020154547716542733878037134073185171856869836545025259041784"
+      ],
+      "wire": [
+        [
+          0,
+          50,
+          50
+        ],
+        [
+          0,
+          0,
+          50
+        ]
+      ]
+    },
+    {
+      "name": "pnm-fs-linear",
+      "source": "inline PNM",
+      "samples": [
+        [
+          47,
+          195,
+          161
+        ],
+        [
+          70,
+          56,
+          192
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "lookup_distance_margins": [
+        "0.034323637302059209500998223728024593000864766435009904096131",
+        "0.014785496000821223894741302429863945665628454918110144153694"
+      ],
+      "second_candidate": [
+        "0.0736824465148016865353454177465332036639504136425167392285670",
+        "0.183861718326358564770837754039634759564747729243475835919932",
+        "0.588601219969832340332292814802176197965085536872536885204624"
+      ],
+      "wire": [
+        [
+          0,
+          50,
+          50
+        ],
+        [
+          0,
+          50,
+          50
         ]
       ]
     }

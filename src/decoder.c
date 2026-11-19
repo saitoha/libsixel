@@ -490,7 +490,7 @@ sixel_decoder_new(
         SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE);
     if (color_environment != NULL &&
             SIXEL_SUCCEEDED(sixel_color_option_parse(color_environment,
-                1, &color_base, &color_definition, NULL))) {
+                1, &color_base, &color_definition, NULL, NULL))) {
         (*ppdecoder)->input_colorspace = color_base;
         (*ppdecoder)->input_icc = color_definition;
     }
@@ -2762,7 +2762,7 @@ sixel_decoder_setopt(
     case SIXEL_OPTFLAG_INPUT_COLORSPACE:  /* T */
         color_definition = NULL;
         status = sixel_color_option_parse(value, 1, &color_base,
-            &color_definition, NULL);
+            &color_definition, NULL, NULL);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

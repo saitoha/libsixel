@@ -82,6 +82,9 @@ SIXEL_INTERNAL_API void
 sixel_loader_set_prefer_float32(sixel_loader_t *loader, int prefer_float32);
 
 SIXEL_INTERNAL_API void
+sixel_loader_set_output_bpc(sixel_loader_t *loader, double black);
+
+SIXEL_INTERNAL_API void
 sixel_loader_set_thumbnail_size_hint(sixel_loader_t *loader, int size);
 
 SIXEL_INTERNAL_API SIXELSTATUS

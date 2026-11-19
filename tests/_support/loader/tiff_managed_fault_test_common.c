@@ -219,6 +219,8 @@ mf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define sixel_cdef_name mf_local_19
 #define sixel_cdef_named_name mf_local_19_identity
 #define sixel_named_colors mf_local_19_registry
+#define sixel_cdef_black_y mf_output_black_y
+#define sixel_cms_rgb_output_bpc mf_output_bpc
 #define sixel_cdef_output_ready mf_local_20
 #define sixel_cdef_parse mf_local_21
 #define sixel_cdef_pcs_scale mf_local_22
@@ -643,6 +645,8 @@ mf_profile_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cdef_name
 #undef sixel_cdef_named_name
 #undef sixel_named_colors
+#undef sixel_cdef_black_y
+#undef sixel_cms_rgb_output_bpc
 #undef sixel_cdef_output_ready
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale

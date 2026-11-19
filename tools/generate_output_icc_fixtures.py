@@ -38,3 +38,43 @@ for rgb in codes:
     lines.append('    {' + ', '.join(format(float(v), '.17g') for v in result) + '},')
 lines += ['};', '']
 (root / 'tests/data/color-numeric/icc-output.h').write_text('\n'.join(lines))
+
+# Diagonal D50 profiles with exact affine input curves. In normalized PCS,
+# a black remap from 1/4 to 1/2 changes the source curve into the reference
+# curve. Thus the reference PNG can keep the *same* original RGB/alpha words
+# and differ only in its embedded ICC, even when composed against bKGD.
+def affine_profile(black):
+    tags = []
+    for i, tag in enumerate((b'rXYZ', b'gXYZ', b'bXYZ')):
+        column = [v if i == row else source.D(0)
+                  for row, v in enumerate(source.D50)]
+        tags.append((tag, b'XYZ ' + bytes(4)
+                     + b''.join(map(source.fixed, column))))
+    curve = b'para' + bytes(4) + struct.pack('>HH7i',
+        4, 0, 65536, 65536 - black, black, 0, 0, 0, 0)
+    tags.extend((tag, curve) for tag in (b'rTRC', b'gTRC', b'bTRC'))
+    return source.pack_profile(tags, name='Affine relative black fixture')
+
+
+def output_bpc_png(icc):
+    from zlib import compress
+    chunks = [
+        (b'IHDR', struct.pack('>IIBBBBB', 6, 1, 16, 6, 0, 0, 0)),
+        (b'iCCP', b'affine\0\0' + compress(icc)),
+        (b'bKGD', struct.pack('>3H', 4096, 4096, 4096)),
+    ]
+    scanline = bytes(1)
+    for value, alpha in zip([0, 8192, 16384, 32768, 49152, 65535],
+                            [65535, 65535, 16384, 32768, 49151, 65535]):
+        scanline += struct.pack('>4H', value, value, value, alpha)
+    chunks.extend([(b'IDAT', compress(scanline)), (b'IEND', b'')])
+    return b'\x89PNG\r\n\x1a\n' + b''.join(source.chunk(*c) for c in chunks)
+
+
+directory = root / 'tests/data/color-numeric'
+output_profile = affine_profile(32768)
+(directory / 'output-bpc.icc').write_bytes(output_profile)
+(directory / 'output-bpc-rgba16.png').write_bytes(
+    output_bpc_png(affine_profile(16384)))
+(directory / 'output-bpc-rgba16-reference.png').write_bytes(
+    output_bpc_png(output_profile))

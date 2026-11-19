@@ -34,7 +34,8 @@
 
 SIXELSTATUS
 sixel_color_option_parse(char const *text, int decoder, int *base,
-                         sixel_color_def_t **definition, int *gamut)
+                         sixel_color_def_t **definition, int *gamut,
+                         int *bpc)
 {
     sixel_option_argument_schema_t const *schema;
     sixel_option_argument_resolution_t resolution;
@@ -126,6 +127,9 @@ sixel_color_option_parse(char const *text, int decoder, int *base,
 publish:
     if (gamut != NULL) {
         *gamut = options.gamut;
+    }
+    if (bpc != NULL) {
+        *bpc = options.bpc;
     }
     *base = resolution.resolved_base_value;
     *definition = candidate;

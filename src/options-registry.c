@@ -1838,6 +1838,11 @@ static sixel_suboption_choice_t const g_gamut_choices[] = {
     { "ray-trace", SIXEL_GAMUT_RAY_TRACE }
 };
 
+static sixel_suboption_choice_t const g_output_bpc_choices[] = {
+    { "0", 0 },
+    { "1", 1 }
+};
+
 static sixel_suboption_key_t const g_suboptions[] = {
     SIXEL_REGISTRY_ENCODER_UINT(
         SIXEL_OPTION_SCHEMA_BINNING_POLICY, g_palette_binning_values,
@@ -1854,6 +1859,10 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE, NULL,
         "gamut", 'G', "SIXEL_OUTPUT_COLORSPACE_GAMUT", NULL, NULL,
         g_gamut_choices, gamut),
+    SIXEL_REGISTRY_OUTPUT_COLOR_CHOICE(
+        SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE, g_output_color_values + 7,
+        "bpc", 'B', "SIXEL_OUTPUT_COLORSPACE_ICC_BPC", NULL, NULL,
+        g_output_bpc_choices, bpc),
     SIXEL_REGISTRY_COLOR_STRING(
         SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE, g_output_color_values + 7,
         "path", 'P', "SIXEL_OUTPUT_COLORSPACE_ICC_PATH",

@@ -72,6 +72,13 @@ sixel_pixelformat_get_colorspace(int pixelformat);
 int
 sixel_helper_compute_depth(int pixelformat);
 
+/* Expand packed 1-, 2-, or 4-bit gray rows to full-range G8 samples.
+ * The public normalization helper preserves the unpacked code values.
+ */
+void
+sixel_pixelformat_expand_gray8(unsigned char *dst, unsigned char const *src,
+                               int width, int height, int pixelformat);
+
 #ifdef __cplusplus
 }
 #endif

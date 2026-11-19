@@ -842,7 +842,9 @@ choose each final Heckbert cluster representative, including after Ward
 merging and Lloyd reassignment. An explicit -p is not required.
 Center is the midpoint of member channel extrema; average is the unweighted
 mean of distinct retained histogram colors; histogram is their
-occurrence-weighted mean. Byte representatives round to nearest with halves
+occurrence-weighted mean. Use histogram for scripts written for v1.8.7
+that specified the former spelling histgram.
+Byte representatives round to nearest with halves
 rounded up. Extended float representatives remain fractional.
 Auto uses average with any enabled dither and histogram with none, including
 after Ward and Lloyd. Auto diffusion resolves to FS above 16 colors and
@@ -1614,6 +1616,12 @@ icc[:path=FILE] -> RGB ICC endpoint (compact icc:PFILE; path=P)
 The omitted path comes from SIXEL_OUTPUT_COLORSPACE_ICC_PATH.
 CLI path overrides the environment. ICC palette snap requires matrix/TRC.
 .br
+icc:bpc=0|1 (bpc=B) defaults to 0. SIXEL_OUTPUT_COLORSPACE_ICC_BPC supplies
+the default for ICC output. A value of 1 requires a selected embedded RGB
+ICC in static RGB/RGBA PNG, builtin CMS, relative intent, and float
+precision. It maps the input ICC black to the output ICC black before
+palette construction. Loader cms_bpc=1 conflicts with this setting.
+.br
 Adobe RGB and DCI-P3 use the same CPU float paths and destination-aware
 snap controls as Display P3. Snap uses the selected definition's primaries,
 white point and transfer function. High-color output still requires
@@ -1892,6 +1900,10 @@ ICC file path for \fB-U icc\fP. Explicit \fBicc:path=FILE\fP or
 \fBicc:PFILE\fP takes precedence (path=P). The profile is read once and
 owned by the encoder. RGB matrix/TRC or supported bidirectional relative
 LUT transforms are required. Active snap requires matrix/TRC.
+.TP 5
+.B SIXEL_OUTPUT_COLORSPACE_ICC_BPC
+Default for explicit -U icc black point compensation (bpc=B).
+An explicit bpc=0 or bpc=1 takes precedence.
 .TP 5
 .B SIXEL_DECODER_INPUT_COLORSPACE_ICC_PATH
 ICC file path for \fBsixel2png -T icc\fP. Explicit path=P takes precedence.

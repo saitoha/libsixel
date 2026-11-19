@@ -244,6 +244,8 @@ static SIXEL_LOADER_TLS int loader_background_colorspace_override = -1;
 static SIXEL_LOADER_TLS int loader_transparent_policy_override = -1;
 static SIXEL_LOADER_TLS sixel_loader_suboptions_t const
     *loader_active_suboptions;
+/* The selected output black lasts only through a synchronous source load. */
+static SIXEL_LOADER_TLS double const *loader_output_black;
 
 typedef struct sixel_loader_timeline_scope {
     sixel_timeline_logger_t *logger;
@@ -396,6 +398,22 @@ sixel_loader_restore_suboptions(
     sixel_loader_suboptions_t const *suboptions)
 {
     loader_active_suboptions = suboptions;
+}
+
+double const *
+loader_cms_output_black(void)
+{
+    return loader_output_black;
+}
+
+double const *
+loader_cms_set_output_black(double const *black)
+{
+    double const *previous;
+
+    previous = loader_output_black;
+    loader_output_black = black;
+    return previous;
 }
 
 sixel_loader_suboptions_t const *

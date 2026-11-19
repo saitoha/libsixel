@@ -24,6 +24,7 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 
 - [Functional overview](overview.md) describes libsixel's capabilities, components, data flow, and architectural boundaries.
 - [Project history and lineage](project-history.md) explains how libsixel grew from kmiya's `sixel` and how contributions shaped it.
+- [C API compatibility with v1.8.7](compatibility.md) records which raw pixel inputs change encoder results, how short indexed images are positioned, and how callers can reproduce the release colors.
 
 ### SIXEL format
 

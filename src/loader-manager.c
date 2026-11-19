@@ -1054,6 +1054,11 @@ sixel_loader_manager_load_impl(
             continue;
         }
         name = sixel_loader_component_get_name(loader);
+        if (loader_cms_output_black() != NULL &&
+            (name == NULL ||
+             (strcmp(name, "builtin") != 0 && strcmp(name, "libpng") != 0))) {
+            continue;
+        }
         sixel_loader_manager_format_worker_name(worker,
                                                 sizeof(worker),
                                                 name);
@@ -1090,6 +1095,11 @@ sixel_loader_manager_load_impl(
          */
     }
 
+    if (status == SIXEL_FALSE && loader_cms_output_black() != NULL) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires the builtin or libpng loader.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     return status;
 }
 

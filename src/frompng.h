@@ -62,6 +62,9 @@ sixel_frompng_apply_colorspace_fallback_pixelformat(
     size_t size,
     sixel_allocator_t *allocator);
 
+SIXEL_INTERNAL_API int
+sixel_frompng_supports_output_bpc(unsigned char const *buffer, size_t size);
+
 SIXELSTATUS
 sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                               sixel_allocator_t *allocator,

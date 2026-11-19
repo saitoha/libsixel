@@ -10,6 +10,7 @@ import struct
 import zlib
 
 import tiff_managed_reference as reference
+from generate_builtin_native_fixtures import XTERM16
 
 
 INPUTS = ('png-samples.json', 'png-p3-16-rgba.png', 'tiff-layout.json',
@@ -72,6 +73,72 @@ def p3_wire_color(linear):
     # P3 and sRGB use the same transfer function. The matrix must precede
     # this final gamut clamp; clamping canonical RGB destroys P3 primaries.
     return wire_color([D(x.numerator) / D(x.denominator) for x in output])
+
+
+def cli_space_cases():
+    def coordinates(rgb, linear):
+        encoded = [D(component) / 255 for component in rgb]
+        if not linear:
+            return encoded
+        return [x / D('12.92') if x <= D('.04045') else
+                ((x + D('.055')) / D('1.055')) ** D('2.4') for x in encoded]
+
+    def nearest(point, palette):
+        distances = sorted((sum((x - y)**2 for x, y in zip(point, color)), i)
+                           for i, color in enumerate(palette))
+        margin = distances[1][0] - distances[0][0]
+        assert margin > D('.009')
+        return distances[0][1], str(margin)
+
+    def case(name, samples, **data):
+        width = len(samples)
+        return dict(name=name, source='inline PNM', samples=samples, width=width,
+                    height=1, source_width=width, scale=1, hidden=[0] * width,
+                    p2=0, **data)
+
+    # Two nearby warm samples and a separate cyan sample. Both coordinate
+    # systems give the same partition, so the changed RGB101 value is due to
+    # the centroid calculation itself.
+    samples = [[223, 31, 25], [72, 57, 29], [16, 169, 221]]
+    for space in ('gamma', 'linear'):
+        linear = space == 'linear'
+        points = [coordinates(rgb, linear) for rgb in samples]
+        centers = [[(x + y) / 2 for x, y in zip(points[0], points[1])],
+                   points[2]]
+        owners, margins = zip(*(nearest(point, centers) for point in points))
+        assert owners == (0, 0, 1)
+        if linear:
+            wire = [wire_color(center) for center in centers]
+        else:
+            assert all(abs(100*x - int(100*x) - D('.5')) > D('.01')
+                       for center in centers for x in center)
+            wire = [[int(100*x + D('.5')) for x in center] for center in centers]
+        yield case('pnm-cluster-' + space, samples, cluster_distance_margins=margins,
+                   wire=[wire[i] for i in owners])
+
+    # The same first color wins in both spaces. Its residual is encoded in
+    # different coordinates. In a one-row raster, only the 7/16 right tap
+    # reaches the second pixel, and it changes the selected entry in both.
+    samples = [[47, 195, 161], [70, 56, 192]]
+    srgb_wire = [wire_color(coordinates(rgb, True)) for rgb in XTERM16]
+    for space in ('gamma', 'linear'):
+        linear = space == 'linear'
+        points = [coordinates(rgb, linear) for rgb in samples]
+        palette = [coordinates(rgb, linear) for rgb in XTERM16]
+        first, first_margin = nearest(points[0], palette)
+        uncorrected, uncorrected_margin = nearest(points[1], palette)
+        candidate = [x + D(7)/16*(y - p)
+                     for x, y, p in zip(points[1], points[0], palette[first])]
+        assert all(0 < x < 1 for x in candidate)
+        corrected, corrected_margin = nearest(candidate, palette)
+        assert corrected != uncorrected
+        yield case('pnm-lookup-' + space, samples, fixed_palette='xterm16',
+                   lookup_distance_margins=[first_margin, uncorrected_margin],
+                   wire=[srgb_wire[first], srgb_wire[uncorrected]])
+        yield case('pnm-fs-' + space, samples, fixed_palette='xterm16',
+                   lookup_distance_margins=[first_margin, corrected_margin],
+                   second_candidate=list(map(str, candidate)),
+                   wire=[srgb_wire[first], srgb_wire[corrected]])
 
 
 def build(inputs):
@@ -212,9 +279,20 @@ def build(inputs):
                           cluster_distance_margins=cluster_margins,
                           fs_lookup_distance_margins=fs_margins,
                           linear=source['linear'], wire=painted))
+        # The negotiated sRGB route clips the same stored P3 ICC witness
+        # in linear sRGB before applying its transfer function.
+        cases.append(dict(name='png-p3-16-rgb-output-srgb',
+                          source=source['source'], width=4, height=2,
+                          source_width=4, scale=1, hidden=[0] * 8, p2=0,
+                          linear=source['linear'],
+                          wire=[wire_color(rgb) for rgb in source['linear']]))
+        cli_space_first = len(cases)
+        cases.extend(cli_space_cases())
 
     header = ('/* Generated independently; do not copy encoder output here. */\n'
+              f'#define CLI_WIRE_PNM_FIRST {cli_space_first}\n'
               'static struct {\n'
+              '    char const *name;\n'
               '    int width, height, source_width, scale, count, p2;\n'
               '    unsigned char hidden[8];\n'
               '    unsigned char rgb[8][3];\n'
@@ -222,7 +300,8 @@ def build(inputs):
     for case in cases:
         fields = [case[k] for k in ('width', 'height', 'source_width', 'scale')]
         fields += [len(case['wire']), case['p2']]
-        header += '    { ' + ', '.join(map(str, fields)) + ',\n'
+        header += '    { "' + case['name'] + '", '
+        header += ', '.join(map(str, fields)) + ',\n'
         header += '      { ' + ', '.join(map(str, case['hidden'])) + ' }, {\n'
         header += ''.join('        { ' + ', '.join(map(str, rgb)) + ' },\n'
                           for rgb in case['wire'])
@@ -234,7 +313,9 @@ def build(inputs):
                          'linear black composition, nearest sample replication, '
                          'sRGB transfer and nearest integer percent; selected '
                          'P3 cases use the independently derived ideal P3/D65 '
-                         'matrix before the final output gamut clamp.',
+                         'matrix before the final output gamut clamp. Inline '
+                         'PNM cases use independent centroid means, exact '
+                         'nearest-color references and one raster FS tap.',
                   scope='Selected CLI wire values, not a perceptual guarantee '
                         'or complete coverage of intermediate precision.',
                   input_sha256={n: hashlib.sha256(inputs[n]).hexdigest()

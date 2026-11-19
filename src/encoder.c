@@ -2441,7 +2441,6 @@ static sixel_option_choice_t const g_option_choices_select_color[] = {
     { "auto", SIXEL_REP_AUTO },
     { "center", SIXEL_REP_CENTER_BOX },
     { "average", SIXEL_REP_AVERAGE_COLORS },
-    { "histogram", SIXEL_REP_AVERAGE_PIXELS },
     { "histogram", SIXEL_REP_AVERAGE_PIXELS }
 };
 
@@ -8455,6 +8454,13 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
     char message[256];
     sixel_color_def_t *linear;
 
+    if (encoder->output_bpc &&
+            encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires float encoder precision.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     /* 8bit applies the palette on gamma bytes. A float-only working space
      * would be discarded at that boundary, and a named destination needs
      * the extended palette coordinates that the bytes cannot hold. */
@@ -12831,6 +12837,8 @@ sixel_encoder_new(
     (*ppencoder)->clustering_colorspace_set = 0;
     (*ppencoder)->force_float32_colorspace = 0;
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->output_bpc            = 0;
+    (*ppencoder)->output_bpc_black      = 0.0;
     (*ppencoder)->output_color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppencoder)->output_icc = NULL;
     (*ppencoder)->output_gamut = SIXEL_GAMUT_AUTO;
@@ -13889,13 +13897,23 @@ sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value)
     sixel_gamut_t *mapper;
     int base;
     int gamut;
+    int bpc;
+    double black;
     SIXELSTATUS status;
 
     candidate = NULL;
     mapper = NULL;
-    status = sixel_color_option_parse(value, 0, &base, &candidate, &gamut);
+    black = 0.0;
+    status = sixel_color_option_parse(value, 0, &base, &candidate, &gamut,
+                                      &bpc);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+    if (bpc && !sixel_cdef_black_y(candidate, &black)) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires a usable relative output black.");
+        sixel_cdef_free(candidate);
+        return SIXEL_BAD_ARGUMENT;
     }
     if (gamut == SIXEL_GAMUT_LOCAL_MINDE ||
             gamut == SIXEL_GAMUT_EDGE_SEEKER ||
@@ -13928,6 +13946,8 @@ sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value)
     sixel_gamut_free(encoder->gamut_mapper);
     encoder->gamut_mapper = mapper;
     encoder->output_gamut = gamut;
+    encoder->output_bpc = bpc;
+    encoder->output_bpc_black = black;
     encoder->output_color_definition = base < 0
         ? -base : SIXEL_PALETTE_OUTPUT_LEGACY;
     encoder->output_colorspace = base < 0 ? SIXEL_COLORSPACE_GAMMA : base;
@@ -19424,6 +19444,9 @@ reload:
         sixel_encoder_thumbnail_hint(encoder));
     prefer_loader_float32 = sixel_encoder_loader_prefers_float32(encoder);
     sixel_loader_set_prefer_float32(loader, prefer_loader_float32);
+    if (encoder->output_bpc) {
+        sixel_loader_set_output_bpc(loader, encoder->output_bpc_black);
+    }
 
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_REQUIRE_STATIC,
@@ -19837,6 +19860,11 @@ sixel_encoder_encode_frame_owned(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (encoder->output_bpc) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires a loaded PNG with an embedded ICC.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     sixel_encoder_resolve_frame_colorspaces(encoder, frame);
     encoder->sixdelta_refinement_needed = 0;
     encoder->sixdelta_painted_pixels = 0u;
@@ -19937,6 +19965,13 @@ sixel_encoder_encode_bytes_owned(
         goto end;
     }
 
+    if (encoder->output_bpc) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires a loaded PNG with an embedded ICC.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth <= 0) {
         sixel_helper_set_additional_message(
@@ -20004,18 +20039,20 @@ sixel_encoder_encode_bytes_owned(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        normalized_pixelformat = pixelformat;
-        status = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                    &normalized_pixelformat,
-                                                    owned_pixels,
-                                                    pixelformat,
-                                                    width,
-                                                    height);
-        if (SIXEL_FAILED(status)) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode_bytes: "
-                "sixel_helper_normalize_pixelformat() failed.");
-            goto end;
+        if (pixelformat & SIXEL_FORMATTYPE_GRAYSCALE) {
+            sixel_pixelformat_expand_gray8(normalized_pixels, owned_pixels,
+                                           width, height, pixelformat);
+            normalized_pixelformat = SIXEL_PIXELFORMAT_G8;
+        } else {
+            status = sixel_helper_normalize_pixelformat(normalized_pixels,
+                &normalized_pixelformat, owned_pixels, pixelformat,
+                width, height);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_encode_bytes: "
+                    "sixel_helper_normalize_pixelformat() failed.");
+                goto end;
+            }
         }
 
         /*
@@ -20712,6 +20749,11 @@ sixel_playback_new(sixel_playback_t **playback,
         return SIXEL_BAD_ARGUMENT;
     }
     *playback = NULL;
+    if (encoder->output_bpc) {
+        sixel_helper_set_additional_message(
+            "ICC output bpc=1 requires a loaded PNG with an embedded ICC.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     (void)sixel_playback_config_init(&defaults, sizeof(defaults));
     if (config != NULL) {
         if (config->struct_size < sizeof(*config)) {

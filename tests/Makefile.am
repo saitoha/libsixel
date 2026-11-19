@@ -255,6 +255,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0084_SELECTED_FRAME_EXPORT \
     -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
     -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
+    -DBUILD_TEST_0022_OUTPUT_BPC_BUILTIN_FLOAT \
     -DBUILD_TEST_0015_AUTO_NEGATIVE_EXPOSURE \
     -DBUILD_TEST_0016_REINHARD_NEGATIVE_EXPOSURE \
     -DBUILD_TEST_0017_AUTO_SIGNED_COLORS \
@@ -7389,6 +7390,7 @@ test_runner_SOURCES = test_runner.c \
     _support/processing/cms/hdr_finish_common.h \
     color/bpc/0020_relative_before_cached_float.c \
     color/bpc/0021_relative_before_cached_byte.c \
+    color/bpc/0022_output_bpc_builtin_float.c \
     color/hdr/0015_auto_negative_exposure.c \
     color/hdr/0016_reinhard_negative_exposure.c \
     color/hdr/0017_auto_signed_colors.c \
@@ -14161,3 +14163,10 @@ EXTRA_DIST += _static/awk/fuzz-triage-registration.awk \
 EXTRA_DIST += _static/awk/c-configured-features.awk \
     _static/data/c-configured-features-legacy.tsv \
     _static/sh/staticcheck-c-configured-features.sh
+
+EXTRA_DIST += data/color-numeric/output-bpc.icc \
+    data/color-numeric/output-bpc-rgba16.png \
+    data/color-numeric/output-bpc-rgba16-reference.png
+
+# The released-client checks are run explicitly with two shared libraries.
+EXTRA_DIST += compat/v1.8.7-r2
