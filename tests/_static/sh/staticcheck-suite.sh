@@ -374,6 +374,10 @@ run_case_tap "staticcheck-loader-cms-boundary" \
     "$src_root/tests/_static/sh/staticcheck-loader-cms-boundary.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-stb-dll-linkage" \
+    sh "$src_root/tests/_static/sh/staticcheck-stb-dll-linkage.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-private-includes" \
     "$src_root/tests/_static/sh/staticcheck-private-includes.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?

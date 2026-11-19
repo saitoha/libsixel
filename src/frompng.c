@@ -49,10 +49,10 @@
 #include "compat_stub.h"
 #include "frompng.h"
 #include "frame-private.h"
+#include "loader-builtin.h"
 #include "loader-common.h"
 
 char const *stbi_failure_reason(void);
-void stbi_image_free(void *retval_from_stbi_load);
 int stbi_is_16_bit_from_memory(unsigned char const *buffer, int len);
 unsigned short *stbi_load_16_from_memory(unsigned char const *buffer,
                                          int len,
@@ -66,11 +66,6 @@ unsigned char *stbi_load_from_memory(unsigned char const *buffer,
                                      int *y,
                                      int *channels_in_file,
                                      int desired_channels);
-char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
-                                                   int len,
-                                                   int initial_size,
-                                                   int *outlen,
-                                                   int parse_header);
 
 #ifndef SIZE_MAX
 #define SIZE_MAX ((size_t)-1)

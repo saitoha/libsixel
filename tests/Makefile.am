@@ -13578,6 +13578,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin tools/compa
     _static/python/staticcheck_c_ast.py \
 	_static/sh/staticcheck-private-includes.sh \
     _static/sh/staticcheck-loader-cms-boundary.sh \
+    _static/sh/staticcheck-stb-dll-linkage.sh \
     _static/awk/loader-cms-boundary.awk \
 	_static/sh/staticcheck-src-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-no-direct-getenv.sh \
