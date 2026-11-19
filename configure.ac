@@ -3078,6 +3078,21 @@ AS_CASE([$host_cpu], [x86_64 | amd64 | i*86], [
       AC_DEFINE([SIXEL_TARGET_AVX2], [],
                 [Function attribute that enables AVX2 intrinsics])])
 ])
+# cosmocc builds both architectures with one configured header. Pass the
+# active architecture to each compiler so it can use its configured kernels.
+AC_MSG_CHECKING([whether the compiler builds Cosmopolitan fat objects])
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#ifndef __FATCOSMOCC__
+#error A separate configuration is used for each target
+#endif
+int main(void) { return 0; }
+]])], [
+  AC_MSG_RESULT([yes])
+  AC_DEFINE([SIXEL_SIMD_SHARED_CONFIG], [1],
+            [Define if x86-64 and AArch64 share the SIMD configuration])
+  AM_CFLAGS="$AM_CFLAGS -Xx86_64-DSIXEL_SIMD_TARGET_X86=1 -Xaarch64-DSIXEL_SIMD_TARGET_A64=1"
+], [AC_MSG_RESULT([no])])
+
 # Kernels that view vector lanes as packed bytes need the byte order.
 AC_C_BIGENDIAN(
   [AC_DEFINE([WORDS_BIGENDIAN], [1],
@@ -5702,6 +5717,18 @@ if test "x$have_neon_a64" = xyes; then
     AC_DEFINE([HAVE_NEON_A64], [1],
               [Define if AArch64 NEON intrinsics are available])
 fi
+
+AC_MSG_CHECKING([for getpid declared in unistd.h])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <unistd.h>
+]], [[
+    pid_t (*current_pid)(void) = getpid;
+    return current_pid() == (pid_t)-1;
+]])], [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([HAVE_GETPID], [1], [Define if unistd.h declares getpid])
+], [AC_MSG_RESULT([no])])
 
 if test "x$enable_xsave_probe" = xno; then
     message_xsave_probe=disabled

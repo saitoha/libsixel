@@ -7,9 +7,26 @@ set -eux
 echo '1..1'
 set -v
 src_root=$1
+for build_file in configure.ac meson.build; do
+    for flag in -Xx86_64-DSIXEL_SIMD_TARGET_X86=1 \
+                -Xaarch64-DSIXEL_SIMD_TARGET_A64=1; do
+        grep -F -- "$flag" "$src_root/$build_file" >/dev/null || {
+            echo "not ok 1 - $build_file is missing Cosmopolitan target flags"
+            exit 0
+        }
+    done
+done
+for target_macro in SIXEL_SIMD_TARGET_X86 SIXEL_SIMD_TARGET_A64; do
+    grep -F "(!defined(SIXEL_SIMD_SHARED_CONFIG) || defined($target_macro))" \
+        "$src_root/src/simd-config.h" >/dev/null || {
+        echo "not ok 1 - shared SIMD configuration is missing $target_macro"
+        exit 0
+    }
+done
 awk '
 function target(expression, name) {
     if (expression ~ /!/) return 0
+    if (expression == "SIXEL_SIMD_SSE2") return 1
     if (expression ~ /defined\(__SSE2__\)/ ||
         expression ~ /defined\(_M_X64\)/ ||
         expression ~ /defined\(_M_AMD64\)/) return 1

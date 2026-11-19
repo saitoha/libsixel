@@ -428,8 +428,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    Thread availability may overlap adaptive sampling with other "
         "work,\n"
         "    but does not select the sampling policy.\n"
-        "    suboption: solid=on|off (S, default on). off skips the\n"
-        "    solid-region scan: faster, but thin solid features may enter\n"
+        "    suboption: solid=S accepts on or off (default on). off\n"
+        "    skips the solid-region scan: faster, but thin features may enter\n"
         "    the palette only when the grid lands on them.\n"
     },
     {

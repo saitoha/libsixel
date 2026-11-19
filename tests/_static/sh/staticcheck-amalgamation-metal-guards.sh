@@ -1,5 +1,5 @@
 #!/bin/sh
-# Metal source bodies must disappear from non-Metal amalgamation builds.
+# Both build systems must include Metal units only in Metal builds.
 # Policy: docs/build/autotools.md
 # Policy: docs/testing/staticcheck.md
 set -eux
@@ -62,5 +62,39 @@ END { if (NR) check_unit(); exit bad || NR == 0 }
     echo 'not ok 1 - Metal bodies lack their amalgamation feature guard'
     exit 0
 }
-echo 'ok 1 - Metal bodies retain their amalgamation feature guard'
+# The guarded units must also be listed in both native Metal builds.
+LC_ALL=C awk '
+BEGIN {
+    for (i = 3; i < ARGC; i++) {
+        name = ARGV[i]
+        sub(/^.*\//, "", name)
+        units[name] = 1
+        delete ARGV[i]
+    }
+}
+FNR == 1 { metal = 0 }
+/^if (HAVE_METAL|have_metal)$/ { metal = 1; next }
+/^endif([[:space:]]|$)/ { metal = 0 }
+metal {
+    count = split($0, words, /[^[:alnum:]_.-]+/)
+    for (i = 1; i <= count; i++) {
+        if (words[i] in units) registered[FILENAME, words[i]] = 1
+    }
+}
+END {
+    for (i = 1; i <= 2; i++) {
+        for (name in units) {
+            if (!((ARGV[i], name) in registered)) {
+                print "Metal source missing from " ARGV[i] ": " name
+                failed = 1
+            }
+        }
+    }
+    exit failed
+}
+' "$1/src/Makefile.am" "$1/src/meson.build" "$1"/src/*metal.m || {
+    echo 'not ok 1 - Metal build source lists are incomplete'
+    exit 0
+}
+echo 'ok 1 - Metal sources are guarded and listed in both build systems'
 exit 0

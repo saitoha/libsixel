@@ -370,8 +370,11 @@ require_fixed "#include \"\$srcdir/build-aux/native-tls-probe.c\"" configure.ac
 require_fixed "cc.run(files('build-aux/native-tls-probe.c')[0]" meson.build
 require_fixed 'probe_value = 5;' build-aux/native-tls-probe.c
 require_fixed "#include \"\$srcdir/build-aux/avx2-target-probe.c\"" configure.ac
-require_fixed "cc.compiles(files('build-aux/avx2-target-probe.c')[0]" meson.build
-require_fixed '#if defined(HAVE_X86_AVX2_TARGET)' src/refresh-spatial.c
+require_fixed "fs.read('build-aux/avx2-target-probe.c')" meson.build
+require_fixed "cc.compiles('#define SIXEL_PROBE_TARGET_AVX2 '" meson.build
+require_fixed '#if SIXEL_SIMD_AVX2' src/refresh-spatial.c
+require_fixed '#define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 SIXEL_TARGET_AVX2' \
+    src/refresh-spatial.c
 require_fixed "#include \"\$srcdir/build-aux/fhedt-heap-probe.c\"" configure.ac
 require_fixed "cc.run(files('build-aux/fhedt-heap-probe.c')[0]" meson.build
 require_fixed '#if defined(SIXEL_SPLIT_FHEDT_DISTANCE_GRID)' \

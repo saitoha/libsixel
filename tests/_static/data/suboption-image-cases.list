@@ -131,6 +131,7 @@ tests/cli/palette-stage-options/0063_sampling_policy_image_regression.t
 tests/cli/palette-stage-options/0064_snap_policy_grid_image_regression.t
 tests/cli/palette-stage-options/0065_threading_palette_image_regression.t
 tests/cli/palette-stage-options/0066_binning_range_strength_image_regression.t
+tests/cli/palette-stage-options/0069_sampling_solid_image_regression.t
 tests/cli/quantizer-options/0094_dequantize_lso_undither_variant_image_regression.t
 tests/cli/quantizer-options/0095_dequantize_selective_blur_threshold_image_regression.t
 tests/cli/quantizer-options/0096_quantize_heckbert_profile_image_regression.t

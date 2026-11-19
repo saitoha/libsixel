@@ -12,10 +12,7 @@ _InterlockedExchange	compiler	-
 _MODE_T_DEFINED	platform	docs/misc/platforms/windows.md
 _MSC_VER	platform	docs/misc/platforms/msvc.md
 _MT	platform	docs/misc/platforms/msvc.md
-_M_AMD64	architecture	-
-_M_ARM64	architecture	-
 _M_IX86	architecture	-
-_M_IX86_FP	architecture	-
 _M_X64	architecture	-
 _NETBSD_SOURCE	platform	docs/misc/platforms/posix-runtimes.md
 _O_BINARY	platform	docs/misc/platforms/windows.md
@@ -50,9 +47,6 @@ __AFL_INIT	tooling	-
 __AFL_LOOP	tooling	-
 __ANDROID__	platform	docs/misc/platforms/posix-runtimes.md
 __APPLE__	platform	docs/misc/platforms/macos.md
-__ARM_BIG_ENDIAN	architecture	-
-__ARM_NEON	architecture	-
-__ARM_NEON__	architecture	-
 __ATOMIC_ACQUIRE	compiler	-
 __ATOMIC_ACQ_REL	compiler	-
 __ATOMIC_RELEASE	compiler	-
@@ -61,7 +55,6 @@ __COSMOPOLITAN__	platform	docs/misc/platforms/cosmopolitan.md
 __CYGWIN__	platform	docs/misc/platforms/cygwin-msys.md
 __DragonFly__	platform	docs/misc/platforms/posix-runtimes.md
 __EMSCRIPTEN__	platform	docs/misc/platforms/emscripten.md
-__FAST_MATH__	compiler	-
 __FMA__	architecture	-
 __FreeBSD__	platform	docs/misc/platforms/posix-runtimes.md
 __GLIBC__	platform	docs/misc/platforms/posix-runtimes.md
@@ -77,7 +70,6 @@ __NetBSD__	platform	docs/misc/platforms/posix-runtimes.md
 __OpenBSD__	platform	docs/misc/platforms/posix-runtimes.md
 __PCC__	compiler	-
 __SIZEOF_INT128__	architecture	-
-__SSE2__	architecture	-
 __STDC_LIB_EXT1__	language	-
 __STDC_NO_ATOMICS__	language	-
 __STDC_NO_THREADS__	language	-
@@ -86,7 +78,6 @@ __STDC_WANT_SECURE_LIB__	language	-
 __STRICT_ANSI__	language	-
 __TINYC__	compiler	-
 __VA_ARGS__	language	-
-__aarch64__	architecture	-
 __wasm_simd128__	architecture	-
 __atomic_compare_exchange_n	compiler	-
 __atomic_load_n	compiler	-
@@ -106,8 +97,6 @@ __has_include	compiler	-
 __i386	architecture	-
 __i386__	architecture	-
 __linux__	platform	docs/misc/platforms/posix-runtimes.md
-__m128i	compiler	-
-__m256i	compiler	-
 __printf__	compiler	-
 __thread	compiler	-
 __typeof__	compiler	-

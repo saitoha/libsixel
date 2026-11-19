@@ -36,8 +36,26 @@ emit_assignment() {
     printf "SIXEL_TEST_PYTHON=%s\n" "$quoted_value"
 }
 
+resolve_venv_python() {
+    # CPython uses Scripts on native Windows and bin on POSIX.
+    for interpreter in "$shared_python_venv/bin/python" \
+        "$shared_python_venv/Scripts/python.exe"; do
+        if [ -x "$interpreter" ]; then
+            venv_python=$interpreter
+            return 0
+        fi
+    done
+    return 1
+}
+
+create_venv() {
+    rm -rf "$shared_python_venv"
+    "$python_bin" -m venv "$shared_python_venv" >/dev/null 2>&1 || return 1
+    resolve_venv_python
+}
+
 venv_has_libsixel_wheel() {
-    "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' \
+    "$venv_python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' \
         >/dev/null 2>&1
 }
 
@@ -63,19 +81,19 @@ try_install_wheel_candidate() {
             installed_wheel_signature=
         if [ "$installed_wheel_signature" = "$candidate_combined_signature" ] &&
                 venv_has_libsixel_wheel; then
-            emit_assignment "$shared_python_venv/bin/python"
+            emit_assignment "$venv_python"
             return 0
         fi
     fi
 
-    "$shared_python_venv/bin/python" -m pip install --no-deps --force-reinstall \
+    "$venv_python" -m pip install --no-deps --force-reinstall \
         "$candidate" >/dev/null 2>&1 || return 1
     if ! venv_has_libsixel_wheel; then
         return 1
     fi
 
     printf "%s\n" "$candidate_combined_signature" >"$wheel_marker"
-    emit_assignment "$shared_python_venv/bin/python"
+    emit_assignment "$venv_python"
     return 0
 }
 
@@ -159,14 +177,7 @@ if ! "$python_bin" -c 'import importlib.util,sys; missing=[m for m in ("venv","e
     exit 0
 fi
 
-if [ ! -x "$shared_python_venv/bin/python" ]; then
-    rm -rf "$shared_python_venv"
-    "$python_bin" -m venv "$shared_python_venv" >/dev/null 2>&1 || true
-fi
-
-if [ ! -x "$shared_python_venv/bin/python" ]; then
-    exit 0
-fi
+resolve_venv_python || create_venv || exit 0
 
 for wheel_candidate in $wheel_candidates; do
     if try_install_wheel_candidate "$wheel_candidate" "$source_signature"; then
@@ -174,11 +185,7 @@ for wheel_candidate in $wheel_candidates; do
     fi
 done
 
-rm -rf "$shared_python_venv"
-"$python_bin" -m venv "$shared_python_venv" >/dev/null 2>&1 || true
-if [ ! -x "$shared_python_venv/bin/python" ]; then
-    exit 0
-fi
+create_venv || exit 0
 
 for wheel_candidate in $wheel_candidates; do
     if try_install_wheel_candidate "$wheel_candidate" "$source_signature"; then

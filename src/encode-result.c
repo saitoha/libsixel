@@ -586,7 +586,7 @@ sixel_indexed_frame_publish_sse2(unsigned char *skip,
     unsigned int *bad)
 {
     __m128i const zero = _mm_setzero_si128();
-    __m128i const ones = _mm_set1_epi8((char)0xff);
+    __m128i const ones = _mm_cmpeq_epi8(zero, zero);
     __m128i const keep = _mm_set1_epi8((char)SIXEL_INDEXED_KEEP);
     __m128i const approximate =
         _mm_set1_epi8((char)SIXEL_INDEXED_KEEP_APPROXIMATE);

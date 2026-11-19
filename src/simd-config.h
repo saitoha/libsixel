@@ -9,9 +9,10 @@
 #ifndef LIBSIXEL_SIMD_CONFIG_H
 #define LIBSIXEL_SIMD_CONFIG_H
 
-/* SSE2 intrinsics compile in the baseline ISA of this build. */
+/* Fat objects share config.h. Each compiler receives its own target flag. */
 #if defined(HAVE_SSE2) && HAVE_SSE2 && \
-    defined(HAVE_EMMINTRIN_H) && HAVE_EMMINTRIN_H
+    defined(HAVE_EMMINTRIN_H) && HAVE_EMMINTRIN_H && \
+    (!defined(SIXEL_SIMD_SHARED_CONFIG) || defined(SIXEL_SIMD_TARGET_X86))
 # define SIXEL_SIMD_SSE2 1
 #else
 # define SIXEL_SIMD_SSE2 0
@@ -27,7 +28,8 @@
 
 /* Any NEON: the common 32-bit and 64-bit intrinsic subset. */
 #if defined(HAVE_NEON) && HAVE_NEON && \
-    defined(HAVE_ARM_NEON_H) && HAVE_ARM_NEON_H
+    defined(HAVE_ARM_NEON_H) && HAVE_ARM_NEON_H && \
+    (!defined(SIXEL_SIMD_SHARED_CONFIG) || defined(SIXEL_SIMD_TARGET_A64))
 # define SIXEL_SIMD_NEON 1
 #else
 # define SIXEL_SIMD_NEON 0

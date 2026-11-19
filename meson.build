@@ -2195,6 +2195,19 @@ else
   xsave_probe_message = 'no (arch)'
 endif
 
+# cosmocc builds both architectures with one configured header. Pass the
+# active architecture to each compiler so it can use its configured kernels.
+if cc.compiles('''
+    #ifndef __FATCOSMOCC__
+    #error A separate configuration is used for each target
+    #endif
+    int main(void) { return 0; }
+  ''', name: 'Cosmopolitan fat objects')
+  conf.set('SIXEL_SIMD_SHARED_CONFIG', 1)
+  add_project_arguments('-Xx86_64-DSIXEL_SIMD_TARGET_X86=1',
+                        '-Xaarch64-DSIXEL_SIMD_TARGET_A64=1', language: 'c')
+endif
+
 # Kernels that view vector lanes as packed bytes need the byte order.
 if host_machine.endian() == 'big'
   conf.set('WORDS_BIGENDIAN', 1)
@@ -2306,6 +2319,17 @@ elif cpu.startswith('arm') or cpu == 'aarch32'
   endif
 else
   simd_message = 'no'
+endif
+
+if cc.links('''
+    #include <sys/types.h>
+    #include <unistd.h>
+    int main(void) {
+      pid_t (*current_pid)(void) = getpid;
+      return current_pid() == (pid_t)-1;
+    }
+  ''', name: 'getpid declared in unistd.h')
+  conf.set('HAVE_GETPID', 1)
 endif
 
 # Meson can report false positives for a few GNU/MSVC probes when the compiler

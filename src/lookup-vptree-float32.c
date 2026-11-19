@@ -58,9 +58,8 @@
  * policy. Only an isolated, proven noncontracting build defines the SIMD
  * gate; amalgamation and unknown arithmetic settings keep scalar lookup.
  * Neither pragmas nor an explicit fma may change the surrounding sources. */
-#if defined(SIXEL_FLOAT_LOOKUP_EXACT_SIMD) && !defined(__FAST_MATH__) \
-    && ((SIXEL_SIMD_NEON_A64) \
-        || (defined(SIXEL_VPTREE_FLOAT_SSE2)))
+#if defined(SIXEL_FLOAT_LOOKUP_EXACT_SIMD) && \
+    (SIXEL_SIMD_NEON_A64 || defined(SIXEL_VPTREE_FLOAT_SSE2))
 #define SIXEL_FLOAT_LOOKUP_SIMD 1
 #else
 #define SIXEL_FLOAT_LOOKUP_SIMD 0

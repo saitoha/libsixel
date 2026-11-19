@@ -21158,6 +21158,36 @@ esac
   *) :
      ;;
 esac
+# cosmocc builds both architectures with one configured header. Pass the
+# active architecture to each compiler so it can use its configured kernels.
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler builds Cosmopolitan fat objects" >&5
+printf %s "checking whether the compiler builds Cosmopolitan fat objects... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifndef __FATCOSMOCC__
+#error A separate configuration is used for each target
+#endif
+int main(void) { return 0; }
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+printf "%s\n" "#define SIXEL_SIMD_SHARED_CONFIG 1" >>confdefs.h
+
+  AM_CFLAGS="$AM_CFLAGS -Xx86_64-DSIXEL_SIMD_TARGET_X86=1 -Xaarch64-DSIXEL_SIMD_TARGET_A64=1"
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
 # Kernels that view vector lanes as packed bytes need the byte order.
  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether byte ordering is bigendian" >&5
 printf %s "checking whether byte ordering is bigendian... " >&6; }
@@ -29814,6 +29844,42 @@ if test "x$have_neon_a64" = xyes; then
 printf "%s\n" "#define HAVE_NEON_A64 1" >>confdefs.h
 
 fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for getpid declared in unistd.h" >&5
+printf %s "checking for getpid declared in unistd.h... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <unistd.h>
+
+int
+main (void)
+{
+
+    pid_t (*current_pid)(void) = getpid;
+    return current_pid() == (pid_t)-1;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+printf "%s\n" "#define HAVE_GETPID 1" >>confdefs.h
+
+
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
 
 if test "x$enable_xsave_probe" = xno; then
     message_xsave_probe=disabled

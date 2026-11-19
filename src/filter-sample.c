@@ -31,7 +31,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#if !defined(_WIN32)
+#if HAVE_GETPID
 #include <unistd.h>
 #endif
 
@@ -241,6 +241,18 @@ sixel_filter_sample_line_spread(unsigned char const *pixels,
     return worst;
 }
 
+#if SIXEL_SAMPLE_SSE2
+/* One of the two unsigned saturating differences is always zero. */
+static __m128i
+sixel_sample_absdiff_sse2(__m128i a, unsigned char const *p)
+{
+    __m128i b;
+
+    b = _mm_loadu_si128((__m128i const *)p);
+    return _mm_or_si128(_mm_subs_epu8(a, b), _mm_subs_epu8(b, a));
+}
+#endif
+
 #if SIXEL_SAMPLE_VECTOR
 /* Solid test for up to 16 points x0, x0 + 3, ...: both[k] is nonzero when
  * the horizontal and the vertical five-pixel lines through point k each
@@ -258,16 +270,29 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
                                 int points,
                                 unsigned char *both)
 {
-    unsigned char horizontal[(3 * 15 + 1) * 4];
-    unsigned char vertical[(3 * 15 + 1) * 4];
+    unsigned char horizontal[(3 * 15 + 1) * 4] = {0};
+    unsigned char vertical[(3 * 15 + 1) * 4] = {0};
     unsigned char const *centre;
+    unsigned char const *pixel;
     size_t row;
     size_t bytes;
     size_t b;
     int k;
     int c;
+    int m;
+    int d;
+    int i;
     unsigned char h;
     unsigned char v;
+#if SIXEL_SAMPLE_NEON
+    uint8x16_t middle;
+    uint8x16_t across;
+    uint8x16_t down;
+#else
+    __m128i middle;
+    __m128i across;
+    __m128i down;
+#endif
 
     row = (size_t)width * (size_t)depth;
     centre = pixels + ((size_t)y * (size_t)width + (size_t)x0)
@@ -275,10 +300,6 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
     bytes = (size_t)(3 * (points - 1) + 1) * (size_t)depth;
     for (b = 0; b + 16 <= bytes; b += 16) {
 #if SIXEL_SAMPLE_NEON
-        uint8x16_t middle;
-        uint8x16_t across;
-        uint8x16_t down;
-
         middle = vld1q_u8(centre + b);
         across = vmaxq_u8(
             vmaxq_u8(vabdq_u8(middle, vld1q_u8(centre + b - depth)),
@@ -293,49 +314,39 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
         vst1q_u8(horizontal + b, across);
         vst1q_u8(vertical + b, down);
 #else
-        /* |a - b| on unsigned bytes is the OR of both saturating
-         * differences, one of which is zero. */
-#define SIXEL_SAMPLE_ABD(a, p) \
-        _mm_or_si128(_mm_subs_epu8((a), \
-                         _mm_loadu_si128((__m128i const *)(p))), \
-                     _mm_subs_epu8(_mm_loadu_si128((__m128i const *)(p)), \
-                         (a)))
-        __m128i middle;
-        __m128i across;
-        __m128i down;
-
         middle = _mm_loadu_si128((__m128i const *)(centre + b));
         across = _mm_max_epu8(
-            _mm_max_epu8(SIXEL_SAMPLE_ABD(middle, centre + b - depth),
-                         SIXEL_SAMPLE_ABD(middle, centre + b + depth)),
-            _mm_max_epu8(SIXEL_SAMPLE_ABD(middle, centre + b - 2 * depth),
-                         SIXEL_SAMPLE_ABD(middle, centre + b + 2 * depth)));
+            _mm_max_epu8(sixel_sample_absdiff_sse2(middle, centre + b - depth),
+                         sixel_sample_absdiff_sse2(middle, centre + b + depth)),
+            _mm_max_epu8(sixel_sample_absdiff_sse2(middle,
+                centre + b - 2 * depth),
+                         sixel_sample_absdiff_sse2(middle,
+                             centre + b + 2 * depth)));
         down = _mm_max_epu8(
-            _mm_max_epu8(SIXEL_SAMPLE_ABD(middle, centre + b - row),
-                         SIXEL_SAMPLE_ABD(middle, centre + b + row)),
-            _mm_max_epu8(SIXEL_SAMPLE_ABD(middle, centre + b - 2 * row),
-                         SIXEL_SAMPLE_ABD(middle, centre + b + 2 * row)));
-#undef SIXEL_SAMPLE_ABD
+            _mm_max_epu8(sixel_sample_absdiff_sse2(middle, centre + b - row),
+                         sixel_sample_absdiff_sse2(middle, centre + b + row)),
+            _mm_max_epu8(sixel_sample_absdiff_sse2(middle,
+                centre + b - 2 * row),
+                         sixel_sample_absdiff_sse2(middle,
+                             centre + b + 2 * row)));
         _mm_storeu_si128((__m128i *)(horizontal + b), across);
         _mm_storeu_si128((__m128i *)(vertical + b), down);
 #endif
     }
     for (; b < bytes; ++b) {
-        int m;
-        int d;
-        int i;
-
-        m = centre[b];
+        /* Step backward from the current byte without wrapping an index. */
+        pixel = centre + b;
+        m = *pixel;
         h = 0;
         v = 0;
         for (i = 1; i <= 2; ++i) {
-            d = abs((int)centre[b - (size_t)(i * depth)] - m);
+            d = abs((int)*(pixel - (size_t)(i * depth)) - m);
             if (d > h) h = (unsigned char)d;
-            d = abs((int)centre[b + (size_t)(i * depth)] - m);
+            d = abs((int)*(pixel + (size_t)(i * depth)) - m);
             if (d > h) h = (unsigned char)d;
-            d = abs((int)centre[b - (size_t)i * row] - m);
+            d = abs((int)*(pixel - (size_t)i * row) - m);
             if (d > v) v = (unsigned char)d;
-            d = abs((int)centre[b + (size_t)i * row] - m);
+            d = abs((int)*(pixel + (size_t)i * row) - m);
             if (d > v) v = (unsigned char)d;
         }
         horizontal[b] = h;
@@ -355,6 +366,15 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
 #endif
 
 #if SIXEL_SAMPLE_AVX2
+static SIXEL_SAMPLE_TARGET_AVX2 __m256i
+sixel_sample_absdiff_avx2(__m256i a, unsigned char const *p)
+{
+    __m256i b;
+
+    b = _mm256_loadu_si256((__m256i const *)p);
+    return _mm256_or_si256(_mm256_subs_epu8(a, b), _mm256_subs_epu8(b, a));
+}
+
 /* vary_points() for 5 to 32 points on 32-byte vectors. A last vector that
  * would pass the end overlaps the previous one instead of leaving a scalar
  * tail, so at least 32 bytes are needed. The tolerance test packs into bit
@@ -397,27 +417,22 @@ sixel_filter_sample_vary_points_avx2(unsigned char const *pixels,
         if (b + 32 > bytes) {
             b = bytes - 32;
         }
-        /* |a - b| on unsigned bytes is the OR of both saturating
-         * differences, one of which is zero. */
-#define SIXEL_SAMPLE_ABD256(a, p) \
-        _mm256_or_si256(_mm256_subs_epu8((a), \
-                            _mm256_loadu_si256((__m256i const *)(p))), \
-                        _mm256_subs_epu8( \
-                            _mm256_loadu_si256((__m256i const *)(p)), (a)))
         middle = _mm256_loadu_si256((__m256i const *)(centre + b));
         across = _mm256_max_epu8(
-            _mm256_max_epu8(SIXEL_SAMPLE_ABD256(middle, centre + b - depth),
-                            SIXEL_SAMPLE_ABD256(middle, centre + b + depth)),
+            _mm256_max_epu8(sixel_sample_absdiff_avx2(middle,
+                centre + b - depth),
+                            sixel_sample_absdiff_avx2(middle,
+                                centre + b + depth)),
             _mm256_max_epu8(
-                SIXEL_SAMPLE_ABD256(middle, centre + b - 2 * depth),
-                SIXEL_SAMPLE_ABD256(middle, centre + b + 2 * depth)));
+                sixel_sample_absdiff_avx2(middle, centre + b - 2 * depth),
+                sixel_sample_absdiff_avx2(middle, centre + b + 2 * depth)));
         down = _mm256_max_epu8(
-            _mm256_max_epu8(SIXEL_SAMPLE_ABD256(middle, centre + b - row),
-                            SIXEL_SAMPLE_ABD256(middle, centre + b + row)),
+            _mm256_max_epu8(sixel_sample_absdiff_avx2(middle, centre + b - row),
+                            sixel_sample_absdiff_avx2(middle,
+                                centre + b + row)),
             _mm256_max_epu8(
-                SIXEL_SAMPLE_ABD256(middle, centre + b - 2 * row),
-                SIXEL_SAMPLE_ABD256(middle, centre + b + 2 * row)));
-#undef SIXEL_SAMPLE_ABD256
+                sixel_sample_absdiff_avx2(middle, centre + b - 2 * row),
+                sixel_sample_absdiff_avx2(middle, centre + b + 2 * row)));
         _mm256_storeu_si256((__m256i *)(horizontal + b), across);
         _mm256_storeu_si256((__m256i *)(vertical + b), down);
         if (b + 32 >= bytes) {
@@ -650,7 +665,7 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
     int sample_width;
 #if SIXEL_SAMPLE_VECTOR
     unsigned char varies[SIXEL_SAMPLE_CHUNK_MAX];
-    unsigned char solid[SIXEL_SAMPLE_CHUNK_MAX];
+    unsigned char solid[SIXEL_SAMPLE_CHUNK_MAX] = {0};
     int chunk_points;
     int solid_count;
     int vector_row;
@@ -826,7 +841,7 @@ static sixel_atomic_u32_t g_sample_pool_busy;
 static sixel_thread_pool_t *g_sample_pool;
 static sixel_filter_sample_job_t *g_sample_pool_job;
 static int g_sample_pool_jobs;
-#if !defined(_WIN32)
+#if HAVE_GETPID
 static pid_t g_sample_pool_pid;
 #endif
 
@@ -883,7 +898,7 @@ sixel_filter_sample_pool_acquire(sixel_filter_sample_job_t *ctx)
         return NULL;
     }
     pool = g_sample_pool;
-#if !defined(_WIN32)
+#if HAVE_GETPID
     if (pool != NULL && g_sample_pool_pid != getpid()) {
         /* Inherited across fork: its workers do not exist here. */
         pool = NULL;
@@ -910,7 +925,7 @@ sixel_filter_sample_pool_acquire(sixel_filter_sample_job_t *ctx)
         }
         g_sample_pool = pool;
         g_sample_pool_jobs = ctx->jobs;
-#if !defined(_WIN32)
+#if HAVE_GETPID
         g_sample_pool_pid = getpid();
 #endif
     }

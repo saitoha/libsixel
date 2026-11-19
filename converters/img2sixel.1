@@ -465,8 +465,8 @@ availability may overlap adaptive sampling with other work, but does not
 select the sampling policy. \fBauto\fP resolves to
 \fBadaptive\-grid\fP at every thread count, including one thread.
 The \fBSIXEL_SAMPLING_POLICY\fP environment provides the default.
-Suboption \fBsolid\fP=\fBon\fP|\fBoff\fP (short \fBS\fP, default
-\fBon\fP) controls solid-region augmentation of adaptive samples.
+Suboption \fBsolid=S\fP accepts \fBon\fP or \fBoff\fP (default
+\fBon\fP) and controls solid-region augmentation of adaptive samples.
 \fBoff\fP skips the source scan for solid regions, which saves CPU time,
 but a thin solid feature then enters the palette only when the sampling grid
 lands on it. \fBSIXEL_SAMPLING_SOLID\fP provides its default.

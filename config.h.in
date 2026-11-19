@@ -288,6 +288,9 @@
 /* Define to 1 if you have the `getpgid' function. */
 #undef HAVE_GETPGID
 
+/* Define if unistd.h declares getpid */
+#undef HAVE_GETPID
+
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
@@ -749,6 +752,9 @@
 
 /* file(1) option used to obtain MIME type in thumbnailer loader. */
 #undef SIXEL_FILE_MIME_OPTION
+
+/* Define if x86-64 and AArch64 share the SIMD configuration */
+#undef SIXEL_SIMD_SHARED_CONFIG
 
 /* Define if printf-family functions need PRIuMAX for size_t formatting. */
 #undef SIXEL_SNPRINTF_NEEDS_PRIUMAX

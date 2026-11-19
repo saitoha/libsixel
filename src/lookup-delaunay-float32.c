@@ -43,8 +43,7 @@
 
 /* Follow the existing isolated float-lookup build policy. Unknown native
  * contraction settings and amalgamation retain the scalar expression. */
-#if defined(SIXEL_FLOAT_LOOKUP_EXACT_SIMD) && !defined(__FAST_MATH__) \
-    && FLT_EVAL_METHOD == 0
+#if defined(SIXEL_FLOAT_LOOKUP_EXACT_SIMD)
 #if SIXEL_SIMD_NEON_A64
 #include <arm_neon.h>
 #define SIXEL_DLF_SIMD 1
