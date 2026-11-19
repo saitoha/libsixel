@@ -13624,6 +13624,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin tools/compa
     _static/sh/staticcheck-test-macro-isolation.sh \
     _static/awk/c-conditional-operand.awk \
     _static/sh/staticcheck-c-conditional-operand.sh \
+    _static/sh/staticcheck-indexed-gpu-fixture-sign-conversion.sh \
     _static/awk/hdr-exposure-rounding.awk \
     _static/sh/staticcheck-hdr-exposure-rounding.sh \
     _static/awk/c-octal-escape-boundary.awk \
