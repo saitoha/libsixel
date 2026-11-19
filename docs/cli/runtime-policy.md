@@ -10,7 +10,7 @@ img2sixel -j auto -o native.six image.png
 sixel2png -j scalar -i native.six -o decoded.png
 ```
 
-Accepted base values are `auto`, `none`, `scalar`, `sse2`, `avx`, and `neon`; `none` and `scalar` request the scalar ceiling. `auto` permits the compiled implementation to use detected native capabilities. A requested ceiling is combined with the build, runtime CPU capabilities, pixel representation, and the implementations available in each stage. It cannot add an instruction set to a build or guarantee vectorization of every operation. The enum ordering is internal; do not interpret an architecture name as a portable request to emulate another CPU.
+Accepted base values are `auto`, `none`, `scalar`, `sse2`, `avx`, `avx2`, and `neon`; `none` and `scalar` request the scalar ceiling. `auto` permits the compiled implementation to use detected native capabilities. A requested ceiling is combined with the build, runtime CPU capabilities, pixel representation, and the implementations available in each stage. It cannot add an instruction set to a build or guarantee vectorization of every operation. The enum ordering is internal; do not interpret an architecture name as a portable request to emulate another CPU.
 
 `SIXEL_SIMD_LEVEL` supplies the environment fallback. Explicit `-j` policy takes precedence. Runtime policy is process-level state, and several consumers cache their resolved settings on first use. Configure it before processing starts; separate processes are the reliable way to compare policies. This is not an API for independently retuning concurrent encoder instances.
 

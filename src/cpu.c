@@ -148,7 +148,9 @@ sixel_cpu_detect_native(void)
      * __cpu_indicator_init). Skip the builtin path there and use the
      * intrinsics-based detection instead.
      */
-    if (__builtin_cpu_supports("avx")) {
+    if (__builtin_cpu_supports("avx2")) {
+        level = SIXEL_SIMD_LEVEL_AVX2;
+    } else if (__builtin_cpu_supports("avx")) {
         level = SIXEL_SIMD_LEVEL_AVX;
     } else if (__builtin_cpu_supports("sse2")) {
         level = SIXEL_SIMD_LEVEL_SSE2;
@@ -162,6 +164,14 @@ sixel_cpu_detect_native(void)
         xcr0 = _xgetbv(0);
         if ((xcr0 & 0x6) == 0x6) {
             level = SIXEL_SIMD_LEVEL_AVX;
+            /* AVX2 is leaf 7 EBX bit 5; XCR0 above covers its state. */
+            __cpuid(cpu_info, 0);
+            if (cpu_info[0] >= 7) {
+                __cpuidex(cpu_info, 7, 0);
+                if (cpu_info[1] & (1 << 5)) {
+                    level = SIXEL_SIMD_LEVEL_AVX2;
+                }
+            }
         }
     }
 #  endif
@@ -192,6 +202,14 @@ sixel_cpu_detect_native(void)
             xcr0 = _xgetbv(0);
             if ((xcr0 & 0x6) == 0x6) {
                 level = SIXEL_SIMD_LEVEL_AVX;
+                /* AVX2 is leaf 7 EBX bit 5; XCR0 above covers its
+                 * state. */
+                if (__get_cpuid_max(0, NULL) >= 7) {
+                    __cpuid_count(7, 0, eax, ebx, ecx, edx);
+                    if ((ebx & (1U << 5)) != 0) {
+                        level = SIXEL_SIMD_LEVEL_AVX2;
+                    }
+                }
             }
         }
 #   endif

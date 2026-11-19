@@ -170,7 +170,7 @@ The decoder suboption \fB:dequant_threshold=PIXELS\fP, with short form
 .TP 5
 .B \-j POLICY[:KEY=VALUE], \-\-runtime\-policy=POLICY[:KEY=VALUE]
 Choose process-wide runtime tuning. POLICY is \fBauto\fP,
-\fBnone/scalar\fP, \fBsse2\fP, \fBavx\fP, or \fBneon\fP and limits the SIMD
+\fBnone/scalar\fP, \fBsse2\fP, \fBavx\fP, \fBavx2\fP, or \fBneon\fP and limits the SIMD
 implementation selected at runtime.
 The decoder suboption \fB:parallel_skew=-20..20\fP, with short form
 \fB:KVALUE\fP, biases decoder worker spans.
@@ -287,7 +287,7 @@ A nonpositive API count means all.
 .TP 5
 .B SIXEL_SIMD_LEVEL
 .br
-Limit SIMD selection to auto, none/scalar, sse2, avx, or neon.
+Limit SIMD selection to auto, none/scalar, sse2, avx, avx2, or neon.
 The \fB\-j\fP runtime policy base takes precedence.
 .TP 5
 .B SIXEL_PARALLEL_SKEW

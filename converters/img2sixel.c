@@ -859,8 +859,8 @@ static cli_option_help_t const g_option_help_table[] = {
         'j',
         "runtime-policy",
         "-j POLICY[:KEY=VALUE], --runtime-policy=POLICY[:KEY=VALUE]\n"
-        "    select the SIMD ceiling: auto, none/scalar, sse2, avx, or\n"
-        "    neon.\n"
+        "    select the SIMD ceiling: auto, none/scalar, sse2, avx, avx2,\n"
+        "    or neon.\n"
         "    encoder sub-options:\n"
         "      :colorspace_min=PIXELS (:CPIXELS)\n"
         "      :sample_min=PIXELS (:SPIXELS)\n"
@@ -1875,8 +1875,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_SIMD_LEVEL",
-        "force SIMD selection. Accepts auto, none/scalar, sse2, avx, or\n"
-        "neon. Overridden by the -j runtime policy base."
+        "force SIMD selection. Accepts auto, none/scalar, sse2, avx, avx2,\n"
+        "or neon. Overridden by the -j runtime policy base."
     },
     {
         "SIXEL_THUMBNAILER_HINT_SIZE",

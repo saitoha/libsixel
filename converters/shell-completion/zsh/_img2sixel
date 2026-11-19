@@ -922,7 +922,8 @@ _runtimepolicy() {
     base=${current%%:*}
     segment=${current##*:}
     if [[ ${base} == auto || ${base} == scalar || ${base} == none || \
-          ${base} == sse2 || ${base} == avx || ${base} == neon ]]; then
+          ${base} == sse2 || ${base} == avx || ${base} == avx2 || \
+          ${base} == neon ]]; then
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%"${segment}"}
@@ -977,6 +978,7 @@ _runtimepolicy() {
     'none[alias for scalar]' \
     'sse2[limit SIMD selection to SSE2]' \
     'avx[limit SIMD selection to AVX]' \
+    'avx2[limit SIMD selection to AVX2]' \
     'neon[limit SIMD selection to NEON]'
 }
 

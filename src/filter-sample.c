@@ -53,7 +53,21 @@
 #endif
 /* Either vector unit runs the chunked solid test below. */
 #define SIXEL_SAMPLE_VECTOR (SIXEL_SAMPLE_NEON || SIXEL_SAMPLE_SSE2)
+/* GCC and Clang compile the AVX2 test for its own function only; the CPU
+ * check at run time decides whether it is called. */
+#if SIXEL_SAMPLE_SSE2 && defined(HAVE_IMMINTRIN_H) && \
+    (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__) && \
+    (defined(__x86_64__) || defined(__i386__))
+# include <immintrin.h>
+# define SIXEL_SAMPLE_AVX2 1
+# define SIXEL_SAMPLE_TARGET_AVX2 __attribute__((target("avx2")))
+#else
+# define SIXEL_SAMPLE_AVX2 0
+#endif
+/* Points per chunk: the AVX2 test takes twice the 16 of the others. */
+#define SIXEL_SAMPLE_CHUNK_MAX (SIXEL_SAMPLE_AVX2 ? 32 : 16)
 #include "compat_stub.h"
+#include "cpu.h"
 #include "filter.h"
 #include "frame-factory.h"
 #include "frame.h"
@@ -342,6 +356,107 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
 }
 #endif
 
+#if SIXEL_SAMPLE_AVX2
+/* vary_points() for 5 to 32 points on 32-byte vectors. A last vector that
+ * would pass the end overlaps the previous one instead of leaving a scalar
+ * tail, so at least 32 bytes are needed. The tolerance test packs into bit
+ * masks, and each point reads its channels from them with one shift. The
+ * same bounds as vary_points() apply. */
+static SIXEL_SAMPLE_TARGET_AVX2 void
+sixel_filter_sample_vary_points_avx2(unsigned char const *pixels,
+                                     int width,
+                                     int depth,
+                                     int x0,
+                                     int y,
+                                     int points,
+                                     unsigned char *both)
+{
+    unsigned char horizontal[(3 * 31 + 1) * 4 + 32];
+    unsigned char vertical[(3 * 31 + 1) * 4 + 32];
+    unsigned char above[((3 * 31 + 1) * 4 + 32) / 8 + 4];
+    unsigned char below[((3 * 31 + 1) * 4 + 32) / 8 + 4];
+    unsigned char const *centre;
+    __m256i tolerance;
+    __m256i zero;
+    size_t row;
+    size_t bytes;
+    size_t b;
+    unsigned int mask;
+    unsigned int h;
+    unsigned int v;
+    unsigned int bit;
+    int k;
+
+    row = (size_t)width * (size_t)depth;
+    centre = pixels + ((size_t)y * (size_t)width + (size_t)x0)
+                      * (size_t)depth;
+    bytes = (size_t)(3 * (points - 1) + 1) * (size_t)depth;
+    for (b = 0;; b += 32) {
+        __m256i middle;
+        __m256i across;
+        __m256i down;
+
+        if (b + 32 > bytes) {
+            b = bytes - 32;
+        }
+        /* |a - b| on unsigned bytes is the OR of both saturating
+         * differences, one of which is zero. */
+#define SIXEL_SAMPLE_ABD256(a, p) \
+        _mm256_or_si256(_mm256_subs_epu8((a), \
+                            _mm256_loadu_si256((__m256i const *)(p))), \
+                        _mm256_subs_epu8( \
+                            _mm256_loadu_si256((__m256i const *)(p)), (a)))
+        middle = _mm256_loadu_si256((__m256i const *)(centre + b));
+        across = _mm256_max_epu8(
+            _mm256_max_epu8(SIXEL_SAMPLE_ABD256(middle, centre + b - depth),
+                            SIXEL_SAMPLE_ABD256(middle, centre + b + depth)),
+            _mm256_max_epu8(
+                SIXEL_SAMPLE_ABD256(middle, centre + b - 2 * depth),
+                SIXEL_SAMPLE_ABD256(middle, centre + b + 2 * depth)));
+        down = _mm256_max_epu8(
+            _mm256_max_epu8(SIXEL_SAMPLE_ABD256(middle, centre + b - row),
+                            SIXEL_SAMPLE_ABD256(middle, centre + b + row)),
+            _mm256_max_epu8(
+                SIXEL_SAMPLE_ABD256(middle, centre + b - 2 * row),
+                SIXEL_SAMPLE_ABD256(middle, centre + b + 2 * row)));
+#undef SIXEL_SAMPLE_ABD256
+        _mm256_storeu_si256((__m256i *)(horizontal + b), across);
+        _mm256_storeu_si256((__m256i *)(vertical + b), down);
+        if (b + 32 >= bytes) {
+            break;
+        }
+    }
+    /* Bits past the last byte are never read by a point, but keep them
+     * defined. */
+    memset(horizontal + bytes, 0, 32 - bytes % 32);
+    memset(vertical + bytes, 0, 32 - bytes % 32);
+    tolerance = _mm256_set1_epi8((char)SIXEL_SAMPLE_SOLID_TOL);
+    zero = _mm256_setzero_si256();
+    for (b = 0; b < bytes; b += 32) {
+        mask = ~(unsigned int)_mm256_movemask_epi8(_mm256_cmpeq_epi8(
+            _mm256_subs_epu8(
+                _mm256_loadu_si256((__m256i const *)(horizontal + b)),
+                tolerance),
+            zero));
+        memcpy(above + b / 8, &mask, 4);
+        mask = ~(unsigned int)_mm256_movemask_epi8(_mm256_cmpeq_epi8(
+            _mm256_subs_epu8(
+                _mm256_loadu_si256((__m256i const *)(vertical + b)),
+                tolerance),
+            zero));
+        memcpy(below + b / 8, &mask, 4);
+    }
+    mask = (1u << depth) - 1u;
+    for (k = 0; k < points; ++k) {
+        bit = (unsigned int)(3 * k * depth);
+        memcpy(&h, above + bit / 8, 4);
+        memcpy(&v, below + bit / 8, 4);
+        both[k] = (unsigned char)(((h >> (bit % 8)) & mask) != 0
+                                  && ((v >> (bit % 8)) & mask) != 0);
+    }
+}
+#endif
+
 #if SIXEL_SAMPLE_NEON
 
 /* The same test for 15 RGB points x0, x0 + 3, ..., x0 + 42, computing only
@@ -536,13 +651,16 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
     int stride;
     int sample_width;
 #if SIXEL_SAMPLE_VECTOR
-    unsigned char varies[16];
-    unsigned char solid[16];
+    unsigned char varies[SIXEL_SAMPLE_CHUNK_MAX];
+    unsigned char solid[SIXEL_SAMPLE_CHUNK_MAX];
     int chunk_points;
     int solid_count;
     int vector_row;
     int last_inner;
     int k;
+#endif
+#if SIXEL_SAMPLE_AVX2
+    int avx2;
 #endif
 
     (void)workspace;
@@ -596,6 +714,9 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
         }
         cells = ctx->cells + (size_t)job.band_index
             * SIXEL_SAMPLE_SOLID_CELLS;
+#if SIXEL_SAMPLE_AVX2
+        avx2 = sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_AVX2;
+#endif
         for (row = first; row < end; ++row) {
             y = clip_y + row * SIXEL_SAMPLE_SOLID_STRIDE;
 #if SIXEL_SAMPLE_VECTOR
@@ -622,6 +743,15 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
                         chunk_points = 15;
                         sixel_filter_sample_vary_points_rgb15(pixels, width,
                             x, y, varies);
+                    } else
+#endif
+#if SIXEL_SAMPLE_AVX2
+                    if (avx2 && chunk_points >= 5) {
+                        if (chunk_points > 32) {
+                            chunk_points = 32;
+                        }
+                        sixel_filter_sample_vary_points_avx2(pixels, width,
+                            depth, x, y, chunk_points, varies);
                     } else
 #endif
                     {
