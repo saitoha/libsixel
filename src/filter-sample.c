@@ -872,6 +872,9 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
     unsigned int seen;
     sixel_filter_sample_job_t ctx;
     sixel_filter_sample_solid_cell_t *partial;
+    unsigned int *merged;
+    unsigned int const *counters;
+    size_t word;
     unsigned int cell;
     int part;
     int c;
@@ -936,15 +939,15 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
     sixel_filter_sample_dispatch(&ctx);
     if (partial != NULL) {
         /* Unsigned sums have the same modular arithmetic as the serial
-         * scan. Merge in job order; selection and tie breaking stay serial. */
+         * scan. Merge in job order; selection and tie breaking stay serial.
+         * Channels past depth stay zero in every zeroed histogram, so the
+         * cells merge as one flat array of counters, which vectorizes. */
+        merged = &cells[0].count;
         for (part = 0; part < ctx.jobs; ++part) {
-            for (cell = 0; cell < SIXEL_SAMPLE_SOLID_CELLS; ++cell) {
-                cells[cell].count += partial[
-                    (size_t)part * SIXEL_SAMPLE_SOLID_CELLS + cell].count;
-                for (c = 0; c < depth; ++c) {
-                    cells[cell].sum[c] += partial[
-                        (size_t)part * SIXEL_SAMPLE_SOLID_CELLS + cell].sum[c];
-                }
+            counters = &partial[(size_t)part * SIXEL_SAMPLE_SOLID_CELLS].count;
+            for (word = 0; word < SIXEL_SAMPLE_SOLID_CELLS
+                    * (sizeof(*cells) / sizeof(unsigned int)); ++word) {
+                merged[word] += counters[word];
             }
         }
         sixel_allocator_free(allocator, partial);
