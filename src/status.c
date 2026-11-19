@@ -153,6 +153,9 @@ sixel_debugf(char const *fmt, ...)
 # define SIXEL_STATUS_NO_TLS_COMPILER 0
 #endif
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_STATUS_TLS
+#else
 #if defined(_MSC_VER)
 # if defined(_MT)
 #  define SIXEL_STATUS_TLS __declspec(thread)
@@ -167,6 +170,7 @@ sixel_debugf(char const *fmt, ...)
 # define SIXEL_STATUS_TLS __thread
 #else
 # define SIXEL_STATUS_TLS
+#endif
 #endif
 
 typedef struct sixel_status_message_store {

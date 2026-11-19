@@ -101,6 +101,10 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	build-aux/test-suite-report.sh \
 	build-aux/read-check-test-list.sh \
 	build-aux/cli-color-tty-probe.c \
+	build-aux/avx2-target-probe.c \
+	build-aux/fhedt-heap-probe.c \
+	build-aux/native-tls-probe.c \
+	build-aux/pthread-probe.c \
 	build-aux/libpng-api-probe.c \
 	build-aux/resolve-binding-test-common.sh \
 	build-aux/resolve-config-h-exports.sh \
@@ -436,6 +440,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/misc/platforms/haiku.md \
 	docs/misc/platforms/macos.md \
 	docs/misc/platforms/mingw.md \
+	docs/misc/platforms/minix.md \
 	docs/misc/platforms/msvc.md \
 	docs/misc/platforms/openvms.md \
 	docs/misc/platforms/posix-runtimes.md \

@@ -12,7 +12,7 @@ awk '
 /AS_IF\(\[test "x\$using_clangcl" = xyes\], \[/ { clangcl = 1; next }
 clangcl && /sixel_response_flag=-clang:-Wl,@/ { flag = 1 }
 clangcl && /\]\)/ { clangcl = 0 }
-/LIBS="\$\{sixel_response_flag\}conftest-response.objects \$LIBS"/ { input = 1 }
+/LIBS="\$\{sixel_response_flag\}conftest-response.objects \$sixel_response_save_LIBS"/ { input = 1 }
 /return sixel_response_probe\(\)/ { reference = 1 }
 /sixel_cv_cc_object_response_flag=\$sixel_response_flag/ { probed = 1 }
 /SIXEL_TEST_RUNNER_RESPONSE_FLAG=\$sixel_cv_cc_object_response_flag/ { result = 1 }

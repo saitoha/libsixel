@@ -279,6 +279,9 @@
 /* Define to 1 if you have the `getopt_long' function. */
 #undef HAVE_GETOPT_LONG
 
+/* Define to 1 if you have the `getpgid' function. */
+#undef HAVE_GETPGID
+
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
@@ -329,6 +332,9 @@
 
 /* whether libfetch is available */
 #undef HAVE_LIBFETCH
+
+/* Define to 1 if libfetch exposes the fetchIO API */
+#undef HAVE_LIBFETCH_FETCHIO
 
 /* Define to 1 if you have the 'iconv' library (-liconv). */
 #undef HAVE_LIBICONV
@@ -635,6 +641,9 @@
 /* Define to 1 if fma preserves product residuals. */
 #undef HAVE_WORKING_FMA
 
+/* Define if functions can target AVX2 independently */
+#undef HAVE_X86_AVX2_TARGET
+
 /* Define to 1 if _xgetbv is available without extra flags */
 #undef HAVE_XGETBV_INTRIN
 
@@ -723,6 +732,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Use fallbacks when executable thread-local storage is unusable */
+#undef SIXEL_DISABLE_TLS
+
 /* Define to 1 if CLI abort tracing is enabled */
 #undef SIXEL_ENABLE_ABORT_TRACE
 
@@ -734,6 +746,9 @@
 
 /* Define if printf-family functions need PRIuMAX for size_t formatting. */
 #undef SIXEL_SNPRINTF_NEEDS_PRIUMAX
+
+/* Split the FHEDT distance grid for limited native heaps */
+#undef SIXEL_SPLIT_FHEDT_DISTANCE_GRID
 
 /* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for

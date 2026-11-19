@@ -165,12 +165,16 @@ sixel_kmeans_gpu_worthwhile(unsigned int points, unsigned int centers,
 }
 
 #if defined(HAVE_TESTS)
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_KM_TEST_TLS
+#else
 #if defined(_MSC_VER)
 #define SIXEL_KM_TEST_TLS __declspec(thread)
 #elif defined(__GNUC__) || defined(__clang__)
 #define SIXEL_KM_TEST_TLS __thread
 #else
 #define SIXEL_KM_TEST_TLS
+#endif
 #endif
 static SIXEL_KM_TEST_TLS int sixel_km_test_failure;
 static SIXEL_KM_TEST_TLS unsigned int sixel_km_test_attempt;

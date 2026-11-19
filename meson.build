@@ -669,6 +669,28 @@ foreach f: flags
   endif
 endforeach
 
+# Check executable access to TLS with the same flags as the build.
+if meson.can_run_host_binaries()
+  tls_probe = cc.run(files('build-aux/native-tls-probe.c')[0], args: flags,
+                     name: 'executable thread-local storage')
+  if not tls_probe.compiled() or tls_probe.returncode() != 0
+    conf.set('SIXEL_DISABLE_TLS', 1)
+  endif
+elif host_system == 'minix'
+  conf.set('SIXEL_DISABLE_TLS', 1)
+endif
+
+# The largest FHEDT distance grid can exceed a single heap allocation.
+if meson.can_run_host_binaries()
+  heap_probe = cc.run(files('build-aux/fhedt-heap-probe.c')[0], args: flags,
+                      name: 'single R=256 FHEDT distance allocation')
+  if not heap_probe.compiled() or heap_probe.returncode() != 0
+    conf.set('SIXEL_SPLIT_FHEDT_DISTANCE_GRID', 1)
+  endif
+elif host_system == 'minix'
+  conf.set('SIXEL_SPLIT_FHEDT_DISTANCE_GRID', 1)
+endif
+
 wflags = cc.get_supported_arguments([
     '-Wdeprecated-declarations',
     '-Wunused-but-set-variable',
@@ -858,6 +880,7 @@ extra_funcs = [
   'nanosleep',
   'usleep',
   'fork',
+  'getpgid',
   'waitpid',
   'posix_spawnp',
   'execvp',
@@ -875,6 +898,7 @@ func_prefixes = {
   '_commit': '#include <io.h>',
   'open': '#include <fcntl.h>',
   'clock_gettime': '#define _POSIX_C_SOURCE 200809L\n#include <time.h>',
+  'getpgid': '#define _XOPEN_SOURCE 700\n#include <unistd.h>',
   'waitpid': '#include <sys/types.h>\n#include <sys/wait.h>'
 }
 
@@ -1495,6 +1519,12 @@ endif
 if fetch_dep.found()
   deps += fetch_dep
   conf.set('HAVE_LIBFETCH', 1)
+  if host_system != 'emscripten' and cc.compiles('''
+      #include <fetch.h>
+      typedef fetchIO sixel_fetch_probe_type;
+      ''', dependencies: fetch_dep, name: 'libfetch fetchIO API')
+    conf.set('HAVE_LIBFETCH_FETCHIO', 1)
+  endif
   net += 'libfetch'
 endif
 
@@ -1639,20 +1669,25 @@ elif wic_opt.enabled()
 endif
 
 threads_opt = get_option('threads')
-threads_message = 'no'
 have_threads = false
 if not threads_opt.disabled()
-  conf.set('SIXEL_ENABLE_THREADS', 1)
-  threads_message = 'yes'
-  have_threads = true
-  if host_system != 'windows'
-    threads_dep = dependency('threads', required: true)
-    deps += threads_dep
-    link_libs += threads_dep
+  if host_system == 'windows'
+    have_threads = true
+  else
+    threads_dep = dependency('threads', required: false)
+    if threads_dep.found() and cc.links(
+        files('build-aux/pthread-probe.c')[0], dependencies: threads_dep,
+        name: 'pthread declarations and library')
+      have_threads = true
+      deps += threads_dep
+      link_libs += threads_dep
+    elif threads_opt.enabled()
+      error('pthread support is required when threads are enabled')
+    endif
   endif
-else
-  conf.set('SIXEL_ENABLE_THREADS', 0)
 endif
+conf.set('SIXEL_ENABLE_THREADS', have_threads ? 1 : 0)
+threads_message = have_threads ? 'yes' : 'no'
 
 # Keep JavaScript's worker cleanup responsive during synchronous C work.
 # These flags belong to executable entry points, not library dependencies.
@@ -2081,6 +2116,10 @@ endif
 if (cpu == 'x86' or cpu == 'x86_64') and not is_pcc_backend
   if cc.has_header('immintrin.h')
     conf.set('HAVE_IMMINTRIN_H', 1)
+    if cc.compiles(files('build-aux/avx2-target-probe.c')[0],
+                   name: 'per-function AVX2 target')
+      conf.set('HAVE_X86_AVX2_TARGET', 1)
+    endif
   endif
   if cc.has_header('cpuid.h')
     conf.set('HAVE_CPUID_H', 1)

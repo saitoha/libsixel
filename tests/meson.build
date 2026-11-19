@@ -1,4 +1,5 @@
-sh = find_program('sh')
+# MINIX sh can stall a large pipeline when Meson captures both output streams.
+sh = find_program(build_machine.system() == 'minix' ? 'bash' : 'sh')
 # Validate the exact test tool through the shell that will invoke it. In a
 # native Windows job, another PATH lookup can select a Perl pkg-config shim
 # whose interpreter differs from the one used during setup.
@@ -359,6 +360,8 @@ test_runner_cases = static_library('test_runner_cases', test_runner_sources,
 test_runner_exe = executable('test_runner',
   link_depends: emscripten_link_depends,
   link_args: program_link_args,
+  # Match the converter build-tree search path for absolute TAP invocations.
+  build_rpath: meson.project_build_root() / 'src',
   link_whole: test_runner_cases,
   objects: float_lookup_tests.extract_all_objects(recursive: true),
   include_directories: test_runner_inc,

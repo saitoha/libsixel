@@ -422,6 +422,7 @@ srcs = [
   'lookup-policy-mahalanobis.h',
   'factory.h',
   'lookup-fhedt-8bit.h',
+  'lookup-fhedt-distances.h',
   'lookup-fhedt-float32.h',
   'lookup-vptree-8bit.h',
   'lookup-delaunay-8bit.h',
@@ -453,7 +454,7 @@ srcs = [
 
 if have_metal
   srcs += ['dither-policy-lso2-gpu-metal.m', 'dither-policy-fs-gpu-metal.m', 'dither-policy-atkinson-gpu-metal.m', 'dither-policy-jajuni-gpu-metal.m', 'dither-policy-stucki-gpu-metal.m', 'dither-policy-burkes-gpu-metal.m', 'dither-policy-sierra1-gpu-metal.m', 'dither-policy-sierra2-gpu-metal.m', 'dither-policy-sierra3-gpu-metal.m', 'retained-plane-metal.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
-           'progressive-gpu-metal.m']
+           'encoder-body-gpu-metal.m', 'progressive-gpu-metal.m']
 endif
 
 if have_vulkan

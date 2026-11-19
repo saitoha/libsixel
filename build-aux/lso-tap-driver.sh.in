@@ -29,6 +29,8 @@ set -u
 # Prefer configure-time detected test shell. Allow runtime override for
 # troubleshooting and platform-specific experiments.
 : "${SIXEL_TEST_SHELL:=@SIXEL_TEST_SHELL@}"
+# Older POSIX shells may retain an unset command word during expansion.
+: "${SIXEL_RUNTIME:=}"
 : "${SIXEL_TEST_PYTHON:=}"
 : "${SIXEL_TEST_RUBY:=}"
 : "${SIXEL_TEST_RUBY_GEM_HOME:=}"

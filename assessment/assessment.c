@@ -88,6 +88,9 @@
 #include "timer.h"
 #include "sixel_atomic.h"
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_ASSESSMENT_TLS
+#else
 #if defined(_MSC_VER)
 # define SIXEL_ASSESSMENT_TLS __declspec(thread)
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && \
@@ -95,6 +98,7 @@
 # define SIXEL_ASSESSMENT_TLS _Thread_local
 #else
 # define SIXEL_ASSESSMENT_TLS
+#endif
 #endif
 
 #if defined(_WIN32)

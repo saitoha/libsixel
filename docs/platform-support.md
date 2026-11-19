@@ -126,7 +126,7 @@ The Windows rows include native MSVC-ABI builds, MinGW/UCRT variants, and cross-
 
 ## Tier 2: @saitoha local CI
 
-The local desktop CI catalog contains only the following platform/compiler groups. Grouped cells are summaries rather than claims that every listed dimension is combined with every other dimension.
+The following platform/compiler groups are covered by the local desktop CI support matrix. Grouped cells are summaries rather than claims that every listed dimension is combined with every other dimension.
 
 | OS or environment | CI release/profile | Architecture | Compiler or ABI | Build systems |
 | --- | --- | --- | --- | --- |
@@ -135,7 +135,7 @@ The local desktop CI catalog contains only the following platform/compiler group
 | OpenIndiana | 2025.10 image | x86_64 | GCC 13 | Autotools, Meson |
 | OpenVMS with GNV | 9.2-3 | x86_64 | GNV `cc` environment | Autotools |
 
-The local jobs run on @saitoha-operated desktop infrastructure using containers and virtual machines. Source, runtime, and tool exceptions are indexed in the [Platform Compatibility Ledger](misc/platforms/README.md), including the detailed [GNU/Hurd Compatibility](misc/platforms/gnu-hurd.md) and [OpenVMS Compatibility](misc/platforms/openvms.md) contracts.
+The local jobs run on @saitoha-operated desktop infrastructure using containers and virtual machines. The manual MINIX 3.3.0 i386 smoke job and its coverage are documented in [MINIX Compatibility](misc/platforms/minix.md). Source, runtime, and tool exceptions are indexed in the [Platform Compatibility Ledger](misc/platforms/README.md), including the detailed [GNU/Hurd Compatibility](misc/platforms/gnu-hurd.md) and [OpenVMS Compatibility](misc/platforms/openvms.md) contracts.
 
 ## Matrix maintenance
 

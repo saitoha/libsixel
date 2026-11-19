@@ -263,7 +263,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-policy-rbc.c \
 	$(srcdir)/lookup-policy-mahalanobis.c $(srcdir)/factory.c \
 	$(srcdir)/components.c $(srcdir)/lookup-fhedt-8bit.c \
-	$(srcdir)/lookup-fhedt-8bit.h $(srcdir)/lookup-fhedt-float32.c \
+	$(srcdir)/lookup-fhedt-8bit.h $(srcdir)/lookup-fhedt-distances.h \
+	$(srcdir)/lookup-fhedt-float32.c \
 	$(srcdir)/lookup-fhedt-float32.h \
 	$(srcdir)/lookup-vptree-8bit.c \
 	$(srcdir)/lookup-delaunay-8bit.c \
@@ -1736,6 +1737,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/components.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-fhedt-8bit.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-fhedt-8bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-fhedt-distances.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-fhedt-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-fhedt-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-8bit.c \

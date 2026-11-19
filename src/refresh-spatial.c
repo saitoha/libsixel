@@ -19,9 +19,7 @@
 #endif
 /* GCC and Clang compile the AVX2 passes for their own functions only; the
  * CPU check at run time decides whether they are called. */
-#if defined(HAVE_IMMINTRIN_H) && \
-    (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__) && \
-    (defined(__x86_64__) || defined(__i386__))
+#if defined(HAVE_X86_AVX2_TARGET)
 #define SIXEL_REFRESH_SPATIAL_AVX2 1
 #define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __attribute__((target("avx2")))
 #include <immintrin.h>

@@ -2109,8 +2109,8 @@ Some influential environment variables:
               gzip command used to expand packaged test fixtures
   CKSUM       POSIX checksum utility used by build and test helpers
   SIXEL_TEST_SHELL
-              Shell path used to run TAP test scripts (default: detect dash,
-              sh, then fallback /bin/sh)
+              Shell path used to run TAP test scripts (default: detect a
+              usable dash, sh, or bash)
   CC_FOR_BUILD
               C compiler for build-machine check tools
   CFLAGS_FOR_BUILD
@@ -16133,18 +16133,20 @@ then :
       mv conftest.$ac_objext conftest-response.$ac_objext
       printf '%s\n' "conftest-response.$ac_objext" > conftest-response.objects
       sixel_response_save_LIBS=$LIBS
-      sixel_response_flag=@
-      # clang-cl otherwise expands @file and repacks all objects onto one
-      # linker response line, exceeding link.exe's response-line length limit.
-      # Forward the original one-object-per-line file to the linker instead.
+      # A compiler may expand its response file into an oversized argv for
+      # the linker. Prefer forwarding the list directly when it links.
+      sixel_response_flags="-Wl,@ @"
+      # clang-cl needs special forwarding to preserve linker response lines.
       if test "x$using_clangcl" = xyes
 then :
 
         sixel_response_flag=-clang:-Wl,@
+        sixel_response_flags=$sixel_response_flag
 
 fi
-      LIBS="${sixel_response_flag}conftest-response.objects $LIBS"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      for sixel_response_flag in $sixel_response_flags; do
+        LIBS="${sixel_response_flag}conftest-response.objects $sixel_response_save_LIBS"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 extern int sixel_response_probe(void);
@@ -16160,11 +16162,13 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-        sixel_cv_cc_object_response_flag=$sixel_response_flag
+          sixel_cv_cc_object_response_flag=$sixel_response_flag
+          break
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
+      done
       LIBS=$sixel_response_save_LIBS
       rm -f conftest-response.$ac_objext conftest-response.objects
 
@@ -18416,25 +18420,9 @@ fi
     LIBS="$LIBS -pthread"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <pthread.h>
-static void *dummy(void *arg)
-{
-    (void)arg;
-    return NULL;
-}
-int
-main (void)
-{
-pthread_t thread;
-int rc;
-rc = pthread_create(&thread, NULL, dummy, NULL);
-if (rc == 0) {
-    pthread_join(thread, NULL);
-}
-return rc;
-  ;
-  return 0;
-}
+
+#include "$srcdir/build-aux/pthread-probe.c"
+
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
@@ -18452,55 +18440,25 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_threads" >&5
 printf "%s\n" "$have_threads" >&6; }
     if test "x$have_threads" != "xyes"; then
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
-printf %s "checking for pthread_create in -lpthread... " >&6; }
-if test ${ac_cv_lib_pthread_pthread_create+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpthread  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pthreads with -lpthread" >&5
+printf %s "checking for pthreads with -lpthread... " >&6; }
+      LIBS="$save_LIBS -lpthread"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.
-   The 'extern "C"' is for builds by C++ compilers;
-   although this is not generally supported in C code supporting it here
-   has little cost and some practical benefit (sr 110532).  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char pthread_create (void);
-int
-main (void)
-{
-return pthread_create ();
-  ;
-  return 0;
-}
+#include "$srcdir/build-aux/pthread-probe.c"
+
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_lib_pthread_pthread_create=yes
-else case e in #(
-  e) ac_cv_lib_pthread_pthread_create=no ;;
-esac
+  have_threads="yes"
+         THREAD_LIBS="-lpthread"
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pthread_pthread_create" >&5
-printf "%s\n" "$ac_cv_lib_pthread_pthread_create" >&6; }
-if test "x$ac_cv_lib_pthread_pthread_create" = xyes
-then :
-  have_threads="yes"
-                    THREAD_LIBS="-lpthread"
-fi
-
+      LIBS="$save_LIBS"
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_threads" >&5
+printf "%s\n" "$have_threads" >&6; }
     fi
     if test "x$have_threads" != "xyes"; then
       if test "x$enable_threads" = "xyes"; then
@@ -20391,6 +20349,110 @@ fi
 fi
 fi
 
+# A compiler may accept TLS syntax even when the executable cannot access
+# its TLS segment. Use the same compiler flags as the production objects.
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether executable thread-local storage works" >&5
+printf %s "checking whether executable thread-local storage works... " >&6; }
+if test ${sixel_cv_working_tls+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  sixel_tls_saved_cflags="$CFLAGS"
+  CFLAGS="$AM_CFLAGS $CFLAGS"
+  if test "$cross_compiling" = yes
+then :
+  case $host_os in #(
+  minix*) :
+    sixel_cv_working_tls=no ;; #(
+  *) :
+    sixel_cv_working_tls=unknown ;;
+esac
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include "$srcdir/build-aux/native-tls-probe.c"
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"
+then :
+  sixel_cv_working_tls=yes
+else case e in #(
+  e) sixel_cv_working_tls=no ;;
+esac
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+
+  CFLAGS="$sixel_tls_saved_cflags"
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_working_tls" >&5
+printf "%s\n" "$sixel_cv_working_tls" >&6; }
+if test "x$sixel_cv_working_tls" = xno
+then :
+
+
+printf "%s\n" "#define SIXEL_DISABLE_TLS 1" >>confdefs.h
+
+
+fi
+
+# Preserve one contiguous distance grid where the native heap supports it.
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether malloc can reserve the R=256 FHEDT distance grid" >&5
+printf %s "checking whether malloc can reserve the R=256 FHEDT distance grid... " >&6; }
+if test ${sixel_cv_fhedt_heap+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  if test "$cross_compiling" = yes
+then :
+
+    case $host_os in #(
+  minix*) :
+    sixel_cv_fhedt_heap=no ;; #(
+  *) :
+    sixel_cv_fhedt_heap=unknown ;;
+esac
+
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include "$srcdir/build-aux/fhedt-heap-probe.c"
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"
+then :
+  sixel_cv_fhedt_heap=yes
+else case e in #(
+  e) sixel_cv_fhedt_heap=no ;;
+esac
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_fhedt_heap" >&5
+printf "%s\n" "$sixel_cv_fhedt_heap" >&6; }
+if test "x$sixel_cv_fhedt_heap" = xno
+then :
+
+
+printf "%s\n" "#define SIXEL_SPLIT_FHEDT_DISTANCE_GRID 1" >>confdefs.h
+
+
+fi
+
 # Check the active printf format dialect without running target code.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether snprintf and fprintf accept %zu" >&5
 printf %s "checking whether snprintf and fprintf accept %zu... " >&6; }
@@ -21026,6 +21088,48 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
+case $host_cpu in #(
+  x86_64 | amd64 | i*86) :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether a function can target AVX2" >&5
+printf %s "checking whether a function can target AVX2... " >&6; }
+if test ${sixel_cv_x86_avx2_target+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include "$srcdir/build-aux/avx2-target-probe.c"
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  sixel_cv_x86_avx2_target=yes
+else case e in #(
+  e) sixel_cv_x86_avx2_target=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_x86_avx2_target" >&5
+printf "%s\n" "$sixel_cv_x86_avx2_target" >&6; }
+  if test "x$sixel_cv_x86_avx2_target" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_X86_AVX2_TARGET 1" >>confdefs.h
+
+
+fi
+ ;; #(
+  *) :
+     ;;
+esac
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_cpu_supports" >&5
 printf %s "checking for __builtin_cpu_supports... " >&6; }
@@ -22833,6 +22937,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
   ac_check_funcs_parallel_includes=""
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for -fno-builtin" >&5
 printf %s "checking for -fno-builtin... " >&6; }
@@ -22877,6 +22983,7 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
         nanosleep \
         usleep \
         fork \
+        getpgid \
         waitpid \
         posix_spawnp \
         execvp \
@@ -23533,8 +23640,8 @@ case "${host_cpu}" in
   x86_64|amd64|i*86)
     if test "x$enable_xsave_probe" != xno && \
        test "x$ac_cv_header_immintrin_h" = xyes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether _xgetbv(0) builds without extra flags" >&5
-printf %s "checking whether _xgetbv(0) builds without extra flags... " >&6; }
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether _xgetbv(0) links without extra flags" >&5
+printf %s "checking whether _xgetbv(0) links without extra flags... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -23549,14 +23656,15 @@ unsigned long long xcr0;
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
   have_xgetbv_intrin=yes
 else case e in #(
   e) have_xgetbv_intrin=no ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_xgetbv_intrin" >&5
 printf "%s\n" "$have_xgetbv_intrin" >&6; }
     fi
@@ -26765,6 +26873,30 @@ fi
     fi
 
     if test x$have_fetch = xyes; then
+        case $host_os in #(
+  emscripten*) :
+     ;; #(
+  *) :
+
+          sixel_saved_fetch_cflags="$CFLAGS"
+          CFLAGS="$CFLAGS $LIBFETCH_CFLAGS"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <fetch.h>
+typedef fetchIO sixel_fetch_probe_type;
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+printf "%s\n" "#define HAVE_LIBFETCH_FETCHIO 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+          CFLAGS="$sixel_saved_fetch_cflags"
+         ;;
+esac
         if test x${net} = x; then
             net="libfetch"
         else
@@ -29231,30 +29363,30 @@ printf "%s\n" "$have_sse2" >&6; }
         ;;
 
     i*86)
-        if test x$ac_cv_header_emmintrin_h = xyes; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports SSE2 flags and
-                             <emmintrin.h>" >&5
+        # Some x86 compilers reject emmintrin.h unless SSE2 is enabled.
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports SSE2 flags and
+                         <emmintrin.h>" >&5
 printf %s "checking whether the compiler supports SSE2 flags and
-                             <emmintrin.h>... " >&6; }
-            saved_CFLAGS="$CFLAGS"
-            if test "x$using_cl" = xyes; then
-                simd_flag="-arch:SSE2"
-            else
-                simd_flag="-msse2"
-            fi
-            CFLAGS="$CFLAGS $simd_flag"
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+                         <emmintrin.h>... " >&6; }
+        saved_CFLAGS="$CFLAGS"
+        if test "x$using_cl" = xyes; then
+            simd_flag="-arch:SSE2"
+        else
+            simd_flag="-msse2"
+        fi
+        CFLAGS="$CFLAGS $simd_flag"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                                #include <emmintrin.h>
+                            #include <emmintrin.h>
 
 int
 main (void)
 {
 
-                                __m128i a = _mm_setzero_si128();
-                                (void)a;
-                                return 0;
+                            __m128i a = _mm_setzero_si128();
+                            (void)a;
+                            return 0;
 
   ;
   return 0;
@@ -29268,12 +29400,14 @@ else case e in #(
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-            CFLAGS="$saved_CFLAGS"
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_sse2" >&5
+        CFLAGS="$saved_CFLAGS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_sse2" >&5
 printf "%s\n" "$have_sse2" >&6; }
-            if test "x$have_sse2" = xyes; then
-                AM_CFLAGS="$AM_CFLAGS $simd_flag"
-            fi
+        if test "x$have_sse2" = xyes; then
+            AM_CFLAGS="$AM_CFLAGS $simd_flag"
+
+printf "%s\n" "#define HAVE_EMMINTRIN_H 1" >>confdefs.h
+
         fi
         ;;
 
@@ -34915,7 +35049,7 @@ fi
 if test "x$SIXEL_TEST_SHELL" = x
 then :
 
-      # Extract the first word of "dash", so it can be a program name with args.
+  # Extract the first word of "dash", so it can be a program name with args.
 set dummy dash; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
@@ -34962,14 +35096,7 @@ printf "%s\n" "no" >&6; }
 fi
 
 
-  if test "x$LS_DASH_PATH" != x -a "x$LS_DASH_PATH" != xno
-then :
-
-    SIXEL_TEST_SHELL="$LS_DASH_PATH"
-
-else case e in #(
-  e)
-    # Extract the first word of "sh", so it can be a program name with args.
+  # Extract the first word of "sh", so it can be a program name with args.
 set dummy sh; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
@@ -35016,19 +35143,33 @@ printf "%s\n" "no" >&6; }
 fi
 
 
-    if test "x$LS_SH_PATH" != x -a "x$LS_SH_PATH" != xno
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a shell that drops an unset TAP runtime prefix" >&5
+printf %s "checking for a shell that drops an unset TAP runtime prefix... " >&6; }
+  for sixel_test_shell in "$LS_DASH_PATH" "$LS_SH_PATH" "$BASH" /bin/sh; do
+    if test "x$sixel_test_shell" != xno && test -n "$sixel_test_shell" &&
+           "$sixel_test_shell" -c 'unset sixel_test_empty
+             set -- ${sixel_test_empty-}
+             test "$#" -eq 0' >/dev/null 2>&1
 then :
 
-      SIXEL_TEST_SHELL="$LS_SH_PATH"
+      SIXEL_TEST_SHELL=$sixel_test_shell
+      break
 
-else case e in #(
-  e)
-      SIXEL_TEST_SHELL="/bin/sh"
-     ;;
-esac
 fi
-   ;;
-esac
+  done
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${SIXEL_TEST_SHELL:-none}" >&5
+printf "%s\n" "${SIXEL_TEST_SHELL:-none}" >&6; }
+  if test -z "$SIXEL_TEST_SHELL"
+then :
+
+    if test "x$enable_tests" = xyes
+then :
+
+      as_fn_error $? "a POSIX-compatible shell is required to run TAP tests" "$LINENO" 5
+
+fi
+    SIXEL_TEST_SHELL=/bin/sh
+
 fi
 
 else case e in #(

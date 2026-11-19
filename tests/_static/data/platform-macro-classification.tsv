@@ -106,6 +106,8 @@ __has_include	compiler	-
 __i386	architecture	-
 __i386__	architecture	-
 __linux__	platform	docs/misc/platforms/posix-runtimes.md
+__m128i	compiler	-
+__m256i	compiler	-
 __printf__	compiler	-
 __thread	compiler	-
 __typeof__	compiler	-

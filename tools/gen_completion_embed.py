@@ -14,12 +14,10 @@ ASCII map of the data flow:
 The resulting header defines two C arrays that mirror the input files.
 """
 
-from __future__ import annotations
-
 import argparse
 import pathlib
 import sys
-from typing import Iterable
+from typing import Iterable, List
 
 
 def _read_text(path: pathlib.Path) -> str:
@@ -32,7 +30,7 @@ def _escape_bytes(text: str) -> Iterable[str]:
 
     # Emit byte arrays to avoid ISO C99 overlength string warnings.
     count_per_line = 12
-    row: list[str] = []
+    row: List[str] = []
 
     for byte in text.encode("utf-8"):
         row.append(f"0x{byte:02x}")
@@ -65,7 +63,7 @@ def _write_header(path: pathlib.Path, bash_text: str, zsh_text: str) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def main(argv: list[str]) -> int:
+def main(argv: List[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Create completion_embed.h from shell completion inputs.",
     )

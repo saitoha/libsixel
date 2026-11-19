@@ -619,7 +619,10 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	build-aux/lso-tap-driver.sh.in build-aux/test-suite-report.awk \
 	build-aux/test-suite-report.sh \
 	build-aux/read-check-test-list.sh \
-	build-aux/cli-color-tty-probe.c build-aux/libpng-api-probe.c \
+	build-aux/cli-color-tty-probe.c build-aux/avx2-target-probe.c \
+	build-aux/fhedt-heap-probe.c build-aux/native-tls-probe.c \
+	build-aux/pthread-probe.c \
+	build-aux/libpng-api-probe.c \
 	build-aux/resolve-binding-test-common.sh \
 	build-aux/resolve-config-h-exports.sh \
 	build-aux/sanitizer-ignorelist.txt \
@@ -927,7 +930,8 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	docs/misc/platforms/emscripten.md \
 	docs/misc/platforms/gnu-hurd.md docs/misc/platforms/haiku.md \
 	docs/misc/platforms/macos.md docs/misc/platforms/mingw.md \
-	docs/misc/platforms/msvc.md docs/misc/platforms/openvms.md \
+	docs/misc/platforms/minix.md docs/misc/platforms/msvc.md \
+	docs/misc/platforms/openvms.md \
 	docs/misc/platforms/posix-runtimes.md \
 	docs/misc/platforms/solaris.md \
 	docs/misc/platforms/windows-paths.md \

@@ -55,9 +55,7 @@
 #define SIXEL_SAMPLE_VECTOR (SIXEL_SAMPLE_NEON || SIXEL_SAMPLE_SSE2)
 /* GCC and Clang compile the AVX2 test for its own function only; the CPU
  * check at run time decides whether it is called. */
-#if SIXEL_SAMPLE_SSE2 && defined(HAVE_IMMINTRIN_H) && \
-    (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__) && \
-    (defined(__x86_64__) || defined(__i386__))
+#if SIXEL_SAMPLE_SSE2 && defined(HAVE_X86_AVX2_TARGET)
 # include <immintrin.h>
 # define SIXEL_SAMPLE_AVX2 1
 # define SIXEL_SAMPLE_TARGET_AVX2 __attribute__((target("avx2")))

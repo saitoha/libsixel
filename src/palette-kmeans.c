@@ -66,6 +66,10 @@
 #include "timer.h"
 
 
+#if defined(SIXEL_DISABLE_TLS)
+# define SIXEL_TLS
+# define SIXEL_KMEANS_TLS_AVAILABLE 0
+#else
 #if defined(_MSC_VER)
 # define SIXEL_TLS __declspec(thread)
 # define SIXEL_KMEANS_TLS_AVAILABLE 1
@@ -79,6 +83,7 @@
 #else
 # define SIXEL_TLS
 # define SIXEL_KMEANS_TLS_AVAILABLE 0
+#endif
 #endif
 
 static SIXEL_TLS int sixel_kmeans_backend_override_enabled = 0;
