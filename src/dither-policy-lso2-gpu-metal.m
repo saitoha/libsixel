@@ -29,6 +29,8 @@ typedef struct lso2_gpu_params {
     uint32_t selection[128];
     uint32_t batch_stage;
     uint32_t variable;
+    /* Retained pixel of output pixel i, row-major in a plane this wide. */
+    uint32_t retained_stride, retained_x, retained_y;
 } lso2_gpu_params_t;
 
 typedef struct lso2_gpu_plan {
@@ -415,6 +417,10 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
     sixel_frame_pixels_view_t source;
     sixel_frame_transparency_t transparency;
     sixel_retained_read_view_t baseline;
+    sixel_retained_gpu_read_view_t retained;
+    id<MTLBuffer> retained_rgb;
+    id<MTLBuffer> retained_valid;
+    int in_place;
     sixel_gpu_lookup_binding_interface_t *binding;
     sixel_gpu_lookup_binding_view_t binding_view;
     sixel_gpu_lookup_build_pass_t const *pass;
@@ -465,10 +471,32 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
             memset([plan->buffers[8] contents], 0, pixels);
         }
     }
+    retained_rgb = plan->buffers[9];
+    retained_valid = plan->buffers[10];
+    params.retained_stride = params.width;
+    params.retained_x = params.retained_y = 0;
+    in_place = 0;
     if (params.delta) {
         status = sixel_retained_read_get_view(request->baseline, &baseline);
         if (status != SIXEL_OK) return status;
-        for (y = 0; y < params.height; ++y) {
+        /* A retained plane on this device is read in place; the live read
+         * excludes its commit until this run has completed. */
+        status = sixel_retained_read_get_gpu_view(request->baseline,
+            plan->device, &retained);
+        if (status == SIXEL_OK) {
+            retained_rgb = sixel_gpu_metal_buffer(plan->device, retained.rgb);
+            retained_valid = sixel_gpu_metal_buffer(plan->device,
+                retained.valid);
+            if (retained_rgb == nil || retained_valid == nil)
+                return SIXEL_RUNTIME_ERROR;
+            params.retained_stride = (uint32_t)retained.valid_stride;
+            params.retained_x = (uint32_t)plan->output.origin_x;
+            params.retained_y = (uint32_t)plan->output.origin_y;
+            in_place = 1;
+        } else if (status != SIXEL_FEATURE_ERROR) {
+            return status;
+        }
+        for (y = 0; !in_place && y < params.height; ++y) {
             offset = y + (size_t)plan->output.origin_y;
             memcpy((unsigned char *)[plan->buffers[9] contents]
                     +y*params.width*3,
@@ -535,6 +563,9 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
                                atIndex:4];
                 } else if (y == 13) {
                     [encoder setBuffer:workspace offset:0 atIndex:y];
+                } else if (y == 9 || y == 10) {
+                    [encoder setBuffer:y == 9 ? retained_rgb : retained_valid
+                                offset:0 atIndex:y];
                 } else {
                     [encoder setBuffer:plan->buffers[y] offset:0 atIndex:y];
                 }

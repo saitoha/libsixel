@@ -8,7 +8,16 @@ struct Lso2GpuParams {
     uint selection[128];
     uint batch_stage;
     uint variable;
+    uint retained_stride, retained_x, retained_y;
 };
+
+/* The retained plane may be the canvas itself, so address it through the
+ * output origin rather than by output index. */
+static uint lso2_gpu_retained(uint i, constant Lso2GpuParams &p)
+{
+    return (i / p.width + p.retained_y) * p.retained_stride
+        + i % p.width + p.retained_x;
+}
 
 static float3 lso2_gpu_color(constant uchar *palette, uint index)
 {
@@ -212,7 +221,7 @@ kernel void lso2_gpu_finish(constant uchar *palette [[buffer(1)]],
     LSO2_GPU_QUERY_BUFFERS
     uint i [[thread_position_in_grid]])
 {
-    uint best, code, threshold;
+    uint best, code, threshold, r;
     float3 query, old, gap, fresh;
     float old_distance, new_distance;
     bool within;
@@ -229,7 +238,7 @@ kernel void lso2_gpu_finish(constant uchar *palette [[buffer(1)]],
     code = 0;
     if (transparent[i]) {
         code = 1;
-    } else if (p.delta && valid[i]) {
+    } else if (p.delta && valid[lso2_gpu_retained(i, p)]) {
         /* Reconstruct the solved fractional query. Retained history is
          * consulted only now and never seeds a later frame's diffusion. */
         fresh = lso2_gpu_color(palette,best);
@@ -240,7 +249,8 @@ kernel void lso2_gpu_finish(constant uchar *palette [[buffer(1)]],
             return;
         }
         fresh = lso2_gpu_color(palette,best);
-        old = float3(retained[3*i],retained[3*i+1],retained[3*i+2]);
+        r = lso2_gpu_retained(i, p);
+        old = float3(retained[3*r],retained[3*r+1],retained[3*r+2]);
         gap = abs(query-old);
         threshold = lso2_gpu_threshold(i, query - old, p, levels);
         within = all(gap <= float(threshold));
@@ -303,7 +313,7 @@ kernel void lso2_gpu_resolve(constant uchar *palette [[buffer(1)]],
     constant uint *levels [[buffer(18)]],
     uint i [[thread_position_in_grid]])
 {
-    uint best, code, threshold;
+    uint best, code, threshold, r;
     float3 query, old, gap, fresh;
     float old_distance, new_distance;
     bool within;
@@ -313,12 +323,13 @@ kernel void lso2_gpu_resolve(constant uchar *palette [[buffer(1)]],
     code = 0;
     if (transparent[i]) {
         code = 1;
-    } else if (p.delta && valid[i]) {
+    } else if (p.delta && valid[lso2_gpu_retained(i, p)]) {
         /* The ready solution owns q and j; no lookup is needed here. */
         query = b[i].xyz;
         best = uint(b[i].w);
         fresh = lso2_gpu_color(palette,best);
-        old = float3(retained[3*i],retained[3*i+1],retained[3*i+2]);
+        r = lso2_gpu_retained(i, p);
+        old = float3(retained[3*r],retained[3*r+1],retained[3*r+2]);
         gap = abs(query-old);
         threshold = lso2_gpu_threshold(i, query - old, p, levels);
         within = all(gap <= float(threshold));
