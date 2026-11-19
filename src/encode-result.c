@@ -5,6 +5,9 @@
 
 #include <limits.h>
 #include <string.h>
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+#include <pthread.h>
+#endif
 #include "encode-result.h"
 #include "cpu.h"
 #include "colorspace.h"
@@ -156,10 +159,139 @@ sixel_indexed_description_validate(
     return SIXEL_OK;
 }
 
+/* Released frame storage is kept for the next frame of the same size: a
+ * fresh shared buffer costs a kernel allocation and first-touch faults on
+ * both processors, which exceeds the copies it replaces. */
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+#define SIXEL_INDEXED_IDLE_SLOTS 4
+static pthread_mutex_t sixel_indexed_idle_gate = PTHREAD_MUTEX_INITIALIZER;
+static struct {
+    sixel_gpu_device_interface_t *device;
+    sixel_gpu_buffer_interface_t *indexes;
+    sixel_gpu_buffer_interface_t *skip;
+    size_t pixels;
+} sixel_indexed_idle[SIXEL_INDEXED_IDLE_SLOTS];
+
+static int
+sixel_indexed_frame_borrow_device(sixel_indexed_frame_t *image,
+    sixel_gpu_device_interface_t *device)
+{
+    int i;
+
+    (void)pthread_mutex_lock(&sixel_indexed_idle_gate);
+    for (i = 0; i < SIXEL_INDEXED_IDLE_SLOTS; ++i) {
+        if (sixel_indexed_idle[i].device == device &&
+                sixel_indexed_idle[i].pixels == image->pixels) {
+            image->gpu_indexes = sixel_indexed_idle[i].indexes;
+            image->gpu_skip = sixel_indexed_idle[i].skip;
+            memset(&sixel_indexed_idle[i], 0, sizeof(sixel_indexed_idle[i]));
+            break;
+        }
+    }
+    (void)pthread_mutex_unlock(&sixel_indexed_idle_gate);
+    if (i == SIXEL_INDEXED_IDLE_SLOTS) return 0;
+    image->gpu_device = device;
+    return 1;
+}
+
+static void
+sixel_indexed_frame_recycle_device(sixel_indexed_frame_t *image)
+{
+    sixel_gpu_device_interface_t *device;
+    sixel_gpu_buffer_interface_t *indexes;
+    sixel_gpu_buffer_interface_t *skip;
+    int i;
+
+    device = image->gpu_device;
+    indexes = image->gpu_indexes;
+    skip = image->gpu_skip;
+    (void)pthread_mutex_lock(&sixel_indexed_idle_gate);
+    for (i = 0; i < SIXEL_INDEXED_IDLE_SLOTS; ++i) {
+        if (sixel_indexed_idle[i].device == NULL) {
+            sixel_indexed_idle[i].device = device;
+            sixel_indexed_idle[i].indexes = indexes;
+            sixel_indexed_idle[i].skip = skip;
+            sixel_indexed_idle[i].pixels = image->pixels;
+            device = NULL;
+            break;
+        }
+    }
+    (void)pthread_mutex_unlock(&sixel_indexed_idle_gate);
+    if (device != NULL) {
+        indexes->vtbl->unref(indexes);
+        skip->vtbl->unref(skip);
+        device->vtbl->unref(device);
+    }
+}
+#else
+static int
+sixel_indexed_frame_borrow_device(sixel_indexed_frame_t *image,
+    sixel_gpu_device_interface_t *device)
+{
+    (void)image;
+    (void)device;
+    return 0;
+}
+
+static void
+sixel_indexed_frame_recycle_device(sixel_indexed_frame_t *image)
+{
+    image->gpu_indexes->vtbl->unref(image->gpu_indexes);
+    image->gpu_skip->vtbl->unref(image->gpu_skip);
+    image->gpu_device->vtbl->unref(image->gpu_device);
+}
+#endif
+
+/* Back both planes with shared device buffers. Any failure leaves the
+ * frame without GPU storage so the caller falls back to the allocator. */
+static void
+sixel_indexed_frame_allocate_device(sixel_indexed_frame_t *image,
+    sixel_gpu_device_interface_t *device)
+{
+    void *indexes;
+    void *skip;
+
+    if (!sixel_indexed_frame_borrow_device(image, device)) {
+        if (device->vtbl->create_buffer(device,
+                    image->pixels * sizeof(*image->indexes),
+                    &image->gpu_indexes) != SIXEL_OK ||
+                device->vtbl->create_buffer(device, image->pixels,
+                    &image->gpu_skip) != SIXEL_OK) {
+            goto fail;
+        }
+        device->vtbl->ref(device);
+        image->gpu_device = device;
+    }
+    if (image->gpu_indexes->vtbl->shared_memory(image->gpu_indexes,
+                &indexes) != SIXEL_OK ||
+            image->gpu_skip->vtbl->shared_memory(image->gpu_skip,
+                &skip) != SIXEL_OK) {
+        sixel_indexed_frame_recycle_device(image);
+        image->gpu_device = NULL;
+        image->gpu_indexes = NULL;
+        image->gpu_skip = NULL;
+        return;
+    }
+    image->indexes = indexes;
+    image->skip = skip;
+    memset(image->skip, 0, image->pixels);
+    return;
+fail:
+    if (image->gpu_indexes != NULL) {
+        image->gpu_indexes->vtbl->unref(image->gpu_indexes);
+        image->gpu_indexes = NULL;
+    }
+    if (image->gpu_skip != NULL) {
+        image->gpu_skip->vtbl->unref(image->gpu_skip);
+        image->gpu_skip = NULL;
+    }
+}
+
 static SIXELSTATUS
 sixel_indexed_frame_allocate(sixel_indexed_frame_t **result,
     sixel_indexed_frame_description_t const *description,
-    sixel_allocator_t *allocator, int allocate_pixels)
+    sixel_allocator_t *allocator, int allocate_pixels,
+    sixel_gpu_device_interface_t *device)
 {
     sixel_indexed_frame_t *image;
     size_t pixels;
@@ -185,7 +317,10 @@ sixel_indexed_frame_allocate(sixel_indexed_frame_t **result,
     image->users = 0;
     sixel_allocator_ref(allocator);
     sixel_wire_palette_ref(description->palette);
-    if (allocate_pixels) {
+    if (allocate_pixels && device != NULL) {
+        sixel_indexed_frame_allocate_device(image, device);
+    }
+    if (allocate_pixels && image->gpu_device == NULL) {
         image->indexes = sixel_allocator_malloc(allocator,
             pixels * sizeof(*image->indexes));
         image->skip = sixel_allocator_calloc(allocator, pixels, 1);
@@ -203,7 +338,17 @@ sixel_indexed_frame_new(sixel_indexed_frame_t **result,
     sixel_indexed_frame_description_t const *description,
     sixel_allocator_t *allocator)
 {
-    return sixel_indexed_frame_allocate(result, description, allocator, 1);
+    return sixel_indexed_frame_allocate(result, description, allocator, 1,
+        NULL);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_indexed_frame_new_on_device(sixel_indexed_frame_t **result,
+    sixel_indexed_frame_description_t const *description,
+    sixel_allocator_t *allocator, sixel_gpu_device_interface_t *device)
+{
+    return sixel_indexed_frame_allocate(result, description, allocator, 1,
+        device);
 }
 
 /* Validate only newly published rows. This also guards externally imported
@@ -259,7 +404,7 @@ sixel_indexed_frame_take(sixel_indexed_frame_t **result,
         return status;
     }
     status = sixel_indexed_frame_allocate(result, &request->description,
-        allocator, 0);
+        allocator, 0, NULL);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -293,8 +438,12 @@ sixel_indexed_frame_unref(sixel_indexed_frame_t *image)
             sixel_atomic_fetch_sub_u32(&image->ref, 1) == 1) {
         allocator = image->allocator;
         sixel_wire_palette_unref(image->description.palette);
-        sixel_allocator_free(allocator, image->indexes);
-        sixel_allocator_free(allocator, image->skip);
+        if (image->gpu_device != NULL) {
+            sixel_indexed_frame_recycle_device(image);
+        } else {
+            sixel_allocator_free(allocator, image->indexes);
+            sixel_allocator_free(allocator, image->skip);
+        }
         sixel_allocator_free(allocator, image);
         sixel_allocator_unref(allocator);
     }

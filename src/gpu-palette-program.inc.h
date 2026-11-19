@@ -131,6 +131,12 @@ sixel_gpu_metal_buffer(sixel_gpu_device_interface_t *device,
     return ((gpu_native_buffer_t *)buffer)->native;
 }
 
+int
+sixel_gpu_device_shares_frames(sixel_gpu_device_interface_t *device)
+{
+    return device == &gpu_device;
+}
+
 SIXELSTATUS
 sixel_gpu_device_acquire(sixel_gpu_device_interface_t **result)
 {

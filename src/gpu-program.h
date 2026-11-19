@@ -22,6 +22,10 @@ typedef struct sixel_gpu_dither_program {
 typedef struct sixel_gpu_program sixel_gpu_program_t;
 SIXEL_INTERNAL_API SIXELSTATUS sixel_gpu_device_acquire(
     sixel_gpu_device_interface_t **);
+/* Nonzero when indexed frames should live in shared buffers of device:
+ * its consumers bind them in place and CPU access stays cached. */
+SIXEL_INTERNAL_API int sixel_gpu_device_shares_frames(
+    sixel_gpu_device_interface_t *);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_gpu_program_prepare(
     sixel_gpu_device_interface_t *, sixel_gpu_lookup_plan_interface_t *,
     sixel_gpu_dither_program_t const *, sixel_gpu_program_t **);

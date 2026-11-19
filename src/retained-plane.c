@@ -588,7 +588,8 @@ sixel_retained_plane_stage(sixel_retained_plane_interface_t *self,
      * prevents abort/reconfiguration while GPU completion waits outside gate;
      * independent body workers can still read immutable indexes and skips. */
     status = sixel_retained_gpu_stage(plane->gpu, update->image->indexes,
-        update->image->skip, update->paint, &update->gpu_stats,
+        update->image->skip, update->image->gpu_indexes,
+        update->image->gpu_skip, update->paint, &update->gpu_stats,
         plane->gpu_test_fault);
     sixel_mutex_lock(&plane->gate);
     update->staged = status == SIXEL_OK;

@@ -19,6 +19,11 @@ struct sixel_indexed_frame {
     sixel_atomic_i32_t state;
     sixel_retained_update_t *update; /* Pinned by each active resource user. */
     sixel_atomic_u32_t users;
+    /* Optional shared GPU storage behind indexes and skip. Producers and
+     * consumers on the same device bind it instead of copying the planes. */
+    sixel_gpu_device_interface_t *gpu_device;
+    sixel_gpu_buffer_interface_t *gpu_indexes;
+    sixel_gpu_buffer_interface_t *gpu_skip;
 };
 
 struct sixel_stream_receipt {
@@ -27,6 +32,12 @@ struct sixel_stream_receipt {
     sixel_encode_identity_t identity;
 };
 
+/* Like sixel_indexed_frame_new, but places indexes and skip in shared
+ * buffers of device when it can allocate them; otherwise uses allocator. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_indexed_frame_new_on_device(sixel_indexed_frame_t **result,
+    sixel_indexed_frame_description_t const *description,
+    sixel_allocator_t *allocator, sixel_gpu_device_interface_t *device);
 SIXEL_INTERNAL_API void
 sixel_indexed_frame_acquire_user(sixel_indexed_frame_t *image);
 SIXEL_INTERNAL_API void
