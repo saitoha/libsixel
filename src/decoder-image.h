@@ -57,6 +57,9 @@ typedef struct image_buffer {
      * These fields are read-only while parallel workers own the image. */
     int capture;
     unsigned char const *capture_defined;
+    /* After a successful RGBA decode: 1 when every alpha byte is 255, 0 when
+     * one is not, -1 when the final pass did not establish it. */
+    int alpha_opaque;
 } image_buffer_t;
 
 /*
@@ -81,13 +84,13 @@ image_buffer_finalize_ormode(image_buffer_t *image);
 
 /* Materialize disjoint band ranges without changing shared parser state.
  * The caller owns validated bounds 0 <= first <= end <= ceil(height / 6). */
-SIXEL_INTERNAL_API void
+SIXEL_INTERNAL_API int
 image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end);
 
 /* Source starts at the first destination band. Worker-local columns can
  * therefore publish disjoint absolute rows without rebasing a pointer before
  * its allocation. Palette and destination metadata remain read-only. */
-SIXEL_INTERNAL_API void
+SIXEL_INTERNAL_API int
 image_buffer_finalize_normal_columns(image_buffer_t *image,
                                       uint64_t const *source,
                                       int first, int end);

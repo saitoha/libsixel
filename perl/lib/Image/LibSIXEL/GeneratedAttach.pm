@@ -130,6 +130,7 @@ sub attach_all {
     $ffi->attach(['sixel_encoder_set_6delta_plane_size' => 'Image::LibSIXEL::sixel_encoder_set_6delta_plane_size'] => ['opaque', 'int', 'int'] => 'int');
     $ffi->attach(['sixel_encoder_set_6delta_plane_origin' => 'Image::LibSIXEL::sixel_encoder_set_6delta_plane_origin'] => ['opaque', 'int', 'int'] => 'int');
     $ffi->attach(['sixel_encoder_invalidate_6delta_plane' => 'Image::LibSIXEL::sixel_encoder_invalidate_6delta_plane'] => ['opaque'] => 'int');
+    $ffi->attach(['sixel_encoder_set_6delta_refresh_periods' => 'Image::LibSIXEL::sixel_encoder_set_6delta_refresh_periods'] => ['opaque', 'int'] => 'int');
     $ffi->attach(['sixel_encoder_set_6delta_threshold_limit' => 'Image::LibSIXEL::sixel_encoder_set_6delta_threshold_limit'] => ['opaque', 'int'] => 'int');
     $ffi->attach(['sixel_encoder_needs_6delta_refinement' => 'Image::LibSIXEL::sixel_encoder_needs_6delta_refinement'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_encoder_get_6delta_painted_pixels' => 'Image::LibSIXEL::sixel_encoder_get_6delta_painted_pixels'] => ['opaque'] => 'int');
@@ -162,6 +163,7 @@ sub attach_all {
     $ffi->attach(['sixel_decoder_setopt' => 'Image::LibSIXEL::_sixel_decoder_setopt'] => ['opaque', 'int', 'string'] => 'int');
     $ffi->attach(['sixel_decoder_decode' => 'Image::LibSIXEL::_sixel_decoder_decode'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_decoder_decode_mapped' => 'Image::LibSIXEL::sixel_decoder_decode_mapped'] => ['opaque', 'opaque', 'int', 'opaque', 'opaque', 'opaque'] => 'int');
+    $ffi->attach(['sixel_decoder_decode_body_mapped' => 'Image::LibSIXEL::sixel_decoder_decode_body_mapped'] => ['opaque', 'opaque', 'int', 'opaque', 'int', 'opaque', 'opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_decoder_decode_pixels' => 'Image::LibSIXEL::sixel_decoder_decode_pixels'] => ['opaque', 'opaque', 'int', 'int', 'int'] => 'int');
 
     return;

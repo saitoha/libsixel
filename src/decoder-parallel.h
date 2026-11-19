@@ -53,6 +53,23 @@ typedef struct sixel_decoder_undither_context {
  */
 SIXEL_INTERNAL_API int
 sixel_decoder_parallel_resolve_threads(void);
+
+/*
+ * Workers a decoder object keeps between decodes.  A parallel decode started
+ * under an object scope that offers the set runs its parse and gather workers
+ * on these threads instead of creating and joining threads per image.  The
+ * set grows to the largest worker count used and idles on a condition
+ * variable in between.  Destroy joins every thread; the owner must not be
+ * decoding.  Without thread support both calls do nothing.
+ */
+typedef struct sixel_decoder_resident sixel_decoder_resident_t;
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decoder_resident_new(sixel_decoder_resident_t **resident);
+SIXEL_INTERNAL_API void
+sixel_decoder_resident_destroy(sixel_decoder_resident_t *resident);
+/* Threads the set holds now; 0 without thread support.  For tests. */
+SIXEL_INTERNAL_API int
+sixel_decoder_resident_threads(sixel_decoder_resident_t *resident);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_override_threads(char const *text);
 SIXEL_INTERNAL_API int

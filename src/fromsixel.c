@@ -177,8 +177,12 @@ image_buffer_release_columns(image_buffer_t *image,
 /* Select depth and mask handling outside the pixel loops. Blending with the
  * initialized destination preserves its exact unpainted sentinel/background,
  * including the distinct byte and wide-index representations. RGBA lookup
- * words are assembled with memcpy so their byte order is host independent. */
-SIXEL_INTERNAL_API void
+ * words are assembled with memcpy so their byte order is host independent.
+ *
+ * For RGBA the loop already holds every final pixel of the bands, painted or
+ * not, so it also reports whether all of their alpha bytes are 255: 1 when
+ * they are, 0 when one is not, -1 for depths without alpha. */
+SIXEL_INTERNAL_API int
 image_buffer_finalize_normal_columns(image_buffer_t *image,
                                       uint64_t const *source,
                                       int first, int end)
@@ -187,6 +191,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
     uint32_t lut[256];
     uint32_t value;
     uint32_t mask;
+    uint32_t alpha_all;
     unsigned char rgba[4];
     unsigned char *bytes;
     unsigned char *coverage;
@@ -203,6 +208,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
 #if SIXEL_DECODER_NEON
     uint8x16_t indices;
     uint8x16_t painted;
+    uint8x16x4_t written;
     uint32_t block[16];
     unsigned char lanes[16];
     int i;
@@ -211,8 +217,9 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
 
     if (source == NULL || (image->depth != 1 && image->depth != 2 &&
             image->depth != 4)) {
-        return;
+        return -1;
     }
+    alpha_all = UINT32_MAX;
 #if SIXEL_DECODER_NEON
     simd = sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON;
 #endif
@@ -258,6 +265,13 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
                         }
                         sixel_simd_blend_rgba16(bytes + (size_t)x0 * 4u,
                                                 block, painted);
+                        /* Painted lanes are 255; only kept ones can differ. */
+                        if (alpha_all != 0u && vminvq_u8(painted) != 255) {
+                            written = vld4q_u8(bytes + (size_t)x0 * 4u);
+                            if (vminvq_u8(written.val[3]) != 255) {
+                                alpha_all = 0u;
+                            }
+                        }
                     }
                     if (coverage != NULL) {
                         vst1q_u8(coverage + x0,
@@ -290,6 +304,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
                     value = (value & ~mask) |
                         (lut[(columns[x] >> shift) & 255u] & mask);
                     memcpy(bytes + (size_t)x * 4u, &value, sizeof(value));
+                    alpha_all &= value;
                 }
             }
             if (image->paint_mask != NULL) {
@@ -301,27 +316,41 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
             }
         }
     }
+    if (image->depth != 4) {
+        return -1;
+    }
+    memcpy(rgba, &alpha_all, sizeof(rgba));
+    return rgba[3] == 255u;
 }
 
-SIXEL_INTERNAL_API void
+SIXEL_INTERNAL_API int
 image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end)
 {
     if (image->normal_columns != NULL) {
-        image_buffer_finalize_normal_columns(image, image->normal_columns +
-            (size_t)first * (size_t)image->width, first, end);
+        return image_buffer_finalize_normal_columns(image,
+            image->normal_columns + (size_t)first * (size_t)image->width,
+            first, end);
     }
+    return -1;
 }
 
 /* Materialization is one-way: later paint must retain palette history and
- * any pixels written by the ordinary or parallel painter. */
-static void
+ * any pixels written by the ordinary or parallel painter.  Returns what the
+ * final pass learned about alpha; see image_buffer_finalize_normal_columns().
+ */
+static int
 image_buffer_materialize_columns(image_buffer_t *image,
                                   sixel_allocator_t *allocator)
 {
+    int alpha;
+
+    alpha = -1;
     if (image->normal_columns != NULL) {
-        image_buffer_finalize_normal_bands(image, 0, (image->height + 5) / 6);
+        alpha = image_buffer_finalize_normal_bands(image, 0,
+                                                   (image->height + 5) / 6);
         image_buffer_release_columns(image, allocator);
     }
+    return alpha;
 }
 
 static SIXELSTATUS
@@ -898,6 +927,7 @@ image_buffer_init(
 
     image->capture = 0;
     image->capture_defined = NULL;
+    image->alpha_opaque = -1;
     image->depth = depth;
     stride = (size_t)width * depth;
     size = stride * (size_t)height;
@@ -1932,7 +1962,8 @@ sixel_decode_raw_body(
                     if (image->normal_columns != NULL) {
                         /* A late raster can enable parallel work after
                          * serial paint. Publish its pixels first. */
-                        image_buffer_materialize_columns(image, allocator);
+                        (void)image_buffer_materialize_columns(image,
+                                                               allocator);
                         context->normal_disabled = 1;
                     }
                     status = sixel_decoder_parallel_request_start(
@@ -1991,7 +2022,8 @@ sixel_decode_raw_body(
                     if (image->normal_columns != NULL) {
                         /* A late raster can enable parallel work after
                          * serial paint. Publish its pixels first. */
-                        image_buffer_materialize_columns(image, allocator);
+                        (void)image_buffer_materialize_columns(image,
+                                                               allocator);
                         context->normal_disabled = 1;
                     }
                     status = sixel_decoder_parallel_request_start(
@@ -2144,7 +2176,8 @@ sixel_decode_raw_body(
                         if (image->normal_columns != NULL) {
                             /* Publish earlier paint before a late raster
                              * enables the parallel destination writer. */
-                            image_buffer_materialize_columns(image, allocator);
+                            (void)image_buffer_materialize_columns(image,
+                                                                   allocator);
                             context->normal_disabled = 1;
                         }
                         status = sixel_decoder_parallel_request_start(
@@ -2765,7 +2798,8 @@ sequence_color_parameters:
                         /* Byte lanes cannot hold wide registers. Direct
                          * output also owns paint-time palette values; raw
                          * indexes intentionally keep the final palette. */
-                        image_buffer_materialize_columns(image, allocator);
+                        (void)image_buffer_materialize_columns(image,
+                                                               allocator);
                         context->normal_disabled = 1;
                     } else {
                         context->normal_color = sixel_column_color(
@@ -3070,6 +3104,7 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
     image->ormode_planes = NULL;
     image->ormode_high_planes = NULL;
     image->normal_columns = NULL;
+    image->alpha_opaque = -1;
 
     logger = NULL;
     logger_prepared = 0;
@@ -3098,6 +3133,7 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
     }
 
 retry:
+    image->alpha_opaque = -1;
     status = parser_context_init(context);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -3228,8 +3264,12 @@ retry:
     if (SIXEL_SUCCEEDED(status)) {
         if (context->ormode) {
             image_buffer_finalize_ormode(image);
-        } else {
-            image_buffer_materialize_columns(image, allocator);
+            image->alpha_opaque = -1;
+        } else if (image->normal_columns != NULL) {
+            /* The final pass visits every pixel, so its answer is the
+             * image's.  A parallel gather sets the field itself. */
+            image->alpha_opaque =
+                image_buffer_materialize_columns(image, allocator);
         }
         /* Constant-aspect fast4 expands after reconstruction, preserving
          * source-row neighbors. Changing aspect already uses device rows
@@ -4822,6 +4862,13 @@ sixel_decode_direct_mapped(
     }
     if (result_flags != NULL && context.palette_redefined_after_paint) {
         *result_flags |= SIXEL_DECODE_PIXELS_RESULT_PALETTE_REDEFINED;
+    }
+    if (result_flags != NULL && image->depth == 4 &&
+            image->alpha_opaque >= 0) {
+        *result_flags |= SIXEL_DECODE_PIXELS_RESULT_ALPHA_KNOWN_INTERNAL;
+        if (image->alpha_opaque > 0) {
+            *result_flags |= SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL;
+        }
     }
     if (palette != NULL && ncolors != NULL) {
         *ncolors = alloc_size = image->ncolors;

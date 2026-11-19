@@ -245,7 +245,14 @@ sixel_decode_pixels_convert(unsigned char *decoded,
         return SIXEL_BAD_ALLOCATION;
     }
 
-    alpha_opaque = sixel_decode_pixels_alpha_is_opaque(decoded, total);
+    if ((*result_flags & SIXEL_DECODE_PIXELS_RESULT_ALPHA_KNOWN_INTERNAL) !=
+            0U) {
+        alpha_opaque = (*result_flags &
+            SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL) != 0U;
+    } else {
+        alpha_opaque = sixel_decode_pixels_alpha_is_opaque(decoded, total);
+    }
+    *result_flags &= ~SIXEL_DECODE_PIXELS_RESULT_INTERNAL_MASK;
     if (!sixel_decode_pixels_format_has_alpha(pixelformat) || alpha_opaque) {
         *result_flags |= SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE;
     }

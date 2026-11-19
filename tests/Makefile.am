@@ -7109,6 +7109,8 @@ test_runner_SOURCES = test_runner.c \
     decoder/parser/0113_parallel_early_st_compatibility.c \
     decoder/parser/0114_simd_band_words.c \
     decoder/parser/0119_token_fast_lane.c \
+    decoder/parser/0123_final_pass_alpha.c \
+    decoder/parser/0124_resident_workers.c \
     decoder/aspect/0001_integer_rows.c \
     decoder/aspect/0002_unit_rows.c \
     decoder/aspect/0003_absent_raster.c \

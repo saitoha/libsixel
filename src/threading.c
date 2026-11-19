@@ -1101,6 +1101,7 @@ sixel_threading_policy_enter(sixel_thread_budget_scope_t *scope,
     scope->ceiling = scope->threads;
     scope->reclaim = NULL;
     scope->reclaim_context = NULL;
+    scope->resident = NULL;
     sixel_thread_config_lock();
     scope->next = g_thread_budget_scopes;
     g_thread_budget_scopes = scope;
@@ -1365,6 +1366,36 @@ sixel_threading_policy_capture(sixel_threading_snapshot_t *snapshot,
         sixel_threading_policy_resolve(NULL, decoder, snapshot);
     }
     return found;
+}
+
+void
+sixel_threading_scope_set_resident(sixel_thread_budget_scope_t *scope,
+                                   void *resident)
+{
+    sixel_thread_config_lock();
+    scope->resident = resident;
+    sixel_thread_config_unlock();
+}
+
+void *
+sixel_threading_resident_current(void)
+{
+    sixel_thread_budget_scope_t *scope;
+    sixel_thread_identity_t owner;
+    void *resident;
+
+    resident = NULL;
+    owner = sixel_thread_identity_current();
+    sixel_thread_config_lock();
+    for (scope = g_thread_budget_scopes; scope != NULL; scope = scope->next) {
+        if (sixel_thread_identity_equal(scope->owner, owner) &&
+                scope->resident != NULL) {
+            resident = scope->resident;
+            break;
+        }
+    }
+    sixel_thread_config_unlock();
+    return resident;
 }
 
 static void
