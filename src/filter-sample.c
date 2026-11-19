@@ -330,6 +330,26 @@ typedef struct sixel_filter_sample_solid_cell {
 } sixel_filter_sample_solid_cell_t;
 
 #define SIXEL_SAMPLE_SOLID_BITS 4
+
+/* Add one solid pixel to its quantized histogram cell. */
+static inline void
+sixel_filter_sample_add_solid(sixel_filter_sample_solid_cell_t *cells,
+                              unsigned char const *px,
+                              int depth)
+{
+    unsigned int const shift = 8u - SIXEL_SAMPLE_SOLID_BITS;
+    unsigned int key;
+    int c;
+
+    key = ((unsigned int)(px[0] >> shift) << (SIXEL_SAMPLE_SOLID_BITS * 2u))
+        | ((unsigned int)(px[1] >> shift) << SIXEL_SAMPLE_SOLID_BITS)
+        | (unsigned int)(px[2] >> shift);
+    cells[key].count++;
+    for (c = 0; c < depth; ++c) {
+        cells[key].sum[c] += px[c];
+    }
+}
+
 #define SIXEL_SAMPLE_SOLID_CELLS (1u << (SIXEL_SAMPLE_SOLID_BITS * 3u))
 
 /* Each job owns complete grid rows and a private integer histogram.
@@ -360,9 +380,6 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
 {
     sixel_filter_sample_job_t *ctx;
     sixel_filter_sample_solid_cell_t *cells;
-    unsigned char const *px;
-    unsigned int const shift = 8u - SIXEL_SAMPLE_SOLID_BITS;
-    unsigned int key;
     size_t source;
     size_t dest;
     int first;
@@ -372,7 +389,6 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
     int row;
     int x;
     int y;
-    int c;
     unsigned char const *pixels;
     unsigned char const *mask;
     unsigned char *output;
@@ -387,10 +403,12 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
     int sample_width;
 #if SIXEL_SAMPLE_NEON
     unsigned char varies[16];
-    int chunk_x;
+    unsigned char solid[16];
     int chunk_points;
+    int solid_count;
     int vector_row;
     int last_inner;
+    int k;
 #endif
 
     (void)workspace;
@@ -447,8 +465,6 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
         for (row = first; row < end; ++row) {
             y = clip_y + row * SIXEL_SAMPLE_SOLID_STRIDE;
 #if SIXEL_SAMPLE_NEON
-            chunk_x = 0;
-            chunk_points = 0;
             /* Points whose both lines stay inside the image take the
              * vector test; edge points keep the scalar spreads. */
             vector_row = y >= SIXEL_SAMPLE_SOLID_HALF
@@ -461,31 +477,43 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
             for (x = clip_x;
                  x < clip_x + clip_width;
                  x += SIXEL_SAMPLE_SOLID_STRIDE) {
+#if SIXEL_SAMPLE_NEON
+                if (vector_row && x >= SIXEL_SAMPLE_SOLID_HALF
+                        && x <= last_inner) {
+                    chunk_points = (last_inner - x)
+                        / SIXEL_SAMPLE_SOLID_STRIDE + 1;
+                    if (chunk_points > 16) {
+                        chunk_points = 16;
+                    }
+                    sixel_filter_sample_vary_points(pixels, width, depth,
+                        x, y, chunk_points, varies);
+                    /* Whether a point is solid follows the picture, so a
+                     * branch per point mispredicts. List the solid points
+                     * without one, then add them in the same column order. */
+                    solid_count = 0;
+                    for (k = 0; k < chunk_points; ++k) {
+                        solid[solid_count] = (unsigned char)k;
+                        solid_count += !varies[k] && (mask == NULL
+                            || mask[(size_t)y * (size_t)width + (size_t)x
+                                    + (size_t)(SIXEL_SAMPLE_SOLID_STRIDE * k)]
+                                == 0);
+                    }
+                    for (k = 0; k < solid_count; ++k) {
+                        sixel_filter_sample_add_solid(cells, pixels
+                            + ((size_t)y * (size_t)width + (size_t)x
+                               + (size_t)(SIXEL_SAMPLE_SOLID_STRIDE
+                                          * solid[k]))
+                            * (size_t)depth, depth);
+                    }
+                    x += SIXEL_SAMPLE_SOLID_STRIDE * (chunk_points - 1);
+                    continue;
+                }
+#endif
                 if (mask != NULL
                         && mask[(size_t)y * (size_t)width
                                      + (size_t)x] != 0) {
                     continue;
                 }
-#if SIXEL_SAMPLE_NEON
-                if (vector_row && x >= SIXEL_SAMPLE_SOLID_HALF
-                        && x <= last_inner) {
-                    if (chunk_points == 0
-                            || x >= chunk_x
-                                + SIXEL_SAMPLE_SOLID_STRIDE * chunk_points) {
-                        chunk_x = x;
-                        chunk_points = (last_inner - x)
-                            / SIXEL_SAMPLE_SOLID_STRIDE + 1;
-                        if (chunk_points > 16) {
-                            chunk_points = 16;
-                        }
-                        sixel_filter_sample_vary_points(pixels, width, depth,
-                            chunk_x, y, chunk_points, varies);
-                    }
-                    if (varies[(x - chunk_x) / SIXEL_SAMPLE_SOLID_STRIDE]) {
-                        continue;
-                    }
-                } else
-#endif
                 /*
                  * Either axis qualifies.  A horizontal run is a scrub bar or an
                  * underline; a vertical run is a scrollbar or window edge.
@@ -501,18 +529,9 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
                             > SIXEL_SAMPLE_SOLID_TOL) {
                     continue;
                 }
-                px = pixels + ((size_t)y * (size_t)width + (size_t)x)
-                              * (size_t)depth;
-                key = ((unsigned int)(px[0] >> shift)
-                       << (SIXEL_SAMPLE_SOLID_BITS * 2u))
-                    | ((unsigned int)(px[1] >> shift)
-                       << SIXEL_SAMPLE_SOLID_BITS)
-                    | (unsigned int)(px[2] >> shift);
-                cells[key].count++;
-                for (c = 0; c < depth; ++c) {
-                    cells[key].sum[c] += px[c];
-                }
-
+                sixel_filter_sample_add_solid(cells, pixels
+                    + ((size_t)y * (size_t)width + (size_t)x)
+                      * (size_t)depth, depth);
             }
         }
     }
