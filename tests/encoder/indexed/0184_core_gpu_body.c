@@ -46,7 +46,7 @@ gpu_body_image(sixel_allocator_t *allocator)
     sixel_indexed_frame_description_t desc;
     sixel_wire_palette_t *palette;
     sixel_indexed_frame_t *image;
-    unsigned int seed;
+    uint32_t seed;
     int x;
     int y;
     int i;
@@ -85,7 +85,8 @@ gpu_body_image(sixel_allocator_t *allocator)
         for (y = 0; y < desc.height; ++y) {
             for (x = 0; x < desc.width; ++x) {
                 i = y * desc.width + x;
-                seed = seed * 1103515245U + 12345U;
+                /* Reduce the widened recurrence modulo 2^32. */
+                seed = (uint32_t)((uint64_t)seed * 1103515245U + 12345U);
                 /* Mix long runs, short gaps and scattered registers. */
                 image->indexes[i] = (x / 13 + y / 4) % 7 == 0
                     ? (sixel_index_t)((seed >> 16) % GPU_BODY_COLORS)

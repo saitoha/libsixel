@@ -375,6 +375,12 @@ require_fixed "cc.compiles('#define SIXEL_PROBE_TARGET_AVX2 '" meson.build
 require_fixed '#if SIXEL_SIMD_AVX2' src/refresh-spatial.c
 require_fixed '#define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 SIXEL_TARGET_AVX2' \
     src/refresh-spatial.c
+# Win64 guarantees 16-byte stack alignment. A 256-bit vector return can
+# use a hidden result slot that MinGW accesses with an aligned AVX store.
+if grep -Eq '^[[:space:]]*static[[:space:]]+SIXEL_REFRESH_SPATIAL_TARGET_AVX2[[:space:]]+__m256(i|d)?([[:space:]]|$)' \
+    "$src_root/src/refresh-spatial.c"; then
+    fail 'spatial AVX2 helpers must not return a 256-bit vector'
+fi
 require_fixed "#include \"\$srcdir/build-aux/fhedt-heap-probe.c\"" configure.ac
 require_fixed "cc.run(files('build-aux/fhedt-heap-probe.c')[0]" meson.build
 require_fixed '#if defined(SIXEL_SPLIT_FHEDT_DISTANCE_GRID)' \

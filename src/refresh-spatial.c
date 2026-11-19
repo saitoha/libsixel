@@ -166,30 +166,34 @@ sixel_refresh_spatial_luma_avx2(unsigned char const *rgb,
     return p;
 }
 
-static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __m256i
-sixel_refresh_spatial_load16_avx2(unsigned char const *p)
-{
-    return _mm256_cvtepu8_epi16(_mm_loadu_si128((__m128i const *)p));
-}
-
 /* Sixteen interior outputs of the scalar operator in 16-bit lanes; both
  * weighted sums of a derivative are nonnegative, so |dx| is their larger
- * minus their smaller, and the total is at most 2040. */
-static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __m256i
+ * minus their smaller, and the total is at most 2040. Store bytes directly:
+ * MinGW GCC can use an aligned AVX store to a 256-bit return slot that the
+ * caller aligned to only 16 bytes. */
+static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 void
 sixel_refresh_spatial_sobel16_avx2(unsigned char const *above,
-    unsigned char const *row, unsigned char const *below)
+    unsigned char const *row, unsigned char const *below, unsigned char *out)
 {
     __m256i am, a, ap, rm, rp, bm, b, bp;
     __m256i left, right, top, bottom, sum;
 
-    am = sixel_refresh_spatial_load16_avx2(above - 1);
-    a = sixel_refresh_spatial_load16_avx2(above);
-    ap = sixel_refresh_spatial_load16_avx2(above + 1);
-    rm = sixel_refresh_spatial_load16_avx2(row - 1);
-    rp = sixel_refresh_spatial_load16_avx2(row + 1);
-    bm = sixel_refresh_spatial_load16_avx2(below - 1);
-    b = sixel_refresh_spatial_load16_avx2(below);
-    bp = sixel_refresh_spatial_load16_avx2(below + 1);
+    am = _mm256_cvtepu8_epi16(
+        _mm_loadu_si128((__m128i const *)(above - 1)));
+    a = _mm256_cvtepu8_epi16(
+        _mm_loadu_si128((__m128i const *)(above)));
+    ap = _mm256_cvtepu8_epi16(
+        _mm_loadu_si128((__m128i const *)(above + 1)));
+    rm = _mm256_cvtepu8_epi16(
+        _mm_loadu_si128((__m128i const *)(row - 1)));
+    rp = _mm256_cvtepu8_epi16(
+        _mm_loadu_si128((__m128i const *)(row + 1)));
+    bm = _mm256_cvtepu8_epi16(
+        _mm_loadu_si128((__m128i const *)(below - 1)));
+    b = _mm256_cvtepu8_epi16(
+        _mm_loadu_si128((__m128i const *)(below)));
+    bp = _mm256_cvtepu8_epi16(
+        _mm_loadu_si128((__m128i const *)(below + 1)));
     left = _mm256_add_epi16(_mm256_add_epi16(am, bm),
         _mm256_slli_epi16(rm, 1));
     right = _mm256_add_epi16(_mm256_add_epi16(ap, bp),
@@ -204,7 +208,9 @@ sixel_refresh_spatial_sobel16_avx2(unsigned char const *above,
         _mm256_sub_epi16(_mm256_max_epu16(top, bottom),
                          _mm256_min_epu16(top, bottom)));
     /* (sum + 4) / 8 never exceeds 255. */
-    return _mm256_srli_epi16(_mm256_add_epi16(sum, _mm256_set1_epi16(4)), 3);
+    sum = _mm256_srli_epi16(_mm256_add_epi16(sum, _mm256_set1_epi16(4)), 3);
+    _mm_storeu_si128((__m128i *)out, _mm_packus_epi16(
+        _mm256_castsi256_si128(sum), _mm256_extracti128_si256(sum, 1)));
 }
 
 static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 int
@@ -212,16 +218,9 @@ sixel_refresh_spatial_sobel_avx2(unsigned char const *above,
     unsigned char const *row, unsigned char const *below,
     unsigned char *out, int x, int end)
 {
-    __m256i low, high;
-
-    for (; x + 32 <= end; x += 32) {
-        low = sixel_refresh_spatial_sobel16_avx2(above + x, row + x,
-            below + x);
-        high = sixel_refresh_spatial_sobel16_avx2(above + x + 16,
-            row + x + 16, below + x + 16);
-        /* The pack interleaves the two halves by lane; 0xd8 undoes it. */
-        _mm256_storeu_si256((__m256i *)(out + x), _mm256_permute4x64_epi64(
-            _mm256_packus_epi16(low, high), 0xd8));
+    for (; x + 16 <= end; x += 16) {
+        sixel_refresh_spatial_sobel16_avx2(above + x, row + x, below + x,
+            out + x);
     }
     return x;
 }

@@ -708,6 +708,8 @@ runs:
         if test "${{ fromJSON(inputs.matrix_json).skip_initial_build || 'false' }}" != true; then
           ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" V=1
         fi
+        # The extracted distcheck tree must configure with the selected tools.
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} \
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" \
           SIXEL_TEST_SHARD=${{ fromJSON(inputs.matrix_json).test_shard || '' }} \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
