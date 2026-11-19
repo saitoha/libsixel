@@ -158,6 +158,14 @@ Retained node capacity is the largest band plan handled by each worker; per-band
 
 Unemitted nodes belong to their start-column buckets; completed nodes belong to the worker's reusable list. Reusing a node overwrites its color, span, map pointer and link before publication. Failed composition discards partial buckets, maps and reusable nodes before another job; terminal teardown joins callbacks before freeing their storage. The [encoding policy](../encoder/output/encode-policy/README.md#implementation-and-existing-coverage) owns bucket ordering and fill semantics.
 
+### GPU band composition
+
+When the GPU policy is not `off`, a Metal build is running, and a parallel indexed frame is fully published before its first band is submitted, encoder_core composes every band on the GPU before workers start. One kernel marks each painted pixel in a per-band, per-register column bitmap; a second finds the spans with the same nine-column gap rule as `sixel_band_compose()` and writes their six-bit column values. A CPU prefix sum between the two passes places each band's spans contiguously, ordered by register and then column. The write pass also records each register's first row-major position in the band from the column values it already reads, without atomics in the first kernel. Workers install the spans into their start-column buckets with farther ends first and, among equal spans, later first-seen registers first, which is the order the CPU compose builds; emission, the ordered writer and the output bytes are therefore unchanged.
+
+OR mode, the `size` encode policy, serial encoding, progressive row publication and a missing device keep the CPU compose. A device that fails once disables the GPU compose for that core. Results are borrowed from shared buffers owned by the core and stay valid until the next frame's run, after finish has drained the workers.
+
+The GPU wait runs on the submitting thread before the first band. On a 1866x1050, 256-color video frame it removes about a fifth of the encoder's CPU cycles, but it also lengthens each frame's encode latency, so unthrottled throughput can fall when the body encode is the critical path.
+
 ### Typed row publication and drain
 
 When `SIXEL_ENABLE_THREADS` is zero, backend selection disables both pthread and Win32 synchronization before considering platform or winpthreads overrides. Mutex operation helpers then use the existing stub implementation; creation reports unavailable thread support. PaletteApply, RetainedPlane and GPU lookup components can omit native mutex initialization in serial builds, so selecting real Windows mutex operations in that configuration would access uninitialized state. The [disabled-thread backend check](../../tests/_static/sh/staticcheck-thread-backend-disabled.sh) preserves this selection boundary without a compiler.
@@ -564,6 +572,7 @@ The fixed-budget colorspace tests select `greedy` explicitly so their worker cou
 | TE-161 | A partial final band preserves exact bytes. | [tests/encoder/scheduling/0027_batch_tail_bytes.t](../../tests/encoder/scheduling/0027_batch_tail_bytes.t) |
 | TE-162 | GPU publication reports zero CPU commit participants and counts all 289 painted pixels across a full threadgroup and a short tail. | [tests/encoder/retained/0009_gpu_commit_count.t](../../tests/encoder/retained/0009_gpu_commit_count.t) |
 | TE-163 | Serial builds select stub synchronization before platform backends, matching components that omit native mutex initialization. | [tests/_static/sh/staticcheck-thread-backend-disabled.sh](../../tests/_static/sh/staticcheck-thread-backend-disabled.sh) |
+| TE-164 | With GPU band composition requested, an offset frame with a reserved key color and kept pixels produces the same bytes as the CPU compose at four threads and decodes to the source registers; without a device both runs use the CPU compose. | [tests/encoder/indexed/0184_core_gpu_body.t](../../tests/encoder/indexed/0184_core_gpu_body.t) |
 
 Helper-lane tests use `SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED`, the same internal capability as production: threading is required, and PCC and TinyCC retain serial preparation. They skip before installing gates when that capability is absent; the explicit-serial test still runs. The GPU overlap and byte-comparison cases require an observed palette-apply kernel dispatch. Their small fixed-time streams compare scheduling consistency, not independent color accuracy.
 

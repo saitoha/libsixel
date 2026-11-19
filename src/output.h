@@ -56,6 +56,7 @@ typedef struct sixel_output_resolved {
     sixel_encoder_core_options_t options;
     sixel_writer_image_header_t header;
     int threads;
+    int gpu_body;
 } sixel_output_resolved_t;
 
 /* Playback owns this history-free preparation and transfers its solution.

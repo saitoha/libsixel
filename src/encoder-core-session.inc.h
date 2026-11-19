@@ -397,6 +397,7 @@ sixel_output_encode_resolved(sixel_output_t *output,
             output->allocator, &output->core);
         if (status != SIXEL_OK) return status;
     }
+    sixel_encoder_core_set_gpu_body(output->core, resolved->gpu_body);
     memset(&body, 0, sizeof(body));
     body.image = resolved->image;
     body.options = resolved->options;
@@ -564,6 +565,10 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
             output->allocator, &output->core);
         if (SIXEL_FAILED(status)) goto end;
     }
+    if (output->core != NULL) {
+        sixel_encoder_core_set_gpu_body(output->core,
+            dither->gpu_policy != SIXEL_GPU_POLICY_OFF);
+    }
     body.image = image;
     body.options.has_gri_arg_limit = output->has_gri_arg_limit;
     body.options.encode_policy = output->encode_policy;
@@ -665,6 +670,8 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         prepared->capture->options = body.options;
         prepared->capture->header = header;
         prepared->capture->threads = body.threads;
+        prepared->capture->gpu_body =
+            dither->gpu_policy != SIXEL_GPU_POLICY_OFF;
         image = NULL;
         emit_started = 0;
         ++dither->apply_count;

@@ -6440,6 +6440,7 @@ test_runner_SOURCES = test_runner.c \
     encoder/indexed/0181_reuse_abort_storage.c \
     encoder/indexed/0182_reuse_allocation_failure.c \
     encoder/indexed/0183_reuse_scratch_allocations.c \
+    encoder/indexed/0184_core_gpu_body.c \
     _support/codec/pool_reuse.c \
     _support/codec/core_reuse.c \
     delta/comparison/0069_query_encode_cpu.c \

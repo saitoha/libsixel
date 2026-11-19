@@ -87,6 +87,7 @@
 #include "threading.h"
 #include "encoder-core-highcolor.h"
 #include "gpu-palette.h"
+#include "encoder-body-gpu.h"
 #include "planner.h"
 #include "timer.h"
 #if SIXEL_ENABLE_THREADS
@@ -235,6 +236,9 @@ typedef struct sixel_parallel_context {
     sixel_band_schedule_t schedule;
     double (*clock)(void *);
     void *clock_context;
+    /* Set by the indexed core when the GPU composed every band of this
+     * frame; workers then only emit. Borrowed until the frame finishes. */
+    sixel_body_gpu_result_t const *gpu_result;
 } sixel_parallel_context_t;
 
 typedef struct sixel_parallel_row_notifier {
@@ -1483,6 +1487,77 @@ sixel_parallel_flush_band(sixel_parallel_context_t *ctx, int band_index)
     return SIXEL_OK;
 }
 
+static SIXELSTATUS sixel_node_new(sixel_node_t **np,
+                                  sixel_allocator_t *allocator);
+
+/* Install one band's GPU spans as compose would. Compose inserts colors in
+ * first-seen order with the newest first among equal spans, so a bucket
+ * holds farther ends first, then later first-seen registers first; ordering
+ * by that key reproduces the CPU buckets and bytes. Classify state stays
+ * empty, so finish has no occupancy or map rows to clear; emission zeroes
+ * the borrowed GPU map spans, which the next run rewrites. */
+static SIXELSTATUS
+sixel_band_compose_gpu(sixel_encode_work_t *work,
+                       sixel_output_t *output,
+                       sixel_body_gpu_result_t const *gpu,
+                       int band_index,
+                       sixel_allocator_t *allocator)
+{
+    sixel_body_gpu_node_t const *span;
+    uint32_t const *first_seen;
+    uint32_t rank;
+    sixel_node_t *np;
+    sixel_node_t *column_head;
+    sixel_node_t *column_tail;
+    uint32_t i;
+    uint32_t end;
+    SIXELSTATUS status;
+
+    if (band_index >= gpu->band_count) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    first_seen = gpu->first_seen + (size_t)band_index * gpu->ncolors;
+    end = gpu->band_first[band_index + 1];
+    for (i = gpu->band_first[band_index]; i < end; ++i) {
+        span = &gpu->nodes[i];
+        if ((np = output->node_free) != NULL) {
+            output->node_free = np->next;
+        } else {
+            status = sixel_node_new(&np, allocator);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
+        np->pal = (int)span->pal;
+        np->sx = (int)span->sx;
+        np->mx = (int)span->mx;
+        /* Emission addresses the span by absolute column. */
+        np->map = (char *)gpu->map + span->map_offset - span->sx;
+        np->next = NULL;
+        work->column_starts[span->sx / 64U] |=
+            UINT64_C(1) << (span->sx % 64U);
+        rank = first_seen[span->pal];
+        column_head = work->columns[span->sx];
+        if (column_head == NULL || column_head->mx < np->mx ||
+                (column_head->mx == np->mx &&
+                 first_seen[column_head->pal] < rank)) {
+            np->next = column_head;
+            work->columns[span->sx] = np;
+        } else {
+            column_tail = column_head;
+            while (column_tail->next != NULL &&
+                    (column_tail->next->mx > np->mx ||
+                     (column_tail->next->mx == np->mx &&
+                      first_seen[column_tail->next->pal] > rank))) {
+                column_tail = column_tail->next;
+            }
+            np->next = column_tail->next;
+            column_tail->next = np;
+        }
+    }
+    return SIXEL_OK;
+}
+
 static int
 sixel_parallel_worker_one(sixel_thread_pool_job_t job,
                            void *userdata,
@@ -1582,6 +1657,16 @@ sixel_parallel_worker_one(sixel_thread_pool_job_t job,
         goto done;
     }
 
+    if (ctx->gpu_result != NULL) {
+        sixel_band_state_reset(&state->band);
+        status = sixel_band_compose_gpu(&state->work, state->output,
+            ctx->gpu_result, band_index, ctx->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        goto emit;
+    }
+
     sixel_band_classify(&state->work,
                          &state->band,
                          ctx->pixels,
@@ -1609,6 +1694,7 @@ sixel_parallel_worker_one(sixel_thread_pool_job_t job,
         goto cleanup;
     }
 
+emit:
     last_row_index = band_start + band_height - 1;
     status = sixel_band_emit(&state->work,
                              &state->band,

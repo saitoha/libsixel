@@ -45,6 +45,11 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_test_clock(sixel_encoder_core_t *core,
     double (*clock)(void *), void *context);
 
+/* Requests GPU band composition for later frames; a core without it, or
+ * without a usable device, keeps composing on the CPU. */
+SIXEL_INTERNAL_API void
+sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *core, int enabled);
+
 /* @classid codec/encoder-core */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object);

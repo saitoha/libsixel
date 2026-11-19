@@ -132,6 +132,7 @@ host_triplet = @host@
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/dither-policy-sierra2-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/dither-policy-sierra3-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/encoder-body-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/retained-plane-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/progressive-gpu-metal.m
@@ -226,9 +227,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/output-factory.h $(srcdir)/encode-result.c \
 	$(srcdir)/encode-result.h $(srcdir)/retained-plane.c \
 	$(srcdir)/retained-plane-gpu.c $(srcdir)/retained-plane-gpu.h \
-	$(srcdir)/gpu-runtime-metal.h $(srcdir)/gpu-runtime-vulkan.h \
-	$(srcdir)/gpu-compute-vulkan.h $(srcdir)/gpu-palette-vulkan.h \
-	$(srcdir)/retained-plane-rows.c \
+	$(srcdir)/gpu-runtime-metal.h $(srcdir)/encoder-body-gpu.h \
+	$(srcdir)/gpu-runtime-vulkan.h $(srcdir)/gpu-compute-vulkan.h \
+	$(srcdir)/gpu-palette-vulkan.h $(srcdir)/retained-plane-rows.c \
 	$(srcdir)/retained-plane-rows.h \
 	$(srcdir)/retained-plane-workers.c \
 	$(srcdir)/retained-plane-workers.h $(srcdir)/palette-apply.c \
@@ -551,7 +552,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-policy-sierra1-gpu-metal.m \
 	$(srcdir)/dither-policy-sierra2-gpu-metal.m \
 	$(srcdir)/dither-policy-sierra3-gpu-metal.m \
-	$(srcdir)/gpu-palette-metal.m $(srcdir)/retained-plane-metal.m \
+	$(srcdir)/gpu-palette-metal.m \
+	$(srcdir)/encoder-body-gpu-metal.m \
+	$(srcdir)/retained-plane-metal.m \
 	$(srcdir)/palette-kmeans-metal.m \
 	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
 	$(srcdir)/clipboard_carbon.c
@@ -582,6 +585,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-sierra2-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-sierra3-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette-metal.lo \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-body-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu-metal.lo
@@ -911,6 +915,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
 	./$(DEPDIR)/libsixel_la-drcs.Plo \
 	./$(DEPDIR)/libsixel_la-encode-result.Plo \
+	./$(DEPDIR)/libsixel_la-encoder-body-gpu-metal.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-core.Plo \
@@ -1675,6 +1680,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-metal.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-body-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-vulkan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-compute-vulkan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette-vulkan.h \
@@ -2468,6 +2474,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-drcs.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encode-result.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-body-gpu-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core.Plo@am__quote@ # am--include-marker
@@ -4418,6 +4425,13 @@ libsixel_la-gpu-palette-metal.lo: gpu-palette-metal.m
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-gpu-palette-metal.lo `test -f 'gpu-palette-metal.m' || echo '$(srcdir)/'`gpu-palette-metal.m
 
+libsixel_la-encoder-body-gpu-metal.lo: encoder-body-gpu-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-encoder-body-gpu-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-encoder-body-gpu-metal.Tpo -c -o libsixel_la-encoder-body-gpu-metal.lo `test -f 'encoder-body-gpu-metal.m' || echo '$(srcdir)/'`encoder-body-gpu-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-encoder-body-gpu-metal.Tpo $(DEPDIR)/libsixel_la-encoder-body-gpu-metal.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='encoder-body-gpu-metal.m' object='libsixel_la-encoder-body-gpu-metal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-encoder-body-gpu-metal.lo `test -f 'encoder-body-gpu-metal.m' || echo '$(srcdir)/'`encoder-body-gpu-metal.m
+
 libsixel_la-retained-plane-metal.lo: retained-plane-metal.m
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-retained-plane-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-retained-plane-metal.Tpo -c -o libsixel_la-retained-plane-metal.lo `test -f 'retained-plane-metal.m' || echo '$(srcdir)/'`retained-plane-metal.m
 @am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-retained-plane-metal.Tpo $(DEPDIR)/libsixel_la-retained-plane-metal.Plo
@@ -4711,6 +4725,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-drcs.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encode-result.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-encoder-body-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core.Plo
@@ -5006,6 +5021,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-drcs.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encode-result.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-encoder-body-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core.Plo
