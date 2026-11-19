@@ -1154,8 +1154,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
     has_accumulation = params.has_6delta != 0;
     has_valid = has_accumulation && request->accumulation_valid_mask != NULL;
 
-    status = sixel_vk_buffer_reserve(runtime,
-        &state->buffers[SIXEL_VK_RESULT], pixel_count, 0);
+    status = sixel_vk_buffer_reserve_readback(runtime,
+        &state->buffers[SIXEL_VK_RESULT], pixel_count);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_gpu_vulkan_upload(runtime, SIXEL_VK_PIXELS,
             request->pixels, pixel_count * 3U);
@@ -1476,6 +1476,11 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         }
         offset = (size_t)chunk->first * request->width;
         length = (size_t)chunk->rows * request->width;
+        status = sixel_vk_buffer_invalidate_range(runtime,
+            &state->buffers[SIXEL_VK_RESULT], offset, length);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         memcpy(request->dest + offset,
             (unsigned char *)state->buffers[SIXEL_VK_RESULT].mapped + offset,
             length);

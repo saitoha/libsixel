@@ -548,18 +548,19 @@ lso2_gpu_vk_reserve_locked(sixel_vk_runtime_t *runtime,
         status = sixel_vk_buffer_reserve(runtime,
             &buffers[LSO2_GPU_VK_COUNT], sizeof(uint32_t), 1);
     }
-    /* Results and the invalid flag are read back by the host. */
+    /* Results and the invalid flag are read back by the host. The host
+     * also writes the flag, so only the results take cached memory. */
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_vk_buffer_reserve(runtime,
-            &buffers[LSO2_GPU_VK_RESULT], pixels, 0);
+        status = sixel_vk_buffer_reserve_readback(runtime,
+            &buffers[LSO2_GPU_VK_RESULT], pixels);
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_vk_buffer_reserve(runtime,
             &buffers[LSO2_GPU_VK_INVALID], 4U, 0);
     }
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_vk_buffer_reserve(runtime,
-            &buffers[LSO2_GPU_VK_SKIP], pixels, 0);
+        status = sixel_vk_buffer_reserve_readback(runtime,
+            &buffers[LSO2_GPU_VK_SKIP], pixels);
     }
     return status;
 }
@@ -1101,6 +1102,14 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
         goto end;
     }
     if (mode != LSO2_GPU_VK_SOLVE) {
+        status = sixel_vk_buffer_invalidate(runtime,
+            &buffers[LSO2_GPU_VK_RESULT], (size_t)pixels);
+        if (SIXEL_SUCCEEDED(status))
+            status = sixel_vk_buffer_invalidate(runtime,
+                &buffers[LSO2_GPU_VK_SKIP], (size_t)pixels);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         memcpy(request->result->indexes, buffers[LSO2_GPU_VK_RESULT].mapped,
             (size_t)pixels);
         memcpy(request->result->skip, buffers[LSO2_GPU_VK_SKIP].mapped,

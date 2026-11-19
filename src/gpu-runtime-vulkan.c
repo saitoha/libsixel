@@ -644,11 +644,12 @@ sixel_vk_buffer_reserve_readback(sixel_vk_runtime_t *runtime,
 }
 
 SIXELSTATUS
-sixel_vk_buffer_invalidate(sixel_vk_runtime_t *runtime,
-    sixel_vk_buffer_t const *buffer, VkDeviceSize size)
+sixel_vk_buffer_invalidate_range(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t const *buffer, VkDeviceSize offset, VkDeviceSize size)
 {
     VkMappedMemoryRange range;
     VkDeviceSize atom;
+    VkDeviceSize end;
 
     if (!buffer->noncoherent || size == 0) return SIXEL_OK;
     atom = runtime->properties.limits.nonCoherentAtomSize;
@@ -657,10 +658,18 @@ sixel_vk_buffer_invalidate(sixel_vk_runtime_t *runtime,
     range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     range.memory = buffer->staging != VK_NULL_HANDLE
         ? buffer->staging_memory : buffer->memory;
-    range.size = (size + atom - 1) / atom * atom;
-    if (range.size >= buffer->capacity) range.size = VK_WHOLE_SIZE;
+    range.offset = offset / atom * atom;
+    end = (offset + size + atom - 1) / atom * atom;
+    range.size = end >= buffer->capacity ? VK_WHOLE_SIZE : end - range.offset;
     return vkInvalidateMappedMemoryRanges(runtime->device, 1, &range)
         == VK_SUCCESS ? SIXEL_OK : SIXEL_RUNTIME_ERROR;
+}
+
+SIXELSTATUS
+sixel_vk_buffer_invalidate(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t const *buffer, VkDeviceSize size)
+{
+    return sixel_vk_buffer_invalidate_range(runtime, buffer, 0, size);
 }
 
 SIXELSTATUS
