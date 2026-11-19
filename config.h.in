@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
 /* Define to 1 to enable XGETBV probing for AVX support */
 #undef ENABLE_XSAVE_PROBE
 
@@ -14,6 +17,9 @@
 
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
+
+/* Define if AVX2 kernels compile for run-time dispatch */
+#undef HAVE_AVX2_KERNELS
 
 /* Define to 1 if you have the 'backtrace' function. */
 #undef HAVE_BACKTRACE
@@ -409,6 +415,9 @@
 /* Define if NEON is available */
 #undef HAVE_NEON
 
+/* Define if AArch64 NEON intrinsics are available */
+#undef HAVE_NEON_A64
+
 /* whether NSWorkspace openURLs returns BOOL */
 #undef HAVE_NSWORKSPACE_OPENURLS_RETURNS_BOOL
 
@@ -641,9 +650,6 @@
 /* Define to 1 if fma preserves product residuals. */
 #undef HAVE_WORKING_FMA
 
-/* Define if functions can target AVX2 independently */
-#undef HAVE_X86_AVX2_TARGET
-
 /* Define to 1 if _xgetbv is available without extra flags */
 #undef HAVE_XGETBV_INTRIN
 
@@ -750,6 +756,9 @@
 /* Split the FHEDT distance grid for limited native heaps */
 #undef SIXEL_SPLIT_FHEDT_DISTANCE_GRID
 
+/* Function attribute that enables AVX2 intrinsics */
+#undef SIXEL_TARGET_AVX2
+
 /* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
@@ -760,6 +769,9 @@
 
 /* Define if libwinpthread is available */
 #undef WITH_WINPTHREAD
+
+/* Define if the host stores multibyte words big-endian */
+#undef WORDS_BIGENDIAN
 
 /* Define to 1 to enable Darwin extensions */
 #undef _DARWIN_C_SOURCE

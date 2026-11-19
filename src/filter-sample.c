@@ -23,6 +23,7 @@
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 /* STDC_HEADERS */
@@ -37,15 +38,13 @@
 #include <sixel.h>
 
 #include "filter-sample.h"
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
 # include <arm_neon.h>
 # define SIXEL_SAMPLE_NEON 1
 #else
 # define SIXEL_SAMPLE_NEON 0
 #endif
-#if !SIXEL_SAMPLE_NEON && defined(HAVE_SSE2) && \
-    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
-     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#if !SIXEL_SAMPLE_NEON && SIXEL_SIMD_SSE2
 # include <emmintrin.h>
 # define SIXEL_SAMPLE_SSE2 1
 #else
@@ -53,12 +52,13 @@
 #endif
 /* Either vector unit runs the chunked solid test below. */
 #define SIXEL_SAMPLE_VECTOR (SIXEL_SAMPLE_NEON || SIXEL_SAMPLE_SSE2)
-/* GCC and Clang compile the AVX2 test for its own function only; the CPU
- * check at run time decides whether it is called. */
-#if SIXEL_SAMPLE_SSE2 && defined(HAVE_X86_AVX2_TARGET)
+/* The AVX2 test is compiled for its own function only (with the attribute
+ * the build probe found); the CPU check at run time decides whether it is
+ * called. */
+#if SIXEL_SAMPLE_SSE2 && SIXEL_SIMD_AVX2
 # include <immintrin.h>
 # define SIXEL_SAMPLE_AVX2 1
-# define SIXEL_SAMPLE_TARGET_AVX2 __attribute__((target("avx2")))
+# define SIXEL_SAMPLE_TARGET_AVX2 SIXEL_TARGET_AVX2
 #else
 # define SIXEL_SAMPLE_AVX2 0
 #endif

@@ -27,18 +27,16 @@
  */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 #include <stdint.h>
 /* A multi-architecture compiler can reuse config.h for another target.
  * Require the current compiler target as well as the configured header. */
-#if HAVE_NEON && HAVE_ARM_NEON_H && \
-    (defined(__ARM_NEON) || defined(__ARM_NEON__))
+#if SIXEL_SIMD_NEON
 # define SIXEL_VPTREE_USE_NEON 1
 # include <arm_neon.h>
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H && \
-    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
-     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#elif SIXEL_SIMD_SSE2
 # define SIXEL_VPTREE_USE_SSE2 1
 # include <emmintrin.h>
 #endif

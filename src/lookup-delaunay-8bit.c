@@ -27,6 +27,7 @@
  */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 #include <stdint.h>
 #include <limits.h>
@@ -36,13 +37,11 @@
 #include "sixel_atomic.h"
 
 /* A shared config.h can describe a different cosmocc compiler target. */
-#if HAVE_SSE2 && HAVE_EMMINTRIN_H && \
-    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
-     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#if SIXEL_SIMD_SSE2
 # define SIXEL_DL8_SSE2 1
 #endif
 
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
 #include <arm_neon.h>
 #define SIXEL_DL8_SIMD 1
 #elif defined(SIXEL_DL8_SSE2)
@@ -336,7 +335,7 @@ sixel_lookup_delaunay_8bit_walk_simd(
     int distance, best_distance, best, pos, lane, packed;
     int32_t distances[4], ids[4];
     sixel_delaunay_byte_block_t const *block;
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
     int32x4_t x, y, z, d, id, vd, vi, key;
     uint32x4_t mask;
 #elif defined(SIXEL_DL8_SSE2)
@@ -355,7 +354,7 @@ sixel_lookup_delaunay_8bit_walk_simd(
          * Initialize it before either packed or separate-lane reduction. */
         best = center;
         best_distance = distance;
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
         vd = vdupq_n_s32(distance);
         vi = vdupq_n_s32(center);
         key = vdupq_n_s32(packed ? (distance << 8) | center : 0);
@@ -375,7 +374,7 @@ sixel_lookup_delaunay_8bit_walk_simd(
             if (block->distance[0] > 4 * distance) {
                 break;
             }
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
             x = vsubq_s32(vdupq_n_s32(pixel[0]), vld1q_s32(block->x));
             y = vsubq_s32(vdupq_n_s32(pixel[1]), vld1q_s32(block->y));
             z = vsubq_s32(vdupq_n_s32(pixel[2]), vld1q_s32(block->z));
@@ -446,7 +445,7 @@ sixel_lookup_delaunay_8bit_walk_simd(
             }
 #endif
         }
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
         if (packed) {
             best = vminvq_s32(key);
             best_distance = best >> 8;
@@ -564,7 +563,7 @@ sixel_lookup_delaunay_8bit_map_cold8(
     int i;
     int j;
     int32_t const *p;
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
     int16x8_t r, g, b, dr, dg, db;
     int32x4_t lo, hi, best_lo, best_hi, idx_lo, idx_hi, index;
     uint32x4_t mask;
@@ -581,7 +580,7 @@ sixel_lookup_delaunay_8bit_map_cold8(
         green[j] = (int16_t)((keys[j] >> 8) & 255U);
         blue[j] = (int16_t)(keys[j] & 255U);
     }
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
     r = vld1q_s16(red);
     g = vld1q_s16(green);
     b = vld1q_s16(blue);
@@ -602,7 +601,7 @@ sixel_lookup_delaunay_8bit_map_cold8(
 #endif
     for (i = 0; i < graph->count; ++i) {
         p = graph->points + i * 3;
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
         dr = vsubq_s16(r, vdupq_n_s16(p[0]));
         dg = vsubq_s16(g, vdupq_n_s16(p[1]));
         db = vsubq_s16(b, vdupq_n_s16(p[2]));
@@ -666,7 +665,7 @@ sixel_lookup_delaunay_8bit_map_cold8(
         best_hi = wasm_i32x4_min(hi, best_hi);
 #endif
     }
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
     vst1q_s32(indexes, idx_lo);
     vst1q_s32(indexes + 4, idx_hi);
 #elif defined(SIXEL_DL8_SSE2)

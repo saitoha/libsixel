@@ -23,6 +23,7 @@
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 /* STDC_HEADERS */
@@ -220,7 +221,7 @@ sixel_cpu_detect_native(void)
         }
     }
 # endif
-#elif defined(__aarch64__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+#elif SIXEL_SIMD_NEON
     level = SIXEL_SIMD_LEVEL_NEON;
 #endif
     return level;

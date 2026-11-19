@@ -383,6 +383,7 @@ srcs = [
   'decoder-ormode.h',
   'decoder-columns.h',
   'decoder-simd.h',
+  'simd-config.h',
   'options.c',
   'options-registry.c',
   'options-registry.h',

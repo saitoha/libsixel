@@ -12,10 +12,9 @@
 
 #include <stdint.h>
 
-#if defined(HAVE_NEON) && HAVE_NEON && \
-    defined(HAVE_ARM_NEON_H) && HAVE_ARM_NEON_H && \
-    (defined(__aarch64__) || defined(_M_ARM64)) && \
-    !defined(__ARM_BIG_ENDIAN)
+#include "simd-config.h"
+
+#if SIXEL_SIMD_NEON_A64 && SIXEL_SIMD_LITTLE_ENDIAN
 # include <arm_neon.h>
 # define SIXEL_DECODER_NEON 1
 #else

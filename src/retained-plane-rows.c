@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 
 #include <string.h>
@@ -9,7 +10,7 @@
 
 /* A shared configuration may target another architecture in a universal
  * build. Both the compiler target and available intrinsics must agree. */
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
 #define SIXEL_RETAINED_NEON 1
 #include <arm_neon.h>
 #else

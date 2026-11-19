@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
+#include "simd-config.h"
 #endif
 #include <stdint.h>
 #include <stdlib.h>
@@ -11,7 +12,7 @@
 #include "loader-common.h"
 #include "cpu.h"
 
-#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64
 #define SIXEL_REFRESH_SPATIAL_NEON 1
 #include <arm_neon.h>
 #else
@@ -19,9 +20,9 @@
 #endif
 /* GCC and Clang compile the AVX2 passes for their own functions only; the
  * CPU check at run time decides whether they are called. */
-#if defined(HAVE_X86_AVX2_TARGET)
+#if SIXEL_SIMD_AVX2
 #define SIXEL_REFRESH_SPATIAL_AVX2 1
-#define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 __attribute__((target("avx2")))
+#define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 SIXEL_TARGET_AVX2
 #include <immintrin.h>
 #else
 #define SIXEL_REFRESH_SPATIAL_AVX2 0
