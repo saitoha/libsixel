@@ -520,6 +520,15 @@ sixel_indexed_frame_get_rows(sixel_indexed_frame_t const *image,
 #define SIXEL_PUBLISH_NEON 0
 #endif
 
+#if !SIXEL_PUBLISH_NEON && defined(HAVE_SSE2) && \
+    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
+     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#define SIXEL_PUBLISH_SSE2 1
+#include <emmintrin.h>
+#else
+#define SIXEL_PUBLISH_SSE2 0
+#endif
+
 #if SIXEL_PUBLISH_NEON
 /* The scalar scan below, sixteen pixels per step in byte lanes.  Indexes
  * are bytes, so a count above 255 rejects none and a key of 256 matches
@@ -563,6 +572,61 @@ sixel_indexed_frame_publish_neon(unsigned char *skip,
             paint));
     }
     *bad |= vmaxvq_u8(acc) != 0u;
+    return i;
+}
+#endif
+
+#if SIXEL_PUBLISH_SSE2
+/* The NEON scan above in SSE2. Unsigned >= is max(a, b) == a, a select is
+ * and/andnot/or, and any nonzero lane leaves a zero-compare mask short. */
+static size_t
+sixel_indexed_frame_publish_sse2(unsigned char *skip,
+    sixel_index_t const *indexes, size_t i, size_t end, size_t count,
+    unsigned int key, unsigned int opaque, unsigned int normalize,
+    unsigned int *bad)
+{
+    __m128i const zero = _mm_setzero_si128();
+    __m128i const ones = _mm_set1_epi8((char)0xff);
+    __m128i const keep = _mm_set1_epi8((char)SIXEL_INDEXED_KEEP);
+    __m128i const approximate =
+        _mm_set1_epi8((char)SIXEL_INDEXED_KEEP_APPROXIMATE);
+    __m128i const limit =
+        _mm_set1_epi8((char)(count < 256u ? count : 0u));
+    __m128i const range = count < 256u ? ones : zero;
+    __m128i const keyv = _mm_set1_epi8((char)(key & 0xffu));
+    __m128i const keyed = key < 256u ? ones : zero;
+    __m128i const opaquev = opaque ? ones : zero;
+    __m128i const normalizev = normalize ? ones : zero;
+    __m128i acc;
+    __m128i code;
+    __m128i index;
+    __m128i paint;
+    __m128i is_key;
+    __m128i kept;
+    __m128i select;
+    __m128i above;
+
+    acc = zero;
+    for (; i + 16u <= end; i += 16u) {
+        code = _mm_loadu_si128((__m128i const *)(skip + i));
+        index = _mm_loadu_si128((__m128i const *)(indexes + i));
+        is_key = _mm_and_si128(_mm_cmpeq_epi8(index, keyv), keyed);
+        paint = _mm_cmpeq_epi8(code, zero);
+        select = _mm_and_si128(_mm_and_si128(paint, is_key), normalizev);
+        code = _mm_or_si128(_mm_and_si128(select, keep),
+            _mm_andnot_si128(select, code));
+        _mm_storeu_si128((__m128i *)(skip + i), code);
+        paint = _mm_cmpeq_epi8(code, zero);
+        above = _mm_and_si128(
+            _mm_cmpeq_epi8(_mm_max_epu8(index, limit), index), range);
+        acc = _mm_or_si128(acc, _mm_and_si128(paint,
+            _mm_or_si128(is_key, above)));
+        kept = _mm_or_si128(_mm_cmpeq_epi8(code, keep),
+            _mm_cmpeq_epi8(code, approximate));
+        acc = _mm_or_si128(acc, _mm_andnot_si128(paint,
+            _mm_or_si128(opaquev, _mm_xor_si128(kept, ones))));
+    }
+    *bad |= _mm_movemask_epi8(_mm_cmpeq_epi8(acc, zero)) != 0xffff;
     return i;
 }
 #endif
@@ -620,6 +684,12 @@ sixel_indexed_frame_publish_internal(sixel_indexed_frame_t *image, int rows,
 #if SIXEL_PUBLISH_NEON
     if (sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON) {
         i = sixel_indexed_frame_publish_neon(skip, indexes, i, end, count,
+            key, opaque, normalize, &bad);
+    }
+#endif
+#if SIXEL_PUBLISH_SSE2
+    if (sixel_cpu_simd_level() >= SIXEL_SIMD_LEVEL_SSE2) {
+        i = sixel_indexed_frame_publish_sse2(skip, indexes, i, end, count,
             key, opaque, normalize, &bad);
     }
 #endif
