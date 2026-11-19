@@ -302,6 +302,99 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
         both[k] = (unsigned char)(h & v);
     }
 }
+
+/* The same test for 15 RGB points x0, x0 + 3, ..., x0 + 42, computing only
+ * at the points. Each row's 48 pixels from x0 - 2 split into channel
+ * planes; table lookups pick the point centres and their horizontal
+ * neighbours, so no difference is taken between points. Lane k of both
+ * holds point k; lane 15 is zero. Needs 2 <= x0, x0 + 46 < width and
+ * 2 <= y < height - 2. */
+static void
+sixel_filter_sample_vary_points_rgb15(unsigned char const *pixels,
+                                      int width,
+                                      int x0,
+                                      int y,
+                                      unsigned char *both)
+{
+    static unsigned char const offsets[16] = {
+        2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35, 38, 41, 44, 255
+    };
+    uint8x16_t index[5];
+    uint8x16x3_t plane[3];
+    uint8x16_t centre[3];
+    uint8x16_t across;
+    uint8x16_t down;
+    uint8x16_t spread[3];
+    uint8x16_t tolerance;
+    unsigned char const *base;
+    size_t row;
+    int d;
+    int c;
+    int r;
+
+    row = (size_t)width * 3u;
+    base = pixels + ((size_t)y * (size_t)width + (size_t)(x0 - 2)) * 3u;
+    /* Offsets past lane 14 stay out of range, so their lookups are 0. */
+    for (d = 0; d < 5; ++d) {
+        index[d] = vaddq_u8(vld1q_u8(offsets), vdupq_n_u8((unsigned char)d));
+        index[d] = vsubq_u8(index[d], vdupq_n_u8(2));
+    }
+    /* Split the centre row: plane[c] holds channel c of 48 pixels. */
+    {
+        uint8x16x3_t a;
+        uint8x16x3_t b;
+        uint8x16x3_t e;
+
+        a = vld3q_u8(base);
+        b = vld3q_u8(base + 48);
+        e = vld3q_u8(base + 96);
+        for (c = 0; c < 3; ++c) {
+            plane[c].val[0] = a.val[c];
+            plane[c].val[1] = b.val[c];
+            plane[c].val[2] = e.val[c];
+        }
+    }
+    for (c = 0; c < 3; ++c) {
+        centre[c] = vqtbl3q_u8(plane[c], index[2]);
+        spread[c] = vmaxq_u8(
+            vmaxq_u8(vabdq_u8(centre[c], vqtbl3q_u8(plane[c], index[0])),
+                     vabdq_u8(centre[c], vqtbl3q_u8(plane[c], index[1]))),
+            vmaxq_u8(vabdq_u8(centre[c], vqtbl3q_u8(plane[c], index[3])),
+                     vabdq_u8(centre[c], vqtbl3q_u8(plane[c], index[4]))));
+    }
+    across = vmaxq_u8(vmaxq_u8(spread[0], spread[1]), spread[2]);
+    for (c = 0; c < 3; ++c) {
+        spread[c] = vdupq_n_u8(0);
+    }
+    for (r = -2; r <= 2; ++r) {
+        uint8x16x3_t a;
+        uint8x16x3_t b;
+        uint8x16x3_t e;
+        unsigned char const *line;
+
+        if (r == 0) {
+            continue;
+        }
+        line = base + (ptrdiff_t)r * (ptrdiff_t)row;
+        a = vld3q_u8(line);
+        b = vld3q_u8(line + 48);
+        e = vld3q_u8(line + 96);
+        for (c = 0; c < 3; ++c) {
+            uint8x16x3_t t;
+
+            t.val[0] = a.val[c];
+            t.val[1] = b.val[c];
+            t.val[2] = e.val[c];
+            spread[c] = vmaxq_u8(spread[c],
+                vabdq_u8(centre[c], vqtbl3q_u8(t, index[2])));
+        }
+    }
+    down = vmaxq_u8(vmaxq_u8(spread[0], spread[1]), spread[2]);
+    tolerance = vdupq_n_u8(SIXEL_SAMPLE_SOLID_TOL);
+    vst1q_u8(both, vandq_u8(vandq_u8(vcgtq_u8(across, tolerance),
+                                     vcgtq_u8(down, tolerance)),
+                            vdupq_n_u8(1)));
+}
 #endif
 
 static unsigned int
@@ -482,11 +575,18 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
                         && x <= last_inner) {
                     chunk_points = (last_inner - x)
                         / SIXEL_SAMPLE_SOLID_STRIDE + 1;
-                    if (chunk_points > 16) {
-                        chunk_points = 16;
+                    if (depth == 3 && chunk_points >= 15
+                            && x + 46 < width) {
+                        chunk_points = 15;
+                        sixel_filter_sample_vary_points_rgb15(pixels, width,
+                            x, y, varies);
+                    } else {
+                        if (chunk_points > 16) {
+                            chunk_points = 16;
+                        }
+                        sixel_filter_sample_vary_points(pixels, width, depth,
+                            x, y, chunk_points, varies);
                     }
-                    sixel_filter_sample_vary_points(pixels, width, depth,
-                        x, y, chunk_points, varies);
                     /* Whether a point is solid follows the picture, so a
                      * branch per point mispredicts. List the solid points
                      * without one, then add them in the same column order. */
