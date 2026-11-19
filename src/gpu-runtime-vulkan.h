@@ -87,11 +87,15 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve(
     VkDeviceSize size, int host_written);
 /* A buffer the shader writes and the host reads in place. It prefers
  * cached host memory even without coherence; call invalidate after the
- * fence wait and before reading the first size bytes. */
+ * fence wait and before reading the first size bytes, and flush after
+ * host writes the shader must see. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_readback(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     VkDeviceSize size);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_invalidate(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t const *buffer,
+    VkDeviceSize size);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_flush(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t const *buffer,
     VkDeviceSize size);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_invalidate_range(
