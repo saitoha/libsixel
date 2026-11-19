@@ -87,9 +87,9 @@ gpu_body_image(sixel_allocator_t *allocator)
                 i = y * desc.width + x;
                 seed = seed * 1103515245U + 12345U;
                 /* Mix long runs, short gaps and scattered registers. */
-                image->indexes[i] = (sixel_index_t)((x / 13 + y / 4) % 7 == 0
-                    ? (seed >> 16) % GPU_BODY_COLORS
-                    : (x / 9 + y) % GPU_BODY_COLORS);
+                image->indexes[i] = (x / 13 + y / 4) % 7 == 0
+                    ? (sixel_index_t)((seed >> 16) % GPU_BODY_COLORS)
+                    : (sixel_index_t)((x / 9 + y) % GPU_BODY_COLORS);
                 image->skip[i] = (seed >> 8) % 11 == 0
                     ? SIXEL_INDEXED_KEEP_APPROXIMATE : SIXEL_INDEXED_PAINT;
                 /* Painted pixels never carry the key color; kept ones
@@ -226,8 +226,8 @@ test_0184_core_gpu_body(int argc, char **argv)
         fprintf(stderr, "decode failed\n");
         goto end;
     }
-    if (memcmp(cpu_pixels, gpu_pixels, (size_t)cpu_width * cpu_height)
-            != 0) {
+    if (memcmp(cpu_pixels, gpu_pixels,
+            (size_t)cpu_width * (size_t)cpu_height) != 0) {
         fprintf(stderr, "GPU body decodes to different pixels\n");
         goto end;
     }

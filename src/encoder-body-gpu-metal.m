@@ -3,6 +3,7 @@
 
 #include "config.h"
 
+#if defined(HAVE_METAL)
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 #include <stdint.h>
@@ -457,3 +458,4 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
     }
     return SIXEL_OK;
 }
+#endif /* HAVE_METAL */
