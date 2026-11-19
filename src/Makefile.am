@@ -107,6 +107,7 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(src
 SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
     $(srcdir)/palette-kmeans-gpu.glsl \
     $(srcdir)/retained-plane-gpu.glsl \
+    $(srcdir)/encoder-body-gpu.glsl \
     $(srcdir)/progressive-gpu-scan.glsl \
     $(srcdir)/progressive-gpu-lookup.glsl
 SIXEL_VULKAN_INPUTS = $(SIXEL_VULKAN_STAGES) \
@@ -181,6 +182,7 @@ SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-dequant-vulkan.lo \
     libsixel_la-palette-kmeans-vulkan.lo \
     libsixel_la-retained-plane-vulkan.lo \
+    libsixel_la-encoder-body-gpu-vulkan.lo \
     libsixel_la-progressive-gpu-vulkan.lo \
     libsixel_la-dither-policy-lso2-gpu-vulkan.lo \
     libsixel_la-dither-policy-none-gpu.lo \
@@ -799,6 +801,7 @@ $(srcdir)/gpu-compute-vulkan.c \
 $(srcdir)/gpu-dequant-vulkan.c \
 $(srcdir)/palette-kmeans-vulkan.c \
 $(srcdir)/retained-plane-vulkan.c \
+$(srcdir)/encoder-body-gpu-vulkan.c \
 $(srcdir)/progressive-gpu-vulkan.c \
 $(srcdir)/gpu-palette-vulkan.c \
 $(srcdir)/dither-policy-lso2-gpu-vulkan.c \

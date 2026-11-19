@@ -526,11 +526,14 @@ sixel_vk_allocate(sixel_vk_runtime_t *runtime, VkDeviceSize size,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
-sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
-    VkDeviceSize size, int host_written)
+/* kind 1: host_written; 0: coherent readback; 2: cached readback that may
+ * need sixel_vk_buffer_invalidate(). */
+static SIXELSTATUS
+sixel_vk_buffer_reserve_kind(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t *buffer, VkDeviceSize size, int kind)
 {
     VkMemoryPropertyFlags flags;
+    VkMemoryPropertyFlags host_flags;
     VkDeviceMemory host_memory;
     SIXELSTATUS status;
 
@@ -542,7 +545,21 @@ sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     sixel_vk_buffer_release(runtime, buffer);
 
     status = SIXEL_FEATURE_ERROR;
-    if (host_written) {
+    if (kind == 2) {
+        /* Some integrated GPUs pair coherence with write-combined mappings
+         * and offer cached memory only without it. CPU loads from
+         * write-combined memory are uncached, so a buffer the host reads
+         * in place prefers cached memory and invalidates after each wait. */
+        status = sixel_vk_allocate(runtime, size,
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &buffer->buffer,
+            &buffer->memory, &flags);
+    }
+    if (kind == 1) {
         /* Host-visible VRAM takes sequential host writes at bus speed; one
          * write replaces the copy into staging plus the device copy out of
          * it. Without such a type, or once that window is exhausted, the
@@ -572,6 +589,7 @@ sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
         return status;
     }
     host_memory = buffer->memory;
+    host_flags = flags;
     if (!(flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
         /* On a discrete GPU this memory is system RAM: a shader reading it
          * crosses PCIe on every access, which made the direct scan an order
@@ -605,7 +623,44 @@ sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
         return SIXEL_BAD_ALLOCATION;
     }
     buffer->capacity = size;
+    buffer->noncoherent =
+        !(host_flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_buffer_reserve(sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    VkDeviceSize size, int host_written)
+{
+    return sixel_vk_buffer_reserve_kind(runtime, buffer, size,
+        host_written ? 1 : 0);
+}
+
+SIXELSTATUS
+sixel_vk_buffer_reserve_readback(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t *buffer, VkDeviceSize size)
+{
+    return sixel_vk_buffer_reserve_kind(runtime, buffer, size, 2);
+}
+
+SIXELSTATUS
+sixel_vk_buffer_invalidate(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t const *buffer, VkDeviceSize size)
+{
+    VkMappedMemoryRange range;
+    VkDeviceSize atom;
+
+    if (!buffer->noncoherent || size == 0) return SIXEL_OK;
+    atom = runtime->properties.limits.nonCoherentAtomSize;
+    if (atom == 0) atom = 1;
+    memset(&range, 0, sizeof(range));
+    range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+    range.memory = buffer->staging != VK_NULL_HANDLE
+        ? buffer->staging_memory : buffer->memory;
+    range.size = (size + atom - 1) / atom * atom;
+    if (range.size >= buffer->capacity) range.size = VK_WHOLE_SIZE;
+    return vkInvalidateMappedMemoryRanges(runtime->device, 1, &range)
+        == VK_SUCCESS ? SIXEL_OK : SIXEL_RUNTIME_ERROR;
 }
 
 SIXELSTATUS
