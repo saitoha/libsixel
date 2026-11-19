@@ -122,6 +122,10 @@ typedef struct sixel_encode_work {
     size_t active_colors_size;
     int *active_color_index;
     size_t active_color_index_size;
+    /* Nodes for one GPU-composed band, indexed by span. They never join
+     * output's reusable list, so popping a node chases no pointer. */
+    sixel_node_t *node_pool;
+    size_t node_pool_count;
     int requested_threads;
 } sixel_encode_work_t;
 
@@ -144,7 +148,8 @@ typedef struct sixel_band_state {
     /*
      * Set when the nodes point into the GPU span buffer. The GPU rewrites
      * every span byte for each frame and nothing else reads that buffer,
-     * so emit leaves the spans as they are instead of zeroing them.
+     * so emit leaves the spans as they are instead of zeroing them. Those
+     * nodes belong to the work's pool and stay out of output's list.
      */
     int spans_rewritten;
 } sixel_band_state_t;
@@ -1500,11 +1505,11 @@ static SIXELSTATUS sixel_node_new(sixel_node_t **np,
  * first-seen order with the newest first among equal spans, so a bucket
  * holds farther ends first, then later first-seen registers first; ordering
  * by that key reproduces the CPU buckets and bytes. Classify state stays
- * empty, so finish has no occupancy or map rows to clear; emission zeroes
- * the borrowed GPU map spans, which the next run rewrites. */
+ * empty, so finish has no occupancy or map rows to clear; emission leaves
+ * the borrowed GPU map spans as they are, since the next run rewrites them.
+ * Nodes come from the work's band pool, in span order. */
 static SIXELSTATUS
 sixel_band_compose_gpu(sixel_encode_work_t *work,
-                       sixel_output_t *output,
                        sixel_body_gpu_result_t const *gpu,
                        int band_index,
                        sixel_allocator_t *allocator)
@@ -1516,24 +1521,33 @@ sixel_band_compose_gpu(sixel_encode_work_t *work,
     sixel_node_t *column_head;
     sixel_node_t *column_tail;
     uint32_t i;
+    uint32_t first;
     uint32_t end;
-    SIXELSTATUS status;
 
     if (band_index >= gpu->band_count) {
         return SIXEL_LOGIC_ERROR;
     }
     first_seen = gpu->first_seen + (size_t)band_index * gpu->ncolors;
+    first = gpu->band_first[band_index];
     end = gpu->band_first[band_index + 1];
-    for (i = gpu->band_first[band_index]; i < end; ++i) {
-        span = &gpu->nodes[i];
-        if ((np = output->node_free) != NULL) {
-            output->node_free = np->next;
-        } else {
-            status = sixel_node_new(&np, allocator);
-            if (SIXEL_FAILED(status)) {
-                return status;
-            }
+    /* The previous band emitted every pool node, so no bucket holds one. */
+    if (end - first > work->node_pool_count) {
+        if (work->node_pool != NULL) {
+            sixel_allocator_free(allocator, work->node_pool);
         }
+        work->node_pool_count = 0;
+        work->node_pool = (sixel_node_t *)sixel_allocator_malloc(allocator,
+            (size_t)(end - first) * sizeof(sixel_node_t));
+        if (work->node_pool == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_band_compose_gpu: sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        work->node_pool_count = (size_t)(end - first);
+    }
+    for (i = first; i < end; ++i) {
+        span = &gpu->nodes[i];
+        np = work->node_pool + (i - first);
         np->pal = (int)span->pal;
         np->sx = (int)span->sx;
         np->mx = (int)span->mx;
@@ -1665,8 +1679,8 @@ sixel_parallel_worker_one(sixel_thread_pool_job_t job,
 
     if (ctx->gpu_result != NULL) {
         sixel_band_state_reset(&state->band);
-        status = sixel_band_compose_gpu(&state->work, state->output,
-            ctx->gpu_result, band_index, ctx->allocator);
+        status = sixel_band_compose_gpu(&state->work, ctx->gpu_result,
+            band_index, ctx->allocator);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -3344,6 +3358,8 @@ sixel_encode_work_init(sixel_encode_work_t *work)
     work->active_colors_size = 0;
     work->active_color_index = NULL;
     work->active_color_index_size = 0;
+    work->node_pool = NULL;
+    work->node_pool_count = 0;
     work->requested_threads = 1;
 }
 
@@ -3539,13 +3555,22 @@ sixel_encode_work_cleanup(sixel_encode_work_t *work,
         for (i = 0; i < count; ++i) {
             while ((node = work->columns[i]) != NULL) {
                 work->columns[i] = node->next;
-                sixel_allocator_free(allocator, node);
+                /* Pool nodes are freed with the pool below. */
+                if (work->node_pool == NULL || node < work->node_pool ||
+                        node >= work->node_pool + work->node_pool_count) {
+                    sixel_allocator_free(allocator, node);
+                }
             }
         }
         sixel_allocator_free(allocator, work->columns);
         work->columns = NULL;
     }
     work->columns_size = 0;
+    if (work->node_pool != NULL) {
+        sixel_allocator_free(allocator, work->node_pool);
+        work->node_pool = NULL;
+    }
+    work->node_pool_count = 0;
     if (work->band_columns != NULL) {
         sixel_allocator_free(allocator, work->band_columns);
         work->band_columns = NULL;
@@ -4126,8 +4151,10 @@ sixel_band_emit(sixel_encode_work_t *work,
                 work->column_starts[(unsigned int)sx / 64U] &=
                     ~(UINT64_C(1) << ((unsigned int)sx % 64U));
             }
-            node->next = output->node_free;
-            output->node_free = node;
+            if (!state->spans_rewritten) {
+                node->next = output->node_free;
+                output->node_free = node;
+            }
             sx = sixel_band_next_start(work, x, width);
         } while (sx < width);
         /* Size policy underpaints only its first nonoverlapping sweep. */
