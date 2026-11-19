@@ -76,7 +76,16 @@ static void burkes_gpu_recycle(burkes_gpu_plan_t *plan)
     if (plan->queue == nil || bytes > 128U * 1024U * 1024U)
         return;
     (void)pthread_mutex_lock(&burkes_gpu_scratch_gate);
-    slot = burkes_gpu_idle_next++ % 2;
+    /* Fill an empty slot first. Replacing a held bundle while another slot
+     * is empty frees memory that the next plan would allocate again. */
+    for (slot = 0; slot < 2; ++slot) {
+        if (burkes_gpu_idle[slot].queue == nil) {
+            break;
+        }
+    }
+    if (slot == 2) {
+        slot = burkes_gpu_idle_next++ % 2;
+    }
     old = burkes_gpu_idle[slot];
     burkes_gpu_idle[slot].queue = plan->queue;
     plan->queue = nil;

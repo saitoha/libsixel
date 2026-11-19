@@ -487,7 +487,16 @@ sierra3_gpu_vk_recycle_locked(sixel_vk_runtime_t *runtime,
         sierra3_gpu_vk_bundle_release(runtime, &plan->bundle);
         return;
     }
-    slot = sierra3_gpu_vk_idle_next++ % SIERRA3_GPU_VK_IDLE;
+    /* Fill an empty slot first. Replacing a held bundle while another slot
+     * is empty frees memory that the next plan would allocate again. */
+    for (slot = 0; slot < SIERRA3_GPU_VK_IDLE; ++slot) {
+        if (sierra3_gpu_vk_bundle_bytes(&sierra3_gpu_vk_idle[slot]) == 0) {
+            break;
+        }
+    }
+    if (slot == SIERRA3_GPU_VK_IDLE) {
+        slot = sierra3_gpu_vk_idle_next++ % SIERRA3_GPU_VK_IDLE;
+    }
     sierra3_gpu_vk_bundle_release(runtime, &sierra3_gpu_vk_idle[slot]);
     sierra3_gpu_vk_idle[slot] = plan->bundle;
     memset(&plan->bundle, 0, sizeof(plan->bundle));

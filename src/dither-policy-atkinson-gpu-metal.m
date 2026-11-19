@@ -76,7 +76,16 @@ static void atkinson_gpu_recycle(atkinson_gpu_plan_t *plan)
     if (plan->queue == nil || bytes > 128U * 1024U * 1024U)
         return;
     (void)pthread_mutex_lock(&atkinson_gpu_scratch_gate);
-    slot = atkinson_gpu_idle_next++ % 2;
+    /* Fill an empty slot first. Replacing a held bundle while another slot
+     * is empty frees memory that the next plan would allocate again. */
+    for (slot = 0; slot < 2; ++slot) {
+        if (atkinson_gpu_idle[slot].queue == nil) {
+            break;
+        }
+    }
+    if (slot == 2) {
+        slot = atkinson_gpu_idle_next++ % 2;
+    }
     old = atkinson_gpu_idle[slot];
     atkinson_gpu_idle[slot].queue = plan->queue;
     plan->queue = nil;
