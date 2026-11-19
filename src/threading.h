@@ -155,6 +155,9 @@ typedef struct sixel_thread_budget_scope {
     int ceiling;
     int (*reclaim)(void *);
     void *reclaim_context;
+    /* Workers the scope's owning object keeps between operations, or NULL.
+     * Only the owner thread reads it; see sixel_threading_resident_current. */
+    void *resident;
     struct sixel_thread_budget_scope *next;
 } sixel_thread_budget_scope_t;
 
@@ -168,6 +171,11 @@ SIXEL_INTERNAL_API void sixel_thread_budget_enter(
     sixel_thread_budget_scope_t *scope, int threads);
 SIXEL_INTERNAL_API void sixel_thread_budget_leave(
     sixel_thread_budget_scope_t *scope);
+/* The innermost resident worker set an object scope of the calling thread
+ * offers, or NULL.  The object owns it; it outlives the scope. */
+SIXEL_INTERNAL_API void *sixel_threading_resident_current(void);
+SIXEL_INTERNAL_API void sixel_threading_scope_set_resident(
+    sixel_thread_budget_scope_t *scope, void *resident);
 
 /* A reclaim callback runs only on the scope owner, outside the configuration
  * lock. It must return true only after all donated execution slots are idle.

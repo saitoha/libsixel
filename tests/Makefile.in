@@ -1389,6 +1389,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	decoder/parser/0114_simd_band_words.c \
 	decoder/parser/0119_token_fast_lane.c \
 	decoder/parser/0123_final_pass_alpha.c \
+	decoder/parser/0124_resident_workers.c \
 	decoder/aspect/0001_integer_rows.c \
 	decoder/aspect/0002_unit_rows.c \
 	decoder/aspect/0003_absent_raster.c \
@@ -7138,6 +7139,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0114_simd_band_words.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0119_token_fast_lane.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0123_final_pass_alpha.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	decoder/parser/test_runner-0124_resident_workers.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0001_integer_rows.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0002_unit_rows.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	decoder/aspect/test_runner-0003_absent_raster.$(OBJEXT) \
@@ -12790,6 +12792,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	decoder/parser/$(DEPDIR)/test_runner-0114_simd_band_words.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0119_token_fast_lane.Po \
 	decoder/parser/$(DEPDIR)/test_runner-0123_final_pass_alpha.Po \
+	decoder/parser/$(DEPDIR)/test_runner-0124_resident_workers.Po \
 	decoder/raster/$(DEPDIR)/test_runner-0003_gpu_dequant_threshold_strtoul.Po \
 	decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Po \
 	delta/commit/$(DEPDIR)/test_runner-0001_delta_fixed_mask_failure.Po \
@@ -24892,6 +24895,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0114_simd_band_words.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0119_token_fast_lane.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0123_final_pass_alpha.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    decoder/parser/0124_resident_workers.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0001_integer_rows.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0002_unit_rows.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    decoder/aspect/0003_absent_raster.c \
@@ -34088,6 +34092,9 @@ decoder/parser/test_runner-0119_token_fast_lane.$(OBJEXT):  \
 	decoder/parser/$(am__dirstamp) \
 	decoder/parser/$(DEPDIR)/$(am__dirstamp)
 decoder/parser/test_runner-0123_final_pass_alpha.$(OBJEXT):  \
+	decoder/parser/$(am__dirstamp) \
+	decoder/parser/$(DEPDIR)/$(am__dirstamp)
+decoder/parser/test_runner-0124_resident_workers.$(OBJEXT):  \
 	decoder/parser/$(am__dirstamp) \
 	decoder/parser/$(DEPDIR)/$(am__dirstamp)
 decoder/aspect/$(am__dirstamp):
@@ -49377,6 +49384,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0114_simd_band_words.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0119_token_fast_lane.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0123_final_pass_alpha.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@decoder/parser/$(DEPDIR)/test_runner-0124_resident_workers.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/raster/$(DEPDIR)/test_runner-0003_gpu_dequant_threshold_strtoul.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/sequence/$(DEPDIR)/test_runner-0002_failed_clear_preserves_canvas.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/commit/$(DEPDIR)/test_runner-0001_delta_fixed_mask_failure.Po@am__quote@ # am--include-marker
@@ -71461,6 +71469,20 @@ decoder/parser/test_runner-0123_final_pass_alpha.obj: decoder/parser/0123_final_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/parser/0123_final_pass_alpha.c' object='decoder/parser/test_runner-0123_final_pass_alpha.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/parser/test_runner-0123_final_pass_alpha.obj `if test -f 'decoder/parser/0123_final_pass_alpha.c'; then $(CYGPATH_W) 'decoder/parser/0123_final_pass_alpha.c'; else $(CYGPATH_W) '$(srcdir)/decoder/parser/0123_final_pass_alpha.c'; fi`
+
+decoder/parser/test_runner-0124_resident_workers.o: decoder/parser/0124_resident_workers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/parser/test_runner-0124_resident_workers.o -MD -MP -MF decoder/parser/$(DEPDIR)/test_runner-0124_resident_workers.Tpo -c -o decoder/parser/test_runner-0124_resident_workers.o `test -f 'decoder/parser/0124_resident_workers.c' || echo '$(srcdir)/'`decoder/parser/0124_resident_workers.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/parser/$(DEPDIR)/test_runner-0124_resident_workers.Tpo decoder/parser/$(DEPDIR)/test_runner-0124_resident_workers.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/parser/0124_resident_workers.c' object='decoder/parser/test_runner-0124_resident_workers.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/parser/test_runner-0124_resident_workers.o `test -f 'decoder/parser/0124_resident_workers.c' || echo '$(srcdir)/'`decoder/parser/0124_resident_workers.c
+
+decoder/parser/test_runner-0124_resident_workers.obj: decoder/parser/0124_resident_workers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/parser/test_runner-0124_resident_workers.obj -MD -MP -MF decoder/parser/$(DEPDIR)/test_runner-0124_resident_workers.Tpo -c -o decoder/parser/test_runner-0124_resident_workers.obj `if test -f 'decoder/parser/0124_resident_workers.c'; then $(CYGPATH_W) 'decoder/parser/0124_resident_workers.c'; else $(CYGPATH_W) '$(srcdir)/decoder/parser/0124_resident_workers.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) decoder/parser/$(DEPDIR)/test_runner-0124_resident_workers.Tpo decoder/parser/$(DEPDIR)/test_runner-0124_resident_workers.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder/parser/0124_resident_workers.c' object='decoder/parser/test_runner-0124_resident_workers.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o decoder/parser/test_runner-0124_resident_workers.obj `if test -f 'decoder/parser/0124_resident_workers.c'; then $(CYGPATH_W) 'decoder/parser/0124_resident_workers.c'; else $(CYGPATH_W) '$(srcdir)/decoder/parser/0124_resident_workers.c'; fi`
 
 decoder/aspect/test_runner-0001_integer_rows.o: decoder/aspect/0001_integer_rows.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT decoder/aspect/test_runner-0001_integer_rows.o -MD -MP -MF decoder/aspect/$(DEPDIR)/test_runner-0001_integer_rows.Tpo -c -o decoder/aspect/test_runner-0001_integer_rows.o `test -f 'decoder/aspect/0001_integer_rows.c' || echo '$(srcdir)/'`decoder/aspect/0001_integer_rows.c

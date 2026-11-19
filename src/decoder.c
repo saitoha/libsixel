@@ -433,6 +433,7 @@ sixel_decoder_new(
                                                   default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS resident_status;
     sixel_color_def_t *color_definition;
     int color_base;
     char const *color_environment;
@@ -464,6 +465,8 @@ sixel_decoder_new(
 
     memset(&(*ppdecoder)->threading, 0,
            sizeof((*ppdecoder)->threading));
+    (*ppdecoder)->resident     = NULL;
+    resident_status = sixel_decoder_resident_new(&(*ppdecoder)->resident);
     (*ppdecoder)->ref          = 1U;
     (*ppdecoder)->output       = strdup_with_allocator("-", allocator);
     (*ppdecoder)->input        = strdup_with_allocator("-", allocator);
@@ -497,11 +500,12 @@ sixel_decoder_new(
     (*ppdecoder)->clipboard_input_format[0] = '\0';
     (*ppdecoder)->clipboard_output_format[0] = '\0';
 
-    if ((*ppdecoder)->output == NULL || (*ppdecoder)->input == NULL) {
+    if ((*ppdecoder)->output == NULL || (*ppdecoder)->input == NULL ||
+            SIXEL_FAILED(resident_status)) {
         sixel_decoder_unref(*ppdecoder);
         *ppdecoder = NULL;
         sixel_helper_set_additional_message(
-            "sixel_decoder_new: strdup_with_allocator() failed.");
+            "sixel_decoder_new: allocation failed.");
         status = SIXEL_BAD_ALLOCATION;
         sixel_allocator_unref(allocator);
         goto end;
@@ -568,6 +572,7 @@ sixel_decoder_destroy(sixel_decoder_t *decoder)
 
     if (decoder) {
         allocator = decoder->allocator;
+        sixel_decoder_resident_destroy(decoder->resident);
         sixel_cdef_free(decoder->input_icc);
         sixel_allocator_free(allocator, decoder->input);
         sixel_allocator_free(allocator, decoder->output);
@@ -3334,6 +3339,34 @@ static SIXELSTATUS sixel_decoder_decode_pixels_dequant_terminated_attempts(
 }
 
 SIXELAPI SIXELSTATUS
+sixel_decoder_decode_body_mapped(
+    sixel_decoder_t *decoder, unsigned char const *body, size_t body_size,
+    int const *params, size_t nparams, sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result)
+{
+    sixel_thread_budget_scope_t policy_scope;
+    SIXELSTATUS status;
+
+    if (decoder == NULL || result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (decoder->dequantize_method != SIXEL_DEQUANTIZE_NONE ||
+            decoder->progressive_input) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode_body_mapped: a bare body has no "
+            "reconstruction or multi-pass input.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    sixel_threading_object_enter(&policy_scope, &decoder->threading, 1);
+    sixel_threading_scope_set_resident(&policy_scope, decoder->resident);
+    status = sixel_decode_pixels_body_mapped(body, body_size, params, nparams,
+                                             options, transform, result,
+                                             decoder->allocator);
+    sixel_thread_budget_leave(&policy_scope);
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
 sixel_decoder_decode_mapped(
     sixel_decoder_t *decoder, unsigned char const *data, size_t size,
     sixel_decode_options_t const *options,
@@ -3368,6 +3401,7 @@ sixel_decoder_decode_mapped(
     }
 
     sixel_threading_object_enter(&policy_scope, &decoder->threading, 1);
+    sixel_threading_scope_set_resident(&policy_scope, decoder->resident);
     sixel_decoder_ref(decoder);
     result->pixels = NULL;
     result->width = 0;
@@ -3531,6 +3565,7 @@ sixel_decoder_decode(
     sx = 0;
     sy = 0;
     sixel_threading_object_enter(&policy_scope, &decoder->threading, 1);
+    sixel_threading_scope_set_resident(&policy_scope, decoder->resident);
     sixel_decoder_ref(decoder);
 
     frame = NULL;

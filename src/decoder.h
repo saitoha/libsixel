@@ -30,9 +30,13 @@
 #include "sixel_atomic.h"
 #include "options.h"
 
+struct sixel_decoder_resident;
+
 /* Decode settings object. */
 struct sixel_decoder {
     sixel_threading_policy_options_t threading;
+    /* Parallel decode workers kept between this object's decodes. */
+    struct sixel_decoder_resident *resident;
     sixel_atomic_u32_t ref;
     char *input;
     char *output;

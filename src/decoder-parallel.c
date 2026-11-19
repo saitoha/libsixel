@@ -2163,6 +2163,252 @@ sixel_decoder_parallel_prepare_undither(
 }
 #endif
 
+#if SIXEL_ENABLE_THREADS
+typedef struct sixel_decoder_resident_slot {
+    sixel_thread_t thread;
+    struct sixel_decoder_resident *owner;
+    sixel_thread_fn fn;
+    void *arg;
+    int pending;
+    int stop;
+} sixel_decoder_resident_slot_t;
+
+struct sixel_decoder_resident {
+    sixel_mutex_t mutex;
+    sixel_cond_t wake;
+    sixel_cond_t done;
+    sixel_decoder_resident_slot_t **slots;
+    int count;
+    int capacity;
+    /* One decode at a time; a concurrent one creates its own threads. */
+    int busy;
+};
+
+static int
+sixel_decoder_resident_main(void *arg)
+{
+    sixel_decoder_resident_slot_t *slot;
+    sixel_decoder_resident_t *resident;
+    sixel_thread_fn fn;
+    void *job;
+
+    slot = (sixel_decoder_resident_slot_t *)arg;
+    resident = slot->owner;
+    sixel_mutex_lock(&resident->mutex);
+    for (;;) {
+        while (!slot->pending && !slot->stop) {
+            sixel_cond_wait(&resident->wake, &resident->mutex);
+        }
+        if (!slot->pending) {
+            break;
+        }
+        fn = slot->fn;
+        job = slot->arg;
+        sixel_mutex_unlock(&resident->mutex);
+        (void)fn(job);
+        sixel_mutex_lock(&resident->mutex);
+        slot->pending = 0;
+        sixel_cond_broadcast(&resident->done);
+    }
+    sixel_mutex_unlock(&resident->mutex);
+    return 0;
+}
+
+SIXELSTATUS
+sixel_decoder_resident_new(sixel_decoder_resident_t **resident)
+{
+    sixel_decoder_resident_t *created;
+
+    *resident = NULL;
+    created = (sixel_decoder_resident_t *)calloc(1, sizeof(*created));
+    if (created == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (sixel_mutex_init(&created->mutex) != 0) {
+        free(created);
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (sixel_cond_init(&created->wake) != 0) {
+        sixel_mutex_destroy(&created->mutex);
+        free(created);
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (sixel_cond_init(&created->done) != 0) {
+        sixel_cond_destroy(&created->wake);
+        sixel_mutex_destroy(&created->mutex);
+        free(created);
+        return SIXEL_RUNTIME_ERROR;
+    }
+    *resident = created;
+    return SIXEL_OK;
+}
+
+void
+sixel_decoder_resident_destroy(sixel_decoder_resident_t *resident)
+{
+    int i;
+
+    if (resident == NULL) {
+        return;
+    }
+    sixel_mutex_lock(&resident->mutex);
+    for (i = 0; i < resident->count; ++i) {
+        resident->slots[i]->stop = 1;
+    }
+    sixel_cond_broadcast(&resident->wake);
+    sixel_mutex_unlock(&resident->mutex);
+    for (i = 0; i < resident->count; ++i) {
+        sixel_thread_join(&resident->slots[i]->thread);
+        free(resident->slots[i]);
+    }
+    free(resident->slots);
+    sixel_cond_destroy(&resident->done);
+    sixel_cond_destroy(&resident->wake);
+    sixel_mutex_destroy(&resident->mutex);
+    free(resident);
+}
+
+int
+sixel_decoder_resident_threads(sixel_decoder_resident_t *resident)
+{
+    int count;
+
+    if (resident == NULL) {
+        return 0;
+    }
+    sixel_mutex_lock(&resident->mutex);
+    count = resident->count;
+    sixel_mutex_unlock(&resident->mutex);
+    return count;
+}
+
+static sixel_decoder_resident_t *
+sixel_decoder_resident_acquire(void)
+{
+    sixel_decoder_resident_t *resident;
+
+    resident = (sixel_decoder_resident_t *)sixel_threading_resident_current();
+    if (resident == NULL) {
+        return NULL;
+    }
+    sixel_mutex_lock(&resident->mutex);
+    if (resident->busy) {
+        sixel_mutex_unlock(&resident->mutex);
+        return NULL;
+    }
+    resident->busy = 1;
+    sixel_mutex_unlock(&resident->mutex);
+    return resident;
+}
+
+static void
+sixel_decoder_resident_release(sixel_decoder_resident_t *resident)
+{
+    if (resident != NULL) {
+        sixel_mutex_lock(&resident->mutex);
+        resident->busy = 0;
+        sixel_mutex_unlock(&resident->mutex);
+    }
+}
+
+/*
+ * Start fn(arg) as worker `index`: on a resident thread when the decode owns
+ * the set, otherwise on a new thread.  Resident threads are created on first
+ * use, so a failure here means the same thing as a failed thread creation.
+ */
+static int
+sixel_decoder_parallel_spawn(sixel_decoder_resident_t *resident,
+                             sixel_thread_t *threads, int index,
+                             sixel_thread_fn fn, void *arg)
+{
+    sixel_decoder_resident_slot_t **grown;
+    sixel_decoder_resident_slot_t *slot;
+    int capacity;
+    int status;
+
+    if (resident == NULL) {
+        return sixel_thread_create(&threads[index], fn, arg);
+    }
+    sixel_mutex_lock(&resident->mutex);
+    if (index >= resident->count) {
+        if (index != resident->count) {
+            sixel_mutex_unlock(&resident->mutex);
+            return SIXEL_LOGIC_ERROR;
+        }
+        if (resident->count == resident->capacity) {
+            capacity = resident->capacity > 0 ? resident->capacity * 2 : 8;
+            grown = (sixel_decoder_resident_slot_t **)realloc(
+                resident->slots, (size_t)capacity * sizeof(*grown));
+            if (grown == NULL) {
+                sixel_mutex_unlock(&resident->mutex);
+                return SIXEL_BAD_ALLOCATION;
+            }
+            resident->slots = grown;
+            resident->capacity = capacity;
+        }
+        slot = (sixel_decoder_resident_slot_t *)calloc(1, sizeof(*slot));
+        if (slot == NULL) {
+            sixel_mutex_unlock(&resident->mutex);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        slot->owner = resident;
+        status = sixel_thread_create(&slot->thread,
+                                     sixel_decoder_resident_main, slot);
+        if (SIXEL_FAILED(status)) {
+            free(slot);
+            sixel_mutex_unlock(&resident->mutex);
+            return status;
+        }
+        resident->slots[resident->count++] = slot;
+    }
+    slot = resident->slots[index];
+    slot->fn = fn;
+    slot->arg = arg;
+    slot->pending = 1;
+    sixel_cond_broadcast(&resident->wake);
+    sixel_mutex_unlock(&resident->mutex);
+    return SIXEL_OK;
+}
+
+static void
+sixel_decoder_parallel_join(sixel_decoder_resident_t *resident,
+                            sixel_thread_t *threads, int index)
+{
+    sixel_decoder_resident_slot_t *slot;
+
+    if (resident == NULL) {
+        sixel_thread_join(&threads[index]);
+        return;
+    }
+    sixel_mutex_lock(&resident->mutex);
+    slot = resident->slots[index];
+    while (slot->pending) {
+        sixel_cond_wait(&resident->done, &resident->mutex);
+    }
+    sixel_mutex_unlock(&resident->mutex);
+}
+#else
+SIXELSTATUS
+sixel_decoder_resident_new(sixel_decoder_resident_t **resident)
+{
+    *resident = NULL;
+    return SIXEL_OK;
+}
+
+void
+sixel_decoder_resident_destroy(sixel_decoder_resident_t *resident)
+{
+    (void)resident;
+}
+
+int
+sixel_decoder_resident_threads(sixel_decoder_resident_t *resident)
+{
+    (void)resident;
+    return 0;
+}
+#endif  /* SIXEL_ENABLE_THREADS */
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_request_start(int direct_mode,
                                      int ormode,
@@ -2185,6 +2431,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int payload_start;
     int payload_len;
     sixel_thread_t *workers;
+    sixel_decoder_resident_t *resident;
     sixel_decoder_worker_context_t *contexts;
     sixel_decoder_worker_chain_t chain;
     int global_capacity;
@@ -2205,6 +2452,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     status = SIXEL_RUNTIME_ERROR;
     prepare_status = SIXEL_OK;
     workers = NULL;
+    resident = NULL;
     contexts = NULL;
     spans = NULL;
     threads = 0;
@@ -2287,6 +2535,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
 
     workers = (sixel_thread_t *)calloc((size_t)threads,
                                        sizeof(sixel_thread_t));
+    resident = sixel_decoder_resident_acquire();
     contexts = (sixel_decoder_worker_context_t *)calloc(
         (size_t)threads, sizeof(sixel_decoder_worker_context_t));
     spans = (int *)calloc((size_t)threads, sizeof(int));
@@ -2393,9 +2642,9 @@ sixel_decoder_parallel_request_start(int direct_mode,
         if (sixel_decoder_parallel_inject_failure("parse", i)) {
             status = SIXEL_RUNTIME_ERROR;
         } else {
-            status = sixel_thread_create(&workers[i],
-                                         sixel_decoder_parallel_direct_worker,
-                                         &contexts[i]);
+            status = sixel_decoder_parallel_spawn(
+                resident, workers, i, sixel_decoder_parallel_direct_worker,
+                &contexts[i]);
         }
         if (SIXEL_FAILED(status)) {
             parallel_failed = 1;
@@ -2405,7 +2654,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     }
 
     for (i = 0; i < created; ++i) {
-        sixel_thread_join(&workers[i]);
+        sixel_decoder_parallel_join(resident, workers, i);
         if (contexts[i].result != 0) {
             parallel_failed = 1;
         }
@@ -2478,8 +2727,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
                 if (sixel_decoder_parallel_inject_failure("gather", i)) {
                     status = SIXEL_RUNTIME_ERROR;
                 } else {
-                    status = sixel_thread_create(
-                        &workers[i],
+                    status = sixel_decoder_parallel_spawn(
+                        resident, workers, i,
                         sixel_decoder_parallel_direct_worker,
                         &contexts[i]);
                 }
@@ -2505,7 +2754,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
             }
 
             for (i = 0; i < created; ++i) {
-                sixel_thread_join(&workers[i]);
+                sixel_decoder_parallel_join(resident, workers, i);
                 if (contexts[i].result != 0) {
                     parallel_failed = 1;
                     if (chain.paint_released) {
@@ -2539,9 +2788,9 @@ sixel_decoder_parallel_request_start(int direct_mode,
 
     created = 0;
     for (i = 0; i < threads; ++i) {
-        status = sixel_thread_create(&workers[i],
-                                     sixel_decoder_parallel_worker,
-                                     &contexts[i]);
+        status = sixel_decoder_parallel_spawn(
+            resident, workers, i, sixel_decoder_parallel_worker,
+            &contexts[i]);
         if (SIXEL_FAILED(status)) {
             parallel_failed = 1;
             sixel_decoder_parallel_cancel_decode(&chain);
@@ -2551,7 +2800,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     }
 
     for (i = 0; i < created; ++i) {
-        sixel_thread_join(&workers[i]);
+        sixel_decoder_parallel_join(resident, workers, i);
         if (contexts[i].result != 0) {
             parallel_failed = 1;
         }
@@ -2602,6 +2851,7 @@ cleanup:
             free(contexts[i].columns);
         }
     }
+    sixel_decoder_resident_release(resident);
     free(workers);
     free(contexts);
     free(spans);

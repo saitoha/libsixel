@@ -188,6 +188,12 @@ Parallel work must preserve:
 
 The ordinary timeline records paired starts and finishes for both parse and gather. `tests/cli/sixel2png/0012_parallel_timeline_spans_paired.t` keeps that diagnostic contract from silently degrading back to zero-length markers. `0013_parallel_gather_barrier.t` verifies that every gather worker reaches the barrier before publication begins. Decoder tests 0025 and 0026 cover partial gather creation and disjoint publication from converging byte spans, including the clean-fallback guarantee.
 
+## Workers kept by a decoder object
+
+A decode through a decoder object (`sixel_decoder_decode_mapped()`, `sixel_decoder_decode_pixels()`, `sixel_decoder_decode_body_mapped()` and the file decode) runs its parse, gather and undither workers on threads the object keeps between calls. The object starts with none; a parallel decode adds threads up to its worker count, and later decodes hand those threads new jobs through a condition variable instead of creating and joining threads for each image. A video player that decodes every frame through one object therefore stops paying thread creation per frame. Destroying the object joins the kept threads.
+
+Only one decode at a time owns the kept set. A second decode that overlaps it on the same object, and every decode through the object-free `sixel_decode_pixels*()` calls, creates and joins its own threads as before. Each worker index keeps its own thread, so the gather barrier still sees every worker running at once. A launch failure joins the jobs already handed out, and the serial fallback leaves the set idle for the next call.
+
 ## Measurement limits
 
 The checked-in timeline and two-size comparison are single diagnostic observations from one generated image class. The worker-budget figure is a repeated decoder scaling curve, but remains one session on one host. A broader performance study should vary payload size, SIXEL command mix, destination dimensions, palette changes, output format, and host. Measure parser/paint time separately from PNG serialization when the question is decoder parallelism.
@@ -204,5 +210,6 @@ The checked-in timeline and two-size comparison are single diagnostic observatio
 | DTH-04 | Worker-local column allocation failure discards private paint and leaves shared pixels and coverage untouched. | [tests/decoder/parser/0111_parallel_columns_allocation_failure.t](../../tests/decoder/parser/0111_parallel_columns_allocation_failure.t) |
 | DTH-05 | Partial parse-worker creation joins started workers and returns a clean serial fallback. | [tests/decoder/parser/0112_parallel_parse_create_failure.t](../../tests/decoder/parser/0112_parallel_parse_create_failure.t) |
 | DTH-06 | Embedded ST followed by trailing data preserves legacy absolute offsets and overlap fallback at each tested worker budget. | [tests/decoder/parser/0113_parallel_early_st_compatibility.t](../../tests/decoder/parser/0113_parallel_early_st_compatibility.t) |
+| DTH-07 | A decoder object keeps its decode workers across calls without growing the set, matches per-call threads through the stream and bare-body entries, and stays reusable after overlapping decodes and a gather launch failure. | [tests/decoder/parser/0124_resident_workers.t](../../tests/decoder/parser/0124_resident_workers.t) |
 
 The [decoder suite](../../tests/decoder/parser) also covers sparse bands, converging spans, palette redefinitions and partial worker creation; the [CLI suite](../../tests/cli/sixel2png) checks paired timeline spans and the all-ready gather barrier. Timing observations depend on the host and are not correctness assertions.

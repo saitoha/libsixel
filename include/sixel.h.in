@@ -2722,6 +2722,26 @@ sixel_decoder_decode_mapped(sixel_decoder_t *decoder,
                             sixel_palette_transform_t const *transform,
                             sixel_decode_result_t *result);
 
+/*
+ * sixel_decode_pixels_body_mapped() run under the decoder object: its
+ * threading policy, allocator and the parallel decode workers the object
+ * keeps between calls.  Reconstruction and multi-pass input do not apply to a
+ * bare body, so a decoder with a dequantize method or progressive input
+ * returns SIXEL_BAD_ARGUMENT.  Calls on one object may overlap; only one at a
+ * time reuses the kept workers.
+ */
+#define SIXEL_HAVE_DECODER_DECODE_BODY_MAPPED 1
+
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_body_mapped(sixel_decoder_t *decoder,
+                                 unsigned char const *body,
+                                 size_t body_size,
+                                 int const *params,
+                                 size_t nparams,
+                                 sixel_decode_options_t const *options,
+                                 sixel_palette_transform_t const *transform,
+                                 sixel_decode_result_t *result);
+
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode_pixels(
     sixel_decoder_t /* in */ *decoder,
