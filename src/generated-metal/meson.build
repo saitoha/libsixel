@@ -14,6 +14,7 @@ metal_sources = files(
   '../dither-policy-bluenoise-gpu.metal',
   '../dither-policy-bluenoise-gpu-query.metal',
   '../retained-plane-gpu.metal',
+  '../filter-sample-gpu.metal',
   '../dither-policy-lso2-gpu.metal',
   '../dither-policy-fs-gpu.metal',
   '../dither-policy-atkinson-gpu.metal',
