@@ -377,59 +377,80 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/dithering/code/palettes/snake16.ppm \
 	docs/tutorial/dithering/code/palettes/snake256.ppm \
 	docs/tutorial/sixel-codec/README.md \
-	docs/tutorial/sixel-codec/step0-by-hand.md \
-	docs/tutorial/sixel-codec/step1-run-length.md \
-	docs/tutorial/sixel-codec/step2-nodes.md \
+	docs/tutorial/sixel-codec/by-hand.md \
+	docs/tutorial/sixel-codec/first-codec.md \
+	docs/tutorial/sixel-codec/nodes.md \
+	docs/tutorial/sixel-codec/packing.md \
+	docs/tutorial/sixel-codec/full-decoder.md \
+	docs/tutorial/sixel-codec/fewer-questions.md \
+	docs/tutorial/sixel-codec/masks.md \
+	docs/tutorial/sixel-codec/next-node.md \
+	docs/tutorial/sixel-codec/column-words.md \
+	docs/tutorial/sixel-codec/swar.md \
+	docs/tutorial/sixel-codec/first-colors.md \
+	docs/tutorial/sixel-codec/occupancy.md \
+	docs/tutorial/sixel-codec/word-decoder.md \
+	docs/tutorial/sixel-codec/vector-lanes.md \
+	docs/tutorial/sixel-codec/transpose.md \
+	docs/tutorial/sixel-codec/parallel-bands.md \
+	docs/tutorial/sixel-codec/parallel-decoder.md \
+	docs/tutorial/sixel-codec/overpaint.md \
 	docs/tutorial/sixel-codec/measurements.md \
 	docs/tutorial/sixel-codec/measurements/results.json \
-	docs/tutorial/sixel-codec/step3-fewer-decisions.md \
-	docs/tutorial/sixel-codec/step4-column-words.md \
-	docs/tutorial/sixel-codec/step5-simd.md \
-	docs/tutorial/sixel-codec/step6-threads.md \
-	docs/tutorial/sixel-codec/step7-overpaint.md \
 	docs/tutorial/sixel-codec/figures/big-picture.svg \
 	docs/tutorial/sixel-codec/figures/character-table.svg \
+	docs/tutorial/sixel-codec/figures/column-words-memory.svg \
+	docs/tutorial/sixel-codec/figures/column-words-word.svg \
+	docs/tutorial/sixel-codec/figures/fewer-questions-dispatch.svg \
+	docs/tutorial/sixel-codec/figures/first-codec-decoder-state.svg \
+	docs/tutorial/sixel-codec/figures/first-codec-passes.svg \
+	docs/tutorial/sixel-codec/figures/first-codec-repeat.svg \
+	docs/tutorial/sixel-codec/figures/first-colors-repeats.svg \
+	docs/tutorial/sixel-codec/figures/full-decoder-repeat-fill.svg \
 	docs/tutorial/sixel-codec/figures/heart-columns.svg \
 	docs/tutorial/sixel-codec/figures/journey.svg \
+	docs/tutorial/sixel-codec/figures/masks-branchless.svg \
+	docs/tutorial/sixel-codec/figures/next-node-starts.svg \
+	docs/tutorial/sixel-codec/figures/nodes-classify.svg \
+	docs/tutorial/sixel-codec/figures/nodes-cut.svg \
+	docs/tutorial/sixel-codec/figures/occupancy-lights.svg \
+	docs/tutorial/sixel-codec/figures/overpaint-fill.svg \
+	docs/tutorial/sixel-codec/figures/packing-shelves.svg \
+	docs/tutorial/sixel-codec/figures/parallel-bands-amdahl.svg \
+	docs/tutorial/sixel-codec/figures/parallel-bands-split.svg \
+	docs/tutorial/sixel-codec/figures/parallel-decoder-prescan.svg \
 	docs/tutorial/sixel-codec/figures/pnm-layout.svg \
 	docs/tutorial/sixel-codec/figures/six-pin-stamp.svg \
 	docs/tutorial/sixel-codec/figures/sixel-codec-tutorial-figures.json \
 	docs/tutorial/sixel-codec/figures/speed.svg \
-	docs/tutorial/sixel-codec/figures/step1-decoder-state.svg \
-	docs/tutorial/sixel-codec/figures/step1-passes.svg \
-	docs/tutorial/sixel-codec/figures/step1-repeat.svg \
-	docs/tutorial/sixel-codec/figures/step2-classify.svg \
-	docs/tutorial/sixel-codec/figures/step2-nodes.svg \
-	docs/tutorial/sixel-codec/figures/step2-packing.svg \
-	docs/tutorial/sixel-codec/figures/step2-repeat-fill.svg \
-	docs/tutorial/sixel-codec/figures/step3-branchless.svg \
-	docs/tutorial/sixel-codec/figures/step3-dispatch.svg \
-	docs/tutorial/sixel-codec/figures/step4-column-word.svg \
-	docs/tutorial/sixel-codec/figures/step4-first-colors.svg \
-	docs/tutorial/sixel-codec/figures/step4-masked-store.svg \
-	docs/tutorial/sixel-codec/figures/step4-memory.svg \
-	docs/tutorial/sixel-codec/figures/step4-occupancy.svg \
-	docs/tutorial/sixel-codec/figures/step4-swar.svg \
-	docs/tutorial/sixel-codec/figures/step5-block.svg \
-	docs/tutorial/sixel-codec/figures/step5-lanes.svg \
-	docs/tutorial/sixel-codec/figures/step5-transpose.svg \
-	docs/tutorial/sixel-codec/figures/step6-amdahl.svg \
-	docs/tutorial/sixel-codec/figures/step6-decoder.svg \
-	docs/tutorial/sixel-codec/figures/step6-encoder.svg \
-	docs/tutorial/sixel-codec/figures/step7-overpaint.svg \
 	docs/tutorial/sixel-codec/figures/stream-anatomy.svg \
+	docs/tutorial/sixel-codec/figures/swar-equal-bytes.svg \
+	docs/tutorial/sixel-codec/figures/transpose-zip.svg \
 	docs/tutorial/sixel-codec/figures/tree-cursor.svg \
+	docs/tutorial/sixel-codec/figures/vector-lanes-block.svg \
+	docs/tutorial/sixel-codec/figures/vector-lanes-compare.svg \
+	docs/tutorial/sixel-codec/figures/word-decoder-masked-store.svg \
 	docs/tutorial/sixel-codec/code/Makefile \
 	docs/tutorial/sixel-codec/code/check.sh \
 	docs/tutorial/sixel-codec/code/common.c \
 	docs/tutorial/sixel-codec/code/mysixel.c \
-	docs/tutorial/sixel-codec/code/step1.c \
-	docs/tutorial/sixel-codec/code/step2.c \
-	docs/tutorial/sixel-codec/code/step3.c \
-	docs/tutorial/sixel-codec/code/step4.c \
-	docs/tutorial/sixel-codec/code/step5.c \
-	docs/tutorial/sixel-codec/code/step6.c \
-	docs/tutorial/sixel-codec/code/step7.c \
+	docs/tutorial/sixel-codec/code/first-codec.c \
+	docs/tutorial/sixel-codec/code/nodes.c \
+	docs/tutorial/sixel-codec/code/packing.c \
+	docs/tutorial/sixel-codec/code/full-decoder.c \
+	docs/tutorial/sixel-codec/code/fewer-questions.c \
+	docs/tutorial/sixel-codec/code/masks.c \
+	docs/tutorial/sixel-codec/code/next-node.c \
+	docs/tutorial/sixel-codec/code/column-words.c \
+	docs/tutorial/sixel-codec/code/swar.c \
+	docs/tutorial/sixel-codec/code/first-colors.c \
+	docs/tutorial/sixel-codec/code/occupancy.c \
+	docs/tutorial/sixel-codec/code/word-decoder.c \
+	docs/tutorial/sixel-codec/code/vector-lanes.c \
+	docs/tutorial/sixel-codec/code/transpose.c \
+	docs/tutorial/sixel-codec/code/parallel-bands.c \
+	docs/tutorial/sixel-codec/code/parallel-decoder.c \
+	docs/tutorial/sixel-codec/code/overpaint.c \
 	docs/tutorial/sixel-codec/code/tutorial.h \
 	docs/ci/design.md \
 	docs/cli/design-policy.md \

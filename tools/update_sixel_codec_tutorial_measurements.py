@@ -4,10 +4,11 @@
 Without options, rewrite every measurement block of the tutorial pages from
 docs/tutorial/sixel-codec/measurements/results.json. With --check, verify
 that the pages match the file. With --measure, first run the benchmarks and
-write that file: `make bench` for every step, then copies of the sources
-patched with phase timers and single-technique variants, a thread sweep, and
-optionally the same pictures through a libsixel build. With --only-overpaint,
-measure step 7 against step 3 and keep every other result.
+write that file: `make bench` for every chapter program, then copies of the
+sources patched with phase timers and a single-technique variant, a thread
+sweep, and optionally the same pictures through a libsixel build. With
+--only-overpaint, measure overpaint against next-node and keep every other
+result.
 """
 
 from __future__ import annotations
@@ -33,15 +34,21 @@ INPUTS = (
     ("two", "Two colors, 1920×1080"),
     ("noise", "Random noise, 1920×1080"),
 )
+# The chapter programs in reading order. Each is compared with the one
+# before it; overpaint changes bytes, not speed, and has a table of its own.
+CHAPTERS = (
+    "first-codec", "nodes", "packing", "full-decoder", "fewer-questions",
+    "masks", "next-node", "column-words", "swar", "first-colors", "occupancy",
+    "word-decoder", "vector-lanes", "transpose", "parallel-bands",
+    "parallel-decoder",
+)
+PHASE_CHAPTERS = ("packing", "next-node", "column-words", "swar",
+                  "first-colors", "occupancy", "vector-lanes")
 PAGES = {
     "README.md": ("summary",),
-    "step1-run-length.md": ("step1",),
-    "step2-nodes.md": ("step2",),
-    "step3-fewer-decisions.md": ("step3", "attribution"),
-    "step4-column-words.md": ("step4",),
-    "step5-simd.md": ("step5",),
-    "step6-threads.md": ("step6",),
-    "step7-overpaint.md": ("overpaint",),
+    **{f"{chapter}.md": (chapter,) for chapter in CHAPTERS},
+    "masks.md": ("masks", "attribution"),
+    "overpaint.md": ("overpaint",),
     "measurements.md": ("environment", "attribution", "phases", "materialize",
                         "prescan", "threads", "libsixel", "overpaint"),
 }
@@ -159,10 +166,10 @@ def patched(source: str, replacements: list[tuple[str, str]]) -> str:
     return source
 
 
-def build(code: Path, step: str, replacements: list[tuple[str, str]],
+def build(code: Path, program: str, replacements: list[tuple[str, str]],
           name: str, cflags: str, cc: str) -> Path:
-    """Compile a patched copy of one step, with a timer header."""
-    source = (code / f"{step}.c").read_text(encoding="utf-8")
+    """Compile a patched copy of one chapter program, with a timer header."""
+    source = (code / f"{program}.c").read_text(encoding="utf-8")
     source = TIMER_HEADER + patched(source, replacements)
     path = code / f"{name}.c"
     path.write_text(source, encoding="utf-8")
@@ -173,7 +180,7 @@ def build(code: Path, step: str, replacements: list[tuple[str, str]],
 
 
 def parse_bench(line: str) -> dict[str, float | int]:
-    """Parse one `stepN bench` result."""
+    """Parse one `PROGRAM bench` result."""
     match = BENCH_RE.search(line)
     if match is None:
         raise SystemExit(f"unexpected bench output: {line!r}")
@@ -213,8 +220,8 @@ def measure_bench(out: Path, rounds: int, cc: str, cflags: str) -> dict:
         result = run(["make", "-s", f"O={out}", f"CC={cc}",
                       f"CFLAGS={cflags}", "bench"], cwd=CODE)
         for line in result.stdout.splitlines():
-            step, name, rest = line.split(" ", 2)
-            faster(bench.setdefault(step, {}), name, parse_bench(rest))
+            chapter, name, rest = line.split(" ", 2)
+            faster(bench.setdefault(chapter, {}), name, parse_bench(rest))
     return bench
 
 
@@ -225,7 +232,7 @@ def timer_output(binary: Path, picture: Path, prefix: str) -> dict:
 
 
 def measure_phases(code: Path, out: Path, cc: str, cflags: str) -> dict:
-    """Time the encoder phases of steps 2 to 5."""
+    """Time the encoder phases of the chapters that change the encoder."""
     report = 'fprintf(stderr, "phases classify=%.3f compose=%.3f emit=%.3f\\n",\
  pt_sum[0] * 1e3, pt_sum[1] * 1e3, pt_sum[2] * 1e3);\
  pt_sum[0] = pt_sum[1] = pt_sum[2] = 0;'
@@ -237,13 +244,13 @@ def measure_phases(code: Path, out: Path, cc: str, cflags: str) -> dict:
         ("        /* 2. compose:", f"        {lap(0)} /* 2. compose:"),
     ]
     patches = {
-        "step2": flat + [
+        "packing": flat + [
             ("        /* 3. order:", f"        {lap(1)} /* 3. order:"),
             ("        put_band(out, list);\n",
              f"        put_band(out, list); {lap(2)} }}\n"),
             ("    free(map);\n", f"    {report}\n    free(map);\n"),
         ],
-        "step3": flat + [
+        "next-node": flat + [
             ("        /* 3. emit,", f"        {lap(1)} /* 3. emit,"),
             ("        put_band(out, heads, starts, words, w, nnodes);\n",
              "        put_band(out, heads, starts, words, w, nnodes); "
@@ -257,25 +264,26 @@ def measure_phases(code: Path, out: Path, cc: str, cflags: str) -> dict:
         ("    encoder_free(&e);\n    return 0;",
          f"    encoder_free(&e);\n    {report}\n    return 0;"),
     ]
-    patches["step4"] = [("    load_columns(e, img, y, rows);\n",
-                         f"    {begin} load_columns(e, img, y, rows);\n")] + band
-    patches["step5"] = [("    from = e->width & ~15;\n",
-                         f"    {begin} from = e->width & ~15;\n")]
-    patches["step5"] = [("#ifdef HAVE_SIMD\n    from = e->width & ~15;\n",
+    for chapter in ("column-words", "swar", "first-colors", "occupancy"):
+        patches[chapter] = [("    load_columns(e, img, y, rows);\n",
+                             f"    {begin} load_columns(e, img, y, rows);\n")
+                            ] + band
+    patches["vector-lanes"] = [("#ifdef HAVE_SIMD\n    from = e->width & ~15;\n",
                          f"    {begin}\n#ifdef HAVE_SIMD\n"
                          "    from = e->width & ~15;\n")] + band
     phases: dict[str, dict] = {}
-    for step, replacements in patches.items():
-        binary = build(code, step, replacements, f"phases-{step}", cflags, cc)
-        phases[step] = {}
+    for chapter, replacements in patches.items():
+        binary = build(code, chapter, replacements, f"phases-{chapter}",
+                       cflags, cc)
+        phases[chapter] = {}
         for name, _ in INPUTS[1:]:
-            phases[step][name] = timer_output(binary, out / f"{name}.ppm",
-                                              "phases")
+            phases[chapter][name] = timer_output(binary, out / f"{name}.ppm",
+                                                 "phases")
     return phases
 
 
 def measure_materialize(code: Path, out: Path, cc: str, cflags: str) -> dict:
-    """Time the pass from column words to rows in steps 4 and 5."""
+    """Time the pass from column words to rows, without and with SIMD."""
     replacements = [(
         "    materialize(&d, img, 0, (d.used_height + 5) / 6);\n",
         "    { double pt_t = pt_now();\n"
@@ -284,17 +292,18 @@ def measure_materialize(code: Path, out: Path, cc: str, cflags: str) -> dict:
         " (pt_now() - pt_t) * 1e3); }\n",
     )]
     result: dict[str, dict] = {}
-    for step in ("step4", "step5"):
-        binary = build(code, step, replacements, f"mat-{step}", cflags, cc)
-        result[step] = {}
+    for chapter in ("word-decoder", "transpose"):
+        binary = build(code, chapter, replacements, f"mat-{chapter}", cflags,
+                       cc)
+        result[chapter] = {}
         for name, _ in INPUTS[1:]:
-            result[step][name] = timer_output(binary, out / f"{name}.ppm",
-                                              "materialize")["ms"]
+            result[chapter][name] = timer_output(
+                binary, out / f"{name}.ppm", "materialize")["ms"]
     return result
 
 
 def measure_prescan(code: Path, out: Path, cc: str, cflags: str) -> dict:
-    """Time the serial prescan of step 6."""
+    """Time the serial prescan of the parallel decoder."""
     replacements = [(
         "    if (prescan(body, stop, &ps) != 0) {\n",
         "    double pt_t = pt_now();\n"
@@ -303,13 +312,14 @@ def measure_prescan(code: Path, out: Path, cc: str, cflags: str) -> dict:
         " (pt_now() - pt_t) * 1e3);\n"
         "    if (pt_rc != 0) {\n",
     )]
-    binary = build(code, "step6", replacements, "prescan", cflags, cc)
+    binary = build(code, "parallel-decoder", replacements, "prescan", cflags,
+                   cc)
     return {name: timer_output(binary, out / f"{name}.ppm", "prescan")["ms"]
             for name, _ in INPUTS[1:]}
 
 
 def measure_attribution(code: Path, out: Path, cc: str, cflags: str) -> dict:
-    """Decode with one technique of step 3 at a time."""
+    """Decode with the masks but without the inner loop."""
     masked_store = (
         "                    dst = cv.pixels + (size_t)(y + r) * cv.width + x;\n"
         "                    if (repeat == 1) {\n"
@@ -339,24 +349,13 @@ def measure_attribution(code: Path, out: Path, cc: str, cflags: str) -> dict:
         "                        continue;\n"
         "                    }\n",
     )
-    branchy = (
-        "                    mask = 0u - ((unsigned int)bits >> r & 1u);\n"
-        "                    *dst = (unsigned char)((*dst & ~mask) |\n"
-        "                                           ((unsigned int)color"
-        " & mask));\n",
-        "                    if (bits >> r & 1) {\n"
-        "                        *dst = (unsigned char)color;\n"
-        "                    }\n"
-        "                    (void)mask;\n",
-    )
     variants = {
-        "masks only": ("step2", [masked_store, bit_loop]),
-        "inner loop only": ("step3", [branchy]),
+        "masks only": ("full-decoder", [masked_store, bit_loop]),
     }
     report: dict[str, dict] = {}
-    for label, (step, replacements) in variants.items():
+    for label, (program, replacements) in variants.items():
         name = "attr-" + label.replace(" ", "-")
-        binary = build(code, step, replacements, name, cflags, cc)
+        binary = build(code, program, replacements, name, cflags, cc)
         report[label] = {}
         for picture, _ in INPUTS[1:]:
             best = 1e30
@@ -369,13 +368,13 @@ def measure_attribution(code: Path, out: Path, cc: str, cflags: str) -> dict:
 
 
 def measure_threads(out: Path) -> dict:
-    """Sweep the thread count of step 6."""
+    """Sweep the thread count of the parallel decoder program."""
     sweep: dict[str, dict] = {}
     for threads in (1, 2, 4, 8, 10, 14):
         env = dict(os.environ, TUTORIAL_THREADS=str(threads))
         sweep[str(threads)] = {}
         for name, _ in INPUTS[1:]:
-            result = run([str(out / "step6"), "bench",
+            result = run([str(out / "parallel-decoder"), "bench",
                           str(out / f"{name}.ppm"), "1", "15"], env=env)
             sweep[str(threads)][name] = parse_bench(result.stdout)
     return sweep
@@ -390,7 +389,7 @@ def measure_libsixel(build_dir: Path, source_dir: Path, revision: str,
         stream = out / f"{name}.six"
         stream.write_text("", encoding="utf-8")
         with stream.open("wb") as handle:
-            subprocess.run([str(out / "step2"), "encode",
+            subprocess.run([str(out / "packing"), "encode",
                             str(out / f"{name}.ppm")], check=True,
                            stdout=handle)
         report[name] = {}
@@ -416,40 +415,43 @@ def compile_libsixel_bench(build_dir: Path, source_dir: Path, out: Path,
 
 
 def make_pictures(out: Path, cc: str, cflags: str) -> None:
-    """Build the steps and write the benchmark pictures, as `make bench`."""
+    """Build the programs and write the benchmark pictures, as `make bench`."""
     run(["make", "-s", f"O={out}", f"CC={cc}", f"CFLAGS={cflags}", "all"],
         cwd=CODE)
     study = ROOT / "docs/encoder/output/high-color/study"
     commands = {
-        "photo-small": ["step2", "decode", str(study / "snake-256-fs.six")],
-        "photo-fhd": ["step2", "decode", str(study / "snake-fhd-256-fs.six")],
-        "two": ["step1", "synth", "two", "1920", "1080"],
-        "noise": ["step1", "synth", "noise", "1920", "1080"],
+        "photo-small": ["full-decoder", "decode",
+                        str(study / "snake-256-fs.six")],
+        "photo-fhd": ["full-decoder", "decode",
+                      str(study / "snake-fhd-256-fs.six")],
+        "two": ["first-codec", "synth", "two", "1920", "1080"],
+        "noise": ["first-codec", "synth", "noise", "1920", "1080"],
     }
-    for name, (step, *arguments) in commands.items():
+    for name, (program, *arguments) in commands.items():
         with (out / f"{name}.ppm").open("wb") as handle:
-            subprocess.run([str(out / step), *arguments], check=True,
+            subprocess.run([str(out / program), *arguments], check=True,
                            stdout=handle)
 
 
 def measure_overpaint(out: Path, rounds: int, arguments: argparse.Namespace,
                       cc: str) -> dict:
-    """Time step 7 and step 3 in turn, so they share the same conditions."""
+    """Time overpaint and next-node in turn, under the same conditions."""
     report: dict[str, dict] = {}
     for name, _ in INPUTS:
         report[name] = {}
         picture = str(out / f"{name}.ppm")
         for _ in range(rounds):
-            for step in ("step3", "step7"):
-                result = run([str(out / step), "bench", picture, "1", "10"])
-                faster(report[name], step, parse_bench(result.stdout))
+            for program in ("next-node", "overpaint"):
+                result = run([str(out / program), "bench", picture, "1",
+                              "10"])
+                faster(report[name], program, parse_bench(result.stdout))
     if arguments.libsixel_build:
         bench = compile_libsixel_bench(arguments.libsixel_build,
                                        arguments.libsixel_source, out, cc)
         for name, _ in INPUTS:
             stream = out / f"{name}.six"
             with stream.open("wb") as handle:
-                subprocess.run([str(out / "step2"), "encode",
+                subprocess.run([str(out / "packing"), "encode",
                                 str(out / f"{name}.ppm")], check=True,
                                stdout=handle)
             fast = parse_bench(run([str(bench), str(stream), "1", "1"]).stdout)
@@ -529,7 +531,7 @@ def measure(arguments: argparse.Namespace) -> None:
 
 
 def measure_only_overpaint(arguments: argparse.Namespace) -> None:
-    """Add step 7's numbers to an existing results file."""
+    """Add overpaint's numbers to an existing results file."""
     results = json.loads(RESULTS.read_text(encoding="utf-8"))
     with tempfile.TemporaryDirectory(prefix="sixel-tutorial-") as temp:
         out = Path(temp)
@@ -560,25 +562,26 @@ def table(header: list[str], rows: list[list[str]]) -> str:
 
 
 def render_summary(results: dict) -> str:
-    """The table of every step and input."""
+    """The table of every chapter program and input."""
     rows = []
-    for number in range(1, 7):
-        cells = results["bench"][f"step{number}"]
-        rows.append([str(number)] + [
+    for chapter in CHAPTERS:
+        cells = results["bench"][chapter]
+        rows.append([f"[{chapter}]({chapter}.md)"] + [
             f"{ms(cells[name]['encode_ms'])} / {ms(cells[name]['decode_ms'])}"
             for name, _ in INPUTS])
-    return table(["Step"] + [label for _, label in INPUTS], rows)
+    return table(["Chapter"] + [label for _, label in INPUTS], rows)
 
 
-def render_step(results: dict, number: int) -> str:
-    """One step's table, compared with the step before it."""
-    cells = results["bench"][f"step{number}"]
-    if number == 1:
+def render_chapter(results: dict, chapter: str) -> str:
+    """One chapter's table, compared with the chapter before it."""
+    cells = results["bench"][chapter]
+    number = CHAPTERS.index(chapter)
+    if number == 0:
         return table(["Input", "Encode", "Decode", "Stream"], [
             [label, f"{ms(cells[name]['encode_ms'])} ms",
              f"{ms(cells[name]['decode_ms'])} ms",
              f"{cells[name]['bytes']:,} bytes"] for name, label in INPUTS])
-    previous = results["bench"][f"step{number - 1}"]
+    previous = results["bench"][CHAPTERS[number - 1]]
     return table(
         ["Input", "Encode", "Speed-up", "Decode", "Speed-up", "Stream"], [
             [label, f"{ms(cells[name]['encode_ms'])} ms",
@@ -604,49 +607,50 @@ def render_environment(results: dict) -> str:
 
 
 def render_attribution(results: dict) -> str:
-    """Decode times with step 3's techniques applied one at a time."""
-    rows = []
-    for label, step in (("Step 2", "step2"), ("Step 3", "step3")):
-        rows.append([label] + [ms(results["bench"][step][name]["decode_ms"])
-                               for name, _ in INPUTS[1:]])
-    for label, key in (("Step 2 with masks for single characters",
-                        "masks only"),
-                       ("Step 3 without the masks", "inner loop only")):
-        rows.insert(-1, [label] + [ms(results["attribution"][key][name])
-                                   for name, _ in INPUTS[1:]])
-    return table(["Decoder"] + [label for _, label in INPUTS[1:]], rows)
+    """Decode times with the inner loop and the masks one at a time."""
+    def bench(chapter: str) -> list[str]:
+        return [ms(results["bench"][chapter][name]["decode_ms"])
+                for name, _ in INPUTS[1:]]
+    return table(["Decoder"] + [label for _, label in INPUTS[1:]], [
+        ["full-decoder"] + bench("full-decoder"),
+        ["full-decoder with masks for single characters"] + [
+            ms(results["attribution"]["masks only"][name])
+            for name, _ in INPUTS[1:]],
+        ["fewer-questions (inner loop, no masks)"] + bench("fewer-questions"),
+        ["masks (inner loop and masks)"] + bench("masks"),
+    ])
 
 
 def render_phases(results: dict) -> str:
-    """Encoder phases per step and input."""
+    """Encoder phases per chapter and input."""
     rows = []
-    for step in ("step2", "step3", "step4", "step5"):
+    for chapter in PHASE_CHAPTERS:
         for name, label in INPUTS[1:]:
-            cell = results["phases"][step][name]
-            rows.append([f"{step[-1]}", label, ms(cell["classify"]),
+            cell = results["phases"][chapter][name]
+            rows.append([chapter, label, ms(cell["classify"]),
                          ms(cell["compose"]), ms(cell["emit"])])
-    return table(["Step", "Input", "Classify", "Cut nodes", "Emit"], rows)
+    return table(["Chapter", "Input", "Classify", "Cut nodes", "Emit"], rows)
 
 
 def render_materialize(results: dict) -> str:
     """The pass from column words to rows."""
-    return table(["Step"] + [label for _, label in INPUTS[1:]], [
-        [step[-1]] + [ms(results["materialize"][step][name])
-                      for name, _ in INPUTS[1:]]
-        for step in ("step4", "step5")])
+    return table(["Decoder"] + [label for _, label in INPUTS[1:]], [
+        [chapter] + [ms(results["materialize"][chapter][name])
+                     for name, _ in INPUTS[1:]]
+        for chapter in ("word-decoder", "transpose")])
 
 
 def render_prescan(results: dict) -> str:
     """The serial prescan against the whole threaded decode."""
     rows = []
     for name, label in INPUTS[1:]:
-        whole = results["bench"]["step6"][name]["decode_ms"]
+        whole = results["bench"]["parallel-decoder"][name]["decode_ms"]
         rows.append([label, ms(results["prescan"][name]), ms(whole)])
     return table(["Input", "Prescan", "Whole decode"], rows)
 
 
 def render_threads(results: dict) -> str:
-    """Thread sweep of step 6."""
+    """Thread sweep of the parallel programs."""
     rows = []
     base = results["threads"]["1"]
     for threads in sorted(results["threads"], key=int):
@@ -668,7 +672,7 @@ def render_libsixel(results: dict) -> str:
     rows = []
     report = results["libsixel"]
     for name, label in INPUTS[1:]:
-        serial = results["bench"]["step5"][name]
+        serial = results["bench"]["transpose"][name]
         threaded = results["threads"]["14"][name]
         rows.append([label, "1", ms(serial["encode_ms"]),
                      ms(report[name]["1"]["encode_ms"]),
@@ -683,13 +687,13 @@ def render_libsixel(results: dict) -> str:
 
 
 def render_overpaint(results: dict) -> str:
-    """Step 7 against step 3, and libsixel's size policy when measured."""
+    """Overpaint against next-node, and libsixel's size policy if measured."""
     report = results["overpaint"]
     rows = []
     has_libsixel = "libsixel_size_bytes" in report[INPUTS[0][0]]
     for name, label in INPUTS:
-        before = report[name]["step3"]
-        after = report[name]["step7"]
+        before = report[name]["next-node"]
+        after = report[name]["overpaint"]
         saved = 100 * (before["bytes"] - after["bytes"]) / before["bytes"]
         row = [label, f"{before['bytes']:,}", f"{after['bytes']:,}",
                f"{saved:.1f}%",
@@ -700,7 +704,7 @@ def render_overpaint(results: dict) -> str:
             size = report[name]["libsixel_size_bytes"]
             row.append(f"{100 * (fast - size) / fast:.1f}%")
         rows.append(row)
-    header = ["Input", "Step 3 bytes", "Step 7 bytes", "Saved",
+    header = ["Input", "next-node bytes", "overpaint bytes", "Saved",
               "Encode, ms", "Decode, ms"]
     if has_libsixel:
         header.append("Saved by libsixel `size`")
@@ -709,8 +713,8 @@ def render_overpaint(results: dict) -> str:
 
 def render(results: dict, block: str) -> str:
     """Return the Markdown of one measurement block."""
-    if block.startswith("step"):
-        return render_step(results, int(block[-1]))
+    if block in CHAPTERS:
+        return render_chapter(results, block)
     return {
         "summary": render_summary,
         "environment": render_environment,
@@ -763,7 +767,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-pages", action="store_true",
                         help="with --measure, leave the pages alone")
     parser.add_argument("--only-overpaint", action="store_true",
-                        help="measure step 7 and keep every other result")
+                        help="measure overpaint and keep every other result")
     parser.add_argument("--check", action="store_true")
     return parser.parse_args()
 

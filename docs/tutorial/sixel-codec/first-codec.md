@@ -1,6 +1,6 @@
-# Step 1: A First Encoder and Decoder
+# A First Encoder and Decoder
 
-In [Lesson 0](step0-by-hand.md) you drew a heart by adding up pin values with a pencil. Now you teach a program to do the same for any picture, and to read SIXEL back into pixels. Both directions fit in about thirty lines of C. They are not fast yet, but they are complete, and every later step only makes them faster. The full source is [`code/step1.c`](code/step1.c).
+In [the first chapter](by-hand.md) you drew a heart by adding up pin values with a pencil. Now you teach a program to do the same for any picture, and to read SIXEL back into pixels. Both directions fit in about thirty lines of C. They are not fast yet, but they are complete, and every later chapter only makes them faster. The full source is [`code/first-codec.c`](code/first-codec.c).
 
 **You will learn:**
 
@@ -13,7 +13,7 @@ In [Lesson 0](step0-by-hand.md) you drew a heart by adding up pin values with a 
 
 Do exactly what you did by hand. Take the first band (six rows). Take the first color. Walk across the band and, for every column, add up the values of the rows that have this color. Write one character per column. Then go back with `$`, take the next color and walk again. When all colors are done, write `-` and continue with the next band.
 
-![An eight by six band of sky, sun and grass. The encoder scans all pixels three times, once per color, and writes one line of characters per color](figures/step1-passes.svg)
+![An eight by six band of sky, sun and grass. The encoder scans all pixels three times, once per color, and writes one line of characters per color](figures/first-codec-passes.svg)
 
 In the picture above, the band has three colors, so the encoder walks over the same 48 pixels three times. The sun only fills two columns on the right, so its line is six empty columns followed by `BB`.
 
@@ -21,7 +21,7 @@ In the picture above, the band has three colors, so the encoder walks over the s
 
 Pictures often have long runs of the same character, such as a sky that is blue for a hundred columns. SIXEL lets you write `!` followed by a count instead:
 
-![Eight tildes become !8~. Runs of one to three stay as letters; four or more use the repeat form](figures/step1-repeat.svg)
+![Eight tildes become !8~. Runs of one to three stay as letters; four or more use the repeat form](figures/first-codec-repeat.svg)
 
 `!8~` is three bytes instead of eight. For a run of three the repeat form is no shorter, so the encoder uses it only for runs of four or more. The encoder collects a run until the character changes and then writes it out with `flush()`.
 
@@ -64,7 +64,7 @@ int encode_sixel(image_t const *img, buffer_t *out)
 
 Read it from the outside in:
 
-| Code | What it does | In Lesson 0 |
+| Code | What it does | By hand |
 | --- | --- | --- |
 | `"\033Pq\"1;1;%d;%d"` | Start the picture and give its size | `ESC P q "1;1;7;12` |
 | first `for (c ...)` | Define every register; `PCT()` turns 0–255 into 0–100 | `#1;2;90;10;20` |
@@ -76,17 +76,17 @@ Read it from the outside in:
 
 Two details are worth a closer look. `y + r < h` stops at the bottom of the picture, whose last band may have fewer than six rows. And a run of empty columns (`?`) at the end of a line is not written at all, because the following `$` goes back to the left edge anyway.
 
-> **Try it.** Encode the heart from Lesson 0 and compare the output with what you worked out by hand:
+> **Try it.** Encode the heart from the first chapter and compare the output with what you worked out by hand:
 >
 > ```sh
-> ./step1 encode heart.pgm | cat -v
+> ./first-codec encode heart.pgm | cat -v
 > ```
 
 ## The decoder: a robot with four notes
 
 The decoder reads the stream one byte at a time. Think of it as a robot that carries four notes: the column `x` where the stamp stands, the top row `y` of the current band, the selected `color`, and a `repeat` count. Most bytes only change a note. Only the sixel characters `?` to `~` paint.
 
-![A table tracing x, y, color and repeat while decoding the tree stream from Lesson 0, byte by byte](figures/step1-decoder-state.svg)
+![A table tracing x, y, color and repeat while decoding the tree stream from the first chapter, byte by byte](figures/first-codec-decoder-state.svg)
 
 ## Decoder
 
@@ -125,16 +125,16 @@ int decode_sixel(unsigned char const *p, size_t size, image_t *img)
 }
 ```
 
-There is one branch per kind of byte. `parse_params()`, from [`common.c`](code/common.c), reads numbers separated by `;`, such as the `1;2;90;10;20` after `#`. The painting branch undoes the encoder's sum: `(ch - '?') >> r & 1` is 1 when pin `r` is pushed. The test `x < img->width && y + r < img->height` keeps a stream that paints outside the picture from writing outside the array.
+There is one branch per kind of byte. `parse_params()`, one of the small helpers at the top of [`code/first-codec.c`](code/first-codec.c), reads numbers separated by `;`, such as the `1;2;90;10;20` after `#`. The painting branch undoes the encoder's sum: `(ch - '?') >> r & 1` is 1 when pin `r` is pushed. The test `x < img->width && y + r < img->height` keeps a stream that paints outside the picture from writing outside the array.
 
-> **Try it.** Decode the tree from Lesson 0 and open `tree.ppm` in an image viewer:
+> **Try it.** Decode the tree from the first chapter and open `tree.ppm` in an image viewer:
 >
 > ```sh
 > printf '\033Pq"1;1;7;12#1;2;0;60;0#2;2;50;30;10#1_s}~}s_-#1!7@$#2??O]O\033\\' |
->     ./step1 decode > tree.ppm
+>     ./first-codec decode > tree.ppm
 > ```
 
-This decoder takes shortcuts. It needs the size (`"`) before any painting, ignores colors given in HLS (`#n;1;h;l;s`), and paints at most one pixel per step. Streams from other programs may need all three; step 2 fixes them.
+This decoder takes shortcuts. It needs the size (`"`) before any painting, ignores colors given in HLS (`#n;1;h;l;s`), and paints at most one pixel per step. Streams from other programs may need all three; the [full decoder](full-decoder.md) handles them.
 
 ## Your turn
 
@@ -143,11 +143,11 @@ Now write your own. Open [`code/mysixel.c`](code/mysixel.c), which has both func
 1. **Encoder first.** Fill in the palette and the band loop. You can check the encoder alone, because any finished decoder can read its output:
 
     ```sh
-    ./mysixel encode heart.pgm | cat -v                     # compare with Lesson 0
-    ./mysixel encode heart.pgm | ./step2 decode > heart.ppm  # does it look right?
+    ./mysixel encode heart.pgm | cat -v                           # compare by hand
+    ./mysixel encode heart.pgm | ./full-decoder decode > heart.ppm  # looks right?
     ```
 
-2. **Then the decoder.** Start with `#`, the sixel characters, `$` and `-`, then add `"` and `!`. Test it with streams you wrote by hand in Lesson 0, then with `./step2 encode heart.pgm | ./mysixel decode > heart.ppm`.
+2. **Then the decoder.** Start with `#`, the sixel characters, `$` and `-`, then add `"` and `!`. Test it with streams you wrote by hand in the first chapter, then with `./packing encode heart.pgm | ./mysixel decode > heart.ppm`.
 
 3. **Then the self test.** `./mysixel selftest` encodes and decodes 50 test pictures of awkward sizes, such as 1×7 and 65×13, and tells you the first pixel that came back wrong. When it prints `50 of 50 round trips passed`, you have written a complete SIXEL codec.
 
@@ -162,15 +162,19 @@ If you get stuck, these are the usual mistakes:
 
 ## What it costs
 
-<!-- measurements:begin:step1 -->
+<!-- measurements:begin:first-codec -->
 | Input | Encode | Decode | Stream |
 | --- | --- | --- | --- |
-| Photograph, 600×450 | 25.6 ms | 7.43 ms | 394,217 bytes |
-| Photograph, 1920×1080 | 183.1 ms | 57.0 ms | 1,784,680 bytes |
-| Two colors, 1920×1080 | 1.70 ms | 2.09 ms | 692,322 bytes |
-| Random noise, 1920×1080 | 276.9 ms | 170.2 ms | 9,942,096 bytes |
+| Photograph, 600×450 | 25.3 ms | 7.54 ms | 394,217 bytes |
+| Photograph, 1920×1080 | 182.2 ms | 58.3 ms | 1,784,680 bytes |
+| Two colors, 1920×1080 | 1.71 ms | 2.14 ms | 692,322 bytes |
+| Random noise, 1920×1080 | 275.0 ms | 173.2 ms | 9,942,096 bytes |
 <!-- measurements:end -->
 
-Look at the two 1920×1080 pictures with the same number of pixels. The two-color pattern takes 1.7 ms to encode, the 255-color photograph 183 ms, more than 100 times as long. That is the plan's weak point: the encoder walks over every band once **per color**, so its work grows with colors × pixels. The stream suffers too: every band contains a `$` and a `#n` for every color, even colors that do not appear in that band, and empty runs for colors that appear only on the right.
+Look at the two 1920×1080 pictures with the same number of pixels. The two-color pattern takes 1.7 ms to encode, the 255-color photograph 182 ms, more than 100 times as long. That is the plan's weak point: the encoder walks over every band once **per color**, so its work grows with colors × pixels. The stream suffers too: every band contains a `$` and a `#n` for every color, even colors that do not appear in that band, and empty runs for colors that appear only on the right.
 
-[Step 2](step2-nodes.md) reads every pixel only once, whatever the number of colors.
+## Where this idea came from
+
+Both halves of this plan are old. Repeat counts with `!` appear in the earliest published encoder found, the PGPLOT driver for the LA50 printer from 1988, and in Ghostscript's LN03 driver from 1991. Those drivers were monochrome, so they needed one pass per band. The color plan of this chapter, one pass per color per band with `$` in between, is the one gnuplot's built-in sixel terminal used from 2013; Netpbm's older `ppmtosix` of 1991 instead set one bit per character and so needed six passes per band. Software decoders are as old as the hand-written files: Chiesa's 1990 tutorial came with a viewer in Amiga BASIC. The [implementation history](../../sixel-format/implementation-history.md#early-open-source-encoders) gives the sources.
+
+Previous: [Drawing SIXEL by hand](by-hand.md) · Next: [Read each pixel once](nodes.md)

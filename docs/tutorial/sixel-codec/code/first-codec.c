@@ -1,6 +1,46 @@
 /* SPDX-License-Identifier: MIT */
-/* Step 1: a complete SIXEL encoder and decoder with run-length coding. */
+/* A first complete SIXEL encoder and decoder with run-length coding. */
 #include "tutorial.h"
+
+/* SIXEL color coordinates are percentages (0-100). */
+#define PCT(v) (((v) * 100 + 127) / 255)
+
+static void set_rgb_pct(image_t *img, int color, int r, int g, int b)
+{
+    int pct[3] = { r, g, b };
+    for (int i = 0; i < 3; i++)
+        img->palette[color * 3 + i] =
+            (unsigned char)(((pct[i] > 100 ? 100 : pct[i]) * 255 + 50) / 100);
+}
+
+/* Read up to max numeric parameters separated by ';'. Missing values are
+ * zero. Returns the number of parameters present, at most max. */
+static int parse_params(unsigned char const **pp, unsigned char const *end, int *params, int max)
+{
+    unsigned char const *p = *pp;
+    int n = 0;
+
+    for (;;) {
+        int value = 0;
+        for (; p < end && *p >= '0' && *p <= '9'; p++)
+            if (value < 1000000) value = value * 10 + (*p - '0');
+        if (n < max) params[n] = value;
+        n++;
+        if (p == end || *p != ';') break;
+        p++;
+    }
+    for (int i = n; i < max; i++) params[i] = 0;
+    *pp = p;
+    return n < max ? n : max;
+}
+
+/* The first body byte after the "ESC P ... q" introducer, or end. */
+static unsigned char const *find_sixel_body(unsigned char const *p, unsigned char const *end)
+{
+    while (p < end && *p != 0x90 && !(*p == 0x1b && p + 1 < end && p[1] == 'P')) p++;
+    while (p < end && *p++ != 'q') {}
+    return p;
+}
 
 static void flush(buffer_t *out, int ch, int count)
 {

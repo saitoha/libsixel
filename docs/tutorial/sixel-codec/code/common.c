@@ -1,18 +1,20 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * The command-line program around every step of the SIXEL codec tutorial.
- * It is deliberately ordinary code: PNM input and output, a fixed-palette
- * quantizer, timing, and a self test. Each stepN.c supplies only
- * encode_sixel() and decode_sixel().
+ * The command-line program around every chapter of the SIXEL codec
+ * tutorial. It is deliberately ordinary code: PNM input and output, a
+ * fixed-palette quantizer, timing, and a self test. Each chapter program
+ * supplies only encode_sixel() and decode_sixel().
  *
- *   stepN encode [IN.pnm]            PNM to SIXEL on standard output
- *   stepN decode [IN.six]            SIXEL to PPM on standard output
- *   stepN synth KIND W H             a synthetic test image as PPM
- *   stepN selftest                   round-trip synthetic images
- *   stepN bench IN.pnm [SCALE] [N]   time encoding and decoding
+ *   PROGRAM encode [IN.pnm]          PNM to SIXEL on standard output
+ *   PROGRAM decode [IN.six]          SIXEL to PPM on standard output
+ *   PROGRAM synth KIND W H           a synthetic test image as PPM
+ *   PROGRAM selftest                 round-trip synthetic images
+ *   PROGRAM bench IN.pnm [SCALE] [N] time encoding and decoding
  *
  * encode and decode read standard input without a file name, so they
- * work in pipelines: ./step1 encode in.ppm | ./step1 decode > out.ppm
+ * work in pipelines:
+ *
+ *   ./first-codec encode in.ppm | ./first-codec decode > out.ppm
  */
 #include <stdarg.h>
 #include <stdio.h>
@@ -48,106 +50,6 @@ image_free(image_t *img)
 {
     free(img->pixels);
     img->pixels = NULL;
-}
-
-static int
-pct_to_byte(int p)
-{
-    if (p > 100) {
-        p = 100;
-    }
-    return (p * 255 + 50) / 100;
-}
-
-void
-set_rgb_pct(image_t *img, int color, int r, int g, int b)
-{
-    img->palette[color * 3 + 0] = (unsigned char)pct_to_byte(r);
-    img->palette[color * 3 + 1] = (unsigned char)pct_to_byte(g);
-    img->palette[color * 3 + 2] = (unsigned char)pct_to_byte(b);
-}
-
-static double
-hls_channel(double m1, double m2, double h)
-{
-    h -= 360.0 * (int)(h / 360.0);
-    if (h < 60.0) {
-        return m1 + (m2 - m1) * h / 60.0;
-    }
-    if (h < 180.0) {
-        return m2;
-    }
-    if (h < 240.0) {
-        return m1 + (m2 - m1) * (240.0 - h) / 60.0;
-    }
-    return m1;
-}
-
-/* SIXEL HLS puts blue at 0 degrees, red at 120 and green at 240, so the
- * usual red-at-zero hue is rotated by 240 degrees. */
-void
-set_hls(image_t *img, int color, int h, int l, int s)
-{
-    double lum = (l > 100 ? 100 : l) / 100.0;
-    double sat = (s > 100 ? 100 : s) / 100.0;
-    double m2 = lum <= 0.5 ? lum * (1.0 + sat) : lum + sat - lum * sat;
-    double m1 = 2.0 * lum - m2;
-    double hue = (double)((h + 240) % 360);
-    double rgb[3];
-    int i;
-
-    rgb[0] = hls_channel(m1, m2, hue + 120.0);
-    rgb[1] = hls_channel(m1, m2, hue);
-    rgb[2] = hls_channel(m1, m2, hue + 240.0);
-    for (i = 0; i < 3; i++) {
-        img->palette[color * 3 + i] = (unsigned char)(rgb[i] * 255.0 + 0.5);
-    }
-}
-
-int
-parse_params(unsigned char const **pp, unsigned char const *end,
-             int *params, int max)
-{
-    unsigned char const *p = *pp;
-    int n = 0;
-    int value;
-    int i;
-
-    for (;;) {
-        value = 0;
-        while (p < end && *p >= '0' && *p <= '9') {
-            if (value < 1000000) {
-                value = value * 10 + (*p - '0');
-            }
-            p++;
-        }
-        if (n < max) {
-            params[n] = value;
-        }
-        n++;
-        if (p < end && *p == ';') {
-            p++;
-        } else {
-            break;
-        }
-    }
-    for (i = n; i < max; i++) {
-        params[i] = 0;
-    }
-    *pp = p;
-    return n < max ? n : max;
-}
-
-unsigned char const *
-find_sixel_body(unsigned char const *p, unsigned char const *end)
-{
-    while (p < end && *p != 0x90 &&
-           !(*p == 0x1b && p + 1 < end && p[1] == 'P')) {
-        p++;
-    }
-    while (p < end && *p++ != 'q') {
-    }
-    return p;
 }
 
 void
@@ -200,20 +102,6 @@ buf_free(buffer_t *b)
     free(b->data);
     b->data = NULL;
     b->size = b->capacity = 0;
-}
-
-void
-put_header_and_palette(image_t const *img, buffer_t *out)
-{
-    int c;
-
-    buf_printf(out, "\033Pq\"1;1;%d;%d", img->width, img->height);
-    for (c = 0; c < img->ncolors; c++) {
-        buf_printf(out, "#%d;2;%d;%d;%d", c,
-                   PCT(img->palette[c * 3 + 0]),
-                   PCT(img->palette[c * 3 + 1]),
-                   PCT(img->palette[c * 3 + 2]));
-    }
 }
 
 /* ------------------------------------------------------------------ */

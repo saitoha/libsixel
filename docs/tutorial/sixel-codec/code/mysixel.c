@@ -5,17 +5,19 @@
  *
  *   make mysixel
  *   ./mysixel encode heart.pgm                  draw it in a SIXEL terminal
- *   ./mysixel encode heart.pgm | ./step2 decode > heart.ppm
+ *   ./mysixel encode heart.pgm | ./full-decoder decode > heart.ppm
  *   ./mysixel encode heart.pgm | ./mysixel decode > heart.ppm
  *   ./mysixel selftest                          round-trip 50 test images
  *
  * common.c does everything else: reading PNM files, writing PPM files and
- * the command line. step1.c is one possible answer; try before you peek.
+ * the command line. Copy the small helpers the hints below mention, PCT(),
+ * parse_params(), find_sixel_body() and set_rgb_pct(), from the top of
+ * first-codec.c, or write them yourself. first-codec.c is also one possible
+ * answer; try before you peek.
  */
 #include "tutorial.h"
 
-int
-encode_sixel(image_t const *img, buffer_t *out)
+int encode_sixel(image_t const *img, buffer_t *out)
 {
     /* 1. Start the picture and give its size: ESC P q "1;1;W;H */
     buf_printf(out, "\033Pq\"1;1;%d;%d", img->width, img->height);
@@ -36,8 +38,7 @@ encode_sixel(image_t const *img, buffer_t *out)
     return 0;
 }
 
-int
-decode_sixel(unsigned char const *p, size_t size, image_t *img)
+int decode_sixel(unsigned char const *p, size_t size, image_t *img)
 {
     /* First p = find_sixel_body(p, p + size) skips everything up to and
      * including the q of ESC P q. The picture ends at the next ESC: stop

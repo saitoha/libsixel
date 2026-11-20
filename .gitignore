@@ -122,10 +122,26 @@ site/
 /src/generated-metal/*-shader.inc.h
 
 # Programs and pictures made while following the SIXEL codec tutorial.
-/docs/tutorial/sixel-codec/code/step[1-7]
+/docs/tutorial/sixel-codec/code/first-codec
+/docs/tutorial/sixel-codec/code/nodes
+/docs/tutorial/sixel-codec/code/packing
+/docs/tutorial/sixel-codec/code/full-decoder
+/docs/tutorial/sixel-codec/code/fewer-questions
+/docs/tutorial/sixel-codec/code/masks
+/docs/tutorial/sixel-codec/code/next-node
+/docs/tutorial/sixel-codec/code/column-words
+/docs/tutorial/sixel-codec/code/swar
+/docs/tutorial/sixel-codec/code/first-colors
+/docs/tutorial/sixel-codec/code/occupancy
+/docs/tutorial/sixel-codec/code/word-decoder
+/docs/tutorial/sixel-codec/code/vector-lanes
+/docs/tutorial/sixel-codec/code/transpose
+/docs/tutorial/sixel-codec/code/parallel-bands
+/docs/tutorial/sixel-codec/code/parallel-decoder
+/docs/tutorial/sixel-codec/code/overpaint
 /docs/tutorial/sixel-codec/code/mysixel
 /docs/tutorial/sixel-codec/code/mine
-/docs/tutorial/sixel-codec/code/step5-scalar
+/docs/tutorial/sixel-codec/code/*-scalar
 /docs/tutorial/sixel-codec/code/*.ppm
 /docs/tutorial/sixel-codec/code/*.pgm
 /docs/tutorial/sixel-codec/code/*.six

@@ -35,7 +35,7 @@ The first published encoders served printers and plotting libraries. They wrote 
 | 1988-12 | PGPLOT [`LADRIV`](https://sites.astro.caltech.edu/~tjp/pgplot/ladriv.html), B. H. Toby | Monochrome LA50 output written line by line; runs longer than four characters use `!`. |
 | 1991-02 | Ghostscript [`gdevln03.c`](https://sources.debian.org/src/gs/3.33-7/gdevln03.c), Ulrich Mueller (CERN) | Monochrome LN03, later LA50, LA70 and LA75 output. Each column's six bits are built by transposing a six-by-eight block of the bitmap; runs longer than three use `!`. |
 | 1991-05 | [`ppmtosix`](https://www.tuhs.org/Usenet/alt.sources/1991-May/002739.html), Richard Vinci; later Netpbm's [`ppmtosixel`](https://netpbm.sourceforge.net/doc/ppmtosixel.html) | Color output that visits one source row at a time and sets one bit per character, so a band takes six passes. The [format overview](README.md#a-row-at-a-time-baseline-netpbm-ppmtosixel) shows its output. |
-| 2013-11 | gnuplot's native sixel terminal in `tek.trm`, Erik Olofsen ([patch #647](https://sourceforge.net/p/gnuplot/patches/647)) | Replaced piping plots through `ppmtosixel`. |
+| 2013-11 | gnuplot's native sixel terminal in `tek.trm`, Erik Olofsen ([patch #647](https://sourceforge.net/p/gnuplot/patches/647)) | Replaced piping plots through `ppmtosixel`. One pass per color over each band, with `$` between colors and `!` for runs longer than three. |
 
 ## kmiya's `sixel` and the node method
 
@@ -43,7 +43,7 @@ kmiya's `sixel` encoder, from the author of RLogin, which added SIXEL in 2010, o
 
 ## libsixel: the node method as a library
 
-libsixel imported kmiya's encoder in March 2014 and turned it into a library and command-line tools. It applied the encoder to animation, multiplexer passthrough and many terminal environments, and added color quantization in front of it. The [project history](../project-history.md#formation-of-libsixel) owns the details.
+libsixel imported kmiya's encoder in March 2014 and turned it into a library and command-line tools. It applied the encoder to animation, multiplexer passthrough and many terminal environments, and added color quantization in front of it. The [project history](../project-history.md#formation-of-libsixel) owns the details. In 2014-11 Araki Ken added the size-oriented [encoding policy](../encoder/output/encode-policy/README.md) (`-E size`), which fills the first graphics line of a band and lets later lines repaint the other colors, so the same pixels need fewer bytes.
 
 ## Decoder-side transposition in `ite`
 
@@ -84,7 +84,7 @@ The [multi-pass decoding](../decoder/multi-pass.md) reference defines how libsix
 
 | Date | Change |
 | --- | --- |
-| 2025-11 | Bands are dispatched to encode workers in parallel and published in order. |
+| 2025-11 | Bands are dispatched to encode workers in parallel and published in order. The decoder splits a stream into byte ranges that are decoded in parallel, with a serial fallback. |
 | 2026-06 | [Delta encoding](../encoder/output/delta-encoding.md) sends only the pixels that changed from the previous frame on a retained canvas. |
 | 2026-07 | Palette application, and later band composition, run on Metal and Vulkan GPUs; [GPU host memory and frame sharing](../gpu/host-memory.md) explains how frames move between the processors. |
 
@@ -95,16 +95,21 @@ Whether earlier implementations sent only changed regions of video frames, or ra
 | Technique | Earliest public example found |
 | --- | --- |
 | Repeat compression with `!` | PGPLOT `LADRIV`, 1988 |
+| One pass per color over each band | gnuplot `tek.trm`, 2013 |
 | Six pixels of a column in one value (encoder) | Ghostscript `gdevln03.c`, 1991, monochrome; chafa, 2019, color |
 | One map per color per band, nodes packed onto lines | kmiya's `sixel`, by 2014 |
 | Six pixels of a column in one value (decoder) | `ite`, 2016 |
 | Bands built in parallel and joined in order | chafa, 2019 |
+| Overpainting the first line of a band to save bytes | libsixel `-E size`, Araki Ken, 2014 |
+| Bands decoded in parallel | libsixel, 2025 |
 | Resident band workers | notcurses, 2022 |
 | SWAR search over column words | jjrv's `sixel.ts`, 2025 |
 | SIMD span filling in a decoder | icy_sixel, 2024 |
 | Layered images with `P2=1` for more colors | Tyler Young, 2026 |
 | Palette redefinition per band | unxed, 2026 |
 | Delta frames on a retained canvas | libsixel, 2026 |
+
+No earliest example was found for several techniques that the [codec tutorial](../tutorial/sixel-codec/README.md) teaches: filling repeats a row at a time in a decoder, an inner loop over data characters, branch-free masked stores, a bitmap of node start columns, finding the distinct colors of a column with shifted comparisons, and SIMD classification or transposition of column words.
 
 ## In libsixel
 

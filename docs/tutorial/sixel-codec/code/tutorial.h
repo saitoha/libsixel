@@ -6,7 +6,9 @@
  * so any encoder can be checked against any decoder. Pixels are palette
  * indexes, one byte each, row by row: exactly the pixel data of a P5 PGM
  * file. common.c supplies the command-line program around the two
- * functions and converts PNM files to and from indexed images.
+ * functions and converts PNM files to and from indexed images. Everything
+ * that reads or writes SIXEL lives in the chapter files, so each of them
+ * shows all the code its codec needs.
  */
 #ifndef SIXEL_TUTORIAL_H
 #define SIXEL_TUTORIAL_H
@@ -42,90 +44,15 @@ int decode_sixel(unsigned char const *data, size_t size, image_t *img);
 int image_alloc(image_t *img, int width, int height);
 void image_free(image_t *img);
 
-/* SIXEL color coordinates are percentages (0-100). */
-#define PCT(v) (((v) * 100 + 127) / 255)
-void set_rgb_pct(image_t *img, int color, int r, int g, int b);
-void set_hls(image_t *img, int color, int h, int l, int s);
-
-/* Read up to max numeric parameters separated by ';'. Missing values are
- * zero. Returns the number of parameters present, at most max. */
-int parse_params(unsigned char const **p, unsigned char const *end,
-                 int *params, int max);
-
-/* The first body byte after the "ESC P ... q" introducer, or end. */
-unsigned char const *find_sixel_body(unsigned char const *p,
-                                     unsigned char const *end);
-
-/* A number of at most five digits that no ';' or further digit follows, the
- * form of nearly every "#n" and "!n" in a stream. Advances *pp and returns 1,
- * or leaves *pp alone and returns 0 so that parse_params() can take over. */
-static inline int
-parse_plain_number(unsigned char const **pp, unsigned char const *end,
-                   int *value)
-{
-    unsigned char const *p = *pp;
-    int v = 0;
-    int digits = 0;
-
-    while (p < end && *p >= '0' && *p <= '9' && digits < 5) {
-        v = v * 10 + (*p++ - '0');
-        digits++;
-    }
-    if (digits == 0 || p == end || *p == ';' || (*p >= '0' && *p <= '9')) {
-        return 0;
-    }
-    *pp = p;
-    *value = v;
-    return 1;
-}
-
 /* Growable output buffer. */
 void buf_reserve(buffer_t *b, size_t extra);
 void buf_printf(buffer_t *b, char const *fmt, ...);
 void buf_free(buffer_t *b);
 
-static inline void
-buf_putc(buffer_t *b, int c)
+static inline void buf_putc(buffer_t *b, int c)
 {
-    if (b->size == b->capacity) {
-        buf_reserve(b, 1);
-    }
+    if (b->size == b->capacity) buf_reserve(b, 1);
     b->data[b->size++] = (unsigned char)c;
 }
-
-static inline void
-buf_putnum(buffer_t *b, int n)
-{
-    char digits[12];
-    int i = 0;
-
-    do {
-        digits[i++] = (char)('0' + n % 10);
-        n /= 10;
-    } while (n > 0);
-    buf_reserve(b, (size_t)i);
-    while (i > 0) {
-        b->data[b->size++] = (unsigned char)digits[--i];
-    }
-}
-
-/* Emit `count` copies of a sixel character, using DECGRI ('!') when the
- * repeat form is shorter. Shared by steps 2 to 5 so their output matches. */
-static inline void
-buf_putrun(buffer_t *b, int ch, int count)
-{
-    if (count > 3) {
-        buf_putc(b, '!');
-        buf_putnum(b, count);
-        buf_putc(b, ch);
-    } else {
-        while (count-- > 0) {
-            buf_putc(b, ch);
-        }
-    }
-}
-
-/* Header and palette shared by every encoder. */
-void put_header_and_palette(image_t const *img, buffer_t *out);
 
 #endif /* SIXEL_TUTORIAL_H */
