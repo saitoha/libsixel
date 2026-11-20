@@ -76,6 +76,10 @@
 #include "pixelformat.h"
 #include "status.h"
 #include "timer.h"
+#include "simd-config.h"
+#if SIXEL_SIMD_NEON_A64
+# include <arm_neon.h>
+#endif
 
 /*
  * K-means testcases live in palette-kmeans.c; declare them here so the
@@ -1353,6 +1357,73 @@ sixel_palette_heckbert_entry_weight(struct tupleint const *entry)
     return (unsigned int)weight;
 }
 
+#if SIXEL_SIMD_NEON_A64
+/* Three-plane form of findBoxBoundariesAndWeight. Planes 0 and 1 share one
+ * vector; the bounds stay in registers and move only on a strict compare,
+ * as in the scalar loop, so equal values keep the earlier bound. */
+static void
+findBoxBoundariesAndWeightNeon3(tupletable2 const colorfreqtable,
+                                unsigned int boxStart,
+                                unsigned int boxSize,
+                                sample minval[],
+                                sample maxval[],
+                                unsigned long *total_weight,
+                                unsigned int axis_count
+                                    [sixel_palette_heckbert_max_channels]
+                                    [sixel_palette_heckbert_axis_bins])
+{
+    struct tupleint const *entry;
+    float64x2_t low;
+    float64x2_t low_min;
+    float64x2_t low_max;
+    uint64x2_t bins;
+    uint64x2_t last_bin;
+    sample value;
+    sample high_min;
+    sample high_max;
+    unsigned long weight;
+    unsigned int high_bin;
+    unsigned int i;
+
+    entry = colorfreqtable.table[boxStart];
+    low_min = low_max = vld1q_f64(entry->tuple);
+    high_min = high_max = entry->tuple[2];
+    weight = 0UL;
+    if (axis_count != NULL) {
+        memset(axis_count, 0, 3U * sizeof(axis_count[0]));
+    }
+    last_bin = vdupq_n_u64(sixel_palette_heckbert_axis_bins - 1U);
+    for (i = 0U; i < boxSize; ++i) {
+        entry = colorfreqtable.table[boxStart + i];
+        weight += (unsigned long)sixel_palette_heckbert_entry_weight(entry);
+        low = vld1q_f64(entry->tuple);
+        value = entry->tuple[2];
+        low_min = vbslq_f64(vcltq_f64(low, low_min), low, low_min);
+        low_max = vbslq_f64(vcgtq_f64(low, low_max), low, low_max);
+        high_min = value < high_min ? value : high_min;
+        high_max = value > high_max ? value : high_max;
+        if (axis_count != NULL) {
+            bins = vcvtq_u64_f64(low);
+            bins = vbslq_u64(vcgtq_u64(bins, last_bin), last_bin, bins);
+            high_bin = (unsigned int)value;
+            if (high_bin >= sixel_palette_heckbert_axis_bins) {
+                high_bin = sixel_palette_heckbert_axis_bins - 1U;
+            }
+            axis_count[0][vgetq_lane_u64(bins, 0)] += 1U;
+            axis_count[1][vgetq_lane_u64(bins, 1)] += 1U;
+            axis_count[2][high_bin] += 1U;
+        }
+    }
+    vst1q_f64(minval, low_min);
+    vst1q_f64(maxval, low_max);
+    minval[2] = high_min;
+    maxval[2] = high_max;
+    if (total_weight != NULL) {
+        *total_weight = weight;
+    }
+}
+#endif
+
 /*
  * Collect min/max bounds and total tuple weight in one pass so splitBox can
  * reuse the same scan for axis selection and weighted median splitting.
@@ -1376,6 +1447,14 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
     unsigned int axis_value;
     sample value;
 
+#if SIXEL_SIMD_NEON_A64
+    if (depth == 3U) {
+        findBoxBoundariesAndWeightNeon3(colorfreqtable, boxStart, boxSize,
+                                        minval, maxval, total_weight,
+                                        axis_count);
+        return;
+    }
+#endif
     for (plane = 0U; plane < depth; ++plane) {
         minval[plane] = colorfreqtable.table[boxStart]->tuple[plane];
         maxval[plane] = minval[plane];
@@ -2855,6 +2934,105 @@ sixel_heckbert_sse(double const sums[4], double const squares[4],
     return error;
 }
 
+#if SIXEL_SIMD_NEON_A64
+/* Three-plane form of sixel_heckbert_box_sse. Each plane holds its sum and
+ * square sum in the two lanes of one vector, and the cut search scores both
+ * children in the lanes of one vector. Every lane takes the operations of the
+ * scalar loop in the same order, fusing the same multiply-adds, so the cut
+ * and the errors are the same values. */
+static double
+sixel_heckbert_box_sse_neon3(tupletable2 table, unsigned int start,
+                             unsigned int size, double const weights[4],
+                             unsigned int *cut, unsigned int *lower,
+                             double children[2])
+{
+    float64x2_t total[3];
+    float64x2_t left[3];
+    float64x2_t zero;
+    float64x2_t factor;
+    float64x2_t right;
+    float64x2_t sums;
+    float64x2_t squares;
+    float64x2_t populations;
+    float64x2_t errors;
+    float64x2_t component;
+    double origin[3];
+    double sum_list[4];
+    double square_list[4];
+    double population;
+    double left_population;
+    double weight;
+    double value;
+    double best;
+    double score;
+    struct tupleint const *entry;
+    unsigned int i;
+    unsigned int plane;
+
+    zero = vdupq_n_f64(0.0);
+    for (plane = 0U; plane < 3U; ++plane) {
+        origin[plane] = table.table[start]->tuple[plane];
+        total[plane] = zero;
+        left[plane] = zero;
+    }
+    population = 0.0;
+    for (i = 0U; i < size; ++i) {
+        entry = table.table[start + i];
+        weight = (double)sixel_palette_heckbert_entry_weight(entry);
+        population += weight;
+        for (plane = 0U; plane < 3U; ++plane) {
+            value = (entry->tuple[plane] - origin[plane]) * weights[plane];
+            factor = vsetq_lane_f64(weight * value, vdupq_n_f64(weight), 1);
+            total[plane] = vfmaq_f64(total[plane], factor,
+                vdupq_n_f64(value));
+        }
+    }
+    for (plane = 0U; plane < 3U; ++plane) {
+        sum_list[plane] = vgetq_lane_f64(total[plane], 0);
+        square_list[plane] = vgetq_lane_f64(total[plane], 1);
+    }
+    sum_list[3] = square_list[3] = 0.0;
+    if (cut == NULL) {
+        return sixel_heckbert_sse(sum_list, square_list, population, 3U);
+    }
+    *cut = 0U;
+    *lower = 0U;
+    children[0] = children[1] = 0.0;
+    left_population = 0.0;
+    best = -1.0;
+    /* Both children hold at least one entry of weight one or more, so
+     * neither population is zero here. */
+    for (i = 0U; i + 1U < size; ++i) {
+        entry = table.table[start + i];
+        weight = (double)sixel_palette_heckbert_entry_weight(entry);
+        left_population += weight;
+        populations = vsetq_lane_f64(population - left_population,
+            vdupq_n_f64(left_population), 1);
+        errors = zero;
+        for (plane = 0U; plane < 3U; ++plane) {
+            value = (entry->tuple[plane] - origin[plane]) * weights[plane];
+            factor = vsetq_lane_f64(weight * value, vdupq_n_f64(weight), 1);
+            left[plane] = vfmaq_f64(left[plane], factor, vdupq_n_f64(value));
+            right = vsubq_f64(total[plane], left[plane]);
+            sums = vzip1q_f64(left[plane], right);
+            squares = vzip2q_f64(left[plane], right);
+            component = vsubq_f64(squares,
+                vdivq_f64(vmulq_f64(sums, sums), populations));
+            errors = vaddq_f64(errors, vmaxnmq_f64(component, zero));
+        }
+        score = vgetq_lane_f64(errors, 0) + vgetq_lane_f64(errors, 1);
+        if (i == 0U || score < best) {
+            best = score;
+            *cut = i + 1U;
+            *lower = (unsigned int)left_population;
+            children[0] = vgetq_lane_f64(errors, 0);
+            children[1] = vgetq_lane_f64(errors, 1);
+        }
+    }
+    return sixel_heckbert_sse(sum_list, square_list, population, 3U);
+}
+#endif
+
 static double
 sixel_heckbert_box_sse(tupletable2 table, unsigned int start,
                        unsigned int size, unsigned int depth,
@@ -2876,6 +3054,12 @@ sixel_heckbert_box_sse(tupletable2 table, unsigned int start,
     unsigned int i;
     unsigned int plane;
 
+#if SIXEL_SIMD_NEON_A64
+    if (depth == 3U) {
+        return sixel_heckbert_box_sse_neon3(table, start, size, weights,
+                                            cut, lower, children);
+    }
+#endif
     memset(sums, 0, sizeof(sums));
     memset(squares, 0, sizeof(squares));
     memset(left_sums, 0, sizeof(left_sums));
