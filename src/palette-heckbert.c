@@ -3582,6 +3582,118 @@ typedef struct sixel_palette_heckbert_colormap_request {
     int *merge_mode;
 } sixel_palette_heckbert_colormap_request_t;
 
+/* Solve every split with the quant/heckbert.gpu component. On success the
+ * table holds the boxes' entries in box order and bv the boxes in sumcompare
+ * order, as the CPU loop leaves them. FEATURE_ERROR leaves both untouched so
+ * the caller can solve on the CPU. */
+static SIXELSTATUS
+sixel_palette_heckbert_solve_gpu(tupletable2 const colorfreqtable,
+                                 unsigned int working_colors,
+                                 int methodForLargest,
+                                 int pixelformat,
+                                 sixel_heckbert_options_t const *options,
+                                 boxVector bv,
+                                 unsigned int *boxes,
+                                 sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_factory_t *factory;
+    sixel_heckbert_solver_interface_t *solver;
+    sixel_heckbert_solve_request_t request;
+    void *service;
+    double *tuples;
+    unsigned int *weights;
+    unsigned int *order;
+    unsigned int *box_fields;
+    double *box_priority;
+    struct tupleint **entries;
+    double axis_weights[4];
+    unsigned int count;
+    unsigned int box_count;
+    unsigned int i;
+
+    count = colorfreqtable.size;
+    solver = NULL;
+    service = NULL;
+    status = sixel_components_getservice("services/factory", &service);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    factory = (sixel_factory_t *)service;
+    status = factory->vtbl->create(factory, "quant/heckbert.gpu", allocator,
+        (void **)&solver);
+    factory->vtbl->unref(factory);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    tuples = sixel_allocator_malloc(allocator,
+        (size_t)count * 3u * sizeof(double));
+    weights = sixel_allocator_malloc(allocator,
+        (size_t)count * sizeof(unsigned int));
+    order = sixel_allocator_malloc(allocator,
+        (size_t)count * sizeof(unsigned int));
+    entries = sixel_allocator_malloc(allocator,
+        (size_t)count * sizeof(*entries));
+    box_fields = sixel_allocator_malloc(allocator,
+        (size_t)working_colors * 3u * sizeof(unsigned int));
+    box_priority = sixel_allocator_malloc(allocator,
+        (size_t)working_colors * sizeof(double));
+    if (tuples == NULL || weights == NULL || order == NULL ||
+            entries == NULL || box_fields == NULL || box_priority == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    for (i = 0U; i < count; ++i) {
+        tuples[i * 3U + 0U] = colorfreqtable.table[i]->tuple[0];
+        tuples[i * 3U + 1U] = colorfreqtable.table[i]->tuple[1];
+        tuples[i * 3U + 2U] = colorfreqtable.table[i]->tuple[2];
+        weights[i] = sixel_palette_heckbert_entry_weight(
+            colorfreqtable.table[i]);
+    }
+    sixel_heckbert_axis_weights(pixelformat, methodForLargest, options,
+        axis_weights);
+    memset(&request, 0, sizeof(request));
+    request.tuples = tuples;
+    request.weights = weights;
+    request.axis_weights = axis_weights;
+    request.count = count;
+    request.colors = working_colors;
+    request.method_for_largest = methodForLargest;
+    request.cut_sse = options->cut_sse;
+    request.order_sse = options->order_sse;
+    request.order = order;
+    request.box_start = box_fields;
+    request.box_size = box_fields + working_colors;
+    request.box_sum = box_fields + 2U * working_colors;
+    request.box_priority = box_priority;
+    request.box_count = &box_count;
+    status = solver->vtbl->solve(solver, &request);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    for (i = 0U; i < count; ++i) {
+        entries[i] = colorfreqtable.table[order[i]];
+    }
+    memcpy(colorfreqtable.table, entries, (size_t)count * sizeof(*entries));
+    for (i = 0U; i < box_count; ++i) {
+        bv[i].ind = request.box_start[i];
+        bv[i].colors = request.box_size[i];
+        bv[i].sum = request.box_sum[i];
+        bv[i].priority = box_priority[i];
+    }
+    qsort(bv, box_count, sizeof(*bv), sumcompare);
+    *boxes = box_count;
+end:
+    sixel_allocator_free(allocator, tuples);
+    sixel_allocator_free(allocator, weights);
+    sixel_allocator_free(allocator, order);
+    sixel_allocator_free(allocator, entries);
+    sixel_allocator_free(allocator, box_fields);
+    sixel_allocator_free(allocator, box_priority);
+    solver->vtbl->unref(solver);
+    return status;
+}
+
 static SIXELSTATUS
 mediancut(tupletable2 const colorfreqtable,
           unsigned int depth,
@@ -3630,6 +3742,7 @@ mediancut(tupletable2 const colorfreqtable,
     struct sixel_pca_sort_entry *pca_workspace;
     unsigned int pca_workspace_capacity;
     unsigned char *axis_keys;
+    int gpu_policy;
 
     status = SIXEL_FALSE;
     bv = NULL;
@@ -3694,6 +3807,26 @@ mediancut(tupletable2 const colorfreqtable,
     }
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
+    /* Policy tests drive mediancut without a palette object. */
+    gpu_policy = request->palette != NULL
+        ? SIXEL_PALETTE_CONTEXT(request->palette)->gpu_policy
+        : SIXEL_GPU_POLICY_OFF;
+    if (gpu_policy != SIXEL_GPU_POLICY_OFF && multicolorBoxesExist &&
+            depth == 3U && !colorfreqtable.preserve_extended &&
+            !apply_merge && !use_reversible &&
+            methodForLargest == SIXEL_LARGE_NORM &&
+            options->cut_sse && options->order_sse &&
+            working_colors <= 256U) {
+        status = sixel_palette_heckbert_solve_gpu(colorfreqtable,
+            working_colors, methodForLargest, pixelformat, options, bv,
+            &boxes, allocator);
+        if (SIXEL_SUCCEEDED(status)) {
+            multicolorBoxesExist = 0;
+        } else if (status != SIXEL_FEATURE_ERROR ||
+                gpu_policy == SIXEL_GPU_POLICY_FORCE) {
+            goto end;
+        }
+    }
     while (boxes < working_colors && multicolorBoxesExist) {
         /* Return revoked loans before the next solver job. */
         sixel_thread_work_checkpoint();

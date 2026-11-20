@@ -66,6 +66,7 @@
 #include "chunk.h"
 #include "frame.h"
 #include "palette.h"
+#include "palette-heckbert-gpu.h"
 #include "loader-manager.h"
 #include "timeline-logger.h"
 
@@ -524,14 +525,19 @@ typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
 # define SIXEL_FACTORY_CLASSID_CREATE_90 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_91 sixel_loader_manager_new
+# define SIXEL_FACTORY_CLASSID_CREATE_91 sixel_palette_heckbert_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_91 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_92 sixel_timeline_logger_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_92 sixel_loader_manager_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_92 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_93 sixel_timeline_logger_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_93 0
 #endif
 %}
 struct sixel_factory_classid_entry {
@@ -629,6 +635,7 @@ codec/encoder-core.ormode, SIXEL_FACTORY_CLASSID_CREATE_87
 image/chunk, SIXEL_FACTORY_CLASSID_CREATE_88
 image/frame, SIXEL_FACTORY_CLASSID_CREATE_89
 quant/palette, SIXEL_FACTORY_CLASSID_CREATE_90
-loader/manager, SIXEL_FACTORY_CLASSID_CREATE_91
-diagnostics/timeline-logger, SIXEL_FACTORY_CLASSID_CREATE_92
+quant/heckbert.gpu, SIXEL_FACTORY_CLASSID_CREATE_91
+loader/manager, SIXEL_FACTORY_CLASSID_CREATE_92
+diagnostics/timeline-logger, SIXEL_FACTORY_CLASSID_CREATE_93
 %%

@@ -92,6 +92,7 @@
 #include "chunk.h"
 #include "frame.h"
 #include "palette.h"
+#include "palette-heckbert-gpu.h"
 #include "loader-manager.h"
 #include "timeline-logger.h"
 
@@ -550,26 +551,31 @@ typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
 # define SIXEL_FACTORY_CLASSID_CREATE_90 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_91 sixel_loader_manager_new
+# define SIXEL_FACTORY_CLASSID_CREATE_91 sixel_palette_heckbert_gpu_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_91 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_92 sixel_timeline_logger_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_92 sixel_loader_manager_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_92 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_93 sixel_timeline_logger_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_93 0
 #endif
 struct sixel_factory_classid_entry {
     char const *name;
     sixel_factory_class_new_fn create;
 };
 
-#define TOTAL_KEYWORDS 92
+#define TOTAL_KEYWORDS 93
 #define MIN_WORD_LENGTH 9
 #define MAX_WORD_LENGTH 27
-#define MIN_HASH_VALUE 20
-#define MAX_HASH_VALUE 125
-/* maximum key range = 106, duplicates = 0 */
+#define MIN_HASH_VALUE 23
+#define MAX_HASH_VALUE 129
+/* maximum key range = 107, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -583,32 +589,32 @@ sixel_factory_classid_hash (register const char *str, register unsigned int len)
 {
   static const unsigned char asso_values[] =
     {
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126,  38,   3,   2, 126,  26,
-       14,   0, 126,  92,   1, 126,  25, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126,   0,   1,  36,
-       17,   1,  24,   5,   0,   0,  35,  75,   7,  18,
-        1,   6,  66,  20,  44,  15,   0,  31,  12,   3,
-       34, 126,  23, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126, 126, 126, 126, 126,
-      126, 126, 126, 126, 126, 126
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130,  28,  15,  34, 130,  44,
+       19,  17, 130,  80,  78, 130,  53, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130,   2,   5,  41,
+        3,   3,  23,  10,  11,   2,  35,  61,   9,   7,
+       13,   5,  33,  58,  29,  14,   2,  22,  25,   4,
+       33, 130,  43, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130, 130, 130, 130, 130,
+      130, 130, 130, 130, 130, 130
     };
   register unsigned int hval = len;
 
@@ -652,108 +658,106 @@ static const struct sixel_factory_classid_entry sixel_factory_classid_wordlist[]
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-    {"", 0}, {"", 0},
+    {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"loader/wic", SIXEL_FACTORY_CLASSID_CREATE_81},
+    {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"loader/gd", SIXEL_FACTORY_CLASSID_CREATE_72},
-    {"", 0}, {"", 0}, {"", 0},
-    {"lookup/6bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_3},
-    {"lookup/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_17},
-    {"", 0}, {"", 0}, {"", 0},
-    {"loader/builtin", SIXEL_FACTORY_CLASSID_CREATE_70},
-    {"", 0}, {"", 0},
-    {"quant/palette", SIXEL_FACTORY_CLASSID_CREATE_90},
-    {"lookup/6bit.float32", SIXEL_FACTORY_CLASSID_CREATE_4},
-    {"lookup/none.float32", SIXEL_FACTORY_CLASSID_CREATE_18},
-    {"dither/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_35},
     {"dither/a_dither.gpu", SIXEL_FACTORY_CLASSID_CREATE_32},
+    {"", 0},
+    {"dither/atkinson.gpu", SIXEL_FACTORY_CLASSID_CREATE_55},
     {"dither/a_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_64},
     {"image/retained-plane", SIXEL_FACTORY_CLASSID_CREATE_82},
-    {"dither/bluenoise.8bit", SIXEL_FACTORY_CLASSID_CREATE_68},
-    {"dither/a_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_65},
-    {"dither/atkinson.gpu", SIXEL_FACTORY_CLASSID_CREATE_55},
     {"dither/atkinson.8bit", SIXEL_FACTORY_CLASSID_CREATE_39},
-    {"lookup/delaunay.8bit", SIXEL_FACTORY_CLASSID_CREATE_23},
-    {"dither/none.float32", SIXEL_FACTORY_CLASSID_CREATE_36},
+    {"dither/a_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_65},
+    {"dither/bluenoise.8bit", SIXEL_FACTORY_CLASSID_CREATE_68},
     {"dither/atkinson.float32", SIXEL_FACTORY_CLASSID_CREATE_40},
-    {"lookup/delaunay.float32", SIXEL_FACTORY_CLASSID_CREATE_24},
-    {"lookup/gridlut.8bit", SIXEL_FACTORY_CLASSID_CREATE_25},
-    {"dither/bluenoise.float32", SIXEL_FACTORY_CLASSID_CREATE_69},
+    {"lookup/delaunay.8bit", SIXEL_FACTORY_CLASSID_CREATE_23},
     {"lookup/ordered.8bit", SIXEL_FACTORY_CLASSID_CREATE_27},
-    {"lookup/gridlut.float32", SIXEL_FACTORY_CLASSID_CREATE_26},
-    {"loader/libtiff", SIXEL_FACTORY_CLASSID_CREATE_78},
+    {"dither/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_35},
+    {"lookup/delaunay.float32", SIXEL_FACTORY_CLASSID_CREATE_24},
+    {"dither/bluenoise.float32", SIXEL_FACTORY_CLASSID_CREATE_69},
+    {"lookup/gridlut.8bit", SIXEL_FACTORY_CLASSID_CREATE_25},
     {"lookup/ordered.float32", SIXEL_FACTORY_CLASSID_CREATE_28},
-    {"loader/gnome-thumbnailer", SIXEL_FACTORY_CLASSID_CREATE_74},
-    {"dither/lso2.8bit", SIXEL_FACTORY_CLASSID_CREATE_62},
     {"image/frame", SIXEL_FACTORY_CLASSID_CREATE_89},
-    {"lookup/eytzinger.8bit", SIXEL_FACTORY_CLASSID_CREATE_7},
-    {"lookup/mono-lightbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_15},
+    {"lookup/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_17},
+    {"dither/none.float32", SIXEL_FACTORY_CLASSID_CREATE_36},
+    {"lookup/gridlut.float32", SIXEL_FACTORY_CLASSID_CREATE_26},
     {"dither/fs.gpu", SIXEL_FACTORY_CLASSID_CREATE_54},
-    {"diagnostics/timeline-logger", SIXEL_FACTORY_CLASSID_CREATE_92},
+    {"loader/builtin", SIXEL_FACTORY_CLASSID_CREATE_70},
+    {"diagnostics/timeline-logger", SIXEL_FACTORY_CLASSID_CREATE_93},
+    {"dither/lso2.8bit", SIXEL_FACTORY_CLASSID_CREATE_62},
+    {"lookup/none.float32", SIXEL_FACTORY_CLASSID_CREATE_18},
+    {"loader/gnome-thumbnailer", SIXEL_FACTORY_CLASSID_CREATE_74},
+    {"dither/bluenoise.gpu", SIXEL_FACTORY_CLASSID_CREATE_34},
+    {"", 0},
+    {"loader/libtiff", SIXEL_FACTORY_CLASSID_CREATE_78},
+    {"io/sixel-writer", SIXEL_FACTORY_CLASSID_CREATE_84},
+    {"dither/lso2.float32", SIXEL_FACTORY_CLASSID_CREATE_63},
+    {"dither/x_dither.gpu", SIXEL_FACTORY_CLASSID_CREATE_33},
+    {"loader/manager", SIXEL_FACTORY_CLASSID_CREATE_92},
+    {"lookup/mono-lightbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_15},
+    {"dither/x_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_66},
+    {"loader/libpng", SIXEL_FACTORY_CLASSID_CREATE_76},
     {"lookup/mono-lightbg.float32", SIXEL_FACTORY_CLASSID_CREATE_16},
+    {"dither/x_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_67},
+    {"dither/none.gpu", SIXEL_FACTORY_CLASSID_CREATE_31},
+    {"dither/fs.float32", SIXEL_FACTORY_CLASSID_CREATE_38},
+    {"loader/libwebp", SIXEL_FACTORY_CLASSID_CREATE_79},
+    {"lookup/rbc.8bit", SIXEL_FACTORY_CLASSID_CREATE_19},
+    {"loader/librsvg", SIXEL_FACTORY_CLASSID_CREATE_77},
+    {"lookup/mono-darkbg.float32", SIXEL_FACTORY_CLASSID_CREATE_14},
     {"lookup/certlut.8bit", SIXEL_FACTORY_CLASSID_CREATE_5},
     {"loader/coregraphics", SIXEL_FACTORY_CLASSID_CREATE_71},
-    {"dither/lso2.float32", SIXEL_FACTORY_CLASSID_CREATE_63},
-    {"lookup/certlut.float32", SIXEL_FACTORY_CLASSID_CREATE_6},
-    {"lookup/eytzinger.float32", SIXEL_FACTORY_CLASSID_CREATE_8},
-    {"io/sixel-writer", SIXEL_FACTORY_CLASSID_CREATE_84},
-    {"loader/libjpeg", SIXEL_FACTORY_CLASSID_CREATE_75},
-    {"lookup/rbc.8bit", SIXEL_FACTORY_CLASSID_CREATE_19},
-    {"dither/bluenoise.gpu", SIXEL_FACTORY_CLASSID_CREATE_34},
-    {"dither/x_dither.gpu", SIXEL_FACTORY_CLASSID_CREATE_33},
-    {"dither/x_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_66},
-    {"", 0},
-    {"lookup/mahalanobis.8bit", SIXEL_FACTORY_CLASSID_CREATE_11},
-    {"dither/x_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_67},
-    {"lookup/mahalanobis.float32", SIXEL_FACTORY_CLASSID_CREATE_12},
-    {"loader/librsvg", SIXEL_FACTORY_CLASSID_CREATE_77},
+    {"quant/palette", SIXEL_FACTORY_CLASSID_CREATE_90},
     {"lookup/rbc.float32", SIXEL_FACTORY_CLASSID_CREATE_20},
-    {"lookup/mono-darkbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_13},
-    {"dither/fs.8bit", SIXEL_FACTORY_CLASSID_CREATE_37},
-    {"lookup/mono-darkbg.float32", SIXEL_FACTORY_CLASSID_CREATE_14},
-    {"dither/fs.float32", SIXEL_FACTORY_CLASSID_CREATE_38},
-    {"loader/manager", SIXEL_FACTORY_CLASSID_CREATE_91},
-    {"lookup/vptree.8bit", SIXEL_FACTORY_CLASSID_CREATE_21},
-    {"loader/quicklook", SIXEL_FACTORY_CLASSID_CREATE_80},
-    {"image/chunk", SIXEL_FACTORY_CLASSID_CREATE_88},
-    {"lookup/vptree.float32", SIXEL_FACTORY_CLASSID_CREATE_22},
-    {"dither/stucki.gpu", SIXEL_FACTORY_CLASSID_CREATE_57},
-    {"dither/stucki.8bit", SIXEL_FACTORY_CLASSID_CREATE_43},
-    {"lookup/fhedt.8bit", SIXEL_FACTORY_CLASSID_CREATE_9},
-    {"", 0},
-    {"dither/stucki.float32", SIXEL_FACTORY_CLASSID_CREATE_44},
-    {"loader/libpng", SIXEL_FACTORY_CLASSID_CREATE_76},
+    {"loader/libjpeg", SIXEL_FACTORY_CLASSID_CREATE_75},
+    {"lookup/certlut.float32", SIXEL_FACTORY_CLASSID_CREATE_6},
+    {"dither/lso2.gpu", SIXEL_FACTORY_CLASSID_CREATE_53},
+    {"lookup/mahalanobis.float32", SIXEL_FACTORY_CLASSID_CREATE_12},
     {"dither/sierra3.gpu", SIXEL_FACTORY_CLASSID_CREATE_61},
     {"dither/sierra3.8bit", SIXEL_FACTORY_CLASSID_CREATE_51},
-    {"lookup/blockcull.8bit", SIXEL_FACTORY_CLASSID_CREATE_29},
-    {"loader/libwebp", SIXEL_FACTORY_CLASSID_CREATE_79},
-    {"dither/sierra3.float32", SIXEL_FACTORY_CLASSID_CREATE_52},
-    {"processing/palette-apply", SIXEL_FACTORY_CLASSID_CREATE_83},
-    {"dither/none.gpu", SIXEL_FACTORY_CLASSID_CREATE_31},
-    {"", 0},
-    {"loader/gdk-pixbuf2", SIXEL_FACTORY_CLASSID_CREATE_73},
-    {"dither/jajuni.gpu", SIXEL_FACTORY_CLASSID_CREATE_56},
-    {"dither/jajuni.8bit", SIXEL_FACTORY_CLASSID_CREATE_41},
-    {"lookup/blockcull.float32", SIXEL_FACTORY_CLASSID_CREATE_30},
-    {"lookup/fhedt.float32", SIXEL_FACTORY_CLASSID_CREATE_10},
-    {"dither/jajuni.float32", SIXEL_FACTORY_CLASSID_CREATE_42},
     {"dither/sierra2.gpu", SIXEL_FACTORY_CLASSID_CREATE_60},
     {"dither/sierra2.8bit", SIXEL_FACTORY_CLASSID_CREATE_49},
-    {"codec/encoder-core", SIXEL_FACTORY_CLASSID_CREATE_85},
-    {"", 0},
+    {"image/chunk", SIXEL_FACTORY_CLASSID_CREATE_88},
+    {"quant/heckbert.gpu", SIXEL_FACTORY_CLASSID_CREATE_91},
+    {"dither/sierra3.float32", SIXEL_FACTORY_CLASSID_CREATE_52},
+    {"lookup/eytzinger.8bit", SIXEL_FACTORY_CLASSID_CREATE_7},
     {"dither/sierra2.float32", SIXEL_FACTORY_CLASSID_CREATE_50},
+    {"dither/stucki.gpu", SIXEL_FACTORY_CLASSID_CREATE_57},
+    {"dither/stucki.8bit", SIXEL_FACTORY_CLASSID_CREATE_43},
+    {"dither/jajuni.gpu", SIXEL_FACTORY_CLASSID_CREATE_56},
+    {"dither/jajuni.8bit", SIXEL_FACTORY_CLASSID_CREATE_41},
+    {"lookup/eytzinger.float32", SIXEL_FACTORY_CLASSID_CREATE_8},
+    {"dither/fs.8bit", SIXEL_FACTORY_CLASSID_CREATE_37},
+    {"lookup/vptree.8bit", SIXEL_FACTORY_CLASSID_CREATE_21},
+    {"lookup/fhedt.float32", SIXEL_FACTORY_CLASSID_CREATE_10},
+    {"loader/gdk-pixbuf2", SIXEL_FACTORY_CLASSID_CREATE_73},
+    {"lookup/mono-darkbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_13},
+    {"lookup/blockcull.8bit", SIXEL_FACTORY_CLASSID_CREATE_29},
     {"dither/burkes.gpu", SIXEL_FACTORY_CLASSID_CREATE_58},
     {"dither/burkes.8bit", SIXEL_FACTORY_CLASSID_CREATE_45},
-    {"", 0},
-    {"lookup/5bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_1},
-    {"dither/burkes.float32", SIXEL_FACTORY_CLASSID_CREATE_46},
-    {"codec/encoder-core.normal", SIXEL_FACTORY_CLASSID_CREATE_86},
-    {"dither/lso2.gpu", SIXEL_FACTORY_CLASSID_CREATE_53},
+    {"codec/encoder-core", SIXEL_FACTORY_CLASSID_CREATE_85},
+    {"processing/palette-apply", SIXEL_FACTORY_CLASSID_CREATE_83},
+    {"lookup/fhedt.8bit", SIXEL_FACTORY_CLASSID_CREATE_9},
+    {"lookup/blockcull.float32", SIXEL_FACTORY_CLASSID_CREATE_30},
+    {"lookup/mahalanobis.8bit", SIXEL_FACTORY_CLASSID_CREATE_11},
     {"dither/sierra1.gpu", SIXEL_FACTORY_CLASSID_CREATE_59},
     {"dither/sierra1.8bit", SIXEL_FACTORY_CLASSID_CREATE_47},
-    {"", 0},
-    {"codec/encoder-core.ormode", SIXEL_FACTORY_CLASSID_CREATE_87},
+    {"lookup/6bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_3},
+    {"dither/stucki.float32", SIXEL_FACTORY_CLASSID_CREATE_44},
+    {"lookup/5bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_1},
+    {"dither/jajuni.float32", SIXEL_FACTORY_CLASSID_CREATE_42},
     {"dither/sierra1.float32", SIXEL_FACTORY_CLASSID_CREATE_48},
-    {"lookup/5bit.float32", SIXEL_FACTORY_CLASSID_CREATE_2}
+    {"codec/encoder-core.ormode", SIXEL_FACTORY_CLASSID_CREATE_87},
+    {"lookup/vptree.float32", SIXEL_FACTORY_CLASSID_CREATE_22},
+    {"lookup/6bit.float32", SIXEL_FACTORY_CLASSID_CREATE_4},
+    {"", 0},
+    {"lookup/5bit.float32", SIXEL_FACTORY_CLASSID_CREATE_2},
+    {"", 0}, {"", 0},
+    {"dither/burkes.float32", SIXEL_FACTORY_CLASSID_CREATE_46},
+    {"codec/encoder-core.normal", SIXEL_FACTORY_CLASSID_CREATE_86},
+    {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+    {"loader/quicklook", SIXEL_FACTORY_CLASSID_CREATE_80}
   };
 
 const struct sixel_factory_classid_entry *

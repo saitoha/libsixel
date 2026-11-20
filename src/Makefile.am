@@ -36,6 +36,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-rbc-gpu.metal \
     $(srcdir)/lookup-policy-mahalanobis-gpu.metal \
     $(srcdir)/lookup-policy-certlut-gpu.metal \
+    $(srcdir)/palette-heckbert-gpu.metal \
     $(srcdir)/gpu-palette-legacy-types.metal \
     $(srcdir)/gpu-palette-legacy-query.metal \
     $(srcdir)/lookup-policy-gridlut-gpu.metal \
@@ -248,7 +249,8 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-lookup-policy-rbc-gpu.lo \
     libsixel_la-lookup-policy-mahalanobis-gpu.lo \
     libsixel_la-lookup-policy-certlut-gpu.lo \
-    libsixel_la-gpu-palette-metal.lo
+    libsixel_la-gpu-palette-metal.lo \
+    libsixel_la-palette-heckbert-gpu-metal.lo
 $(SIXEL_METAL_CONSUMERS): $(SIXEL_METAL_FRAGMENTS)
 
 if WANT_AMALGAMATED_LIB
@@ -429,6 +431,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-kmeans-build.h \
                 $(srcdir)/palette-kmeans-gpu.c \
                 $(srcdir)/palette-kmeans-gpu.h \
+                $(srcdir)/palette-heckbert-gpu.c \
+                $(srcdir)/palette-heckbert-gpu.h \
                 $(srcdir)/palette-kmeans.h \
                 $(srcdir)/palette-bin-histogram.c \
                 $(srcdir)/palette-bin-histogram.h \
@@ -834,6 +838,7 @@ $(srcdir)/encoder-body-gpu-metal.m \
 $(srcdir)/retained-plane-metal.m \
 $(srcdir)/filter-sample-metal.m \
 $(srcdir)/palette-kmeans-metal.m \
+$(srcdir)/palette-heckbert-gpu-metal.m \
 $(srcdir)/progressive-gpu-metal.m
 endif
 if HAVE_CLIPBOARD_MACOS_APPKIT
@@ -1001,6 +1006,7 @@ FACTORY_CLASSID_INPUTS = \
     $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
     $(srcdir)/palette.h \
+    $(srcdir)/palette-heckbert-gpu.h \
     $(srcdir)/loader-manager.h \
     $(srcdir)/timeline-logger.h
 

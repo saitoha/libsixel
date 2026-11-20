@@ -76,6 +76,10 @@ refresh_encode_sequence(char const *diffuse, char const *gpu,
                 != SIXEL_OK ||
             sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, gpu)
                 != SIXEL_OK ||
+            /* The GPU median cut differs from the CPU one; k-center keeps
+             * the palette identical so only the refresh path is compared. */
+            sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_QUANTIZE_MODEL,
+                "center") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY, policy)
                 != SIXEL_OK) {
         fprintf(stderr, "refresh dither %s/%s/%s rejected: %s\n", diffuse,

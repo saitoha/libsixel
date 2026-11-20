@@ -1382,6 +1382,83 @@ struct sixel_palette_interface {
  */
 
 /*
+ * One median-cut solve over histogram entries. Every array is borrowed until
+ * solve returns. tuples holds count RGB triples, weights their populations.
+ * axis_weights scales each axis, as the CPU split does. On success order is
+ * a permutation of entry indexes grouped by box: box i covers
+ * order[box_start[i]] .. order[box_start[i] + box_size[i] - 1], with
+ * box_sum[i] entries' total weight and box_priority[i] its SSE. Boxes come
+ * back in creation order; the caller sorts them. FEATURE_ERROR denotes a
+ * configuration, input or device this solver does not support, before any
+ * output is written; the caller then solves on the CPU.
+ */
+typedef struct sixel_heckbert_solve_request {
+    double const *tuples;
+    unsigned int const *weights;
+    double const *axis_weights;
+    unsigned int count;
+    unsigned int colors;
+    int method_for_largest;
+    int cut_sse;
+    int order_sse;
+    unsigned int *order;
+    unsigned int *box_start;
+    unsigned int *box_size;
+    unsigned int *box_sum;
+    double *box_priority;
+    unsigned int *box_count;
+} sixel_heckbert_solve_request_t;
+
+typedef struct sixel_heckbert_solver_interface
+    sixel_heckbert_solver_interface_t;
+
+/*
+ * IDL responsibility:
+ * - split histogram entries into median-cut boxes
+ */
+
+/*
+ * IDL forbidden state:
+ * - image_pixels
+ * - palette_entries
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("split histogram entries into median-cut boxes")]
+ * [forbid_state("image_pixels", "palette_entries")]
+ * interface heckbert_solver {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates]
+ *     SIXELSTATUS solve(in heckbert_solve_request const *request);
+ * };
+ */
+
+typedef struct sixel_heckbert_solver_vtbl {
+    void (*ref)(sixel_heckbert_solver_interface_t *self);
+    void (*unref)(sixel_heckbert_solver_interface_t *self);
+    SIXELSTATUS (*solve)(
+        sixel_heckbert_solver_interface_t *self,
+        sixel_heckbert_solve_request_t const *request);
+} sixel_heckbert_solver_vtbl_t;
+
+struct sixel_heckbert_solver_interface {
+    sixel_heckbert_solver_vtbl_t const *vtbl;
+};
+
+/*
+ * IDL coclass:
+ * [classid("quant/heckbert.gpu")]
+ * coclass palette_heckbert_gpu {
+ *     [default] interface heckbert_solver;
+ * };
+ */
+
+/*
  * Ownership/lifetime:
  * - Factory create returns refcount=1 policy objects.
  * - Callers release with policy->vtbl->unref(policy).

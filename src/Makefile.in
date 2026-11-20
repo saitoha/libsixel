@@ -137,6 +137,7 @@ host_triplet = @host@
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/retained-plane-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/filter-sample-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-heckbert-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/progressive-gpu-metal.m
 
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_9 = \
@@ -304,7 +305,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans-build.c \
 	$(srcdir)/palette-kmeans-build.h \
 	$(srcdir)/palette-kmeans-gpu.c $(srcdir)/palette-kmeans-gpu.h \
-	$(srcdir)/palette-kmeans.h $(srcdir)/palette-bin-histogram.c \
+	$(srcdir)/palette-heckbert-gpu.c \
+	$(srcdir)/palette-heckbert-gpu.h $(srcdir)/palette-kmeans.h \
+	$(srcdir)/palette-bin-histogram.c \
 	$(srcdir)/palette-bin-histogram.h $(srcdir)/palette-plan.c \
 	$(srcdir)/palette-plan.h $(srcdir)/sample-statistics.c \
 	$(srcdir)/sample-statistics.h $(srcdir)/palette-sample.c \
@@ -562,6 +565,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/retained-plane-metal.m \
 	$(srcdir)/filter-sample-metal.m \
 	$(srcdir)/palette-kmeans-metal.m \
+	$(srcdir)/palette-heckbert-gpu-metal.m \
 	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
 	$(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
@@ -596,6 +600,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-sample-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu-metal.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_macos.lo
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_5 = libsixel_la-clipboard_carbon.lo
@@ -648,6 +653,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-assign.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-build.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-gpu.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-bin-histogram.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-plan.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sample-statistics.lo \
@@ -1046,6 +1052,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-snap.Plo \
 	./$(DEPDIR)/libsixel_la-palette-cover-native.Plo \
+	./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo \
+	./$(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kcenter.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo \
@@ -1461,6 +1469,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-rbc-gpu.metal \
     $(srcdir)/lookup-policy-mahalanobis-gpu.metal \
     $(srcdir)/lookup-policy-certlut-gpu.metal \
+    $(srcdir)/palette-heckbert-gpu.metal \
     $(srcdir)/gpu-palette-legacy-types.metal \
     $(srcdir)/gpu-palette-legacy-query.metal \
     $(srcdir)/lookup-policy-gridlut-gpu.metal \
@@ -1658,7 +1667,8 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-lookup-policy-rbc-gpu.lo \
     libsixel_la-lookup-policy-mahalanobis-gpu.lo \
     libsixel_la-lookup-policy-certlut-gpu.lo \
-    libsixel_la-gpu-palette-metal.lo
+    libsixel_la-gpu-palette-metal.lo \
+    libsixel_la-palette-heckbert-gpu-metal.lo
 
 @WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_TARGET = sixel.c
@@ -1791,6 +1801,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-build.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-gpu.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-bin-histogram.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-bin-histogram.h \
@@ -2313,6 +2325,7 @@ FACTORY_CLASSID_INPUTS = \
     $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
     $(srcdir)/palette.h \
+    $(srcdir)/palette-heckbert-gpu.h \
     $(srcdir)/loader-manager.h \
     $(srcdir)/timeline-logger.h
 
@@ -2613,6 +2626,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-merge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-snap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-cover-native.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kcenter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo@am__quote@ # am--include-marker
@@ -3067,6 +3082,13 @@ libsixel_la-palette-kmeans-gpu.lo: palette-kmeans-gpu.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-kmeans-gpu.c' object='libsixel_la-palette-kmeans-gpu.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-gpu.lo `test -f 'palette-kmeans-gpu.c' || echo '$(srcdir)/'`palette-kmeans-gpu.c
+
+libsixel_la-palette-heckbert-gpu.lo: palette-heckbert-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-heckbert-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-heckbert-gpu.Tpo -c -o libsixel_la-palette-heckbert-gpu.lo `test -f 'palette-heckbert-gpu.c' || echo '$(srcdir)/'`palette-heckbert-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-heckbert-gpu.Tpo $(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-heckbert-gpu.c' object='libsixel_la-palette-heckbert-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-heckbert-gpu.lo `test -f 'palette-heckbert-gpu.c' || echo '$(srcdir)/'`palette-heckbert-gpu.c
 
 libsixel_la-palette-bin-histogram.lo: palette-bin-histogram.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-bin-histogram.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-bin-histogram.Tpo -c -o libsixel_la-palette-bin-histogram.lo `test -f 'palette-bin-histogram.c' || echo '$(srcdir)/'`palette-bin-histogram.c
@@ -4478,6 +4500,13 @@ libsixel_la-palette-kmeans-metal.lo: palette-kmeans-metal.m
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-palette-kmeans-metal.lo `test -f 'palette-kmeans-metal.m' || echo '$(srcdir)/'`palette-kmeans-metal.m
 
+libsixel_la-palette-heckbert-gpu-metal.lo: palette-heckbert-gpu-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-palette-heckbert-gpu-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Tpo -c -o libsixel_la-palette-heckbert-gpu-metal.lo `test -f 'palette-heckbert-gpu-metal.m' || echo '$(srcdir)/'`palette-heckbert-gpu-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Tpo $(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='palette-heckbert-gpu-metal.m' object='libsixel_la-palette-heckbert-gpu-metal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-palette-heckbert-gpu-metal.lo `test -f 'palette-heckbert-gpu-metal.m' || echo '$(srcdir)/'`palette-heckbert-gpu-metal.m
+
 libsixel_la-progressive-gpu-metal.lo: progressive-gpu-metal.m
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-progressive-gpu-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-progressive-gpu-metal.Tpo -c -o libsixel_la-progressive-gpu-metal.lo `test -f 'progressive-gpu-metal.m' || echo '$(srcdir)/'`progressive-gpu-metal.m
 @am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-progressive-gpu-metal.Tpo $(DEPDIR)/libsixel_la-progressive-gpu-metal.Plo
@@ -4880,6 +4909,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-cover-native.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kcenter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo
@@ -5178,6 +5209,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-cover-native.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kcenter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo

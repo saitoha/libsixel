@@ -37,6 +37,7 @@ metal_sources = files(
   '../lookup-policy-rbc-gpu.metal',
   '../lookup-policy-mahalanobis-gpu.metal',
   '../lookup-policy-certlut-gpu.metal',
+  '../palette-heckbert-gpu.metal',
   '../gpu-palette-legacy-types.metal',
   '../gpu-palette-legacy-query.metal',
   '../lookup-policy-gridlut-gpu.metal',
