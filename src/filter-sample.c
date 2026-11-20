@@ -591,8 +591,6 @@ typedef struct sixel_filter_sample_solid_cell {
     unsigned int sum[4];
 } sixel_filter_sample_solid_cell_t;
 
-#define SIXEL_SAMPLE_SOLID_BITS 4
-
 /* Add one solid pixel to its quantized histogram cell. */
 static inline void
 sixel_filter_sample_add_solid(sixel_filter_sample_solid_cell_t *cells,
@@ -632,8 +630,6 @@ sixel_filter_sample_add_solid(sixel_filter_sample_solid_cell_t *cells,
     }
 #endif
 }
-
-#define SIXEL_SAMPLE_SOLID_CELLS (1u << (SIXEL_SAMPLE_SOLID_BITS * 3u))
 
 /* Each job owns complete grid rows and a private integer histogram.
  * Keep source-relative scan coordinates: a partition must not shift the
@@ -1080,6 +1076,7 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
                                  int clip_height,
                                  unsigned char *out,
                                  unsigned int out_max,
+                                 int gpu,
                                  sixel_allocator_t *allocator,
                                  sixel_timeline_logger_t *logger)
 {
@@ -1124,6 +1121,20 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
     if (cells == NULL) {
         return 0u;
     }
+#if defined(HAVE_METAL)
+    /* The device scan covers the common unmasked RGB frame. */
+    if (gpu && mask == NULL && depth == 3
+            && sizeof(*cells) == 5u * sizeof(unsigned int)
+            && (size_t)clip_width * (size_t)clip_height
+               >= sixel_runtime_policy_sample_min_pixels(524288u)
+            && sixel_filter_sample_solid_gpu(pixels, width, height,
+                   clip_x, clip_y, clip_width, clip_height,
+                   &cells[0].count) == SIXEL_OK) {
+        goto select;
+    }
+#else
+    (void)gpu;
+#endif
     memset(&ctx, 0, sizeof(ctx));
     ctx.pixels = pixels;
     ctx.mask = mask;
@@ -1168,6 +1179,9 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
         }
         sixel_allocator_free(allocator, partial);
     }
+#if defined(HAVE_METAL)
+select:
+#endif
     for (cell = 0; cell < SIXEL_SAMPLE_SOLID_CELLS; ++cell) {
         seen += cells[cell].count;
     }
@@ -1267,7 +1281,7 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
 {
     return sixel_filter_sample_collect_solid(pixels, width, height, depth,
         mask, clip_x, clip_y, clip_width, clip_height, out, out_max,
-        allocator, NULL);
+        0, allocator, NULL);
 }
 
 static SIXELSTATUS
@@ -1531,6 +1545,9 @@ sixel_filter_sample_copy_frame(
                                                        height,
                                                        solid,
                                                        SIXEL_SAMPLE_SOLID_MAX,
+                                                       config != NULL &&
+                                                       config->gpu_policy !=
+                                                       SIXEL_GPU_POLICY_OFF,
                                                        allocator, logger);
     }
     if (solid_count > 0u) {

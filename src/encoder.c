@@ -6568,6 +6568,7 @@ sixel_encoder_sample_frame(
     config.palette_sample_override = encoder->palette_sample_override;
     config.palette_sample_target = encoder->palette_sample_target;
     config.skip_solid = encoder->palette_sample_solid == 0;
+    config.gpu_policy = encoder->gpu_policy;
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_SAMPLE,
                                                  &config,

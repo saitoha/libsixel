@@ -22,6 +22,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/dither-policy-sierra2-gpu.metal \
     $(srcdir)/dither-policy-sierra3-gpu.metal \
     $(srcdir)/retained-plane-gpu.metal \
+    $(srcdir)/filter-sample-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
     $(srcdir)/lookup-policy-none-fractional-gpu.metal \
     $(srcdir)/lookup-policy-eytzinger-fractional-gpu.metal \
@@ -233,6 +234,7 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-dither-policy-sierra2-gpu-metal.lo \
     libsixel_la-dither-policy-sierra3-gpu-metal.lo \
     libsixel_la-retained-plane-metal.lo \
+    libsixel_la-filter-sample-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-none-gpu.lo \
     libsixel_la-lookup-policy-eytzinger-gpu.lo \
@@ -830,6 +832,7 @@ $(srcdir)/dither-policy-sierra3-gpu-metal.m \
 $(srcdir)/gpu-palette-metal.m \
 $(srcdir)/encoder-body-gpu-metal.m \
 $(srcdir)/retained-plane-metal.m \
+$(srcdir)/filter-sample-metal.m \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/progressive-gpu-metal.m
 endif

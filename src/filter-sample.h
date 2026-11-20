@@ -63,6 +63,9 @@ typedef struct sixel_filter_sample_config {
     /* Non-zero skips solid-region augmentation (sampling solid=off): the
      * adaptive sample is the grid alone. Zero keeps the default scan. */
     int skip_solid;
+    /* SIXEL_GPU_POLICY_*: any policy but OFF may scan solid regions on
+     * the GPU; the CPU scans when no device takes it. */
+    int gpu_policy;
 } sixel_filter_sample_config_t;
 
 SIXELSTATUS
@@ -101,6 +104,27 @@ sixel_filter_sample_init(sixel_filter_t *filter,
 #define SIXEL_SAMPLE_SOLID_HALF 2
 #define SIXEL_SAMPLE_SOLID_TOL 6
 #define SIXEL_SAMPLE_SOLID_MAX 32u
+
+/* Solid colors are counted in cells of their top four bits per channel. */
+#define SIXEL_SAMPLE_SOLID_BITS 4
+#define SIXEL_SAMPLE_SOLID_CELLS (1u << (SIXEL_SAMPLE_SOLID_BITS * 3u))
+
+/*
+ * Scan the RGB888 clip of PIXELS for solid points on the device, leaving
+ * in CELLS (SIXEL_SAMPLE_SOLID_CELLS records of a count and four channel
+ * sums) exactly the histogram the CPU scan builds.  Fails, leaving CELLS
+ * unspecified, when no device is available or another scan holds it.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_filter_sample_solid_gpu(
+    unsigned char const /* in */  *pixels,
+    int                 /* in */   width,
+    int                 /* in */   height,
+    int                 /* in */   clip_x,
+    int                 /* in */   clip_y,
+    int                 /* in */   clip_width,
+    int                 /* in */   clip_height,
+    unsigned int        /* out */ *cells);
 
 /*
  * Two solid colors nearer than this are the same UI element as far as the
