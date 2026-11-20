@@ -366,13 +366,35 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
 #endif
 
 #if SIXEL_SAMPLE_AVX2
-static SIXEL_SAMPLE_TARGET_AVX2 __m256i
-sixel_sample_absdiff_avx2(__m256i a, unsigned char const *p)
+/*
+ * The most distant of the four neighbours is at one of the two extremes.
+ * Store bytes through a pointer to avoid the Win64 ABI's hidden vector
+ * result slot, which GCC can access with a 32-byte aligned AVX store.
+ */
+static SIXEL_SAMPLE_TARGET_AVX2 void
+sixel_sample_axis_diff_avx2(unsigned char const *centre, size_t step,
+                           unsigned char *out)
 {
-    __m256i b;
+    __m256i middle;
+    __m256i before;
+    __m256i after;
+    __m256i far_before;
+    __m256i far_after;
+    __m256i low;
+    __m256i high;
 
-    b = _mm256_loadu_si256((__m256i const *)p);
-    return _mm256_or_si256(_mm256_subs_epu8(a, b), _mm256_subs_epu8(b, a));
+    middle = _mm256_loadu_si256((__m256i const *)centre);
+    before = _mm256_loadu_si256((__m256i const *)(centre - step));
+    after = _mm256_loadu_si256((__m256i const *)(centre + step));
+    far_before = _mm256_loadu_si256((__m256i const *)(centre - 2 * step));
+    far_after = _mm256_loadu_si256((__m256i const *)(centre + 2 * step));
+    low = _mm256_min_epu8(_mm256_min_epu8(before, after),
+                         _mm256_min_epu8(far_before, far_after));
+    high = _mm256_max_epu8(_mm256_max_epu8(before, after),
+                          _mm256_max_epu8(far_before, far_after));
+    _mm256_storeu_si256((__m256i *)out,
+        _mm256_max_epu8(_mm256_subs_epu8(middle, low),
+                        _mm256_subs_epu8(high, middle)));
 }
 
 /* vary_points() for 5 to 32 points on 32-byte vectors. A last vector that
@@ -411,31 +433,11 @@ sixel_filter_sample_vary_points_avx2(unsigned char const *pixels,
                       * (size_t)depth;
     bytes = (size_t)(3 * (points - 1) + 1) * (size_t)depth;
     for (b = 0;; b += 32) {
-        __m256i middle;
-        __m256i across;
-        __m256i down;
-
         if (b + 32 > bytes) {
             b = bytes - 32;
         }
-        middle = _mm256_loadu_si256((__m256i const *)(centre + b));
-        across = _mm256_max_epu8(
-            _mm256_max_epu8(sixel_sample_absdiff_avx2(middle,
-                centre + b - depth),
-                            sixel_sample_absdiff_avx2(middle,
-                                centre + b + depth)),
-            _mm256_max_epu8(
-                sixel_sample_absdiff_avx2(middle, centre + b - 2 * depth),
-                sixel_sample_absdiff_avx2(middle, centre + b + 2 * depth)));
-        down = _mm256_max_epu8(
-            _mm256_max_epu8(sixel_sample_absdiff_avx2(middle, centre + b - row),
-                            sixel_sample_absdiff_avx2(middle,
-                                centre + b + row)),
-            _mm256_max_epu8(
-                sixel_sample_absdiff_avx2(middle, centre + b - 2 * row),
-                sixel_sample_absdiff_avx2(middle, centre + b + 2 * row)));
-        _mm256_storeu_si256((__m256i *)(horizontal + b), across);
-        _mm256_storeu_si256((__m256i *)(vertical + b), down);
+        sixel_sample_axis_diff_avx2(centre + b, (size_t)depth, horizontal + b);
+        sixel_sample_axis_diff_avx2(centre + b, row, vertical + b);
         if (b + 32 >= bytes) {
             break;
         }

@@ -377,9 +377,9 @@ require_fixed '#define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 SIXEL_TARGET_AVX2' \
     src/refresh-spatial.c
 # Win64 guarantees 16-byte stack alignment. A 256-bit vector return can
 # use a hidden result slot that MinGW accesses with an aligned AVX store.
-if grep -Eq '^[[:space:]]*static[[:space:]]+SIXEL_REFRESH_SPATIAL_TARGET_AVX2[[:space:]]+__m256(i|d)?([[:space:]]|$)' \
-    "$src_root/src/refresh-spatial.c"; then
-    fail 'spatial AVX2 helpers must not return a 256-bit vector'
+if grep -Eq '^[[:space:]]*static[[:space:]]+(SIXEL_REFRESH_SPATIAL|SIXEL_SAMPLE)_TARGET_AVX2[[:space:]]+__m256(i|d)?([[:space:]]|$)' \
+    "$src_root/src/refresh-spatial.c" "$src_root/src/filter-sample.c"; then
+    fail 'AVX2 spatial and sampling helpers must not return 256-bit vectors'
 fi
 # New sample options must have defined defaults in C test fixtures.
 if grep -En '^[[:space:]]*sixel_filter_sample_config_t[[:space:]]+[[:alnum:]_]+[[:space:]]*;' \
