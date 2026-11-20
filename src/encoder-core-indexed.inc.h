@@ -301,9 +301,6 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
         core->gpu_unavailable = 1;
         return;
     }
-    if (core->gpu_result.band_count != core->parallel.band_count) {
-        return;
-    }
     core->parallel.gpu_result = &core->gpu_result;
 }
 #endif
