@@ -19,7 +19,7 @@ palette=$2
 here=$(cd "$(dirname "$0")" && pwd)
 bin=${3:-$here}
 lsqa=${LSQA:-lsqa}
-codec="$here/../../sixel-codec/code/step2"
+codec="$here/../../sixel-codec/code/packing"
 output=$(mktemp "${TMPDIR:-/tmp}/dither-score.XXXXXX") || exit 1
 trap 'rm -f "$output"' EXIT INT TERM
 

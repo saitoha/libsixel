@@ -1,6 +1,6 @@
-# Lesson 0: Drawing SIXEL by Hand
+# Drawing SIXEL by Hand
 
-Before writing any code, let us draw a picture in SIXEL with nothing but a pencil and the `printf` command. By the end of this lesson you will be able to read every byte of a SIXEL stream, and you will know exactly what the encoder of [step 1](step1-run-length.md) has to produce.
+Before writing any code, let us draw a picture in SIXEL with nothing but a pencil and the `printf` command. By the end of this chapter you will be able to read every byte of a SIXEL stream, and you will know exactly what the [first codec](first-codec.md) has to produce.
 
 **You will learn:**
 
@@ -99,12 +99,12 @@ P2
 0 0 0 1 0 0 0
 ```
 
-`P2` says "a gray picture written as text", `7 6` is the size, and `1` is the largest value. Every following number is one pixel, and it is also the pixel's color register: 0 is black and 1 is white. Now let the step 1 encoder turn it into SIXEL, and look at the text it writes with `cat -v`, which shows the escape character as `^[`:
+`P2` says "a gray picture written as text", `7 6` is the size, and `1` is the largest value. Every following number is one pixel, and it is also the pixel's color register: 0 is black and 1 is white. Now let the first encoder turn it into SIXEL, and look at the text it writes with `cat -v`, which shows the escape character as `^[`:
 
 ```sh
 make
-./step1 encode heart.pgm            # draws the heart, white on black
-./step1 encode heart.pgm | cat -v
+./first-codec encode heart.pgm      # draws the heart, white on black
+./first-codec encode heart.pgm | cat -v
 ```
 
 ```text
@@ -113,7 +113,11 @@ make
 
 There is your heart, `#1EN^}^NE`, at the end. Before it, the encoder also paints the black background with register 0 (`#0xo_@_ox`), because in a picture file every pixel has a color, even a black one.
 
-> **Try it.** Draw your initials in a `P2` file, perhaps 12 pixels tall so that you get two bands, and work out the SIXEL by hand before you run `./step1 encode`. Did you get the same characters?
+> **Try it.** Draw your initials in a `P2` file, perhaps 12 pixels tall so that you get two bands, and work out the SIXEL by hand before you run `./first-codec encode`. Did you get the same characters?
+
+## Where this idea came from
+
+People drew SIXEL by hand, or with small private programs, long before any open-source encoder existed. Picture files were passed around for replay, such as the Kermit graphics demonstrations of the 1980s, and in 1990 Chris F. Chiesa condensed three years of notes into a tutorial much like this chapter, with a dumper that wrote one character per column and no repeats. Most of those early tools are lost. The [implementation history](../../sixel-format/implementation-history.md#lost-tools-and-hand-encoding) lists what survives.
 
 ## What you learned
 
@@ -121,6 +125,8 @@ There is your heart, `#1EN^}^NE`, at the end. Before it, the encoder also paints
 - `#n;2;r;g;b` defines a color, `#n` selects it, `!n` repeats the next character, `$` goes back to the left edge, and `-` moves down six rows.
 - A stream is `ESC P q`, an optional size, the color definitions, the body and `ESC \`.
 
-That is the whole format the tutorial needs. The [SIXEL format overview](../../sixel-format/README.md) describes the rest, such as HLS colors and the parameters after `ESC P`. In [step 1](step1-run-length.md) you teach a program to do what you just did by hand, and to read it back.
+That is the whole format the tutorial needs. The [SIXEL format overview](../../sixel-format/README.md) describes the rest, such as HLS colors and the parameters after `ESC P`. In the [first codec](first-codec.md) you teach a program to do what you just did by hand, and to read it back.
 
 **Answers.** The diagonal line is `@ACGO_`: the values 1, 2, 4, 8, 16 and 32, one row lower in each column. A trunk in rows 1 to 5 needs 2 + 4 + 8 + 16 + 32 = 62, the character `}`, in the middle column.
+
+Next: [A first encoder and decoder](first-codec.md)

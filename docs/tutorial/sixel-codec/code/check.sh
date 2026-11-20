@@ -3,15 +3,19 @@
 #
 # Check the SIXEL codec tutorial programs against each other.
 #
-#   ./check.sh [DIR]    DIR holds step1 ... step7 (default: this directory)
+#   ./check.sh [DIR]    DIR holds the chapter programs (default: here)
 #
-# 1. Every step round-trips the synthetic self-test images.
-# 2. Encoders 2 to 6 produce byte-identical streams, for every thread count.
-# 3. Decoders 2 to 6 produce identical images from every stream, including
-#    the sample streams in images/ and a few unusual hand-written ones.
-#    Step 1 is compared only where its simplifications do not matter.
-# 4. Step 7 writes a different stream that every decoder reads to the same
-#    pixels, and that stream is never longer than step 3's.
+# 1. Every program round-trips the synthetic self-test images.
+# 2. From packing on, every encoder writes the same bytes as packing, for
+#    every thread count. The nodes encoder writes other bytes, which decode
+#    to the same pixels and are never longer than the first codec's.
+# 3. From full-decoder on, every decoder reads every stream to the same
+#    image, including the sample streams in images/ and a few unusual
+#    hand-written ones. The first codec's decoder, which first-codec, nodes
+#    and packing share, is compared only where its simplifications do not
+#    matter.
+# 4. Overpaint writes a different stream that every decoder reads to the
+#    same pixels, and that stream is never longer than packing's.
 
 set -u
 
@@ -21,6 +25,15 @@ images="$here/../../../../images"
 work=$(mktemp -d "${TMPDIR:-/tmp}/sixel-tutorial.XXXXXX") || exit 1
 trap 'rm -rf "$work"' EXIT INT TERM
 failures=0
+
+# Encoders that must write packing's bytes, and decoders that must read like
+# full-decoder. The two threaded programs are checked separately.
+same_encoders="full-decoder fewer-questions masks next-node column-words
+    swar first-colors occupancy word-decoder vector-lanes transpose"
+full_decoders="fewer-questions masks next-node column-words swar
+    first-colors occupancy word-decoder vector-lanes transpose parallel-bands"
+serial="first-codec nodes packing full-decoder $same_encoders overpaint"
+threaded="parallel-bands parallel-decoder"
 
 fail() {
     echo "FAIL: $*"
@@ -38,12 +51,15 @@ same() {
     fail "$what"
 }
 
-for s in 1 2 3 4 5 7; do
-    "$bin/step$s" selftest >/dev/null || fail "step$s selftest"
+# shellcheck disable=SC2086 # the lists are split on purpose
+for s in $(echo $serial | tr ' ' '\n' | sort -u); do
+    "$bin/$s" selftest >/dev/null || fail "$s selftest"
 done
-for t in 1 3 8; do
-    TUTORIAL_THREADS=$t "$bin/step6" selftest >/dev/null ||
-        fail "step6 selftest with $t threads"
+for s in $threaded; do
+    for t in 1 3 8; do
+        TUTORIAL_THREADS=$t "$bin/$s" selftest >/dev/null ||
+            fail "$s selftest with $t threads"
+    done
 done
 
 # Inputs: the sample photograph and synthetic images of awkward sizes.
@@ -52,39 +68,55 @@ for spec in "noise 257 49" "two 300 7" "sparse 1000 31" "gradient 64 64" \
             "flat 5 5"; do
     # shellcheck disable=SC2086 # split the spec into arguments
     set -- $spec
-    "$bin/step1" synth "$1" "$2" "$3" >"$work/$1.ppm" || fail "synth $1"
+    "$bin/first-codec" synth "$1" "$2" "$3" >"$work/$1.ppm" ||
+        fail "synth $1"
 done
 
 for img in "$work"/*.ppm; do
     name=$(basename "$img" .ppm)
-    "$bin/step1" encode "$img" >"$work/$name.1.six" || fail "step1 encode $name"
-    "$bin/step2" encode "$img" >"$work/$name.2.six" || fail "step2 encode $name"
-    for s in 3 4 5; do
-        same "$work/$name.2.six" "$work/$name.$s.six" \
-            "step$s encoding of $name differs from step2" \
-            "$bin/step$s" encode "$img"
+    "$bin/first-codec" encode "$img" >"$work/$name.first.six" ||
+        fail "first-codec encode $name"
+    "$bin/nodes" encode "$img" >"$work/$name.nodes.six" ||
+        fail "nodes encode $name"
+    if [ "$(wc -c <"$work/$name.nodes.six")" -gt \
+         "$(wc -c <"$work/$name.first.six")" ]; then
+        fail "nodes encoding of $name is longer than first-codec's"
+    fi
+    "$bin/packing" encode "$img" >"$work/$name.packing.six" ||
+        fail "packing encode $name"
+    for s in $same_encoders; do
+        same "$work/$name.packing.six" "$work/$name.out.six" \
+            "$s encoding of $name differs from packing" \
+            "$bin/$s" encode "$img"
     done
-    for t in 1 2 5 16; do
-        same "$work/$name.2.six" "$work/$name.6.six" \
-            "step6 encoding of $name with $t threads differs from step2" \
-            env TUTORIAL_THREADS="$t" "$bin/step6" encode "$img"
+    for s in $threaded; do
+        for t in 1 2 5 16; do
+            same "$work/$name.packing.six" "$work/$name.out.six" \
+                "$s encoding of $name with $t threads differs from packing" \
+                env TUTORIAL_THREADS="$t" "$bin/$s" encode "$img"
+        done
     done
-    "$bin/step7" encode "$img" >"$work/$name.7.six" || fail "step7 encode $name"
-    if [ "$(wc -c <"$work/$name.7.six")" -gt "$(wc -c <"$work/$name.2.six")" ]; then
-        fail "step7 encoding of $name is longer than step2's"
+    "$bin/overpaint" encode "$img" >"$work/$name.overpaint.six" ||
+        fail "overpaint encode $name"
+    if [ "$(wc -c <"$work/$name.overpaint.six")" -gt \
+         "$(wc -c <"$work/$name.packing.six")" ]; then
+        fail "overpaint encoding of $name is longer than packing's"
     fi
     # Every decoder reads every stream style to the same image.
-    for six in "$work/$name.1.six" "$work/$name.2.six" "$work/$name.7.six"; do
-        "$bin/step1" decode "$six" >"$work/ref.ppm" || fail "step1 decode $six"
-        for s in 2 3 4 5; do
+    for six in "$work/$name.first.six" "$work/$name.nodes.six" \
+               "$work/$name.packing.six" "$work/$name.overpaint.six"; do
+        "$bin/first-codec" decode "$six" >"$work/ref.ppm" ||
+            fail "first-codec decode $six"
+        for s in full-decoder $full_decoders overpaint; do
             same "$work/ref.ppm" "$work/out.ppm" \
-                "step$s decoding of $(basename "$six") differs" \
-                "$bin/step$s" decode "$six"
+                "$s decoding of $(basename "$six") differs" \
+                "$bin/$s" decode "$six"
         done
         for t in 1 3 16; do
             same "$work/ref.ppm" "$work/out.ppm" \
-                "step6 decoding of $(basename "$six") with $t threads" \
-                env TUTORIAL_THREADS="$t" "$bin/step6" decode "$six"
+                "parallel-decoder decoding of $(basename "$six"), $t threads" \
+                env TUTORIAL_THREADS="$t" \
+                "$bin/parallel-decoder" decode "$six"
         done
     done
 done
@@ -99,31 +131,31 @@ printf 'P2\n7 6\n1\n0 1 1 0 1 1 0\n1 1 1 1 1 1 1\n1 1 1 1 1 1 1\n0 1 1 1 1 1 0\n
     printf '\001\001\001\001\001\001\001\000\001\001\001\001\001\000'
     printf '\000\000\001\001\001\000\000\000\000\000\001\000\000\000'
 } >"$work/heart5.pgm"
-for s in 1 2 3 4 5 6; do
-    "$bin/step$s" encode "$work/heart.pgm" >"$work/heart.$s.six" ||
-        fail "step$s encode heart.pgm"
+for s in first-codec nodes packing $same_encoders $threaded; do
+    "$bin/$s" encode "$work/heart.pgm" >"$work/heart.$s.six" ||
+        fail "$s encode heart.pgm"
     same "$work/heart.$s.six" "$work/heart5.$s.six" \
-        "step$s encodes P2 and P5 differently" \
-        "$bin/step$s" encode "$work/heart5.pgm"
+        "$s encodes P2 and P5 differently" \
+        "$bin/$s" encode "$work/heart5.pgm"
     grep -q '#1EN^}^NE' "$work/heart.$s.six" ||
-        fail "step$s heart body differs from lesson 0"
+        fail "$s heart body differs from lesson 0"
     same "$work/heart.$s.six" "$work/heart.stdin.six" \
-        "step$s encodes standard input differently" \
-        "$bin/step$s" encode <"$work/heart.pgm"
+        "$s encodes standard input differently" \
+        "$bin/$s" encode <"$work/heart.pgm"
 done
 
 # The tallest pictures: the last band extends past the size limit, and every
-# step must read its own stream.
+# program must read its own stream.
 for h in 32767 32768; do
     printf 'P5 1 %d 1\n' "$h" >"$work/tall.pgm"
     head -c "$h" /dev/zero >>"$work/tall.pgm"
-    for s in 1 2 3 4 5 6 7; do
-        if "$bin/step$s" encode "$work/tall.pgm" >"$work/tall.six" &&
-                "$bin/step$s" decode "$work/tall.six" >"$work/tall.ppm" &&
+    for s in first-codec nodes packing $same_encoders $threaded overpaint; do
+        if "$bin/$s" encode "$work/tall.pgm" >"$work/tall.six" &&
+                "$bin/$s" decode "$work/tall.six" >"$work/tall.ppm" &&
                 [ "$(sed -n 2p "$work/tall.ppm")" = "1 $h" ]; then
             :
         else
-            fail "step$s cannot read its own 1x$h stream"
+            fail "$s cannot read its own 1x$h stream"
         fi
     done
 done
@@ -144,17 +176,17 @@ cp "$images/map8.six" "$images/map64.six" "$work/"
 for six in "$work"/map8.six "$work"/map64.six "$work"/noraster.six \
            "$work"/beyond.six "$work"/redefine.six "$work"/emptybands.six \
            "$work"/unterminated.six "$work"/preamble.six; do
-    "$bin/step2" decode "$six" >"$work/ref.ppm" ||
-        fail "step2 decode $(basename "$six")"
-    for s in 3 4 5; do
+    "$bin/full-decoder" decode "$six" >"$work/ref.ppm" ||
+        fail "full-decoder decode $(basename "$six")"
+    for s in $full_decoders overpaint; do
         same "$work/ref.ppm" "$work/out.ppm" \
-            "step$s decoding of $(basename "$six") differs from step2" \
-            "$bin/step$s" decode "$six"
+            "$s decoding of $(basename "$six") differs" \
+            "$bin/$s" decode "$six"
     done
     for t in 1 2 4; do
         same "$work/ref.ppm" "$work/out.ppm" \
-            "step6 decoding of $(basename "$six") with $t threads" \
-            env TUTORIAL_THREADS="$t" "$bin/step6" decode "$six"
+            "parallel-decoder decoding of $(basename "$six"), $t threads" \
+            env TUTORIAL_THREADS="$t" "$bin/parallel-decoder" decode "$six"
     done
 done
 

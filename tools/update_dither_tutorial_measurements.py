@@ -132,7 +132,7 @@ def measure_all(arguments: argparse.Namespace) -> dict:
                     [str(out / "dtool"), "measure", str(inputs[picture]),
                      str(path)]).stdout.decode())
                 # The codec chapter's encoder: colors become registers.
-                stream = run([str(codec / "step2"), "encode",
+                stream = run([str(codec / "packing"), "encode",
                               str(path)]).stdout
                 entry = {name: report[name] for name in METRICS}
                 entry.update(pixel_error=float(simple[1]),
@@ -245,7 +245,7 @@ def measure_lessons(arguments: argparse.Namespace, out: Path, codec: Path,
     def score(picture: str) -> dict:
         report = json.loads(run([str(arguments.lsqa), str(extra[picture]),
                                  str(path)]).stdout)["quality"]
-        stream = run([str(codec / "step2"), "encode", str(path)]).stdout
+        stream = run([str(codec / "packing"), "encode", str(path)]).stdout
         return {"area": report["DE00_region_mean"],
                 "ms_ssim": report["MS-SSIM"], "bytes": len(stream)}
 
@@ -339,7 +339,7 @@ def make_palettes(img2sixel: Path) -> None:
         for count in (16, 256):
             stream = run([str(img2sixel), "-p", str(count), "-d", "none",
                           str(ROOT / "images/snake.png")]).stdout
-            data = run([f"{temp}/step2", "decode"], input=stream).stdout
+            data = run([f"{temp}/full-decoder", "decode"], input=stream).stdout
             match = re.match(rb"P6\s+\d+\s+\d+\s+255\s", data)
             pixels = data[match.end():]
             colors = sorted({tuple(pixels[i:i + 3])

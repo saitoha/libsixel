@@ -11,7 +11,7 @@ This index lists every libsixel document, grouped into parts that run from an ov
 | Display or convert images with `img2sixel` and `sixel2png` | [Command-line options at a glance](cli/options.md) |
 | Improve output quality | [Why quantization quality needs color, display, and vision knowledge](concepts/quality-optimization.md), then [Encoding pipeline](encoder/pipeline/README.md) |
 | Use the library from C | [Functional overview](overview.md), then [Encoding pipeline](encoder/pipeline/README.md) and [Decoding pipeline](decoder/pipeline/README.md) |
-| Learn how a SIXEL codec works by writing one | [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) |
+| Write your own fast SIXEL codec | [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) |
 | Learn how dithering works by writing it | [Dithering, step by step](tutorial/dithering/README.md) |
 | Build libsixel on your platform | [Build, runtime, and platform support](platform-support.md) |
 | Contribute code or documentation | [Testing guide](testing/guide.md), [Staticcheck](testing/staticcheck.md), and [Documentation workflow](documentation/workflow.md) |
@@ -37,7 +37,7 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 
 ### Tutorials
 
-- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated course in which you write a SIXEL encoder and decoder, from a thirty-line codec through a faster parser and memory layout to SIMD, threads and smaller streams.
+- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated course in which you write your own SIXEL encoder and decoder, one idea per chapter, from a thirty-line codec through a better plan, fewer questions and column words to SIMD, threads and smaller streams, with the earliest known source of each idea.
 - [Dithering, step by step](tutorial/dithering/README.md) is an illustrated course in which you write dithers, look at their banding and grain, measure their quality and make them fast.
 
 ## Using libsixel

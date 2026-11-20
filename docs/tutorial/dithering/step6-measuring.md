@@ -106,7 +106,7 @@ And here it is with a palette of its own:
 
 **GMSD also penalizes dots.** Dots are edges to it, so all dithers score worse than the nearest color on the gradient. As [its definition](../../quality/metrics.md#gradient-metric-gmsd) notes, compare it only between dither variants, not with no dither at all.
 
-**Bytes have a price.** On the gradient, removing the bands costs more than 100 times the bytes. On the photograph with its own palette, it costs a bit more than double, and the difference between 56 and 129 kilobytes is the real decision for a slow connection. Atkinson needs about a fifth fewer bytes than Floyd–Steinberg here, and its MS-SSIM is better, while its area error is worse. [Step 7 of the codec tutorial](../sixel-codec/step7-overpaint.md) removes some of those bytes again without changing a pixel.
+**Bytes have a price.** On the gradient, removing the bands costs more than 100 times the bytes. On the photograph with its own palette, it costs a bit more than double, and the difference between 56 and 129 kilobytes is the real decision for a slow connection. Atkinson needs about a fifth fewer bytes than Floyd–Steinberg here, and its MS-SSIM is better, while its area error is worse. [Overpainting in the codec tutorial](../sixel-codec/overpaint.md) removes some of those bytes again without changing a pixel.
 
 No row wins every column. That is the normal result, and it is why [no single metric captures dither quality](../../quality/metrics.md#combining-metrics-for-dithered-output).
 

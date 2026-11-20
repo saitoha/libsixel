@@ -25,7 +25,7 @@ Open `bands.ppm` and `dots.ppm` in any image viewer. To see them in a SIXEL term
 
 ```sh
 make -C ../../sixel-codec/code
-../../sixel-codec/code/step6 encode dots.ppm
+../../sixel-codec/code/parallel-bands encode dots.ppm
 ```
 
 ## The programs you will use

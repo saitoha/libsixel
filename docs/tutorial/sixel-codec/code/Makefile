@@ -1,9 +1,9 @@
 # Build the SIXEL codec tutorial programs with any POSIX make:
 #
-#   make            build step1 ... step7
+#   make            build one program per chapter, first-codec ... overpaint
 #   make mysixel    build your own codec from mysixel.c
-#   make check      run every self test and cross-step comparison
-#   make bench      time every step on the inputs of the published table
+#   make check      run every self test and cross-chapter comparison
+#   make bench      time every chapter on the inputs of the published tables
 #
 # The programs do not use libsixel. Override CC, CFLAGS or O (the output
 # directory) as needed, for example: make O=/tmp/sixel-tutorial check
@@ -12,26 +12,49 @@ CC = cc
 CFLAGS = -O2 -Wall -Wextra
 LDLIBS = -lpthread
 O = .
-STEPS = $(O)/step1 $(O)/step2 $(O)/step3 $(O)/step4 $(O)/step5 $(O)/step6 \
-	$(O)/step7
+CHAPTERS = $(O)/first-codec $(O)/nodes $(O)/packing $(O)/full-decoder \
+	$(O)/fewer-questions $(O)/masks $(O)/next-node $(O)/column-words \
+	$(O)/swar $(O)/first-colors $(O)/occupancy $(O)/word-decoder \
+	$(O)/vector-lanes $(O)/transpose $(O)/parallel-bands \
+	$(O)/parallel-decoder $(O)/overpaint
 
-all: $(STEPS)
+all: $(CHAPTERS)
 
-$(STEPS): common.c tutorial.h
-$(O)/step1: step1.c
-	$(CC) $(CFLAGS) -o $@ common.c step1.c $(LDLIBS)
-$(O)/step2: step2.c
-	$(CC) $(CFLAGS) -o $@ common.c step2.c $(LDLIBS)
-$(O)/step3: step3.c
-	$(CC) $(CFLAGS) -o $@ common.c step3.c $(LDLIBS)
-$(O)/step4: step4.c
-	$(CC) $(CFLAGS) -o $@ common.c step4.c $(LDLIBS)
-$(O)/step5: step5.c
-	$(CC) $(CFLAGS) -o $@ common.c step5.c $(LDLIBS)
-$(O)/step6: step6.c step5.c
-	$(CC) $(CFLAGS) -o $@ common.c step6.c $(LDLIBS)
-$(O)/step7: step7.c
-	$(CC) $(CFLAGS) -o $@ common.c step7.c $(LDLIBS)
+$(CHAPTERS): common.c tutorial.h
+$(O)/first-codec: first-codec.c
+	$(CC) $(CFLAGS) -o $@ common.c first-codec.c $(LDLIBS)
+$(O)/nodes: nodes.c
+	$(CC) $(CFLAGS) -o $@ common.c nodes.c $(LDLIBS)
+$(O)/packing: packing.c
+	$(CC) $(CFLAGS) -o $@ common.c packing.c $(LDLIBS)
+$(O)/full-decoder: full-decoder.c
+	$(CC) $(CFLAGS) -o $@ common.c full-decoder.c $(LDLIBS)
+$(O)/fewer-questions: fewer-questions.c
+	$(CC) $(CFLAGS) -o $@ common.c fewer-questions.c $(LDLIBS)
+$(O)/masks: masks.c
+	$(CC) $(CFLAGS) -o $@ common.c masks.c $(LDLIBS)
+$(O)/next-node: next-node.c
+	$(CC) $(CFLAGS) -o $@ common.c next-node.c $(LDLIBS)
+$(O)/column-words: column-words.c
+	$(CC) $(CFLAGS) -o $@ common.c column-words.c $(LDLIBS)
+$(O)/swar: swar.c
+	$(CC) $(CFLAGS) -o $@ common.c swar.c $(LDLIBS)
+$(O)/first-colors: first-colors.c
+	$(CC) $(CFLAGS) -o $@ common.c first-colors.c $(LDLIBS)
+$(O)/occupancy: occupancy.c
+	$(CC) $(CFLAGS) -o $@ common.c occupancy.c $(LDLIBS)
+$(O)/word-decoder: word-decoder.c
+	$(CC) $(CFLAGS) -o $@ common.c word-decoder.c $(LDLIBS)
+$(O)/vector-lanes: vector-lanes.c
+	$(CC) $(CFLAGS) -o $@ common.c vector-lanes.c $(LDLIBS)
+$(O)/transpose: transpose.c
+	$(CC) $(CFLAGS) -o $@ common.c transpose.c $(LDLIBS)
+$(O)/parallel-bands: parallel-bands.c transpose.c
+	$(CC) $(CFLAGS) -o $@ common.c parallel-bands.c $(LDLIBS)
+$(O)/parallel-decoder: parallel-decoder.c transpose.c
+	$(CC) $(CFLAGS) -o $@ common.c parallel-decoder.c $(LDLIBS)
+$(O)/overpaint: overpaint.c
+	$(CC) $(CFLAGS) -o $@ common.c overpaint.c $(LDLIBS)
 
 # Not in `all`: it is yours to finish, so it fails its self test at first.
 mysixel: mysixel.c common.c tutorial.h
@@ -45,18 +68,18 @@ check: all
 STUDY = ../../../encoder/output/high-color/study
 RUNS = 10
 bench: all
-	$(O)/step2 decode $(STUDY)/snake-256-fs.six > $(O)/photo-small.ppm
-	$(O)/step2 decode $(STUDY)/snake-fhd-256-fs.six > $(O)/photo-fhd.ppm
-	$(O)/step1 synth two 1920 1080 > $(O)/two.ppm
-	$(O)/step1 synth noise 1920 1080 > $(O)/noise.ppm
-	@for s in $(STEPS); do \
+	$(O)/full-decoder decode $(STUDY)/snake-256-fs.six > $(O)/photo-small.ppm
+	$(O)/full-decoder decode $(STUDY)/snake-fhd-256-fs.six > $(O)/photo-fhd.ppm
+	$(O)/first-codec synth two 1920 1080 > $(O)/two.ppm
+	$(O)/first-codec synth noise 1920 1080 > $(O)/noise.ppm
+	@for s in $(CHAPTERS); do \
 	    for i in photo-small photo-fhd two noise; do \
 	        echo "$$(basename $$s) $$i $$($$s bench $(O)/$$i.ppm 1 $(RUNS))"; \
 	    done; \
 	done
 
 clean:
-	rm -f $(STEPS) $(O)/mysixel $(O)/photo-small.ppm $(O)/photo-fhd.ppm \
+	rm -f $(CHAPTERS) $(O)/mysixel $(O)/photo-small.ppm $(O)/photo-fhd.ppm \
 	    $(O)/two.ppm $(O)/noise.ppm
 
 .PHONY: all check bench clean

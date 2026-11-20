@@ -15,7 +15,7 @@ This page is for readers who want to check or reproduce the numbers in the [tuto
 | Load average before, after | 5.52, 4.99 |
 <!-- measurements:end -->
 
-The quality scores come from `lsqa` built at the listed revision, with its default settings unless a table says otherwise, which include a viewing density of 60 pixels per degree. All pictures are decoded as sRGB. Bytes are the length of the SIXEL stream written by step 2 of the [codec tutorial](../sixel-codec/step2-nodes.md). These are few pictures and one machine: they illustrate what the metrics do, and they are not a ranking of the methods. The [dithering reference](../../encoder/palette-application/dithering/README.md#measured-static-image-quality-size-and-speed) has libsixel's own comparison.
+The quality scores come from `lsqa` built at the listed revision, with its default settings unless a table says otherwise, which include a viewing density of 60 pixels per degree. All pictures are decoded as sRGB. Bytes are the length of the SIXEL stream written by the [packing](../sixel-codec/packing.md) encoder of the codec tutorial. These are few pictures and one machine: they illustrate what the metrics do, and they are not a ranking of the methods. The [dithering reference](../../encoder/palette-application/dithering/README.md#measured-static-image-quality-size-and-speed) has libsixel's own comparison.
 
 ## Speed
 

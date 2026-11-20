@@ -43,7 +43,7 @@ from plot_encoding_pipeline_figures import (
 WIDTH = 720
 MONO = "ui-monospace, SFMono-Regular, Menlo, monospace"
 
-# Pixel art tokens. '.' is an unpainted cell in lesson 0 and the white
+# Pixel art tokens. '.' is an unpainted cell in by-hand and the white
 # background register 0 in the encoder examples.
 TOKEN_FILL = {
     ".": PAPER,
@@ -123,43 +123,50 @@ ASSET_NAMES = (
     "character-table.svg",
     "tree-cursor.svg",
     "stream-anatomy.svg",
-    "step1-passes.svg",
-    "step1-repeat.svg",
-    "step1-decoder-state.svg",
-    "step2-classify.svg",
-    "step2-nodes.svg",
-    "step2-packing.svg",
-    "step2-repeat-fill.svg",
-    "step3-dispatch.svg",
-    "step3-branchless.svg",
-    "step4-memory.svg",
-    "step4-column-word.svg",
-    "step4-swar.svg",
-    "step4-first-colors.svg",
-    "step4-occupancy.svg",
-    "step4-masked-store.svg",
-    "step5-lanes.svg",
-    "step5-block.svg",
-    "step5-transpose.svg",
-    "step6-encoder.svg",
-    "step6-decoder.svg",
-    "step6-amdahl.svg",
-    "step7-overpaint.svg",
+    "first-codec-passes.svg",
+    "first-codec-repeat.svg",
+    "first-codec-decoder-state.svg",
+    "nodes-classify.svg",
+    "nodes-cut.svg",
+    "packing-shelves.svg",
+    "full-decoder-repeat-fill.svg",
+    "fewer-questions-dispatch.svg",
+    "masks-branchless.svg",
+    "next-node-starts.svg",
+    "column-words-memory.svg",
+    "column-words-word.svg",
+    "swar-equal-bytes.svg",
+    "first-colors-repeats.svg",
+    "occupancy-lights.svg",
+    "word-decoder-masked-store.svg",
+    "vector-lanes-compare.svg",
+    "vector-lanes-block.svg",
+    "transpose-zip.svg",
+    "parallel-bands-split.svg",
+    "parallel-decoder-prescan.svg",
+    "parallel-bands-amdahl.svg",
+    "overpaint-fill.svg",
     "sixel-codec-tutorial-figures.json",
 )
 
-# Measured results from docs/tutorial/sixel-codec/README.md, 2400x1800
-# photograph: (encode ms, decode ms) per step.
+# The chapter programs in reading order, as in the measurement script.
+CHAPTERS = (
+    "first-codec", "nodes", "packing", "full-decoder", "fewer-questions",
+    "masks", "next-node", "column-words", "swar", "first-colors", "occupancy",
+    "word-decoder", "vector-lanes", "transpose", "parallel-bands",
+    "parallel-decoder",
+)
+
 
 def fhd_times() -> list[tuple[float, float]]:
-    """Encode and decode milliseconds of the Full HD photograph per step."""
+    """Encode and decode milliseconds of the Full HD photograph per chapter."""
     results = json.loads((Path(__file__).resolve().parent.parent /
                           "docs/tutorial/sixel-codec/measurements/"
                           "results.json").read_text(encoding="utf-8"))
     cells = results["bench"]
-    return [(cells[f"step{n}"]["photo-fhd"]["encode_ms"],
-             cells[f"step{n}"]["photo-fhd"]["decode_ms"])
-            for n in range(1, 7)]
+    return [(cells[chapter]["photo-fhd"]["encode_ms"],
+             cells[chapter]["photo-fhd"]["decode_ms"])
+            for chapter in CHAPTERS]
 
 
 # ------------------------------------------------------------------ #
@@ -204,8 +211,8 @@ def put_span(values: Sequence[int], start: int, end: int) -> str:
     return "".join(out)
 
 
-def step1_band(rows: Sequence[str], registers: dict[str, int]) -> list[str]:
-    """Return step 1's line for every register of one band."""
+def first_codec_band(rows: Sequence[str], registers: dict[str, int]) -> list[str]:
+    """Return first-codec's line for every register of one band."""
     lines = []
     for token, c in sorted(registers.items(), key=lambda item: item[1]):
         values = column_values(rows, token)
@@ -233,7 +240,7 @@ def lesson_band(rows: Sequence[str], registers: dict[str, int]) -> str:
 
 @dataclass(frozen=True)
 class Node:
-    """One color span of a band, as in step 2."""
+    """One color span of a band, as in the nodes chapter."""
 
     token: str
     color: int
@@ -243,7 +250,7 @@ class Node:
 
 def compose_nodes(rows: Sequence[str],
                   registers: dict[str, int]) -> list[Node]:
-    """Cut every color row into nodes and order them as step 2 does."""
+    """Cut every color row into nodes and order them as packing does."""
     width = len(rows[0])
     buckets: list[list[Node]] = [[] for _ in range(width)]
     for token, c in sorted(registers.items(), key=lambda item: item[1]):
@@ -289,8 +296,8 @@ def pack_lines(nodes: Sequence[Node]) -> list[list[Node]]:
     return lines
 
 
-def step2_band(rows: Sequence[str], registers: dict[str, int]) -> str:
-    """Return step 2's bytes for one band."""
+def packing_band(rows: Sequence[str], registers: dict[str, int]) -> str:
+    """Return packing's bytes for one band."""
     out = []
     color = -1
     for sweep in pack_lines(compose_nodes(rows, registers)):
@@ -308,8 +315,8 @@ def step2_band(rows: Sequence[str], registers: dict[str, int]) -> str:
     return "".join(out)
 
 
-def step7_band(rows: Sequence[str], registers: dict[str, int]) -> str:
-    """Return step 7's bytes: the first graphics line fills its nodes."""
+def overpaint_band(rows: Sequence[str], registers: dict[str, int]) -> str:
+    """Return overpaint's bytes: the first graphics line fills its nodes."""
     out = []
     color = -1
     full = sixel_char((1 << len(rows)) - 1)
@@ -335,12 +342,12 @@ HEART_BODY = lesson_band(HEART, {"R": 1})
 TREE_BANDS = (lesson_band(TREE[:6], TREE_REGISTERS),
               lesson_band(TREE[6:], TREE_REGISTERS))
 TREE_BODY = "-".join(TREE_BANDS)
-SCENE_LINES = step1_band(SCENE, SCENE_REGISTERS)
-SCENE_EXACT = step2_band(SCENE, SCENE_REGISTERS)
-SCENE_FILLED = step7_band(SCENE, SCENE_REGISTERS)
+SCENE_LINES = first_codec_band(SCENE, SCENE_REGISTERS)
+SCENE_EXACT = packing_band(SCENE, SCENE_REGISTERS)
+SCENE_FILLED = overpaint_band(SCENE, SCENE_REGISTERS)
 SHAPES_NODES = compose_nodes(SHAPES, SHAPES_REGISTERS)
 SHAPES_LINES = pack_lines(SHAPES_NODES)
-SHAPES_BODY = step2_band(SHAPES, SHAPES_REGISTERS)
+SHAPES_BODY = packing_band(SHAPES, SHAPES_REGISTERS)
 
 assert HEART_BODY == "#1EN^}^NE", HEART_BODY
 
@@ -477,7 +484,7 @@ def big_picture() -> str:
     body.append(mono(52, 448, TREE_BODY + " ESC \\", 18, 650, GOLD))
     body.append(note(32, 505, (
         "Send it to a terminal that understands SIXEL and the terminal",
-        "draws the tree. Lesson 0 shows how to read every byte of it.",
+        "draws the tree. The first chapter reads every byte of it.",
     )))
     return document(560, "What a SIXEL codec does",
                     "A seven by twelve pixel tree is encoded into a short "
@@ -487,88 +494,86 @@ def big_picture() -> str:
 
 
 JOURNEY = (
-    ("0", "Read SIXEL", "a heart by hand", TEAL),
-    ("1", "Simple codec", "30 lines each way", BLUE),
-    ("2", "Nodes", "read each pixel once", BLUE),
-    ("3", "Fewer decisions", "stop asking about each byte", BLUE),
-    ("4", "64-bit words", "6 pixels in 1 number", MAGENTA),
-    ("5", "SIMD", "16 columns at once", MAGENTA),
-    ("6", "Threads", "many cores at once", GOLD),
-    ("7", "Overpaint", "applied: fewer bytes", TEAL),
+    ("A working codec", ("by-hand", "first-codec"), TEAL),
+    ("A better plan", ("nodes", "packing", "full-decoder"), BLUE),
+    ("Fewer questions", ("fewer-questions", "masks", "next-node"), BLUE),
+    ("Column words", ("column-words", "swar", "first-colors", "occupancy",
+                      "word-decoder"), MAGENTA),
+    ("Wider instructions", ("vector-lanes", "transpose"), MAGENTA),
+    ("More cores", ("parallel-bands", "parallel-decoder"), GOLD),
+    ("Fewer bytes", ("overpaint",), TEAL),
 )
 
 
 def journey() -> str:
-    """A staircase of the lessons."""
-    height = 640
+    """The parts of the tutorial and their chapters."""
+    height = 120 + len(JOURNEY) * 74 + 70
     body = [title("The journey",
-                  "Each step changes one idea.")]
-    step_w = 82
-    for i, (number, name, idea, color) in enumerate(JOURNEY):
-        x = 32 + i * step_w
-        y = 400 - i * 38
-        body.append(rect(x, y, step_w - 6, 560 - y, PAPER, color,
-                         1.6, 10))
-        body.append(rect(x, y, step_w - 6, 8, color, radius=4))
-        body.append(text(x + (step_w - 6) / 2, y + 44, number, 30, 800,
-                         color, "middle"))
-        words = name.split(" ")
-        for k, word in enumerate(words):
-            body.append(text(x + (step_w - 6) / 2, y + 72 + k * 20, word,
-                             14, 750, INK, "middle"))
-        lines = []
-        current = ""
-        for word in idea.split(" "):
-            candidate = (current + " " + word).strip()
-            if len(candidate) > 10 and current:
-                lines.append(current)
-                current = word
-            else:
-                current = candidate
-        lines.append(current)
-        for k, value in enumerate(lines):
-            body.append(text(x + (step_w - 6) / 2,
-                             y + 80 + len(words) * 20 + k * 19, value,
-                             13, 500, MUTED, "middle"))
-    body.append(note(32, 596, (
-        "Steps 2 to 6 write exactly the same bytes, so each one is a pure",
-        "speed-up you can test. Step 7 changes the bytes, not the pixels.",
-    ), 17))
+                  "One idea per chapter, grouped into parts.")]
+    for i, (part, chapters, color) in enumerate(JOURNEY):
+        y = 112 + i * 74
+        body.append(rect(32, y, 656, 62, PAPER, color, 1.6, 10))
+        body.append(rect(32, y, 8, 62, color, radius=4))
+        body.append(text(56, y + 37, part, 17, 800, INK))
+        rows: list[list[tuple[str, float]]] = [[]]
+        used = 0.0
+        for chapter in chapters:
+            width = 14 + 8.2 * len(chapter)
+            if rows[-1] and used + width > 436:
+                rows.append([])
+                used = 0.0
+            rows[-1].append((chapter, width))
+            used += width + 8
+        for k, chips in enumerate(rows):
+            row_y = y + 18 if len(rows) == 1 else y + 5 + k * 28
+            x = 240
+            for chapter, width in chips:
+                body.append(rect(x, row_y, width, 24, PANEL, color, 1.2,
+                                 12))
+                body.append(mono(x + width / 2, row_y + 17, chapter, 13,
+                                 700, INK, "middle"))
+                x += width + 8
+    body.append(note(32, height - 44, (
+        "From packing on, every encoder writes the same bytes, so each",
+        "chapter is a pure speed-up you can test. Overpaint changes the bytes.",
+    ), 16))
     return document(height, "The journey",
-                    "Eight lessons as a staircase: 0 read SIXEL by hand, "
-                    "1 a simple codec, 2 nodes, 3 fewer decisions, "
-                    "4 64-bit words, 5 SIMD, 6 threads, and the applied "
-                    "lesson 7 overpaint.", body)
+                    "The chapters grouped into parts: "
+                    + "; ".join(f"{part}: " + ", ".join(chapters)
+                                for part, chapters, _ in JOURNEY) + ".",
+                    body)
 
 
 def speed() -> str:
-    """Full HD pictures per second, encode and decode, per step."""
+    """Full HD pictures per second, encode and decode, per chapter."""
     times = fhd_times()
-    height = 650
+    row = 40
+    top = 140
+    height = top + len(times) * row + 80
     body = [title("How fast does it get?",
                   "Full HD photographs per second, more is better")]
-    top = 140
-    bar_h = 26
-    scale = 440 / max(1000.0 / min(min(pair) for pair in times), 1.0)
-    body.append(text(160, top - 18, "encode", 16, 700, BLUE))
-    body.append(text(260, top - 18, "decode", 16, 700, MAGENTA))
+    bar_h = 15
+    scale = 360 / max(1000.0 / min(min(pair) for pair in times), 1.0)
+    body.append(text(200, top - 18, "encode", 16, 700, BLUE))
+    body.append(text(290, top - 18, "decode", 16, 700, MAGENTA))
     for i, (enc, dec) in enumerate(times):
-        y = top + i * 72
-        body.append(text(32, y + 34, f"Step {i + 1}", 19, 750, INK))
+        y = top + i * row
+        body.append(mono(32, y + 22, CHAPTERS[i], 14, 700, INK))
         for k, (ms, color) in enumerate(((enc, BLUE), (dec, MAGENTA))):
             per_second = 1000.0 / ms
             w = max(per_second * scale, 3)
-            by = y + k * (bar_h + 4)
-            body.append(rect(130, by, w, bar_h, color, radius=4))
-            body.append(text(138 + w, by + 19, f"{per_second:.0f}", 16,
+            by = y + k * (bar_h + 2)
+            body.append(rect(200, by, w, bar_h, color, radius=3))
+            body.append(text(206 + w, by + 13, f"{per_second:.0f}", 13,
                              700, color))
-    body.append(note(32, top + 6 * 72 + 20, (
-        "Measured on an Apple M3 Max. Step 6 uses all cores; the",
-        "others use one. The README table lists every input.",
+    body.append(note(32, top + len(times) * row + 24, (
+        "Measured on an Apple M3 Max. The two parallel chapters use all",
+        "cores; the others use one. The README table lists every input.",
     ), 15))
     return document(height, "How fast does it get?",
                     "Bar chart of Full HD photographs encoded and decoded "
-                    "per second at each step: encode "
+                    "per second in each chapter, from first-codec to "
+                    "parallel-decoder: encode "
                     + ", ".join(f"{1000 / e:.0f}" for e, _ in times)
                     + "; decode "
                     + ", ".join(f"{1000 / d:.0f}" for _, d in times)
@@ -628,7 +633,7 @@ def pnm_layout() -> str:
 
 
 # ------------------------------------------------------------------ #
-# Lesson 0.                                                           #
+# by-hand.                                                            #
 
 
 def six_pin_stamp() -> str:
@@ -835,14 +840,14 @@ def stream_anatomy() -> str:
 
 
 # ------------------------------------------------------------------ #
-# Step 1.                                                             #
+# first-codec.                                                        #
 
 
-def step1_passes() -> str:
-    """The step 1 encoder reads the band once per color."""
+def first_codec_passes() -> str:
+    """The first encoder reads the band once per color."""
     height = 640
     size = 26
-    body = [title("Step 1 reads the band once per color",
+    body = [title("The first codec reads the band once per color",
                   "Three colors means three passes over the same 48 pixels.")]
     tokens = sorted(SCENE_REGISTERS, key=SCENE_REGISTERS.get)
     names = {"S": "sky", "Y": "sun", "G": "grass"}
@@ -862,13 +867,13 @@ def step1_passes() -> str:
     body.append(note(32, 600, (
         "A photograph with 216 colors needs 216 passes per band.",
     ), 17, INK, 650))
-    return document(height, "Step 1 reads the band once per color",
+    return document(height, "The first codec reads the band once per color",
                     "An eight by six band of sky, sun and grass. The "
                     "encoder scans all pixels three times and writes "
                     + " then ".join(SCENE_LINES) + ".", body)
 
 
-def step1_repeat() -> str:
+def first_codec_repeat() -> str:
     """When the repeat introducer pays off."""
     height = 430
     body = [title("Saying \"eight times\" instead of eight letters",
@@ -903,7 +908,7 @@ def step1_repeat() -> str:
                     "letters; four or more use the repeat form.", body)
 
 
-def step1_decoder_state() -> str:
+def first_codec_decoder_state() -> str:
     """The decoder's four variables changing as it reads."""
     height = 660
     body = [title("The decoder is a robot with four notes",
@@ -944,10 +949,10 @@ def step1_decoder_state() -> str:
 
 
 # ------------------------------------------------------------------ #
-# Step 2.                                                             #
+# nodes, packing and full-decoder.                                    #
 
 
-def step2_classify() -> str:
+def nodes_classify() -> str:
     """One pass drops every pixel's bit into its color's row."""
     height = 610
     size = 34
@@ -1004,7 +1009,7 @@ def node_bar(x0: float, y: float, scale: float, node: Node,
     return body
 
 
-def step2_nodes() -> str:
+def nodes_cut() -> str:
     """Cutting a color row into nodes with the gap rule."""
     height = 580
     size = 26
@@ -1045,7 +1050,7 @@ def step2_nodes() -> str:
                     "nine, so it becomes two nodes.", body)
 
 
-def step2_packing() -> str:
+def packing_shelves() -> str:
     """Packing nodes onto graphics lines like books on shelves."""
     height = 720
     scale = 25
@@ -1085,7 +1090,7 @@ def step2_packing() -> str:
                     + ". Body: " + SHAPES_BODY, body)
 
 
-def step2_repeat_fill() -> str:
+def full_decoder_repeat_fill() -> str:
     """Filling a repeat a row at a time."""
     height = 470
     size = 30
@@ -1119,10 +1124,10 @@ def step2_repeat_fill() -> str:
 
 
 # ------------------------------------------------------------------ #
-# Step 3.                                                             #
+# fewer-questions and masks.                                          #
 
 
-def step3_dispatch() -> str:
+def fewer_questions_dispatch() -> str:
     """Asking about every byte, against staying in a loop."""
     height = 520
     size = 44
@@ -1167,7 +1172,7 @@ def step3_dispatch() -> str:
                     "characters in one loop.", body)
 
 
-def step3_branchless() -> str:
+def masks_branchless() -> str:
     """Testing six bits, against a mask for every row."""
     height = 500
     bits = 0b100110
@@ -1206,11 +1211,74 @@ def step3_branchless() -> str:
                     "every row the same way, with no choice to predict.", body)
 
 
+def next_node_starts() -> str:
+    """A bitmap of start columns finds the next node for a line."""
+    height = 660
+    size = 26
+    x0 = 48
+    first = SHAPES_LINES[0]
+    pending = [n for n in SHAPES_NODES if n not in first]
+    starts = sorted({n.sx for n in pending})
+    body = [title("Finding the next node",
+                  "One bit per start column; a bit scan skips the rest.")]
+    body.append(text(x0, 116, "Pending nodes after line 1, in their "
+                     "start-column buckets:", 17, 750, INK))
+    for k, node in enumerate(pending):
+        body.append(node_bar(x0, 132 + k * 32, size, node))
+        body.append(text(x0 + node.mx * size + 6, 132 + k * 32 + 19,
+                         f"[{node.sx}, {node.mx})", 14, 700, MUTED))
+    y = 132 + len(pending) * 32 + 40
+    body.append(text(x0, y - 12, "starts: one bit per column", 15, 700,
+                     MUTED))
+    width = len(SHAPES[0])
+    for c in range(width):
+        on = c in starts
+        body.append(cell(x0 + c * size, y, size - 3, GOLD if on else PAPER,
+                         "1" if on else "0", INK if on else MUTED,
+                         GOLD if on else GRID, 12))
+        if c % 4 == 0:
+            body.append(text(x0 + c * size + 11, y + 42, str(c), 11, 600,
+                             MUTED, "middle"))
+    hops = []
+    x = 0
+    taken = []
+    for node in pending:
+        if node.sx >= x:
+            hops.append((x, node))
+            taken.append(node)
+            x = node.mx
+    y2 = y + 74
+    body.append(text(x0, y2, "Line 2: the first start at or after the "
+                     "cursor, again and again", 17, 750, INK))
+    for k, (cursor, node) in enumerate(hops):
+        body.append(mono(x0, y2 + 34 + k * 28,
+                         f"cursor {cursor:2d} -> start {node.sx:2d}: "
+                         f"#{node.color} [{node.sx}, {node.mx})", 16, 700,
+                         BLUE))
+    end = y2 + 34 + len(hops) * 28
+    body.append(mono(x0, end, f"cursor {x:2d} -> none: write $", 16, 700,
+                     MAGENTA))
+    skipped = [n for n in pending if n not in taken]
+    body.append(note(x0, end + 34, (
+        "bits = starts[i] & (~0 << x % 64);  start = 64 * i + ctz64(bits);",
+        f"#{skipped[0].color} at column {skipped[0].sx} waits for line 3 "
+        "without being visited.",
+    ), 15, INK, 600))
+    return document(height, "Finding the next node",
+                    "After the first line, nodes start at columns "
+                    + ", ".join(str(c) for c in starts)
+                    + ". For line 2 a bit scan jumps from the cursor to the "
+                    "next start, taking "
+                    + ", ".join(f"#{n.color}" for _, n in hops)
+                    + f"; #{skipped[0].color} at column {skipped[0].sx} "
+                    "waits for line 3.", body)
+
+
 # ------------------------------------------------------------------ #
-# Step 4.                                                             #
+# column-words to word-decoder.                                       #
 
 
-def step4_memory() -> str:
+def column_words_memory() -> str:
     """Rows lie end to end, so a column is scattered."""
     height = 560
     size = 34
@@ -1277,7 +1345,7 @@ def word_cells(x: float, y: float, values: Sequence[object], size: float,
     return "".join(body)
 
 
-def step4_column_word() -> str:
+def column_words_word() -> str:
     """Six pixels of one column packed into one 64-bit number."""
     height = 560
     size = 48
@@ -1309,7 +1377,7 @@ def step4_column_word() -> str:
                     "row 0 in byte 0.", body)
 
 
-def step4_swar() -> str:
+def swar_equal_bytes() -> str:
     """Which rows of the column have color 2?"""
     height = 760
     size = 50
@@ -1348,7 +1416,7 @@ def step4_swar() -> str:
                     "the six-bit value 38, character e.", body)
 
 
-def step4_first_colors() -> str:
+def first_colors_repeats() -> str:
     """Finding each color of a column once."""
     height = 520
     size = 52
@@ -1390,7 +1458,7 @@ def step4_first_colors() -> str:
                     "2 and 7 only.", body)
 
 
-def step4_occupancy() -> str:
+def occupancy_lights() -> str:
     """A bitmap of occupied columns and the jump to the next one."""
     height = 440
     size = 36
@@ -1428,7 +1496,7 @@ def step4_occupancy() -> str:
                     "bit to the next.", body)
 
 
-def step4_masked_store() -> str:
+def word_decoder_masked_store() -> str:
     """Painting into a column word with a mask."""
     height = 640
     size = 50
@@ -1466,10 +1534,10 @@ def step4_masked_store() -> str:
 
 
 # ------------------------------------------------------------------ #
-# Step 5.                                                             #
+# vector-lanes and transpose.                                         #
 
 
-def step5_lanes() -> str:
+def vector_lanes_compare() -> str:
     """One instruction compares sixteen pairs."""
     height = 470
     size = 38
@@ -1512,7 +1580,7 @@ BLOCK_ROWS = (
 )
 
 
-def step5_block() -> str:
+def vector_lanes_block() -> str:
     """Six compares give one color's characters for 16 columns."""
     height = 590
     size = 38
@@ -1566,7 +1634,7 @@ def lane_strip(x: float, y: float, cells: Sequence[tuple[int, int]],
     return "".join(body)
 
 
-def step5_transpose() -> str:
+def transpose_zip() -> str:
     """Three rounds of interleaving turn columns back into rows."""
     height = 790
     size = 36
@@ -1638,14 +1706,14 @@ def step5_transpose() -> str:
 
 
 # ------------------------------------------------------------------ #
-# Step 6.                                                              #
+# parallel-bands and parallel-decoder.                                #
 
 
 WORKER_COLORS = (BLUE, MAGENTA, GOLD, TEAL)
 WORKER_LIGHT = (BLUE_LIGHT, MAGENTA_LIGHT, GOLD_LIGHT, TEAL_LIGHT)
 
 
-def step6_encoder() -> str:
+def parallel_bands_split() -> str:
     """Bands split between threads, outputs glued in order."""
     height = 560
     body = [title("Encoding with four helpers",
@@ -1683,7 +1751,7 @@ def step6_encoder() -> str:
                     "buffers are joined in order.", body)
 
 
-def step6_decoder() -> str:
+def parallel_decoder_prescan() -> str:
     """Prescan for band starts, then paint in parallel."""
     height = 640
     body = [title("Decoding with helpers: find the bands first",
@@ -1744,7 +1812,7 @@ def step6_decoder() -> str:
                     "parallel, with a serial fallback.", body)
 
 
-def step6_amdahl() -> str:
+def parallel_bands_amdahl() -> str:
     """The serial part limits the speed-up."""
     height = 470
     body = [title("Why 14 cores do not give 14×",
@@ -1778,7 +1846,7 @@ def step6_amdahl() -> str:
 # ------------------------------------------------------------------ #
 
 
-def step7_overpaint() -> str:
+def overpaint_fill() -> str:
     """A band painted exactly, and painted with a filled first line."""
     height = 668
     size = 26
@@ -1823,28 +1891,29 @@ FACTORIES: tuple[tuple[str, Callable[[], str]], ...] = (
     ("character-table.svg", character_table),
     ("tree-cursor.svg", tree_cursor),
     ("stream-anatomy.svg", stream_anatomy),
-    ("step1-passes.svg", step1_passes),
-    ("step1-repeat.svg", step1_repeat),
-    ("step1-decoder-state.svg", step1_decoder_state),
-    ("step2-classify.svg", step2_classify),
-    ("step2-nodes.svg", step2_nodes),
-    ("step2-packing.svg", step2_packing),
-    ("step2-repeat-fill.svg", step2_repeat_fill),
-    ("step3-dispatch.svg", step3_dispatch),
-    ("step3-branchless.svg", step3_branchless),
-    ("step4-memory.svg", step4_memory),
-    ("step4-column-word.svg", step4_column_word),
-    ("step4-swar.svg", step4_swar),
-    ("step4-first-colors.svg", step4_first_colors),
-    ("step4-occupancy.svg", step4_occupancy),
-    ("step4-masked-store.svg", step4_masked_store),
-    ("step5-lanes.svg", step5_lanes),
-    ("step5-block.svg", step5_block),
-    ("step5-transpose.svg", step5_transpose),
-    ("step6-encoder.svg", step6_encoder),
-    ("step6-decoder.svg", step6_decoder),
-    ("step6-amdahl.svg", step6_amdahl),
-    ("step7-overpaint.svg", step7_overpaint),
+    ("first-codec-passes.svg", first_codec_passes),
+    ("first-codec-repeat.svg", first_codec_repeat),
+    ("first-codec-decoder-state.svg", first_codec_decoder_state),
+    ("nodes-classify.svg", nodes_classify),
+    ("nodes-cut.svg", nodes_cut),
+    ("packing-shelves.svg", packing_shelves),
+    ("full-decoder-repeat-fill.svg", full_decoder_repeat_fill),
+    ("fewer-questions-dispatch.svg", fewer_questions_dispatch),
+    ("masks-branchless.svg", masks_branchless),
+    ("next-node-starts.svg", next_node_starts),
+    ("column-words-memory.svg", column_words_memory),
+    ("column-words-word.svg", column_words_word),
+    ("swar-equal-bytes.svg", swar_equal_bytes),
+    ("first-colors-repeats.svg", first_colors_repeats),
+    ("occupancy-lights.svg", occupancy_lights),
+    ("word-decoder-masked-store.svg", word_decoder_masked_store),
+    ("vector-lanes-compare.svg", vector_lanes_compare),
+    ("vector-lanes-block.svg", vector_lanes_block),
+    ("transpose-zip.svg", transpose_zip),
+    ("parallel-bands-split.svg", parallel_bands_split),
+    ("parallel-decoder-prescan.svg", parallel_decoder_prescan),
+    ("parallel-bands-amdahl.svg", parallel_bands_amdahl),
+    ("overpaint-fill.svg", overpaint_fill),
 )
 
 
@@ -1865,9 +1934,9 @@ def manifest() -> dict[str, object]:
             "tree": {"rows": list(TREE), "registers": TREE_REGISTERS,
                      "body": TREE_BODY},
             "scene": {"rows": list(SCENE), "registers": SCENE_REGISTERS,
-                      "step1_lines": SCENE_LINES,
-                      "step2_body": SCENE_EXACT,
-                      "step7_body": SCENE_FILLED},
+                      "first_codec_lines": SCENE_LINES,
+                      "packing_body": SCENE_EXACT,
+                      "overpaint_body": SCENE_FILLED},
             "shapes": {
                 "rows": list(SHAPES),
                 "registers": SHAPES_REGISTERS,
@@ -1875,7 +1944,7 @@ def manifest() -> dict[str, object]:
                 "nodes": [[n.color, n.sx, n.mx] for n in SHAPES_NODES],
                 "lines": [[n.color for n in sweep]
                           for sweep in SHAPES_LINES],
-                "step2_body": SHAPES_BODY,
+                "packing_body": SHAPES_BODY,
             },
         },
         "sources": {

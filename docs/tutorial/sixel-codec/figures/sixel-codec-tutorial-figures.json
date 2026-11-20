@@ -9,28 +9,29 @@
     "character-table.svg",
     "tree-cursor.svg",
     "stream-anatomy.svg",
-    "step1-passes.svg",
-    "step1-repeat.svg",
-    "step1-decoder-state.svg",
-    "step2-classify.svg",
-    "step2-nodes.svg",
-    "step2-packing.svg",
-    "step2-repeat-fill.svg",
-    "step3-dispatch.svg",
-    "step3-branchless.svg",
-    "step4-memory.svg",
-    "step4-column-word.svg",
-    "step4-swar.svg",
-    "step4-first-colors.svg",
-    "step4-occupancy.svg",
-    "step4-masked-store.svg",
-    "step5-lanes.svg",
-    "step5-block.svg",
-    "step5-transpose.svg",
-    "step6-encoder.svg",
-    "step6-decoder.svg",
-    "step6-amdahl.svg",
-    "step7-overpaint.svg"
+    "first-codec-passes.svg",
+    "first-codec-repeat.svg",
+    "first-codec-decoder-state.svg",
+    "nodes-classify.svg",
+    "nodes-cut.svg",
+    "packing-shelves.svg",
+    "full-decoder-repeat-fill.svg",
+    "fewer-questions-dispatch.svg",
+    "masks-branchless.svg",
+    "next-node-starts.svg",
+    "column-words-memory.svg",
+    "column-words-word.svg",
+    "swar-equal-bytes.svg",
+    "first-colors-repeats.svg",
+    "occupancy-lights.svg",
+    "word-decoder-masked-store.svg",
+    "vector-lanes-compare.svg",
+    "vector-lanes-block.svg",
+    "transpose-zip.svg",
+    "parallel-bands-split.svg",
+    "parallel-decoder-prescan.svg",
+    "parallel-bands-amdahl.svg",
+    "overpaint-fill.svg"
   ],
   "fixtures": {
     "heart": {
@@ -45,6 +46,13 @@
       ]
     },
     "scene": {
+      "first_codec_lines": [
+        "#0NN^^^NKK",
+        "$#1!6?BB",
+        "$#2oo___ooo"
+      ],
+      "overpaint_body": "#0!8~$#2oo___ooo$#1!6?BB",
+      "packing_body": "#0NN^^^NKK$#2oo___ooo$#1!6?BB",
       "registers": {
         "G": 2,
         "S": 0,
@@ -57,14 +65,7 @@
         "SSSSSSSS",
         "GGSSSGGG",
         "GGGGGGGG"
-      ],
-      "step1_lines": [
-        "#0NN^^^NKK",
-        "$#1!6?BB",
-        "$#2oo___ooo"
-      ],
-      "step2_body": "#0NN^^^NKK$#2oo___ooo$#1!6?BB",
-      "step7_body": "#0!8~$#2oo___ooo$#1!6?BB"
+      ]
     },
     "shapes": {
       "lines": [
@@ -114,6 +115,7 @@
           22
         ]
       ],
+      "packing_body": "#0xoo`fffccff~~```!4~{{~~$#1ENNE#2???BB#3!4?]]]#2!4?BB$#4???!8W",
       "registers": {
         ".": 0,
         "B": 4,
@@ -128,8 +130,7 @@
         ".RRBBBBBBBB..GGG........",
         "...BBBBBBBB..GGG........",
         "........................"
-      ],
-      "step2_body": "#0xoo`fffccff~~```!4~{{~~$#1ENNE#2???BB#3!4?]]]#2!4?BB$#4???!8W"
+      ]
     },
     "tree": {
       "body": "#1_s}~}s_-#1!7@$#2??O]O",

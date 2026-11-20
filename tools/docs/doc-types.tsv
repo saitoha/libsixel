@@ -168,15 +168,25 @@ docs/tutorial/dithering/step8-integer-error.md	tutorial	both	dithering lesson + 
 docs/tutorial/dithering/step9-lookup.md	tutorial	both	dithering lesson + measurements
 docs/tutorial/dithering/step10-threads.md	tutorial	both	dithering lesson + measurements
 docs/tutorial/sixel-codec/README.md	tutorial	both	codec-implementation learning path, CLI harness and exercise skeleton + measured results and links to libsixel internals
-docs/tutorial/sixel-codec/step0-by-hand.md	tutorial	user	
-docs/tutorial/sixel-codec/step1-run-length.md	tutorial	both	codec-implementation lesson + measurements
-docs/tutorial/sixel-codec/step2-nodes.md	tutorial	both	codec-implementation lesson + measurements and libsixel encoder lineage
+docs/tutorial/sixel-codec/by-hand.md	tutorial	user	
+docs/tutorial/sixel-codec/first-codec.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/nodes.md	tutorial	both	codec-implementation lesson + measurements and libsixel encoder lineage
+docs/tutorial/sixel-codec/packing.md	tutorial	both	codec-implementation lesson + measurements and libsixel encoder lineage
+docs/tutorial/sixel-codec/full-decoder.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/fewer-questions.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/masks.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/next-node.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/column-words.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/swar.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/first-colors.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/occupancy.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-classify comparison
+docs/tutorial/sixel-codec/word-decoder.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-word design
+docs/tutorial/sixel-codec/vector-lanes.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/transpose.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/parallel-bands.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
+docs/tutorial/sixel-codec/parallel-decoder.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
+docs/tutorial/sixel-codec/overpaint.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/measurements.md	reference	both	measurement record and reproduction for the tutorial
-docs/tutorial/sixel-codec/step3-fewer-decisions.md	tutorial	both	codec-implementation lesson + measurements
-docs/tutorial/sixel-codec/step4-column-words.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-word design
-docs/tutorial/sixel-codec/step5-simd.md	tutorial	both	codec-implementation lesson + measurements
-docs/tutorial/sixel-codec/step6-threads.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
-docs/tutorial/sixel-codec/step7-overpaint.md	tutorial	both	codec-implementation lesson + measurements
 docs/writers/png/README.md	reference	both	writer/API contracts + contributor benchmark and test ledger
 docs/encoder/palette-application/clamp-policy.md	reference	both	feedback bounds and precision contracts
 docs/encoder/output/gamut-mapping.md	reference	both	output policy and numeric contract

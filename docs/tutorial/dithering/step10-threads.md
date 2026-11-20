@@ -9,7 +9,7 @@ A palette application touches every pixel, and a computer has many cores. Whethe
 - what a warm-up does to a seam, and what it does not,
 - how to keep the output independent of the number of threads.
 
-Choose the method and the split with an option, for example `./step10 IN.ppm PALETTE.ppm fs,bands=4,overlap=6`. As in the [codec tutorial](../sixel-codec/step6-threads.md), `TUTORIAL_THREADS` sets the number of threads.
+Choose the method and the split with an option, for example `./step10 IN.ppm PALETTE.ppm fs,bands=4,overlap=6`. As in the [codec tutorial](../sixel-codec/parallel-bands.md), `TUTORIAL_THREADS` sets the number of threads.
 
 ## A pattern splits by itself
 
@@ -39,7 +39,7 @@ pthread_mutex_unlock(&job->lock);
 
 One choice here matters more than it looks: the **number of bands is not the number of threads**. A band's output depends only on its own rows, so the picture is the same on 1, 3 or 16 threads, as long as `bands` stays the same. `make check` requires this. With `bands=1`, it is exactly step 3 on any number of threads.
 
-The heights are also rounded up to whole groups of six rows, the height of a [SIXEL band](../sixel-codec/step0-by-hand.md), so that a finished band can go straight to the encoder.
+The heights are also rounded up to whole groups of six rows, the height of a [SIXEL band](../sixel-codec/by-hand.md), so that a finished band can go straight to the encoder.
 
 ## The seam
 
@@ -108,7 +108,7 @@ All these use 14 bands, so the output is the same in each row of the table:
 | Bayer pattern, 255 colors | 155.7 (1.0×) | 81.9 (1.9×) | 44.8 (3.5×) | 26.6 (5.9×) | 21.8 (7.1×) |
 <!-- measurements:end -->
 
-Every method gains about 7 times on 14 threads, because bands share nothing and each thread's work is mostly one long loop over the pixels. It does not reach 14 times: this machine has ten performance cores and four slower ones, and other programs were running during the measurement. The [lesson on threads](../sixel-codec/step6-threads.md#why-14-cores-do-not-give-14) in the codec tutorial explains the general limits.
+Every method gains about 7 times on 14 threads, because bands share nothing and each thread's work is mostly one long loop over the pixels. It does not reach 14 times: this machine has ten performance cores and four slower ones, and other programs were running during the measurement. The [chapter on parallel bands](../sixel-codec/parallel-bands.md#why-14-cores-do-not-give-14) in the codec tutorial explains the general limits.
 
 The band count is a trade: more bands share the work better, but make more seams. The picture also changes when you change it. libsixel [chooses it from the worker budget](../../threading/encoder.md#ditherencode-budget-policy), so a different number of workers can give different pixels, which is why a comparison of its error diffusion must fix that budget.
 
