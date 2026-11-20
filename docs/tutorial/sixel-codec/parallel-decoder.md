@@ -75,12 +75,12 @@ The earliest parallel SIXEL decoder found is libsixel's, from 2025-11. Whether a
 <!-- measurements:begin:parallel-decoder -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 2.33 ms | 1.0× | 0.13 ms | 4.5× | 328,750 bytes |
-| Photograph, 1920×1080 | 2.44 ms | 1.0× | 0.51 ms | 5.3× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 0.55 ms | 0.9× | 0.33 ms | 2.2× | 692,322 bytes |
-| Random noise, 1920×1080 | 12.5 ms | 1.0× | 2.36 ms | 6.5× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.90 ms | 1.0× | 0.14 ms | 4.1× | 328,750 bytes |
+| Photograph, 1920×1080 | 1.88 ms | 1.0× | 0.53 ms | 5.1× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 0.34 ms | 1.0× | 0.27 ms | 3.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 10.8 ms | 1.0× | 2.32 ms | 6.6× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The Full HD photograph decodes 5.3 times faster than with one thread, and random noise 6.5 times. The prescan is not what limits this: it takes about 0.07 ms on the Full HD photograph, against about 0.5 ms for the whole decode, because it stops only at band ends. In the [thread sweep](measurements.md#thread-scaling), the decoder reaches about 6 times at 10 threads and then gets slightly slower, which the fixed ranges and the 4 slower efficiency cores of the machine probably explain, although this was not measured separately. The two-color pattern scales less well, about 2.5 times; its total time is so short that the cost of starting threads and of materializing starts to matter.
+The Full HD photograph decodes 5.1 times faster than with one thread, and random noise 6.6 times. The prescan is not what limits this: it takes about 0.06 ms on the Full HD photograph, against about 0.5 ms for the whole decode, because it stops only at band ends. In the [thread sweep](measurements.md#thread-scaling), the decoder reaches about 5 times at 8 to 10 threads and then gets slightly slower, which the fixed ranges and the 4 slower efficiency cores of the machine probably explain, although this was not measured separately. The two-color pattern scales less well, less than 3 times; its total time is so short that the cost of starting threads and of materializing starts to matter.
 
 Previous: [Encode bands in parallel](parallel-bands.md) · Next: [Smaller streams by overpainting](overpaint.md)

@@ -69,14 +69,14 @@ Packing nodes greedily onto shared lines is, like the nodes themselves, the desi
 <!-- measurements:begin:packing -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 3.93 ms | 0.8× | 2.66 ms | 2.8× | 328,750 bytes |
-| Photograph, 1920×1080 | 22.4 ms | 0.9× | 16.5 ms | 3.5× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.37 ms | 0.9× | 2.09 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 153.0 ms | 0.4× | 44.3 ms | 3.9× | 9,316,560 bytes |
+| Photograph, 600×450 | 3.77 ms | 0.8× | 2.31 ms | 2.9× | 328,750 bytes |
+| Photograph, 1920×1080 | 21.3 ms | 0.9× | 14.3 ms | 3.7× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 2.34 ms | 0.9× | 2.32 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 148.1 ms | 0.4× | 38.9 ms | 4.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
 The encoder got *slower*, a little on the photograph and more than twice on random noise. The list walk visits every remaining node once per line, and a band of noise has thousands of nodes and many lines. [Next node](next-node.md) removes that walk.
 
-The decoder got 3.5 times faster on the photograph without a single changed line, because the first decoder steps through every blank column one at a time and the packed stream has 11 times fewer of them. A decoder that skips a run of blank columns in one step gains nothing: the [full decoder](full-decoder.md) of the next chapter decodes both streams in the same time. A speed-up can belong to the pair of programs rather than to either one, which is a reason to measure both halves together.
+The decoder got 3.7 times faster on the photograph without a single changed line, because the first decoder steps through every blank column one at a time and the packed stream has 11 times fewer of them. A decoder that skips a run of blank columns in one step gains nothing: the [full decoder](full-decoder.md) of the next chapter decodes both streams in the same time. A speed-up can belong to the pair of programs rather than to either one, which is a reason to measure both halves together.
 
 Previous: [Read each pixel once](nodes.md) · Next: [A decoder for every stream](full-decoder.md)

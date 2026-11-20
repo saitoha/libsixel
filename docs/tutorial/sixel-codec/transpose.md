@@ -41,13 +41,13 @@ Transposing 8×8 blocks of bytes with interleaving instructions is a standard SI
 <!-- measurements:begin:transpose -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 2.41 ms | 1.0× | 0.56 ms | 1.1× | 328,750 bytes |
-| Photograph, 1920×1080 | 10.9 ms | 1.0× | 2.71 ms | 1.1× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.75 ms | 1.0× | 0.72 ms | 1.6× | 692,322 bytes |
-| Random noise, 1920×1080 | 73.8 ms | 1.0× | 15.2 ms | 1.1× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.88 ms | 1.0× | 0.54 ms | 1.1× | 328,750 bytes |
+| Photograph, 1920×1080 | 8.61 ms | 1.0× | 2.67 ms | 1.2× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 1.72 ms | 1.0× | 0.81 ms | 1.5× | 692,322 bytes |
+| Random noise, 1920×1080 | 65.4 ms | 1.0× | 15.0 ms | 1.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The transpose makes the pass back to rows about 3.4 times faster, 0.17 ms instead of 0.57 ms for a Full HD picture. But that pass was less than a fifth of decoding the photograph, and the parsing around it is unchanged, so the whole decoder gains only about 1.1 times there. The two-color pattern, whose parsing is cheap, gains 1.6 times.
+The transpose makes the pass back to rows about 3.4 times faster, 0.17 ms instead of 0.57 ms for a Full HD picture. But that pass was less than a fifth of decoding the photograph, and the parsing around it is unchanged, so the whole decoder gains only about 1.2 times there. The two-color pattern, whose parsing is cheap, gains 1.5 times.
 
 libsixel's own [vector band-word paths](../../decoder/pipeline/README.md#vector-band-word-paths) materialize sixteen column words at a time with table lookups and keep ordinary literal runs scalar, because those runs are short and the scalar store is already cheap.
 

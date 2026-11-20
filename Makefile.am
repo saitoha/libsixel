@@ -385,10 +385,8 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/sixel-codec/fewer-questions.md \
 	docs/tutorial/sixel-codec/masks.md \
 	docs/tutorial/sixel-codec/next-node.md \
-	docs/tutorial/sixel-codec/column-words.md \
-	docs/tutorial/sixel-codec/swar.md \
-	docs/tutorial/sixel-codec/first-colors.md \
 	docs/tutorial/sixel-codec/occupancy.md \
+	docs/tutorial/sixel-codec/direct-writes.md \
 	docs/tutorial/sixel-codec/word-decoder.md \
 	docs/tutorial/sixel-codec/vector-lanes.md \
 	docs/tutorial/sixel-codec/transpose.md \
@@ -399,13 +397,11 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/sixel-codec/measurements/results.json \
 	docs/tutorial/sixel-codec/figures/big-picture.svg \
 	docs/tutorial/sixel-codec/figures/character-table.svg \
-	docs/tutorial/sixel-codec/figures/column-words-memory.svg \
-	docs/tutorial/sixel-codec/figures/column-words-word.svg \
+	docs/tutorial/sixel-codec/figures/direct-writes-reserve.svg \
 	docs/tutorial/sixel-codec/figures/fewer-questions-dispatch.svg \
 	docs/tutorial/sixel-codec/figures/first-codec-decoder-state.svg \
 	docs/tutorial/sixel-codec/figures/first-codec-passes.svg \
 	docs/tutorial/sixel-codec/figures/first-codec-repeat.svg \
-	docs/tutorial/sixel-codec/figures/first-colors-repeats.svg \
 	docs/tutorial/sixel-codec/figures/full-decoder-repeat-fill.svg \
 	docs/tutorial/sixel-codec/figures/heart-columns.svg \
 	docs/tutorial/sixel-codec/figures/journey.svg \
@@ -424,11 +420,11 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/sixel-codec/figures/sixel-codec-tutorial-figures.json \
 	docs/tutorial/sixel-codec/figures/speed.svg \
 	docs/tutorial/sixel-codec/figures/stream-anatomy.svg \
-	docs/tutorial/sixel-codec/figures/swar-equal-bytes.svg \
 	docs/tutorial/sixel-codec/figures/transpose-zip.svg \
 	docs/tutorial/sixel-codec/figures/tree-cursor.svg \
 	docs/tutorial/sixel-codec/figures/vector-lanes-block.svg \
 	docs/tutorial/sixel-codec/figures/vector-lanes-compare.svg \
+	docs/tutorial/sixel-codec/figures/word-decoder-column-word.svg \
 	docs/tutorial/sixel-codec/figures/word-decoder-masked-store.svg \
 	docs/tutorial/sixel-codec/code/Makefile \
 	docs/tutorial/sixel-codec/code/check.sh \
@@ -441,10 +437,8 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/sixel-codec/code/fewer-questions.c \
 	docs/tutorial/sixel-codec/code/masks.c \
 	docs/tutorial/sixel-codec/code/next-node.c \
-	docs/tutorial/sixel-codec/code/column-words.c \
-	docs/tutorial/sixel-codec/code/swar.c \
-	docs/tutorial/sixel-codec/code/first-colors.c \
 	docs/tutorial/sixel-codec/code/occupancy.c \
+	docs/tutorial/sixel-codec/code/direct-writes.c \
 	docs/tutorial/sixel-codec/code/word-decoder.c \
 	docs/tutorial/sixel-codec/code/vector-lanes.c \
 	docs/tutorial/sixel-codec/code/transpose.c \

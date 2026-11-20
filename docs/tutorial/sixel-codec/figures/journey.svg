@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="720" height="708" viewBox="0 0 720 708" role="img" aria-labelledby="figure-title figure-description">
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="634" viewBox="0 0 720 634" role="img" aria-labelledby="figure-title figure-description">
 <title id="figure-title">The journey</title>
-<desc id="figure-description">The chapters grouped into parts: A working codec: by-hand, first-codec; A better plan: nodes, packing, full-decoder; Fewer questions: fewer-questions, masks, next-node; Column words: column-words, swar, first-colors, occupancy, word-decoder; Wider instructions: vector-lanes, transpose; More cores: parallel-bands, parallel-decoder; Fewer bytes: overpaint.</desc>
+<desc id="figure-description">The chapters grouped into parts: A working codec: by-hand, first-codec; A better plan: nodes, packing, full-decoder; Less wasted work: fewer-questions, masks, next-node, occupancy, direct-writes; Wider words: word-decoder, vector-lanes, transpose; More cores: parallel-bands, parallel-decoder; Fewer bytes: overpaint.</desc>
 <defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
-<rect x="0.0" y="0.0" width="720.0" height="708.0" fill="#F8FAFC" stroke="none"/>
+<rect x="0.0" y="0.0" width="720.0" height="634.0" fill="#F8FAFC" stroke="none"/>
 <text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">The journey</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">One idea per chapter, grouped into parts.</text>
 <rect x="32.0" y="112.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.6"/>
 <rect x="32.0" y="112.0" width="8.0" height="62.0" rx="4.0" fill="#0F766E" stroke="none"/>
@@ -22,44 +22,37 @@
 <text x="438.6" y="221.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">full-decoder</text>
 <rect x="32.0" y="260.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
 <rect x="32.0" y="260.0" width="8.0" height="62.0" rx="4.0" fill="#2563EB" stroke="none"/>
-<text x="56.0" y="297.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Fewer questions</text>
-<rect x="240.0" y="278.0" width="137.0" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.2"/>
-<text x="308.5" y="295.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">fewer-questions</text>
-<rect x="385.0" y="278.0" width="55.0" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.2"/>
-<text x="412.5" y="295.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">masks</text>
-<rect x="448.0" y="278.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.2"/>
-<text x="491.9" y="295.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">next-node</text>
+<text x="56.0" y="297.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Less wasted work</text>
+<rect x="240.0" y="265.0" width="137.0" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.2"/>
+<text x="308.5" y="282.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">fewer-questions</text>
+<rect x="385.0" y="265.0" width="55.0" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.2"/>
+<text x="412.5" y="282.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">masks</text>
+<rect x="448.0" y="265.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.2"/>
+<text x="491.9" y="282.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">next-node</text>
+<rect x="543.8" y="265.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.2"/>
+<text x="587.7" y="282.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">occupancy</text>
+<rect x="240.0" y="293.0" width="120.6" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.2"/>
+<text x="300.3" y="310.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">direct-writes</text>
 <rect x="32.0" y="334.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.6"/>
 <rect x="32.0" y="334.0" width="8.0" height="62.0" rx="4.0" fill="#BE185D" stroke="none"/>
-<text x="56.0" y="371.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Column words</text>
-<rect x="240.0" y="339.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="296.2" y="356.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">column-words</text>
-<rect x="360.4" y="339.0" width="46.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="383.8" y="356.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">swar</text>
-<rect x="415.2" y="339.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="471.4" y="356.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">first-colors</text>
-<rect x="535.6" y="339.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="579.5" y="356.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">occupancy</text>
-<rect x="240.0" y="367.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="296.2" y="384.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">word-decoder</text>
-<rect x="32.0" y="408.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.6"/>
-<rect x="32.0" y="408.0" width="8.0" height="62.0" rx="4.0" fill="#BE185D" stroke="none"/>
-<text x="56.0" y="445.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Wider instructions</text>
-<rect x="240.0" y="426.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="296.2" y="443.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">vector-lanes</text>
-<rect x="360.4" y="426.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="404.3" y="443.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">transpose</text>
-<rect x="32.0" y="482.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#D97706" stroke-width="1.6"/>
-<rect x="32.0" y="482.0" width="8.0" height="62.0" rx="4.0" fill="#D97706" stroke="none"/>
-<text x="56.0" y="519.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">More cores</text>
-<rect x="240.0" y="500.0" width="128.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#D97706" stroke-width="1.2"/>
-<text x="304.4" y="517.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">parallel-bands</text>
-<rect x="376.8" y="500.0" width="145.2" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#D97706" stroke-width="1.2"/>
-<text x="449.4" y="517.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">parallel-decoder</text>
-<rect x="32.0" y="556.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.6"/>
-<rect x="32.0" y="556.0" width="8.0" height="62.0" rx="4.0" fill="#0F766E" stroke="none"/>
-<text x="56.0" y="593.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Fewer bytes</text>
-<rect x="240.0" y="574.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#0F766E" stroke-width="1.2"/>
-<text x="283.9" y="591.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">overpaint</text>
-<text x="32.0" y="664.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">From packing on, every encoder writes the same bytes, so each</text><text x="32.0" y="686.4" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">chapter is a pure speed-up you can test. Overpaint changes the bytes.</text>
+<text x="56.0" y="371.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Wider words</text>
+<rect x="240.0" y="352.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="296.2" y="369.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">word-decoder</text>
+<rect x="360.4" y="352.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="416.6" y="369.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">vector-lanes</text>
+<rect x="480.8" y="352.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="524.7" y="369.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">transpose</text>
+<rect x="32.0" y="408.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#D97706" stroke-width="1.6"/>
+<rect x="32.0" y="408.0" width="8.0" height="62.0" rx="4.0" fill="#D97706" stroke="none"/>
+<text x="56.0" y="445.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">More cores</text>
+<rect x="240.0" y="426.0" width="128.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#D97706" stroke-width="1.2"/>
+<text x="304.4" y="443.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">parallel-bands</text>
+<rect x="376.8" y="426.0" width="145.2" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#D97706" stroke-width="1.2"/>
+<text x="449.4" y="443.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">parallel-decoder</text>
+<rect x="32.0" y="482.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.6"/>
+<rect x="32.0" y="482.0" width="8.0" height="62.0" rx="4.0" fill="#0F766E" stroke="none"/>
+<text x="56.0" y="519.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Fewer bytes</text>
+<rect x="240.0" y="500.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#0F766E" stroke-width="1.2"/>
+<text x="283.9" y="517.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">overpaint</text>
+<text x="32.0" y="590.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">From packing on, every encoder writes the same bytes, so each</text><text x="32.0" y="612.4" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">chapter is a pure speed-up you can test. Overpaint changes the bytes.</text>
 </svg>

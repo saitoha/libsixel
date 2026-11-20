@@ -64,12 +64,12 @@ chafa's SIXEL encoder divided the image into batches of rows, built them in a th
 <!-- measurements:begin:parallel-bands -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 2.28 ms | 1.1× | 0.58 ms | 1.0× | 328,750 bytes |
-| Photograph, 1920×1080 | 2.45 ms | 4.4× | 2.70 ms | 1.0× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 0.50 ms | 5.5× | 0.72 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 12.9 ms | 5.7× | 15.3 ms | 1.0× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.91 ms | 1.0× | 0.57 ms | 0.9× | 328,750 bytes |
+| Photograph, 1920×1080 | 1.88 ms | 4.6× | 2.69 ms | 1.0× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 0.35 ms | 4.9× | 0.81 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 10.4 ms | 6.3× | 15.2 ms | 1.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The speed-up in the table compares with the transpose chapter. The Full HD photograph encodes 4.4 times faster with the default number of threads, and the [thread sweep](measurements.md#thread-scaling) shows the curve: it keeps gaining up to 14 threads and reaches about 7 times. Random noise scales a little better. The small photograph encodes on one thread, because it is too small to be worth splitting. The machine has 10 performance cores and 4 slower efficiency cores, and each thread gets a fixed range of bands, so the slowest range decides the finish.
+The speed-up in the table compares with the transpose chapter. The Full HD photograph encodes 4.6 times faster with the default number of threads, and the [thread sweep](measurements.md#thread-scaling) shows the curve: it keeps gaining up to 14 threads and reaches almost 9 times. Random noise gains 6.3 times with the default number of threads. The small photograph encodes on one thread, because it is too small to be worth splitting. The machine has 10 performance cores and 4 slower efficiency cores, and each thread gets a fixed range of bands, so the slowest range decides the finish.
 
 Previous: [Turn columns back into rows](transpose.md) · Next: [Decode bands in parallel](parallel-decoder.md)

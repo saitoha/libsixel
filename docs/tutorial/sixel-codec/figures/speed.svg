@@ -1,90 +1,86 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="720" height="860" viewBox="0 0 720 860" role="img" aria-labelledby="figure-title figure-description">
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="790" viewBox="0 0 720 790" role="img" aria-labelledby="figure-title figure-description">
 <title id="figure-title">How fast does it get?</title>
-<desc id="figure-description">Bar chart of Full HD photographs encoded and decoded per second in each chapter, from first-codec to parallel-decoder: encode 5, 49, 45, 45, 45, 44, 47, 46, 38, 42, 85, 85, 92, 92, 408, 410; decode 17, 17, 61, 85, 93, 238, 240, 240, 240, 239, 243, 324, 325, 369, 370, 1961.</desc>
+<desc id="figure-description">Bar chart, on a logarithmic scale, of the milliseconds needed to encode and to decode one Full HD photograph in each chapter, from first-codec to parallel-decoder: encode 181 ms, 19 ms, 21 ms, 22 ms, 22 ms, 22 ms, 21 ms, 10 ms, 8.7 ms, 8.8 ms, 8.6 ms, 8.6 ms, 1.9 ms, 1.9 ms; decode 53 ms, 53 ms, 14 ms, 10 ms, 10 ms, 4.3 ms, 4.3 ms, 4.2 ms, 4.3 ms, 3.1 ms, 3.1 ms, 2.7 ms, 2.7 ms, 0.53 ms.</desc>
 <defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
-<rect x="0.0" y="0.0" width="720.0" height="860.0" fill="#F8FAFC" stroke="none"/>
-<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">How fast does it get?</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Full HD photographs per second, more is better</text>
-<text x="200.0" y="122.0" fill="#2563EB" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">encode</text>
-<text x="290.0" y="122.0" fill="#BE185D" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">decode</text>
-<text x="32.0" y="162.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">first-codec</text>
-<rect x="200.0" y="140.0" width="3.0" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="209.0" y="153.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">5</text>
-<rect x="200.0" y="157.0" width="3.1" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="209.1" y="170.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">17</text>
-<text x="32.0" y="202.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">nodes</text>
-<rect x="200.0" y="180.0" width="9.1" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="215.1" y="193.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">49</text>
-<rect x="200.0" y="197.0" width="3.2" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="209.2" y="210.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">17</text>
-<text x="32.0" y="242.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">packing</text>
-<rect x="200.0" y="220.0" width="8.2" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="214.2" y="233.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">45</text>
-<rect x="200.0" y="237.0" width="11.1" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="217.1" y="250.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">61</text>
-<text x="32.0" y="282.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">full-decoder</text>
-<rect x="200.0" y="260.0" width="8.3" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="214.3" y="273.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">45</text>
-<rect x="200.0" y="277.0" width="15.7" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="221.7" y="290.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">85</text>
-<text x="32.0" y="322.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">fewer-questions</text>
-<rect x="200.0" y="300.0" width="8.2" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="214.2" y="313.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">45</text>
-<rect x="200.0" y="317.0" width="17.1" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="223.1" y="330.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">93</text>
-<text x="32.0" y="362.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">masks</text>
-<rect x="200.0" y="340.0" width="8.2" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="214.2" y="353.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">44</text>
-<rect x="200.0" y="357.0" width="43.7" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="249.7" y="370.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">238</text>
-<text x="32.0" y="402.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">next-node</text>
-<rect x="200.0" y="380.0" width="8.7" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="214.7" y="393.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">47</text>
-<rect x="200.0" y="397.0" width="44.1" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="250.1" y="410.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">240</text>
-<text x="32.0" y="442.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">column-words</text>
-<rect x="200.0" y="420.0" width="8.4" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="214.4" y="433.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">46</text>
-<rect x="200.0" y="437.0" width="44.1" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="250.1" y="450.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">240</text>
-<text x="32.0" y="482.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">swar</text>
-<rect x="200.0" y="460.0" width="6.9" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="212.9" y="473.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">38</text>
-<rect x="200.0" y="477.0" width="44.1" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="250.1" y="490.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">240</text>
-<text x="32.0" y="522.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">first-colors</text>
-<rect x="200.0" y="500.0" width="7.7" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="213.7" y="513.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">42</text>
-<rect x="200.0" y="517.0" width="43.9" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="249.9" y="530.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">239</text>
-<text x="32.0" y="562.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">occupancy</text>
-<rect x="200.0" y="540.0" width="15.7" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="221.7" y="553.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">85</text>
-<rect x="200.0" y="557.0" width="44.6" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="250.6" y="570.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">243</text>
-<text x="32.0" y="602.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">word-decoder</text>
-<rect x="200.0" y="580.0" width="15.6" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="221.6" y="593.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">85</text>
-<rect x="200.0" y="597.0" width="59.4" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="265.4" y="610.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">324</text>
-<text x="32.0" y="642.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">vector-lanes</text>
-<rect x="200.0" y="620.0" width="16.9" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="222.9" y="633.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">92</text>
-<rect x="200.0" y="637.0" width="59.6" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="265.6" y="650.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">325</text>
-<text x="32.0" y="682.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">transpose</text>
-<rect x="200.0" y="660.0" width="16.9" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="222.9" y="673.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">92</text>
-<rect x="200.0" y="677.0" width="67.7" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="273.7" y="690.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">369</text>
-<text x="32.0" y="722.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">parallel-bands</text>
-<rect x="200.0" y="700.0" width="74.9" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="280.9" y="713.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">408</text>
-<rect x="200.0" y="717.0" width="68.0" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="274.0" y="730.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">370</text>
-<text x="32.0" y="762.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">parallel-decoder</text>
-<rect x="200.0" y="740.0" width="75.2" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
-<text x="281.2" y="753.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">410</text>
-<rect x="200.0" y="757.0" width="360.0" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
-<text x="566.0" y="770.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">1961</text>
-<text x="32.0" y="804.0" fill="#556176" font-size="15" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Measured on an Apple M3 Max. The two parallel chapters use all</text><text x="32.0" y="825.0" fill="#556176" font-size="15" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">cores; the others use one. The README table lists every input.</text>
+<rect x="0.0" y="0.0" width="720.0" height="790.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">How fast does it get?</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Milliseconds per Full HD photograph, less is better</text>
+<text x="32.0" y="110.0" fill="#2563EB" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">encode</text>
+<text x="100.0" y="110.0" fill="#BE185D" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">decode</text>
+<line x1="268.0" y1="142.0" x2="268.0" y2="706.0" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="4 4"/>
+<text x="268.0" y="136.0" fill="#556176" font-size="13" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">1 ms</text>
+<line x1="398.0" y1="142.0" x2="398.0" y2="706.0" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="4 4"/>
+<text x="398.0" y="136.0" fill="#556176" font-size="13" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">10 ms</text>
+<line x1="528.0" y1="142.0" x2="528.0" y2="706.0" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="4 4"/>
+<text x="528.0" y="136.0" fill="#556176" font-size="13" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">100 ms</text>
+<text x="32.0" y="172.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">first-codec</text>
+<rect x="200.0" y="150.0" width="361.6" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="567.6" y="163.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">181 ms</text>
+<rect x="200.0" y="167.0" width="292.6" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="498.6" y="180.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">53 ms</text>
+<text x="32.0" y="212.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">nodes</text>
+<rect x="200.0" y="190.0" width="234.7" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="440.7" y="203.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">19 ms</text>
+<rect x="200.0" y="207.0" width="292.2" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="498.2" y="220.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">53 ms</text>
+<text x="32.0" y="252.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">packing</text>
+<rect x="200.0" y="230.0" width="240.7" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="446.7" y="243.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">21 ms</text>
+<rect x="200.0" y="247.0" width="218.1" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="424.1" y="260.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">14 ms</text>
+<text x="32.0" y="292.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">full-decoder</text>
+<rect x="200.0" y="270.0" width="242.0" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="448.0" y="283.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">22 ms</text>
+<rect x="200.0" y="287.0" width="199.9" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="405.9" y="300.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">10 ms</text>
+<text x="32.0" y="332.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">fewer-questions</text>
+<rect x="200.0" y="310.0" width="242.4" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="448.4" y="323.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">22 ms</text>
+<rect x="200.0" y="327.0" width="198.0" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="404.0" y="340.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">10 ms</text>
+<text x="32.0" y="372.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">masks</text>
+<rect x="200.0" y="350.0" width="242.1" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="448.1" y="363.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">22 ms</text>
+<rect x="200.0" y="367.0" width="150.2" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="356.2" y="380.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">4.3 ms</text>
+<text x="32.0" y="412.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">next-node</text>
+<rect x="200.0" y="390.0" width="239.3" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="445.3" y="403.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">21 ms</text>
+<rect x="200.0" y="407.0" width="149.8" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="355.8" y="420.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">4.3 ms</text>
+<text x="32.0" y="452.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">occupancy</text>
+<rect x="200.0" y="430.0" width="200.7" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="406.7" y="443.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">10 ms</text>
+<rect x="200.0" y="447.0" width="149.7" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="355.7" y="460.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">4.2 ms</text>
+<text x="32.0" y="492.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">direct-writes</text>
+<rect x="200.0" y="470.0" width="190.3" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="396.3" y="483.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">8.7 ms</text>
+<rect x="200.0" y="487.0" width="149.8" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="355.8" y="500.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">4.3 ms</text>
+<text x="32.0" y="532.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">word-decoder</text>
+<rect x="200.0" y="510.0" width="190.6" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="396.6" y="523.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">8.8 ms</text>
+<rect x="200.0" y="527.0" width="131.9" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="337.9" y="540.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">3.1 ms</text>
+<text x="32.0" y="572.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">vector-lanes</text>
+<rect x="200.0" y="550.0" width="189.5" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="395.5" y="563.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">8.6 ms</text>
+<rect x="200.0" y="567.0" width="131.7" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="337.7" y="580.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">3.1 ms</text>
+<text x="32.0" y="612.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">transpose</text>
+<rect x="200.0" y="590.0" width="189.5" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="395.5" y="603.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">8.6 ms</text>
+<rect x="200.0" y="607.0" width="123.4" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="329.4" y="620.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">2.7 ms</text>
+<text x="32.0" y="652.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">parallel-bands</text>
+<rect x="200.0" y="630.0" width="103.6" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="309.6" y="643.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">1.9 ms</text>
+<rect x="200.0" y="647.0" width="123.8" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="329.8" y="660.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">2.7 ms</text>
+<text x="32.0" y="692.0" fill="#172033" font-size="14" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">parallel-decoder</text>
+<rect x="200.0" y="670.0" width="103.6" height="15.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="309.6" y="683.0" fill="#2563EB" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">1.9 ms</text>
+<rect x="200.0" y="687.0" width="32.1" height="15.0" rx="3.0" fill="#BE185D" stroke="none"/>
+<text x="238.1" y="700.0" fill="#BE185D" font-size="13" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">0.53 ms</text>
+<text x="32.0" y="734.0" fill="#556176" font-size="15" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Logarithmic scale: each grid line is ten times the one before.</text><text x="32.0" y="755.0" fill="#556176" font-size="15" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Apple M3 Max; the two parallel chapters use all cores.</text>
 </svg>

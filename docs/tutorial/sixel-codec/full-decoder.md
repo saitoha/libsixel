@@ -69,10 +69,10 @@ Software decoders are as old as the hand-written files: Chiesa's 1990 tutorial c
 <!-- measurements:begin:full-decoder -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 3.89 ms | 1.0× | 2.04 ms | 1.3× | 328,750 bytes |
-| Photograph, 1920×1080 | 22.1 ms | 1.0× | 11.7 ms | 1.4× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.33 ms | 1.0× | 1.78 ms | 1.2× | 692,322 bytes |
-| Random noise, 1920×1080 | 151.8 ms | 1.0× | 32.9 ms | 1.3× | 9,316,560 bytes |
+| Photograph, 600×450 | 3.63 ms | 1.0× | 1.79 ms | 1.3× | 328,750 bytes |
+| Photograph, 1920×1080 | 21.8 ms | 1.0× | 10.3 ms | 1.4× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 2.34 ms | 1.0× | 2.14 ms | 1.1× | 692,322 bytes |
+| Random noise, 1920×1080 | 149.5 ms | 1.0× | 30.1 ms | 1.3× | 9,316,560 bytes |
 <!-- measurements:end -->
 
 The photograph decodes 1.4 times faster, random noise 1.3 times, and the two-color pattern a little. The encoder has not changed; its row only shows how much one measurement differs from the next.

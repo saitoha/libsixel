@@ -1,269 +1,243 @@
 {
   "attribution": {
     "masks only": {
-      "noise": 26.6,
-      "photo-fhd": 6.17,
-      "two": 2.01
+      "noise": 23.31,
+      "photo-fhd": 5.44,
+      "two": 2.04
     }
   },
   "bench": {
-    "column-words": {
+    "direct-writes": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 18.9,
-        "encode_ms": 103.49
+        "decode_ms": 18.74,
+        "encode_ms": 60.53
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 4.16,
-        "encode_ms": 21.9
+        "decode_ms": 4.26,
+        "encode_ms": 8.73
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
         "decode_ms": 0.8,
-        "encode_ms": 3.65
+        "encode_ms": 1.72
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.48,
-        "encode_ms": 2.76
+        "decode_ms": 1.5,
+        "encode_ms": 4.19
       }
     },
     "fewer-questions": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 25.79,
-        "encode_ms": 157.76
+        "decode_ms": 25.39,
+        "encode_ms": 151.32
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 10.71,
-        "encode_ms": 22.38
+        "decode_ms": 10.01,
+        "encode_ms": 21.98
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 1.78,
-        "encode_ms": 4.0
+        "decode_ms": 1.66,
+        "encode_ms": 3.79
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.17,
-        "encode_ms": 2.37
+        "decode_ms": 0.96,
+        "encode_ms": 2.34
       }
     },
     "first-codec": {
       "noise": {
         "bytes": 9942096,
         "colors": 256,
-        "decode_ms": 173.22,
-        "encode_ms": 275.0
+        "decode_ms": 156.11,
+        "encode_ms": 275.05
       },
       "photo-fhd": {
         "bytes": 1784680,
         "colors": 255,
-        "decode_ms": 58.33,
-        "encode_ms": 182.16
+        "decode_ms": 53.44,
+        "encode_ms": 181.44
       },
       "photo-small": {
         "bytes": 394217,
         "colors": 254,
-        "decode_ms": 7.54,
-        "encode_ms": 25.33
+        "decode_ms": 6.86,
+        "encode_ms": 25.35
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 2.14,
-        "encode_ms": 1.71
-      }
-    },
-    "first-colors": {
-      "noise": {
-        "bytes": 9316560,
-        "colors": 256,
-        "decode_ms": 18.57,
-        "encode_ms": 104.94
-      },
-      "photo-fhd": {
-        "bytes": 1663155,
-        "colors": 255,
-        "decode_ms": 4.18,
-        "encode_ms": 23.73
-      },
-      "photo-small": {
-        "bytes": 328750,
-        "colors": 254,
-        "decode_ms": 0.76,
-        "encode_ms": 4.08
-      },
-      "two": {
-        "bytes": 692322,
-        "colors": 2,
-        "decode_ms": 1.52,
-        "encode_ms": 3.48
+        "decode_ms": 2.27,
+        "encode_ms": 1.68
       }
     },
     "full-decoder": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 32.88,
-        "encode_ms": 151.77
+        "decode_ms": 30.05,
+        "encode_ms": 149.47
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 11.73,
-        "encode_ms": 22.06
+        "decode_ms": 10.34,
+        "encode_ms": 21.81
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 2.04,
-        "encode_ms": 3.89
+        "decode_ms": 1.79,
+        "encode_ms": 3.63
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.78,
-        "encode_ms": 2.33
+        "decode_ms": 2.14,
+        "encode_ms": 2.34
       }
     },
     "masks": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 18.67,
-        "encode_ms": 155.7
+        "decode_ms": 18.57,
+        "encode_ms": 151.3
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 4.2,
-        "encode_ms": 22.52
+        "decode_ms": 4.29,
+        "encode_ms": 21.83
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 0.8,
-        "encode_ms": 3.89
+        "decode_ms": 0.79,
+        "encode_ms": 3.82
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.48,
-        "encode_ms": 2.37
+        "decode_ms": 1.51,
+        "encode_ms": 2.27
       }
     },
     "next-node": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 18.62,
-        "encode_ms": 102.95
+        "decode_ms": 18.66,
+        "encode_ms": 101.65
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 4.16,
-        "encode_ms": 21.18
+        "decode_ms": 4.26,
+        "encode_ms": 20.8
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 0.79,
-        "encode_ms": 3.68
+        "decode_ms": 0.81,
+        "encode_ms": 3.49
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.48,
-        "encode_ms": 2.22
+        "decode_ms": 1.5,
+        "encode_ms": 2.16
       }
     },
     "nodes": {
       "noise": {
         "bytes": 9942096,
         "colors": 256,
-        "decode_ms": 172.27,
-        "encode_ms": 65.06
+        "decode_ms": 155.69,
+        "encode_ms": 64.35
       },
       "photo-fhd": {
         "bytes": 1677105,
         "colors": 255,
-        "decode_ms": 58.11,
-        "encode_ms": 20.23
+        "decode_ms": 53.03,
+        "encode_ms": 19.18
       },
       "photo-small": {
         "bytes": 346872,
         "colors": 254,
-        "decode_ms": 7.5,
-        "encode_ms": 3.27
+        "decode_ms": 6.77,
+        "encode_ms": 3.04
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 2.15,
-        "encode_ms": 2.19
+        "decode_ms": 2.29,
+        "encode_ms": 2.16
       }
     },
     "occupancy": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 18.51,
-        "encode_ms": 68.43
+        "decode_ms": 18.78,
+        "encode_ms": 66.98
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 4.12,
-        "encode_ms": 11.73
+        "decode_ms": 4.25,
+        "encode_ms": 10.49
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 0.74,
-        "encode_ms": 2.31
+        "decode_ms": 0.78,
+        "encode_ms": 2.01
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.47,
-        "encode_ms": 3.9
+        "decode_ms": 1.5,
+        "encode_ms": 4.97
       }
     },
     "overpaint": {
       "noise": {
         "bytes": 9228951,
         "colors": 256,
-        "decode_ms": 19.08,
-        "encode_ms": 103.05
+        "decode_ms": 19.1,
+        "encode_ms": 101.21
       },
       "photo-fhd": {
         "bytes": 1443766,
         "colors": 255,
-        "decode_ms": 3.88,
-        "encode_ms": 20.56
+        "decode_ms": 3.98,
+        "encode_ms": 20.26
       },
       "photo-small": {
         "bytes": 302133,
         "colors": 254,
-        "decode_ms": 0.78,
-        "encode_ms": 3.59
+        "decode_ms": 0.8,
+        "encode_ms": 3.5
       },
       "two": {
         "bytes": 347802,
         "colors": 2,
-        "decode_ms": 0.8,
+        "decode_ms": 0.81,
         "encode_ms": 1.58
       }
     },
@@ -271,182 +245,156 @@
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 44.32,
-        "encode_ms": 153.02
+        "decode_ms": 38.89,
+        "encode_ms": 148.1
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 16.47,
-        "encode_ms": 22.35
+        "decode_ms": 14.28,
+        "encode_ms": 21.3
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 2.66,
-        "encode_ms": 3.93
+        "decode_ms": 2.31,
+        "encode_ms": 3.77
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 2.09,
-        "encode_ms": 2.37
+        "decode_ms": 2.32,
+        "encode_ms": 2.34
       }
     },
     "parallel-bands": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 15.27,
-        "encode_ms": 12.86
+        "decode_ms": 15.24,
+        "encode_ms": 10.38
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 2.7,
-        "encode_ms": 2.45
+        "decode_ms": 2.69,
+        "encode_ms": 1.88
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 0.58,
-        "encode_ms": 2.28
+        "decode_ms": 0.57,
+        "encode_ms": 1.91
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.72,
-        "encode_ms": 0.5
+        "decode_ms": 0.81,
+        "encode_ms": 0.35
       }
     },
     "parallel-decoder": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 2.36,
-        "encode_ms": 12.53
+        "decode_ms": 2.32,
+        "encode_ms": 10.83
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 0.51,
-        "encode_ms": 2.44
+        "decode_ms": 0.53,
+        "encode_ms": 1.88
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 0.13,
-        "encode_ms": 2.33
+        "decode_ms": 0.14,
+        "encode_ms": 1.9
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.33,
-        "encode_ms": 0.55
-      }
-    },
-    "swar": {
-      "noise": {
-        "bytes": 9316560,
-        "colors": 256,
-        "decode_ms": 18.95,
-        "encode_ms": 104.66
-      },
-      "photo-fhd": {
-        "bytes": 1663155,
-        "colors": 255,
-        "decode_ms": 4.16,
-        "encode_ms": 26.47
-      },
-      "photo-small": {
-        "bytes": 328750,
-        "colors": 254,
-        "decode_ms": 0.78,
-        "encode_ms": 4.37
-      },
-      "two": {
-        "bytes": 692322,
-        "colors": 2,
-        "decode_ms": 1.48,
-        "encode_ms": 3.22
+        "decode_ms": 0.27,
+        "encode_ms": 0.34
       }
     },
     "transpose": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 15.15,
-        "encode_ms": 73.82
+        "decode_ms": 15.04,
+        "encode_ms": 65.44
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 2.71,
-        "encode_ms": 10.88
+        "decode_ms": 2.67,
+        "encode_ms": 8.61
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 0.56,
-        "encode_ms": 2.41
+        "decode_ms": 0.54,
+        "encode_ms": 1.88
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.72,
-        "encode_ms": 2.75
+        "decode_ms": 0.81,
+        "encode_ms": 1.72
       }
     },
     "vector-lanes": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 16.13,
-        "encode_ms": 74.41
+        "decode_ms": 15.65,
+        "encode_ms": 65.73
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 3.08,
-        "encode_ms": 10.84
+        "decode_ms": 3.09,
+        "encode_ms": 8.6
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 0.59,
-        "encode_ms": 2.36
+        "decode_ms": 0.61,
+        "encode_ms": 1.9
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.15,
-        "encode_ms": 2.7
+        "decode_ms": 1.21,
+        "encode_ms": 1.73
       }
     },
     "word-decoder": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 15.79,
-        "encode_ms": 68.4
+        "decode_ms": 15.72,
+        "encode_ms": 60.85
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 3.09,
-        "encode_ms": 11.77
+        "decode_ms": 3.1,
+        "encode_ms": 8.78
       },
       "photo-small": {
         "bytes": 328750,
         "colors": 254,
-        "decode_ms": 0.61,
-        "encode_ms": 2.3
+        "decode_ms": 0.62,
+        "encode_ms": 1.75
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.14,
-        "encode_ms": 3.91
+        "decode_ms": 1.22,
+        "encode_ms": 4.21
       }
     }
   },
@@ -454,10 +402,10 @@
     "cflags": "-O2 -Wall -Wextra",
     "compiler": "Apple clang version 21.0.0 (clang-2100.4.1.1)",
     "date": "2026-11-20",
-    "load_after": 7.15,
-    "load_before": 6.11,
+    "load_after": 3.64,
+    "load_before": 2.57,
     "machine": "Apple M3 Max",
-    "revision": "141c71ac03",
+    "revision": "751bd54c1f",
     "system": "Darwin 27.0.0"
   },
   "libsixel": {
@@ -465,28 +413,28 @@
       "1": {
         "bytes": 9325121,
         "colors": 256,
-        "decode_ms": 15.462,
-        "encode_ms": 51.732
+        "decode_ms": 15.402,
+        "encode_ms": 51.755
       },
       "14": {
         "bytes": 9325124,
         "colors": 256,
-        "decode_ms": 2.769,
-        "encode_ms": 7.407
+        "decode_ms": 2.733,
+        "encode_ms": 7.547
       }
     },
     "photo-fhd": {
       "1": {
         "bytes": 1681355,
         "colors": 255,
-        "decode_ms": 2.806,
-        "encode_ms": 7.455
+        "decode_ms": 2.789,
+        "encode_ms": 7.468
       },
       "14": {
         "bytes": 1681355,
         "colors": 255,
-        "decode_ms": 0.701,
-        "encode_ms": 1.405
+        "decode_ms": 0.617,
+        "encode_ms": 1.292
       }
     },
     "revision": "141c71ac0",
@@ -494,14 +442,14 @@
       "1": {
         "bytes": 691964,
         "colors": 2,
-        "decode_ms": 0.908,
-        "encode_ms": 3.051
+        "decode_ms": 0.907,
+        "encode_ms": 3.04
       },
       "14": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.425,
-        "encode_ms": 0.681
+        "decode_ms": 0.435,
+        "encode_ms": 0.774
       }
     }
   },
@@ -512,9 +460,9 @@
       "two": 0.167
     },
     "word-decoder": {
-      "noise": 0.583,
-      "photo-fhd": 0.572,
-      "two": 0.578
+      "noise": 0.581,
+      "photo-fhd": 0.571,
+      "two": 0.576
     }
   },
   "overpaint": {
@@ -524,14 +472,14 @@
       "next-node": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 18.53,
-        "encode_ms": 102.17
+        "decode_ms": 18.62,
+        "encode_ms": 101.73
       },
       "overpaint": {
         "bytes": 9228951,
         "colors": 256,
         "decode_ms": 19.05,
-        "encode_ms": 101.66
+        "encode_ms": 101.35
       }
     },
     "photo-fhd": {
@@ -540,14 +488,14 @@
       "next-node": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 4.2,
-        "encode_ms": 21.09
+        "decode_ms": 4.25,
+        "encode_ms": 20.75
       },
       "overpaint": {
         "bytes": 1443766,
         "colors": 255,
-        "decode_ms": 3.88,
-        "encode_ms": 20.38
+        "decode_ms": 3.97,
+        "encode_ms": 20.28
       }
     },
     "photo-small": {
@@ -557,13 +505,13 @@
         "bytes": 328750,
         "colors": 254,
         "decode_ms": 0.78,
-        "encode_ms": 3.61
+        "encode_ms": 3.49
       },
       "overpaint": {
         "bytes": 302133,
         "colors": 254,
         "decode_ms": 0.78,
-        "encode_ms": 3.57
+        "encode_ms": 3.52
       }
     },
     "two": {
@@ -572,262 +520,228 @@
       "next-node": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 1.47,
+        "decode_ms": 1.49,
         "encode_ms": 2.22
       },
       "overpaint": {
         "bytes": 347802,
         "colors": 2,
-        "decode_ms": 0.79,
+        "decode_ms": 0.81,
         "encode_ms": 1.58
       }
     }
   },
   "phases": {
-    "column-words": {
+    "direct-writes": {
       "noise": {
-        "classify": 1.535,
-        "compose": 60.193,
-        "emit": 43.201
+        "classify": 2.63,
+        "compose": 21.737,
+        "emit": 36.545
       },
       "photo-fhd": {
-        "classify": 1.293,
-        "compose": 14.565,
-        "emit": 6.357
+        "classify": 2.41,
+        "compose": 2.215,
+        "emit": 4.164
       },
       "two": {
-        "classify": 1.287,
-        "compose": 0.234,
-        "emit": 1.294
-      }
-    },
-    "first-colors": {
-      "noise": {
-        "classify": 3.594,
-        "compose": 58.692,
-        "emit": 42.051
-      },
-      "photo-fhd": {
-        "classify": 3.187,
-        "compose": 14.356,
-        "emit": 6.087
-      },
-      "two": {
-        "classify": 1.94,
-        "compose": 0.238,
-        "emit": 1.29
+        "classify": 3.261,
+        "compose": 0.49,
+        "emit": 0.425
       }
     },
     "next-node": {
       "noise": {
-        "classify": 1.724,
-        "compose": 59.335,
-        "emit": 41.778
+        "classify": 1.78,
+        "compose": 59.061,
+        "emit": 42.756
       },
       "photo-fhd": {
-        "classify": 0.735,
-        "compose": 14.519,
-        "emit": 6.287
+        "classify": 0.722,
+        "compose": 14.087,
+        "emit": 6.221
       },
       "two": {
         "classify": 0.71,
-        "compose": 0.228,
-        "emit": 1.296
+        "compose": 0.226,
+        "emit": 1.291
       }
     },
     "occupancy": {
       "noise": {
-        "classify": 4.061,
-        "compose": 21.618,
-        "emit": 42.654
+        "classify": 2.71,
+        "compose": 22.055,
+        "emit": 44.414
       },
       "photo-fhd": {
-        "classify": 3.303,
-        "compose": 2.171,
-        "emit": 6.105
+        "classify": 2.46,
+        "compose": 2.25,
+        "emit": 6.231
       },
       "two": {
-        "classify": 2.11,
-        "compose": 0.499,
-        "emit": 1.288
+        "classify": 3.267,
+        "compose": 0.494,
+        "emit": 1.286
       }
     },
     "packing": {
       "noise": {
-        "classify": 1.715,
-        "compose": 58.017,
-        "emit": 90.729
+        "classify": 1.664,
+        "compose": 58.33,
+        "emit": 90.481
       },
       "photo-fhd": {
-        "classify": 0.733,
-        "compose": 14.326,
-        "emit": 6.954
+        "classify": 0.716,
+        "compose": 14.17,
+        "emit": 6.805
       },
       "two": {
-        "classify": 0.706,
-        "compose": 0.215,
-        "emit": 1.373
-      }
-    },
-    "swar": {
-      "noise": {
-        "classify": 2.391,
-        "compose": 60.024,
-        "emit": 42.113
-      },
-      "photo-fhd": {
-        "classify": 5.593,
-        "compose": 14.424,
-        "emit": 6.291
-      },
-      "two": {
-        "classify": 1.658,
-        "compose": 0.236,
-        "emit": 1.291
+        "classify": 0.709,
+        "compose": 0.204,
+        "emit": 1.363
       }
     },
     "vector-lanes": {
       "noise": {
-        "classify": 7.661,
-        "compose": 21.535,
-        "emit": 44.173
+        "classify": 7.614,
+        "compose": 21.653,
+        "emit": 37.079
       },
       "photo-fhd": {
-        "classify": 2.173,
-        "compose": 2.205,
-        "emit": 6.558
+        "classify": 2.224,
+        "compose": 2.246,
+        "emit": 4.233
       },
       "two": {
-        "classify": 0.86,
-        "compose": 0.496,
-        "emit": 1.295
+        "classify": 0.857,
+        "compose": 0.504,
+        "emit": 0.44
       }
     }
   },
   "prescan": {
-    "noise": 0.362,
-    "photo-fhd": 0.068,
-    "two": 0.122
+    "noise": 0.357,
+    "photo-fhd": 0.064,
+    "two": 0.082
   },
   "threads": {
     "1": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 15.13,
-        "encode_ms": 74.56
+        "decode_ms": 15.1,
+        "encode_ms": 68.53
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 2.69,
-        "encode_ms": 11.15
+        "decode_ms": 2.62,
+        "encode_ms": 8.92
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.81,
-        "encode_ms": 2.67
+        "decode_ms": 0.82,
+        "encode_ms": 1.81
       }
     },
     "10": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 2.16,
-        "encode_ms": 11.12
+        "decode_ms": 2.09,
+        "encode_ms": 7.77
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 0.43,
-        "encode_ms": 2.13
+        "decode_ms": 0.49,
+        "encode_ms": 1.4
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.32,
-        "encode_ms": 0.47
+        "decode_ms": 0.28,
+        "encode_ms": 0.3
       }
     },
     "14": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 2.34,
-        "encode_ms": 9.38
+        "decode_ms": 2.29,
+        "encode_ms": 8.04
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 0.5,
-        "encode_ms": 1.51
+        "decode_ms": 0.52,
+        "encode_ms": 1.03
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.35,
-        "encode_ms": 0.48
+        "decode_ms": 0.3,
+        "encode_ms": 0.34
       }
     },
     "2": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 8.19,
-        "encode_ms": 40.61
+        "decode_ms": 7.79,
+        "encode_ms": 34.53
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
         "decode_ms": 1.4,
-        "encode_ms": 6.51
+        "encode_ms": 4.71
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.53,
-        "encode_ms": 1.52
+        "decode_ms": 0.5,
+        "encode_ms": 0.96
       }
     },
     "4": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 4.3,
-        "encode_ms": 20.65
+        "decode_ms": 4.28,
+        "encode_ms": 17.56
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 0.82,
-        "encode_ms": 3.63
+        "decode_ms": 0.75,
+        "encode_ms": 2.93
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.37,
-        "encode_ms": 0.85
+        "decode_ms": 0.34,
+        "encode_ms": 0.52
       }
     },
     "8": {
       "noise": {
         "bytes": 9316560,
         "colors": 256,
-        "decode_ms": 2.54,
-        "encode_ms": 13.44
+        "decode_ms": 2.49,
+        "encode_ms": 9.41
       },
       "photo-fhd": {
         "bytes": 1663155,
         "colors": 255,
-        "decode_ms": 0.53,
-        "encode_ms": 2.64
+        "decode_ms": 0.5,
+        "encode_ms": 1.67
       },
       "two": {
         "bytes": 692322,
         "colors": 2,
-        "decode_ms": 0.34,
-        "encode_ms": 0.55
+        "decode_ms": 0.28,
+        "encode_ms": 0.33
       }
     }
   }

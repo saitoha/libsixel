@@ -13,10 +13,9 @@ CFLAGS = -O2 -Wall -Wextra
 LDLIBS = -lpthread
 O = .
 CHAPTERS = $(O)/first-codec $(O)/nodes $(O)/packing $(O)/full-decoder \
-	$(O)/fewer-questions $(O)/masks $(O)/next-node $(O)/column-words \
-	$(O)/swar $(O)/first-colors $(O)/occupancy $(O)/word-decoder \
-	$(O)/vector-lanes $(O)/transpose $(O)/parallel-bands \
-	$(O)/parallel-decoder $(O)/overpaint
+	$(O)/fewer-questions $(O)/masks $(O)/next-node $(O)/occupancy \
+	$(O)/direct-writes $(O)/word-decoder $(O)/vector-lanes $(O)/transpose \
+	$(O)/parallel-bands $(O)/parallel-decoder $(O)/overpaint
 
 all: $(CHAPTERS)
 
@@ -35,14 +34,10 @@ $(O)/masks: masks.c
 	$(CC) $(CFLAGS) -o $@ common.c masks.c $(LDLIBS)
 $(O)/next-node: next-node.c
 	$(CC) $(CFLAGS) -o $@ common.c next-node.c $(LDLIBS)
-$(O)/column-words: column-words.c
-	$(CC) $(CFLAGS) -o $@ common.c column-words.c $(LDLIBS)
-$(O)/swar: swar.c
-	$(CC) $(CFLAGS) -o $@ common.c swar.c $(LDLIBS)
-$(O)/first-colors: first-colors.c
-	$(CC) $(CFLAGS) -o $@ common.c first-colors.c $(LDLIBS)
 $(O)/occupancy: occupancy.c
 	$(CC) $(CFLAGS) -o $@ common.c occupancy.c $(LDLIBS)
+$(O)/direct-writes: direct-writes.c
+	$(CC) $(CFLAGS) -o $@ common.c direct-writes.c $(LDLIBS)
 $(O)/word-decoder: word-decoder.c
 	$(CC) $(CFLAGS) -o $@ common.c word-decoder.c $(LDLIBS)
 $(O)/vector-lanes: vector-lanes.c

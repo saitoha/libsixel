@@ -45,14 +45,14 @@ Bitmaps with a count-trailing-zeros jump are a general technique, used for examp
 <!-- measurements:begin:next-node -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 3.68 ms | 1.1× | 0.79 ms | 1.0× | 328,750 bytes |
-| Photograph, 1920×1080 | 21.2 ms | 1.1× | 4.16 ms | 1.0× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.22 ms | 1.1× | 1.48 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 103.0 ms | 1.5× | 18.6 ms | 1.0× | 9,316,560 bytes |
+| Photograph, 600×450 | 3.49 ms | 1.1× | 0.81 ms | 1.0× | 328,750 bytes |
+| Photograph, 1920×1080 | 20.8 ms | 1.0× | 4.26 ms | 1.0× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 2.16 ms | 1.1× | 1.50 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 101.7 ms | 1.5× | 18.7 ms | 1.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-Random noise encodes 1.5 times faster, because writing its stream now takes 42 ms instead of 91 ms. The photograph barely changes: its bands have few enough lines that the walk was not expensive. The [measurement record](measurements.md#encoder-phases) lists the time of each phase.
+Random noise encodes 1.5 times faster, because writing its stream now takes 43 ms instead of 91 ms. The photograph barely changes: its bands have few enough lines that the walk was not expensive. The [measurement record](measurements.md#encoder-phases) lists the time of each phase.
 
-A larger cost is now in plain view. Cutting nodes takes 14.5 ms of the photograph's 21 ms, because the encoder scans every slot of every color present in a band, and most of those slots are empty. The next four chapters change where the pixels sit in memory so that the encoder can stop looking at empty slots.
+A larger cost is now in plain view. Cutting nodes takes 14 ms of the photograph's 21 ms, because the encoder scans every slot of every color present in a band, and most of those slots are empty. The [next chapter](occupancy.md) records where each color appears, so that the encoder can stop looking at empty slots.
 
-Previous: [Store with masks instead of branches](masks.md) · Next: [Keep a column in one word](column-words.md)
+Previous: [Store with masks instead of branches](masks.md) · Next: [Remember where each color is](occupancy.md)
