@@ -50,7 +50,6 @@ struct sixel_decoder {
     int thumbnail_size;
     int direct_color;
     int progressive_input;
-    size_t input_passes;
     int input_colorspace;
     /* Owned endpoint; frame coordinates retain their independent tag. */
     struct sixel_color_def *input_icc;
@@ -60,6 +59,15 @@ struct sixel_decoder {
     char clipboard_input_format[32];
     char clipboard_output_format[32];
 };
+
+/* Optional diagnostics belong to the individual decode, including nested
+ * or concurrent calls on the same configured decoder. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decoder_decode_mapped_with_pass_count(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result,
+    size_t *input_passes);
 
 /*
  * Shared k_undither dequantizer used by decoder-side -d handling and tools

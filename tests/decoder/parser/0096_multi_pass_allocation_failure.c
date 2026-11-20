@@ -67,6 +67,7 @@ int test_sequence_0086(int argc, char **argv)
     sixel_decoder_t *decoder;
     sixel_decode_result_t result;
     SIXELSTATUS status;
+    size_t input_passes;
     size_t baseline;
     size_t fail;
     int ok;
@@ -99,11 +100,11 @@ int test_sequence_0086(int argc, char **argv)
         memset(&result, 0, sizeof(result));
         sequence_alloc_call = 0U;
         sequence_alloc_fail = fail;
-        status = sixel_decoder_decode_pixels(decoder, stream,
-            sizeof(stream) - 1U, NULL, &result);
+        status = sixel_decoder_decode_mapped_with_pass_count(decoder, stream,
+            sizeof(stream) - 1U, NULL, NULL, &result, &input_passes);
         if (SIXEL_SUCCEEDED(status)) {
             completed = result.pixels != NULL &&
-                result.pixels[2] == 255 && decoder->input_passes == 2U;
+                result.pixels[2] == 255 && input_passes == 2U;
         } else if (result.pixels != NULL) {
             ok = 0;
         }

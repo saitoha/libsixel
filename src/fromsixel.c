@@ -4766,7 +4766,9 @@ sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
     *width = 0;
     *height = 0;
     *flags = 0;
-    *passes = 0;
+    if (passes != NULL) {
+        *passes = 0U;
+    }
     status = sixel_sequence_open(&d, data, size, 0, allocator);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -4781,7 +4783,9 @@ sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
         *width = d->state.width;
         *height = d->state.height;
         *flags = d->state.flags;
-        *passes = d->passes;
+        if (passes != NULL) {
+            *passes = d->passes;
+        }
         status = SIXEL_OK;
     } else {
         sixel_helper_set_additional_message(

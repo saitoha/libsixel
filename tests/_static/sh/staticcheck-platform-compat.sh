@@ -334,6 +334,23 @@ require_fixed "emscripten_fetch_flag = '-sFETCH=1'" meson.build
 require_fixed 'emscripten_get_compiler_setting("NODERAWFS")' src/path.c
 require_fixed 'fetch = emscripten_fetch(&attr, url);' src/chunk.c
 require_fixed '#if defined(O_EXCL) && !defined(__EMSCRIPTEN__)' src/decoder.c
+# Parsed pass counts belong to caller storage when decodes share an object.
+awk '
+/^struct sixel_decoder \{/ { active = 1; found = 1 }
+active && /input_passes/ { shared = 1 }
+active && /^};/ { active = 0 }
+END { exit !found || shared }
+' "$src_root/src/decoder.h" ||
+    fail 'decoder objects must not store per-call input pass counts'
+# Reject callbacks record frame presence without storing an entire raster.
+awk '
+/^edge_expect_failure\(/ { active = 1; found = 1 }
+active && /edge_frame_probe_t|edge_load_buffer(_options)?\(/ { capture = 1 }
+active && /edge_load_buffer_custom\(/ { dispatch = 1 }
+active && /^}/ { active = 0 }
+END { exit !found || !dispatch || capture }
+' "$src_root/tests/_support/loader/builtin/loader_builtin_memory_test_common.c" ||
+    fail 'loader rejection tests must not reserve a frame capture'
 require_fixed 'AC_PATH_PROG([RANLIB], [emranlib], [ranlib])' configure.ac
 require_fixed 'AC_PATH_PROGS([AR], [emar emer], [ar])' configure.ac
 require_fixed "ar = 'emar'" build-aux/meson-cross/emscripten

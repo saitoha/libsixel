@@ -482,7 +482,6 @@ sixel_decoder_new(
     (*ppdecoder)->thumbnail_size = 0;
     (*ppdecoder)->direct_color = 0;
     (*ppdecoder)->progressive_input = 0;
-    (*ppdecoder)->input_passes = 0U;
     (*ppdecoder)->input_colorspace = SIXEL_OPTION_INPUT_SRGB;
     (*ppdecoder)->input_icc = NULL;
     color_definition = NULL;
@@ -3365,11 +3364,12 @@ sixel_decoder_decode_body_mapped(
     return status;
 }
 
-SIXELAPI SIXELSTATUS
-sixel_decoder_decode_mapped(
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decoder_decode_mapped_with_pass_count(
     sixel_decoder_t *decoder, unsigned char const *data, size_t size,
     sixel_decode_options_t const *options,
-    sixel_palette_transform_t const *transform, sixel_decode_result_t *result)
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result,
+    size_t *input_passes)
 {
     sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status;
@@ -3395,6 +3395,9 @@ sixel_decoder_decode_mapped(
     width = 0;
     height = 0;
 
+    if (input_passes != NULL) {
+        *input_passes = 0U;
+    }
     if (decoder == NULL || data == NULL || result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -3421,7 +3424,6 @@ sixel_decoder_decode_mapped(
         bg = options->bgcolor;
     }
 
-    decoder->input_passes = 0U;
     if (decoder->progressive_input) {
         if (decoder->dequantize_method != SIXEL_DEQUANTIZE_NONE ||
                 decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
@@ -3432,7 +3434,7 @@ sixel_decoder_decode_mapped(
         }
         status = sixel_decode_sequence_mapped(data, size, transform,
             &rgba_pixels, &width, &height, &result_flags,
-            &decoder->input_passes, decoder->allocator);
+            input_passes, decoder->allocator);
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_decode_pixels_finish_rgba(&rgba_pixels,
                 width, height, pixelformat, bg, result_flags, result,
@@ -3501,6 +3503,16 @@ end:
     sixel_thread_budget_leave(&policy_scope);
     sixel_decoder_unref(decoder);
     return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_mapped(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result)
+{
+    return sixel_decoder_decode_mapped_with_pass_count(
+        decoder, data, size, options, transform, result, NULL);
 }
 
 SIXELAPI SIXELSTATUS
@@ -3728,7 +3740,6 @@ sixel_decoder_decode(
         goto end;
     }
 
-    decoder->input_passes = 0U;
     if (decoder->progressive_input) {
         if (dequantize_method != SIXEL_DEQUANTIZE_NONE ||
                 decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
@@ -3739,7 +3750,7 @@ sixel_decoder_decode(
         }
         status = sixel_decode_sequence_mapped(raw_data, (size_t)raw_len,
             NULL, &direct_pixels, &sx, &sy, &raw_result_flags,
-            &decoder->input_passes, decoder->allocator);
+            NULL, decoder->allocator);
     } else if (dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
         /*
          * The decoder GPU dequantizer consumes the direct RGBA image that the
