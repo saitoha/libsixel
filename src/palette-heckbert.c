@@ -1262,24 +1262,46 @@ sixel_palette_heckbert_reposition_box(boxVector bv,
                                       unsigned int count,
                                       unsigned int index)
 {
-    unsigned int pos;
-    struct box tmp;
+    unsigned int low;
+    unsigned int high;
+    unsigned int middle;
+    struct box moved;
 
-    pos = index;
     if (bv == NULL || count < 2U || index >= count) {
         return;
     }
-    while (pos > 0U && sumcompare(&bv[pos - 1U], &bv[pos]) > 0) {
-        tmp = bv[pos - 1U];
-        bv[pos - 1U] = bv[pos];
-        bv[pos] = tmp;
-        --pos;
+    /* The other boxes are in sumcompare order, and box indices differ, so
+     * the order is total: binary search finds the slot the former stepwise
+     * swaps reached, and one memmove shifts the boxes in between. */
+    moved = bv[index];
+    if (index > 0U && sumcompare(&bv[index - 1U], &moved) > 0) {
+        low = 0U;
+        high = index - 1U;
+        while (low < high) {
+            middle = low + (high - low) / 2U;
+            if (sumcompare(&bv[middle], &moved) > 0) {
+                high = middle;
+            } else {
+                low = middle + 1U;
+            }
+        }
+        memmove(&bv[low + 1U], &bv[low], (index - low) * sizeof(*bv));
+        bv[low] = moved;
+        return;
     }
-    while (pos + 1U < count && sumcompare(&bv[pos], &bv[pos + 1U]) > 0) {
-        tmp = bv[pos];
-        bv[pos] = bv[pos + 1U];
-        bv[pos + 1U] = tmp;
-        ++pos;
+    if (index + 1U < count && sumcompare(&moved, &bv[index + 1U]) > 0) {
+        low = index + 1U;
+        high = count - 1U;
+        while (low < high) {
+            middle = low + (high - low + 1U) / 2U;
+            if (sumcompare(&moved, &bv[middle]) > 0) {
+                low = middle;
+            } else {
+                high = middle - 1U;
+            }
+        }
+        memmove(&bv[index], &bv[index + 1U], (low - index) * sizeof(*bv));
+        bv[low] = moved;
     }
 }
 
