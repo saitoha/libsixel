@@ -24,6 +24,7 @@ typedef struct sixel_indexed_core {
     int gpu_unavailable;
     sixel_body_gpu_t *gpu;
     sixel_body_gpu_result_t gpu_result;
+    uint32_t gpu_registers[SIXEL_PALETTE_MAX];
 #if SIXEL_ENABLE_THREADS
     sixel_parallel_context_t parallel;
     int parallel_active;
@@ -268,7 +269,9 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
 {
     sixel_indexed_frame_description_t const *desc;
     sixel_body_gpu_request_t request;
+    sixel_output_t const *body;
     SIXELSTATUS status;
+    int i;
 
     core->parallel.gpu_result = NULL;
     if (!core->gpu_body || core->gpu_unavailable || core->options.ormode ||
@@ -296,6 +299,18 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
     request.device = core->image->gpu_device;
     request.indexes_buffer = core->image->gpu_indexes;
     request.mask_buffer = core->image->gpu_skip;
+    /* The settings sixel_put_node reads from the worker outputs, which
+     * copy them from the body output. */
+    body = core->body;
+    for (i = 0; i < ncolors; ++i) {
+        core->gpu_registers[i] = body->wire_colors != NULL
+            ? body->wire_colors[i].definition.register_index
+            : (uint32_t)i;
+    }
+    request.registers = core->gpu_registers;
+    request.selectors = ncolors != 2 || desc->keycolor == -1 ||
+        body->keycolor_reserved;
+    request.limited = body->has_gri_arg_limit;
     status = sixel_body_gpu_run(core->gpu, &request, &core->gpu_result);
     if (SIXEL_FAILED(status)) {
         core->gpu_unavailable = 1;
@@ -370,6 +385,14 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
                 ready_bands - core->band,
                 core->parallel.band_count - core->band,
                 core->parallel.worker_capacity, core->parallel.queue_capacity);
+            if (core->parallel.gpu_result != NULL &&
+                    core->parallel.gpu_result->bytes != NULL) {
+                /* Spelled bands are copies; one job per queue's worth. */
+                span = core->parallel.band_count - core->band;
+                if (span > core->parallel.queue_capacity) {
+                    span = core->parallel.queue_capacity;
+                }
+            }
             sixel_parallel_submit_span(&core->parallel, core->band, span);
             if (!sixel_parallel_jobs_allowed(&core->parallel)) {
                 status = SIXEL_RUNTIME_ERROR;
