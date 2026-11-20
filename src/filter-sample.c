@@ -391,8 +391,9 @@ sixel_filter_sample_vary_points_avx2(unsigned char const *pixels,
 {
     unsigned char horizontal[(3 * 31 + 1) * 4 + 32];
     unsigned char vertical[(3 * 31 + 1) * 4 + 32];
-    unsigned char above[((3 * 31 + 1) * 4 + 32) / 8 + 4];
-    unsigned char below[((3 * 31 + 1) * 4 + 32) / 8 + 4];
+    /* The four-byte reads can include padding after the last mask. */
+    unsigned char above[((3 * 31 + 1) * 4 + 32) / 8 + 4] = {0};
+    unsigned char below[((3 * 31 + 1) * 4 + 32) / 8 + 4] = {0};
     unsigned char const *centre;
     __m256i tolerance;
     __m256i zero;

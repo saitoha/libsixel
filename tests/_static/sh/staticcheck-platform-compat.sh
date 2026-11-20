@@ -381,6 +381,11 @@ if grep -Eq '^[[:space:]]*static[[:space:]]+SIXEL_REFRESH_SPATIAL_TARGET_AVX2[[:
     "$src_root/src/refresh-spatial.c"; then
     fail 'spatial AVX2 helpers must not return a 256-bit vector'
 fi
+# AVX2 sampling loads full words from bitmaps with a partial last word.
+require_fixed 'above[((3 * 31 + 1) * 4 + 32) / 8 + 4] = {0};' \
+    src/filter-sample.c
+require_fixed 'below[((3 * 31 + 1) * 4 + 32) / 8 + 4] = {0};' \
+    src/filter-sample.c
 require_fixed "#include \"\$srcdir/build-aux/fhedt-heap-probe.c\"" configure.ac
 require_fixed "cc.run(files('build-aux/fhedt-heap-probe.c')[0]" meson.build
 require_fixed '#if defined(SIXEL_SPLIT_FHEDT_DISTANCE_GRID)' \

@@ -12,30 +12,6 @@
 #include <string.h>
 #include <sixel.h>
 
-static char const *const bodies[] = {
-    /* Two full bands. */
-    "\"1;1;8;12#1;2;100;0;0#1!8~-!8~",
-    /* A hole in the second band. */
-    "\"1;1;8;12#1;2;100;0;0#1!8~-!3~?!4~",
-    /* A partial last band, fully painted and with one row missing. */
-    "\"1;1;8;8#1;2;0;100;0#1!8~-!8~",
-    "\"1;1;8;8#1;2;0;100;0#1!8~-!7~A",
-    /* Wider than one SIMD block, full and with a hole past it. */
-    "\"1;1;40;12#1;2;0;0;100#1!40~-!40~",
-    "\"1;1;40;12#1;2;0;0;100#1!40~-!33~?!6~",
-    /* Colors laid over each other through carriage returns. */
-    "\"1;1;24;6#1;2;100;0;0#2;2;0;100;0#1!24F$#2!24w",
-    "\"1;1;24;6#1;2;100;0;0#2;2;0;100;0#1!24F$#2!23w",
-    /* Painting past the raster grows the canvas; the declared second band
-     * stays unpainted unless trusted clipping drops the overflow. */
-    "\"1;1;4;12#1;2;100;100;0#1!10~",
-    "\"1;1;4;6#1;2;100;100;0#1!10~",
-    /* Black paint is still paint. */
-    "\"1;1;4;6#1;2;0;0;0#1!4~",
-    /* Nothing painted at all. */
-    "\"1;1;4;6#1;2;0;0;0#1!4?",
-};
-
 static int
 walk_opaque(unsigned char const *pixels, int width, int height)
 {
@@ -126,6 +102,29 @@ build_tall(char *out, size_t capacity, int bands, int hole_band)
 int
 test_decoder_0110(int argc, char **argv)
 {
+    static char const *const bodies[] = {
+        /* Two full bands. */
+        "\"1;1;8;12#1;2;100;0;0#1!8~-!8~",
+        /* A hole in the second band. */
+        "\"1;1;8;12#1;2;100;0;0#1!8~-!3~?!4~",
+        /* A partial last band, fully painted and with one row missing. */
+        "\"1;1;8;8#1;2;0;100;0#1!8~-!8~",
+        "\"1;1;8;8#1;2;0;100;0#1!8~-!7~A",
+        /* Wider than one SIMD block, full and with a hole past it. */
+        "\"1;1;40;12#1;2;0;0;100#1!40~-!40~",
+        "\"1;1;40;12#1;2;0;0;100#1!40~-!33~?!6~",
+        /* Colors laid over each other through carriage returns. */
+        "\"1;1;24;6#1;2;100;0;0#2;2;0;100;0#1!24F$#2!24w",
+        "\"1;1;24;6#1;2;100;0;0#2;2;0;100;0#1!24F$#2!23w",
+        /* Painting past the raster grows the canvas; the declared second band
+         * stays unpainted unless trusted clipping drops the overflow. */
+        "\"1;1;4;12#1;2;100;100;0#1!10~",
+        "\"1;1;4;6#1;2;100;100;0#1!10~",
+        /* Black paint is still paint. */
+        "\"1;1;4;6#1;2;0;0;0#1!4~",
+        /* Nothing painted at all. */
+        "\"1;1;4;6#1;2;0;0;0#1!4?",
+    };
     static char tall[65536];
     unsigned char stream[512];
     char label[64];
