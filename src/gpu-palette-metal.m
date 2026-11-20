@@ -583,6 +583,23 @@ sixel_gpu_palette_metal_fill_params(
 
 #include "gpu-palette-program.inc.h"
 
+/* An indexed frame in this device's shared storage is its own result
+ * buffer: the kernel writes the frame in place, with no wrap or copy. */
+static id<MTLBuffer>
+sixel_gpu_metal_frame_buffer(sixel_gpu_buffer_interface_t *buffer,
+                             void const *memory,
+                             NSUInteger length)
+{
+    id<MTLBuffer> native;
+
+    native = sixel_gpu_metal_buffer(&gpu_device, buffer);
+    if (native == nil || [native contents] != memory ||
+            [native length] < length) {
+        return nil;
+    }
+    return native;
+}
+
 /* Commands own their encoded resources. Keep a bounded window alive until
  * completion, including after producer cancellation or consumer failure.
  * Per-slot validation flags prevent a later failed range from poisoning an
@@ -597,6 +614,7 @@ typedef struct sixel_gpu_metal_dispatch {
     NSUInteger thread_multiple, fixed_threads;
     NSUInteger block_width, block_height, threads_per_block;
     int result_direct;
+    int accumulation_direct;
 } sixel_gpu_metal_dispatch_t;
 
 typedef struct sixel_gpu_metal_range {
@@ -749,7 +767,8 @@ sixel_gpu_metal_apply_ranges(sixel_gpu_palette_request_t const *request,
                 (unsigned char *)[dispatch->buffers[0] contents] + offset,
                 length);
         }
-        if (request->accumulation_result_mask != NULL) {
+        if (request->accumulation_result_mask != NULL &&
+                !dispatch->accumulation_direct) {
             memcpy(request->accumulation_result_mask + offset,
                 (unsigned char *)[dispatch->buffers[9] contents] + offset,
                 length);
@@ -835,6 +854,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
     id<MTLComputePipelineState> pipeline;
     id<MTLBuffer> lookup_buffer;
     int result_buffer_direct;
+    int accumulation_direct;
     int locked;
     sixel_gpu_metal_dispatch_t dispatch;
 
@@ -891,6 +911,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
     accumulation_valid_length = 0U;
     accumulation_result_length = 0U;
     result_buffer_direct = 0;
+    accumulation_direct = 0;
     locked = 0;
 
     if (request == NULL) {
@@ -972,8 +993,13 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
             request->accumulation_result_mask != NULL ?
             (NSUInteger)request->accumulation_result_mask_size : 1U;
 
-        result_buffer =
-            sixel_gpu_metal_wrap_dest_buffer(request->dest, result_length);
+        /* Retained so that the direct release below balances. */
+        result_buffer = [sixel_gpu_metal_frame_buffer(request->dest_buffer,
+            request->dest, result_length) retain];
+        if (result_buffer == nil) {
+            result_buffer = sixel_gpu_metal_wrap_dest_buffer(request->dest,
+                result_length);
+        }
         if (result_buffer != nil) {
             result_buffer_direct = 1;
         } else {
@@ -1054,10 +1080,17 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
             accumulation_valid_buffer = g_sixel_gpu_metal_dummy_buffer;
         }
         if (request->accumulation_result_mask != NULL) {
-            accumulation_result_buffer = sixel_gpu_metal_upload_buffer(
-                &g_sixel_gpu_metal_accumulation_result_buffer,
+            accumulation_result_buffer = sixel_gpu_metal_frame_buffer(
+                request->accumulation_result_buffer,
                 request->accumulation_result_mask,
                 accumulation_result_length);
+            accumulation_direct = accumulation_result_buffer != nil;
+            if (!accumulation_direct) {
+                accumulation_result_buffer = sixel_gpu_metal_upload_buffer(
+                    &g_sixel_gpu_metal_accumulation_result_buffer,
+                    request->accumulation_result_mask,
+                    accumulation_result_length);
+            }
         } else {
             accumulation_result_buffer = g_sixel_gpu_metal_dummy_buffer;
         }
@@ -1162,6 +1195,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
         dispatch.block_height = lookup_run.block_height;
         dispatch.threads_per_block = lookup_run.threads_per_block;
         dispatch.result_direct = result_buffer_direct;
+        dispatch.accumulation_direct = accumulation_direct;
         dispatch.buffers[0] = result_buffer;
         dispatch.buffers[1] = pixel_buffer;
         dispatch.buffers[2] = palette_buffer;
