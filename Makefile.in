@@ -463,6 +463,7 @@ SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
 SIXEL_TEST_DEPRECATED_CFLAGS = @SIXEL_TEST_DEPRECATED_CFLAGS@
 SIXEL_TEST_GZIP = @SIXEL_TEST_GZIP@
+SIXEL_TEST_PRINTF_CFLAGS = @SIXEL_TEST_PRINTF_CFLAGS@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
@@ -621,8 +622,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	build-aux/read-check-test-list.sh \
 	build-aux/cli-color-tty-probe.c build-aux/avx2-target-probe.c \
 	build-aux/fhedt-heap-probe.c build-aux/native-tls-probe.c \
-	build-aux/pthread-probe.c \
-	build-aux/libpng-api-probe.c \
+	build-aux/pthread-probe.c build-aux/libpng-api-probe.c \
 	build-aux/resolve-binding-test-common.sh \
 	build-aux/resolve-config-h-exports.sh \
 	build-aux/sanitizer-ignorelist.txt \
@@ -1546,9 +1546,10 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	docs/writers/png/figures/writer-time.png \
 	docs/writers/png/figures/writer-size.svg \
 	docs/writers/png/figures/writer-size.png \
-	tools/plot_png_writer_measurements.py docs/threading/README.md \
-	docs/threading/animation.md docs/threading/decoder.md \
-	docs/threading/encoder.md docs/threading/measurement.md \
+	tools/plot_png_writer_measurements.py docs/gpu/host-memory.md \
+	docs/threading/README.md docs/threading/animation.md \
+	docs/threading/decoder.md docs/threading/encoder.md \
+	docs/threading/measurement.md \
 	docs/threading/measurements/animation-thread4-timeline.png \
 	docs/threading/measurements/animation-thread4.jsonl \
 	docs/threading/measurements/decoder-api-scaling.json \

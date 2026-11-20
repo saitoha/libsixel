@@ -1076,6 +1076,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/writers/png/figures/writer-size.svg \
 	docs/writers/png/figures/writer-size.png \
 	tools/plot_png_writer_measurements.py \
+	docs/gpu/host-memory.md \
 	docs/threading/README.md \
 	docs/threading/animation.md \
 	docs/threading/decoder.md \

@@ -28,8 +28,8 @@ Playback manages the handoff and limits how much unfinished work can pile up. It
 | --- | --- | --- |
 | Show one picture | Direct encoding | There is no next frame to prepare. |
 | Write a simple script or a small sequential C loop | Direct encoding | You may not need queue management. |
-| Feed decoded video frames from a player such as 6mov | Playback | Preparation and output can overlap. |
-| Feed changed rectangles from a remote desktop such as 6rdp | Playback with per-frame options | Each accepted rectangle keeps its own placement settings. |
+| Feed decoded video frames from a video player | Playback | Preparation and output can overlap. |
+| Feed changed rectangles from a remote-desktop client | Playback with per-frame options | Each accepted rectangle keeps its own placement settings. |
 | Play an animation file with `img2sixel` | The CLI's [animation controls](animation.md) | The loader already supplies the frames. |
 
 ## Tell frame overlap from band overlap
