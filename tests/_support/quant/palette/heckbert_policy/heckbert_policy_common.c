@@ -178,6 +178,7 @@ heckbert_policy_check(int scenario)
     unsigned long cluster_weights[2];
     double cluster_sums[6];
     struct policy_box boxes[3];
+    unsigned char keys[5];
     double weights[4];
     double actual[4];
     double sums[4];
@@ -305,7 +306,7 @@ heckbert_policy_check(int scenario)
         count = 1;
         status = policy_splitBox(boxes, &count, 0, table, 3,
             scenario % 2 ? SIXEL_LARGE_NORM : SIXEL_LARGE_PCA,
-            NULL, 0, &options, SIXEL_PIXELFORMAT_RGBFLOAT32);
+            NULL, 0, keys, &options, SIXEL_PIXELFORMAT_RGBFLOAT32);
         best = -1.0;
         winner = 0;
         for (k = 1; k < 5; ++k) {
@@ -484,6 +485,7 @@ heckbert_fractional_axis_check(void)
     static double const expected[] = { 1.5, 2.25, 2.25, 2.5, 2.75, 3.0 };
     policy_tupletable2 table;
     sixel_allocator_t *allocator;
+    unsigned char keys[6];
     unsigned int i;
     int ok;
     SIXELSTATUS status;
@@ -502,7 +504,7 @@ heckbert_fractional_axis_check(void)
         table.table[i]->policy_tuple[0] = values[i];
     }
     status = policy_sortBoxByAxisBuckets(table, 0U, 6U, 0U,
-        NULL, NULL, NULL);
+        NULL, NULL, NULL, keys);
     ok = SIXEL_SUCCEEDED(status);
     for (i = 0U; i < 6U; ++i) {
         ok = ok && table.table[i]->policy_tuple[0] == expected[i];

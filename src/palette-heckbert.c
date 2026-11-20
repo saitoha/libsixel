@@ -1570,7 +1570,8 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
                          [sixel_palette_heckbert_max_channels]
                          [sixel_palette_heckbert_axis_bins],
                      sample const minval[],
-                     sample const maxval[])
+                     sample const maxval[],
+                     unsigned char *keys)
 {
     unsigned int bucket_count[sixel_palette_heckbert_axis_bins];
     unsigned int bucket_next[sixel_palette_heckbert_axis_bins];
@@ -1581,8 +1582,9 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
     unsigned int index;
     unsigned int cursor;
     unsigned int axis_value;
+    unsigned int target;
+    unsigned char key;
     struct tupleint *entry;
-    struct tupleint *swapped;
 
     if (axis >= sixel_palette_heckbert_max_channels) {
         sixel_helper_set_additional_message(
@@ -1593,6 +1595,16 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
         bucket_count[bucket] = 0U;
         bucket_next[bucket] = 0U;
         bucket_end[bucket] = 0U;
+    }
+    /* Read each bucket once. The permutation below then moves the keys with
+     * the entries instead of loading every entry again. */
+    for (index = 0U; index < boxSize; ++index) {
+        entry = colorfreqtable.table[boxStart + index];
+        axis_value = (unsigned int)entry->tuple[axis];
+        if (axis_value >= sixel_palette_heckbert_axis_bins) {
+            axis_value = sixel_palette_heckbert_axis_bins - 1U;
+        }
+        keys[index] = (unsigned char)axis_value;
     }
 
     if (axis_count != NULL && minval != NULL && maxval != NULL) {
@@ -1611,11 +1623,7 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
         min_bucket = sixel_palette_heckbert_axis_bins - 1U;
         max_bucket = 0U;
         for (index = 0U; index < boxSize; ++index) {
-            entry = colorfreqtable.table[boxStart + index];
-            axis_value = (unsigned int)entry->tuple[axis];
-            if (axis_value >= sixel_palette_heckbert_axis_bins) {
-                axis_value = sixel_palette_heckbert_axis_bins - 1U;
-            }
+            axis_value = keys[index];
             bucket_count[axis_value] += 1U;
             if (axis_value < min_bucket) {
                 min_bucket = axis_value;
@@ -1639,19 +1647,18 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
     for (bucket = min_bucket; bucket <= max_bucket; ++bucket) {
         while (bucket_next[bucket] < bucket_end[bucket]) {
             index = bucket_next[bucket];
-            entry = colorfreqtable.table[index];
-            axis_value = (unsigned int)entry->tuple[axis];
-            if (axis_value >= sixel_palette_heckbert_axis_bins) {
-                axis_value = sixel_palette_heckbert_axis_bins - 1U;
-            }
-            if (axis_value == bucket) {
+            key = keys[index - boxStart];
+            if (key == bucket) {
                 bucket_next[bucket] += 1U;
                 continue;
             }
-            swapped = colorfreqtable.table[bucket_next[axis_value]];
-            colorfreqtable.table[bucket_next[axis_value]] = entry;
-            colorfreqtable.table[index] = swapped;
-            bucket_next[axis_value] += 1U;
+            target = bucket_next[key];
+            entry = colorfreqtable.table[target];
+            colorfreqtable.table[target] = colorfreqtable.table[index];
+            colorfreqtable.table[index] = entry;
+            keys[index - boxStart] = keys[target - boxStart];
+            keys[target - boxStart] = key;
+            bucket_next[key] += 1U;
         }
     }
 
@@ -3158,6 +3165,7 @@ sixel_palette_heckbert_split_attempt(
     unsigned int dimensions,
     struct sixel_pca_sort_entry *pca_workspace,
     unsigned int pca_workspace_capacity,
+    unsigned char *axis_keys,
     unsigned int *medianIndex,
     unsigned int *lowersum,
     unsigned int *axis_used,
@@ -3278,7 +3286,8 @@ sixel_palette_heckbert_split_attempt(
                                       axis,
                                       axis_count,
                                       minval,
-                                      maxval);
+                                      maxval,
+                                      axis_keys);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -3311,6 +3320,7 @@ splitBox(boxVector bv,
          int methodForLargest,
          struct sixel_pca_sort_entry *pca_workspace,
          unsigned int pca_workspace_capacity,
+         unsigned char *axis_keys,
          sixel_heckbert_options_t const *options,
          int pixelformat)
 {
@@ -3441,6 +3451,7 @@ splitBox(boxVector bv,
                                                       dimensions,
                                                       pca_workspace,
                                                       pca_workspace_capacity,
+                                                      axis_keys,
                                                       &medianIndex,
                                                       &lowersum,
                                                       &axis_used,
@@ -3596,6 +3607,7 @@ mediancut(tupletable2 const colorfreqtable,
     char log_detail[128];
     struct sixel_pca_sort_entry *pca_workspace;
     unsigned int pca_workspace_capacity;
+    unsigned char *axis_keys;
 
     status = SIXEL_FALSE;
     bv = NULL;
@@ -3619,6 +3631,7 @@ mediancut(tupletable2 const colorfreqtable,
     log_detail[0] = '\0';
     pca_workspace = NULL;
     pca_workspace_capacity = 0U;
+    axis_keys = NULL;
     sum = 0U;
     for (i = 0U; i < colorfreqtable.size; ++i) {
         sum += colorfreqtable.table[i]->value;
@@ -3649,6 +3662,14 @@ mediancut(tupletable2 const colorfreqtable,
             pca_workspace_capacity = colorfreqtable.size;
         }
     }
+    axis_keys = (unsigned char *)sixel_allocator_malloc(allocator,
+        colorfreqtable.size);
+    if (axis_keys == NULL) {
+        sixel_helper_set_additional_message(
+            "unable to allocate heckbert axis keys.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
     while (boxes < working_colors && multicolorBoxesExist) {
@@ -3674,7 +3695,8 @@ mediancut(tupletable2 const colorfreqtable,
                               depth,
                               methodForLargest,
                               pca_workspace,
-                              pca_workspace_capacity, options, pixelformat);
+                              pca_workspace_capacity, axis_keys, options,
+                              pixelformat);
             if (SIXEL_FAILED(status)) {
                 iteration_wall_stop = sixel_timer_now();
                 if (request->iterate_ms != NULL) {
@@ -3903,6 +3925,7 @@ end:
     if (pca_workspace != NULL) {
         sixel_allocator_free(allocator, pca_workspace);
     }
+    sixel_allocator_free(allocator, axis_keys);
 
     return status;
 }
