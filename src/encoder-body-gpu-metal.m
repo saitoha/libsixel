@@ -92,6 +92,257 @@ static NSString *const sixel_body_gpu_source = @
 "  }\n"
 "  if (write_pass == 0) { counts[t] = n; widths[t] = used; }\n"
 "  else first_seen[t] = first;\n"
+"}\n"
+/* Emission. The spelling follows sixel_put_node: a run of at most three
+ * cells repeats its symbol, a longer one is '!' count symbol, and the
+ * limited form first peels '!255' symbol pieces from runs above 255. */
+"struct emit_params {\n"
+"  uint encoded_width; uint words; uint ncolors; uint bands;\n"
+"  uint selectors; uint limited; uint nodes; uint group_limit;\n"
+"};\n"
+"static uint emit_digits(uint v) {\n"
+"  uint n = 1; while (v >= 10) { v /= 10; n++; } return n;\n"
+"}\n"
+"static uint emit_run_length(uint c, uint limited) {\n"
+"  uint n = 0;\n"
+"  if (limited != 0 && c > 255) { uint k = (c - 1) / 255; n = k * 5; c -= k * 255; }\n"
+"  return n + (c <= 3 ? c : 2 + emit_digits(c));\n"
+"}\n"
+"static uint emit_number(device uchar *out, uint o, uint v) {\n"
+"  uint n = emit_digits(v);\n"
+"  for (uint i = n; i > 0; i--) { out[o + i - 1] = (uchar)('0' + v % 10); v /= 10; }\n"
+"  return o + n;\n"
+"}\n"
+"static uint emit_run(device uchar *out, uint o, uchar s, uint c, uint limited) {\n"
+"  if (limited != 0 && c > 255) {\n"
+"    uint k = (c - 1) / 255; c -= k * 255;\n"
+"    for (; k > 0; k--) { out[o] = '!'; out[o + 1] = '2'; out[o + 2] = '5'; out[o + 3] = '5'; out[o + 4] = s; o += 5; }\n"
+"  }\n"
+"  if (c <= 3) { for (; c > 0; c--) out[o++] = s; return o; }\n"
+"  out[o++] = '!'; o = emit_number(out, o, c); out[o++] = s;\n"
+"  return o;\n"
+"}\n"
+/* One thread per span: the spelled length of its column values. */
+"kernel void body_lengths(device const uint4 *nodes [[buffer(0)]],\n"
+"                         device const uchar *map [[buffer(1)]],\n"
+"                         device uint *lengths [[buffer(2)]],\n"
+"                         constant emit_params &p [[buffer(3)]],\n"
+"                         uint t [[thread_position_in_grid]]) {\n"
+"  if (t >= p.nodes) return;\n"
+"  uint4 n = nodes[t];\n"
+"  device const uchar *row = map + n.w;\n"
+"  uint w = n.z - n.y; uint total = 0;\n"
+"  for (uint i = 0; i < w;) {\n"
+"    uchar v = row[i]; uint e = i + 1;\n"
+"    while (e < w && row[e] == v) e++;\n"
+"    total += emit_run_length(e - i, p.limited); i = e;\n"
+"  }\n"
+"  lengths[t] = total;\n"
+"}\n"
+/* One thread per band reproduces sixel_band_emit. Each column holds its
+ * spans by farther end, then later first-seen register; a sweep takes the
+ * first remaining start at or after the cursor, and a new sweep begins
+ * with '$' at the first remaining start. Each emitted span records its
+ * node, its byte offset in the band, the cursor before it, and flags. */
+"kernel void body_order(device const uint4 *nodes [[buffer(0)]],\n"
+"                       device const uint *band_first [[buffer(1)]],\n"
+"                       device const uint *first_seen [[buffer(2)]],\n"
+"                       device const uint *lengths [[buffer(3)]],\n"
+"                       device const uint *registers [[buffer(4)]],\n"
+"                       device uint *columns [[buffer(5)]],\n"
+"                       device uint *bits [[buffer(6)]],\n"
+"                       device uint *sorted [[buffer(7)]],\n"
+"                       device uint4 *entries [[buffer(8)]],\n"
+"                       device uint *band_size [[buffer(9)]],\n"
+"                       constant emit_params &p [[buffer(10)]],\n"
+"                       uint b [[thread_position_in_grid]]) {\n"
+"  if (b >= p.bands) return;\n"
+"  uint first = band_first[b]; uint end = band_first[b + 1];\n"
+"  if (end - first <= p.group_limit) return;\n"
+"  uint width = p.encoded_width;\n"
+"  device uint *head = columns + (ulong)b * (2 * width + 1);\n"
+"  device uint *stop = head + width + 1;\n"
+"  device uint *o = bits + (ulong)b * p.words;\n"
+"  device const uint *rank = first_seen + (ulong)b * p.ncolors;\n"
+"  for (uint x = 0; x <= width; x++) head[x] = 0;\n"
+"  for (uint w = 0; w < p.words; w++) o[w] = 0;\n"
+"  for (uint i = first; i < end; i++) head[nodes[i].y + 1]++;\n"
+"  for (uint x = 0; x < width; x++) head[x + 1] += head[x];\n"
+"  for (uint x = 0; x < width; x++) stop[x] = head[x];\n"
+"  for (uint i = first; i < end; i++) {\n"
+"    uint4 n = nodes[i]; uint k = first + stop[n.y]++;\n"
+"    uint j = k;\n"
+"    while (j > first + head[n.y]) {\n"
+"      uint4 q = nodes[sorted[j - 1]];\n"
+"      if (q.z > n.z || (q.z == n.z && rank[q.x] > rank[n.x])) break;\n"
+"      sorted[j] = sorted[j - 1]; j--;\n"
+"    }\n"
+"    sorted[j] = i;\n"
+"    o[n.y / 32] |= 1u << (n.y % 32);\n"
+"  }\n"
+"  uint pos = b > 0 ? 1 : 0; uint k = first; uint x = 0; uint active = 0xffffffffu;\n"
+"  uint sx = body_next(o, p.words, width, 0);\n"
+"  while (sx < width) {\n"
+"    uint dollar = 0;\n"
+"    if (x > sx) { dollar = 1; x = 0; }\n"
+"    do {\n"
+"      uint i = sorted[first + head[sx]];\n"
+"      uint4 n = nodes[i];\n"
+"      uint sel = p.selectors != 0 && active != n.x ? 1 : 0;\n"
+"      entries[k++] = uint4(i, pos, x, dollar | sel << 1 | b << 2);\n"
+"      pos += dollar + (sel != 0 ? 1 + emit_digits(registers[n.x]) : 0)\n"
+"        + (x < sx ? emit_run_length(sx - x, p.limited) : 0) + lengths[i];\n"
+"      if (sel != 0) active = n.x;\n"
+"      dollar = 0; x = n.z;\n"
+"      if (++head[sx] == stop[sx]) o[sx / 32] &= ~(1u << (sx % 32));\n"
+"      sx = body_next(o, p.words, width, x);\n"
+"    } while (sx < width);\n"
+"    sx = body_next(o, p.words, width, 0);\n"
+"  }\n"
+"  band_size[b] = pos;\n"
+"}\n"
+/* Bands of at most BODY_GROUP_NODES spans take one threadgroup each. The
+ * threads sort the spans by start, farther end, then later first-seen
+ * register, which is the column order of body_order; one thread then takes
+ * the sweeps from threadgroup memory, and the threads sum the spelled
+ * lengths into offsets. The first remaining span at or after the cursor is
+ * the first unconsumed sorted span whose start reaches it, since each
+ * column's spans are consumed from its head. */
+"#define BODY_GROUP_NODES 4096\n"
+"#define BODY_GROUP_THREADS 256\n"
+"kernel void body_order_group(device const uint4 *nodes [[buffer(0)]],\n"
+"                             device const uint *band_first [[buffer(1)]],\n"
+"                             device const uint *first_seen [[buffer(2)]],\n"
+"                             device const uint *lengths [[buffer(3)]],\n"
+"                             device const uint *registers [[buffer(4)]],\n"
+"                             device ulong *keys [[buffer(5)]],\n"
+"                             device ushort *slots [[buffer(6)]],\n"
+"                             device uint4 *entries [[buffer(7)]],\n"
+"                             device uint *band_size [[buffer(8)]],\n"
+"                             constant emit_params &p [[buffer(9)]],\n"
+"                             uint b [[threadgroup_position_in_grid]],\n"
+"                             uint t [[thread_position_in_threadgroup]]) {\n"
+"  threadgroup uint spans[BODY_GROUP_NODES];\n"
+"  threadgroup uchar colors[BODY_GROUP_NODES];\n"
+"  threadgroup uint consumed[BODY_GROUP_NODES / 32];\n"
+"  threadgroup uint partial[BODY_GROUP_THREADS];\n"
+"  uint first = band_first[b]; uint n = band_first[b + 1] - first;\n"
+"  if (n > p.group_limit) return;\n"
+"  uint size = 1; while (size < n) size <<= 1;\n"
+"  device ulong *k = keys + (ulong)b * BODY_GROUP_NODES;\n"
+"  device ushort *s = slots + (ulong)b * BODY_GROUP_NODES;\n"
+"  device const uint *rank = first_seen + (ulong)b * p.ncolors;\n"
+"  for (uint i = t; i < size; i += BODY_GROUP_THREADS) {\n"
+"    if (i < n) {\n"
+"      uint4 q = nodes[first + i];\n"
+"      k[i] = (ulong)q.y << 48 | (ulong)(0xffffu - q.z) << 32 | (ulong)(0xffffffffu - rank[q.x]);\n"
+"    } else k[i] = ~0ul;\n"
+"    s[i] = (ushort)i;\n"
+"  }\n"
+"  for (uint i = t; i < BODY_GROUP_NODES / 32; i += BODY_GROUP_THREADS) consumed[i] = 0;\n"
+"  threadgroup_barrier(mem_flags::mem_device);\n"
+"  for (uint w = 2; w <= size; w <<= 1) {\n"
+"    for (uint j = w >> 1; j > 0; j >>= 1) {\n"
+"      for (uint i = t; i < size; i += BODY_GROUP_THREADS) {\n"
+"        uint l = i ^ j;\n"
+"        if (l > i) {\n"
+"          ulong a = k[i]; ulong c = k[l];\n"
+"          bool up = (i & w) == 0;\n"
+"          if (up ? a > c : a < c) {\n"
+"            k[i] = c; k[l] = a; ushort v = s[i]; s[i] = s[l]; s[l] = v;\n"
+"          }\n"
+"        }\n"
+"      }\n"
+"      threadgroup_barrier(mem_flags::mem_device);\n"
+"    }\n"
+"  }\n"
+"  for (uint i = t; i < n; i += BODY_GROUP_THREADS) {\n"
+"    uint4 q = nodes[first + s[i]];\n"
+"    spans[i] = q.y << 16 | q.z; colors[i] = (uchar)q.x;\n"
+"  }\n"
+"  threadgroup_barrier(mem_flags::mem_threadgroup);\n"
+"  if (t == 0) {\n"
+"    uint x = 0; uint e = 0; uint low = 0; uint active = 0xffffffffu;\n"
+"    while (true) {\n"
+"      while (low < n && (consumed[low / 32] >> (low % 32) & 1) != 0) low++;\n"
+"      if (low >= n) break;\n"
+"      uint at = low; uint dollar = 0;\n"
+"      if (x > (spans[at] >> 16)) { dollar = 1; x = 0; }\n"
+"      while (true) {\n"
+"        uint sx = spans[at] >> 16; uint mx = spans[at] & 0xffffu;\n"
+"        uint c = colors[at];\n"
+"        uint sel = p.selectors != 0 && active != c ? 1 : 0;\n"
+"        entries[first + e++] = uint4(first + s[at], 0, x, dollar | sel << 1 | b << 2);\n"
+"        if (sel != 0) active = c;\n"
+"        consumed[at / 32] |= 1u << (at % 32);\n"
+"        dollar = 0; x = mx;\n"
+"        uint lo = at + 1; uint hi = n;\n"
+"        while (lo < hi) { uint m = (lo + hi) / 2; if ((spans[m] >> 16) < x) lo = m + 1; else hi = m; }\n"
+"        uint w = lo / 32; uint bits = lo < n ? ~consumed[w] & (0xffffffffu << (lo % 32)) : 0;\n"
+"        while (bits == 0 && ++w * 32 < n) bits = ~consumed[w];\n"
+"        if (bits == 0) break;\n"
+"        at = w * 32 + ctz(bits);\n"
+"        if (at >= n) break;\n"
+"      }\n"
+"    }\n"
+"  }\n"
+"  threadgroup_barrier(mem_flags::mem_device);\n"
+"  uint per = (n + BODY_GROUP_THREADS - 1) / BODY_GROUP_THREADS;\n"
+"  uint lo = t * per; uint hi = min(n, lo + per); uint sum = 0;\n"
+"  for (uint i = lo; i < hi; i++) {\n"
+"    uint4 e = entries[first + i]; uint4 q = nodes[e.x];\n"
+"    uint len = (e.w & 1) + ((e.w & 2) != 0 ? 1 + emit_digits(registers[q.x]) : 0)\n"
+"      + (e.z < q.y ? emit_run_length(q.y - e.z, p.limited) : 0) + lengths[e.x];\n"
+"    spans[i] = len; sum += len;\n"
+"  }\n"
+"  partial[t] = sum;\n"
+"  threadgroup_barrier(mem_flags::mem_threadgroup);\n"
+"  if (t == 0) {\n"
+"    uint run = b > 0 ? 1 : 0;\n"
+"    for (uint i = 0; i < BODY_GROUP_THREADS; i++) { uint v = partial[i]; partial[i] = run; run += v; }\n"
+"    band_size[b] = run;\n"
+"  }\n"
+"  threadgroup_barrier(mem_flags::mem_threadgroup);\n"
+"  uint pos = partial[t];\n"
+"  for (uint i = lo; i < hi; i++) { entries[first + i].y = pos; pos += spans[i]; }\n"
+"}\n"
+/* Band offsets and the '-' that opens every band after the first. */
+"kernel void body_bases(device const uint *band_size [[buffer(0)]],\n"
+"                       device uint *band_bytes [[buffer(1)]],\n"
+"                       device uchar *out [[buffer(2)]],\n"
+"                       constant emit_params &p [[buffer(3)]],\n"
+"                       uint t [[thread_position_in_grid]]) {\n"
+"  if (t != 0) return;\n"
+"  uint total = 0;\n"
+"  for (uint b = 0; b < p.bands; b++) {\n"
+"    band_bytes[b] = total;\n"
+"    if (b > 0) out[total] = '-';\n"
+"    total += band_size[b];\n"
+"  }\n"
+"  band_bytes[p.bands] = total;\n"
+"}\n"
+"kernel void body_write(device const uint4 *nodes [[buffer(0)]],\n"
+"                       device const uchar *map [[buffer(1)]],\n"
+"                       device const uint4 *entries [[buffer(2)]],\n"
+"                       device const uint *band_bytes [[buffer(3)]],\n"
+"                       device const uint *registers [[buffer(4)]],\n"
+"                       device uchar *out [[buffer(5)]],\n"
+"                       constant emit_params &p [[buffer(6)]],\n"
+"                       uint t [[thread_position_in_grid]]) {\n"
+"  if (t >= p.nodes) return;\n"
+"  uint4 e = entries[t];\n"
+"  uint4 n = nodes[e.x];\n"
+"  uint o = band_bytes[e.w >> 2] + e.y;\n"
+"  if ((e.w & 1) != 0) out[o++] = '$';\n"
+"  if ((e.w & 2) != 0) { out[o++] = '#'; o = emit_number(out, o, registers[n.x]); }\n"
+"  if (e.z < n.y) o = emit_run(out, o, '?', n.y - e.z, p.limited);\n"
+"  device const uchar *row = map + n.w;\n"
+"  uint w = n.z - n.y;\n"
+"  for (uint i = 0; i < w;) {\n"
+"    uchar v = row[i]; uint f = i + 1;\n"
+"    while (f < w && row[f] == v) f++;\n"
+"    o = emit_run(out, o, (uchar)('?' + v), f - i, p.limited); i = f;\n"
+"  }\n"
 "}\n";
 
 typedef struct sixel_body_gpu_params {
@@ -101,20 +352,41 @@ typedef struct sixel_body_gpu_params {
     uint32_t words, bands, has_mask, pad;
 } sixel_body_gpu_params_t;
 
-struct sixel_body_gpu {
-    void *device;           /* id<MTLDevice>, retained */
-    void *queue;            /* id<MTLCommandQueue> */
-    void *classify;         /* id<MTLComputePipelineState> */
-    void *spans;
-    void *buffers[10];      /* id<MTLBuffer>, grown on demand */
-    size_t lengths[10];
-    uint32_t *band_first;
-    size_t band_first_count;
-};
+typedef struct sixel_body_gpu_emit_params {
+    uint32_t encoded_width, words, ncolors, bands;
+    uint32_t selectors, limited, nodes, group_limit;
+} sixel_body_gpu_emit_params_t;
+
+/* Mirrors BODY_GROUP_NODES and BODY_GROUP_THREADS in the shader. */
+#define SIXEL_BODY_GROUP_NODES 4096U
+#define SIXEL_BODY_GROUP_THREADS 256U
 
 enum {
     BODY_INDEXES, BODY_MASK, BODY_OCCUPANCY, BODY_COUNTS, BODY_WIDTHS,
-    BODY_NODE_FIRST, BODY_MAP_FIRST, BODY_NODES, BODY_MAP, BODY_FIRST_SEEN
+    BODY_NODE_FIRST, BODY_MAP_FIRST, BODY_NODES, BODY_MAP, BODY_FIRST_SEEN,
+    BODY_BAND_FIRST, BODY_LENGTHS, BODY_REGISTERS, BODY_COLUMNS, BODY_BITS,
+    BODY_SORTED, BODY_ENTRIES, BODY_BAND_SIZE, BODY_BAND_BYTES, BODY_BYTES,
+    BODY_KEYS, BODY_KEY_SLOTS, BODY_SLOTS
+};
+
+enum {
+    BODY_CLASSIFY, BODY_SPANS, BODY_LENGTH, BODY_ORDER, BODY_ORDER_GROUP,
+    BODY_BASES, BODY_WRITE, BODY_PIPELINES
+};
+
+static char const *const sixel_body_gpu_kernels[BODY_PIPELINES] = {
+    "body_classify", "body_spans", "body_lengths", "body_order",
+    "body_order_group", "body_bases", "body_write"
+};
+
+struct sixel_body_gpu {
+    void *device;           /* id<MTLDevice>, retained */
+    void *queue;            /* id<MTLCommandQueue> */
+    void *pipelines[BODY_PIPELINES];    /* id<MTLComputePipelineState> */
+    void *buffers[BODY_SLOTS];  /* id<MTLBuffer>, grown on demand */
+    size_t lengths[BODY_SLOTS];
+    uint32_t *band_first;
+    size_t band_first_count;
 };
 
 static id<MTLBuffer>
@@ -161,10 +433,10 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
     @autoreleasepool {
         id<MTLDevice> device;
         id<MTLLibrary> library;
-        id<MTLComputePipelineState> classify;
-        id<MTLComputePipelineState> spans;
+        id<MTLComputePipelineState> pipeline;
         id<MTLCommandQueue> queue;
         NSError *error;
+        int i;
 
         error = nil;
         device = MTLCreateSystemDefaultDevice();
@@ -177,18 +449,22 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
         if (library == nil) {
             goto end;
         }
-        classify = [device newComputePipelineStateWithFunction:
-            [library newFunctionWithName:@"body_classify"] error:&error];
-        spans = [device newComputePipelineStateWithFunction:
-            [library newFunctionWithName:@"body_spans"] error:&error];
+        context->device = (void *)CFBridgingRetain(device);
+        for (i = 0; i < BODY_PIPELINES; ++i) {
+            pipeline = [device newComputePipelineStateWithFunction:
+                [library newFunctionWithName:
+                    [NSString stringWithUTF8String:
+                        sixel_body_gpu_kernels[i]]] error:&error];
+            if (pipeline == nil) {
+                goto end;
+            }
+            context->pipelines[i] = (void *)CFBridgingRetain(pipeline);
+        }
         queue = [device newCommandQueue];
-        if (classify == nil || spans == nil || queue == nil) {
+        if (queue == nil) {
             goto end;
         }
-        context->device = (void *)CFBridgingRetain(device);
         context->queue = (void *)CFBridgingRetain(queue);
-        context->classify = (void *)CFBridgingRetain(classify);
-        context->spans = (void *)CFBridgingRetain(spans);
         status = SIXEL_OK;
     }
 end:
@@ -214,8 +490,9 @@ sixel_body_gpu_destroy(sixel_body_gpu_t *context)
             CFRelease(context->buffers[i]);
         }
     }
-    if (context->spans != NULL) CFRelease(context->spans);
-    if (context->classify != NULL) CFRelease(context->classify);
+    for (i = 0; i < BODY_PIPELINES; ++i) {
+        if (context->pipelines[i] != NULL) CFRelease(context->pipelines[i]);
+    }
     if (context->queue != NULL) CFRelease(context->queue);
     if (context->device != NULL) CFRelease(context->device);
     free(context->band_first);
@@ -238,7 +515,8 @@ sixel_body_gpu_encode_spans(id<MTLComputeCommandEncoder> encoder,
     NSUInteger group;
     id<MTLComputePipelineState> pipeline;
 
-    pipeline = (__bridge id<MTLComputePipelineState>)context->spans;
+    pipeline = (__bridge id<MTLComputePipelineState>)
+        context->pipelines[BODY_SPANS];
     [encoder setComputePipelineState:pipeline];
     for (i = 0; i < sizeof(slots) / sizeof(slots[0]); ++i) {
         [encoder setBuffer:(__bridge id<MTLBuffer>)context->buffers[slots[i]]
@@ -255,6 +533,78 @@ sixel_body_gpu_encode_spans(id<MTLComputeCommandEncoder> encoder,
     if (group > 256) group = 256;
     [encoder dispatchThreads:MTLSizeMake(threads, 1, 1)
        threadsPerThreadgroup:MTLSizeMake(group, 1, 1)];
+}
+
+static void
+sixel_body_gpu_dispatch(id<MTLComputeCommandEncoder> encoder,
+                        sixel_body_gpu_t *context, int kernel,
+                        int const *slots, NSUInteger count,
+                        sixel_body_gpu_emit_params_t const *params,
+                        NSUInteger threads)
+{
+    id<MTLComputePipelineState> pipeline;
+    NSUInteger group;
+    NSUInteger i;
+
+    pipeline = (__bridge id<MTLComputePipelineState>)
+        context->pipelines[kernel];
+    [encoder setComputePipelineState:pipeline];
+    for (i = 0; i < count; ++i) {
+        [encoder setBuffer:(__bridge id<MTLBuffer>)context->buffers[slots[i]]
+                    offset:0 atIndex:i];
+    }
+    [encoder setBytes:params length:sizeof(*params) atIndex:count];
+    group = [pipeline maxTotalThreadsPerThreadgroup];
+    if (group > 64) group = 64;
+    [encoder dispatchThreads:MTLSizeMake(threads > 0 ? threads : 1, 1, 1)
+       threadsPerThreadgroup:MTLSizeMake(group, 1, 1)];
+}
+
+/* Spell the body after the write pass: span lengths, the per-band order
+ * and offsets, band bases, then the bytes. */
+static void
+sixel_body_gpu_encode_emit(id<MTLComputeCommandEncoder> encoder,
+                           sixel_body_gpu_t *context,
+                           sixel_body_gpu_emit_params_t const *params)
+{
+    static int const lengths[] = { BODY_NODES, BODY_MAP, BODY_LENGTHS };
+    static int const order[] = {
+        BODY_NODES, BODY_BAND_FIRST, BODY_FIRST_SEEN, BODY_LENGTHS,
+        BODY_REGISTERS, BODY_COLUMNS, BODY_BITS, BODY_SORTED, BODY_ENTRIES,
+        BODY_BAND_SIZE
+    };
+    static int const group[] = {
+        BODY_NODES, BODY_BAND_FIRST, BODY_FIRST_SEEN, BODY_LENGTHS,
+        BODY_REGISTERS, BODY_KEYS, BODY_KEY_SLOTS, BODY_ENTRIES,
+        BODY_BAND_SIZE
+    };
+    static int const bases[] = { BODY_BAND_SIZE, BODY_BAND_BYTES, BODY_BYTES };
+    id<MTLComputePipelineState> pipeline;
+    NSUInteger i;
+    static int const write[] = {
+        BODY_NODES, BODY_MAP, BODY_ENTRIES, BODY_BAND_BYTES, BODY_REGISTERS,
+        BODY_BYTES
+    };
+
+    sixel_body_gpu_dispatch(encoder, context, BODY_LENGTH, lengths,
+        sizeof(lengths) / sizeof(lengths[0]), params, params->nodes);
+    sixel_body_gpu_dispatch(encoder, context, BODY_ORDER, order,
+        sizeof(order) / sizeof(order[0]), params, params->bands);
+    pipeline = (__bridge id<MTLComputePipelineState>)
+        context->pipelines[BODY_ORDER_GROUP];
+    [encoder setComputePipelineState:pipeline];
+    for (i = 0; i < sizeof(group) / sizeof(group[0]); ++i) {
+        [encoder setBuffer:(__bridge id<MTLBuffer>)context->buffers[group[i]]
+                    offset:0 atIndex:i];
+    }
+    [encoder setBytes:params length:sizeof(*params)
+              atIndex:sizeof(group) / sizeof(group[0])];
+    [encoder dispatchThreadgroups:MTLSizeMake(params->bands, 1, 1)
+            threadsPerThreadgroup:MTLSizeMake(SIXEL_BODY_GROUP_THREADS, 1, 1)];
+    sixel_body_gpu_dispatch(encoder, context, BODY_BASES, bases,
+        sizeof(bases) / sizeof(bases[0]), params, 1);
+    sixel_body_gpu_dispatch(encoder, context, BODY_WRITE, write,
+        sizeof(write) / sizeof(write[0]), params, params->nodes);
 }
 
 SIXELSTATUS
@@ -274,6 +624,10 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
     uint32_t *widths;
     uint32_t *node_first;
     uint32_t *map_first;
+    sixel_body_gpu_emit_params_t emit;
+    size_t gap_bound;
+    size_t byte_bound;
+    int spell;
 
     if (context == NULL || request == NULL || result == NULL ||
             request->indexes == NULL || request->width <= 0 ||
@@ -366,7 +720,8 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         }
 
         queue = (__bridge id<MTLCommandQueue>)context->queue;
-        classify = (__bridge id<MTLComputePipelineState>)context->classify;
+        classify = (__bridge id<MTLComputePipelineState>)
+            context->pipelines[BODY_CLASSIFY];
         command = [queue commandBuffer];
         blit = [command blitCommandEncoder];
         [blit fillBuffer:(__bridge id<MTLBuffer>)
@@ -435,10 +790,74 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
             return SIXEL_BAD_ALLOCATION;
         }
 
+        /* Every span costs at most '$', a selector, its leading gap and
+         * one byte per column; a gap is no longer than the limited
+         * spelling of the full width. */
+        spell = request->registers != NULL;
+        if (spell) {
+            gap_bound = 5U * (params.encoded_width / 255U) + 2U;
+            for (t = params.encoded_width; t > 0; t /= 10) ++gap_bound;
+            byte_bound = (size_t)params.bands + (size_t)map_total +
+                (size_t)nodes_total * (1U + 4U + gap_bound);
+            if (byte_bound > UINT32_MAX) {
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            memset(&emit, 0, sizeof(emit));
+            emit.encoded_width = params.encoded_width;
+            emit.words = params.words;
+            emit.ncolors = params.ncolors;
+            emit.bands = params.bands;
+            emit.selectors = request->selectors != 0;
+            emit.limited = request->limited != 0;
+            emit.nodes = (uint32_t)nodes_total;
+            /* Spans pack start and end in 16 bits each. */
+            emit.group_limit = params.encoded_width <= 0xffffU
+                ? SIXEL_BODY_GROUP_NODES : 0U;
+            if (sixel_body_gpu_buffer(context, BODY_BAND_FIRST,
+                        ((size_t)params.bands + 1U) * 4U) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_LENGTHS,
+                        (size_t)nodes_total * 4U) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_REGISTERS,
+                        (size_t)params.ncolors * 4U) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_COLUMNS,
+                        (size_t)params.bands *
+                        (2U * (size_t)params.encoded_width + 1U) * 4U)
+                        == nil ||
+                    sixel_body_gpu_buffer(context, BODY_BITS,
+                        (size_t)params.bands * params.words * 4U) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_SORTED,
+                        (size_t)nodes_total * 4U) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_ENTRIES,
+                        (size_t)nodes_total * 16U) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_BAND_SIZE,
+                        (size_t)params.bands * 4U) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_BAND_BYTES,
+                        ((size_t)params.bands + 1U) * 4U) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_BYTES,
+                        byte_bound) == nil ||
+                    sixel_body_gpu_buffer(context, BODY_KEYS,
+                        (size_t)params.bands * SIXEL_BODY_GROUP_NODES * 8U)
+                        == nil ||
+                    sixel_body_gpu_buffer(context, BODY_KEY_SLOTS,
+                        (size_t)params.bands * SIXEL_BODY_GROUP_NODES * 2U)
+                        == nil) {
+                return SIXEL_BAD_ALLOCATION;
+            }
+            memcpy([(__bridge id<MTLBuffer>)
+                    context->buffers[BODY_BAND_FIRST] contents],
+                context->band_first, ((size_t)params.bands + 1U) * 4U);
+            memcpy([(__bridge id<MTLBuffer>)
+                    context->buffers[BODY_REGISTERS] contents],
+                request->registers, (size_t)params.ncolors * 4U);
+        }
+
         command = [queue commandBuffer];
         encoder = [command computeCommandEncoder];
         sixel_body_gpu_encode_spans(encoder, context, &params, 1U,
             indexes, mask);
+        if (spell) {
+            sixel_body_gpu_encode_emit(encoder, context, &emit);
+        }
         [encoder endEncoding];
         [command commit];
         [command waitUntilCompleted];
@@ -455,6 +874,10 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
             context->buffers[BODY_FIRST_SEEN] contents];
         result->ncolors = (int)params.ncolors;
         result->band_count = (int)params.bands;
+        result->bytes = spell ? (unsigned char const *)[(__bridge id<MTLBuffer>)
+            context->buffers[BODY_BYTES] contents] : NULL;
+        result->band_bytes = spell ? (uint32_t const *)[(__bridge id<MTLBuffer>)
+            context->buffers[BODY_BAND_BYTES] contents] : NULL;
     }
     return SIXEL_OK;
 }

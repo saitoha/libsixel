@@ -47,6 +47,13 @@ typedef struct sixel_body_gpu_request {
     sixel_gpu_device_interface_t *device;
     sixel_gpu_buffer_interface_t *indexes_buffer;
     sixel_gpu_buffer_interface_t *mask_buffer;
+    /* Emission settings. A backend that spells the body also returns its
+     * bytes: registers[c] is the number written after '#' for color c,
+     * selectors is zero when no '#' is written (the two-color keyed rule),
+     * and limited splits repeats above 255. */
+    uint32_t const *registers;
+    int selectors;
+    int limited;
 } sixel_body_gpu_request_t;
 
 /* Borrowed views into the context's buffers, valid until the next run or
@@ -58,6 +65,11 @@ typedef struct sixel_body_gpu_result {
     uint32_t const *first_seen;     /* [band * ncolors + register] */
     int band_count;
     int ncolors;
+    /* The body as the CPU emission would write it, or NULL when the backend
+     * returns spans only. Band b is bytes[band_bytes[b] .. band_bytes[b + 1])
+     * and begins with its '-' separator, except band 0. */
+    unsigned char const *bytes;
+    uint32_t const *band_bytes;
 } sixel_body_gpu_result_t;
 
 typedef struct sixel_body_gpu sixel_body_gpu_t;

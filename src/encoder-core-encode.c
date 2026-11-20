@@ -1684,6 +1684,21 @@ sixel_parallel_worker_one(sixel_thread_pool_job_t job,
         goto done;
     }
 
+    if (ctx->gpu_result != NULL && ctx->gpu_result->bytes != NULL) {
+        /* The device spelled the band; the band carries its own '-'. */
+        uint32_t const *offsets = ctx->gpu_result->band_bytes;
+        if (offsets[band_index + 1] > offsets[band_index]) {
+            state->writer_error = sixel_output_write_bytes(state->output,
+                (char const *)ctx->gpu_result->bytes + offsets[band_index],
+                (int)(offsets[band_index + 1] - offsets[band_index]));
+        }
+        status = state->writer_error;
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        goto done;
+    }
+
     if (ctx->gpu_result != NULL) {
         sixel_band_state_reset(&state->band);
         status = sixel_band_compose_gpu(&state->work, ctx->gpu_result,

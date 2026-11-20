@@ -311,6 +311,8 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
     result->first_seen = (uint32_t const *)buffers[BODY_FIRST_SEEN].mapped;
     result->ncolors = (int)params->ncolors;
     result->band_count = (int)params->bands;
+    result->bytes = NULL;
+    result->band_bytes = NULL;
     return SIXEL_OK;
 }
 
