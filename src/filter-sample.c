@@ -606,10 +606,31 @@ sixel_filter_sample_add_solid(sixel_filter_sample_solid_cell_t *cells,
     key = ((unsigned int)(px[0] >> shift) << (SIXEL_SAMPLE_SOLID_BITS * 2u))
         | ((unsigned int)(px[1] >> shift) << SIXEL_SAMPLE_SOLID_BITS)
         | (unsigned int)(px[2] >> shift);
+#if SIXEL_SAMPLE_NEON
+    {
+        /* count and the RGB sums are adjacent: one vector update. The
+         * bytes are loaded once; histogram stores cannot alias them. */
+        uint8x8_t bytes;
+        uint32x4_t cell;
+
+        bytes = vdup_n_u8(1);
+        bytes = vld1_lane_u8(px, bytes, 1);
+        bytes = vld1_lane_u8(px + 1, bytes, 2);
+        bytes = vld1_lane_u8(px + 2, bytes, 3);
+        cell = vld1q_u32(&cells[key].count);
+        cell = vaddw_u16(cell, vget_low_u16(vmovl_u8(bytes)));
+        vst1q_u32(&cells[key].count, cell);
+        if (depth > 3) {
+            cells[key].sum[3] += px[3];
+        }
+    }
+    (void)c;
+#else
     cells[key].count++;
     for (c = 0; c < depth; ++c) {
         cells[key].sum[c] += px[c];
     }
+#endif
 }
 
 #define SIXEL_SAMPLE_SOLID_CELLS (1u << (SIXEL_SAMPLE_SOLID_BITS * 3u))
@@ -778,12 +799,20 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
                      * branch per point mispredicts. List the solid points
                      * without one, then add them in the same column order. */
                     solid_count = 0;
-                    for (k = 0; k < chunk_points; ++k) {
-                        solid[solid_count] = (unsigned char)k;
-                        solid_count += !varies[k] && (mask == NULL
-                            || mask[(size_t)y * (size_t)width + (size_t)x
-                                    + (size_t)(SIXEL_SAMPLE_SOLID_STRIDE * k)]
-                                == 0);
+                    if (mask == NULL) {
+                        for (k = 0; k < chunk_points; ++k) {
+                            solid[solid_count] = (unsigned char)k;
+                            solid_count += varies[k] == 0;
+                        }
+                    } else {
+                        /* Both bytes are read: && would branch per point. */
+                        for (k = 0; k < chunk_points; ++k) {
+                            solid[solid_count] = (unsigned char)k;
+                            solid_count += (varies[k] == 0)
+                                & (mask[(size_t)y * (size_t)width + (size_t)x
+                                        + (size_t)(SIXEL_SAMPLE_SOLID_STRIDE
+                                                   * k)] == 0);
+                        }
                     }
                     for (k = 0; k < solid_count; ++k) {
                         sixel_filter_sample_add_solid(cells, pixels
