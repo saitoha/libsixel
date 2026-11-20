@@ -146,6 +146,7 @@ docs/testing/png-chrm-arithmetic.md	reference	contributor	test inventory + indep
 docs/testing/png-chrm-boundaries.md	reference	contributor	test inventory + fixture/oracle explanation
 docs/testing/resampling-coverage.md	reference	contributor	coverage inventory + assertion-mechanism explanation
 docs/testing/staticcheck.md	explanation	contributor	staticcheck purpose + invariant reference and run/add how-to
+docs/gpu/host-memory.md	explanation	contributor	
 docs/threading/README.md	reference	both	navigation for runtime users and threading contributors
 docs/threading/animation.md	explanation	contributor	frame-ownership model + scheduling contracts and future requirements
 docs/threading/decoder.md	explanation	both	parallel decode rationale + path reference and measured scaling
