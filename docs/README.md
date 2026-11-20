@@ -31,6 +31,7 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 - [SIXEL format overview](sixel-format/README.md) is a practical guide to the DEC SIXEL wire format, its control functions, rendering model, and interoperability limits.
 - [Terminal graphics history](sixel-format/terminal-graphics-history/README.md) surveys how terminals have drawn pictures, from vector and raster protocols to images made of characters.
 - [SIXEL specification status and interpretation layers](sixel-format/specification-layers.md) explains what the standards and DEC manuals define, how implementations interpret the rest, and where libsixel stands.
+- [How SIXEL implementations evolved](sixel-format/implementation-history.md) traces encoding and decoding techniques from hand-written files to layered, parallel and delta output, and where each first appeared.
 - [SIXEL patents and royalties](sixel-format/patents-and-royalties.md) summarizes the public evidence that implementing SIXEL requires no license or royalty.
 - [SIXEL codec comparison](sixel-format/comparison/README.md) compares SIXEL's quality, speed, and size with JPEG, GIF, PNG, QOI, WebP, AVIF, and HEIC.
 

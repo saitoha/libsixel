@@ -130,6 +130,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/platform-support.md \
 	docs/project-history.md \
 	docs/sixel-format/README.md \
+	docs/sixel-format/implementation-history.md \
 	docs/sixel-format/patents-and-royalties.md \
 	docs/misc/algorithm-patents.md \
 	docs/sixel-format/specification-layers.md \
