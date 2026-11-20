@@ -15,6 +15,8 @@
 #include "src/palette.h"
 #include "src/threading.h"
 
+#if SIXEL_ENABLE_THREADS
+
 #define GPU_BODY_COLORS 40
 #define GPU_BODY_KEY 5
 
@@ -173,6 +175,8 @@ gpu_body_decode(gpu_body_sink_t const *sink, int *width, int *height)
     free(palette);
     return pixels;
 }
+
+#endif
 
 int
 test_0184_core_gpu_body(int argc, char **argv)

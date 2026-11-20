@@ -1266,6 +1266,10 @@ run_case_tap "staticcheck-ci-configure-make" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-configure-make.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-ci-apt-retry" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-apt-retry.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-ci-install-path" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-install-path.sh" \
     "$src_root" || fail_and_exit $?

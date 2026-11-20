@@ -17866,8 +17866,9 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; CKSUM='$(CKSUM)'; export CKSUM; AWK='$(AWK)'; \
 	export AWK; SED='$(SED)'; export SED; \
 	SIXEL_TEST_PKG_CONFIG='$(PKG_CONFIG)'; export \
-	SIXEL_TEST_PKG_CONFIG; SIXEL_TEST_CONFIG_SHELL='$(SIXEL_TEST_SHELL)'; \
-	export SIXEL_TEST_CONFIG_SHELL; \
+	SIXEL_TEST_PKG_CONFIG; \
+	SIXEL_TEST_CONFIG_SHELL='$(SIXEL_TEST_SHELL)'; export \
+	SIXEL_TEST_CONFIG_SHELL; \
 	TOP_SRCDIR='$(SIXEL_TEST_TOP_SRCDIR)'; export TOP_SRCDIR; \
 	TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR; \
 	$(am__append_1) $(am__append_2) \
@@ -29799,6 +29800,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-c-test-crt.sh \
 	_static/awk/c-test-crt.awk \
 	_static/sh/staticcheck-ci-configure-make.sh \
+	_static/sh/staticcheck-ci-apt-retry.sh \
 	_static/sh/staticcheck-ci-install-path.sh \
 	_static/sh/staticcheck-cosmocc-cache-digest.sh \
 	_static/sh/staticcheck-ci-msvc-complete-build.sh \

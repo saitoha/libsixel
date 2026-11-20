@@ -13,7 +13,7 @@ test_palette_0079_sampling_small_solid(int argc, char **argv)
     sixel_allocator_t *allocator;
     sixel_frame_t *frame;
     sixel_filter_t *filter;
-    sixel_filter_sample_config_t config;
+    sixel_filter_sample_config_t config = {0};
     sixel_sample_stream_t samples;
     unsigned char pixels[32 * 32 * 3];
     unsigned char const *sample_pixels;
@@ -28,7 +28,6 @@ test_palette_0079_sampling_small_solid(int argc, char **argv)
     filter = NULL;
     ok = 0;
     memset(pixels, 128, sizeof(pixels));
-    memset(&config, 0, sizeof(config));
     sixel_sample_stream_init(&samples);
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL,
                 NULL, NULL)) ||

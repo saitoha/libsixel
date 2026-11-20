@@ -55,7 +55,7 @@ sample_case(int format, int clipped, int mode, int encoded_test, int budget)
     sixel_sample_stream_t samples;
     sixel_frame_interface_t *iface;
     sixel_frame_transparency_t transparency;
-    sixel_filter_sample_config_t config;
+    sixel_filter_sample_config_t config = {0};
     sixel_thread_budget_scope_t scope;
     sixel_runtime_policy_options_t runtime;
     sixel_encoder_t *encoder;
@@ -133,7 +133,6 @@ sample_case(int format, int clipped, int mode, int encoded_test, int budget)
     }
     pixel_format = format == 0 ? SIXEL_PIXELFORMAT_RGB888
         : format == 1 ? SIXEL_PIXELFORMAT_PAL8 : SIXEL_PIXELFORMAT_RGBFLOAT32;
-    memset(&config, 0, sizeof(config));
     config.policy = SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
     config.source = SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME;
     /* At 64 colors this raster uses different strides for auto, high and

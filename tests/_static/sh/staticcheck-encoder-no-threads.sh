@@ -27,5 +27,12 @@ sed '/^#define SIXEL_ENABLE_THREADS[[:space:]]/d' \
     echo 'not ok 1 - encoder builds with SIXEL_ENABLE_THREADS undefined'
     exit 0
 }
-echo 'ok 1 - encoder builds with SIXEL_ENABLE_THREADS undefined'
+# Compile the registered GPU test with unused-function warnings enabled.
+"$cc_bin" -std=c99 -DHAVE_CONFIG_H -fsyntax-only -Wunused-function -Werror \
+    -I"$config_dir" -I"$build_root/include" -I"$src_root/include" \
+    -I"$src_root" "$src_root/tests/encoder/indexed/0184_core_gpu_body.c" || {
+    echo 'not ok 1 - GPU-body test helpers require thread support'
+    exit 0
+}
+echo 'ok 1 - encoder and test build with SIXEL_ENABLE_THREADS undefined'
 exit 0

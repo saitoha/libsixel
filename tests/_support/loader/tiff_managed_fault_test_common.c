@@ -552,7 +552,13 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_cdef_export_icc(sixel_color_def_t const *definition,
                       unsigned char **bytes, size_t *length,
                       sixel_allocator_t *allocator);
+#define sixel_cms_prepare_bpc mf_cms_prepare_bpc
+#define sixel_cms_apply_bpc mf_cms_apply_bpc
+#define sixel_cms_builtin_black_y mf_cms_builtin_black_y
 #include "src/cms.c"
+#undef sixel_cms_builtin_black_y
+#undef sixel_cms_apply_bpc
+#undef sixel_cms_prepare_bpc
 #undef malloc
 #undef SIXEL_TEST_MF_STRING
 #undef SIXEL_TEST_MF_STRING_IMPL

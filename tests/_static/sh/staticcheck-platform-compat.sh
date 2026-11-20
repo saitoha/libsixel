@@ -381,6 +381,12 @@ if grep -Eq '^[[:space:]]*static[[:space:]]+SIXEL_REFRESH_SPATIAL_TARGET_AVX2[[:
     "$src_root/src/refresh-spatial.c"; then
     fail 'spatial AVX2 helpers must not return a 256-bit vector'
 fi
+# New sample options must have defined defaults in C test fixtures.
+if grep -En '^[[:space:]]*sixel_filter_sample_config_t[[:space:]]+[[:alnum:]_]+[[:space:]]*;' \
+    "$src_root"/tests/palette/sampling/*.c \
+    "$src_root"/tests/_support/quant/palette/sampling_float/*.c; then
+    fail 'initialize sample filter configurations at declaration'
+fi
 # AVX2 sampling loads full words from bitmaps with a partial last word.
 require_fixed 'above[((3 * 31 + 1) * 4 + 32) / 8 + 4] = {0};' \
     src/filter-sample.c
