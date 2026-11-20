@@ -1,18 +1,31 @@
 #!/bin/sh -e
 
+output=
 prev=
-for a in "$@"; do
-  if [ "$prev" = "-o" ]; then
-    case "$a" in
-      # Meson changed the sanity check output name in newer releases.
-      # Handle both legacy and current forms to keep setup portable.
-      sanitycheck*.exe|sanity_check_for_*.exe)
-        cp "$(which true)" "$a"
-        exit 0
-        ;;
-    esac
-  fi
-  prev="$a"
+for arg do
+    if test "$prev" = -o; then
+        output=$arg
+    fi
+    prev=$arg
 done
 
-exec cosmocc "$@"
+# Meson launches linked probes directly with subprocess, without a shell to
+# interpret an APE executable. Keep the compiler output and give each
+# temporary probe a shell launcher. Installed and test binaries stay APE.
+case "$output" in
+    /*) ;;
+    *) output=$PWD/$output ;;
+esac
+case "$output" in
+    */meson-private/*.exe) ;;
+    *) exec cosmocc "$@" ;;
+esac
+
+cosmocc "$@"
+test "$(head -n 1 "$output")" = "MZqFpD='" || exit 0
+mv "$output" "$output.ape"
+cat >"$output" <<'LAUNCHER'
+#!/bin/sh
+exec sh "$0.ape" "$@"
+LAUNCHER
+chmod +x "$output"
