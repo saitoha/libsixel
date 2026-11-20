@@ -72,10 +72,10 @@ Sorting a band into one map per color and cutting the maps into nodes is the des
 <!-- measurements:begin:nodes -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 3.27 ms | 7.7× | 7.50 ms | 1.0× | 346,872 bytes |
-| Photograph, 1920×1080 | 20.2 ms | 9.0× | 58.1 ms | 1.0× | 1,677,105 bytes |
-| Two colors, 1920×1080 | 2.19 ms | 0.8× | 2.15 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 65.1 ms | 4.2× | 172.3 ms | 1.0× | 9,942,096 bytes |
+| Photograph, 600×450 | 3.04 ms | 8.3× | 6.77 ms | 1.0× | 346,872 bytes |
+| Photograph, 1920×1080 | 19.2 ms | 9.5× | 53.0 ms | 1.0× | 1,677,105 bytes |
+| Two colors, 1920×1080 | 2.16 ms | 0.8× | 2.29 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 64.3 ms | 4.3× | 155.7 ms | 1.0× | 9,942,096 bytes |
 <!-- measurements:end -->
 
 The speed-up compares each chapter with the one before it. The photograph now encodes 9 times faster, and random noise about 4 times. The two-color pattern gets slightly slower: the first codec already made only two passes there, and the drawers cost a little bookkeeping. This is the largest single gain of the whole tutorial, and it comes from a better plan, not from a clever instruction.

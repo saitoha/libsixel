@@ -176,10 +176,8 @@ docs/tutorial/sixel-codec/full-decoder.md	tutorial	both	codec-implementation les
 docs/tutorial/sixel-codec/fewer-questions.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/masks.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/next-node.md	tutorial	both	codec-implementation lesson + measurements
-docs/tutorial/sixel-codec/column-words.md	tutorial	both	codec-implementation lesson + measurements
-docs/tutorial/sixel-codec/swar.md	tutorial	both	codec-implementation lesson + measurements
-docs/tutorial/sixel-codec/first-colors.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/occupancy.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-classify comparison
+docs/tutorial/sixel-codec/direct-writes.md	tutorial	both	codec-implementation lesson + measurements and libsixel reserved-emission comparison
 docs/tutorial/sixel-codec/word-decoder.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-word design
 docs/tutorial/sixel-codec/vector-lanes.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/transpose.md	tutorial	both	codec-implementation lesson + measurements

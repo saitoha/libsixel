@@ -2,10 +2,11 @@
 /*
  * Remember where each color is.
  *
- * Each (color, column) pair that classification finds also sets a bit in
- * that color's occupancy bitmap, so cutting nodes walks the occupied columns
- * instead of scanning every slot of every color present. The decoder is the
- * masks chapter's, and the stream is the packing chapter's.
+ * Classification sets one bit per (color, column) in an occupancy row as it
+ * fills the drawers, so cutting nodes walks the occupied columns with a bit
+ * scan instead of looking at every column of every color present. The
+ * encoder's arrays move into one struct. The decoder is the masks
+ * chapter's, and the stream is the packing chapter's.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -120,14 +121,8 @@ static void put_header_and_palette(image_t const *img, buffer_t *out)
         buf_printf(out, "#%d;2;%d;%d;%d", c, PCT(img->palette[c * 3]),
                    PCT(img->palette[c * 3 + 1]), PCT(img->palette[c * 3 + 2]));
 }
-#include <stdlib.h>
-#include <string.h>
-
-#include "tutorial.h"
 
 #define NODE_GAP 9
-#define BYTES_01 UINT64_C(0x0101010101010101)
-#define BYTES_7F UINT64_C(0x7f7f7f7f7f7f7f7f)
 
 static inline int ctz64(uint64_t v)
 {
@@ -138,23 +133,6 @@ static inline int ctz64(uint64_t v)
     for (; (v & 1) == 0; v >>= 1) n++;
     return n;
 #endif
-}
-
-/* Bit 7 of each byte of the result is set when that byte of v is zero:
- * adding 0x7f to the low seven bits carries into bit 7 unless they are
- * all zero, and the byte's own bit 7 must be clear as well. */
-static inline uint64_t zero_bytes(uint64_t v)
-{
-    return ~(((v & BYTES_7F) + BYTES_7F) | v | BYTES_7F);
-}
-
-/* Bit i of the result is set when byte i of word equals c. The multiply
- * gathers the eight byte flags into the top byte. */
-static inline unsigned int equal_bytes(uint64_t word, unsigned int c)
-{
-    uint64_t zero = zero_bytes(word ^ (c * BYTES_01));
-    return (unsigned int)((((zero >> 7) & BYTES_01) *
-                           UINT64_C(0x0102040810204080)) >> 56);
 }
 
 /* ------------------------------------------------------------------ */
@@ -171,7 +149,6 @@ typedef struct encoder {
     size_t words;               /* 64-bit words per occupancy row */
     unsigned char *map;         /* ncolors rows of sixel bits */
     uint64_t *occupancy;        /* ncolors rows of column bits */
-    uint64_t *columns;          /* one column word per x */
     unsigned char used[256];    /* colors present in the band */
     uint64_t *starts;           /* columns where pending nodes start */
     node_t *pool;
@@ -181,8 +158,7 @@ typedef struct encoder {
 
 static void encoder_free(encoder_t *e)
 {
-    free(e->map), free(e->occupancy), free(e->columns);
-    free(e->starts), free(e->pool), free(e->heads);
+    free(e->map), free(e->occupancy), free(e->starts), free(e->pool), free(e->heads);
 }
 
 static int encoder_init(encoder_t *e, image_t const *img)
@@ -194,48 +170,26 @@ static int encoder_init(encoder_t *e, image_t const *img)
     e->words = ((size_t)w + 63) / 64;
     e->map = calloc((size_t)img->ncolors * w, 1);
     e->occupancy = calloc((size_t)img->ncolors * e->words, sizeof(uint64_t));
-    e->columns = malloc((size_t)w * sizeof(uint64_t));
     e->pool = malloc(sizeof(node_t) * (size_t)img->ncolors * (w / (NODE_GAP + 1) + 1));
     e->heads = calloc((size_t)w, sizeof(node_t *));
     e->starts = calloc(e->words, sizeof(uint64_t));
-    if (!e->map || !e->occupancy || !e->columns || !e->pool || !e->heads || !e->starts) {
+    if (!e->map || !e->occupancy || !e->pool || !e->heads || !e->starts) {
         encoder_free(e);
         return -1;
     }
     return 0;
 }
 
-/* Transpose the band's rows into column words. Accumulating a whole row
- * at a time keeps every loop a sequential pass that compilers vectorize. */
-static void load_columns(encoder_t *e, image_t const *img, int y, int rows)
+/* One pass over the band's pixels: the pixel's row bit goes into its
+ * color's drawer, and the column's bit into that color's occupancy row. */
+static void classify(encoder_t *e, image_t const *img, int y, int rows)
 {
-    memset(e->columns, 0, (size_t)e->width * sizeof(uint64_t));
     for (int r = 0; r < rows; r++) {
         unsigned char const *row = img->pixels + (size_t)(y + r) * e->width;
-        for (int x = 0; x < e->width; x++)
-            e->columns[x] |= (uint64_t)row[x] << (8 * r);
-    }
-}
-
-/* Visit every color of every column once. A byte is the first occurrence
- * of its color when no lower byte holds the same register; comparing the
- * word with itself shifted by one to five bytes finds all repeats at once.
- * Each first occurrence then names a color, and equal_bytes() finds all its
- * rows. The iterations are independent, so the CPU can overlap them. */
-static void classify(encoder_t *e, int rows)
-{
-    uint64_t lanes = UINT64_C(0x8080808080808080) >> (8 * (8 - rows));
-
-    for (int x = 0; x < e->width; x++) {
-        uint64_t word = e->columns[x], repeat = 0;
-        for (int k = 1; k < rows; k++)
-            repeat |= zero_bytes(word ^ (word << (8 * k))) & (~UINT64_C(0) << (8 * k));
-        for (uint64_t firsts = lanes & ~repeat; firsts != 0; firsts &= firsts - 1) {
-            unsigned int c = (unsigned int)(word >> (ctz64(firsts) & ~7)) & 0xff;
-            e->map[(size_t)c * e->width + x] =
-                (unsigned char)(equal_bytes(word, c) & ((1u << rows) - 1));
-            e->occupancy[c * e->words + (size_t)x / 64] |= UINT64_C(1) << (x % 64);
-            e->used[c] = 1;
+        for (int x = 0; x < e->width; x++) {
+            e->map[row[x] * e->width + x] |= (unsigned char)(1 << r);
+            e->occupancy[row[x] * e->words + (size_t)x / 64] |= UINT64_C(1) << (x % 64);
+            e->used[row[x]] = 1;
         }
     }
 }
@@ -251,8 +205,9 @@ static void add_node(encoder_t *e, int c, int sx, int mx)
     e->starts[sx / 64] |= UINT64_C(1) << (sx % 64);
 }
 
-/* Same nodes as packing, found by walking set occupancy bits. The walk
- * also clears the occupancy bits and used flags for the next band. */
+/* The nodes of next-node, found by walking the set occupancy bits instead
+ * of scanning every column of every color. The walk also clears the bits
+ * and the used flags for the next band. */
 static void compose(encoder_t *e)
 {
     e->nnodes = 0;
@@ -334,8 +289,7 @@ static void encode_band(encoder_t *e, image_t const *img, int y, buffer_t *out)
     int rows = img->height - y < 6 ? img->height - y : 6;
 
     if (y > 0) buf_putc(out, '-');
-    load_columns(e, img, y, rows);
-    classify(e, rows);
+    classify(e, img, y, rows);
     compose(e);
     put_band(e, out);
 }

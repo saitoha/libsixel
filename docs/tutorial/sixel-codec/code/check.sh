@@ -28,10 +28,10 @@ failures=0
 
 # Encoders that must write packing's bytes, and decoders that must read like
 # full-decoder. The two threaded programs are checked separately.
-same_encoders="full-decoder fewer-questions masks next-node column-words
-    swar first-colors occupancy word-decoder vector-lanes transpose"
-full_decoders="fewer-questions masks next-node column-words swar
-    first-colors occupancy word-decoder vector-lanes transpose parallel-bands"
+same_encoders="full-decoder fewer-questions masks next-node occupancy
+    direct-writes word-decoder vector-lanes transpose"
+full_decoders="fewer-questions masks next-node occupancy direct-writes
+    word-decoder vector-lanes transpose parallel-bands"
 serial="first-codec nodes packing full-decoder $same_encoders overpaint"
 threaded="parallel-bands parallel-decoder"
 

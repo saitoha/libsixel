@@ -1,6 +1,6 @@
 # Sixteen Columns in One Instruction
 
-The [SWAR](swar.md) chapter packed eight bytes into one 64-bit number and handled them together with clever arithmetic. Modern processors have a more direct tool: **vector registers** that hold sixteen bytes and instructions that compare, combine or shuffle all sixteen in one go. This is called **SIMD**, *single instruction, multiple data*. This chapter uses it to classify sixteen columns at once. The decoder is the [word-decoder](word-decoder.md) chapter's, and the stream is still the [packing](packing.md) chapter's. The source is [`code/vector-lanes.c`](code/vector-lanes.c).
+The [word decoder](word-decoder.md) handled the six bytes of a column word together with ordinary 64-bit arithmetic. Modern processors have a wider tool: **vector registers** that hold sixteen bytes and instructions that compare, combine or shuffle all sixteen in one go. This is called **SIMD**, *single instruction, multiple data*. This chapter uses it to sort sixteen columns into drawers at once. The decoder is the [word-decoder](word-decoder.md) chapter's, and the stream is still the [packing](packing.md) chapter's. The source is [`code/vector-lanes.c`](code/vector-lanes.c).
 
 **You will learn:**
 
@@ -8,7 +8,7 @@ The [SWAR](swar.md) chapter packed eight bytes into one 64-bit number and handle
 - how six compares give one color's characters for sixteen columns,
 - why SIMD helps some pictures and not others.
 
-The code uses only the vector instructions that every 64-bit PC and every 64-bit ARM processor has: SSE2 on x86-64 and Advanced SIMD (NEON) on AArch64. Elsewhere, or when built with `-DTUTORIAL_NO_SIMD`, the [occupancy](occupancy.md) encoder runs unchanged.
+The code uses only the vector instructions that every 64-bit PC and every 64-bit ARM processor has: SSE2 on x86-64 and Advanced SIMD (NEON) on AArch64. Elsewhere, or when built with `-DTUTORIAL_NO_SIMD`, the [direct-writes](direct-writes.md) encoder runs unchanged.
 
 ## One instruction, sixteen answers
 
@@ -69,7 +69,7 @@ for (int x = 0; x < end; x += 16) {
 }
 ```
 
-This loop takes the place of the column words in the encoder. With SIMD, they run only for the at most fifteen columns left over at the right edge of each band. The occupancy bits stay, because cutting nodes still needs them.
+This loop takes the place of the [occupancy](occupancy.md) chapter's loop over pixels, which now runs only for the at most fifteen columns left over at the right edge of each band. The occupancy bits stay, because cutting nodes still needs them.
 
 The loop over the block's 96 pixels only looks for colors it has not handled yet. `seen[c] == stamp` marks colors already done in this block, and increasing `stamp` for the next block forgets them all without clearing anything. Every new color then costs up to six compares, one 16-byte store into its drawer, and one movemask for its lights. Lanes without the color store zero, which the drawer already holds there, so the store needs no mask.
 
@@ -92,20 +92,20 @@ Which SIXEL encoder first classified columns with vector compares is not known. 
 >
 > `photo.ppm` is the picture you decoded in the [fewer questions](fewer-questions.md) chapter. Which picture gains, and which one loses? Can you explain why from the number of colors per block?
 >
-> Then write one yourself. `put_span()` looks for the end of a run one byte at a time. Rewrite it to compare sixteen bytes at once with `v_eq()` and `v_movemask()`, and find the first difference with `ctz64()`. `make check` must still pass. Measure it: photographs have short runs, so the result may surprise you.
+> Then write one yourself. `put_band()` looks for the end of a run one byte at a time. Rewrite it to compare sixteen bytes at once with `v_eq()` and `v_movemask()`, and find the first difference with `ctz64()`. `make check` must still pass. Measure it: photographs have short runs, so the result may surprise you.
 
 ## How fast is it?
 
 <!-- measurements:begin:vector-lanes -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 2.36 ms | 1.0× | 0.59 ms | 1.0× | 328,750 bytes |
-| Photograph, 1920×1080 | 10.8 ms | 1.1× | 3.08 ms | 1.0× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.70 ms | 1.4× | 1.15 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 74.4 ms | 0.9× | 16.1 ms | 1.0× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.90 ms | 0.9× | 0.61 ms | 1.0× | 328,750 bytes |
+| Photograph, 1920×1080 | 8.60 ms | 1.0× | 3.09 ms | 1.0× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 1.73 ms | 2.4× | 1.21 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 65.7 ms | 0.9× | 15.7 ms | 1.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-On the photograph SIMD gains less than 10%: classifying takes 2.2 ms instead of 3.3 ms, but classifying is not where most of the time goes. Writing out the stream takes about 60% of the time, and no vector compare helps with that. The two-color pattern gains most, 1.4 times, because each block holds only two colors. Random noise loses a little, because the number of colors per block approaches the number of pixels. SIMD pays only where the data is regular and the time is actually spent, which is why this chapter comes after the cheaper ideas.
+On the photograph SIMD gains almost nothing: classifying takes 2.2 ms instead of 2.4 ms, and classifying is not where most of the time goes. Writing out the stream takes about half of the time, and no vector compare helps with that. The two-color pattern gains 2.4 times, because each block holds only two colors: classifying takes 0.9 ms instead of 3.3 ms, which wins back what the [occupancy](occupancy.md) chapter lost there. Random noise loses a little, because the number of colors per block approaches the number of pixels. SIMD pays only where the data is regular and the time is actually spent, which is why this chapter comes after the cheaper ideas.
 
 libsixel's [encoder](../../encoder/output/encode-policy/README.md) uses NEON to classify sparse mask bytes, and SIMD in [color-space conversion](../../encoder/colorspace-handling/README.md) and [resampling](../../encoder/preprocessing/resampling/README.md).
 

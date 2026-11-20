@@ -81,10 +81,10 @@ The other chapters can be compared byte by byte, but this stream is supposed to 
 <!-- measurements:begin:overpaint -->
 | Input | next-node bytes | overpaint bytes | Saved | Encode, ms | Decode, ms | Saved by libsixel `size` |
 | --- | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 328,750 | 302,133 | 8.1% | 3.61 → 3.57 | 0.78 → 0.78 | 8.1% |
-| Photograph, 1920×1080 | 1,663,155 | 1,443,766 | 13.2% | 21.1 → 20.4 | 4.20 → 3.88 | 13.0% |
-| Two colors, 1920×1080 | 692,322 | 347,802 | 49.8% | 2.22 → 1.58 | 1.47 → 0.79 | 48.9% |
-| Random noise, 1920×1080 | 9,316,560 | 9,228,951 | 0.9% | 102.2 → 101.7 | 18.5 → 19.1 | 0.9% |
+| Photograph, 600×450 | 328,750 | 302,133 | 8.1% | 3.49 → 3.52 | 0.78 → 0.78 | 8.1% |
+| Photograph, 1920×1080 | 1,663,155 | 1,443,766 | 13.2% | 20.8 → 20.3 | 4.25 → 3.97 | 13.0% |
+| Two colors, 1920×1080 | 692,322 | 347,802 | 49.8% | 2.22 → 1.58 | 1.49 → 0.81 | 48.9% |
+| Random noise, 1920×1080 | 9,316,560 | 9,228,951 | 0.9% | 101.7 → 101.3 | 18.6 → 19.1 | 0.9% |
 <!-- measurements:end -->
 
 The saving follows the picture's structure. Every band of the two-color pattern has one color that fills the whole width, and its long mask collapses into a single run, so half the stream disappears. A dithered photograph gains less, because only one node per stretch of columns gets to fill. Random noise gains almost nothing: each color has so few pixels in a band that its nodes are short, and the first line holds only a small part of them.

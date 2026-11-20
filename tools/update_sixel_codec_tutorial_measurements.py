@@ -38,12 +38,11 @@ INPUTS = (
 # before it; overpaint changes bytes, not speed, and has a table of its own.
 CHAPTERS = (
     "first-codec", "nodes", "packing", "full-decoder", "fewer-questions",
-    "masks", "next-node", "column-words", "swar", "first-colors", "occupancy",
-    "word-decoder", "vector-lanes", "transpose", "parallel-bands",
-    "parallel-decoder",
+    "masks", "next-node", "occupancy", "direct-writes", "word-decoder",
+    "vector-lanes", "transpose", "parallel-bands", "parallel-decoder",
 )
-PHASE_CHAPTERS = ("packing", "next-node", "column-words", "swar",
-                  "first-colors", "occupancy", "vector-lanes")
+PHASE_CHAPTERS = ("packing", "next-node", "occupancy", "direct-writes",
+                  "vector-lanes")
 PAGES = {
     "README.md": ("summary",),
     **{f"{chapter}.md": (chapter,) for chapter in CHAPTERS},
@@ -248,14 +247,16 @@ def measure_phases(code: Path, out: Path, cc: str, cflags: str) -> dict:
             ("        /* 3. order:", f"        {lap(1)} /* 3. order:"),
             ("        put_band(out, list);\n",
              f"        put_band(out, list); {lap(2)} }}\n"),
-            ("    free(map);\n", f"    {report}\n    free(map);\n"),
+            ("    buf_printf(out, \"\\033\\\\\");\n",
+             f"    buf_printf(out, \"\\033\\\\\");\n    {report}\n"),
         ],
         "next-node": flat + [
             ("        /* 3. emit,", f"        {lap(1)} /* 3. emit,"),
             ("        put_band(out, heads, starts, words, w, nnodes);\n",
              "        put_band(out, heads, starts, words, w, nnodes); "
              f"{lap(2)} }}\n"),
-            ("    free(map);\n", f"    {report}\n    free(map);\n"),
+            ("    buf_printf(out, \"\\033\\\\\");\n",
+             f"    buf_printf(out, \"\\033\\\\\");\n    {report}\n"),
         ],
     }
     band = [
@@ -264,9 +265,9 @@ def measure_phases(code: Path, out: Path, cc: str, cflags: str) -> dict:
         ("    encoder_free(&e);\n    return 0;",
          f"    encoder_free(&e);\n    {report}\n    return 0;"),
     ]
-    for chapter in ("column-words", "swar", "first-colors", "occupancy"):
-        patches[chapter] = [("    load_columns(e, img, y, rows);\n",
-                             f"    {begin} load_columns(e, img, y, rows);\n")
+    for chapter in ("occupancy", "direct-writes"):
+        patches[chapter] = [("    classify(e, img, y, rows);\n",
+                             f"    {begin} classify(e, img, y, rows);\n")
                             ] + band
     patches["vector-lanes"] = [("#ifdef HAVE_SIMD\n    from = e->width & ~15;\n",
                          f"    {begin}\n#ifdef HAVE_SIMD\n"
@@ -305,12 +306,12 @@ def measure_materialize(code: Path, out: Path, cc: str, cflags: str) -> dict:
 def measure_prescan(code: Path, out: Path, cc: str, cflags: str) -> dict:
     """Time the serial prescan of the parallel decoder."""
     replacements = [(
-        "    if (prescan(body, stop, &ps) != 0) {\n",
+        "    if (prescan(body, stop, &ps) != 0) goto end;\n",
         "    double pt_t = pt_now();\n"
         "    int pt_rc = prescan(body, stop, &ps);\n"
         '    fprintf(stderr, "prescan ms=%.3f\\n",'
         " (pt_now() - pt_t) * 1e3);\n"
-        "    if (pt_rc != 0) {\n",
+        "    if (pt_rc != 0) goto end;\n",
     )]
     binary = build(code, "parallel-decoder", replacements, "prescan", cflags,
                    cc)
@@ -322,32 +323,25 @@ def measure_attribution(code: Path, out: Path, cc: str, cflags: str) -> dict:
     """Decode with the masks but without the inner loop."""
     masked_store = (
         "                    dst = cv.pixels + (size_t)(y + r) * cv.width + x;\n"
-        "                    if (repeat == 1) {\n"
-        "                        *dst = (unsigned char)color;"
-        "    /* the common case */\n"
-        "                    } else {\n"
-        "                        memset(dst, color, (size_t)repeat);\n"
-        "                    }\n",
+        "                    if (repeat == 1) *dst = (unsigned char)color;"
+        "   /* the common case */\n"
+        "                    else memset(dst, color, (size_t)repeat);\n",
         "                    dst = cv.pixels + (size_t)(y + r) * cv.width + x;\n"
         "                    memset(dst, color, (size_t)repeat);\n",
     )
     bit_loop = (
-        "                for (r = 0; r < 6; r++) {\n"
-        "                    if ((bits >> r & 1) == 0) {\n"
-        "                        continue;\n"
-        "                    }\n",
+        "                for (int r = 0; r < 6; r++) {\n"
+        "                    if ((bits >> r & 1) == 0) continue;\n",
         "                if (repeat == 1) {\n"
         "                    dst = cv.pixels + (size_t)y * cv.width + x;\n"
-        "                    for (r = 0; r < 6; r++, dst += cv.width) {\n"
+        "                    for (int r = 0; r < 6; r++, dst += cv.width) {\n"
         "                        unsigned int m = 0u - "
         "((unsigned int)bits >> r & 1u);\n"
         "                        *dst = (unsigned char)((*dst & ~m) |\n"
         "                            ((unsigned int)color & m));\n"
         "                    }\n"
-        "                } else for (r = 0; r < 6; r++) {\n"
-        "                    if ((bits >> r & 1) == 0) {\n"
-        "                        continue;\n"
-        "                    }\n",
+        "                } else for (int r = 0; r < 6; r++) {\n"
+        "                    if ((bits >> r & 1) == 0) continue;\n",
     )
     variants = {
         "masks only": ("full-decoder", [masked_store, bit_loop]),

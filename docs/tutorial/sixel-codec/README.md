@@ -86,7 +86,7 @@ The chapter programs are worked answers. Try a part yourself first, then compare
 
 Each chapter adds one idea, to either the encoder or the decoder, and keeps the other half as it was. The chapters are grouped into parts:
 
-![The chapters grouped into parts: a working codec, a better plan, fewer questions, column words, wider instructions, more cores and fewer bytes](figures/journey.svg)
+![The chapters grouped into parts: a working codec, a better plan, less wasted work, wider words, more cores and fewer bytes](figures/journey.svg)
 
 | Chapter | The idea | Changes | Earliest public example found |
 | --- | --- | --- | --- |
@@ -98,11 +98,9 @@ Each chapter adds one idea, to either the encoder or the decoder, and keeps the 
 | [Ask fewer questions](fewer-questions.md) | Stay in a loop over data characters | Decoder | Not known |
 | [Store with masks instead of branches](masks.md) | Paint without guessing | Decoder | Not known |
 | [Find the next node without a search](next-node.md) | A bit per start column and a bit scan | Encoder | Not known |
-| [Keep a column in one word](column-words.md) | Six pixels in one 64-bit number | Encoder | Ghostscript, 1991; in color, chafa, 2019 |
-| [Compare eight bytes at once](swar.md) | Find all rows of one color with a few operations | Encoder | jjrv's `sixel.ts`, 2025 |
-| [Visit each color of a column once](first-colors.md) | Find repeated rows with shifted comparisons | Encoder | Not known |
 | [Remember where each color is](occupancy.md) | A row of bits per color for cutting nodes | Encoder | chafa, 2019 |
-| [Decode into column words](word-decoder.md) | One masked store per character | Decoder | `ite`, 2016 |
+| [Write without checking every byte](direct-writes.md) | One room check per node, short runs without a branch | Encoder | Not known |
+| [Decode into column words](word-decoder.md) | Six pixels in one 64-bit number, one masked store per character | Decoder | `ite`, 2016 |
 | [Sixteen columns in one instruction](vector-lanes.md) | SIMD compares for sixteen columns | Encoder | Not known |
 | [Turn columns back into rows](transpose.md) | An 8×8 byte transpose with SIMD | Decoder | Not known |
 | [Encode bands in parallel](parallel-bands.md) | Threads, one range of bands each | Encoder | chafa, 2019 |
@@ -124,34 +122,32 @@ make bench      # time every chapter on the pictures of the table below
 
 ## How fast does it get?
 
-![Bar chart of Full HD photographs encoded and decoded per second in each chapter, rising steeply in the parallel chapters](figures/speed.svg)
+![Bar chart, on a logarithmic scale, of the milliseconds needed to encode and to decode one Full HD photograph in each chapter, falling from 181 and 53 ms in the first chapter to about 1.9 and 0.5 ms in the parallel chapters](figures/speed.svg)
 
 The table gives the time to encode and to decode one picture, in milliseconds, as measured by `make bench`. The inputs are two photographs with an adaptive 256-color palette and error diffusion, the kind of picture `img2sixel` writes, a 1920×1080 pattern of two colors, and 1920×1080 random pixels in 256 colors, the hardest case.
 
 <!-- measurements:begin:summary -->
 | Chapter | Photograph, 600×450 | Photograph, 1920×1080 | Two colors, 1920×1080 | Random noise, 1920×1080 |
 | --- | --- | --- | --- | --- |
-| [first-codec](first-codec.md) | 25.3 / 7.54 | 182.2 / 58.3 | 1.71 / 2.14 | 275.0 / 173.2 |
-| [nodes](nodes.md) | 3.27 / 7.50 | 20.2 / 58.1 | 2.19 / 2.15 | 65.1 / 172.3 |
-| [packing](packing.md) | 3.93 / 2.66 | 22.4 / 16.5 | 2.37 / 2.09 | 153.0 / 44.3 |
-| [full-decoder](full-decoder.md) | 3.89 / 2.04 | 22.1 / 11.7 | 2.33 / 1.78 | 151.8 / 32.9 |
-| [fewer-questions](fewer-questions.md) | 4.00 / 1.78 | 22.4 / 10.7 | 2.37 / 1.17 | 157.8 / 25.8 |
-| [masks](masks.md) | 3.89 / 0.80 | 22.5 / 4.20 | 2.37 / 1.48 | 155.7 / 18.7 |
-| [next-node](next-node.md) | 3.68 / 0.79 | 21.2 / 4.16 | 2.22 / 1.48 | 103.0 / 18.6 |
-| [column-words](column-words.md) | 3.65 / 0.80 | 21.9 / 4.16 | 2.76 / 1.48 | 103.5 / 18.9 |
-| [swar](swar.md) | 4.37 / 0.78 | 26.5 / 4.16 | 3.22 / 1.48 | 104.7 / 18.9 |
-| [first-colors](first-colors.md) | 4.08 / 0.76 | 23.7 / 4.18 | 3.48 / 1.52 | 104.9 / 18.6 |
-| [occupancy](occupancy.md) | 2.31 / 0.74 | 11.7 / 4.12 | 3.90 / 1.47 | 68.4 / 18.5 |
-| [word-decoder](word-decoder.md) | 2.30 / 0.61 | 11.8 / 3.09 | 3.91 / 1.14 | 68.4 / 15.8 |
-| [vector-lanes](vector-lanes.md) | 2.36 / 0.59 | 10.8 / 3.08 | 2.70 / 1.15 | 74.4 / 16.1 |
-| [transpose](transpose.md) | 2.41 / 0.56 | 10.9 / 2.71 | 2.75 / 0.72 | 73.8 / 15.2 |
-| [parallel-bands](parallel-bands.md) | 2.28 / 0.58 | 2.45 / 2.70 | 0.50 / 0.72 | 12.9 / 15.3 |
-| [parallel-decoder](parallel-decoder.md) | 2.33 / 0.13 | 2.44 / 0.51 | 0.55 / 0.33 | 12.5 / 2.36 |
+| [first-codec](first-codec.md) | 25.4 / 6.86 | 181.4 / 53.4 | 1.68 / 2.27 | 275.1 / 156.1 |
+| [nodes](nodes.md) | 3.04 / 6.77 | 19.2 / 53.0 | 2.16 / 2.29 | 64.3 / 155.7 |
+| [packing](packing.md) | 3.77 / 2.31 | 21.3 / 14.3 | 2.34 / 2.32 | 148.1 / 38.9 |
+| [full-decoder](full-decoder.md) | 3.63 / 1.79 | 21.8 / 10.3 | 2.34 / 2.14 | 149.5 / 30.1 |
+| [fewer-questions](fewer-questions.md) | 3.79 / 1.66 | 22.0 / 10.0 | 2.34 / 0.96 | 151.3 / 25.4 |
+| [masks](masks.md) | 3.82 / 0.79 | 21.8 / 4.29 | 2.27 / 1.51 | 151.3 / 18.6 |
+| [next-node](next-node.md) | 3.49 / 0.81 | 20.8 / 4.26 | 2.16 / 1.50 | 101.7 / 18.7 |
+| [occupancy](occupancy.md) | 2.01 / 0.78 | 10.5 / 4.25 | 4.97 / 1.50 | 67.0 / 18.8 |
+| [direct-writes](direct-writes.md) | 1.72 / 0.80 | 8.73 / 4.26 | 4.19 / 1.50 | 60.5 / 18.7 |
+| [word-decoder](word-decoder.md) | 1.75 / 0.62 | 8.78 / 3.10 | 4.21 / 1.22 | 60.9 / 15.7 |
+| [vector-lanes](vector-lanes.md) | 1.90 / 0.61 | 8.60 / 3.09 | 1.73 / 1.21 | 65.7 / 15.7 |
+| [transpose](transpose.md) | 1.88 / 0.54 | 8.61 / 2.67 | 1.72 / 0.81 | 65.4 / 15.0 |
+| [parallel-bands](parallel-bands.md) | 1.91 / 0.57 | 1.88 / 2.69 | 0.35 / 0.81 | 10.4 / 15.2 |
+| [parallel-decoder](parallel-decoder.md) | 1.90 / 0.14 | 1.88 / 0.53 | 0.34 / 0.27 | 10.8 / 2.32 |
 <!-- measurements:end -->
 
 Each cell is encode / decode time in milliseconds; smaller is faster. A chapter that changes only one half leaves the other half's time as it was, up to the noise of measuring. Stream sizes are listed on the chapter pages. The numbers come from one Apple M3 Max, and the [measurement record](measurements.md) gives the conditions, the time of each phase, the thread sweep and the commands to reproduce them.
 
-Three lessons hide in these numbers. The biggest single jump in the encoder comes from a better plan, not from clever instructions: the first codec looks at every pixel once per color, the [nodes](nodes.md) encoder only once. Once the plan is right, the biggest gain on one core comes from simply asking fewer questions, with no change of data layout: [masks](masks.md) make the photograph's decoder 2.5 times faster. And clever instructions do not pay on their own: the [SWAR](swar.md) chapter makes the encoder slower, and [SIMD](vector-lanes.md) gives the smallest gain on photographs, because the time is mostly spent elsewhere. That is why every chapter is measured instead of assumed to be faster.
+Three lessons hide in these numbers. The biggest single jump in the encoder comes from a better plan, not from clever instructions: the first codec looks at every pixel once per color, the [nodes](nodes.md) encoder only once. Once the plan is right, the biggest gain on one core comes from simply asking fewer questions, with no change of data layout: [masks](masks.md) make the photograph's decoder 2.3 times faster. And clever instructions do not pay on their own: [SIMD](vector-lanes.md) gives the smallest gain on photographs, because the time is mostly spent elsewhere, while plainly [writing with fewer checks](direct-writes.md) gains more. The [measurement record](measurements.md#ideas-that-did-not-pay-off) lists ideas that were tried and left out because they made nothing faster. That is why every chapter is measured instead of assumed to be faster.
 
 ## Words used in this tutorial
 
@@ -166,8 +162,7 @@ Three lessons hide in these numbers. The biggest single jump in the encoder come
 | Stream | The complete SIXEL text of a picture |
 | Node | A stretch of one color within a band ([nodes](nodes.md)) |
 | Branch | A place where the program chooses between two paths, such as an `if`; the processor guesses the answer ([masks](masks.md)) |
-| Column word | The six pixels of one column packed into one 64-bit number ([column words](column-words.md)) |
-| SWAR | Handling the bytes of one ordinary number as separate values ([SWAR](swar.md)) |
+| Column word | The six pixels of one column packed into one 64-bit number ([word decoder](word-decoder.md)) |
 | Lane | One of the sixteen bytes of a vector register ([vector lanes](vector-lanes.md)) |
 | Thread | A part of the program that can run on a CPU core at the same time as the others ([parallel bands](parallel-bands.md)) |
 | Overpaint | Painting a pixel with a wrong color first and its real color later, to save bytes ([overpaint](overpaint.md)) |

@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import math
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -133,11 +134,9 @@ ASSET_NAMES = (
     "fewer-questions-dispatch.svg",
     "masks-branchless.svg",
     "next-node-starts.svg",
-    "column-words-memory.svg",
-    "column-words-word.svg",
-    "swar-equal-bytes.svg",
-    "first-colors-repeats.svg",
     "occupancy-lights.svg",
+    "direct-writes-reserve.svg",
+    "word-decoder-column-word.svg",
     "word-decoder-masked-store.svg",
     "vector-lanes-compare.svg",
     "vector-lanes-block.svg",
@@ -152,9 +151,8 @@ ASSET_NAMES = (
 # The chapter programs in reading order, as in the measurement script.
 CHAPTERS = (
     "first-codec", "nodes", "packing", "full-decoder", "fewer-questions",
-    "masks", "next-node", "column-words", "swar", "first-colors", "occupancy",
-    "word-decoder", "vector-lanes", "transpose", "parallel-bands",
-    "parallel-decoder",
+    "masks", "next-node", "occupancy", "direct-writes", "word-decoder",
+    "vector-lanes", "transpose", "parallel-bands", "parallel-decoder",
 )
 
 
@@ -496,10 +494,9 @@ def big_picture() -> str:
 JOURNEY = (
     ("A working codec", ("by-hand", "first-codec"), TEAL),
     ("A better plan", ("nodes", "packing", "full-decoder"), BLUE),
-    ("Fewer questions", ("fewer-questions", "masks", "next-node"), BLUE),
-    ("Column words", ("column-words", "swar", "first-colors", "occupancy",
-                      "word-decoder"), MAGENTA),
-    ("Wider instructions", ("vector-lanes", "transpose"), MAGENTA),
+    ("Less wasted work", ("fewer-questions", "masks", "next-node",
+                          "occupancy", "direct-writes"), BLUE),
+    ("Wider words", ("word-decoder", "vector-lanes", "transpose"), MAGENTA),
     ("More cores", ("parallel-bands", "parallel-decoder"), GOLD),
     ("Fewer bytes", ("overpaint",), TEAL),
 )
@@ -545,38 +542,52 @@ def journey() -> str:
 
 
 def speed() -> str:
-    """Full HD pictures per second, encode and decode, per chapter."""
+    """Milliseconds per Full HD photograph, encode and decode, per chapter."""
     times = fhd_times()
     row = 40
-    top = 140
+    top = 150
     height = top + len(times) * row + 80
     body = [title("How fast does it get?",
-                  "Full HD photographs per second, more is better")]
+                  "Milliseconds per Full HD photograph, less is better")]
     bar_h = 15
-    scale = 360 / max(1000.0 / min(min(pair) for pair in times), 1.0)
-    body.append(text(200, top - 18, "encode", 16, 700, BLUE))
-    body.append(text(290, top - 18, "decode", 16, 700, MAGENTA))
+    x0 = 200
+    decade = 130                    # pixels per factor of ten
+    low = 0.3                       # ms at the left edge of the bars
+
+    def x_of(ms: float) -> float:
+        return x0 + decade * math.log10(ms / low)
+
+    def label(ms: float) -> str:
+        return f"{ms:.0f} ms" if ms >= 10 else (
+            f"{ms:.1f} ms" if ms >= 1 else f"{ms:.2f} ms")
+
+    body.append(text(32, top - 40, "encode", 16, 700, BLUE))
+    body.append(text(100, top - 40, "decode", 16, 700, MAGENTA))
+    for tick in (1, 10, 100):
+        x = x_of(tick)
+        body.append(line(x, top - 8, x, top + len(times) * row - 4, GRID, 1.2,
+                         dash="4 4"))
+        body.append(text(x, top - 14, f"{tick} ms", 13, 650, MUTED, "middle"))
     for i, (enc, dec) in enumerate(times):
         y = top + i * row
         body.append(mono(32, y + 22, CHAPTERS[i], 14, 700, INK))
         for k, (ms, color) in enumerate(((enc, BLUE), (dec, MAGENTA))):
-            per_second = 1000.0 / ms
-            w = max(per_second * scale, 3)
+            w = max(x_of(ms) - x0, 3)
             by = y + k * (bar_h + 2)
-            body.append(rect(200, by, w, bar_h, color, radius=3))
-            body.append(text(206 + w, by + 13, f"{per_second:.0f}", 13,
-                             700, color))
+            body.append(rect(x0, by, w, bar_h, color, radius=3))
+            body.append(text(x0 + w + 6, by + 13, label(ms), 13, 700, color))
     body.append(note(32, top + len(times) * row + 24, (
-        "Measured on an Apple M3 Max. The two parallel chapters use all",
-        "cores; the others use one. The README table lists every input.",
+        "Logarithmic scale: each grid line is ten times the one before.",
+        "Apple M3 Max; the two parallel chapters use all cores.",
     ), 15))
     return document(height, "How fast does it get?",
-                    "Bar chart of Full HD photographs encoded and decoded "
-                    "per second in each chapter, from first-codec to "
-                    "parallel-decoder: encode "
-                    + ", ".join(f"{1000 / e:.0f}" for e, _ in times)
+                    "Bar chart, on a logarithmic scale, of the milliseconds "
+                    "needed to encode and to decode one Full HD photograph "
+                    "in each chapter, from first-codec to parallel-decoder: "
+                    "encode "
+                    + ", ".join(label(e) for e, _ in times)
                     + "; decode "
-                    + ", ".join(f"{1000 / d:.0f}" for _, d in times)
+                    + ", ".join(label(d) for _, d in times)
                     + ".", body)
 
 
@@ -1275,54 +1286,7 @@ def next_node_starts() -> str:
 
 
 # ------------------------------------------------------------------ #
-# column-words to word-decoder.                                       #
-
-
-def column_words_memory() -> str:
-    """Rows lie end to end, so a column is scattered."""
-    height = 560
-    size = 34
-    body = [title("Where the pixels live in memory",
-                  "Memory is one long street of numbered boxes.")]
-    rows = ("abcdefgh", "ijklmnop", "qrstuvwx", "yzABCDEF", "GHIJKLMN",
-            "OPQRSTUV")
-    x0, y0 = 32, 120
-    for r, row in enumerate(rows):
-        for c, ch in enumerate(row):
-            hot = c == 2
-            body.append(cell(x0 + c * size, y0 + r * size, size - 3,
-                             GOLD_LIGHT if hot else PAPER, ch,
-                             GOLD if hot else MUTED,
-                             GOLD if hot else GRID, 15, False))
-    body.append(text(x0, y0 + 6 * size + 24, "the band on screen", 15, 700,
-                     MUTED))
-    body.append(text(340, 140, "A sixel character needs column 2:", 17,
-                     750, INK))
-    body.append(mono(340, 170, "c  k  s  A  I  Q", 20, 750, GOLD))
-    body.append(text(340, 200, "They are 8 boxes apart in memory.", 17,
-                     600, MUTED))
-    small = 13
-    yy = 400
-    body.append(text(32, yy - 16, "the same band in memory, row after row:",
-                     16, 700, MUTED))
-    flat = "".join(rows)
-    for i, ch in enumerate(flat):
-        hot = i % 8 == 2
-        x = 32 + i * small
-        body.append(rect(x, yy, small - 1, 30,
-                         GOLD if hot else (PAPER if (i // 8) % 2 == 0
-                                           else BLUE_LIGHT), GRID, 0.6, 2))
-    for r in range(6):
-        body.append(text(32 + (r * 8 + 4) * small, yy + 50, f"row {r}", 12,
-                         650, MUTED, "middle"))
-    body.append(note(32, 490, (
-        "In a real image the gap is the image width. Painting one",
-        "character means one store in each of six separate rows.",
-    ), 17))
-    return document(height, "Where the pixels live in memory",
-                    "An eight by six band with letters. Column 2 holds c, "
-                    "k, s, A, I, Q, which are eight boxes apart when the "
-                    "rows are laid end to end in memory.", body)
+# occupancy to word-decoder.                                          #
 
 
 COLUMN = (5, 2, 2, 5, 7, 2)
@@ -1345,7 +1309,7 @@ def word_cells(x: float, y: float, values: Sequence[object], size: float,
     return "".join(body)
 
 
-def column_words_word() -> str:
+def word_decoder_column_word() -> str:
     """Six pixels of one column packed into one 64-bit number."""
     height = 560
     size = 48
@@ -1372,90 +1336,9 @@ def column_words_word() -> str:
         "handles a whole number in one step, so it sees 6 pixels at once.",
     ), 17, INK, 600))
     return document(height, "Six pixels in one number",
-                    "A column with palette indexes 5, 2, 2, 5, 7, 2 is "
+                    "A column with register numbers 5, 2, 2, 5, 7, 2 is "
                     "packed into the low six bytes of one 64-bit word, "
                     "row 0 in byte 0.", body)
-
-
-def swar_equal_bytes() -> str:
-    """Which rows of the column have color 2?"""
-    height = 760
-    size = 50
-    x0 = 220
-    color = 2
-    xored = [v ^ color for v in COLUMN] + [color, color]
-    flags = [1 if v == 0 else 0 for v in xored]
-    bits = sum(1 << r for r in range(6) if flags[r])
-    body = [title("Asking all six rows at once",
-                  f"Which rows of this column have color {color}?")]
-    stages = (
-        ("the column", list(COLUMN) + [0, 0], None, BLUE),
-        (f"copies of {color}", [color] * 8, None, MUTED),
-        ("XOR: equal → 0", xored,
-         [GOLD_LIGHT if v == 0 else PAPER for v in xored], GOLD),
-        ("zero? (zero_bytes)", flags,
-         [TEAL_LIGHT if f else PAPER for f in flags], TEAL),
-    )
-    for i, (label, values, fills, accent) in enumerate(stages):
-        y = 130 + i * 110
-        body.append(text(32, y + 30, label, 17, 750, accent))
-        body.append(word_cells(x0, y, values, size, accent, fills, i == 0))
-    y = 130 + 4 * 110
-    body.append(text(32, y + 30, "gather the flags", 17, 750, MAGENTA))
-    body.append(mono(x0, y + 32, f"rows 1, 2, 5 → {bits_label(bits)} = {bits}",
-                     22, 750, MAGENTA))
-    body.append(mono(x0, y + 72, f"{bits} + 63 = '{sixel_char(bits)}'", 22,
-                     750, MAGENTA))
-    body.append(note(32, 700, (
-        "Every box is handled by the same few operations on the whole",
-        "number. This is called SWAR: SIMD within a register.",
-    ), 17))
-    return document(height, "Asking all six rows at once",
-                    "The column 5, 2, 2, 5, 7, 2 is XORed with copies of "
-                    "2. Zero bytes mark rows 1, 2 and 5, which gather to "
-                    "the six-bit value 38, character e.", body)
-
-
-def first_colors_repeats() -> str:
-    """Finding each color of a column once."""
-    height = 520
-    size = 52
-    body = [title("Visiting each color once",
-                  "A row is new if no row above it has the same color.")]
-    x0, y0 = 70, 120
-    seen: list[int] = []
-    for r, v in enumerate(COLUMN):
-        first = v not in seen
-        seen.append(v)
-        body.append(cell(x0, y0 + r * size, size - 4,
-                         TEAL_LIGHT if first else PAPER, str(v), INK,
-                         TEAL if first else GRID, 20))
-        body.append(text(x0 - 12, y0 + r * size + 30, f"row {r}", 14, 650,
-                         MUTED, "end"))
-        verdict = "new color" if first else f"same as row {COLUMN.index(v)}"
-        body.append(text(x0 + 70, y0 + r * size + 32, verdict, 17, 700,
-                         TEAL if first else MUTED))
-    colors = []
-    for v in COLUMN:
-        if v not in colors:
-            colors.append(v)
-    body.append(box(320, 130, 368, 250, TEAL))
-    body.append(text(340, 165, "So this column needs", 18, 700, INK))
-    body.append(text(340, 192, f"{len(colors)} visits, not 6:", 18, 700,
-                     INK))
-    for i, c in enumerate(colors):
-        value = sum(1 << r for r, v in enumerate(COLUMN) if v == c)
-        body.append(mono(340, 240 + i * 40,
-                         f"color {c}: {bits_label(value)} '{sixel_char(value)}'",
-                         20, 750, TEAL))
-    body.append(note(32, 460, (
-        "The code compares the word with copies of itself shifted down",
-        "by 1 to 5 rows, which tests every pair of rows at once.",
-    ), 17))
-    return document(height, "Visiting each color once",
-                    "In the column 5, 2, 2, 5, 7, 2 rows 0, 1 and 4 start "
-                    "a new color, so the column is visited for colors 5, "
-                    "2 and 7 only.", body)
 
 
 def occupancy_lights() -> str:
@@ -1494,6 +1377,55 @@ def occupancy_lights() -> str:
                     "Sixteen columns, of which 2, 3, 9 and 14 are "
                     "occupied. Count trailing zeros jumps from one set "
                     "bit to the next.", body)
+
+
+def direct_writes_reserve() -> str:
+    """One reservation per node, then plain pointer writes."""
+    height = 440
+    size = 34
+    color, gap = 12, 5
+    values = (63, 63, 63, 63, 38, 38, 1)
+    written = "#" + str(color) + run("?", gap) + put_span(values, 0,
+                                                          len(values))
+    spare = 32
+    total = len(values) + spare
+    shown = len(written) + 5
+    body = [title("One check per node",
+                  "Reserve the worst case once, then write with *q++.")]
+    x0, y0 = 32, 150
+    body.append(text(x0, y0 - 30, f"node: color {color}, {gap} blank "
+                     f"columns before it, {len(values)} columns", 16, 700,
+                     INK))
+    for i in range(shown):
+        if i < len(written):
+            fill, label, ink, edge = TEAL_LIGHT, written[i], INK, TEAL
+        elif i < len(written) + 2:
+            fill, label, ink, edge = PANEL, written[-1], MUTED, GRID
+        else:
+            fill, label, ink, edge = PAPER, "", MUTED, GRID
+        body.append(cell(x0 + i * size, y0, size - 4, fill, label, ink,
+                         edge, 17))
+    end = x0 + shown * size + 40
+    body.append(text(x0 + shown * size + 4, y0 + 22,
+                     f"… {total - shown} more", 15, 650, MUTED))
+    body.append(path(f"M {x0} {y0 + 40} L {x0} {y0 + 50} L {end} {y0 + 50} "
+                     f"L {end} {y0 + 40}", GOLD, 2))
+    body.append(text(x0, y0 + 76, f"buf_reserve(out, {len(values)} + "
+                     f"{spare}): {total} bytes, asked once", 16, 700, GOLD))
+    body.append(text(x0, y0 + 116, f"teal: the {len(written)} bytes "
+                     "written, the color, the blank run, the node's "
+                     "characters", 15, 650, MUTED))
+    body.append(text(x0, y0 + 142, "grey: the two extra copies of a short "
+                     "run, overwritten by what comes next", 15, 650, MUTED))
+    body.append(note(x0, height - 92, (
+        "A node never needs more than one byte per column plus a color",
+        "selection and a run of blank columns, so the writes cannot overflow.",
+    ), 16))
+    return document(height, "One check per node",
+                    "A node of seven columns reserves seven bytes plus "
+                    "thirty-two. The written bytes, a color selection, a "
+                    "run of blank columns and the node's characters, "
+                    "always end inside the reservation.", body)
 
 
 def word_decoder_masked_store() -> str:
@@ -1901,11 +1833,9 @@ FACTORIES: tuple[tuple[str, Callable[[], str]], ...] = (
     ("fewer-questions-dispatch.svg", fewer_questions_dispatch),
     ("masks-branchless.svg", masks_branchless),
     ("next-node-starts.svg", next_node_starts),
-    ("column-words-memory.svg", column_words_memory),
-    ("column-words-word.svg", column_words_word),
-    ("swar-equal-bytes.svg", swar_equal_bytes),
-    ("first-colors-repeats.svg", first_colors_repeats),
     ("occupancy-lights.svg", occupancy_lights),
+    ("direct-writes-reserve.svg", direct_writes_reserve),
+    ("word-decoder-column-word.svg", word_decoder_column_word),
     ("word-decoder-masked-store.svg", word_decoder_masked_store),
     ("vector-lanes-compare.svg", vector_lanes_compare),
     ("vector-lanes-block.svg", vector_lanes_block),
