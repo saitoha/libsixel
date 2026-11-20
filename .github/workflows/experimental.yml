@@ -517,7 +517,8 @@ jobs:
               libwebp
             exec_type: msys2
 
-          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2-1-of-4
+            test_shard: 1/4
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
@@ -537,7 +538,149 @@ jobs:
             vcpkg_packages: lcms
             exec_type: msys2
 
-          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2-2-of-4
+            test_shard: 2/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2-3-of-4
+            test_shard: 3/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2-4-of-4
+            test_shard: 4/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2-1-of-4
+            test_shard: 1/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2-2-of-4
+            test_shard: 2/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2-3-of-4
+            test_shard: 3/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2-4-of-4
+            test_shard: 4/4
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
