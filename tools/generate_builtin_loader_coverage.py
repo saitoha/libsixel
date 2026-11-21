@@ -33,7 +33,6 @@ class Family:
     key: str
     title: str
     document: str
-    document_label: str
     tokens: tuple[str, ...]
 
 
@@ -42,77 +41,66 @@ FAMILIES = (
         "shared",
         "Shared loader integration and policy",
         "docs/loader/builtin.md",
-        "Builtin Image Loader",
         (),
     ),
     Family(
         "netpbm",
         "Netpbm",
         "docs/loader/builtin/netpbm.md",
-        "Netpbm builtin component",
         ("pnm", "pam", "ppm", "pgm", "pbm", "netpbm"),
     ),
     Family(
         "gif",
         "GIF",
         "docs/loader/builtin/gif.md",
-        "GIF builtin component",
         ("gif",),
     ),
     Family(
         "png",
         "PNG and APNG",
         "docs/loader/builtin/png/README.md",
-        "PNG/APNG builtin component",
         ("png", "apng"),
     ),
     Family(
         "jpeg",
         "JPEG",
         "docs/loader/builtin/jpeg.md",
-        "JPEG builtin component",
         ("jpeg", "jpg"),
     ),
     Family(
         "hdr",
         "Radiance HDR",
         "docs/loader/builtin/hdr.md",
-        "Radiance HDR builtin component",
         ("hdr",),
     ),
     Family(
         "psd",
         "PSD and PSB",
         "docs/loader/builtin/psd.md",
-        "PSD/PSB builtin component",
         ("psd", "psb"),
     ),
     Family(
         "bmp",
         "BMP and DIB",
         "docs/loader/builtin/bmp.md",
-        "BMP builtin component",
         ("bmp", "dib"),
     ),
     Family(
         "sixel",
         "SIXEL",
         "docs/loader/builtin/sixel.md",
-        "SIXEL builtin component",
         ("sixel",),
     ),
     Family(
         "tga",
         "TGA",
         "docs/loader/builtin/tga.md",
-        "TGA builtin component",
         ("tga",),
     ),
     Family(
         "pic",
         "Softimage PIC",
         "docs/loader/builtin/pic.md",
-        "Softimage PIC builtin component",
         ("pic",),
     ),
 )
@@ -391,9 +379,6 @@ def render_directory(tests: list[dict[str, object]], directory: Path) -> list[st
         lines.extend(
             [
                 f"### {family.title}{suffix}",
-                "",
-                f"Primary implementation context: "
-                f"[{family.document_label}]({document_link(family.document)}).",
                 "",
                 "| Test | Observation | Assertion mechanism | Policy context |",
                 "| --- | --- | --- | --- |",

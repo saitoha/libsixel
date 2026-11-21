@@ -2474,88 +2474,56 @@ sixel_builtin_apng_parse_fctl(
 
 static void
 sixel_builtin_apng_clear_rect(sixel_builtin_apng_canvas_t const *canvas,
-                              sixel_builtin_apng_frame_control_t *control)
+                              sixel_builtin_apng_frame_control_t const *control)
 {
-    int x;
-    int y;
-    int px;
-    int py;
-    unsigned char *dst;
+    size_t stride;
+    size_t row_bytes;
+    size_t offset;
+    size_t y;
 
-    for (y = 0; y < (int)control->height; ++y) {
-        py = (int)control->y_offset + y;
-        if (py < 0 || py >= canvas->height) {
-            continue;
-        }
-        for (x = 0; x < (int)control->width; ++x) {
-            px = (int)control->x_offset + x;
-            if (px < 0 || px >= canvas->width) {
-                continue;
-            }
-            dst = canvas->pixels + ((py * canvas->width + px) * 4);
-            dst[0] = 0;
-            dst[1] = 0;
-            dst[2] = 0;
-            dst[3] = 0;
-        }
+    /* The fcTL parser validates the entire rectangle against the canvas. */
+    stride = (size_t)canvas->width * 4u;
+    row_bytes = (size_t)control->width * 4u;
+    offset = (size_t)control->y_offset * stride
+        + (size_t)control->x_offset * 4u;
+    for (y = 0; y < (size_t)control->height; ++y) {
+        memset(canvas->pixels + offset + y * stride, 0, row_bytes);
     }
 }
 
 static void
 sixel_builtin_apng_blend_rect(sixel_builtin_apng_canvas_t const *canvas,
-                              sixel_builtin_apng_frame_control_t *control,
+                              sixel_builtin_apng_frame_control_t const *control,
                               unsigned char const *src)
 {
-    int x;
-    int y;
-    int px;
-    int py;
-    int idx;
-    unsigned int sa;
-    unsigned int da;
-    unsigned int oa;
+    size_t x;
+    size_t y;
+    size_t stride;
+    size_t row_bytes;
+    size_t offset;
     unsigned char const *sp;
     unsigned char *dp;
 
-    for (y = 0; y < (int)control->height; ++y) {
-        py = (int)control->y_offset + y;
-        if (py < 0 || py >= canvas->height) {
+    stride = (size_t)canvas->width * 4u;
+    row_bytes = (size_t)control->width * 4u;
+    offset = (size_t)control->y_offset * stride
+        + (size_t)control->x_offset * 4u;
+    for (y = 0; y < (size_t)control->height; ++y) {
+        sp = src + y * row_bytes;
+        dp = canvas->pixels + offset + y * stride;
+        if (control->blend_op == 0) {
+            memcpy(dp, sp, row_bytes);
             continue;
         }
-        for (x = 0; x < (int)control->width; ++x) {
-            px = (int)control->x_offset + x;
-            if (px < 0 || px >= canvas->width) {
-                continue;
+        /* The byte canvas only receives binary alpha. A fractional
+         * source promotes the canvas before it reaches this function. */
+        for (x = 0; x < row_bytes; x += 4u) {
+            if (sp[x + 3u] != 0u) {
+                memcpy(dp + x, sp + x, 4u);
+            } else if (dp[x + 3u] == 0u) {
+                /* OVER clears hidden RGB when both pixels are transparent. */
+                memset(dp + x, 0, 4u);
             }
-            idx = y * (int)control->width + x;
-            sp = src + idx * 4;
-            dp = canvas->pixels + ((py * canvas->width + px) * 4);
-
-            if (control->blend_op == 0) {
-                dp[0] = sp[0];
-                dp[1] = sp[1];
-                dp[2] = sp[2];
-                dp[3] = sp[3];
-                continue;
-            }
-
-            sa = sp[3];
-            da = dp[3];
-            oa = sa + ((da * (255 - sa)) / 255);
-            if (oa == 0) {
-                dp[0] = 0;
-                dp[1] = 0;
-                dp[2] = 0;
-                dp[3] = 0;
-                continue;
-            }
-            dp[0] = (unsigned char)((sp[0] * sa + dp[0] * da
-                                     * (255 - sa) / 255) / oa);
-            dp[1] = (unsigned char)((sp[1] * sa + dp[1] * da
-                                     * (255 - sa) / 255) / oa);
-            dp[2] = (unsigned char)((sp[2] * sa + dp[2] * da
-                                     * (255 - sa) / 255) / oa);
-            dp[3] = (unsigned char)oa;
         }
     }
 }

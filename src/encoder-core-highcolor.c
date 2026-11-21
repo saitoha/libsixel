@@ -175,16 +175,12 @@ end:
 }
 
 /*
- * Normalize a channel value into the range representable by an unsigned char
- * and make the narrowing explicit for MSVC. Negative errors are clamped to
- * zero and large positive values are capped at 0xff.
+ * Error diffusion adds a nonnegative share to an unsigned byte. Saturate
+ * that sum before narrowing so a bright channel cannot wrap to zero.
  */
 static unsigned char
 sixel_clamp_channel_to_byte(int value)
 {
-    if (value < 0) {
-        return 0;
-    }
     if (value > 0xff) {
         return 0xff;
     }
@@ -208,9 +204,8 @@ dither_func_fs(unsigned char *data, int width)
     int error_g = data[1] & 0x7;
     int error_b = data[2] & 0x7;
 
-    /* Floyd Steinberg Method
-     *          curr    7/16
-     *  3/16    5/48    1/16
+    /* Legacy high-color Floyd-Steinberg weights: 5/16 to the right,
+     * 3/16 to the lower left and 5/16 directly below.
      */
     r = (data[3 + 0] + (error_r * 5 >> 4));
     g = (data[3 + 1] + (error_g * 5 >> 4));
@@ -716,7 +711,6 @@ static void
 dither_func_a_dither(unsigned char *data, int width, int x, int y)
 {
     int c;
-    float value;
     float mask;
 
     (void) width; /* unused */
@@ -724,12 +718,9 @@ dither_func_a_dither(unsigned char *data, int width, int x, int y)
     for (c = 0; c < 3; c ++) {
         mask = (float)((((x + c * 17) + y * 236) * 119) & 255);
         mask = ((mask - 128) / 256.0f);
-        value = data[c] + mask;
-        if (value < 0) {
-            value = 0;
-        }
-        value = value > 255 ? 255 : value;
-        data[c] = sixel_clamp_channel_to_byte((int)value);
+        /* The adjustment is strictly between -1 and 1, so truncation
+         * toward zero already keeps the result within the byte range. */
+        data[c] = (unsigned char)(data[c] + mask);
     }
 }
 
@@ -738,7 +729,6 @@ static void
 dither_func_x_dither(unsigned char *data, int width, int x, int y)
 {
     int c;
-    float value;
     float mask;
 
     (void) width;  /* unused */
@@ -746,12 +736,8 @@ dither_func_x_dither(unsigned char *data, int width, int x, int y)
     for (c = 0; c < 3; c ++) {
         mask = (float)((((x + c * 17) ^ (y * 236)) * 1234) & 511);
         mask = ((mask - 128) / 512.0f);
-        value = data[c] + mask;
-        if (value < 0) {
-            value = 0;
-        }
-        value = value > 255 ? 255 : value;
-        data[c] = sixel_clamp_channel_to_byte((int)value);
+        /* The fractional adjustment fits the byte range after truncation. */
+        data[c] = (unsigned char)(data[c] + mask);
     }
 }
 

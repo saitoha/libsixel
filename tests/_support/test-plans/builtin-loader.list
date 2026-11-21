@@ -371,6 +371,10 @@ tests/loader-png/animation/0061_file_background_numeric.t
 tests/loader-png/animation/0062_gamma_transfer_numeric.t
 tests/loader-png/animation/0063_palette_trns_numeric.t
 tests/loader-png/animation/0064_rgb16_trns_numeric.t
+tests/loader-png/animation/0117_builtin_apng_byte_background_numeric.t
+tests/loader-png/animation/0118_builtin_apng_byte_previous_numeric.t
+tests/loader-png/animation/0119_builtin_apng_byte_over_transparent_numeric.t
+tests/loader-png/animation/0120_builtin_apng_byte_over_opaque_numeric.t
 tests/loader-png/decode/0001_lsqa_format_rgb.t
 tests/loader-png/decode/0002_loader_builtin_rgb_png_fallback.t
 tests/loader-png/decode/0003_loader_builtin_rejects_corrupted_png.t

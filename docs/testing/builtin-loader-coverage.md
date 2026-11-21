@@ -15,7 +15,7 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [Shared loader integration and policy](../loader/builtin.md) | 21 | 1 | 0 | 1 | 3 | 0 | 16 |
 | [Netpbm](../loader/builtin/netpbm.md) | 34 | 34 | 0 | 0 | 0 | 0 | 0 |
 | [GIF](../loader/builtin/gif.md) | 74 | 39 | 0 | 2 | 12 | 2 | 19 |
-| [PNG and APNG](../loader/builtin/png/README.md) | 331 | 95 | 4 | 0 | 14 | 7 | 211 |
+| [PNG and APNG](../loader/builtin/png/README.md) | 335 | 99 | 4 | 0 | 14 | 7 | 211 |
 | [JPEG](../loader/builtin/jpeg.md) | 249 | 104 | 12 | 1 | 57 | 5 | 70 |
 | [Radiance HDR](../loader/builtin/hdr.md) | 275 | 258 | 0 | 1 | 5 | 0 | 11 |
 | [PSD and PSB](../loader/builtin/psd.md) | 1276 | 728 | 29 | 402 | 86 | 3 | 28 |
@@ -23,15 +23,13 @@ Counts are rebuilt from the suite and show assertion mechanisms, not semantic co
 | [SIXEL](../loader/builtin/sixel.md) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | [TGA](../loader/builtin/tga.md) | 79 | 61 | 0 | 0 | 14 | 0 | 4 |
 | [Softimage PIC](../loader/builtin/pic.md) | 33 | 11 | 0 | 0 | 14 | 0 | 8 |
-| **Total** | **2544** | **1492** | **45** | **411** | **212** | **17** | **367** |
+| **Total** | **2548** | **1496** | **45** | **411** | **212** | **17** | **367** |
 
 ## Complete inventory
 
 <!-- test-plan: @tests/_support/test-plans/builtin-loader.list -->
 
 ### Shared loader integration and policy
-
-Primary implementation context: [Builtin Image Loader](../loader/builtin.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
@@ -58,8 +56,6 @@ Primary implementation context: [Builtin Image Loader](../loader/builtin.md).
 | [tests/loader/dispatch/0008_loader_builtin_callback_status_matrix.t](../../tests/loader/dispatch/0008_loader_builtin_callback_status_matrix.t) | Verify builtin formats propagate callback interruption. | Trace/status observation | Policy-linked: [`docs/loader/builtin.md`](../loader/builtin.md) |
 
 ### Netpbm
-
-Primary implementation context: [Netpbm builtin component](../loader/builtin/netpbm.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
@@ -99,8 +95,6 @@ Primary implementation context: [Netpbm builtin component](../loader/builtin/net
 | [tests/loader/netpbm/0034_loader_builtin_pnm_pam_graya_paths_numeric.t](../../tests/loader/netpbm/0034_loader_builtin_pnm_pam_graya_paths_numeric.t) | TAP wrapper for builtin PNM PAM GRAYA path numeric checks. | Direct numeric/digest | Inventory only |
 
 ### GIF
-
-Primary implementation context: [GIF builtin component](../loader/builtin/gif.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
@@ -180,8 +174,6 @@ Primary implementation context: [GIF builtin component](../loader/builtin/gif.md
 | [tests/loader/gif/0074_gif_icc_gamma_replay_numeric.t](../../tests/loader/gif/0074_gif_icc_gamma_replay_numeric.t) | Verify GIF ICC gamma replay samples and loader behavior. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/gif.md`](../loader/builtin/gif.md) |
 
 ### PNG and APNG
-
-Primary implementation context: [PNG/APNG builtin component](../loader/builtin/png/README.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
@@ -300,6 +292,10 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader-png/animation/0062_gamma_transfer_numeric.t](../../tests/loader-png/animation/0062_gamma_transfer_numeric.t) | Verify builtin APNG gamma transfer. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
 | [tests/loader-png/animation/0063_palette_trns_numeric.t](../../tests/loader-png/animation/0063_palette_trns_numeric.t) | Verify builtin APNG palette trns. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
 | [tests/loader-png/animation/0064_rgb16_trns_numeric.t](../../tests/loader-png/animation/0064_rgb16_trns_numeric.t) | Verify builtin APNG rgb16 trns. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/png/README.md`](../loader/builtin/png/README.md) |
+| [tests/loader-png/animation/0117_builtin_apng_byte_background_numeric.t](../../tests/loader-png/animation/0117_builtin_apng_byte_background_numeric.t) | Check that byte APNG BACKGROUND clears only the offset frame rectangle. | Direct numeric/digest | Inventory only |
+| [tests/loader-png/animation/0118_builtin_apng_byte_previous_numeric.t](../../tests/loader-png/animation/0118_builtin_apng_byte_previous_numeric.t) | Check that byte APNG PREVIOUS restores the pixel under the rectangle. | Direct numeric/digest | Inventory only |
+| [tests/loader-png/animation/0119_builtin_apng_byte_over_transparent_numeric.t](../../tests/loader-png/animation/0119_builtin_apng_byte_over_transparent_numeric.t) | Check that byte APNG OVER clears hidden RGB at zero combined coverage. | Direct numeric/digest | Inventory only |
+| [tests/loader-png/animation/0120_builtin_apng_byte_over_opaque_numeric.t](../../tests/loader-png/animation/0120_builtin_apng_byte_over_opaque_numeric.t) | Check that byte APNG OVER replaces a pixel with an opaque source. | Direct numeric/digest | Inventory only |
 | [tests/loader-png/decode/0001_lsqa_format_rgb.t](../../tests/loader-png/decode/0001_lsqa_format_rgb.t) | Confirm RGB PNG quality meets the lsqa baseline thresholds. Fixture: tests/data/inputs/snake_192.png is the 192x192 source. Compare the encoded image with its unquantized source samples. | Perceptual quality threshold | Inventory only |
 | [tests/loader-png/decode/0002_loader_builtin_rgb_png_fallback.t](../../tests/loader-png/decode/0002_loader_builtin_rgb_png_fallback.t) | TAP test confirming builtin loader falls back for non-indexed PNG. | Other integration/smoke | Inventory only |
 | [tests/loader-png/decode/0003_loader_builtin_rejects_corrupted_png.t](../../tests/loader-png/decode/0003_loader_builtin_rejects_corrupted_png.t) | TAP test confirming forced builtin loader rejects corrupted PNG input. | Acceptance/rejection | Inventory only |
@@ -518,8 +514,6 @@ Primary implementation context: [PNG/APNG builtin component](../loader/builtin/p
 | [tests/loader-png/profile/0017_loader_builtin_png_icc_float_prefix_failure.t](../../tests/loader-png/profile/0017_loader_builtin_png_icc_float_prefix_failure.t) | Preserve every source component after a qualified icc float prefix failure. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/png-source-precision.md`](../loader/builtin/png-source-precision.md) |
 
 ### JPEG
-
-Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
@@ -774,8 +768,6 @@ Primary implementation context: [JPEG builtin component](../loader/builtin/jpeg.
 | [tests/loader-jpeg/precision/0045_jp_hier_arith_multiblock_prog.t](../../tests/loader-jpeg/precision/0045_jp_hier_arith_multiblock_prog.t) | Verify hier arith multiblock prog. | Other integration/smoke | Policy-linked: [`docs/loader/builtin/jpeg.md`](../loader/builtin/jpeg.md) |
 
 ### Radiance HDR
-
-Primary implementation context: [Radiance HDR builtin component](../loader/builtin/hdr.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
@@ -1056,8 +1048,6 @@ Primary implementation context: [Radiance HDR builtin component](../loader/built
 | [tests/loader/hdr-tonemap/0115_loader_builtin_hdr_invalid_tonemap_defaults_to_none_numeric.t](../../tests/loader/hdr-tonemap/0115_loader_builtin_hdr_invalid_tonemap_defaults_to_none_numeric.t) | Loader builtin hdr invalid tonemap defaults to none numeric. | Direct numeric/digest | Inventory only |
 
 ### PSD and PSB
-
-Primary implementation context: [PSD/PSB builtin component](../loader/builtin/psd.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
@@ -2340,8 +2330,6 @@ Primary implementation context: [PSD/PSB builtin component](../loader/builtin/ps
 
 ### BMP and DIB
 
-Primary implementation context: [BMP builtin component](../loader/builtin/bmp.md).
-
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
 | [tests/loader-jpeg/decode/0011_loader_builtin_bmp_bi_jpeg_cms_off_numeric.t](../../tests/loader-jpeg/decode/0011_loader_builtin_bmp_bi_jpeg_cms_off_numeric.t) | TAP wrapper for builtin BMP BI_JPEG CMS-off numeric checks. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/bmp.md`](../loader/builtin/bmp.md) |
@@ -2517,16 +2505,12 @@ Primary implementation context: [BMP builtin component](../loader/builtin/bmp.md
 
 ### SIXEL
 
-Primary implementation context: [SIXEL builtin component](../loader/builtin/sixel.md).
-
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
 | [tests/decoder/raster/0001_loader_builtin_sixel_unpainted_numeric.t](../../tests/decoder/raster/0001_loader_builtin_sixel_unpainted_numeric.t) | Distinguish an unpainted index before and after palette expansion. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/sixel.md`](../loader/builtin/sixel.md) |
 | [tests/decoder/raster/0002_loader_builtin_sixel_high_color_numeric.t](../../tests/decoder/raster/0002_loader_builtin_sixel_high_color_numeric.t) | Isolate final-palette collapse after a color-register redefinition. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/sixel.md`](../loader/builtin/sixel.md) |
 
 ### TGA
-
-Primary implementation context: [TGA builtin component](../loader/builtin/tga.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |
@@ -2611,8 +2595,6 @@ Primary implementation context: [TGA builtin component](../loader/builtin/tga.md
 | [tests/loader/tga/0079_table_opaque_alpha_numeric.t](../../tests/loader/tga/0079_table_opaque_alpha_numeric.t) | Verify TGA table opaque alpha using original codes and analytic values. | Direct numeric/digest | Policy-linked: [`docs/loader/builtin/tga.md`](../loader/builtin/tga.md) |
 
 ### Softimage PIC
-
-Primary implementation context: [Softimage PIC builtin component](../loader/builtin/pic.md).
 
 | Test | Observation | Assertion mechanism | Policy context |
 | --- | --- | --- | --- |

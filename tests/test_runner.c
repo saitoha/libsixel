@@ -1535,6 +1535,15 @@ int test_highcolor_0082(int argc, char **argv);
 int test_highcolor_0083(int argc, char **argv);
 int test_highcolor_0086(int argc, char **argv);
 int test_highcolor_0087(int argc, char **argv);
+int test_highcolor_0088(int argc, char **argv);
+int test_highcolor_0089(int argc, char **argv);
+int test_highcolor_0090(int argc, char **argv);
+int test_highcolor_0091(int argc, char **argv);
+int test_highcolor_0092(int argc, char **argv);
+int test_highcolor_0093(int argc, char **argv);
+int test_highcolor_0094(int argc, char **argv);
+int test_highcolor_0095(int argc, char **argv);
+int test_highcolor_0096(int argc, char **argv);
 int test_png_snapshot_0001(int argc, char **argv);
 int test_png_snapshot_0002(int argc, char **argv);
 int test_png_snapshot_0003(int argc, char **argv);
@@ -2219,6 +2228,10 @@ int test_frame_0054_geometry(int argc, char **argv);
 int test_frame_0098_dynamic(int argc, char **argv);
 int test_frame_0178_byte(int argc, char **argv);
 int test_apng_0001_float(int argc, char **argv);
+int test_apng_byte_0117(int argc, char **argv);
+int test_apng_byte_0118(int argc, char **argv);
+int test_apng_byte_0119(int argc, char **argv);
+int test_apng_byte_0120(int argc, char **argv);
 int test_frame_0239_alpha(int argc, char **argv);
 int test_frame_0003_transparent_mask_clip(int argc, char **argv);
 int test_frame_0004_transparent_mask_resize(int argc, char **argv);
@@ -8197,6 +8210,24 @@ static test_entry_t const test_entries[] = {
     { "encoder/highcolor/0086_byte_fs_neighborhood", test_highcolor_0086 },
     { "encoder/highcolor/0087_byte_atkinson_neighborhood",
       test_highcolor_0087 },
+    { "encoder/highcolor/0088_byte_jajuni_neighborhood",
+      test_highcolor_0088 },
+    { "encoder/highcolor/0089_byte_stucki_neighborhood",
+      test_highcolor_0089 },
+    { "encoder/highcolor/0090_byte_burkes_neighborhood",
+      test_highcolor_0090 },
+    { "encoder/highcolor/0091_byte_sierra1_neighborhood",
+      test_highcolor_0091 },
+    { "encoder/highcolor/0092_byte_sierra2_neighborhood",
+      test_highcolor_0092 },
+    { "encoder/highcolor/0093_byte_sierra3_neighborhood",
+      test_highcolor_0093 },
+    { "encoder/highcolor/0094_byte_a_dither_coordinates",
+      test_highcolor_0094 },
+    { "encoder/highcolor/0095_byte_x_dither_coordinates",
+      test_highcolor_0095 },
+    { "encoder/highcolor/0096_byte_fs_saturation",
+      test_highcolor_0096 },
     { "codec/png_snapshot/0024_highcolor_srgb_byte", test_png_snapshot_0024 },
     { "codec/png_snapshot/0025_highcolor_srgb_float", test_png_snapshot_0025 },
     { "codec/png_snapshot/0026_highcolor_p3_rgb", test_png_snapshot_0026 },
@@ -10155,6 +10186,14 @@ static test_entry_t const test_entries[] = {
     { "jpeg-cmyk/0018_legacy_lcms2_rejection", test_jc_0018 },
     { "jpeg-cmyk/0019_legacy_colorsync_rejection", test_jc_0019 },
     { "png-keycolor/0001_frame_samples", test_png_key_0001 },
+    { "loader-png/animation/0117_builtin_apng_byte_background_numeric",
+      test_apng_byte_0117 },
+    { "loader-png/animation/0118_builtin_apng_byte_previous_numeric",
+      test_apng_byte_0118 },
+    { "loader-png/animation/0119_builtin_apng_byte_over_transparent_numeric",
+      test_apng_byte_0119 },
+    { "loader-png/animation/0120_builtin_apng_byte_over_opaque_numeric",
+      test_apng_byte_0120 },
     { "png-keycolor/0002_paint_mask", test_png_key_0002 },
     { "cms/0008_invalid_rgb_definition", test_cdef_0008 },
     { "cms/0009_icc_length_ownership", test_cdef_0009 },

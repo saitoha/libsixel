@@ -14,11 +14,13 @@ typedef struct ap_fixture {
 
 typedef struct ap_probe {
     int count;
+    int height;
     int format[8];
     int frame[8];
     int loop[8];
-    int hidden[8][2];
-    double rgb[8][6];
+    int hidden[8][4];
+    double rgb[8][12];
+    unsigned char bytes[8][12];
     SIXELSTATUS callback_status;
 } ap_probe_t;
 
@@ -58,7 +60,7 @@ ap_chunk(ap_fixture_t *f, char const *type,
 }
 
 static void
-ap_header(ap_fixture_t *f, int depth, int type)
+ap_header(ap_fixture_t *f, int depth, int type, int height)
 {
     unsigned char ihdr[13];
 
@@ -66,7 +68,7 @@ ap_header(ap_fixture_t *f, int depth, int type)
     f->size = 8u;
     memset(ihdr, 0, sizeof(ihdr));
     ap_u32(ihdr, 2);
-    ap_u32(ihdr + 4, 1);
+    ap_u32(ihdr + 4, (uint32_t)height);
     ihdr[8] = (unsigned char)depth;
     ihdr[9] = (unsigned char)type;
     ap_chunk(f, "IHDR", ihdr, sizeof(ihdr));
@@ -117,15 +119,16 @@ ap_actl(ap_fixture_t *f, int frames, int plays)
 
 static void
 ap_fctl(ap_fixture_t *f, int sequence, int blend, int dispose,
-        int width, int x)
+        int width, int height, int x, int y)
 {
     unsigned char data[26];
 
     memset(data, 0, sizeof(data));
     ap_u32(data, (uint32_t)sequence);
     ap_u32(data + 4, (uint32_t)width);
-    ap_u32(data + 8, 1);
+    ap_u32(data + 8, (uint32_t)height);
     ap_u32(data + 12, (uint32_t)x);
+    ap_u32(data + 16, (uint32_t)y);
     data[21] = 1;
     data[23] = 10;
     data[24] = (unsigned char)dispose;
@@ -148,6 +151,7 @@ ap_capture(sixel_frame_t *frame, void *data)
     sixel_frame_pixels_view_t view;
     sixel_frame_transparency_t mask;
     sixel_frame_alpha_t alpha;
+    size_t pixels;
     size_t i;
     int n;
 
@@ -158,7 +162,7 @@ ap_capture(sixel_frame_t *frame, void *data)
     iface->vtbl->get_transparency(iface, &mask);
     iface->vtbl->get_alpha(iface, &alpha);
     /* Fractional coverage must be resolved before the legacy callback. */
-    if (n >= 8 || view.width != 2 || view.height != 1 ||
+    if (n >= 8 || view.width != 2 || view.height != probe->height ||
         alpha.values != NULL || alpha.count != 0u ||
         (view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
          view.pixelformat != SIXEL_PIXELFORMAT_RGB888)) {
@@ -167,14 +171,18 @@ ap_capture(sixel_frame_t *frame, void *data)
     probe->format[n] = view.pixelformat;
     probe->frame[n] = sixel_frame_get_frame_no(frame);
     probe->loop[n] = sixel_frame_get_loop_no(frame);
-    for (i = 0u; i < 6u; ++i) {
+    pixels = (size_t)view.height * 2u;
+    if (view.pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        memcpy(probe->bytes[n], view.pixels, pixels * 3u);
+    }
+    for (i = 0u; i < pixels * 3u; ++i) {
         probe->rgb[n][i] = view.pixelformat == SIXEL_PIXELFORMAT_RGB888
             ? ap_linear(view.pixels[i] / 255.0)
             : view.pixels_float32[i];
     }
-    for (i = 0u; i < 2u; ++i) {
+    for (i = 0u; i < pixels; ++i) {
         probe->hidden[n][i] = mask.transparent_mask != NULL
-            && mask.transparent_mask_size == 2u && mask.transparent_mask[i];
+            && mask.transparent_mask_size == pixels && mask.transparent_mask[i];
     }
     return probe->callback_status;
 }
@@ -233,22 +241,22 @@ ap_build(ap_fixture_t *f, int mode)
     frames = mode <= 1 || mode == 7 || mode == 13 ? 1
            : mode == 8 ? 2 : 4;
     if (mode == 16 || mode == 17) {
-        ap_header(f, 8, 6);
+        ap_header(f, 8, 6, 1);
         ap_actl(f, mode == 16 ? 2 : 3, 1);
-        ap_fctl(f, 0, 0, 0, 2, 0);
+        ap_fctl(f, 0, 0, 0, 2, 1, 0, 0);
         ap_row(f, -1, 8, (unsigned const[8]){
             255, 0, 0, 255, 255, 0, 0, 255});
-        ap_fctl(f, 1, mode == 16, mode == 17, 1, 1);
+        ap_fctl(f, 1, mode == 16, mode == 17, 1, 1, 1, 0);
         ap_data(f, 2, (unsigned char const[5]){0, 0, 0, 255, 128}, 5u);
         if (mode == 17) {
-            ap_fctl(f, 3, 1, 0, 1, 1);
+            ap_fctl(f, 3, 1, 0, 1, 1, 1, 0);
             ap_data(f, 4, (unsigned char const[5]){0, 0, 255, 0, 0}, 5u);
         }
         ap_chunk(f, "IEND", NULL, 0u);
         return;
     }
     if (mode == 14 || mode == 15) {
-        ap_header(f, mode == 14 ? 8 : 16, mode == 14 ? 3 : 2);
+        ap_header(f, mode == 14 ? 8 : 16, mode == 14 ? 3 : 2, 1);
         if (mode == 14) {
             ap_chunk(f, "PLTE", palette, sizeof(palette));
             ap_chunk(f, "tRNS", trns + 4, 2u);
@@ -256,7 +264,7 @@ ap_build(ap_fixture_t *f, int mode)
             ap_chunk(f, "tRNS", trns, sizeof(trns));
         }
         ap_actl(f, 1, 1);
-        ap_fctl(f, 0, 0, 0, 2, 0);
+        ap_fctl(f, 0, 0, 0, 2, 1, 0, 0);
         memset(raw, 0, sizeof(raw));
         if (mode == 14) {
             raw[2] = 1;
@@ -269,7 +277,7 @@ ap_build(ap_fixture_t *f, int mode)
         ap_chunk(f, "IEND", NULL, 0u);
         return;
     }
-    ap_header(f, depth, 6);
+    ap_header(f, depth, 6, 1);
     if (depth == 16 && mode >= 2 && mode != 13) {
         ap_chunk(f, "cICP", cicp, sizeof(cicp));
     }
@@ -283,7 +291,7 @@ ap_build(ap_fixture_t *f, int mode)
     ap_actl(f, frames, mode == 6 ? 2 : 1);
     for (n = 0; n < frames; ++n) {
         ap_fctl(f, n == 0 ? 0 : n * 2 - 1, n != 0,
-                n == 1 && depth == 16 ? 2 : n == 2 ? 1 : 0, 2, 0);
+                n == 1 && depth == 16 ? 2 : n == 2 ? 1 : 0, 2, 1, 0, 0);
         ap_row(f, n == 0 ? -1 : n * 2, depth,
             mode == 0 || mode == 13 ? precise : mode == 1 ? tiny
             : depth == 8 ? (n == 0 ? byte_first : byte_next) : rows[n]);
@@ -292,7 +300,7 @@ ap_build(ap_fixture_t *f, int mode)
 }
 
 static SIXELSTATUS
-ap_load(ap_fixture_t const *f, ap_probe_t *probe, int mode)
+ap_load(ap_fixture_t const *f, ap_probe_t *probe, int mode, int height)
 {
     sixel_allocator_t *allocator;
     sixel_loader_component_t *loader;
@@ -312,6 +320,7 @@ ap_load(ap_fixture_t const *f, ap_probe_t *probe, int mode)
     chunk = NULL;
     memset(background, 0, sizeof(background));
     memset(probe, 0, sizeof(*probe));
+    probe->height = height;
     probe->callback_status = mode == 9 ? SIXEL_BAD_INPUT : SIXEL_OK;
     callback = (loader_probe_callback_state_t){NULL, ap_capture, probe};
     loader_manager_init_loader_suboptions(&options);
@@ -373,6 +382,68 @@ end:
     return status;
 }
 
+int
+test_apng_byte_canvas(int dispose, int opaque_over)
+{
+    static unsigned char const transparent[] = {0, 0, 255, 0, 0};
+    static unsigned char const blue[] = {0, 0, 0, 255, 255};
+    unsigned char initial[] = {
+        0, 255, 255, 0, 255,  255, 0, 255, 255,
+        0, 255, 0, 0, 255,    0, 255, 0, 255
+    };
+    unsigned char const expected[] = {
+        255, 255, 0,  255, 0, 255,
+        255, 0, 0,  0, dispose == 2 ? 255 : 0, opaque_over ? 255 : 0
+    };
+    ap_fixture_t fixture;
+    ap_probe_t probe;
+    SIXELSTATUS status;
+    int last;
+    int n;
+
+    /* Frame zero seeds the lower-right pixel, including hidden green when
+     * testing a transparent destination. Later frames touch only (1, 1). */
+    if (dispose == 0 && !opaque_over) {
+        initial[17] = 0u;
+    }
+    last = dispose == 0 ? 1 : 2;
+    ap_header(&fixture, 8, 6, 2);
+    ap_actl(&fixture, last + 1, 1);
+    ap_fctl(&fixture, 0, 0, 0, 2, 2, 0, 0);
+    ap_data(&fixture, -1, initial, sizeof(initial));
+    ap_fctl(&fixture, 1, dispose == 0, dispose, 1, 1, 1, 1);
+    ap_data(&fixture, 2, dispose != 0 || opaque_over ? blue : transparent,
+            sizeof(blue));
+    if (dispose != 0) {
+        /* Observe disposal on the next frame with a transparent OVER. */
+        ap_fctl(&fixture, 3, 1, 0, 1, 1, 1, 1);
+        ap_data(&fixture, 4, transparent, sizeof(transparent));
+    }
+    ap_chunk(&fixture, "IEND", NULL, 0u);
+
+    /* Mode 7 selects the unmanaged, binary-alpha byte loader setup. */
+    status = ap_load(&fixture, &probe, 7, 2);
+    if (SIXEL_FAILED(status) || probe.count != last + 1) {
+        fprintf(stderr, "APNG byte canvas status=%x frames=%d expected=%d\n",
+                status, probe.count, last + 1);
+        return EXIT_FAILURE;
+    }
+    for (n = 0; n <= last; ++n) {
+        if (probe.format[n] != SIXEL_PIXELFORMAT_RGB888) {
+            fprintf(stderr, "APNG frame %d did not retain byte RGB\n", n);
+            return EXIT_FAILURE;
+        }
+    }
+    if (probe.hidden[last][0] != 0 ||
+        probe.hidden[last][1] != 0 || probe.hidden[last][2] != 0 ||
+        probe.hidden[last][3] != (dispose != 2 && !opaque_over) ||
+        memcmp(probe.bytes[last], expected, sizeof(expected)) != 0) {
+        fprintf(stderr, "APNG byte canvas samples at frame %d differ\n", last);
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+
 static int
 ap_close(double actual, double expected)
 {
@@ -419,7 +490,7 @@ test_apng_0001_float(int argc, char **argv)
     }
     mode = atoi(argv[1]);
     ap_build(&f, mode);
-    status = ap_load(&f, &probe, mode);
+    status = ap_load(&f, &probe, mode, 1);
     if (mode == 9) {
         return status == SIXEL_BAD_INPUT && probe.count == 1
              ? EXIT_SUCCESS : EXIT_FAILURE;

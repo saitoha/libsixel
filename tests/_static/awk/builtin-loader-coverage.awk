@@ -84,7 +84,6 @@ BEGIN {
     tokens[7] = "psd|psb"; tokens[8] = "bmp|dib"; tokens[9] = "sixel"; tokens[10] = "tga"; tokens[11] = "pic"
     split("Shared loader integration and policy;Netpbm;GIF;PNG and APNG;JPEG;Radiance HDR;PSD and PSB;BMP and DIB;SIXEL;TGA;Softimage PIC", titles, ";")
     split("Direct numeric/digest;Perceptual quality threshold;Trace/status observation;Acceptance/rejection;Robustness/liveness;Other integration/smoke", kinds, ";")
-    split("Builtin Image Loader;Netpbm builtin component;GIF builtin component;PNG/APNG builtin component;JPEG builtin component;Radiance HDR builtin component;PSD/PSB builtin component;BMP builtin component;SIXEL builtin component;TGA builtin component;Softimage PIC builtin component", labels, ";")
     for (i = 1; i <= 11; i++) documents[i] = "../loader/builtin/" keys[i] ".md"
     documents[1] = "../loader/builtin.md"; documents[4] = "../loader/builtin/png/README.md"
     manifest = root "/tests/_support/test-plans/builtin-loader.list"
@@ -97,7 +96,6 @@ BEGIN {
         summary[++summary_count] = row " |"
         if (!sizes[i]) continue
         inventory[++inventory_count] = "### " titles[i]
-        inventory[++inventory_count] = "Primary implementation context: [" labels[i] "](" documents[i] ")."
         inventory[++inventory_count] = "| Test | Observation | Assertion mechanism | Policy context |"
         inventory[++inventory_count] = "| --- | --- | --- | --- |"
         for (j = 1; j <= sizes[i]; j++) inventory[++inventory_count] = rows[i, j]

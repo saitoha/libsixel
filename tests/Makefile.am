@@ -2116,6 +2116,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0083_PACKED_PNG_P3 \
     -DBUILD_TEST_0086_BYTE_FS_NEIGHBORHOOD \
     -DBUILD_TEST_0087_BYTE_ATKINSON_NEIGHBORHOOD \
+    -DBUILD_TEST_0088_BYTE_JAJUNI_NEIGHBORHOOD \
+    -DBUILD_TEST_0089_BYTE_STUCKI_NEIGHBORHOOD \
+    -DBUILD_TEST_0090_BYTE_BURKES_NEIGHBORHOOD \
+    -DBUILD_TEST_0091_BYTE_SIERRA1_NEIGHBORHOOD \
+    -DBUILD_TEST_0092_BYTE_SIERRA2_NEIGHBORHOOD \
+    -DBUILD_TEST_0093_BYTE_SIERRA3_NEIGHBORHOOD \
+    -DBUILD_TEST_0094_BYTE_A_DITHER_COORDINATES \
+    -DBUILD_TEST_0095_BYTE_X_DITHER_COORDINATES \
+    -DBUILD_TEST_0096_BYTE_FS_SATURATION \
     -DBUILD_HIGHCOLOR_PACKED_COMMON \
     -DBUILD_HIGHCOLOR_PNG_COMMON \
     -DBUILD_HIGHCOLOR_MASK_COMMON \
@@ -3635,6 +3644,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0119_RESET_COLORSPACE_AUTO \
     -DBUILD_TEST_0120_EXPLICIT_CLUSTERING_AUTO_WORKING \
     -DBUILD_TEST_0116_FRAME_SAMPLES \
+    -DBUILD_TEST_0117_BUILTIN_APNG_BYTE_BACKGROUND_NUMERIC \
+    -DBUILD_TEST_0118_BUILTIN_APNG_BYTE_PREVIOUS_NUMERIC \
+    -DBUILD_TEST_0119_BUILTIN_APNG_BYTE_OVER_TRANSPARENT_NUMERIC \
+    -DBUILD_TEST_0120_BUILTIN_APNG_BYTE_OVER_OPAQUE_NUMERIC \
     -DBUILD_TEST_0001_BYTE_REQUEST_FLOAT_SOURCE \
     -DBUILD_TEST_0002_BYTE_REQUEST_LINEAR_SOURCE \
     -DBUILD_TEST_0083_PAINT_MASK \
@@ -5883,6 +5896,15 @@ test_runner_SOURCES = \
     test_runner.c \
     encoder/highcolor/0086_byte_fs_neighborhood.c \
     encoder/highcolor/0087_byte_atkinson_neighborhood.c \
+    encoder/highcolor/0088_byte_jajuni_neighborhood.c \
+    encoder/highcolor/0089_byte_stucki_neighborhood.c \
+    encoder/highcolor/0090_byte_burkes_neighborhood.c \
+    encoder/highcolor/0091_byte_sierra1_neighborhood.c \
+    encoder/highcolor/0092_byte_sierra2_neighborhood.c \
+    encoder/highcolor/0093_byte_sierra3_neighborhood.c \
+    encoder/highcolor/0094_byte_a_dither_coordinates.c \
+    encoder/highcolor/0095_byte_x_dither_coordinates.c \
+    encoder/highcolor/0096_byte_fs_saturation.c \
     _support/lso2-gpu/retained_common.c \
     _support/processing/delta-refresh/spatial_test_common.c \
     delta/refresh/0100_custom_band_periods.c \
@@ -6325,6 +6347,10 @@ test_runner_SOURCES = \
     _support/processing/colorspace/public_float_common.c \
     _support/processing/colorspace/public_float_fault.c \
     loader-png/animation/0116_frame_samples.c \
+    loader-png/animation/0117_builtin_apng_byte_background_numeric.c \
+    loader-png/animation/0118_builtin_apng_byte_previous_numeric.c \
+    loader-png/animation/0119_builtin_apng_byte_over_transparent_numeric.c \
+    loader-png/animation/0120_builtin_apng_byte_over_opaque_numeric.c \
     loader-png/decode/0083_paint_mask.c \
     color/cms/0014_invalid_rgb_definition.c \
     color/cms/0016_p3_float_roundtrip.c \
