@@ -93,7 +93,10 @@
 #define sixel_palette_heckbert_colormap_request_t \
     policy_sixel_palette_heckbert_colormap_request_t
 #define sixel_palette_heckbert_axis_bins policy_sixel_palette_heckbert_axis_bins
+#define findBoxBoundariesAndWeightAvx2 \
+    policy_findBoxBoundariesAndWeightAvx2
 #include "src/palette-heckbert.c"
+#undef findBoxBoundariesAndWeightAvx2
 #undef sixel_palette_heckbert_colormap_request
 #undef sixel_palette_heckbert_colormap_request_t
 #undef sixel_palette_heckbert_log_start
@@ -518,4 +521,96 @@ heckbert_fractional_axis_check(void)
     sixel_allocator_free(allocator, table.table);
     sixel_allocator_unref(allocator);
     return ok ? 0 : 1;
+}
+
+/* Depth four selects the scalar loop, while RGB dispatches to AVX2. The
+ * zero fourth plane does not affect RGB bounds, counts or tuple weights. */
+int
+heckbert_bounds_avx2_check(int edge)
+{
+#if SIXEL_SIMD_AVX2
+    policy_tupletable2 table;
+    struct policy_tupleint *entries[65];
+    double low[2][4];
+    double high[2][4];
+    unsigned int bins[2][4][256];
+    unsigned long weight[2];
+    uint32_t state;
+    unsigned int i;
+    unsigned int j;
+    unsigned int run;
+    unsigned int size;
+    int result;
+
+    if (sixel_cpu_simd_level() != SIXEL_SIMD_LEVEL_AVX2) {
+        return 77;
+    }
+    memset(entries, 0, sizeof(entries));
+    result = 1;
+    for (i = 0U; i < 65U; ++i) {
+        entries[i] = malloc(sizeof(*entries[i]) + 3U * sizeof(double));
+        if (entries[i] == NULL) {
+            goto done;
+        }
+    }
+    table.table = entries;
+    table.size = 65U;
+    table.preserve_extended = 0;
+    state = 0xa8541bcU;
+    for (run = 0U; run < 200U; ++run) {
+        size = run % 65U;
+        for (i = 0U; i < 65U; ++i) {
+            state = state * 1664525U + 1013904223U;
+            entries[i]->value = edge ? (i % 2U ? 0U : UINT_MAX)
+                : state % 1000U;
+            for (j = 0U; j < 3U; ++j) {
+                state = state * 1664525U + 1013904223U;
+                entries[i]->policy_tuple[j] = edge
+                    ? (run % 2U ? (i % 2U ? -0.0 : 0.0)
+                        : (i % 2U ? 255.0 : (double)UINT_MAX))
+                    : (double)state / 1677721.6;
+            }
+            entries[i]->policy_tuple[3] = 0.0;
+        }
+        memset(bins, 0xa5, sizeof(bins));
+        low[1][3] = high[1][3] = -1234.0;
+        for (j = 0U; j < 2U; ++j) {
+            policy_findBoxBoundariesAndWeight(table, 4U - j, 1U, size,
+                low[j], high[j], &weight[j], bins[j]);
+        }
+        if (memcmp(low[0], low[1], 3U * sizeof(double)) != 0
+                || memcmp(high[0], high[1], 3U * sizeof(double)) != 0
+                || memcmp(bins[0], bins[1], 3U * sizeof(bins[0][0]))
+                || weight[0] != weight[1]
+                || low[1][3] != -1234.0 || high[1][3] != -1234.0) {
+            goto done;
+        }
+        for (i = 0U; i < 256U; ++i) {
+            if (bins[1][3][i] != 0xa5a5a5a5U) {
+                goto done;
+            }
+        }
+        /* Extended coordinates only request bounds, without axis bins. */
+        for (i = 0U; i < 65U; ++i) {
+            entries[i]->policy_tuple[0] -= 2048.0;
+        }
+        for (j = 0U; j < 2U; ++j) {
+            policy_findBoxBoundariesAndWeight(table, 4U - j, 1U, size,
+                low[j], high[j], NULL, NULL);
+        }
+        if (memcmp(low[0], low[1], 3U * sizeof(double)) != 0
+                || memcmp(high[0], high[1], 3U * sizeof(double)) != 0) {
+            goto done;
+        }
+    }
+    result = 0;
+done:
+    for (i = 0U; i < 65U; ++i) {
+        free(entries[i]);
+    }
+    return result;
+#else
+    (void)edge;
+    return 77;
+#endif
 }

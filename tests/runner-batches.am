@@ -5575,6 +5575,8 @@ batch_palette_heckbert_0120 = \
     palette/heckbert/0126_heckbert_bucket_sparse_rgba.c
 
 batch_palette_heckbert_0127 = \
+    palette/heckbert/0151_bounds_avx2_edge.c \
+    palette/heckbert/0150_bounds_avx2_random.c \
     palette/heckbert/0127_heckbert_sources.c \
     palette/heckbert/0128_quant_palette_ordinary_float_heckbert_ward.c \
     palette/heckbert/0129_heckbert_snap.c \

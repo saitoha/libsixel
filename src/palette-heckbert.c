@@ -77,6 +77,10 @@
 #include "status.h"
 #include "timer.h"
 #include "simd-config.h"
+#include "cpu.h"
+#if SIXEL_SIMD_AVX2
+# include <immintrin.h>
+#endif
 #if SIXEL_SIMD_NEON_A64
 # include <arm_neon.h>
 #endif
@@ -1447,6 +1451,64 @@ findBoxBoundariesAndWeightNeon3(tupletable2 const colorfreqtable,
 }
 #endif
 
+#if SIXEL_SIMD_AVX2
+/* RGB bounds share a vector, but strict comparisons keep the first equal
+ * value, including signed zero, just as the scalar loop does. Masked loads
+ * and stores never touch a fourth component of a three-channel tuple.
+ * Histogram coordinates are nonnegative: clamp before signed conversion
+ * so every representable unsigned coordinate maps to the scalar bin. */
+/* Accel: HECKBERT-BOX-BOUNDS avx2 */
+static SIXEL_TARGET_AVX2 void
+findBoxBoundariesAndWeightAvx2(tupletable2 const colorfreqtable,
+                              unsigned int boxStart,
+                              unsigned int boxSize,
+                              sample minval[], sample maxval[],
+                              unsigned long *total_weight,
+                              unsigned int axis_count
+                                  [sixel_palette_heckbert_max_channels]
+                                  [sixel_palette_heckbert_axis_bins])
+{
+    __m256i mask;
+    __m256d value;
+    __m256d low;
+    __m256d high;
+    __m256d last_bin;
+    __m128i bins;
+    struct tupleint const *entry;
+    unsigned long weight;
+    unsigned int i;
+
+    mask = _mm256_set_epi64x(0, -1, -1, -1);
+    entry = colorfreqtable.table[boxStart];
+    low = high = _mm256_maskload_pd(entry->tuple, mask);
+    last_bin = _mm256_set1_pd(sixel_palette_heckbert_axis_bins - 1U);
+    weight = 0UL;
+    if (axis_count != NULL) {
+        memset(axis_count, 0, 3U * sizeof(axis_count[0]));
+    }
+    for (i = 0U; i < boxSize; ++i) {
+        entry = colorfreqtable.table[boxStart + i];
+        weight += (unsigned long)sixel_palette_heckbert_entry_weight(entry);
+        value = _mm256_maskload_pd(entry->tuple, mask);
+        low = _mm256_blendv_pd(low, value,
+            _mm256_cmp_pd(value, low, _CMP_LT_OQ));
+        high = _mm256_blendv_pd(high, value,
+            _mm256_cmp_pd(value, high, _CMP_GT_OQ));
+        if (axis_count != NULL) {
+            bins = _mm256_cvttpd_epi32(_mm256_min_pd(value, last_bin));
+            axis_count[0][_mm_cvtsi128_si32(bins)] += 1U;
+            axis_count[1][_mm_extract_epi32(bins, 1)] += 1U;
+            axis_count[2][_mm_extract_epi32(bins, 2)] += 1U;
+        }
+    }
+    _mm256_maskstore_pd(minval, mask, low);
+    _mm256_maskstore_pd(maxval, mask, high);
+    if (total_weight != NULL) {
+        *total_weight = weight;
+    }
+}
+#endif
+
 /*
  * Collect min/max bounds and total tuple weight in one pass so splitBox can
  * reuse the same scan for axis selection and weighted median splitting.
@@ -1470,6 +1532,14 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
     unsigned int axis_value;
     sample value;
 
+#if SIXEL_SIMD_AVX2
+    if (depth == 3U
+            && sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_AVX2) {
+        findBoxBoundariesAndWeightAvx2(colorfreqtable, boxStart, boxSize,
+            minval, maxval, total_weight, axis_count);
+        return;
+    }
+#endif
 #if SIXEL_SIMD_NEON_A64
     if (depth == 3U) {
         findBoxBoundariesAndWeightNeon3(colorfreqtable, boxStart, boxSize,
