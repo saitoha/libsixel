@@ -48,5 +48,46 @@ END { exit failed || !bounded(source) || chunks < 2 }
     echo 'not ok 1 - Metal chunks must be parenthesized and at most 1024 bytes'
     exit 0
 }
-echo 'ok 1 - embedded Metal chunks are parenthesized and at most 1024 bytes'
+# Count adjacent host string literals, ignoring whitespace and C comments.
+# Metal source composed at runtime is bounded per array element.
+LC_ALL=C awk '
+FNR == 1 { bytes = 0; comment = 0; reported = 0 }
+{
+    line = $0
+    if (comment) {
+        if (!sub(/^.*\*\//, "", line)) next
+        comment = 0
+    }
+    while (1) {
+        sub(/^[[:space:]]+/, "", line)
+        if (line == "" || line ~ /^\/\//) break
+        if (line ~ /^\/\*/) {
+            if (sub(/^\/\*.*\*\//, "", line)) continue
+            comment = 1
+            break
+        }
+        if (!match(line, /^@?"([^"\\]|\\.)*"/)) {
+            bytes = 0
+            break
+        }
+        literal = substr(line, 1, RLENGTH)
+        line = substr(line, RLENGTH + 1)
+        sub(/^@?"/, "", literal)
+        sub(/"$/, "", literal)
+        gsub(/\\./, "x", literal)
+        bytes += length(literal)
+        if (bytes > 4095 && !reported) {
+            reported = 1
+            print "# " FILENAME ":" FNR ": adjacent literals exceed 4095 bytes"
+            failed = 1
+            next
+        }
+    }
+}
+END { exit failed }
+' "$src_root"/src/*-metal.m || {
+    echo 'not ok 1 - Metal host literals exceed the C99 length guarantee'
+    exit 0
+}
+echo 'ok 1 - embedded Metal source uses bounded literals'
 exit 0
