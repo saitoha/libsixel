@@ -2425,6 +2425,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0040_XBGR8888_SAMPLES \
     -DBUILD_TEST_0041_BGRX8888_SAMPLES \
     -DBUILD_TEST_0042_HEIGHT_LIMIT \
+    -DBUILD_TEST_0043_PAL1_ROW_PADDING \
+    -DBUILD_TEST_0044_PAL2_ROW_PADDING \
+    -DBUILD_TEST_0045_PAL4_ROW_PADDING \
+    -DBUILD_TEST_0046_PAL8_INDEX_255 \
+    -DBUILD_TEST_0047_G8_RGB_SAMPLES \
+    -DBUILD_TEST_0048_G8_PALETTE_LOOKUP \
+    -DBUILD_TEST_0049_NULL_FILENAME_CLEANUP \
+    -DBUILD_TEST_0050_PACKED_ALLOCATION_FAILURE \
     -DBUILD_TEST_0143_ADOBE_LIBPNG \
     -DBUILD_TEST_0144_DCI_LIBPNG \
     -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -6113,6 +6121,14 @@ test_runner_SOURCES = \
     writer/png/0040_xbgr8888_samples.c \
     writer/png/0041_bgrx8888_samples.c \
     writer/png/0042_height_limit.c \
+    writer/png/0043_pal1_row_padding.c \
+    writer/png/0044_pal2_row_padding.c \
+    writer/png/0045_pal4_row_padding.c \
+    writer/png/0046_pal8_index_255.c \
+    writer/png/0047_g8_rgb_samples.c \
+    writer/png/0048_g8_palette_lookup.c \
+    writer/png/0049_null_filename_cleanup.c \
+    writer/png/0050_packed_allocation_failure.c \
     writer/png/color_test_common.h \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \

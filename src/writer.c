@@ -696,7 +696,9 @@ write_png_to_file(
                           filename != NULL ? filename : "(null)");
     }
     if (filename == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+        /* Format normalization and logging may already own allocations. */
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
     }
     if (strcmp(filename, "-") == 0) {
 #if defined(O_BINARY)

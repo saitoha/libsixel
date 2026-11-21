@@ -333,49 +333,71 @@ png_color_write(char const *path, int mode)
     return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-int
-png_packed_roundtrip(char const *path, unsigned char *packed, int format,
-                     int has_transparency)
+static edge_frame_probe_t *
+pc_writer_roundtrip(char const *path, unsigned char *pixels,
+                     unsigned char *palette, int format, int width,
+                     int height, int color_type)
 {
-    static unsigned char const rgb[] = {24, 83, 151, 190, 33, 62};
-    unsigned char data[512];
+    unsigned char data[1024];
     edge_frame_probe_t *probe;
     edge_loader_options_t options;
     FILE *file;
     size_t length;
     SIXELSTATUS status;
-    int ok;
+    int indexed;
 
-    status = sixel_helper_write_image_file(packed, 2, 1, NULL, format,
+    status = sixel_helper_write_image_file(pixels, width, height,
+                                          palette, format,
                                           path, SIXEL_FORMAT_PNG, NULL);
     if (SIXEL_FAILED(status)) {
-        return EXIT_FAILURE;
+        return NULL;
     }
     file = sixel_compat_fopen(path, "rb");
     if (file == NULL) {
-        return EXIT_FAILURE;
+        return NULL;
     }
     length = fread(data, 1u, sizeof(data), file);
     fclose(file);
-    if (length == sizeof(data)) {
-        return EXIT_FAILURE;
+    if (length < 45u || length == sizeof(data) ||
+        memcmp(data, "\211PNG\r\n\032\n", 8u) != 0 ||
+        data[24] != 8u || data[25] != color_type) {
+        return NULL;
     }
 
     probe = calloc(1u, sizeof(*probe));
     if (probe == NULL) {
-        return EXIT_FAILURE;
+        return NULL;
     }
+    indexed = color_type == 3;
     edge_loader_options_init(&options);
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
-    options.use_palette = 0;
+    options.use_palette = indexed;
     options.set_prefer_float32 = 1;
     options.prefer_float32 = 0;
-    ok = edge_load_buffer_options("PNG packed samples", data, length,
-            &options, probe, &status) == 0 && status == SIXEL_OK &&
-        probe->callback_count == 1 && probe->width[0] == 2 &&
-        probe->height[0] == 1 &&
-        probe->pixelformat[0] == SIXEL_PIXELFORMAT_RGB888 &&
-        probe->rgb_size[0] == sizeof(rgb) &&
+    if (edge_load_buffer_options("PNG writer roundtrip", data, length,
+            &options, probe, &status) != 0 || status != SIXEL_OK ||
+        probe->callback_count != 1 || probe->width[0] != width ||
+        probe->height[0] != height || probe->pixelformat[0] !=
+            (indexed ? SIXEL_PIXELFORMAT_PAL8 : SIXEL_PIXELFORMAT_RGB888)) {
+        free(probe);
+        return NULL;
+    }
+    return probe;
+}
+
+int
+png_packed_roundtrip(char const *path, unsigned char *packed, int format,
+                     int has_transparency)
+{
+    static unsigned char const rgb[] = {24, 83, 151, 190, 33, 62};
+    edge_frame_probe_t *probe;
+    int ok;
+
+    probe = pc_writer_roundtrip(path, packed, NULL, format, 2, 1, 6);
+    if (probe == NULL) {
+        return EXIT_FAILURE;
+    }
+    ok = probe->rgb_size[0] == sizeof(rgb) &&
         memcmp(probe->rgb[0], rgb, sizeof(rgb)) == 0;
     if (has_transparency) {
         ok = ok && probe->mask_size[0] == 2u &&
@@ -387,6 +409,65 @@ png_packed_roundtrip(char const *path, unsigned char *packed, int format,
         fprintf(stderr, "incorrect PNG samples for packed format %d\n",
                 format);
     }
+    free(probe);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+png_indexed_roundtrip(char const *path, unsigned char *packed, int format,
+                      int width, int height, int entries,
+                      unsigned char const *indices)
+{
+    unsigned char palette[SIXEL_PALETTE_MAX * 3];
+    edge_frame_probe_t *probe;
+    size_t count;
+    int i;
+    int ok;
+
+    for (i = 0; i < SIXEL_PALETTE_MAX; ++i) {
+        palette[i * 3] = (unsigned char)i;
+        palette[i * 3 + 1] = (unsigned char)(255 - i);
+        palette[i * 3 + 2] = (unsigned char)(i / 2);
+    }
+    probe = pc_writer_roundtrip(path, packed, palette, format, width,
+                                height, 3);
+    if (probe == NULL) {
+        return EXIT_FAILURE;
+    }
+    count = (size_t)width * (size_t)height;
+    ok = probe->rgb_size[0] == count &&
+        memcmp(probe->rgb[0], indices, count) == 0 &&
+        probe->ncolors[0] == entries &&
+        probe->palette_size[0] == (size_t)entries * 3u &&
+        memcmp(probe->palette[0], palette, probe->palette_size[0]) == 0;
+    if (!ok) {
+        fprintf(stderr, "incorrect PNG indices or PLTE for format %d\n",
+                format);
+    }
+    free(probe);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+png_gray_roundtrip(char const *path, int with_palette)
+{
+    static unsigned char const expected[][9] = {
+        {0, 0, 0, 173, 173, 173, 255, 255, 255},
+        {19, 7, 221, 198, 15, 60, 19, 7, 221}
+    };
+    unsigned char gray[] = {0, 173, 255};
+    unsigned char indices[] = {2, 0, 2};
+    unsigned char palette[] = {198, 15, 60, 253, 1, 134, 19, 7, 221};
+    edge_frame_probe_t *probe;
+    int ok;
+
+    probe = pc_writer_roundtrip(path, with_palette ? indices : gray,
+        with_palette ? palette : NULL, SIXEL_PIXELFORMAT_G8, 3, 1, 2);
+    if (probe == NULL) {
+        return EXIT_FAILURE;
+    }
+    ok = probe->rgb_size[0] == sizeof(expected[0]) &&
+        memcmp(probe->rgb[0], expected[with_palette], sizeof(expected[0])) == 0;
     free(probe);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -1206,10 +1206,7 @@ expand_palette(unsigned char *restrict dst,
                int width, int height, int const pixelformat)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int bpp;  /* bit per plane */
-    int use_palette_tables;
-    int tables_ready;
-    size_t total_pixels;
+    int bpp;
 
     /*
      * Reject empty dimensions early. An empty row or column would make the
@@ -1223,37 +1220,21 @@ expand_palette(unsigned char *restrict dst,
         goto end;
     }
 
-    use_palette_tables = 0;
-    tables_ready = 0;
-
+    /* Only packed formats reach this helper. The public entry handles
+     * byte indices and byte grayscale directly. */
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_G1:
         bpp = 1;
-        use_palette_tables = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_G2:
         bpp = 2;
-        use_palette_tables = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL4:
     case SIXEL_PIXELFORMAT_G4:
         bpp = 4;
-        use_palette_tables = 1;
         break;
-    case SIXEL_PIXELFORMAT_PAL8:
-    case SIXEL_PIXELFORMAT_G8:
-        total_pixels = (size_t)width * (size_t)height;
-
-        /*
-         * Direct copy for already expanded 8 bpp sources. Using memcpy
-         * avoids the per-pixel loop overhead when the input is byte
-         * aligned and requires no bit unpacking.
-         */
-        memcpy(dst, src, total_pixels);
-        status = SIXEL_OK;
-        goto end;
     default:
         status = SIXEL_BAD_ARGUMENT;
         sixel_helper_set_additional_message(
@@ -1261,19 +1242,11 @@ expand_palette(unsigned char *restrict dst,
         goto end;
     }
 
-    if (use_palette_tables) {
-        /*
-         * Initialize lookup tables only when packed palette input is
-         * present. Formats that are already 8 bpp avoid the setup cost.
-         */
-        tables_ready = sixel_init_palette_tables();
-    }
-
 #if HAVE_DEBUG
     fprintf(stderr, "expanding PAL%d to PAL8...\n", bpp);
 #endif
 
-    if (tables_ready) {
+    if (sixel_init_palette_tables()) {
         sixel_trace_topic_message(
             "pixelformat_contract",
             "LSXPIX1|palette_expand=table|bpp=%d",
@@ -1467,8 +1440,6 @@ end:
     return status;
 }
 
-
-/* Normalize RGB888 input without modification. */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

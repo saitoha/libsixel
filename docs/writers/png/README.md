@@ -198,6 +198,12 @@ Each row is one independently reportable observation. Format tests run against w
 | PW-27 | P3 selective blur coordinates. | Both | [tests/writer/png/0026_p3_selective_blur_coordinates.t](../../../tests/writer/png/0026_p3_selective_blur_coordinates.t) |
 | PW-28 | P3 direct resize coordinates. | Both | [tests/writer/png/0027_p3_direct_resize_coordinates.t](../../../tests/writer/png/0027_p3_direct_resize_coordinates.t) |
 | PW-29 | P3 direct undither coordinates. | Both | [tests/writer/png/0028_p3_direct_undither_coordinates.t](../../../tests/writer/png/0028_p3_direct_undither_coordinates.t) |
+| PW-30 | PAL1 expands two non-byte-aligned rows into the exact 8-bit indices. | Both | [tests/writer/png/0043_pal1_row_padding.t](../../../tests/writer/png/0043_pal1_row_padding.t) |
+| PW-31 | PAL2 expands each row and ignores padding when deriving PLTE length. | Both | [tests/writer/png/0044_pal2_row_padding.t](../../../tests/writer/png/0044_pal2_row_padding.t) |
+| PW-32 | PAL4 expands odd-width rows and preserves referenced palette entries. | Both | [tests/writer/png/0045_pal4_row_padding.t](../../../tests/writer/png/0045_pal4_row_padding.t) |
+| PW-33 | PAL8 index 255 preserves the sample and all 256 PLTE entries. | Both | [tests/writer/png/0046_pal8_index_255.t](../../../tests/writer/png/0046_pal8_index_255.t) |
+| PW-34 | G8 without a palette replicates the gray sample to all RGB channels. | Both | [tests/writer/png/0047_g8_rgb_samples.t](../../../tests/writer/png/0047_g8_rgb_samples.t) |
+| PW-35 | G8 with a palette writes the looked-up RGB triples as direct samples. | Both | [tests/writer/png/0048_g8_palette_lookup.t](../../../tests/writer/png/0048_g8_palette_lookup.t) |
 
 
 ### Native snapshot behavioral contracts
@@ -230,7 +236,7 @@ Before the dedicated writer tests, existing coverage established that PNG target
 
 The focused suite now covers the three writer output classes used by the decoder, both command entry routes, all documented `img2sixel` PNG target forms, the builtin CRC regression, and the post-SIXEL dither snapshot contract. The same format tests are backend-neutral and run in both libpng and builtin CI configurations; PW-08 is intentionally builtin-only.
 
-The suite does not currently enumerate every public input normalization format, assert the derived `PLTE` extent, inject allocator or stream failures, validate every dynamically sized chunk CRC independently, or define composed animation snapshots. High-color value tests cover a 320-key final-band image, selected HLS primaries and a source-mask hole; they do not certify every possible register schedule or receiver. Those are explicit coverage gaps rather than implied guarantees. Compressed PNG byte identity across the two backends is deliberately outside the contract.
+The indexed and gray input tests verify normalized samples, including the `PLTE` extent at index 255 and for rows with unused padding bits. Defensive probes exercise allocation failure when unpacking indices and cleanup when the output filename is absent. Stream failures, exhaustive input normalization, independent validation of every chunk CRC, and composed animation snapshots remain outside this coverage. High-color value tests cover a 320-key final-band image, selected HLS primaries and a source-mask hole; they do not certify every possible register schedule or receiver. Those are explicit coverage gaps rather than implied guarantees. Compressed PNG byte identity across the two backends is deliberately outside the contract.
 
 ### Additional named input definitions
 
