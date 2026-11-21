@@ -7400,12 +7400,11 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   emscripten-windows:
-    name: Meson-windows-x86_64-emscripten-batch
+    name: Meson-windows-x86_64-emscripten-static
     runs-on: windows-2025
     timeout-minutes: 30
     env:
-      # Pin an official SDK that ships emcc.bat.
-      EMSDK_VERSION: 5.0.1
+      EMSDK_VERSION: 7.0.0
     steps:
       - name: Configure git EOL
         shell: cmd
@@ -7438,7 +7437,7 @@ jobs:
           (echo [binaries]
            echo awk = 'C:/Program Files/Git/usr/bin/awk.exe'
           ) > "%RUNNER_TEMP%\wasm-native.ini"
-          call emcc.bat --version || exit /b 1
+          emcc.exe --version || exit /b 1
           meson setup wasm-build --native-file "%RUNNER_TEMP%\wasm-native.ini" --cross-file build-aux/meson-cross/emscripten-windows ^
             --prefix / -Ddefault_library=static -Dauto_features=disabled -Dthreads=enabled -Dtests=false || exit /b 1
           meson compile -C wasm-build || exit /b 1

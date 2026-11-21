@@ -1,6 +1,5 @@
 [binaries]
-# Preserve Ninja's argv quoting across the SDK's batch entry point.
-c = ['python', '@DIRNAME@' / '../emcc-batch.py']
+c = 'emcc.exe'
 # Use the SDK's LLVM tools directly for long archive commands.
 ar = 'llvm-ar.exe'
 strip = 'llvm-strip.exe'

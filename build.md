@@ -385,12 +385,12 @@ meson compile -C builddir installcheck  # optional: tests installed commands
 
 ### Windows Emscripten SDK (Meson)
 
-On x64 Windows, use `cmd.exe` with the official Windows SDK, Python with Meson 1.3 or newer and Ninja, and an AWK executable for the public header generator. The following example uses Emscripten 5.0.1, whose Windows package supplies `emcc.bat`, and the AWK executable bundled with Git for Windows.
+On x64 Windows, use `cmd.exe` with the official Windows SDK, Python, Meson, Ninja, and an AWK executable for the public header generator. The following example uses the Emscripten 7.0.0 SDK and the AWK executable bundled with Git for Windows.
 
 ```bat
-git clone --depth 1 --branch 5.0.1 https://github.com/emscripten-core/emsdk.git
-call emsdk\emsdk.bat install 5.0.1
-call emsdk\emsdk.bat activate 5.0.1
+git clone --depth 1 --branch 7.0.0 https://github.com/emscripten-core/emsdk.git
+call emsdk\emsdk.bat install 7.0.0
+call emsdk\emsdk.bat activate 7.0.0
 call emsdk\emsdk_env.bat
 set "PATH=%CD%\emsdk\upstream\bin;%PATH%"
 (echo [binaries]
@@ -403,7 +403,7 @@ meson install -C wasm-build --no-rebuild --destdir "%CD%\wasm-install"
 node wasm-install\bin\img2sixel.js --version
 ```
 
-Set the AWK path in `wasm-native.ini` to match your installation. This build uses the builtin image loaders and disables the POSIX TAP suite. Meson installs the `.js` programs and their `.wasm` sidecars into `bindir` on Windows. On POSIX hosts with split output, it installs the runtime files into `libexecdir/libsixel` and adds Node launchers to `bindir`.
+Set the AWK path in `wasm-native.ini` to match your installation. The SDK's batch files configure the environment, and Meson and Ninja invoke `emcc.exe` directly. This build uses the builtin image loaders and disables the POSIX TAP suite. Meson installs the `.js` programs and their `.wasm` sidecars into `bindir` on Windows. On POSIX hosts with split output, it installs the runtime files into `libexecdir/libsixel` and adds Node launchers to `bindir`.
 
 ### Static analyzer builds (Meson)
 
