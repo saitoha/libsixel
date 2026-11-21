@@ -42,6 +42,7 @@ decoder_gpu_number(device const uchar *body, thread uint &p, uint end,
 
 /* Pass one: the columns a chunk advances and the last selection it makes,
  * with bit 8 set when it makes one. */
+/* Accel: DECODE-BAND-PARSE metal */
 kernel void
 decoder_gpu_measure(device const uchar *body [[buffer(0)]],
                     device const DecoderGpuSegment *segments [[buffer(1)]],
@@ -83,6 +84,7 @@ decoder_gpu_measure(device const uchar *body [[buffer(0)]],
     info[index] = uint2((uint)min(advance, 0xfffffffful), color);
 }
 
+/* Accel: DECODE-BAND-PARSE metal */
 kernel void
 decoder_gpu_parse(device const uchar *body [[buffer(0)]],
                   device const DecoderGpuSegment *segments [[buffer(1)]],
@@ -222,6 +224,7 @@ decoder_gpu_parse(device const uchar *body [[buffer(0)]],
 }
 
 /* Pack the six resolved pixels of each column into its band-column word. */
+/* Accel: DECODE-BAND-PARSE metal */
 kernel void
 decoder_gpu_pack(device const uint *pixels [[buffer(0)]],
                  device ulong *columns [[buffer(1)]],

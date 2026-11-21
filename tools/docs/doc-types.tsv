@@ -1,6 +1,8 @@
 path	type	audience	note
 docs/AGENTS.md	reference	contributor	reference + how-to for documentation maintenance
 docs/README.md	reference	both	navigation for both audiences
+docs/acceleration/README.md	explanation	contributor	explanation + reference for tags, states and the static check
+docs/acceleration/ledger.md	reference	contributor	
 docs/build/README.md	explanation	both	build rationale + contributor ownership reference and validation commands
 docs/build/autotools.md	explanation	contributor	build rationale + target reference and regeneration how-to
 docs/build/configure-macros.md	reference	contributor	macro inventory + explanation of configuration boundaries

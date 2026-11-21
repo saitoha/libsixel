@@ -2942,6 +2942,7 @@ sixel_put_selector_reserved(unsigned char *p, int value)
 }
 
 
+/* Accel: EMIT-PUT-NODE neon sse2 */
 static SIXELSTATUS
 sixel_put_node(
     sixel_output_t /* in */     *output,  /* output context */
@@ -3909,6 +3910,7 @@ sixel_band_color_mask(uint64_t word, unsigned int color)
                            UINT64_C(0x0102040810204080)) >> 56);
 }
 
+/* Accel: EMIT-BAND-CLASSIFY neon sse2 */
 static void
 sixel_band_classify(sixel_encode_work_t *work,
                     sixel_band_state_t *state,

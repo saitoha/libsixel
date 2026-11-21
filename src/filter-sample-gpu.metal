@@ -36,6 +36,7 @@ sample_solid_spread(device const uchar *pixels, int width, int height,
 /* One lane per scan point on the stride-3 grid. A solid point adds its
  * color to a 12-bit cell. Lanes of a SIMD group that share a cell add
  * once; integer sums do not depend on the order of the additions. */
+/* Accel: SAMPLE-VARY-POINTS metal */
 kernel void sample_solid(
     device const uchar *pixels [[buffer(0)]],
     device atomic_uint *cells [[buffer(1)]],

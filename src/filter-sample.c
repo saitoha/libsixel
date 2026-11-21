@@ -243,6 +243,7 @@ sixel_filter_sample_line_spread(unsigned char const *pixels,
 
 #if SIXEL_SAMPLE_SSE2
 /* One of the two unsigned saturating differences is always zero. */
+/* Accel: SAMPLE-VARY-POINTS sse2 */
 static __m128i
 sixel_sample_absdiff_sse2(__m128i a, unsigned char const *p)
 {
@@ -261,6 +262,7 @@ sixel_sample_absdiff_sse2(__m128i a, unsigned char const *p)
  * pixel between the points, so the loads are contiguous and branch-free.
  * Every line must lie inside the image: 2 <= x0, the last point plus two
  * is below width, and 2 <= y < height - 2. */
+/* Accel: SAMPLE-VARY-POINTS neon sse2 */
 static void
 sixel_filter_sample_vary_points(unsigned char const *pixels,
                                 int width,
@@ -371,6 +373,7 @@ sixel_filter_sample_vary_points(unsigned char const *pixels,
  * Store bytes through a pointer to avoid the Win64 ABI's hidden vector
  * result slot, which GCC can access with a 32-byte aligned AVX store.
  */
+/* Accel: SAMPLE-VARY-POINTS avx2 */
 static SIXEL_SAMPLE_TARGET_AVX2 void
 sixel_sample_axis_diff_avx2(unsigned char const *centre, size_t step,
                            unsigned char *out)
@@ -402,6 +405,7 @@ sixel_sample_axis_diff_avx2(unsigned char const *centre, size_t step,
  * tail, so at least 32 bytes are needed. The tolerance test packs into bit
  * masks, and each point reads its channels from them with one shift. The
  * same bounds as vary_points() apply. */
+/* Accel: SAMPLE-VARY-POINTS avx2 */
 static SIXEL_SAMPLE_TARGET_AVX2 void
 sixel_filter_sample_vary_points_avx2(unsigned char const *pixels,
                                      int width,
@@ -481,6 +485,7 @@ sixel_filter_sample_vary_points_avx2(unsigned char const *pixels,
  * neighbours, so no difference is taken between points. Lane k of both
  * holds point k; lane 15 is zero. Needs 2 <= x0, x0 + 46 < width and
  * 2 <= y < height - 2. */
+/* Accel: SAMPLE-VARY-RGB neon */
 static void
 sixel_filter_sample_vary_points_rgb15(unsigned char const *pixels,
                                       int width,
@@ -595,6 +600,7 @@ typedef struct sixel_filter_sample_solid_cell {
 } sixel_filter_sample_solid_cell_t;
 
 /* Add one solid pixel to its quantized histogram cell. */
+/* Accel: SAMPLE-SOLID-ADD neon */
 static inline void
 sixel_filter_sample_add_solid(sixel_filter_sample_solid_cell_t *cells,
                               unsigned char const *px,

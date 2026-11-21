@@ -180,6 +180,7 @@ hb_scan(device const float4 *points, device const uint *order, uint start,
     return c;
 }
 
+/* Accel: HECKBERT-MEDIAN-CUT metal */
 kernel void
 heckbert_solve(device const float4 *points [[buffer(0)]],
                device uint *order [[buffer(1)]],

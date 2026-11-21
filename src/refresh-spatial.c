@@ -61,6 +61,7 @@ sixel_refresh_spatial_sobel(unsigned char const *above,
  * derivative are nonnegative, so |dx| is their absolute difference and the
  * total (at most 2040) stays in 16-bit lanes. A rounding shift by 3 is the
  * scalar (sum + 4) / 8, which never exceeds 255. */
+/* Accel: REFRESH-SOBEL neon */
 static inline uint16x8_t
 sixel_refresh_spatial_sobel8(uint8x8_t am, uint8x8_t a, uint8x8_t ap,
     uint8x8_t rm, uint8x8_t rp, uint8x8_t bm, uint8x8_t b, uint8x8_t bp)
@@ -74,6 +75,7 @@ sixel_refresh_spatial_sobel8(uint8x8_t am, uint8x8_t a, uint8x8_t ap,
     return vaddq_u16(vabdq_u16(right, left), vabdq_u16(top, bottom));
 }
 
+/* Accel: REFRESH-SOBEL neon */
 static int
 sixel_refresh_spatial_sobel_neon(unsigned char const *above,
     unsigned char const *row, unsigned char const *below,
@@ -110,6 +112,7 @@ sixel_refresh_spatial_sobel_neon(unsigned char const *above,
  * is at most 65408, so it stays in 16-bit lanes. Each 128-bit lane holds 16
  * pixels; shuffles split their 48 bytes into channel planes, and the final
  * pack restores pixel order lane by lane. Returns the pixels done. */
+/* Accel: REFRESH-LUMA avx2 */
 static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 size_t
 sixel_refresh_spatial_luma_avx2(unsigned char const *rgb,
     unsigned char *luma, size_t n)
@@ -171,6 +174,7 @@ sixel_refresh_spatial_luma_avx2(unsigned char const *rgb,
  * minus their smaller, and the total is at most 2040. Store bytes directly:
  * MinGW GCC can use an aligned AVX store to a 256-bit return slot that the
  * caller aligned to only 16 bytes. */
+/* Accel: REFRESH-SOBEL avx2 */
 static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 void
 sixel_refresh_spatial_sobel16_avx2(unsigned char const *above,
     unsigned char const *row, unsigned char const *below, unsigned char *out)
@@ -227,6 +231,7 @@ sixel_refresh_spatial_sobel_avx2(unsigned char const *above,
 
 /* Full 4x4 tiles of one tile row, eight at a time: (sum + 8) / 16 as the
  * scalar loop computes for a count of 16. Returns the tiles done. */
+/* Accel: REFRESH-COARSE avx2 */
 static SIXEL_REFRESH_SPATIAL_TARGET_AVX2 int
 sixel_refresh_spatial_coarse_avx2(unsigned char const *fine, int w,
     unsigned char *out, int tiles)

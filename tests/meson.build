@@ -1235,6 +1235,17 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-accel-ledger',
+    [meson.current_source_dir() / '_static/sh/staticcheck-accel-ledger.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-accel-ledger-controls',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-accel-ledger-controls.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-docs-dist-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-docs-dist-sync.sh',
       meson.project_source_root()],
