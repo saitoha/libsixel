@@ -2433,6 +2433,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0048_G8_PALETTE_LOOKUP \
     -DBUILD_TEST_0049_NULL_FILENAME_CLEANUP \
     -DBUILD_TEST_0050_PACKED_ALLOCATION_FAILURE \
+    -DBUILD_STREAM_FAULT_COMMON \
+    -DBUILD_TEST_0051_SHORT_WRITE_CLEANUP \
+    -DBUILD_TEST_0052_FLUSH_FAILURE_CLEANUP \
+    -DBUILD_TEST_0053_CLOSE_FAILURE_STATUS \
+    -DBUILD_TEST_0054_WRITE_FAILURE_PRECEDES_CLOSE \
+    -DBUILD_TEST_0055_STDOUT_FAILURE_BORROWS_STREAM \
     -DBUILD_TEST_0143_ADOBE_LIBPNG \
     -DBUILD_TEST_0144_DCI_LIBPNG \
     -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -6129,6 +6135,13 @@ test_runner_SOURCES = \
     writer/png/0048_g8_palette_lookup.c \
     writer/png/0049_null_filename_cleanup.c \
     writer/png/0050_packed_allocation_failure.c \
+    writer/png/stream_fault_common.c \
+    writer/png/stream_fault_common.h \
+    writer/png/0051_short_write_cleanup.c \
+    writer/png/0052_flush_failure_cleanup.c \
+    writer/png/0053_close_failure_status.c \
+    writer/png/0054_write_failure_precedes_close.c \
+    writer/png/0055_stdout_failure_borrows_stream.c \
     writer/png/color_test_common.h \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \

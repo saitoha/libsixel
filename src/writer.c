@@ -45,44 +45,36 @@
 #include "compat_stub.h"
 #if HAVE_LIBPNG
 # include <png.h>
+#endif
+#if HAVE_LIBPNG && HAVE_SETJMP && HAVE_LONGJMP && defined(PNG_SETJMP_SUPPORTED)
+# define SIXEL_WRITER_USE_LIBPNG 1
 #else
-/*
- * Silence warnings from the bundled stb_image_write header. The file is a
- * third-party dependency, so we prefer to guard the include site instead of
- * modifying upstream code.
- */
-# if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wall"
-#  pragma clang diagnostic ignored "-Wextra"
-#  pragma clang diagnostic ignored "-Wpedantic"
-# elif defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wall"
-#  pragma GCC diagnostic ignored "-Wextra"
-#  pragma GCC diagnostic ignored "-Wpedantic"
-# endif
-# define STBI_WRITE_NO_STDIO 1
-# define STBIW_MEMMOVE(a, b, sz) sixel_compat_memmove((a), (b), (sz))
-# include "stb_image_write.h"
-# if defined(__clang__)
-#  pragma clang diagnostic pop
-# elif defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic pop
-# endif
-#endif  /* HAVE_LIBPNG */
+# define SIXEL_WRITER_USE_LIBPNG 0
+/* Use the bundled writer when libpng errors cannot be caught. */
+#endif  /* SIXEL_WRITER_USE_LIBPNG */
 
 #include <sixel.h>
 #include "stdio_stub.h"
 #include "timeline-logger.h"
 #include "writer.h"
 
+/* A private test copy can substitute failing stream operations without
+ * adding runtime hooks to the normal writer. */
+#ifndef SIXEL_PNG_IO_OPEN
+# define SIXEL_PNG_IO_OPEN sixel_compat_fopen
+# define SIXEL_PNG_IO_WRITE fwrite
+# define SIXEL_PNG_IO_FLUSH fflush
+# define SIXEL_PNG_IO_CLOSE fclose
+# define SIXEL_PNG_IO_FREE free
+# define SIXEL_PNG_IO_DESTROY png_destroy_write_struct
+#endif
+
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
 
-#if HAVE_LIBPNG && HAVE_SETJMP && HAVE_LONGJMP
+#if SIXEL_WRITER_USE_LIBPNG
 /*
  * Capture libpng write errors so callers receive the library detail string
  * instead of only the generic SIXEL_PNG_ERROR status.
@@ -110,10 +102,6 @@ sixel_writer_png_warning_callback(png_structp png_ptr,
         sixel_helper_set_additional_message(warning_message);
     }
 }
-#endif  /* HAVE_LIBPNG && HAVE_SETJMP && HAVE_LONGJMP */
-
-
-#if HAVE_LIBPNG
 /*
  * Keep write callback state in a tiny context so timeline logs can identify
  * how many chunks reached fwrite before libpng reports an error.
@@ -152,7 +140,7 @@ sixel_writer_png_write_callback(png_structp png_ptr,
                           (unsigned long)length);
     }
 
-    written = fwrite(data, 1, length, ctx->output_fp);
+    written = SIXEL_PNG_IO_WRITE(data, 1, length, ctx->output_fp);
     if (written != (size_t)length) {
         if (ctx->logger_prepared) {
             sixel_timeline_logger_logf(ctx->logger,
@@ -207,7 +195,7 @@ sixel_writer_png_flush_callback(png_structp png_ptr)
                           (unsigned long)ctx->write_bytes);
     }
 
-    if (fflush(ctx->output_fp) != 0) {
+    if (SIXEL_PNG_IO_FLUSH(ctx->output_fp) != 0) {
         if (ctx->logger_prepared) {
             sixel_timeline_logger_logf(ctx->logger,
                               "io",
@@ -232,18 +220,134 @@ sixel_writer_png_flush_callback(png_structp png_ptr)
                           (unsigned long)ctx->write_bytes);
     }
 }
-#endif  /* HAVE_LIBPNG */
+
+typedef struct sixel_writer_png_image {
+    png_bytepp rows;
+    png_colorp palette;
+    int palette_entries;
+    png_uint_32 width;
+    png_uint_32 height;
+    int pixelformat;
+    int srgb;
+    unsigned char const *icc;
+    png_uint_32 icc_length;
+} sixel_writer_png_image_t;
 
 
-#if !HAVE_LIBPNG
+/* The caller owns cleanup. Keep the jump in this small frame so none
+ * of the caller's resource owners can be clobbered by libpng errors. */
+static SIXELSTATUS
+sixel_writer_png_emit(png_structp png_ptr, png_infop info_ptr,
+                      sixel_writer_png_io_context_t *io,
+                      sixel_writer_png_image_t const *image)
+{
+    int color_type;
+
+    if (setjmp(png_jmpbuf(png_ptr))) {
+        if (io->logger_prepared) {
+            sixel_timeline_logger_logf(io->logger,
+                              "io",
+                              "png",
+                              "libpng_error_callback",
+                              0,
+                              "status=%d",
+                              SIXEL_PNG_ERROR);
+        }
+        return SIXEL_PNG_ERROR;
+    }
+    png_set_write_fn(png_ptr,
+                     io,
+                     &sixel_writer_png_write_callback,
+                     &sixel_writer_png_flush_callback);
+    if (image->palette != NULL) {
+        png_set_IHDR(png_ptr,
+                     info_ptr,
+                     image->width,
+                     image->height,
+                     8,
+                     PNG_COLOR_TYPE_PALETTE,
+                     PNG_INTERLACE_NONE,
+                     PNG_COMPRESSION_TYPE_BASE,
+                     PNG_FILTER_TYPE_BASE);
+        png_set_PLTE(png_ptr, info_ptr, image->palette,
+                      image->palette_entries);
+    } else {
+        color_type = PNG_COLOR_TYPE_RGB;
+        if (image->pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
+            color_type = PNG_COLOR_TYPE_RGBA;
+        }
+        png_set_IHDR(png_ptr,
+                     info_ptr,
+                     image->width,
+                     image->height,
+                     8,
+                     color_type,
+                     PNG_INTERLACE_NONE,
+                     PNG_COMPRESSION_TYPE_BASE,
+                     PNG_FILTER_TYPE_BASE);
+    }
+    if (io->logger_prepared) {
+        sixel_timeline_logger_logf(io->logger,
+                          "io",
+                          "png",
+                          "libpng_write_info_begin",
+                          0);
+    }
+    /* Metadata describes the supplied encoded values, including PLTE. */
+    if (image->srgb) {
+        png_set_sRGB(png_ptr, info_ptr, PNG_sRGB_INTENT_RELATIVE);
+    } else if (image->icc != NULL) {
+        png_set_iCCP(png_ptr, info_ptr, "RGB", PNG_COMPRESSION_TYPE_BASE,
+                     image->icc, image->icc_length);
+    }
+    png_write_info(png_ptr, info_ptr);
+    if (io->logger_prepared) {
+        sixel_timeline_logger_logf(io->logger,
+                          "io",
+                          "png",
+                          "libpng_write_info_done",
+                          0);
+        sixel_timeline_logger_logf(io->logger,
+                          "io",
+                          "png",
+                          "libpng_write_image_begin",
+                          0);
+    }
+    png_write_image(png_ptr, image->rows);
+    if (io->logger_prepared) {
+        sixel_timeline_logger_logf(io->logger,
+                          "io",
+                          "png",
+                          "libpng_write_image_done",
+                          0);
+        sixel_timeline_logger_logf(io->logger,
+                          "io",
+                          "png",
+                          "libpng_write_end_begin",
+                          0);
+    }
+    png_write_end(png_ptr, NULL);
+    if (io->logger_prepared) {
+        sixel_timeline_logger_logf(io->logger,
+                          "io",
+                          "png",
+                          "libpng_write_end_done",
+                          0);
+    }
+
+    return SIXEL_OK;
+}
+#endif  /* SIXEL_WRITER_USE_LIBPNG */
+
+
+#if !SIXEL_WRITER_USE_LIBPNG
+/* The bundled encoder and its allocator live in stb_image_write.c. */
+extern int stbi_write_png_compression_level;
+
 unsigned char *
 stbi_write_png_to_mem(const unsigned char *pixels, int stride_bytes,
                       int x, int y, int n, int *out_len);
 
-/*
- * The stb helper lives in another translation unit, so we forward declare it
- * here to satisfy the compiler. The picture below shows the relationship.
- */
 unsigned char *
 stbi_zlib_compress(unsigned char *data,
                    int data_len,
@@ -299,7 +403,7 @@ png_write_u32(FILE *output_fp, unsigned int value)
     buffer[2] = (unsigned char)((value >> 8) & 0xffU);
     buffer[3] = (unsigned char)(value & 0xffU);
 
-    written = fwrite(buffer, 1, sizeof(buffer), output_fp);
+    written = SIXEL_PNG_IO_WRITE(buffer, 1, sizeof(buffer), output_fp);
     if (written != sizeof(buffer)) {
         return 0;
     }
@@ -314,8 +418,8 @@ png_write_u32(FILE *output_fp, unsigned int value)
  *     +--------+---------+----------+--------+
  */
 static int
-png_write_chunk(FILE *output_fp, char const *tag,
-                unsigned char const *payload, size_t length)
+sixel_builtin_png_write_chunk(FILE *output_fp, char const *tag,
+                              unsigned char const *payload, size_t length)
 {
     unsigned char type[4];
     unsigned int crc;
@@ -330,13 +434,13 @@ png_write_chunk(FILE *output_fp, char const *tag,
         return 0;
     }
 
-    written = fwrite(type, 1, sizeof(type), output_fp);
+    written = SIXEL_PNG_IO_WRITE(type, 1, sizeof(type), output_fp);
     if (written != sizeof(type)) {
         return 0;
     }
 
     if (length > 0) {
-        written = fwrite(payload, 1, length, output_fp);
+        written = SIXEL_PNG_IO_WRITE(payload, 1, length, output_fp);
         if (written != length) {
             return 0;
         }
@@ -362,11 +466,12 @@ png_write_color(FILE *fp, int srgb, unsigned char const *icc, size_t length)
     static unsigned char const intent = 1u;
 
     if (srgb) {
-        return png_write_chunk(fp, "sRGB", &intent, 1u);
+        return sixel_builtin_png_write_chunk(fp, "sRGB", &intent, 1u);
     }
-    return icc == NULL || png_write_chunk(fp, "iCCP", icc, length);
+    return icc == NULL ||
+           sixel_builtin_png_write_chunk(fp, "iCCP", icc, length);
 }
-#endif  /* !HAVE_LIBPNG */
+#endif  /* !SIXEL_WRITER_USE_LIBPNG */
 
 /* The caller dispatches packed layouts that need conversion. */
 static SIXELSTATUS
@@ -470,7 +575,7 @@ write_png_to_file(
     int bytes_per_pixel = 3;
     sixel_timeline_logger_t *logger;
     int logger_prepared = 0;
-#if HAVE_LIBPNG
+#if SIXEL_WRITER_USE_LIBPNG
     int y = 0;
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
@@ -491,7 +596,7 @@ write_png_to_file(
     int icc_compressed_length = 0;
     size_t icc_chunk_length = 0u;
     size_t payload_size = 0;
-#endif  /* HAVE_LIBPNG */
+#endif  /* SIXEL_WRITER_USE_LIBPNG */
 
     logger = NULL;
     (void)sixel_timeline_logger_prepare_env(allocator, &logger);
@@ -508,15 +613,15 @@ write_png_to_file(
                           height,
                           pixelformat);
     }
-#if HAVE_LIBPNG
+#if SIXEL_WRITER_USE_LIBPNG
     png_io_ctx.output_fp = NULL;
     png_io_ctx.logger = logger;
     png_io_ctx.logger_prepared = logger_prepared;
     png_io_ctx.write_calls = 0u;
     png_io_ctx.write_bytes = 0u;
-#endif  /* HAVE_LIBPNG */
+#endif  /* SIXEL_WRITER_USE_LIBPNG */
 
-#if !HAVE_LIBPNG
+#if !SIXEL_WRITER_USE_LIBPNG
     if (icc != NULL) {
         icc_compressed = stbi_zlib_compress((unsigned char *)icc,
             (int)icc_length, &icc_compressed_length, 8);
@@ -706,7 +811,7 @@ write_png_to_file(
 #endif  /* defined(O_BINARY) */
         output_fp = stdout;
     } else {
-        output_fp = sixel_compat_fopen(filename, "wb");
+        output_fp = SIXEL_PNG_IO_OPEN(filename, "wb");
         if (!output_fp) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             if (logger_prepared) {
@@ -742,7 +847,7 @@ write_png_to_file(
      *        v                  v
      *   indexed pipeline   RGB pipeline
      */
-#if HAVE_LIBPNG
+#if SIXEL_WRITER_USE_LIBPNG
     if (uses_palette) {
         rows = sixel_allocator_malloc(allocator,
                                       (size_t)height
@@ -755,6 +860,22 @@ write_png_to_file(
         }
         for (y = 0; y < height; ++y) {
             rows[y] = pixels + width * y;
+        }
+        /* Cleanup needs this pointer even after a libpng longjmp. Keep
+         * it stable by completing the allocation before setjmp. */
+        png_palette = sixel_allocator_malloc(allocator,
+                                             (size_t)palette_entries
+                                             * sizeof(png_color));
+        if (png_palette == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: sixel_allocator_malloc() failed");
+            goto end;
+        }
+        for (i = 0; i < palette_entries; ++i) {
+            png_palette[i].red = palette[i * 3 + 0];
+            png_palette[i].green = palette[i * 3 + 1];
+            png_palette[i].blue = palette[i * 3 + 2];
         }
     } else {
         rows = sixel_allocator_malloc(allocator,
@@ -779,17 +900,10 @@ write_png_to_file(
                           "libpng_create_begin",
                           0);
     }
-#if HAVE_SETJMP && HAVE_LONGJMP
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
                                       NULL,
                                       &sixel_writer_png_error_callback,
                                       &sixel_writer_png_warning_callback);
-#else
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
-                                      NULL,
-                                      NULL,
-                                      NULL);
-#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
     if (!png_ptr) {
         status = SIXEL_PNG_ERROR;
         if (logger_prepared) {
@@ -831,115 +945,16 @@ write_png_to_file(
                           "libpng_info_done",
                           0);
     }
-# if USE_SETJMP && HAVE_SETJMP
-    if (setjmp(png_jmpbuf(png_ptr))) {
-        status = SIXEL_PNG_ERROR;
-        if (logger_prepared) {
-            sixel_timeline_logger_logf(logger,
-                              "io",
-                              "png",
-                              "libpng_error_callback",
-                              0,
-                              "status=%d",
-                              status);
-        }
-        goto end;
-    }
-# endif
     png_io_ctx.output_fp = output_fp;
-    png_set_write_fn(png_ptr,
-                     &png_io_ctx,
-                     &sixel_writer_png_write_callback,
-                     &sixel_writer_png_flush_callback);
-    if (uses_palette) {
-        png_set_IHDR(png_ptr,
-                     info_ptr,
-                     (png_uint_32)width,
-                     (png_uint_32)height,
-                     8,
-                     PNG_COLOR_TYPE_PALETTE,
-                     PNG_INTERLACE_NONE,
-                     PNG_COMPRESSION_TYPE_BASE,
-                     PNG_FILTER_TYPE_BASE);
-        png_palette = sixel_allocator_malloc(allocator,
-                                             (size_t)palette_entries
-                                             * sizeof(png_color));
-        if (png_palette == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            sixel_helper_set_additional_message(
-                "write_png_to_file: sixel_allocator_malloc() failed");
-            goto end;
-        }
-        for (i = 0; i < palette_entries; ++i) {
-            png_palette[i].red = palette[i * 3 + 0];
-            png_palette[i].green = palette[i * 3 + 1];
-            png_palette[i].blue = palette[i * 3 + 2];
-        }
-        png_set_PLTE(png_ptr, info_ptr, png_palette, palette_entries);
-    } else {
-        int color_type;
-
-        color_type = PNG_COLOR_TYPE_RGB;
-        if (pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
-            color_type = PNG_COLOR_TYPE_RGBA;
-        }
-        png_set_IHDR(png_ptr,
-                     info_ptr,
-                     (png_uint_32)width,
-                     (png_uint_32)height,
-                     8,
-                     color_type,
-                     PNG_INTERLACE_NONE,
-                     PNG_COMPRESSION_TYPE_BASE,
-                     PNG_FILTER_TYPE_BASE);
-    }
-    if (logger_prepared) {
-        sixel_timeline_logger_logf(logger,
-                          "io",
-                          "png",
-                          "libpng_write_info_begin",
-                          0);
-    }
-    /* Metadata describes the supplied encoded values, including PLTE. */
-    if (srgb) {
-        png_set_sRGB(png_ptr, info_ptr, PNG_sRGB_INTENT_RELATIVE);
-    } else if (icc != NULL) {
-        png_set_iCCP(png_ptr, info_ptr, "RGB", PNG_COMPRESSION_TYPE_BASE,
-                     icc, (png_uint_32)icc_length);
-    }
-    png_write_info(png_ptr, info_ptr);
-    if (logger_prepared) {
-        sixel_timeline_logger_logf(logger,
-                          "io",
-                          "png",
-                          "libpng_write_info_done",
-                          0);
-        sixel_timeline_logger_logf(logger,
-                          "io",
-                          "png",
-                          "libpng_write_image_begin",
-                          0);
-    }
-    png_write_image(png_ptr, rows);
-    if (logger_prepared) {
-        sixel_timeline_logger_logf(logger,
-                          "io",
-                          "png",
-                          "libpng_write_image_done",
-                          0);
-        sixel_timeline_logger_logf(logger,
-                          "io",
-                          "png",
-                          "libpng_write_end_begin",
-                          0);
-    }
-    png_write_end(png_ptr, NULL);
-    if (logger_prepared) {
-        sixel_timeline_logger_logf(logger,
-                          "io",
-                          "png",
-                          "libpng_write_end_done",
-                          0);
+    status = sixel_writer_png_emit(
+        png_ptr, info_ptr, &png_io_ctx,
+        &(sixel_writer_png_image_t){
+            rows, png_palette, palette_entries,
+            (png_uint_32)width, (png_uint_32)height,
+            pixelformat, srgb, icc, (png_uint_32)icc_length
+        });
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 #else
     if (uses_palette) {
@@ -976,7 +991,7 @@ write_png_to_file(
         signature[5] = 0x0a;
         signature[6] = 0x1a;
         signature[7] = 0x0a;
-        if (fwrite(signature, 1u, sizeof(signature), output_fp) !=
+        if (SIXEL_PNG_IO_WRITE(signature, 1u, sizeof(signature), output_fp) !=
             sizeof(signature)) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
@@ -996,7 +1011,8 @@ write_png_to_file(
         ihdr[10] = 0;
         ihdr[11] = 0;
         ihdr[12] = 0;
-        if (!png_write_chunk(output_fp, "IHDR", ihdr, sizeof(ihdr))) {
+        if (!sixel_builtin_png_write_chunk(output_fp, "IHDR",
+                                           ihdr, sizeof(ihdr))) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
@@ -1020,23 +1036,19 @@ write_png_to_file(
             plte[i * 3 + 1] = palette[i * 3 + 1];
             plte[i * 3 + 2] = palette[i * 3 + 2];
         }
-        if (!png_write_chunk(output_fp,
-                             "PLTE",
-                             plte,
-                             (size_t)palette_entries * 3U)) {
+        if (!sixel_builtin_png_write_chunk(output_fp, "PLTE", plte,
+                                           (size_t)palette_entries * 3U)) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
         }
-        if (!png_write_chunk(output_fp,
-                             "IDAT",
-                             compressed,
-                             (size_t)png_len)) {
+        if (!sixel_builtin_png_write_chunk(output_fp, "IDAT", compressed,
+                                           (size_t)png_len)) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
         }
-        if (!png_write_chunk(output_fp, "IEND", NULL, 0)) {
+        if (!sixel_builtin_png_write_chunk(output_fp, "IEND", NULL, 0)) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
@@ -1057,24 +1069,24 @@ write_png_to_file(
         /* stb owns image compression; insert metadata after its IHDR
          * without decoding, recoloring, or recompressing any pixels. */
         if (png_len < 33 ||
-            fwrite(png_data, 1u, 33u, output_fp) != 33u ||
+            SIXEL_PNG_IO_WRITE(png_data, 1u, 33u, output_fp) != 33u ||
             !png_write_color(output_fp, srgb, icc_chunk,
                              icc_chunk_length) ||
-            fwrite(png_data + 33u, 1u, (size_t)png_len - 33u,
+            SIXEL_PNG_IO_WRITE(png_data + 33u, 1u, (size_t)png_len - 33u,
                    output_fp) != (size_t)png_len - 33u) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
         }
     }
-#endif  /* HAVE_LIBPNG */
+#endif  /* SIXEL_WRITER_USE_LIBPNG */
 
     /*
      * Emscripten's Node stdout path does not reliably drain the C stdio
      * buffer at process exit.  Flush explicitly so stdout PNG streams keep the
      * final chunk bytes even when the destination is not closed here.
      */
-    if (fflush(output_fp) != 0) {
+    if (SIXEL_PNG_IO_FLUSH(output_fp) != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("fflush() failed.");
         goto end;
@@ -1093,7 +1105,12 @@ end:
                               "target=%s",
                               filename != NULL ? filename : "(null)");
         }
-        fclose(output_fp);
+        /* A close error can fail an otherwise complete write, but must
+         * preserve the status and diagnostic of an earlier failure. */
+        if (SIXEL_PNG_IO_CLOSE(output_fp) != 0 && SIXEL_SUCCEEDED(status)) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("fclose() failed.");
+        }
         if (logger_prepared) {
             sixel_timeline_logger_logf(logger,
                               "io",
@@ -1104,21 +1121,21 @@ end:
                               filename != NULL ? filename : "(null)");
         }
     }
-#if HAVE_LIBPNG
+#if SIXEL_WRITER_USE_LIBPNG
     sixel_allocator_free(allocator, rows);
     if (png_ptr) {
-        png_destroy_write_struct(&png_ptr, &info_ptr);
+        SIXEL_PNG_IO_DESTROY(&png_ptr, &info_ptr);
     }
     sixel_allocator_free(allocator, png_palette);
 #else
-    /* The bundled compressor allocates with the C runtime. */
-    free(icc_compressed);
+    /* stb allocates these buffers with the C runtime. */
+    SIXEL_PNG_IO_FREE(icc_compressed);
+    SIXEL_PNG_IO_FREE(compressed);
+    SIXEL_PNG_IO_FREE(png_data);
     sixel_allocator_free(allocator, icc_chunk);
-    sixel_allocator_free(allocator, compressed);
     sixel_allocator_free(allocator, filtered);
     sixel_allocator_free(allocator, plte);
-    sixel_allocator_free(allocator, png_data);
-#endif  /* HAVE_LIBPNG */
+#endif  /* SIXEL_WRITER_USE_LIBPNG */
     sixel_allocator_free(allocator, new_pixels);
     if (logger_prepared) {
         sixel_timeline_logger_logf(logger,
@@ -1135,6 +1152,14 @@ end:
 
     return status;
 }
+
+#undef SIXEL_WRITER_USE_LIBPNG
+#undef SIXEL_PNG_IO_OPEN
+#undef SIXEL_PNG_IO_WRITE
+#undef SIXEL_PNG_IO_FLUSH
+#undef SIXEL_PNG_IO_CLOSE
+#undef SIXEL_PNG_IO_FREE
+#undef SIXEL_PNG_IO_DESTROY
 
 
 SIXEL_INTERNAL_API SIXELSTATUS

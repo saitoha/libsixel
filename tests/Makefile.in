@@ -366,6 +366,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	writer/png/0048_g8_palette_lookup.c \
 	writer/png/0049_null_filename_cleanup.c \
 	writer/png/0050_packed_allocation_failure.c \
+	writer/png/stream_fault_common.c \
+	writer/png/stream_fault_common.h \
+	writer/png/0051_short_write_cleanup.c \
+	writer/png/0052_flush_failure_cleanup.c \
+	writer/png/0053_close_failure_status.c \
+	writer/png/0054_write_failure_precedes_close.c \
+	writer/png/0055_stdout_failure_borrows_stream.c \
 	writer/png/color_test_common.h \
 	$(top_srcdir)/assessment/assessment.c \
 	$(top_srcdir)/assessment/color.c \
@@ -1769,6 +1776,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0048_g8_palette_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0049_null_filename_cleanup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0050_packed_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-stream_fault_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0051_short_write_cleanup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0052_flush_failure_cleanup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0053_close_failure_status.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0054_write_failure_precedes_close.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0055_stdout_failure_borrows_stream.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-color.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-scielab.$(OBJEXT) \
@@ -5295,7 +5308,13 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	writer/png/$(DEPDIR)/test_runner-0048_g8_palette_lookup.Po \
 	writer/png/$(DEPDIR)/test_runner-0049_null_filename_cleanup.Po \
 	writer/png/$(DEPDIR)/test_runner-0050_packed_allocation_failure.Po \
+	writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Po \
+	writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Po \
+	writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Po \
+	writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Po \
+	writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Po \
 	writer/png/$(DEPDIR)/test_runner-color_test_common.Po \
+	writer/png/$(DEPDIR)/test_runner-stream_fault_common.Po \
 	writer/snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -8160,6 +8179,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_G8_PALETTE_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_NULL_FILENAME_CLEANUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_PACKED_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_STREAM_FAULT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_SHORT_WRITE_CLEANUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_FLUSH_FAILURE_CLEANUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_CLOSE_FAILURE_STATUS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_WRITE_FAILURE_PRECEDES_CLOSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_STDOUT_FAILURE_BORROWS_STREAM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0143_ADOBE_LIBPNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0144_DCI_LIBPNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -11884,6 +11909,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0048_g8_palette_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0049_null_filename_cleanup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0050_packed_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/stream_fault_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/stream_fault_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0051_short_write_cleanup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0052_flush_failure_cleanup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0053_close_failure_status.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0054_write_failure_precedes_close.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0055_stdout_failure_borrows_stream.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/color.c \
@@ -20622,6 +20654,24 @@ writer/png/test_runner-0049_null_filename_cleanup.$(OBJEXT):  \
 writer/png/test_runner-0050_packed_allocation_failure.$(OBJEXT):  \
 	writer/png/$(am__dirstamp) \
 	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-stream_fault_common.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0051_short_write_cleanup.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0052_flush_failure_cleanup.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0053_close_failure_status.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0054_write_failure_precedes_close.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0055_stdout_failure_borrows_stream.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/assessment/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/assessment
 	@: >>$(top_builddir)/assessment/$(am__dirstamp)
@@ -28299,7 +28349,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0048_g8_palette_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0049_null_filename_cleanup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0050_packed_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-color_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-stream_fault_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -31528,6 +31584,90 @@ writer/png/test_runner-0050_packed_allocation_failure.obj: writer/png/0050_packe
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0050_packed_allocation_failure.c' object='writer/png/test_runner-0050_packed_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0050_packed_allocation_failure.obj `if test -f 'writer/png/0050_packed_allocation_failure.c'; then $(CYGPATH_W) 'writer/png/0050_packed_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0050_packed_allocation_failure.c'; fi`
+
+writer/png/test_runner-stream_fault_common.o: writer/png/stream_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-stream_fault_common.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-stream_fault_common.Tpo -c -o writer/png/test_runner-stream_fault_common.o `test -f 'writer/png/stream_fault_common.c' || echo '$(srcdir)/'`writer/png/stream_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-stream_fault_common.Tpo writer/png/$(DEPDIR)/test_runner-stream_fault_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/stream_fault_common.c' object='writer/png/test_runner-stream_fault_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-stream_fault_common.o `test -f 'writer/png/stream_fault_common.c' || echo '$(srcdir)/'`writer/png/stream_fault_common.c
+
+writer/png/test_runner-stream_fault_common.obj: writer/png/stream_fault_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-stream_fault_common.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-stream_fault_common.Tpo -c -o writer/png/test_runner-stream_fault_common.obj `if test -f 'writer/png/stream_fault_common.c'; then $(CYGPATH_W) 'writer/png/stream_fault_common.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/stream_fault_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-stream_fault_common.Tpo writer/png/$(DEPDIR)/test_runner-stream_fault_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/stream_fault_common.c' object='writer/png/test_runner-stream_fault_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-stream_fault_common.obj `if test -f 'writer/png/stream_fault_common.c'; then $(CYGPATH_W) 'writer/png/stream_fault_common.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/stream_fault_common.c'; fi`
+
+writer/png/test_runner-0051_short_write_cleanup.o: writer/png/0051_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0051_short_write_cleanup.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Tpo -c -o writer/png/test_runner-0051_short_write_cleanup.o `test -f 'writer/png/0051_short_write_cleanup.c' || echo '$(srcdir)/'`writer/png/0051_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0051_short_write_cleanup.c' object='writer/png/test_runner-0051_short_write_cleanup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0051_short_write_cleanup.o `test -f 'writer/png/0051_short_write_cleanup.c' || echo '$(srcdir)/'`writer/png/0051_short_write_cleanup.c
+
+writer/png/test_runner-0051_short_write_cleanup.obj: writer/png/0051_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0051_short_write_cleanup.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Tpo -c -o writer/png/test_runner-0051_short_write_cleanup.obj `if test -f 'writer/png/0051_short_write_cleanup.c'; then $(CYGPATH_W) 'writer/png/0051_short_write_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0051_short_write_cleanup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0051_short_write_cleanup.c' object='writer/png/test_runner-0051_short_write_cleanup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0051_short_write_cleanup.obj `if test -f 'writer/png/0051_short_write_cleanup.c'; then $(CYGPATH_W) 'writer/png/0051_short_write_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0051_short_write_cleanup.c'; fi`
+
+writer/png/test_runner-0052_flush_failure_cleanup.o: writer/png/0052_flush_failure_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0052_flush_failure_cleanup.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Tpo -c -o writer/png/test_runner-0052_flush_failure_cleanup.o `test -f 'writer/png/0052_flush_failure_cleanup.c' || echo '$(srcdir)/'`writer/png/0052_flush_failure_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0052_flush_failure_cleanup.c' object='writer/png/test_runner-0052_flush_failure_cleanup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0052_flush_failure_cleanup.o `test -f 'writer/png/0052_flush_failure_cleanup.c' || echo '$(srcdir)/'`writer/png/0052_flush_failure_cleanup.c
+
+writer/png/test_runner-0052_flush_failure_cleanup.obj: writer/png/0052_flush_failure_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0052_flush_failure_cleanup.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Tpo -c -o writer/png/test_runner-0052_flush_failure_cleanup.obj `if test -f 'writer/png/0052_flush_failure_cleanup.c'; then $(CYGPATH_W) 'writer/png/0052_flush_failure_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0052_flush_failure_cleanup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0052_flush_failure_cleanup.c' object='writer/png/test_runner-0052_flush_failure_cleanup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0052_flush_failure_cleanup.obj `if test -f 'writer/png/0052_flush_failure_cleanup.c'; then $(CYGPATH_W) 'writer/png/0052_flush_failure_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0052_flush_failure_cleanup.c'; fi`
+
+writer/png/test_runner-0053_close_failure_status.o: writer/png/0053_close_failure_status.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0053_close_failure_status.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Tpo -c -o writer/png/test_runner-0053_close_failure_status.o `test -f 'writer/png/0053_close_failure_status.c' || echo '$(srcdir)/'`writer/png/0053_close_failure_status.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Tpo writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0053_close_failure_status.c' object='writer/png/test_runner-0053_close_failure_status.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0053_close_failure_status.o `test -f 'writer/png/0053_close_failure_status.c' || echo '$(srcdir)/'`writer/png/0053_close_failure_status.c
+
+writer/png/test_runner-0053_close_failure_status.obj: writer/png/0053_close_failure_status.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0053_close_failure_status.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Tpo -c -o writer/png/test_runner-0053_close_failure_status.obj `if test -f 'writer/png/0053_close_failure_status.c'; then $(CYGPATH_W) 'writer/png/0053_close_failure_status.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0053_close_failure_status.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Tpo writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0053_close_failure_status.c' object='writer/png/test_runner-0053_close_failure_status.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0053_close_failure_status.obj `if test -f 'writer/png/0053_close_failure_status.c'; then $(CYGPATH_W) 'writer/png/0053_close_failure_status.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0053_close_failure_status.c'; fi`
+
+writer/png/test_runner-0054_write_failure_precedes_close.o: writer/png/0054_write_failure_precedes_close.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0054_write_failure_precedes_close.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Tpo -c -o writer/png/test_runner-0054_write_failure_precedes_close.o `test -f 'writer/png/0054_write_failure_precedes_close.c' || echo '$(srcdir)/'`writer/png/0054_write_failure_precedes_close.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Tpo writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0054_write_failure_precedes_close.c' object='writer/png/test_runner-0054_write_failure_precedes_close.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0054_write_failure_precedes_close.o `test -f 'writer/png/0054_write_failure_precedes_close.c' || echo '$(srcdir)/'`writer/png/0054_write_failure_precedes_close.c
+
+writer/png/test_runner-0054_write_failure_precedes_close.obj: writer/png/0054_write_failure_precedes_close.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0054_write_failure_precedes_close.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Tpo -c -o writer/png/test_runner-0054_write_failure_precedes_close.obj `if test -f 'writer/png/0054_write_failure_precedes_close.c'; then $(CYGPATH_W) 'writer/png/0054_write_failure_precedes_close.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0054_write_failure_precedes_close.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Tpo writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0054_write_failure_precedes_close.c' object='writer/png/test_runner-0054_write_failure_precedes_close.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0054_write_failure_precedes_close.obj `if test -f 'writer/png/0054_write_failure_precedes_close.c'; then $(CYGPATH_W) 'writer/png/0054_write_failure_precedes_close.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0054_write_failure_precedes_close.c'; fi`
+
+writer/png/test_runner-0055_stdout_failure_borrows_stream.o: writer/png/0055_stdout_failure_borrows_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0055_stdout_failure_borrows_stream.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Tpo -c -o writer/png/test_runner-0055_stdout_failure_borrows_stream.o `test -f 'writer/png/0055_stdout_failure_borrows_stream.c' || echo '$(srcdir)/'`writer/png/0055_stdout_failure_borrows_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Tpo writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0055_stdout_failure_borrows_stream.c' object='writer/png/test_runner-0055_stdout_failure_borrows_stream.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0055_stdout_failure_borrows_stream.o `test -f 'writer/png/0055_stdout_failure_borrows_stream.c' || echo '$(srcdir)/'`writer/png/0055_stdout_failure_borrows_stream.c
+
+writer/png/test_runner-0055_stdout_failure_borrows_stream.obj: writer/png/0055_stdout_failure_borrows_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0055_stdout_failure_borrows_stream.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Tpo -c -o writer/png/test_runner-0055_stdout_failure_borrows_stream.obj `if test -f 'writer/png/0055_stdout_failure_borrows_stream.c'; then $(CYGPATH_W) 'writer/png/0055_stdout_failure_borrows_stream.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0055_stdout_failure_borrows_stream.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Tpo writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0055_stdout_failure_borrows_stream.c' object='writer/png/test_runner-0055_stdout_failure_borrows_stream.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0055_stdout_failure_borrows_stream.obj `if test -f 'writer/png/0055_stdout_failure_borrows_stream.c'; then $(CYGPATH_W) 'writer/png/0055_stdout_failure_borrows_stream.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0055_stdout_failure_borrows_stream.c'; fi`
 
 $(top_builddir)/assessment/test_runner-assessment.o: $(top_builddir)/assessment/assessment.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-assessment.o -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo -c -o $(top_builddir)/assessment/test_runner-assessment.o `test -f '$(top_builddir)/assessment/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/assessment.c

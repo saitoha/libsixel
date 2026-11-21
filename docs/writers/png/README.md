@@ -111,15 +111,17 @@ Float32 and packed integer inputs are converted before the backend is selected, 
 
 ## Backend selection
 
-Backend selection is compile-time and is not a command-line choice. Autotools uses libpng when `./configure --with-png` succeeds and uses the builtin backend with `--without-png`; the default is automatic detection. Meson uses the equivalent `-Dpng=enabled`, `-Dpng=disabled`, or automatic feature selection. `HAVE_LIBPNG=1` selects the libpng branch in `src/writer.c`; otherwise the builtin branch is compiled.
+Backend selection is compile-time and is not a command-line choice. Autotools uses libpng when `./configure --with-png` succeeds and uses the builtin backend with `--without-png`; the default is automatic detection. Meson uses the equivalent `-Dpng=enabled`, `-Dpng=disabled`, or automatic feature selection. The writer uses libpng when the build has libpng with jump support and the C runtime provides `setjmp` and `longjmp`. Other builds use the builtin writer.
 
 Both backends implement the same pixel-format and PNG color-type contracts above. Compressed bytes, row filters, IDAT partitioning, and total file size are backend implementation details and are not byte-stability guarantees across libpng and builtin builds.
+
+The writer releases its buffers and closes a file it opened even when output fails. For standard output the caller retains ownership. The builtin writer reports a short write as `SIXEL_LIBC_ERROR` with the low byte of `errno`. Both backends use that status for a failed final flush or close. If close also fails during cleanup, the earlier error status and diagnostic take precedence.
 
 ### libpng backend
 
 The libpng backend builds one row pointer per image row and configures a non-interlaced PNG with base compression and filter types. Indexed output sets an 8-bit palette IHDR and copies the derived palette range into `PLTE`. Direct output sets an 8-bit RGB or RGBA IHDR.
 
-libsixel supplies libpng with write and flush callbacks backed by the selected `FILE *`. A short write or flush error enters libpng's error path. Where `setjmp` and `longjmp` support is available, libsixel installs error and warning callbacks, preserves libpng's diagnostic as the additional error message, and returns `SIXEL_PNG_ERROR` after a libpng failure. Timeline logging records the write-call and byte counts without changing PNG contents.
+libsixel supplies libpng with write and flush callbacks backed by the selected `FILE *`. A short write or flush error enters libpng's error path. The error and warning callbacks preserve the libpng diagnostic as the additional error message. The writer catches a libpng failure and returns `SIXEL_PNG_ERROR`. Timeline logging records the write-call and byte counts without changing PNG contents.
 
 ### builtin backend
 
@@ -204,6 +206,11 @@ Each row is one independently reportable observation. Format tests run against w
 | PW-33 | PAL8 index 255 preserves the sample and all 256 PLTE entries. | Both | [tests/writer/png/0046_pal8_index_255.t](../../../tests/writer/png/0046_pal8_index_255.t) |
 | PW-34 | G8 without a palette replicates the gray sample to all RGB channels. | Both | [tests/writer/png/0047_g8_rgb_samples.t](../../../tests/writer/png/0047_g8_rgb_samples.t) |
 | PW-35 | G8 with a palette writes the looked-up RGB triples as direct samples. | Both | [tests/writer/png/0048_g8_palette_lookup.t](../../../tests/writer/png/0048_g8_palette_lookup.t) |
+| PW-36 | Report a short writer transfer and release the opened stream and buffers. | Both | [tests/writer/png/0051_short_write_cleanup.t](../../../tests/writer/png/0051_short_write_cleanup.t) |
+| PW-37 | Report a failed final flush and release the opened stream and buffers. | Both | [tests/writer/png/0052_flush_failure_cleanup.t](../../../tests/writer/png/0052_flush_failure_cleanup.t) |
+| PW-38 | Report close failure after a successful write and flush. | Both | [tests/writer/png/0053_close_failure_status.t](../../../tests/writer/png/0053_close_failure_status.t) |
+| PW-39 | Preserve an earlier short-write status and diagnostic when closing fails. | Both | [tests/writer/png/0054_write_failure_precedes_close.t](../../../tests/writer/png/0054_write_failure_precedes_close.t) |
+| PW-40 | Release writer resources while leaving borrowed standard output open. | Both | [tests/writer/png/0055_stdout_failure_borrows_stream.t](../../../tests/writer/png/0055_stdout_failure_borrows_stream.t) |
 
 
 ### Native snapshot behavioral contracts
@@ -236,7 +243,7 @@ Before the dedicated writer tests, existing coverage established that PNG target
 
 The focused suite now covers the three writer output classes used by the decoder, both command entry routes, all documented `img2sixel` PNG target forms, the builtin CRC regression, and the post-SIXEL dither snapshot contract. The same format tests are backend-neutral and run in both libpng and builtin CI configurations; PW-08 is intentionally builtin-only.
 
-The indexed and gray input tests verify normalized samples, including the `PLTE` extent at index 255 and for rows with unused padding bits. Defensive probes exercise allocation failure when unpacking indices and cleanup when the output filename is absent. Stream failures, exhaustive input normalization, independent validation of every chunk CRC, and composed animation snapshots remain outside this coverage. High-color value tests cover a 320-key final-band image, selected HLS primaries and a source-mask hole; they do not certify every possible register schedule or receiver. Those are explicit coverage gaps rather than implied guarantees. Compressed PNG byte identity across the two backends is deliberately outside the contract.
+The indexed and gray input tests verify normalized samples, including the `PLTE` extent at index 255 and for rows with unused padding bits. Defensive probes exercise allocation failure when unpacking indices and cleanup when the output filename is absent. The stream probes inject a short write, a failed final flush, and a failed close. They verify status, diagnostic precedence, buffer release, and stream ownership. Exhaustive input normalization, independent validation of every chunk CRC, and composed animation snapshots remain outside this coverage. High-color value tests cover a 320-key final-band image, selected HLS primaries and a source-mask hole; they do not certify every possible register schedule or receiver. Those are explicit coverage gaps rather than implied guarantees. Compressed PNG byte identity across the two backends is deliberately outside the contract.
 
 ### Additional named input definitions
 

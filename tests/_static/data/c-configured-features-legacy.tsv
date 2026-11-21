@@ -359,8 +359,6 @@ src/tty.c	1	#ifHAVE_FCNTL_H&&HAVE_SYS_SELECT_H&&(HAVE_UNISTD_H||HAVE_SYS_UNISTD_
 src/tty.c	2	#ifHAVE_SYS_SELECT_H&&!defined(__EMSCRIPTEN__)
 src/tty.c	1	#ifSIXEL_TTY_HAVE_TERMIOS_CBREAK&&!defined(__EMSCRIPTEN__)&&defined(TIOCGWINSZ)
 src/tty.c	3	#ifdefined(_WIN32)
-src/writer.c	2	#elifdefined(__GNUC__)&&!defined(__PCC__)
-src/writer.c	2	#ifdefined(__clang__)
 tests/_support/cli/0038_cli_color_tty.c	1	#elifdefined(__DragonFly__)||defined(__NetBSD__)||defined(__OpenBSD__)
 tests/_support/cli/0038_cli_color_tty.c	1	#ifdefined(PENDIN)&&(defined(__COSMOPOLITAN__)||defined(__DragonFly__)||defined(__NetBSD__)||defined(__OpenBSD__)||(defined(__APPLE__)&&defined(__MACH__)))
 tests/_support/cli/0038_cli_color_tty.c	1	#ifdefined(__APPLE__)&&!defined(_DARWIN_C_SOURCE)

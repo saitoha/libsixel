@@ -372,6 +372,11 @@ int test_png_g8_rgb_samples(int argc, char **argv);
 int test_png_g8_palette_lookup(int argc, char **argv);
 int test_png_null_filename_cleanup(int argc, char **argv);
 int test_png_packed_allocation_failure(int argc, char **argv);
+int test_png_stream_0051(int argc, char **argv);
+int test_png_stream_0052(int argc, char **argv);
+int test_png_stream_0053(int argc, char **argv);
+int test_png_stream_0054(int argc, char **argv);
+int test_png_stream_0055(int argc, char **argv);
 int test_png_color_0026(int argc, char **argv);
 int test_png_color_0027(int argc, char **argv);
 int test_png_color_0028(int argc, char **argv);
@@ -10470,6 +10475,16 @@ static test_entry_t const test_entries[] = {
     { "writer/png/0049_null_filename_cleanup", test_png_null_filename_cleanup },
     { "writer/png/0050_packed_allocation_failure",
       test_png_packed_allocation_failure },
+    { "writer/png/0051_short_write_cleanup",
+      test_png_stream_0051 },
+    { "writer/png/0052_flush_failure_cleanup",
+      test_png_stream_0052 },
+    { "writer/png/0053_close_failure_status",
+      test_png_stream_0053 },
+    { "writer/png/0054_write_failure_precedes_close",
+      test_png_stream_0054 },
+    { "writer/png/0055_stdout_failure_borrows_stream",
+      test_png_stream_0055 },
     { "writer/png/0026_adobe_rgb_indexed", test_png_color_0026 },
     { "writer/png/0027_dci_p3_indexed", test_png_color_0027 },
     { "writer/png/0028_adobe_rgb_direct", test_png_color_0028 },
