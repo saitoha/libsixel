@@ -93,7 +93,11 @@
 #define sixel_palette_heckbert_colormap_request_t \
     policy_sixel_palette_heckbert_colormap_request_t
 #define sixel_palette_heckbert_axis_bins policy_sixel_palette_heckbert_axis_bins
+#define sixel_heckbert_box_sse_avx2 policy_sixel_heckbert_box_sse_avx2
+#define sixel_heckbert_error_avx2 policy_sixel_heckbert_error_avx2
 #include "src/palette-heckbert.c"
+#undef sixel_heckbert_box_sse_avx2
+#undef sixel_heckbert_error_avx2
 #undef sixel_palette_heckbert_colormap_request
 #undef sixel_palette_heckbert_colormap_request_t
 #undef sixel_palette_heckbert_log_start
@@ -518,4 +522,94 @@ heckbert_fractional_axis_check(void)
     sixel_allocator_free(allocator, table.table);
     sixel_allocator_unref(allocator);
     return ok ? 0 : 1;
+}
+
+/* The fourth reference plane is identically zero. Depth four deliberately
+ * selects the unchanged scalar implementation; depth three uses AVX2. */
+int
+heckbert_score_avx2_check(int edge)
+{
+#if SIXEL_SIMD_AVX2
+    policy_tupletable2 table;
+    struct policy_tupleint *entries[65];
+    double weights[4];
+    double children[2][2];
+    double score[2];
+    unsigned int cuts[2];
+    unsigned int lower[2];
+    uint32_t state;
+    unsigned int i;
+    unsigned int j;
+    unsigned int run;
+    unsigned int size;
+    int result;
+
+    if (sixel_cpu_simd_level() != SIXEL_SIMD_LEVEL_AVX2) {
+        return 77;
+    }
+    memset(entries, 0, sizeof(entries));
+    result = 1;
+    for (i = 0U; i < 65U; ++i) {
+        entries[i] = malloc(sizeof(*entries[i]) + 3U * sizeof(double));
+        if (entries[i] == NULL) {
+            goto done;
+        }
+    }
+    table.table = entries;
+    table.size = 65U;
+    table.preserve_extended = 1;
+    state = 0x8fa3219U;
+    for (run = 0U; run < 200U; ++run) {
+        size = run % 65U;
+        for (j = 0U; j < 4U; ++j) {
+            weights[j] = j == 3U ? 0.0 : (double)(j + 1U) / 7.0;
+        }
+        for (i = 0U; i < 65U; ++i) {
+            state = state * 1664525U + 1013904223U;
+            entries[i]->value = edge ? (run % 3U == 0U ? 0U : 1U)
+                : state % 1000U;
+            for (j = 0U; j < 3U; ++j) {
+                state = state * 1664525U + 1013904223U;
+                entries[i]->policy_tuple[j] = edge
+                    ? (run % 2U == 0U ? 255.0 : (double)(i % 2U))
+                    : (double)(int32_t)state / 16777216.0;
+            }
+            entries[i]->policy_tuple[3] = 0.0;
+        }
+        score[0] = policy_sixel_heckbert_box_sse(table, 1U, size, 4U,
+            weights, &cuts[0], &lower[0], children[0]);
+        score[1] = policy_sixel_heckbert_box_sse(table, 1U, size, 3U,
+            weights, &cuts[1], &lower[1], children[1]);
+        if (memcmp(&score[0], &score[1], sizeof(double)) != 0
+                || cuts[0] != cuts[1] || lower[0] != lower[1]
+                || memcmp(children[0], children[1], sizeof(children[0]))) {
+            goto done;
+        }
+        score[1] = policy_sixel_heckbert_box_sse(table, 1U, size, 3U,
+            weights, NULL, NULL, NULL);
+        if (memcmp(&score[0], &score[1], sizeof(double)) != 0) {
+            goto done;
+        }
+    }
+    /* No tuple storage is required for an empty box. */
+    table.table = NULL;
+    score[0] = policy_sixel_heckbert_box_sse(table, 0U, 0U, 3U,
+        weights, &cuts[0], &lower[0], children[0]);
+    score[1] = policy_sixel_heckbert_box_sse(table, 0U, 0U, 3U,
+        weights, NULL, NULL, NULL);
+    if (score[0] != 0.0 || score[1] != 0.0 || cuts[0] != 0U
+            || lower[0] != 0U || children[0][0] != 0.0
+            || children[0][1] != 0.0) {
+        goto done;
+    }
+    result = 0;
+done:
+    for (i = 0U; i < 65U; ++i) {
+        free(entries[i]);
+    }
+    return result;
+#else
+    (void)edge;
+    return 77;
+#endif
 }
