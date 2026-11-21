@@ -3361,6 +3361,7 @@ am__objects_2 = .runner-batches/test_runner-batch_encoder_indexed_0185.inc.$(OBJ
 	.runner-batches/test_runner-batch_palette_heckbert_0085.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_heckbert_0120.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_heckbert_0127.inc.$(OBJEXT) \
+	.runner-batches/test_runner-batch_palette_heckbert_0150.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_kcenter_0004.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_kmeans_0001.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_kmeans_0024.inc.$(OBJEXT) \
@@ -3982,6 +3983,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0085.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0120.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0127.inc.Po \
+	.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0150.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_kcenter_0004.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_kmeans_0001.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_kmeans_0024.inc.Po \
@@ -14142,6 +14144,7 @@ runner_batches = \
     .runner-batches/batch_palette_heckbert_0085.inc.c \
     .runner-batches/batch_palette_heckbert_0120.inc.c \
     .runner-batches/batch_palette_heckbert_0127.inc.c \
+    .runner-batches/batch_palette_heckbert_0150.inc.c \
     .runner-batches/batch_palette_kcenter_0004.inc.c \
     .runner-batches/batch_palette_kmeans_0001.inc.c \
     .runner-batches/batch_palette_kmeans_0024.inc.c \
@@ -19211,10 +19214,6 @@ batch_palette_heckbert_0120 = \
     palette/heckbert/0126_heckbert_bucket_sparse_rgba.c
 
 batch_palette_heckbert_0127 = \
-    palette/heckbert/0151_score_avx2_edge.c \
-    palette/heckbert/0150_score_avx2_random.c \
-    palette/heckbert/0153_bounds_avx2_edge.c \
-    palette/heckbert/0152_bounds_avx2_random.c \
     palette/heckbert/0127_heckbert_sources.c \
     palette/heckbert/0128_quant_palette_ordinary_float_heckbert_ward.c \
     palette/heckbert/0129_heckbert_snap.c \
@@ -19228,6 +19227,12 @@ batch_palette_heckbert_0127 = \
     palette/heckbert/0137_heckbert_polish_auto_average.c \
     palette/heckbert/0138_heckbert_once.c \
     palette/heckbert/0139_heckbert_unique.c
+
+batch_palette_heckbert_0150 = \
+    palette/heckbert/0150_score_avx2_random.c \
+    palette/heckbert/0151_score_avx2_edge.c \
+    palette/heckbert/0152_bounds_avx2_random.c \
+    palette/heckbert/0153_bounds_avx2_edge.c
 
 batch_palette_kcenter_0004 = \
     palette/kcenter/0004_center_sources.c \
@@ -26253,6 +26258,9 @@ $(top_builddir)/converters/test_runner-path.$(OBJEXT):  \
 .runner-batches/test_runner-batch_palette_heckbert_0127.inc.$(OBJEXT):  \
 	.runner-batches/$(am__dirstamp) \
 	.runner-batches/$(DEPDIR)/$(am__dirstamp)
+.runner-batches/test_runner-batch_palette_heckbert_0150.inc.$(OBJEXT):  \
+	.runner-batches/$(am__dirstamp) \
+	.runner-batches/$(DEPDIR)/$(am__dirstamp)
 .runner-batches/test_runner-batch_palette_kcenter_0004.inc.$(OBJEXT):  \
 	.runner-batches/$(am__dirstamp) \
 	.runner-batches/$(DEPDIR)/$(am__dirstamp)
@@ -27083,6 +27091,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0085.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0120.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0127.inc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0150.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_kcenter_0004.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_kmeans_0001.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_kmeans_0024.inc.Po@am__quote@ # am--include-marker
@@ -53814,6 +53823,20 @@ $(top_builddir)/converters/test_runner-path.obj: $(top_builddir)/converters/path
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='.runner-batches/batch_palette_heckbert_0127.inc.c' object='.runner-batches/test_runner-batch_palette_heckbert_0127.inc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o .runner-batches/test_runner-batch_palette_heckbert_0127.inc.obj `if test -f '.runner-batches/batch_palette_heckbert_0127.inc.c'; then $(CYGPATH_W) '.runner-batches/batch_palette_heckbert_0127.inc.c'; else $(CYGPATH_W) '$(srcdir)/.runner-batches/batch_palette_heckbert_0127.inc.c'; fi`
+
+.runner-batches/test_runner-batch_palette_heckbert_0150.inc.o: .runner-batches/batch_palette_heckbert_0150.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_palette_heckbert_0150.inc.o -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0150.inc.Tpo -c -o .runner-batches/test_runner-batch_palette_heckbert_0150.inc.o `test -f '.runner-batches/batch_palette_heckbert_0150.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_palette_heckbert_0150.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0150.inc.Tpo .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0150.inc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='.runner-batches/batch_palette_heckbert_0150.inc.c' object='.runner-batches/test_runner-batch_palette_heckbert_0150.inc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o .runner-batches/test_runner-batch_palette_heckbert_0150.inc.o `test -f '.runner-batches/batch_palette_heckbert_0150.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_palette_heckbert_0150.inc.c
+
+.runner-batches/test_runner-batch_palette_heckbert_0150.inc.obj: .runner-batches/batch_palette_heckbert_0150.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_palette_heckbert_0150.inc.obj -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0150.inc.Tpo -c -o .runner-batches/test_runner-batch_palette_heckbert_0150.inc.obj `if test -f '.runner-batches/batch_palette_heckbert_0150.inc.c'; then $(CYGPATH_W) '.runner-batches/batch_palette_heckbert_0150.inc.c'; else $(CYGPATH_W) '$(srcdir)/.runner-batches/batch_palette_heckbert_0150.inc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0150.inc.Tpo .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0150.inc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='.runner-batches/batch_palette_heckbert_0150.inc.c' object='.runner-batches/test_runner-batch_palette_heckbert_0150.inc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o .runner-batches/test_runner-batch_palette_heckbert_0150.inc.obj `if test -f '.runner-batches/batch_palette_heckbert_0150.inc.c'; then $(CYGPATH_W) '.runner-batches/batch_palette_heckbert_0150.inc.c'; else $(CYGPATH_W) '$(srcdir)/.runner-batches/batch_palette_heckbert_0150.inc.c'; fi`
 
 .runner-batches/test_runner-batch_palette_kcenter_0004.inc.o: .runner-batches/batch_palette_kcenter_0004.inc.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_palette_kcenter_0004.inc.o -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_palette_kcenter_0004.inc.Tpo -c -o .runner-batches/test_runner-batch_palette_kcenter_0004.inc.o `test -f '.runner-batches/batch_palette_kcenter_0004.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_palette_kcenter_0004.inc.c

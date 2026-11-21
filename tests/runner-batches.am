@@ -506,6 +506,7 @@ runner_batches = \
     .runner-batches/batch_palette_heckbert_0085.inc.c \
     .runner-batches/batch_palette_heckbert_0120.inc.c \
     .runner-batches/batch_palette_heckbert_0127.inc.c \
+    .runner-batches/batch_palette_heckbert_0150.inc.c \
     .runner-batches/batch_palette_kcenter_0004.inc.c \
     .runner-batches/batch_palette_kmeans_0001.inc.c \
     .runner-batches/batch_palette_kmeans_0024.inc.c \
@@ -5575,10 +5576,6 @@ batch_palette_heckbert_0120 = \
     palette/heckbert/0126_heckbert_bucket_sparse_rgba.c
 
 batch_palette_heckbert_0127 = \
-    palette/heckbert/0151_score_avx2_edge.c \
-    palette/heckbert/0150_score_avx2_random.c \
-    palette/heckbert/0153_bounds_avx2_edge.c \
-    palette/heckbert/0152_bounds_avx2_random.c \
     palette/heckbert/0127_heckbert_sources.c \
     palette/heckbert/0128_quant_palette_ordinary_float_heckbert_ward.c \
     palette/heckbert/0129_heckbert_snap.c \
@@ -5592,6 +5589,12 @@ batch_palette_heckbert_0127 = \
     palette/heckbert/0137_heckbert_polish_auto_average.c \
     palette/heckbert/0138_heckbert_once.c \
     palette/heckbert/0139_heckbert_unique.c
+
+batch_palette_heckbert_0150 = \
+    palette/heckbert/0150_score_avx2_random.c \
+    palette/heckbert/0151_score_avx2_edge.c \
+    palette/heckbert/0152_bounds_avx2_random.c \
+    palette/heckbert/0153_bounds_avx2_edge.c
 
 batch_palette_kcenter_0004 = \
     palette/kcenter/0004_center_sources.c \
