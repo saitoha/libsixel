@@ -10,6 +10,7 @@ struct RetainedParams {
 /* Every source lane writes its candidate at the canvas origin. The backend
  * reconciles earlier dirty ranges before dispatch, so untouched canvas bytes
  * remain committed history. Keeps copy exact bytes and validity. */
+/* Accel: RETAINED-EXPAND metal */
 kernel void retained_expand(
     device const uchar *rgb [[buffer(0)]],
     device const uchar *valid [[buffer(1)]],

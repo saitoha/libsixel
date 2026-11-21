@@ -7390,6 +7390,8 @@ staticcheck-loader-cms-boundary \
 	staticcheck-docs-envvars-help-table \
 	staticcheck-docs-github-math \
 	staticcheck-doc-types-inventory \
+	staticcheck-accel-ledger \
+	staticcheck-accel-ledger-controls \
 	staticcheck-docs-dist-sync \
 	staticcheck-docs-length-limits \
 	staticcheck-doc-test-links \
@@ -7472,6 +7474,8 @@ staticcheck-docs-bash-vs-zsh-completion \
 staticcheck-docs-envvars-help-table \
 staticcheck-docs-github-math \
 staticcheck-doc-types-inventory \
+staticcheck-accel-ledger \
+staticcheck-accel-ledger-controls \
 staticcheck-docs-dist-sync \
 staticcheck-docs-length-limits \
 staticcheck-doc-test-links \
@@ -8215,6 +8219,26 @@ staticcheck-doc-types-inventory:
 		--trs-file staticcheck-doc-types-inventory.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-doc-types-inventory.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-accel-ledger:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-accel-ledger" \
+		--log-file staticcheck-accel-ledger.log \
+		--trs-file staticcheck-accel-ledger.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-accel-ledger.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-accel-ledger-controls:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-accel-ledger-controls" \
+		--log-file staticcheck-accel-ledger-controls.log \
+		--trs-file staticcheck-accel-ledger-controls.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-accel-ledger-controls.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-docs-dist-sync:
@@ -9756,6 +9780,12 @@ EXTRA_DIST += _static/awk/fuzz-triage-registration.awk \
 EXTRA_DIST += _static/awk/c-configured-features.awk \
     _static/data/c-configured-features-legacy.tsv \
     _static/sh/staticcheck-c-configured-features.sh
+
+EXTRA_DIST += _static/awk/accel-units.awk \
+    _static/awk/accel-ledger.awk \
+    _static/data/accel-untagged-legacy.tsv \
+    _static/sh/staticcheck-accel-ledger.sh \
+    _static/sh/staticcheck-accel-ledger-controls.sh
 
 EXTRA_DIST += data/color-numeric/output-bpc.icc \
     data/color-numeric/output-bpc-rgba16.png \

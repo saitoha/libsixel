@@ -1383,6 +1383,7 @@ sixel_palette_heckbert_entry_weight(struct tupleint const *entry)
 /* Three-plane form of findBoxBoundariesAndWeight. Planes 0 and 1 share one
  * vector; the bounds stay in registers and move only on a strict compare,
  * as in the scalar loop, so equal values keep the earlier bound. */
+/* Accel: HECKBERT-BOX-BOUNDS neon */
 static void
 findBoxBoundariesAndWeightNeon3(tupletable2 const colorfreqtable,
                                 unsigned int boxStart,
@@ -2969,6 +2970,7 @@ sixel_heckbert_sse(double const sums[4], double const squares[4],
  * children in the lanes of one vector. Every lane takes the operations of the
  * scalar loop in the same order, fusing the same multiply-adds, so the cut
  * and the errors are the same values. */
+/* Accel: HECKBERT-BOX-SCORE neon */
 static double
 sixel_heckbert_box_sse_neon3(tupletable2 table, unsigned int start,
                              unsigned int size, double const weights[4],

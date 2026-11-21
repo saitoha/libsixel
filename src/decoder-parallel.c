@@ -691,6 +691,7 @@ sixel_decoder_parallel_reserve_columns(sixel_decoder_worker_context_t *context,
  * zero pattern, which leaves their columns unchanged. Short runs dominate
  * dithered bodies, so the run end no longer costs a mispredicted loop exit.
  * Returns the number of bytes consumed; run_end bounds input and columns. */
+/* Accel: DECODE-LITERAL-RUN neon */
 #if HAVE_FUNC_ATTRIBUTE_ALWAYS_INLINE
 __attribute__((always_inline))
 #endif

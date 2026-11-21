@@ -12,6 +12,7 @@
 #include "encoder-body-gpu.h"
 #include "gpu-runtime-metal.h"
 
+/* Accel: BODY-COMPOSE metal */
 static NSString *const sixel_body_gpu_source = @
 "#include <metal_stdlib>\n"
 "using namespace metal;\n"

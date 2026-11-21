@@ -141,6 +141,7 @@ decoder_gpu_add_chunk(decoder_gpu_segment_t *segments, uint32_t *count,
 /* Split BODY[0, LENGTH) at '$' and '-', cut long segments into chunks, and
  * stop at the string terminator.  Returns the chunk count, or 0 when the
  * body needs the CPU parser. */
+/* Accel: DECODE-BODY-SPLIT neon */
 static uint32_t
 decoder_gpu_split(unsigned char const *body, uint32_t length,
                   decoder_gpu_segment_t *segments, uint32_t capacity,

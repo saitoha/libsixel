@@ -533,6 +533,7 @@ sixel_indexed_frame_get_rows(sixel_indexed_frame_t const *image,
 /* The scalar scan below, sixteen pixels per step in byte lanes.  Indexes
  * are bytes, so a count above 255 rejects none and a key of 256 matches
  * none; both comparisons are masked instead of widened. */
+/* Accel: PUBLISH-INDEX-SCAN neon */
 static size_t
 sixel_indexed_frame_publish_neon(unsigned char *skip,
     sixel_index_t const *indexes, size_t i, size_t end, size_t count,
@@ -579,6 +580,7 @@ sixel_indexed_frame_publish_neon(unsigned char *skip,
 #if SIXEL_PUBLISH_SSE2
 /* The NEON scan above in SSE2. Unsigned >= is max(a, b) == a, a select is
  * and/andnot/or, and any nonzero lane leaves a zero-compare mask short. */
+/* Accel: PUBLISH-INDEX-SCAN sse2 */
 static size_t
 sixel_indexed_frame_publish_sse2(unsigned char *skip,
     sixel_index_t const *indexes, size_t i, size_t end, size_t count,

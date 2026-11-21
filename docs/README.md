@@ -255,6 +255,11 @@ Building, testing, and maintaining libsixel and its documentation.
 - [CLI design policy](cli/design-policy.md) defines option design, compatibility, parsing, diagnostics, and documentation synchronization.
 - [Converter suboption architecture](cli/suboptions.md) defines structured option grammar, the option registry, precedence, and environment-variable parity.
 
+### Acceleration backends
+
+- [Acceleration backends](acceleration/README.md) explains how SIMD and GPU implementations are tagged in source and checked against the ledger.
+- [Acceleration ledger](acceleration/ledger.md) lists each accelerated operation and whether NEON, SSE2, AVX2, WASM, Metal and Vulkan implement it.
+
 ### Platform compatibility
 
 - [Platform compatibility ledger](misc/platforms/README.md) indexes the per-platform compatibility contracts and their static checks.

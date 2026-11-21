@@ -45,6 +45,7 @@ sixel_retained_rows_prepare(sixel_retained_rows_t *rows,
 }
 
 #if SIXEL_RETAINED_NEON
+/* Accel: RETAINED-ROWS neon */
 static uint8x16_t
 sixel_retained_rows_gather(unsigned char const *lut, uint8x16_t indexes)
 {
@@ -67,6 +68,7 @@ sixel_retained_rows_gather(unsigned char const *lut, uint8x16_t indexes)
 }
 #endif
 
+/* Accel: RETAINED-ROWS neon */
 SIXEL_INTERNAL_API void
 sixel_retained_rows_run(sixel_retained_rows_t const *rows,
     int first, int last, sixel_retained_update_stats_t *stats)

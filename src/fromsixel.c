@@ -186,6 +186,7 @@ image_buffer_release_columns(image_buffer_t *image,
  * For RGBA the loop already holds every final pixel of the bands, painted or
  * not, so it also reports whether all of their alpha bytes are 255: 1 when
  * they are, 0 when one is not, -1 for depths without alpha. */
+/* Accel: DECODE-FINALIZE neon */
 SIXEL_INTERNAL_API int
 image_buffer_finalize_normal_columns(image_buffer_t *image,
                                       uint64_t const *source,
@@ -408,6 +409,7 @@ image_buffer_enable_ormode(image_buffer_t *image,
  * stream.  The common shapes (byte indices or RGBA from the low eight planes)
  * get their own loops; the per-pixel depth and upper-plane tests stay in the
  * general loop for 16-bit output and wide registers. */
+/* Accel: DECODE-FINALIZE neon */
 SIXEL_INTERNAL_API void
 image_buffer_finalize_ormode(image_buffer_t *image)
 {

@@ -45,6 +45,7 @@ static uint8_t const sixel_simd_run_positions[16] = {
  * Bytes below '?' wrap above 63 after the subtraction, so one maximum test
  * rejects both sides of the range.
  */
+/* Accel: DECODE-BAND-WORDS neon */
 static inline int
 sixel_simd_load_sixels(unsigned char const *p, uint8x16_t *patterns)
 {
@@ -60,6 +61,7 @@ sixel_simd_load_sixels(unsigned char const *p, uint8x16_t *patterns)
 
 /* Fold the sixteen patterns into the union of painted rows and the offset
  * of the last nonzero pattern, matching the scalar run bookkeeping. */
+/* Accel: DECODE-BAND-WORDS neon */
 static inline void
 sixel_simd_run_extent(uint8x16_t bits, int *rows, int *last)
 {
@@ -88,6 +90,7 @@ sixel_simd_run_extent(uint8x16_t bits, int *rows, int *last)
  * long enough for this whole-block form; ordinary runs are not, and their
  * scalar column update is already about 1.4 cycles per column.
  */
+/* Accel: DECODE-BAND-WORDS neon */
 static inline int
 sixel_simd_planes_or16(uint64_t *dst, uint64_t spread,
                        unsigned char const *p, int *rows, int *last)
@@ -124,6 +127,7 @@ static int8_t const sixel_simd_plane_shift[16] = {
  * row bit is isolated, moved to its plane position, and three pairwise adds
  * fold the eight lanes of every word into one byte, keeping word order.
  */
+/* Accel: DECODE-BAND-WORDS neon */
 static inline uint8x16_t
 sixel_simd_gather16(uint64_t const *words, int row)
 {
@@ -163,6 +167,7 @@ static uint8_t const sixel_simd_word_offsets[2][16] = {
 };
 
 /* Pick byte `lane` of sixteen consecutive 64-bit words. */
+/* Accel: DECODE-BAND-WORDS neon */
 static inline uint8x16_t
 sixel_simd_word_bytes16(uint8x16x4_t lo, uint8x16x4_t hi, int lane)
 {
@@ -180,6 +185,7 @@ sixel_simd_word_bytes16(uint8x16x4_t lo, uint8x16x4_t hi, int lane)
  * six, bit r). Lanes looked up out of range stay zero and in-range
  * offsets never exceed 63, so the two lookups never overlap.
  */
+/* Accel: DECODE-BAND-WORDS neon */
 static inline uint8x16_t
 sixel_simd_columns_row16(uint64_t const *words, int row, uint8x16_t *painted)
 {
@@ -197,6 +203,7 @@ sixel_simd_columns_row16(uint64_t const *words, int row, uint8x16_t *painted)
 
 /* Blend sixteen RGBA pixels: painted columns take the looked-up colors,
  * the others keep the initialized destination. */
+/* Accel: DECODE-BAND-WORDS neon */
 static inline void
 sixel_simd_blend_rgba16(unsigned char *dst, uint32_t const *colors,
                         uint8x16_t painted)
