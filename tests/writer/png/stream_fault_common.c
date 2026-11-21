@@ -162,8 +162,9 @@ png_stream_fault_destroy(png_structpp png, png_infopp info)
 }
 #else
 /* The builtin writer receives CRT-owned bytes from stb. Supply a small
- * buffer here so fault tests need no private stb symbols from the DLL. */
-static int png_stream_fault_compression_level;
+ * buffer here so fault tests need no private stb symbols from the DLL.
+ * Match the external linkage of the declaration in writer.c. */
+int png_stream_fault_compression_level;
 
 static unsigned char *
 png_stream_fault_compress(unsigned char *pixels, int size, int *length,

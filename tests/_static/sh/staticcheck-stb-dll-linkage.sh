@@ -37,5 +37,26 @@ END { exit failed }
     echo 'not ok 1 - shared stb functions use one DLL declaration'
     exit 0
 }
-echo 'ok 1 - shared stb functions use one DLL declaration'
+# The fault fixture includes writer.c, so its remapped compression level
+# must have the external linkage expected by the production declaration.
+awk '
+/^#define[[:space:]]+stbi_write_png_compression_level[[:space:]]/ {
+    stub = $3
+}
+/^int[[:space:]]/ {
+    name = $2
+    sub(/;$/, "", name)
+    external[name] = 1
+}
+/^static[[:space:]]+int[[:space:]]/ {
+    name = $3
+    sub(/;$/, "", name)
+    internal[name] = 1
+}
+END { exit stub == "" || !external[stub] || internal[stub] }
+' "$1/tests/writer/png/stream_fault_common.c" || {
+    echo 'not ok 1 - the PNG fault fixture matches stb variable linkage'
+    exit 0
+}
+echo 'ok 1 - shared stb declarations and PNG fault fixture linkage agree'
 exit 0
