@@ -1,3 +1,4 @@
 *.trs
 *.log
 *.wasm
+/.runner-batches/

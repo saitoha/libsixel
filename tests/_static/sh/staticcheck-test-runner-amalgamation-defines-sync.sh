@@ -55,7 +55,7 @@ function scan_defines(line, token) {
     }
 }
 {
-    if ($0 ~ /^[[:space:]]*(test_runner|[[:alnum:]_]+_la)_SOURCES[[:space:]]*\+?=/) {
+    if ($0 ~ /^[[:space:]]*((test_runner|[[:alnum:]_]+_la)_SOURCES|batch_[[:alnum:]_]+)[[:space:]]*\+?=/) {
         in_sources = 1
     }
     if ($0 ~ /^[[:space:]]*TEST_RUNNER_AMALGAMATION_DEFINES[[:space:]]*\+?=/) {
@@ -87,7 +87,7 @@ END {
         exit 1
     }
 }
-' "$makefile_am"); then
+' "$makefile_am" "$src_root/tests/runner-batches.am"); then
     :
 else
     echo "not ok 1 - test runner amalgamation defines stay synchronized"

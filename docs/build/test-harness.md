@@ -19,7 +19,7 @@ The shared helper passes the complete glob to a shell function, then emits at mo
 | Registration layer | Autotools | Meson |
 | --- | --- | --- |
 | Runtime script | Discovered by the shared helper at make time; OpenVMS refreshes its list before execution. | Discovered by the shared helper at setup time. |
-| Ordinary C test source | Explicit `test_runner_SOURCES` in `tests/Makefile.am`. | Setup-time source scan using Meson's Python interpreter, excluding `*.inc.c`. |
+| Ordinary C test source | Individual sources in `tests/Makefile.am`. Short cases with matching headers and declarations are compiled in groups of up to 16 from one category in [runner-batches.am](../../tests/runner-batches.am). | Setup-time source scan using Meson's Python interpreter, excluding `*.inc.c`. |
 | Dispatchable C observation | Registered in `test_runner.c` with its implementation and wrapper. | The same dispatch implementation and wrapper. |
 | Amalgamated runner | `amalgamation/sixel.c` and `TEST_RUNNER_AMALGAMATION_DEFINES` when amalgamated tools are selected. | The ordinary test source list linked to `libsixel_dep`; the runner is not replaced with that Autotools amalgamated translation unit. |
 

@@ -86,7 +86,7 @@ function scan_sources(line, token) {
         line = substr(line, RSTART + RLENGTH)
     }
 }
-$0 ~ /^[[:space:]]*(test_runner|[[:alnum:]_]+_la)_SOURCES[[:space:]]*=/ {
+$0 ~ /^[[:space:]]*((test_runner|[[:alnum:]_]+_la)_SOURCES|batch_[[:alnum:]_]+)[[:space:]]*=/ {
     in_sources = 1
 }
 in_sources {
@@ -95,7 +95,7 @@ in_sources {
 in_sources && $0 !~ /\\[[:space:]]*$/ {
     in_sources = 0
 }
-' "$tests_makefile" >> "$unit_entries"
+' "$tests_makefile" "$src_root/tests/runner-batches.am" >> "$unit_entries"
 
 # The test runner amalgamation enables every registered C test in one
 # translation unit.  Its private functions and typedef names therefore share
