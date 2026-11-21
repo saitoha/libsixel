@@ -1250,6 +1250,7 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
     }
 #else
     (void)gpu;
+    (void)share_owner;
 #endif
     memset(&ctx, 0, sizeof(ctx));
     ctx.pixels = pixels;
