@@ -604,6 +604,8 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	build-aux/cosmoar-response.awk \
 	build-aux/emscripten-node-stdio.js \
 	build-aux/meson-cross/emscripten-windows \
+	build-examples/example-build-emcc.sh \
+	build-examples/example-build-emcc.cmd \
 	build-aux/test-runner-amalgamation-defines.awk \
 	build-aux/clean-test-logs.sh build-aux/list-tree-files.sh \
 	build-aux/list-test-reports.sh \

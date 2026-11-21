@@ -40,29 +40,10 @@ jobs:
         shell: cmd
         run: python -m pip install meson==1.11.1 ninja==1.13.2
 
-      - name: Install the Windows Emscripten SDK
-        shell: cmd
-        run: |
-          git clone --depth 1 --branch "%EMSDK_VERSION%" https://github.com/emscripten-core/emsdk.git "%RUNNER_TEMP%\emsdk" || exit /b 1
-          call "%RUNNER_TEMP%\emsdk\emsdk.bat" install "%EMSDK_VERSION%" || exit /b 1
-
       - name: Build and test the installed Wasm converters
         shell: cmd
         run: |
-          set "PATH=%pythonLocation%;%pythonLocation%\Scripts;%SystemRoot%\System32;%SystemRoot%"
-          call "%RUNNER_TEMP%\emsdk\emsdk.bat" activate "%EMSDK_VERSION%" || exit /b 1
-          call "%RUNNER_TEMP%\emsdk\emsdk_env.bat" || exit /b 1
-          set "PATH=%RUNNER_TEMP%\emsdk\upstream\bin;%PATH%"
-          set "WASM_STAGE=%RUNNER_TEMP%\libsixel-wasm"
-          rem Expose the build-time AWK without adding a POSIX shell to PATH.
-          (echo [binaries]
-           echo awk = 'C:/Program Files/Git/usr/bin/awk.exe'
-          ) > "%RUNNER_TEMP%\wasm-native.ini"
-          emcc.exe --version || exit /b 1
-          meson setup wasm-build --native-file "%RUNNER_TEMP%\wasm-native.ini" --cross-file build-aux/meson-cross/emscripten-windows ^
-            --prefix / -Ddefault_library=static -Dauto_features=disabled -Dthreads=enabled -Dtests=false || exit /b 1
-          meson compile -C wasm-build || exit /b 1
-          meson install -C wasm-build --no-rebuild --destdir "%WASM_STAGE%" || exit /b 1
-          node "%WASM_STAGE%\bin\img2sixel.js" -o wasm-build\snake.six images\snake.png || exit /b 1
-          node "%WASM_STAGE%\bin\sixel2png.js" -i wasm-build\snake.six -o wasm-build\snake.png || exit /b 1
-          node "%WASM_STAGE%\bin\lsqa.js" -m ms-ssim -b ms-ssim:min=0.98 images\snake.png wasm-build\snake.png
+          set "PATH=%pythonLocation%;%pythonLocation%\Scripts;%SystemRoot%\System32;%SystemRoot%;%ProgramFiles%\Git\cmd"
+          set "SIXEL_EMSDK_DIR=%RUNNER_TEMP%\emsdk"
+          set "SIXEL_EMCC_BUILD_DIR=%RUNNER_TEMP%\libsixel-wasm"
+          call build-examples\example-build-emcc.cmd
