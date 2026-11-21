@@ -189,6 +189,8 @@ The ColorSync gamma compatibility setting in [Loader CMS](../loader/color-manage
 
 Fault injection and test-only implementation switches are not public options or environment contracts. Their names use the `_SIXEL_TEST_*` namespace and do not appear in public help, manual pages, shell completion, or language bindings. This boundary prevents a test seam from becoming a compatibility promise or an accidental production control.
 
+The internal `_SIXEL_TEST_REFRESH_SPATIAL_DETERMINISTIC` switch is documented with its behavior and scope in [delta encoding](../encoder/output/delta-encoding.md).
+
 ## Defaults and configuration
 
 Every configurable value has one identifiable default and a documented precedence order. Unless an established interface defines another order, use:

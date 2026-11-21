@@ -1625,7 +1625,8 @@ batch_delta_refresh_0098 = \
 
 batch_delta_refresh_0101 = \
     delta/refresh/0101_spatial_defaults.c \
-    delta/refresh/0102_spatial_explicit_disable.c
+    delta/refresh/0102_spatial_explicit_disable.c \
+    delta/refresh/0103_spatial_deterministic_env.c
 
 batch_delta_residual_0001 = \
     delta/residual/0001_defaults.c \

@@ -11,6 +11,7 @@
 #include "bluenoise_64x64.h"
 #include "loader-common.h"
 #include "cpu.h"
+#include "options.h"
 
 #if SIXEL_SIMD_NEON_A64
 #define SIXEL_REFRESH_SPATIAL_NEON 1
@@ -33,7 +34,7 @@ struct sixel_refresh_spatial {
     sixel_mutex_t mutex;
     sixel_cond_t cond;
     sixel_thread_t thread;
-    int width, height, stop, pending;
+    int width, height, stop, pending, deterministic, queued_valid;
     unsigned char *input, *work, *scratch;
     uint64_t queued_frame, completed_frame, cached_frame;
     int completed, cached;
@@ -496,6 +497,8 @@ sixel_refresh_spatial_worker(void *opaque)
         memcpy(state->result, result, sizeof(result));
         state->completed_frame = frame;
         state->completed = 1;
+        if (state->deterministic)
+            sixel_cond_broadcast(&state->cond);
         sixel_mutex_unlock(&state->mutex);
         if (state->hooks && state->hooks->published)
             state->hooks->published(state->hooks->context, frame);
@@ -541,6 +544,9 @@ sixel_refresh_spatial_new(sixel_refresh_spatial_t **out,
     if (state == NULL) return SIXEL_BAD_ALLOCATION;
     state->allocator = allocator;
     state->hooks = hooks;
+    /* Test-only reproducibility is sampled once per producer lifetime. */
+    state->deterministic =
+        sixel_test_environment_refresh_spatial_deterministic();
     state->width = w;
     state->height = h;
     status = sixel_mutex_init(&state->mutex);
@@ -560,6 +566,7 @@ sixel_refresh_spatial_new(sixel_refresh_spatial_t **out,
     if (frame % 4U == 0U) {
         memcpy(state->input, rgb, n * 3);
         state->queued_frame = frame;
+        state->queued_valid = 1;
         state->pending = 1;
     }
     status = sixel_thread_create(&state->thread,
@@ -609,6 +616,28 @@ sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **owner,
         if (status != SIXEL_OK) return status;
         state = *owner;
         queued = frame % 4U == 0U;
+    } else if (state->deterministic) {
+        /* Consume each submitted map at the following frame boundary.
+         * Waiting releases the mutex so the producer can publish it. */
+        sixel_mutex_lock(&state->mutex);
+        while (state->queued_valid && frame > state->queued_frame &&
+                (!state->completed ||
+                 state->completed_frame != state->queued_frame))
+            sixel_cond_wait(&state->cond, &state->mutex);
+        if (state->completed) {
+            memcpy(state->snapshot, state->result, sizeof(state->snapshot));
+            state->cached_frame = state->completed_frame;
+            state->cached = 1;
+        }
+        if (frame % 4U == 0U) {
+            memcpy(state->input, rgb, (size_t)state->width * state->height * 3);
+            state->queued_frame = frame;
+            state->queued_valid = 1;
+            state->pending = 1;
+            queued = 1;
+            sixel_cond_signal(&state->cond);
+        }
+        sixel_mutex_unlock(&state->mutex);
     } else if (sixel_mutex_trylock(&state->mutex)) {
         /* Ongoing submission and snapshot publication are opportunistic.
          * The worker releases the lock while computing from its input. */
