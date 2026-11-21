@@ -509,8 +509,10 @@ runs:
         # BSD sha256sum needs short options and an explicit stdin operand.
         if ! printf '%s  %s\n' "$COSMOCC_SHA256" "$archive" |
             "${sha256[@]}" -c - >/dev/null; then
+          # Space out retries so a brief runner DNS outage can recover.
           curl --fail --location --connect-timeout 15 --max-time 600 \
-            --retry 2 --output "$archive.part" \
+            --retry 5 --retry-delay 30 --retry-max-time 240 \
+            --output "$archive.part" \
             "https://github.com/jart/cosmopolitan/releases/download/${COSMOCC_VERSION}/cosmocc-${COSMOCC_VERSION}.zip"
           # Never publish a partial download or an HTTP error as a cache hit.
           printf '%s  %s\n' "$COSMOCC_SHA256" "$archive.part" |
