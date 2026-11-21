@@ -13,7 +13,7 @@ enum retained_rows_observation {
     RETAINED_ROWS_BACKEND
 };
 
-int retained_rows_check(int neon, int width, int height, int colors,
+int retained_rows_check(int backend, int width, int height, int colors,
     int pattern, int record_paint, int first, int last,
     enum retained_rows_observation observation);
 

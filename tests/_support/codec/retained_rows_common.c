@@ -4,7 +4,7 @@
 #include "retained_rows_common.h"
 
 int
-retained_rows_check(int neon, int width, int height, int colors,
+retained_rows_check(int backend, int width, int height, int colors,
     int pattern, int record_paint, int first, int last,
     enum retained_rows_observation observation)
 {
@@ -87,8 +87,12 @@ retained_rows_check(int neon, int width, int height, int colors,
     rows.width = width;
     rows.stride = 270;
     sixel_retained_rows_prepare(&rows, &view);
-    if (neon > 0 && !rows.neon) return 77;
-    if (neon == 0) rows.neon = 0;
+    if (backend == 1 && !rows.neon) return 77;
+    if (backend == 2 && !rows.avx2) return 77;
+    if (backend == 0) {
+        rows.neon = 0;
+        rows.avx2 = 0;
+    }
     sixel_retained_rows_run(&rows, first, last, &stats);
     switch (observation) {
     case RETAINED_ROWS_RGB:
@@ -102,7 +106,8 @@ retained_rows_check(int neon, int width, int height, int colors,
     case RETAINED_ROWS_REFINEMENT:
         return stats.refinement_needed != expected_refinement;
     case RETAINED_ROWS_BACKEND:
-        return rows.neon != (neon > 0);
+        return rows.neon != (backend == 1) ||
+            rows.avx2 != (backend == 2);
     }
     return 1;
 }
