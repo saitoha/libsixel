@@ -2501,28 +2501,33 @@ sixel_builtin_apng_blend_rect(sixel_builtin_apng_canvas_t const *canvas,
     size_t stride;
     size_t row_bytes;
     size_t offset;
-    unsigned char const *sp;
-    unsigned char *dp;
+    unsigned char const *src_row;
+    unsigned char const *src_pixel;
+    unsigned char *dst_row;
+    unsigned char *dst_pixel;
 
     stride = (size_t)canvas->width * 4u;
     row_bytes = (size_t)control->width * 4u;
     offset = (size_t)control->y_offset * stride
         + (size_t)control->x_offset * 4u;
     for (y = 0; y < (size_t)control->height; ++y) {
-        sp = src + y * row_bytes;
-        dp = canvas->pixels + offset + y * stride;
+        src_row = src + y * row_bytes;
+        dst_row = canvas->pixels + offset + y * stride;
         if (control->blend_op == 0) {
-            memcpy(dp, sp, row_bytes);
+            memcpy(dst_row, src_row, row_bytes);
             continue;
         }
-        /* The byte canvas only receives binary alpha. A fractional
-         * source promotes the canvas before it reaches this function. */
+        /* The byte canvas only receives binary alpha. A fractional source
+         * promotes the canvas before it reaches this function. Each OVER
+         * iteration reads and writes only the current four-byte pixel. */
         for (x = 0; x < row_bytes; x += 4u) {
-            if (sp[x + 3u] != 0u) {
-                memcpy(dp + x, sp + x, 4u);
-            } else if (dp[x + 3u] == 0u) {
+            src_pixel = src_row + x;
+            dst_pixel = dst_row + x;
+            if (src_pixel[3] != 0u) {
+                memcpy(dst_pixel, src_pixel, 4u);
+            } else if (dst_pixel[3] == 0u) {
                 /* OVER clears hidden RGB when both pixels are transparent. */
-                memset(dp + x, 0, 4u);
+                memset(dst_pixel, 0, 4u);
             }
         }
     }
