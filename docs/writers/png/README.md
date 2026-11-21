@@ -206,7 +206,7 @@ Each row is one independently reportable observation. Format tests run against w
 | PW-33 | PAL8 index 255 preserves the sample and all 256 PLTE entries. | Both | [tests/writer/png/0046_pal8_index_255.t](../../../tests/writer/png/0046_pal8_index_255.t) |
 | PW-34 | G8 without a palette replicates the gray sample to all RGB channels. | Both | [tests/writer/png/0047_g8_rgb_samples.t](../../../tests/writer/png/0047_g8_rgb_samples.t) |
 | PW-35 | G8 with a palette writes the looked-up RGB triples as direct samples. | Both | [tests/writer/png/0048_g8_palette_lookup.t](../../../tests/writer/png/0048_g8_palette_lookup.t) |
-| PW-36 | Report a short writer transfer and release the opened stream and buffers. | Both | [tests/writer/png/0051_short_write_cleanup.t](../../../tests/writer/png/0051_short_write_cleanup.t) |
+| PW-36 | Report a short transfer in the IDAT payload and release the opened stream and buffers. | Both | [tests/writer/png/0051_idat_short_write_cleanup.t](../../../tests/writer/png/0051_idat_short_write_cleanup.t) |
 | PW-37 | Report a failed final flush and release the opened stream and buffers. | Both | [tests/writer/png/0052_flush_failure_cleanup.t](../../../tests/writer/png/0052_flush_failure_cleanup.t) |
 | PW-38 | Report close failure after a successful write and flush. | Both | [tests/writer/png/0053_close_failure_status.t](../../../tests/writer/png/0053_close_failure_status.t) |
 | PW-39 | Preserve an earlier short-write status and diagnostic when closing fails. | Both | [tests/writer/png/0054_write_failure_precedes_close.t](../../../tests/writer/png/0054_write_failure_precedes_close.t) |

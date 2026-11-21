@@ -6,7 +6,10 @@ enum png_stream_fault {
     PNG_STREAM_SHORT_WRITE = 1,
     PNG_STREAM_FLUSH_FAILURE = 2,
     PNG_STREAM_CLOSE_FAILURE = 4,
-    PNG_STREAM_STDOUT = 8
+    PNG_STREAM_STDOUT = 8,
+    PNG_STREAM_IDAT_SHORT_WRITE = 16,
+    PNG_STREAM_OPEN_FAILURE = 32,
+    PNG_STREAM_ALLOCATION_FAILURE = 64
 };
 
 int png_test_stream_fault(int faults);

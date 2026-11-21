@@ -368,11 +368,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	writer/png/0050_packed_allocation_failure.c \
 	writer/png/stream_fault_common.c \
 	writer/png/stream_fault_common.h \
-	writer/png/0051_short_write_cleanup.c \
+	writer/png/0051_idat_short_write_cleanup.c \
 	writer/png/0052_flush_failure_cleanup.c \
 	writer/png/0053_close_failure_status.c \
 	writer/png/0054_write_failure_precedes_close.c \
 	writer/png/0055_stdout_failure_borrows_stream.c \
+	writer/png/0056_open_failure_cleanup.c \
+	writer/png/0057_post_open_allocation_cleanup.c \
 	writer/png/color_test_common.h \
 	$(top_srcdir)/assessment/assessment.c \
 	$(top_srcdir)/assessment/color.c \
@@ -1777,11 +1779,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0049_null_filename_cleanup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0050_packed_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-stream_fault_common.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0051_short_write_cleanup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0051_idat_short_write_cleanup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0052_flush_failure_cleanup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0053_close_failure_status.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0054_write_failure_precedes_close.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0055_stdout_failure_borrows_stream.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0056_open_failure_cleanup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0057_post_open_allocation_cleanup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-color.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-scielab.$(OBJEXT) \
@@ -2854,7 +2858,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-terminal-color.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-terminal-color-tty.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-path.$(OBJEXT)
-am__objects_2 = .runner-batches/test_runner-batch_assessment_delta_e_0002.inc.$(OBJEXT) \
+am__objects_2 = .runner-batches/test_runner-batch_encoder_indexed_0185.inc.$(OBJEXT) \
+	.runner-batches/test_runner-batch_assessment_delta_e_0002.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_assessment_sciede2000_0001.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_assessment_scielab_0002.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_assessment_scielab_0008.inc.$(OBJEXT) \
@@ -3689,6 +3694,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	.runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0161.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0163.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0179.inc.Po \
+	.runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0185.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_encoder_macro_0009.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_encoder_macro_0017.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_encoder_palette_definition_0001.inc.Po \
@@ -5308,11 +5314,13 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	writer/png/$(DEPDIR)/test_runner-0048_g8_palette_lookup.Po \
 	writer/png/$(DEPDIR)/test_runner-0049_null_filename_cleanup.Po \
 	writer/png/$(DEPDIR)/test_runner-0050_packed_allocation_failure.Po \
-	writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Po \
+	writer/png/$(DEPDIR)/test_runner-0051_idat_short_write_cleanup.Po \
 	writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Po \
 	writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Po \
 	writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Po \
 	writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Po \
+	writer/png/$(DEPDIR)/test_runner-0056_open_failure_cleanup.Po \
+	writer/png/$(DEPDIR)/test_runner-0057_post_open_allocation_cleanup.Po \
 	writer/png/$(DEPDIR)/test_runner-color_test_common.Po \
 	writer/png/$(DEPDIR)/test_runner-stream_fault_common.Po \
 	writer/snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po
@@ -6857,6 +6865,20 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETAINED_COMPONENT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETAINED_ROWS_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETAINED_WORKERS_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0185_RETAINED_AVX2_BACKEND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_RETAINED_AVX2_PALETTE_256_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0187_RETAINED_AVX2_MIXED_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0188_RETAINED_AVX2_MIXED_VALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0189_RETAINED_AVX2_MIXED_PAINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0190_RETAINED_AVX2_MIXED_COUNT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0191_RETAINED_AVX2_MIXED_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0192_RETAINED_AVX2_ALL_KEEP_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0193_RETAINED_AVX2_EXACT_KEEP_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0194_RETAINED_AVX2_ALL_APPROXIMATE_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0195_RETAINED_AVX2_SHORT_PALETTE_SENTINEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0196_RETAINED_AVX2_WITHOUT_SKIP_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0197_RETAINED_AVX2_TAIL_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0198_RETAINED_AVX2_PARTIAL_ROWS_RGB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_RETAINED_NEON_PALETTE_256_RGB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_RETAINED_NEON_MIXED_RGB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0087_RETAINED_NEON_MIXED_VALID \
@@ -8180,11 +8202,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_NULL_FILENAME_CLEANUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_PACKED_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_STREAM_FAULT_COMMON \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_SHORT_WRITE_CLEANUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_IDAT_SHORT_WRITE_CLEANUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_FLUSH_FAILURE_CLEANUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_CLOSE_FAILURE_STATUS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_WRITE_FAILURE_PRECEDES_CLOSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_STDOUT_FAILURE_BORROWS_STREAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_OPEN_FAILURE_CLEANUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_POST_OPEN_ALLOCATION_CLEANUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0143_ADOBE_LIBPNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0144_DCI_LIBPNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -11911,11 +11935,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0050_packed_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/stream_fault_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/stream_fault_common.h \
-@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0051_short_write_cleanup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0051_idat_short_write_cleanup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0052_flush_failure_cleanup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0053_close_failure_status.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0054_write_failure_precedes_close.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0055_stdout_failure_borrows_stream.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0056_open_failure_cleanup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0057_post_open_allocation_cleanup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/color.c \
@@ -13605,6 +13631,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 # definitions, feature macros or private implementation copies individually
 # in test_runner_SOURCES. Keep each case in exactly one inventory.
 runner_batches = \
+    .runner-batches/batch_encoder_indexed_0185.inc.c \
     .runner-batches/batch_assessment_delta_e_0002.inc.c \
     .runner-batches/batch_assessment_sciede2000_0001.inc.c \
     .runner-batches/batch_assessment_scielab_0002.inc.c \
@@ -14149,6 +14176,22 @@ runner_batches = \
     .runner-batches/batch_writer_snapshot_0019.inc.c \
     .runner-batches/batch_writer_snapshot_0022.inc.c \
     .runner-batches/batch_writer_snapshot_0024.inc.c
+
+batch_encoder_indexed_0185 = \
+    encoder/indexed/0185_retained_avx2_backend.c \
+    encoder/indexed/0186_retained_avx2_palette_256_rgb.c \
+    encoder/indexed/0187_retained_avx2_mixed_rgb.c \
+    encoder/indexed/0188_retained_avx2_mixed_valid.c \
+    encoder/indexed/0189_retained_avx2_mixed_paint.c \
+    encoder/indexed/0190_retained_avx2_mixed_count.c \
+    encoder/indexed/0191_retained_avx2_mixed_refinement.c \
+    encoder/indexed/0192_retained_avx2_all_keep_rgb.c \
+    encoder/indexed/0193_retained_avx2_exact_keep_refinement.c \
+    encoder/indexed/0194_retained_avx2_all_approximate_refinement.c \
+    encoder/indexed/0195_retained_avx2_short_palette_sentinel.c \
+    encoder/indexed/0196_retained_avx2_without_skip_rgb.c \
+    encoder/indexed/0197_retained_avx2_tail_rgb.c \
+    encoder/indexed/0198_retained_avx2_partial_rows_rgb.c
 
 batch_assessment_delta_e_0002 = \
     assessment/delta-e/0002_same_physical_coordinates.c \
@@ -20657,7 +20700,7 @@ writer/png/test_runner-0050_packed_allocation_failure.$(OBJEXT):  \
 writer/png/test_runner-stream_fault_common.$(OBJEXT):  \
 	writer/png/$(am__dirstamp) \
 	writer/png/$(DEPDIR)/$(am__dirstamp)
-writer/png/test_runner-0051_short_write_cleanup.$(OBJEXT):  \
+writer/png/test_runner-0051_idat_short_write_cleanup.$(OBJEXT):  \
 	writer/png/$(am__dirstamp) \
 	writer/png/$(DEPDIR)/$(am__dirstamp)
 writer/png/test_runner-0052_flush_failure_cleanup.$(OBJEXT):  \
@@ -20670,6 +20713,12 @@ writer/png/test_runner-0054_write_failure_precedes_close.$(OBJEXT):  \
 	writer/png/$(am__dirstamp) \
 	writer/png/$(DEPDIR)/$(am__dirstamp)
 writer/png/test_runner-0055_stdout_failure_borrows_stream.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0056_open_failure_cleanup.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0057_post_open_allocation_cleanup.$(OBJEXT):  \
 	writer/png/$(am__dirstamp) \
 	writer/png/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/assessment/$(am__dirstamp):
@@ -24682,6 +24731,9 @@ $(top_builddir)/converters/test_runner-path.$(OBJEXT):  \
 .runner-batches/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) .runner-batches/$(DEPDIR)
 	@: >>.runner-batches/$(DEPDIR)/$(am__dirstamp)
+.runner-batches/test_runner-batch_encoder_indexed_0185.inc.$(OBJEXT):  \
+	.runner-batches/$(am__dirstamp) \
+	.runner-batches/$(DEPDIR)/$(am__dirstamp)
 .runner-batches/test_runner-batch_assessment_delta_e_0002.inc.$(OBJEXT):  \
 	.runner-batches/$(am__dirstamp) \
 	.runner-batches/$(DEPDIR)/$(am__dirstamp)
@@ -26730,6 +26782,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0161.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0163.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0179.inc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0185.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_encoder_macro_0009.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_encoder_macro_0017.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_encoder_palette_definition_0001.inc.Po@am__quote@ # am--include-marker
@@ -28349,11 +28402,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0048_g8_palette_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0049_null_filename_cleanup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0050_packed_allocation_failure.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0051_idat_short_write_cleanup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0053_close_failure_status.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0054_write_failure_precedes_close.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0055_stdout_failure_borrows_stream.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0056_open_failure_cleanup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0057_post_open_allocation_cleanup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-color_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-stream_fault_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po@am__quote@ # am--include-marker
@@ -31599,19 +31654,19 @@ writer/png/test_runner-stream_fault_common.obj: writer/png/stream_fault_common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-stream_fault_common.obj `if test -f 'writer/png/stream_fault_common.c'; then $(CYGPATH_W) 'writer/png/stream_fault_common.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/stream_fault_common.c'; fi`
 
-writer/png/test_runner-0051_short_write_cleanup.o: writer/png/0051_short_write_cleanup.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0051_short_write_cleanup.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Tpo -c -o writer/png/test_runner-0051_short_write_cleanup.o `test -f 'writer/png/0051_short_write_cleanup.c' || echo '$(srcdir)/'`writer/png/0051_short_write_cleanup.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0051_short_write_cleanup.c' object='writer/png/test_runner-0051_short_write_cleanup.o' libtool=no @AMDEPBACKSLASH@
+writer/png/test_runner-0051_idat_short_write_cleanup.o: writer/png/0051_idat_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0051_idat_short_write_cleanup.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0051_idat_short_write_cleanup.Tpo -c -o writer/png/test_runner-0051_idat_short_write_cleanup.o `test -f 'writer/png/0051_idat_short_write_cleanup.c' || echo '$(srcdir)/'`writer/png/0051_idat_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0051_idat_short_write_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0051_idat_short_write_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0051_idat_short_write_cleanup.c' object='writer/png/test_runner-0051_idat_short_write_cleanup.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0051_short_write_cleanup.o `test -f 'writer/png/0051_short_write_cleanup.c' || echo '$(srcdir)/'`writer/png/0051_short_write_cleanup.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0051_idat_short_write_cleanup.o `test -f 'writer/png/0051_idat_short_write_cleanup.c' || echo '$(srcdir)/'`writer/png/0051_idat_short_write_cleanup.c
 
-writer/png/test_runner-0051_short_write_cleanup.obj: writer/png/0051_short_write_cleanup.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0051_short_write_cleanup.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Tpo -c -o writer/png/test_runner-0051_short_write_cleanup.obj `if test -f 'writer/png/0051_short_write_cleanup.c'; then $(CYGPATH_W) 'writer/png/0051_short_write_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0051_short_write_cleanup.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0051_short_write_cleanup.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0051_short_write_cleanup.c' object='writer/png/test_runner-0051_short_write_cleanup.obj' libtool=no @AMDEPBACKSLASH@
+writer/png/test_runner-0051_idat_short_write_cleanup.obj: writer/png/0051_idat_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0051_idat_short_write_cleanup.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0051_idat_short_write_cleanup.Tpo -c -o writer/png/test_runner-0051_idat_short_write_cleanup.obj `if test -f 'writer/png/0051_idat_short_write_cleanup.c'; then $(CYGPATH_W) 'writer/png/0051_idat_short_write_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0051_idat_short_write_cleanup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0051_idat_short_write_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0051_idat_short_write_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0051_idat_short_write_cleanup.c' object='writer/png/test_runner-0051_idat_short_write_cleanup.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0051_short_write_cleanup.obj `if test -f 'writer/png/0051_short_write_cleanup.c'; then $(CYGPATH_W) 'writer/png/0051_short_write_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0051_short_write_cleanup.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0051_idat_short_write_cleanup.obj `if test -f 'writer/png/0051_idat_short_write_cleanup.c'; then $(CYGPATH_W) 'writer/png/0051_idat_short_write_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0051_idat_short_write_cleanup.c'; fi`
 
 writer/png/test_runner-0052_flush_failure_cleanup.o: writer/png/0052_flush_failure_cleanup.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0052_flush_failure_cleanup.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0052_flush_failure_cleanup.Tpo -c -o writer/png/test_runner-0052_flush_failure_cleanup.o `test -f 'writer/png/0052_flush_failure_cleanup.c' || echo '$(srcdir)/'`writer/png/0052_flush_failure_cleanup.c
@@ -31668,6 +31723,34 @@ writer/png/test_runner-0055_stdout_failure_borrows_stream.obj: writer/png/0055_s
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0055_stdout_failure_borrows_stream.c' object='writer/png/test_runner-0055_stdout_failure_borrows_stream.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0055_stdout_failure_borrows_stream.obj `if test -f 'writer/png/0055_stdout_failure_borrows_stream.c'; then $(CYGPATH_W) 'writer/png/0055_stdout_failure_borrows_stream.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0055_stdout_failure_borrows_stream.c'; fi`
+
+writer/png/test_runner-0056_open_failure_cleanup.o: writer/png/0056_open_failure_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0056_open_failure_cleanup.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0056_open_failure_cleanup.Tpo -c -o writer/png/test_runner-0056_open_failure_cleanup.o `test -f 'writer/png/0056_open_failure_cleanup.c' || echo '$(srcdir)/'`writer/png/0056_open_failure_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0056_open_failure_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0056_open_failure_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0056_open_failure_cleanup.c' object='writer/png/test_runner-0056_open_failure_cleanup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0056_open_failure_cleanup.o `test -f 'writer/png/0056_open_failure_cleanup.c' || echo '$(srcdir)/'`writer/png/0056_open_failure_cleanup.c
+
+writer/png/test_runner-0056_open_failure_cleanup.obj: writer/png/0056_open_failure_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0056_open_failure_cleanup.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0056_open_failure_cleanup.Tpo -c -o writer/png/test_runner-0056_open_failure_cleanup.obj `if test -f 'writer/png/0056_open_failure_cleanup.c'; then $(CYGPATH_W) 'writer/png/0056_open_failure_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0056_open_failure_cleanup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0056_open_failure_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0056_open_failure_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0056_open_failure_cleanup.c' object='writer/png/test_runner-0056_open_failure_cleanup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0056_open_failure_cleanup.obj `if test -f 'writer/png/0056_open_failure_cleanup.c'; then $(CYGPATH_W) 'writer/png/0056_open_failure_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0056_open_failure_cleanup.c'; fi`
+
+writer/png/test_runner-0057_post_open_allocation_cleanup.o: writer/png/0057_post_open_allocation_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0057_post_open_allocation_cleanup.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0057_post_open_allocation_cleanup.Tpo -c -o writer/png/test_runner-0057_post_open_allocation_cleanup.o `test -f 'writer/png/0057_post_open_allocation_cleanup.c' || echo '$(srcdir)/'`writer/png/0057_post_open_allocation_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0057_post_open_allocation_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0057_post_open_allocation_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0057_post_open_allocation_cleanup.c' object='writer/png/test_runner-0057_post_open_allocation_cleanup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0057_post_open_allocation_cleanup.o `test -f 'writer/png/0057_post_open_allocation_cleanup.c' || echo '$(srcdir)/'`writer/png/0057_post_open_allocation_cleanup.c
+
+writer/png/test_runner-0057_post_open_allocation_cleanup.obj: writer/png/0057_post_open_allocation_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0057_post_open_allocation_cleanup.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0057_post_open_allocation_cleanup.Tpo -c -o writer/png/test_runner-0057_post_open_allocation_cleanup.obj `if test -f 'writer/png/0057_post_open_allocation_cleanup.c'; then $(CYGPATH_W) 'writer/png/0057_post_open_allocation_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0057_post_open_allocation_cleanup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0057_post_open_allocation_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0057_post_open_allocation_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0057_post_open_allocation_cleanup.c' object='writer/png/test_runner-0057_post_open_allocation_cleanup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0057_post_open_allocation_cleanup.obj `if test -f 'writer/png/0057_post_open_allocation_cleanup.c'; then $(CYGPATH_W) 'writer/png/0057_post_open_allocation_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0057_post_open_allocation_cleanup.c'; fi`
 
 $(top_builddir)/assessment/test_runner-assessment.o: $(top_builddir)/assessment/assessment.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-assessment.o -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo -c -o $(top_builddir)/assessment/test_runner-assessment.o `test -f '$(top_builddir)/assessment/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/assessment.c
@@ -46676,6 +46759,20 @@ $(top_builddir)/converters/test_runner-path.obj: $(top_builddir)/converters/path
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/path.c' object='$(top_builddir)/converters/test_runner-path.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-path.obj `if test -f '$(top_builddir)/converters/path.c'; then $(CYGPATH_W) '$(top_builddir)/converters/path.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/path.c'; fi`
+
+.runner-batches/test_runner-batch_encoder_indexed_0185.inc.o: .runner-batches/batch_encoder_indexed_0185.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_encoder_indexed_0185.inc.o -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0185.inc.Tpo -c -o .runner-batches/test_runner-batch_encoder_indexed_0185.inc.o `test -f '.runner-batches/batch_encoder_indexed_0185.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_encoder_indexed_0185.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) .runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0185.inc.Tpo .runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0185.inc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='.runner-batches/batch_encoder_indexed_0185.inc.c' object='.runner-batches/test_runner-batch_encoder_indexed_0185.inc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o .runner-batches/test_runner-batch_encoder_indexed_0185.inc.o `test -f '.runner-batches/batch_encoder_indexed_0185.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_encoder_indexed_0185.inc.c
+
+.runner-batches/test_runner-batch_encoder_indexed_0185.inc.obj: .runner-batches/batch_encoder_indexed_0185.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_encoder_indexed_0185.inc.obj -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0185.inc.Tpo -c -o .runner-batches/test_runner-batch_encoder_indexed_0185.inc.obj `if test -f '.runner-batches/batch_encoder_indexed_0185.inc.c'; then $(CYGPATH_W) '.runner-batches/batch_encoder_indexed_0185.inc.c'; else $(CYGPATH_W) '$(srcdir)/.runner-batches/batch_encoder_indexed_0185.inc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) .runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0185.inc.Tpo .runner-batches/$(DEPDIR)/test_runner-batch_encoder_indexed_0185.inc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='.runner-batches/batch_encoder_indexed_0185.inc.c' object='.runner-batches/test_runner-batch_encoder_indexed_0185.inc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o .runner-batches/test_runner-batch_encoder_indexed_0185.inc.obj `if test -f '.runner-batches/batch_encoder_indexed_0185.inc.c'; then $(CYGPATH_W) '.runner-batches/batch_encoder_indexed_0185.inc.c'; else $(CYGPATH_W) '$(srcdir)/.runner-batches/batch_encoder_indexed_0185.inc.c'; fi`
 
 .runner-batches/test_runner-batch_assessment_delta_e_0002.inc.o: .runner-batches/batch_assessment_delta_e_0002.inc.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_assessment_delta_e_0002.inc.o -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_assessment_delta_e_0002.inc.Tpo -c -o .runner-batches/test_runner-batch_assessment_delta_e_0002.inc.o `test -f '.runner-batches/batch_assessment_delta_e_0002.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_assessment_delta_e_0002.inc.c

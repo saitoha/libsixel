@@ -2,9 +2,9 @@
 #include "stream_fault_common.h"
 
 int
-test_png_stream_0051(int argc, char **argv)
+test_png_stream_0056(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return png_test_stream_fault(PNG_STREAM_SHORT_WRITE);
+    return png_test_stream_fault(PNG_STREAM_OPEN_FAILURE);
 }
