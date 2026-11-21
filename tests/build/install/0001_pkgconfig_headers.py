@@ -62,8 +62,11 @@ def check(args):
             raise RuntimeError('expected exactly one staged libsixel.pc')
         # Keep /usr/include visible in Cflags for a staged system-prefix
         # install; host compiler defaults must not satisfy this probe.
+        # MSYS2 expects the lookup directory in its native spelling.
+        # pkgconf returns the sysroot spelling in Cflags. Forward slashes
+        # keep Windows drive paths intact through shell-style flag parsing.
         env = dict(os.environ, PKG_CONFIG_PATH=str(packages[0].parent),
-                   PKG_CONFIG_SYSROOT_DIR=str(stage),
+                   PKG_CONFIG_SYSROOT_DIR=stage.as_posix(),
                    PKG_CONFIG_ALLOW_SYSTEM_CFLAGS='1')
         flags = shlex.split(run(pkgconfig_command + ['--cflags', 'libsixel'],
                                 env=env))

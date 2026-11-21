@@ -299,6 +299,8 @@ runs:
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         "VCPKG_DEFAULT_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+    # Install pkgconf in MSYS2 so configure does not pick up the runner's
+    # Strawberry Perl pkg-config, which ignores the staged install sysroot.
     - name: Setup MSYS2 (Windows) (attempt 1)
       id: setup_msys2_1
       if: ${{ fromJSON(inputs.matrix_json).msystem != '' }}
@@ -308,7 +310,7 @@ runs:
         msystem: ${{ fromJSON(inputs.matrix_json).msystem || '' }}
         #update: true
         location: ${{ runner.temp }}\msys64-ci-attempt-1
-        install: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+        install: pkgconf ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
 
     - name: Wait before MSYS2 retry (attempt 2)
       if: >-
@@ -329,7 +331,7 @@ runs:
         msystem: ${{ fromJSON(inputs.matrix_json).msystem || '' }}
         #update: true
         location: ${{ runner.temp }}\msys64-ci-attempt-2
-        install: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+        install: pkgconf ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
 
     - name: Wait before MSYS2 retry (attempt 3)
       if: >-
@@ -350,7 +352,7 @@ runs:
         msystem: ${{ fromJSON(inputs.matrix_json).msystem || '' }}
         #update: true
         location: ${{ runner.temp }}\msys64-ci-attempt-3
-        install: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+        install: pkgconf ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
 
     - name: Prepare vcpkg environment (MSYS2, MSVC deps)
       if: >-

@@ -19,6 +19,7 @@ function valid(meson, makefile, tap, install) {
         index(install, "pkgconfig = os.environ.get(\047SIXEL_TEST_PKG_CONFIG\047)") &&
         index(install, "shell = os.environ.get(\047SIXEL_TEST_CONFIG_SHELL\047)") &&
         index(install, "pkgconfig_command = [shell, \047-c\047, \047exec \"$@\"\047, \047pkg-config\047, pkgconfig]") &&
+        index(install, "PKG_CONFIG_SYSROOT_DIR=stage.as_posix()") &&
         !index(install, "shutil.which(") &&
         index(tap, "test -n \"${SIXEL_TEST_PKG_CONFIG-}\"") &&
         index(tap, "\"${SIXEL_TEST_PKG_CONFIG}\" --static --cflags --libs") &&
@@ -51,6 +52,22 @@ END {
     "$1/tests/build/pkgconfig/0001_libsixel_pc_resolves.t" \
     "$1/tests/build/install/0001_pkgconfig_headers.py" || {
     echo 'not ok 1 - metadata test uses configured pkg-config'
+    exit 0
+}
+# Each MSYS2 setup attempt must supply a sysroot-capable pkg-config in MSYS2.
+awk '
+/^    - name:/ { msys = 0 }
+/^    - name: Setup MSYS2 \(Windows\) \(attempt [1-3]\)$/ {
+    msys = 1
+    attempts++
+}
+msys && /^        install:/ {
+    installs++
+    if ($2 != "pkgconf") invalid = 1
+}
+END { exit invalid || attempts != 3 || installs != attempts }
+' "$1/.github/actions/ci-steps/action.yml" || {
+    echo 'not ok 1 - MSYS2 setup installs pkgconf on each attempt'
     exit 0
 }
 echo 'ok 1 - metadata test uses configured pkg-config'
