@@ -90,9 +90,11 @@ libsixelquicklookcore_a_SOURCES += \
     $(top_srcdir)/src/threadpool.h
 endif
 
+# The standalone core only links the CPU decoder.
 libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
     -DSIXEL_STATUS_HAVE_TTY_HELPERS=0 \
-    -DSIXEL_DECODE_PIXELS_NO_FAST4=1
+    -DSIXEL_DECODE_PIXELS_NO_FAST4=1 \
+    -DSIXEL_DECODE_PIXELS_NO_GPU=1
 
 if HAVE_APPLE_QUICKLOOK_EXTENSION
 

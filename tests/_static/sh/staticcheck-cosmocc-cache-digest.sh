@@ -60,6 +60,11 @@ mkdir() { test "$*" = "-p cosmopolitan" || exit 91; }
 curl() {
     test "$CACHE_STATUS" -ne 0 || exit 91
     test "$downloaded" -eq 0 || exit 91
+    # Require a recovery window without unbounded retries on a cache miss.
+    case " $* " in
+        *" --retry 3 --retry-delay 180 --retry-max-time 600 "*) ;;
+        *) exit 91 ;;
+    esac
     downloaded=1
     return "$DOWNLOAD_STATUS"
 }
@@ -84,7 +89,7 @@ for HASH_TOOL in sha256sum shasum; do
     for CACHE_STATUS in 0 1; do
         export CACHE_STATUS
         DOWNLOAD_STATUS=0 DOWNLOAD_DIGEST_STATUS=0 bash -euc "$script" || {
-            echo 'not ok 1 - Cosmopolitan validates cached and downloaded bytes'
+            echo 'not ok 1 - Cosmopolitan verifies bytes and retries transient download failures'
             exit 0
         }
     done
@@ -96,12 +101,12 @@ for HASH_TOOL in sha256sum shasum; do
         exit 0
     }
     result=0
-    CACHE_STATUS=1 DOWNLOAD_STATUS=56 DOWNLOAD_DIGEST_STATUS=0 \
+    CACHE_STATUS=1 DOWNLOAD_STATUS=28 DOWNLOAD_DIGEST_STATUS=0 \
         bash -euc "$script" || result=$?
-    test "$result" -eq 56 || {
+    test "$result" -eq 28 || {
         echo 'not ok 1 - Cosmopolitan propagates download failure'
         exit 0
     }
 done
-echo 'ok 1 - Cosmopolitan verifies archives through portable checksum options'
+echo 'ok 1 - Cosmopolitan verifies archives and bounds download retries'
 exit 0

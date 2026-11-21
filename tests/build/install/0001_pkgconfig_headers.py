@@ -60,13 +60,19 @@ def check(args):
         packages = list(stage.rglob('libsixel.pc'))
         if len(packages) != 1:
             raise RuntimeError('expected exactly one staged libsixel.pc')
-        # Keep /usr/include visible in Cflags for a staged system-prefix
-        # install; host compiler defaults must not satisfy this probe.
-        env = dict(os.environ, PKG_CONFIG_PATH=str(packages[0].parent),
-                   PKG_CONFIG_SYSROOT_DIR=str(stage),
+        # Search the staged directory first. A relative search path works
+        # with both native Windows and POSIX pkg-config path separators.
+        # Keep system include flags visible and use forward slashes in the
+        # returned sysroot path so shell-style parsing preserves it.
+        sysroot = stage.as_posix()
+        env = dict(os.environ, PKG_CONFIG_PATH='.', PKG_CONFIG_SYSROOT_DIR=sysroot,
                    PKG_CONFIG_ALLOW_SYSTEM_CFLAGS='1')
-        flags = shlex.split(run(pkgconfig_command + ['--cflags', 'libsixel'],
-                                env=env))
+        cflags = run(pkgconfig_command + ['--cflags', 'libsixel'],
+                     env=env, cwd=str(packages[0].parent))
+        # pkgconf can substitute a sysroot containing spaces verbatim.
+        # Use a sentinel that cannot appear in a path while splitting flags.
+        flags = [flag.replace('\0', sysroot) for flag in
+                 shlex.split(cflags.replace(sysroot, '\0'))]
         headers = list(stage.rglob('sixel.h'))
         if len(headers) != 1:
             raise RuntimeError('expected exactly one staged sixel.h')

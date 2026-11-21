@@ -1284,6 +1284,7 @@ image_buffer_expand_rows(unsigned char **pixels, size_t stride,
     return SIXEL_OK;
 }
 
+#if SIXEL_ENABLE_THREADS
 /* Band-column output needs pristine RGBA pixels: no serial columns, no paint
  * before the workers' anchor (paint after it is parsed again by them), and no
  * row expansion or OR mode later.  Allocate the
@@ -1315,6 +1316,7 @@ image_buffer_prepare_band_block(image_buffer_t *image,
     image->band_width = image->width;
     image->band_height = image->height;
 }
+#endif
 
 /* Constant-aspect painters use unscaled rows. Expand their materialized
  * result, coverage and separate fused-undither output exactly once. The

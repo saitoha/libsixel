@@ -25,6 +25,7 @@
 #ifndef LIBSIXEL_WRITER_H
 #define LIBSIXEL_WRITER_H
 
+#include <stdio.h>
 #include <sixel.h>
 #include "cms.h"
 
@@ -40,10 +41,13 @@ typedef struct sixel_writer_color {
     sixel_color_def_t const *definition;
 } sixel_writer_color_t;
 
+/* A caller-provided stream takes precedence over the filename. The writer
+ * leaves that stream open for the caller. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_write_image_color(unsigned char *data, int width, int height,
                          unsigned char *palette, int pixelformat,
-                         char const *filename, int imageformat,
+                         char const *filename, FILE *output_stream,
+                         int imageformat,
                          sixel_writer_color_t const *color,
                          sixel_allocator_t *allocator);
 

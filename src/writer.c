@@ -558,6 +558,7 @@ write_png_to_file(
     unsigned char       /* in */ *palette,      /* palette of source data */
     int                 /* in */ pixelformat,   /* source pixelFormat */
     char const          /* in */ *filename,     /* destination filename */
+    FILE *output_stream,
     int srgb, unsigned char const *icc, size_t icc_length,
     sixel_allocator_t   /* in */ *allocator)
 {
@@ -800,12 +801,13 @@ write_png_to_file(
                           "target=%s",
                           filename != NULL ? filename : "(null)");
     }
-    if (filename == NULL) {
+    if (output_stream != NULL) {
+        output_fp = output_stream;
+    } else if (filename == NULL) {
         /* Format normalization and logging may already own allocations. */
         status = SIXEL_BAD_ARGUMENT;
         goto end;
-    }
-    if (strcmp(filename, "-") == 0) {
+    } else if (strcmp(filename, "-") == 0) {
 #if defined(O_BINARY)
         (void)sixel_compat_set_binary(STDOUT_FILENO);
 #endif  /* defined(O_BINARY) */
@@ -1095,7 +1097,7 @@ write_png_to_file(
     status = SIXEL_OK;
 
 end:
-    if (output_fp && output_fp != stdout) {
+    if (output_fp && output_fp != stdout && output_fp != output_stream) {
         if (logger_prepared) {
             sixel_timeline_logger_logf(logger,
                               "io",
@@ -1170,6 +1172,7 @@ sixel_write_image_color(
     unsigned char       /* in */ *palette,     /* palette of source data */
     int                 /* in */ pixelformat,  /* source pixelFormat */
     char const          /* in */ *filename,    /* destination filename */
+    FILE *output_stream,
     int                 /* in */ imageformat,  /* destination imageformat */
     sixel_writer_color_t const *color,
     sixel_allocator_t   /* in */ *allocator)   /* allocator object */
@@ -1242,7 +1245,7 @@ sixel_write_image_color(
     switch (imageformat) {
     case SIXEL_FORMAT_PNG:
         status = write_png_to_file(data, width, height, palette,
-                                   pixelformat, filename,
+                                   pixelformat, filename, output_stream,
                                    color != NULL && color->srgb,
                                    icc, icc_length, allocator);
         break;
@@ -1291,6 +1294,6 @@ sixel_helper_write_image_file(unsigned char *data, int width, int height,
                                sixel_allocator_t *allocator)
 {
     return sixel_write_image_color(data, width, height, palette,
-                                    pixelformat, filename, imageformat,
+                                    pixelformat, filename, NULL, imageformat,
                                     NULL, allocator);
 }

@@ -903,14 +903,14 @@ sixel_wasi_tmpfile(char **path_out)
 SIXEL_COMPAT_API FILE *
 sixel_compat_tmpfile(void)
 {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     wchar_t directory[MAX_PATH + 1];
     wchar_t path[MAX_PATH + 1];
     DWORD length;
     FILE *stream;
 
-    /* tmpfile_s uses the drive root, which can require administrator
-     * privileges. Reserve a name in the user's temporary directory and
+    /* The Windows CRT can use the drive root, which can require
+     * administrator privileges. Use the user's temporary directory and
      * keep binary update mode and automatic deletion on the final close. */
     length = GetTempPathW(MAX_PATH + 1, directory);
     if (length == 0 || length > MAX_PATH - 14) {

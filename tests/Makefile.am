@@ -9771,7 +9771,9 @@ EXTRA_DIST += _static/sh/staticcheck-compiler-link-boundary.sh \
     _static/sh/staticcheck-ci-tsan-shards.sh
 
 EXTRA_DIST += _static/sh/staticcheck-ci-clang-pgo-input-list.sh \
-    _static/sh/staticcheck-encoder-no-threads.sh \
+    _static/sh/staticcheck-no-threads.sh \
+    _static/sh/staticcheck-metal-heckbert.sh \
+    _static/sh/staticcheck-gpu-default-lookup-tests.sh \
     _static/sh/staticcheck-refresh-spatial-clang-analyzer.sh \
     _static/sh/staticcheck-refresh-spatial-rpc-macro.sh
 

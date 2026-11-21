@@ -979,8 +979,8 @@ else
         "missing config.h in build root"
 fi
 
-run_case_tap "staticcheck-encoder-no-threads" \
-    sh "$src_root/tests/_static/sh/staticcheck-encoder-no-threads.sh" \
+run_case_tap "staticcheck-no-threads" \
+    sh "$src_root/tests/_static/sh/staticcheck-no-threads.sh" \
     "$src_root" "$build_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-build-doc-configure-help" \
@@ -1264,6 +1264,14 @@ run_case_tap "staticcheck-pkg-config-unavailable" \
 
 run_case_tap "staticcheck-metal-stream" \
     sh "$src_root/tests/_static/sh/staticcheck-metal-stream.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-metal-heckbert" \
+    sh "$src_root/tests/_static/sh/staticcheck-metal-heckbert.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-gpu-default-lookup-tests" \
+    sh "$src_root/tests/_static/sh/staticcheck-gpu-default-lookup-tests.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-nightly-msvc-archiver" \

@@ -324,10 +324,12 @@ png_color_write(char const *path, int mode)
             SIXEL_PIXELFORMAT_PAL8, path, SIXEL_FORMAT_PNG, NULL);
     } else if (mode == 2) {
         status = sixel_write_image_color(pixels, 3, 1, NULL,
-            SIXEL_PIXELFORMAT_RGB888, path, SIXEL_FORMAT_PNG, &color, NULL);
+            SIXEL_PIXELFORMAT_RGB888, path, NULL, SIXEL_FORMAT_PNG,
+            &color, NULL);
     } else {
         status = sixel_write_image_color(indices, 3, 1, pixels,
-            SIXEL_PIXELFORMAT_PAL8, path, SIXEL_FORMAT_PNG, &color, NULL);
+            SIXEL_PIXELFORMAT_PAL8, path, NULL, SIXEL_FORMAT_PNG,
+            &color, NULL);
     }
     sixel_cdef_free(definition);
     return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;

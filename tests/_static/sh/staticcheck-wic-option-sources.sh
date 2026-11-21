@@ -70,6 +70,26 @@ END { exit found ? 0 : 1 }
     status=1
 }
 
+# Both standalone Quick Look builds must exclude the Metal decoder call.
+for build_file in Makefile.am meson.build; do
+    grep -Fq -- '-DSIXEL_DECODE_PIXELS_NO_GPU=1' \
+        "$src_root/quicklook-extension/$build_file" || {
+        echo "# Quick Look $build_file must select the CPU decoder"
+        status=1
+    }
+done
+awk '
+/^#if defined\(HAVE_METAL\) && !defined\(SIXEL_DECODE_PIXELS_NO_GPU\)/ {
+    guarded = 1
+}
+/^#endif/ { guarded = 0 }
+/sixel_decoder_gpu_parse_columns\(/ { found = 1; missing = !guarded }
+END { exit !found || missing }
+' "$src_root/src/decoder-parallel.c" || {
+    echo '# Parallel decoder must guard the call to the Metal implementation'
+    status=1
+}
+
 test "$status" -eq 0 || {
     echo "not ok 1 - specialized decoder sources stay synchronized"
     exit 1

@@ -347,7 +347,7 @@ require_fixed '-sNODERAWFS=1' configure.ac
 require_fixed "emscripten_fetch_flag = '-sFETCH=1'" meson.build
 require_fixed 'emscripten_get_compiler_setting("NODERAWFS")' src/path.c
 require_fixed 'fetch = emscripten_fetch(&attr, url);' src/chunk.c
-require_fixed '#if defined(O_EXCL) && !defined(__EMSCRIPTEN__)' src/decoder.c
+require_fixed 'clipboard_output_stream = sixel_compat_tmpfile();' src/decoder.c
 # Parsed pass counts belong to caller storage when decodes share an object.
 awk '
 /^struct sixel_decoder \{/ { active = 1; found = 1 }

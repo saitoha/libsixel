@@ -34,10 +34,11 @@ artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0043-diffusion-lso2-gain-short-$$.six"
 env_output="${artifact_dir}/0043-diffusion-lso2-gain-env-$$.six"
 
+# Hold the input palette constant when comparing two spellings of gain.
 short_trace=$(set +xv; SIXEL_GPU_POLICY=force \
     SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --precision-policy=8bit --lookup-policy=ordered -d "lso2:Gsmall-error" "${input_image}" 2>&1 >"${short_output}") || {
+    -b xterm256 --precision-policy=8bit --lookup-policy=ordered -d "lso2:Gsmall-error" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "lso2:gain short conversion failed"
     exit 0
 }
@@ -55,7 +56,7 @@ case "${short_trace}" in *LSXDTH1\|*diffuse=lso2\|*diffuse_on_gpu=1\|*) true ;; 
 env_trace=$(set +xv; SIXEL_GPU_POLICY=force \
     SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --precision-policy=8bit --lookup-policy=ordered --env "SIXEL_DITHER_LSO2_GAIN=small-error" -d "lso2" \
+    -b xterm256 --precision-policy=8bit --lookup-policy=ordered --env "SIXEL_DITHER_LSO2_GAIN=small-error" -d "lso2" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "lso2:gain env conversion failed"
     exit 0
