@@ -511,7 +511,7 @@ runs:
             "${sha256[@]}" -c - >/dev/null; then
           # Space out retries so a brief runner DNS outage can recover.
           curl --fail --location --connect-timeout 15 --max-time 600 \
-            --retry 5 --retry-delay 30 --retry-max-time 240 \
+            --retry 3 --retry-delay 180 --retry-max-time 600 \
             --output "$archive.part" \
             "https://github.com/jart/cosmopolitan/releases/download/${COSMOCC_VERSION}/cosmocc-${COSMOCC_VERSION}.zip"
           # Never publish a partial download or an HTTP error as a cache hit.

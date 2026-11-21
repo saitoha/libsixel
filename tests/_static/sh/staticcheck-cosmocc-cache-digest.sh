@@ -62,7 +62,7 @@ curl() {
     test "$downloaded" -eq 0 || exit 91
     # Require a recovery window without unbounded retries on a cache miss.
     case " $* " in
-        *" --retry 5 --retry-delay 30 --retry-max-time 240 "*) ;;
+        *" --retry 3 --retry-delay 180 --retry-max-time 600 "*) ;;
         *) exit 91 ;;
     esac
     downloaded=1
