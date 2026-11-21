@@ -220,6 +220,24 @@ SCAN_BUILD="$(command -v scan-build || command -v scan-build-18 || command -v sc
 "$SCAN_BUILD" --status-bugs --keep-going make -j"$(nproc)" V=1
 ```
 
+### WASI SDK (Linux, macOS, and Windows)
+
+Extract [WASI SDK 34 or newer](https://github.com/WebAssembly/wasi-sdk/releases) for your host and install Python 3, Meson, and Ninja. Set `WASI_SDK_PATH` to the extracted SDK, then run the example for your shell.
+
+```sh
+export WASI_SDK_PATH=/path/to/wasi-sdk
+build-examples/example-build-wasi.sh
+```
+
+```bat
+set "WASI_SDK_PATH=C:\path\to\wasi-sdk"
+call build-examples\example-build-wasi.cmd
+```
+
+The examples build static `wasm32-wasip1` modules with the built-in image codecs and install them in `build-examples/build-wasi/install/bin`. Set `SIXEL_WASI_BUILD_DIR` to select another build directory. Add the installed `bin` directory and Wasmtime to `PATH` to run `img2sixel`, `sixel2png`, and `lsqa` through their launchers. The launchers grant guest programs access to the working directory with `--dir .`. Set `TMPDIR` inside the guest to a writable, preopened directory if temporary files should be stored elsewhere.
+
+Pass `--check` to test a PNG → SIXEL → PNG pipe through the installed Wasmtime launchers. Pass `--check-wasmer` to run the same check with Wasmtime and Wasmer 7.5 or newer on `PATH`. On Windows, use binary-safe redirection such as `cmd.exe` when sending image bytes through a shell pipe.
+
 ### Emscripten (Autotools)
 
 Run [`build-examples/example-build-emcc.sh`](build-examples/example-build-emcc.sh) on Linux or macOS from an unconfigured source tree to build static converters with the SDK's PNG and JPEG ports and verify a PNG → SIXEL → PNG round trip. Set `SIXEL_EMCC_CHECK=1` to run the full Autotools test suite as well. The script uses an active `emcc` if available and otherwise installs SDK 7.0.0 by default. Set `SIXEL_EMSDK_DIR` to select an SDK checkout or `SIXEL_EMCC_BUILD_DIR` to select the output directory.

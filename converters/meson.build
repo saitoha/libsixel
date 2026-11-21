@@ -64,6 +64,7 @@ if img2sixel_opt.enabled()
   if amalgamated_tools_enabled
     img2sixel_exe = executable('img2sixel',
       [amalgamation_out],
+      kwargs: wasi_executable_kwargs,
       link_depends: emscripten_link_depends,
       link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
@@ -77,6 +78,7 @@ if img2sixel_opt.enabled()
   else
     img2sixel_exe = executable('img2sixel',
       img2sixel_core_sources,
+      kwargs: wasi_executable_kwargs,
       link_depends: emscripten_link_depends,
       link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
@@ -455,6 +457,7 @@ if sixel2png_opt.enabled()
   if amalgamated_tools_enabled
     sixel2png_exe = executable('sixel2png',
       [amalgamation_out],
+      kwargs: wasi_executable_kwargs,
       link_depends: emscripten_link_depends,
       link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
@@ -466,6 +469,7 @@ if sixel2png_opt.enabled()
   else
     sixel2png_exe = executable('sixel2png',
       ['sixel2png.c'] + sources_common + aborttrace_sources,
+      kwargs: wasi_executable_kwargs,
       link_depends: emscripten_link_depends,
       link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],

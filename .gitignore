@@ -92,6 +92,7 @@ libsixel-*.xz
 build-aux/lso-tap-driver.sh
 build-aux/resolve-test-tool-paths.sh
 build-examples/emsdk*
+/build-examples/build-wasi/
 ruby/lib/libsixel/version_runtime.rb
 tests/.perl-test-venv/
 tests/.php-test-venv/

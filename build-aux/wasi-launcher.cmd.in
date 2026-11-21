@@ -1,0 +1,4 @@
+@echo off
+setlocal DisableDelayedExpansion
+wasmtime run --dir . "%~dp0@WASI_TOOL@.wasm" %*
+exit /b %errorlevel%

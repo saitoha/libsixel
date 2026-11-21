@@ -44,9 +44,9 @@
 #elif HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif  /* HAVE_SYS_UNISTD_H */
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
+#if SIXEL_HAVE_ENCODER_SIGINT_SYNC
 # include <signal.h>
-#endif  /* !_WIN32 && !__EMSCRIPTEN__ && HAVE_SIGNAL_H */
+#endif
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
@@ -1927,7 +1927,8 @@ sixel_encoder_handoff_trace_minimal_enabled(void)
     return sixel_diagnostics_handoff_trace_is_enabled();
 }
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
+/* The synchronization hook needs to signal a host process by PID. */
+#if SIXEL_HAVE_ENCODER_SIGINT_SYNC
 static void
 sixel_encoder_test_sigint_sync_notify_dispatch_start(void)
 {

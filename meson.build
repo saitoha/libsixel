@@ -33,7 +33,19 @@ project('libsixel',
 
 host_system = host_machine.system()
 windows_emscripten_build = build_machine.system() == 'windows' and host_system == 'emscripten'
+wasi_build = host_system == 'wasi'
+windows_wasm_build = windows_emscripten_build or (wasi_build and build_machine.system() == 'windows')
 cc = meson.get_compiler('c')
+wasi_executable_kwargs = {}
+if wasi_build
+  if get_option('default_library') != 'static'
+    error('WASI builds require -Ddefault_library=static')
+  endif
+  if get_option('shebang_file') != ''
+    error('WASI executables use separate launchers')
+  endif
+  wasi_executable_kwargs = {'name_suffix': 'wasm'}
+endif
 # Streams and allocated memory cross the libsixel DLL boundary. Plain builds
 # otherwise omit CRT flags and silently give each module a private static CRT.
 if ['msvc', 'clang-cl'].contains(cc.get_id()) and get_option('default_library') != 'static'
@@ -48,6 +60,9 @@ if ['msvc', 'clang-cl'].contains(cc.get_id()) and get_option('default_library') 
 endif
 fs = import('fs')
 conf = configuration_data()
+if wasi_build
+  conf.set('HAVE_WASI_API_H', 1)
+endif
 have_objc = add_languages('objc', required: false, native: false)
 
 # Meson does not recognize pcc natively, so pcc builds use a wrapper that
@@ -800,11 +815,32 @@ std_headers = [
     'windows.h',
 ]
 foreach h : std_headers
-  if cc.has_header(h)
+  if wasi_build and ['signal.h', 'sys/signal.h'].contains(h)
+    # wasi-libc ships signal headers that reject compilation by default.
+    header_available = cc.check_header(h)
+  else
+    header_available = cc.has_header(h)
+  endif
+  if header_available
     macro = 'HAVE_' + h.to_upper().replace('.', '_').replace('/', '_')
     conf.set(macro, 1)
   endif
 endforeach
+
+# The encoder signal hook needs a POSIX process ID and SIGUSR1.
+if conf.has('HAVE_SIGNAL_H') and cc.links('''
+    #if defined(_WIN32) || defined(__EMSCRIPTEN__)
+    #error The encoder signal hook is unavailable on this target
+    #endif
+    #ifndef _POSIX_C_SOURCE
+    #define _POSIX_C_SOURCE 200809L
+    #endif
+    #include <signal.h>
+    #include <unistd.h>
+    int main(void) { return kill(0, SIGUSR1); }
+    ''', name: 'encoder process signal hook')
+  conf.set('SIXEL_HAVE_ENCODER_SIGINT_SYNC', 1)
+endif
 
 # miscellaneous functions
 # Keep the CLI transport probe separate from the library TTY feature macros.
@@ -1049,6 +1085,11 @@ abort_trace_enabled = not abort_trace_opt.disabled()
 if host_system == 'emscripten'
   if abort_trace_opt.enabled()
     error('abort_trace=enabled is not supported on emscripten')
+  endif
+  abort_trace_enabled = false
+elif wasi_build
+  if abort_trace_opt.enabled()
+    error('abort_trace=enabled is not supported on WASI')
   endif
   abort_trace_enabled = false
 elif host_system == 'windows'
@@ -2815,7 +2856,7 @@ endif
 
 # The Windows SDK can build from cmd.exe without sh when shell-based targets
 # such as TAP and amalgamation are disabled.
-sh = find_program('sh', required: not windows_emscripten_build or
+sh = find_program('sh', required: not windows_wasm_build or
   get_option('tests') or fuzz_enabled or amalgamated_sources_enabled or
   have_vulkan or shebang_enabled)
 meson_prog = find_program('meson', required: true)
@@ -2905,6 +2946,29 @@ if gdk_pixbuf_loader_deps.length() > 0
 endif
 
 subdir('assessment')
+
+if wasi_build
+  wasi_tools = ['lsqa']
+  if img2sixel_opt.enabled()
+    wasi_tools += ['img2sixel']
+  endif
+  if sixel2png_opt.enabled()
+    wasi_tools += ['sixel2png']
+  endif
+  foreach tool : wasi_tools
+    launcher_conf = configuration_data()
+    launcher_conf.set('WASI_TOOL', tool)
+    if build_machine.system() == 'windows'
+      configure_file(input: 'build-aux/wasi-launcher.cmd.in',
+        output: tool + '.cmd', configuration: launcher_conf,
+        install_dir: get_option('bindir'))
+    else
+      configure_file(input: 'build-aux/wasi-launcher.sh.in',
+        output: tool, configuration: launcher_conf,
+        install_dir: get_option('bindir'), install_mode: 'rwxr-xr-x')
+    endif
+  endforeach
+endif
 
 
 if have_quicklook_extension

@@ -42,6 +42,7 @@ endif
 
 lsqa_bin = executable('lsqa',
            lsqa_sources,
+           kwargs: wasi_executable_kwargs,
   link_depends: emscripten_link_depends,
            link_args: program_link_args,
            include_directories: lsqa_inc,

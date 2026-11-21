@@ -798,6 +798,8 @@ lsqa_video_run(lsqa_video_options_t const *options,
     char const *profile_path;
     char const *spec;
     char *cms;
+    char *report_path;
+    char *maps_path;
     long profile_size;
     size_t end;
     double pts;
@@ -813,6 +815,8 @@ lsqa_video_run(lsqa_video_options_t const *options,
     loader = NULL;
     profile = NULL;
     icc = NULL;
+    report_path = NULL;
+    maps_path = NULL;
     v.options = options;
     v.allocator = allocator;
     *valid_mask = 0;
@@ -879,7 +883,7 @@ lsqa_video_run(lsqa_video_options_t const *options,
     status = SIXEL_RUNTIME_ERROR;
     if (options->report != NULL) {
         /* Use the shared CRT adapter, including in C-runner builds. */
-        v.report = sixel_compat_tmpfile();
+        v.report = sixel_compat_spool_open(&report_path);
         if (v.report == NULL) {
             sixel_helper_set_additional_message("cannot create report spool");
             goto cleanup;
@@ -954,7 +958,7 @@ lsqa_video_run(lsqa_video_options_t const *options,
         fputs("}\n", v.report);
     }
     if (options->error_map != NULL) {
-        v.maps = sixel_compat_tmpfile();
+        v.maps = sixel_compat_spool_open(&maps_path);
         if (v.maps == NULL) {
             sixel_helper_set_additional_message(
                 "cannot create error-map spool");
@@ -1046,8 +1050,8 @@ cleanup:
     sixel_assessment_unref(v.qa);
     sixel_sequence_close(v.decoder);
     if (chunk != NULL) { chunk->vtbl->unref(chunk); }
-    if (v.report != NULL) { fclose(v.report); }
-    if (v.maps != NULL) { fclose(v.maps); }
+    sixel_compat_spool_close(v.report, report_path);
+    sixel_compat_spool_close(v.maps, maps_path);
     if (v.timeline != NULL) { fclose(v.timeline); }
     if (v.display != NULL) { fclose(v.display); }
     if (icc != NULL) { fclose(icc); }

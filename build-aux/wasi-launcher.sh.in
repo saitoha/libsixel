@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec wasmtime run --dir . "$(dirname "$0")/@WASI_TOOL@.wasm" "$@"

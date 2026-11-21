@@ -217,6 +217,10 @@ SIXEL_COMPAT_API FILE *sixel_compat_fopen(const char *filename,
 
 SIXEL_COMPAT_API FILE *sixel_compat_tmpfile(void);
 
+/* A spool may retain a path until after its stream is closed. */
+SIXEL_COMPAT_API FILE *sixel_compat_spool_open(char **path);
+SIXEL_COMPAT_API void sixel_compat_spool_close(FILE *stream, char *path);
+
 SIXEL_COMPAT_API const char *sixel_compat_getenv(const char *name);
 
 SIXEL_COMPAT_API int sixel_compat_setenv(const char *name,

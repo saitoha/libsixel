@@ -604,8 +604,13 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	build-aux/cosmoar-response.awk \
 	build-aux/emscripten-node-stdio.js tools/embed-shader.py \
 	tools/gen_6cells_h.py build-aux/meson-cross/emscripten-windows \
+	build-aux/wasi-clang.py build-aux/wasi-launcher.sh.in \
+	build-aux/wasi-launcher.cmd.in \
 	build-examples/example-build-emcc.sh \
 	build-examples/example-build-emcc.cmd \
+	build-examples/example-build-wasi.sh \
+	build-examples/example-build-wasi.cmd \
+	build-examples/example-build-wasi.py \
 	build-aux/test-runner-amalgamation-defines.awk \
 	build-aux/clean-test-logs.sh build-aux/list-tree-files.sh \
 	build-aux/list-test-reports.sh \

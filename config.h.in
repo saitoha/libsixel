@@ -629,6 +629,9 @@
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
 
+/* Define to 1 for WASI libc. */
+#undef HAVE_WASI_API_H
+
 /* whether libwebp is available */
 #undef HAVE_WEBP
 
@@ -755,6 +758,9 @@
 
 /* file(1) option used to obtain MIME type in thumbnailer loader. */
 #undef SIXEL_FILE_MIME_OPTION
+
+/* Define to 1 for the encoder process signal hook. */
+#undef SIXEL_HAVE_ENCODER_SIGINT_SYNC
 
 /* Define if x86-64 and AArch64 share the SIMD configuration */
 #undef SIXEL_SIMD_SHARED_CONFIG

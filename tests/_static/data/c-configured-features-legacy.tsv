@@ -173,7 +173,6 @@ src/encoder.c	2	#elifdefined(__GNUC__)&&!defined(__PCC__)
 src/encoder.c	1	#elifdefined(__STDC_VERSION__)&&__STDC_VERSION__>=201112L&&!defined(__PCC__)
 src/encoder.c	1	#if!defined(_POSIX_C_SOURCE)
 src/encoder.c	1	#if!defined(_WIN32)
-src/encoder.c	2	#if!defined(_WIN32)&&!defined(__EMSCRIPTEN__)&&HAVE_SIGNAL_H
 src/encoder.c	5	#ifdefined(O_EXCL)&&!defined(_WIN32)
 src/encoder.c	3	#ifdefined(O_EXCL)&&!defined(_WIN32)&&!defined(__EMSCRIPTEN__)
 src/encoder.c	1	#ifdefined(TIOCGWINSZ)&&!defined(__EMSCRIPTEN__)

@@ -6270,6 +6270,23 @@ else
 fi
 
 
+
+case $host_os in #(
+  wasi*) :
+
+  # lsqa uses setjmp/longjmp even with the builtin image loaders.
+  CFLAGS="$CFLAGS -mllvm -wasm-enable-sjlj -mllvm -wasm-use-legacy-eh=false"
+  CPPFLAGS="$CPPFLAGS -D_WASI_EMULATED_PROCESS_CLOCKS"
+  LDFLAGS="$LDFLAGS -Wl,-z,stack-size=786432"
+  LIBS="-lsetjmp -lwasi-emulated-process-clocks $LIBS"
+  enable_shared=no
+
+printf "%s\n" "#define HAVE_WASI_API_H 1" >>confdefs.h
+
+ ;; #(
+  *) :
+     ;;
+esac
 # clang-cl accepts -o for the object but derives gcov files from the source
 # basename. Use Automake's native -Fo translation even when its -c/-o probe
 # succeeds, so different directories can contain equally named sources.
@@ -16430,7 +16447,7 @@ esac
 fi
 
 
-# Emscripten cannot run lso-timeout, so skip building it there.
+# Wasm targets cannot spawn the processes managed by lso-timeout.
 case "$host_os" in
   mingw*|msys*|cygwin*|windows*|msvc*)
       build_windows=yes
@@ -16449,7 +16466,7 @@ fi
 
 
 case "$host_os" in
-  emscripten*)
+  emscripten*|wasi*)
       build_lso_timeout=no
       ;;
   *)
@@ -17987,6 +18004,12 @@ then :
 fi
          enable_abort_trace="no"
                   LDFLAGS="$LDFLAGS -Wno-pthreads-mem-growth" ;; #(
+  wasi*) :
+    if test "x$enable_abort_trace" = "xyes"
+then :
+  as_fn_error $? "--enable-abort-trace is not supported on WASI" "$LINENO" 5
+fi
+         enable_abort_trace="no" ;; #(
   mingw*|*mingw*|*ucrt*|*win32*|*windows*) :
     if test "x$enable_abort_trace" = "xyes"
 then :
@@ -22507,6 +22530,50 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for encoder process signal hook" >&5
+printf %s "checking for encoder process signal hook... " >&6; }
+if test ${sixel_cv_encoder_sigint_sync+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if defined(_WIN32) || defined(__EMSCRIPTEN__)
+#error The encoder signal hook is unavailable on this target
+#endif
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+#include <signal.h>
+#include <unistd.h>
+int main(void) { return kill(0, SIGUSR1); }
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_encoder_sigint_sync=yes
+else case e in #(
+  e) sixel_cv_encoder_sigint_sync=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_encoder_sigint_sync" >&5
+printf "%s\n" "$sixel_cv_encoder_sigint_sync" >&6; }
+if test "x$sixel_cv_encoder_sigint_sync" = xyes
+then :
+
+
+printf "%s\n" "#define SIXEL_HAVE_ENCODER_SIGINT_SYNC 1" >>confdefs.h
+
+
+fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for CLI nonblocking foreground terminal I/O" >&5
 printf %s "checking for CLI nonblocking foreground terminal I/O... " >&6; }

@@ -756,6 +756,16 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
 ])
 
 AC_PROG_CC
+
+AS_CASE([$host_os], [wasi*], [
+  # lsqa uses setjmp/longjmp even with the builtin image loaders.
+  CFLAGS="$CFLAGS -mllvm -wasm-enable-sjlj -mllvm -wasm-use-legacy-eh=false"
+  CPPFLAGS="$CPPFLAGS -D_WASI_EMULATED_PROCESS_CLOCKS"
+  LDFLAGS="$LDFLAGS -Wl,-z,stack-size=786432"
+  LIBS="-lsetjmp -lwasi-emulated-process-clocks $LIBS"
+  enable_shared=no
+  AC_DEFINE([HAVE_WASI_API_H], [1], [Define to 1 for WASI libc.])
+])
 # clang-cl accepts -o for the object but derives gcov files from the source
 # basename. Use Automake's native -Fo translation even when its -c/-o probe
 # succeeds, so different directories can contain equally named sources.
@@ -1012,7 +1022,7 @@ AS_IF([test "x$ac_cv_lso_date_epoch_nsec" = "xyes"],
       [LSO_TAP_DATE_CMD=''])
 AC_SUBST([LSO_TAP_DATE_CMD])
 
-# Emscripten cannot run lso-timeout, so skip building it there.
+# Wasm targets cannot spawn the processes managed by lso-timeout.
 case "$host_os" in
   mingw*|msys*|cygwin*|windows*|msvc*)
       build_windows=yes
@@ -1025,7 +1035,7 @@ AM_CONDITIONAL([BUILDING_ON_WINDOWS],
                [test "x$build_windows" = "xyes"])
 
 case "$host_os" in
-  emscripten*)
+  emscripten*|wasi*)
       build_lso_timeout=no
       ;;
   *)
@@ -1887,6 +1897,10 @@ AS_CASE([$host_os],
          enable_abort_trace="no"
          dnl Silence emcc pthreads/memory growth warning at link time.
          LDFLAGS="$LDFLAGS -Wno-pthreads-mem-growth"],
+        [wasi*],
+        [AS_IF([test "x$enable_abort_trace" = "xyes"],
+               [AC_MSG_ERROR([--enable-abort-trace is not supported on WASI])])
+         enable_abort_trace="no"],
         [mingw*|*mingw*|*ucrt*|*win32*|*windows*],
         [AS_IF([test "x$enable_abort_trace" = "xyes"],
                [AC_MSG_ERROR([--enable-abort-trace is not supported on this Windows environment])])
@@ -3316,6 +3330,26 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          tmpnam \
                          gettimeofday \
                         ])
+
+AC_CACHE_CHECK([for encoder process signal hook],
+  [sixel_cv_encoder_sigint_sync], [
+  AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#if defined(_WIN32) || defined(__EMSCRIPTEN__)
+#error The encoder signal hook is unavailable on this target
+#endif
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+#include <signal.h>
+#include <unistd.h>
+int main(void) { return kill(0, SIGUSR1); }
+  ]])], [sixel_cv_encoder_sigint_sync=yes],
+         [sixel_cv_encoder_sigint_sync=no])
+])
+AS_IF([test "x$sixel_cv_encoder_sigint_sync" = xyes], [
+  AC_DEFINE([SIXEL_HAVE_ENCODER_SIGINT_SYNC], [1],
+            [Define to 1 for the encoder process signal hook.])
+])
 
 AC_CACHE_CHECK([for CLI nonblocking foreground terminal I/O],
   [sixel_cv_cli_color_tty], [

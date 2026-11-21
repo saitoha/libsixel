@@ -84,6 +84,9 @@
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
+#if HAVE_WASI_API_H
+# include <wasi/api.h>
+#endif
 #if defined(_WIN32)
 # if !defined(UNICODE)
 #  define UNICODE
@@ -809,6 +812,94 @@ sixel_compat_fopen(const char *filename, const char *mode)
 }
 
 
+#if HAVE_WASI_API_H
+/* WASI has no libc temporary-file API. Create files exclusively in a
+ * directory the runtime has made writable to the guest. */
+static int
+sixel_wasi_create_temp(char *path, size_t capacity)
+{
+    static char const alphabet[] =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+    unsigned char random_bytes[6];
+    size_t length;
+    size_t i;
+    int attempt;
+    int fd;
+
+    length = strlen(path);
+    if (length < sizeof(random_bytes) || length >= capacity) {
+        errno = EINVAL;
+        return -1;
+    }
+    for (attempt = 0; attempt < 32; ++attempt) {
+        if (__wasi_random_get(random_bytes, sizeof(random_bytes)) != 0) {
+            errno = EIO;
+            return -1;
+        }
+        for (i = 0; i < sizeof(random_bytes); ++i) {
+            path[length - sizeof(random_bytes) + i] =
+                alphabet[random_bytes[i] & 63u];
+        }
+        fd = sixel_compat_open(path, O_RDWR | O_CREAT | O_EXCL, 0600);
+        if (fd >= 0 || errno != EEXIST) {
+            return fd;
+        }
+    }
+    return -1;
+}
+
+static FILE *
+sixel_wasi_tmpfile(char **path_out)
+{
+    char const *directory;
+    char *path;
+    size_t capacity;
+    int fd;
+    int saved_errno;
+    FILE *stream;
+
+    directory = getenv("TMPDIR");
+    if (directory == NULL || directory[0] == '\0') {
+        directory = ".";
+    }
+    capacity = strlen(directory) + sizeof("/libsixel-XXXXXX");
+    path = (char *)malloc(capacity);
+    if (path == NULL) {
+        errno = ENOMEM;
+        return NULL;
+    }
+    (void)snprintf(path, capacity, "%s/libsixel-XXXXXX", directory);
+    fd = sixel_wasi_create_temp(path, capacity);
+    if (fd >= 0) {
+        stream = fdopen(fd, "w+b");
+        if (stream != NULL) {
+            if (sixel_compat_unlink(path) == 0) {
+                free(path);
+                return stream;
+            }
+            /* Some runtimes cannot unlink an open file on Windows. Keep
+             * the name with the caller so it can unlink after closing. */
+            if (path_out != NULL) {
+                *path_out = path;
+                return stream;
+            }
+        }
+        saved_errno = errno;
+        if (stream != NULL) {
+            (void)fclose(stream);
+        } else {
+            (void)sixel_compat_close(fd);
+        }
+        (void)sixel_compat_unlink(path);
+        errno = saved_errno;
+    }
+    saved_errno = errno;
+    free(path);
+    errno = saved_errno;
+    return NULL;
+}
+#endif
+
 SIXEL_COMPAT_API FILE *
 sixel_compat_tmpfile(void)
 {
@@ -836,9 +927,36 @@ sixel_compat_tmpfile(void)
         return NULL;
     }
     return stream;
+#elif HAVE_WASI_API_H
+    return sixel_wasi_tmpfile(NULL);
 #else
     return tmpfile();
 #endif
+}
+
+
+SIXEL_COMPAT_API FILE *
+sixel_compat_spool_open(char **path)
+{
+    *path = NULL;
+#if HAVE_WASI_API_H
+    return sixel_wasi_tmpfile(path);
+#else
+    return sixel_compat_tmpfile();
+#endif
+}
+
+
+SIXEL_COMPAT_API void
+sixel_compat_spool_close(FILE *stream, char *path)
+{
+    if (stream != NULL) {
+        (void)fclose(stream);
+    }
+    if (path != NULL) {
+        (void)sixel_compat_unlink(path);
+        free(path);
+    }
 }
 
 
@@ -1189,6 +1307,8 @@ sixel_compat_tmpnam(char *buffer, size_t buffer_size)
         return NULL;
     }
     return buffer;
+#elif HAVE_WASI_API_H
+    return sixel_compat_mktemp(buffer, buffer_size) == 0 ? buffer : NULL;
 #else
     (void)buffer_size;
 # if HAVE_MKSTEMP
@@ -1382,6 +1502,19 @@ sixel_compat_mktemp(char *templ, size_t buffer_size)
         return (-1);
     }
     return 0;
+#elif HAVE_WASI_API_H
+    int fd;
+
+    if (templ == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+    fd = sixel_wasi_create_temp(templ, buffer_size);
+    if (fd < 0) {
+        return -1;
+    }
+    (void)sixel_compat_close(fd);
+    return sixel_compat_unlink(templ);
 #elif HAVE_MKSTEMP
     int fd;
 
