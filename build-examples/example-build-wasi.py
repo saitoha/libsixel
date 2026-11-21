@@ -3,10 +3,47 @@
 import argparse
 import os
 from pathlib import Path
+import platform
 import shutil
 import subprocess
 import sys
 import tempfile
+
+
+def find_sdk(build, env):
+    sdk_path = env.get("WASI_SDK_PATH")
+    if sdk_path:
+        return Path(sdk_path).resolve()
+
+    system = {"Darwin": "macos", "Linux": "linux", "Windows": "windows"}.get(
+        platform.system()
+    )
+    machine = platform.machine().lower()
+    arch = {"amd64": "x86_64", "aarch64": "arm64"}.get(machine, machine)
+    if not system or arch not in ("x86_64", "arm64"):
+        sys.exit("Set WASI_SDK_PATH for this host platform.")
+
+    release = "wasi-sdk-34"
+    name = f"{release}.0-{arch}-{system}"
+    sdk = build / name
+    if sdk.is_dir():
+        return sdk
+
+    curl = shutil.which("curl", path=env["PATH"])
+    tar = shutil.which("tar", path=env["PATH"])
+    if not curl or not tar:
+        sys.exit("Install curl and tar or set WASI_SDK_PATH to an extracted SDK.")
+    url = f"https://github.com/WebAssembly/wasi-sdk/releases/download/{release}/{name}.tar.gz"
+    print(f"Downloading {name} with curl", flush=True)
+    # Publish the SDK only after extraction succeeds so interrupted downloads
+    # leave the cache empty and the next invocation can retry.
+    with tempfile.TemporaryDirectory(prefix="wasi-sdk-download-", dir=build) as tmp:
+        archive = Path(tmp) / "sdk.tar.gz"
+        subprocess.run([curl, "-fLsS", "--retry", "3", "-o", str(archive), url],
+                       env=env, check=True)
+        subprocess.run([tar, "-xf", str(archive), "-C", tmp], env=env, check=True)
+        (Path(tmp) / name).rename(sdk)
+    return sdk
 
 
 def make_cross_file(source, build, sdk):
@@ -123,9 +160,6 @@ def main():
     args = parser.parse_args()
 
     source = Path(__file__).resolve().parents[1]
-    sdk_path = os.environ.get("WASI_SDK_PATH")
-    if not sdk_path:
-        sys.exit("Set WASI_SDK_PATH to an extracted WASI SDK (34 or newer).")
     build = Path(os.environ.get(
         "SIXEL_WASI_BUILD_DIR", str(source / "build-examples/build-wasi")
     )).resolve()
@@ -143,7 +177,7 @@ def main():
         sys.exit("Wasmer is required for --check-wasmer.")
 
     build.mkdir(parents=True, exist_ok=True)
-    cross_file = make_cross_file(source, build, Path(sdk_path).resolve())
+    cross_file = make_cross_file(source, build, find_sdk(build, env))
     setup = [meson, "setup"]
     if (build / "meson-private/coredata.dat").is_file():
         setup.append("--reconfigure")

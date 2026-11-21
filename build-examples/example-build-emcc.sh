@@ -28,6 +28,10 @@ if test -n "${SIXEL_EMSDK_DIR:-}" || ! command -v emcc >/dev/null 2>&1; then
     git clone --depth 1 --branch "$sdk_version" \
       https://github.com/emscripten-core/emsdk.git "$sdkdir"
   fi
+  # Match the native Windows example and use the system curl when available.
+  if command -v curl >/dev/null 2>&1; then
+    export EMSDK_USE_CURL=1
+  fi
   "$sdkdir/emsdk" install "$sdk_version"
   "$sdkdir/emsdk" activate "$sdk_version"
   # The SDK's environment script resolves its location from the working

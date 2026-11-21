@@ -222,15 +222,13 @@ SCAN_BUILD="$(command -v scan-build || command -v scan-build-18 || command -v sc
 
 ### WASI SDK (Linux, macOS, and Windows)
 
-Extract [WASI SDK 34 or newer](https://github.com/WebAssembly/wasi-sdk/releases) for your host and install Python 3, Meson, and Ninja. Set `WASI_SDK_PATH` to the extracted SDK, then run the example for your shell.
+Install Python 3, Meson, Ninja, curl, and tar. On x86-64 and ARM64 the examples download [WASI SDK 34](https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-34) with curl and reuse the extracted SDK in the build directory. To use an existing WASI SDK 34 or newer, set `WASI_SDK_PATH` to its extracted directory.
 
 ```sh
-export WASI_SDK_PATH=/path/to/wasi-sdk
 build-examples/example-build-wasi.sh
 ```
 
 ```bat
-set "WASI_SDK_PATH=C:\path\to\wasi-sdk"
 call build-examples\example-build-wasi.cmd
 ```
 
@@ -240,7 +238,7 @@ Pass `--check` to test a PNG → SIXEL → PNG pipe through the installed Wasmti
 
 ### Emscripten (Autotools)
 
-Run [`build-examples/example-build-emcc.sh`](build-examples/example-build-emcc.sh) on Linux or macOS from an unconfigured source tree to build static converters with the SDK's PNG and JPEG ports and verify a PNG → SIXEL → PNG round trip. Set `SIXEL_EMCC_CHECK=1` to run the full Autotools test suite as well. The script uses an active `emcc` if available and otherwise installs SDK 7.0.0 by default. Set `SIXEL_EMSDK_DIR` to select an SDK checkout or `SIXEL_EMCC_BUILD_DIR` to select the output directory.
+Run [`build-examples/example-build-emcc.sh`](build-examples/example-build-emcc.sh) on Linux or macOS from an unconfigured source tree to build static converters with the SDK's PNG and JPEG ports and verify a PNG → SIXEL → PNG round trip. Set `SIXEL_EMCC_CHECK=1` to run the full Autotools test suite as well. The script uses an active `emcc` if available and otherwise installs SDK 7.0.0 by default. It clones the emsdk manager when needed, and the manager downloads the SDK with curl when available. Set `SIXEL_EMSDK_DIR` to select an SDK checkout or `SIXEL_EMCC_BUILD_DIR` to select the output directory.
 
 The equivalent manual Autotools procedure is:
 

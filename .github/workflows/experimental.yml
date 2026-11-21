@@ -57,15 +57,12 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            sdk: x86_64-linux
             wasmtime: x86_64-linux
             extension: tar.xz
           - os: macos-15
-            sdk: arm64-macos
             wasmtime: aarch64-macos
             extension: tar.xz
           - os: windows-2025
-            sdk: x86_64-windows
             wasmtime: x86_64-windows
             extension: zip
     steps:
@@ -77,25 +74,18 @@ jobs:
       - name: Install Meson and Ninja
         run: python -m pip install meson==1.11.1 ninja==1.13.2
 
-      - name: Install WASI SDK and Wasmtime
+      - name: Install Wasmtime
         shell: pwsh
         env:
-          SDK_PLATFORM: ${{ matrix.sdk }}
           WASMTIME_PLATFORM: ${{ matrix.wasmtime }}
           WASMTIME_EXTENSION: ${{ matrix.extension }}
         run: |
           Set-Location $env:RUNNER_TEMP
-          $sdk = "wasi-sdk-34.0-$env:SDK_PLATFORM"
           $runtime = "wasmtime-v51.0.0-$env:WASMTIME_PLATFORM"
-          curl -fLsS --retry 3 -o sdk.tar.gz "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-34/$sdk.tar.gz"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          tar -xf sdk.tar.gz
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           curl -fLsS --retry 3 -o "runtime.$env:WASMTIME_EXTENSION" "https://github.com/bytecodealliance/wasmtime/releases/download/v51.0.0/$runtime.$env:WASMTIME_EXTENSION"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           tar -xf "runtime.$env:WASMTIME_EXTENSION"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          "WASI_SDK_PATH=$(Join-Path $env:RUNNER_TEMP $sdk)" >> $env:GITHUB_ENV
           "SIXEL_WASI_BUILD_DIR=$(Join-Path $env:RUNNER_TEMP 'libsixel WASI')" >> $env:GITHUB_ENV
           "$(Join-Path $env:RUNNER_TEMP $runtime)" >> $env:GITHUB_PATH
 
