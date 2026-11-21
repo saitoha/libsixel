@@ -19511,6 +19511,61 @@ fi
 
 
 
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __attribute__((always_inline))" >&5
+printf %s "checking for __attribute__((always_inline))... " >&6; }
+if test ${ax_cv_have_func_attribute_always_inline+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+                    inline __attribute__((always_inline)) int foo( void ) { return 0; }
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+                                      if test -s conftest.err
+then :
+  ax_cv_have_func_attribute_always_inline=no
+else case e in #(
+  e) ax_cv_have_func_attribute_always_inline=yes ;;
+esac
+fi
+else case e in #(
+  e) ax_cv_have_func_attribute_always_inline=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+     ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have_func_attribute_always_inline" >&5
+printf "%s\n" "$ax_cv_have_func_attribute_always_inline" >&6; }
+
+    if test yes = $ax_cv_have_func_attribute_always_inline
+then :
+
+printf "%s\n" "#define HAVE_FUNC_ATTRIBUTE_ALWAYS_INLINE 1" >>confdefs.h
+
+fi
+
+
+
+
+
+
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __attribute__((deprecated))" >&5
 printf %s "checking for __attribute__((deprecated))... " >&6; }
 if test ${ax_cv_have_func_attribute_deprecated+y}

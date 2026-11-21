@@ -506,6 +506,10 @@ if have_unreachable
   conf.set('HAVE___BUILTIN_UNREACHABLE', 1)
 endif
 
+if cc.has_function_attribute('always_inline')
+  conf.set('HAVE_FUNC_ATTRIBUTE_ALWAYS_INLINE', 1)
+endif
+
 if cc.compiles('''
     __attribute__((deprecated)) void test(void) {}
 ''')

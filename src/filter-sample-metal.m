@@ -12,16 +12,9 @@
 #include "gpu-program.h"
 #include "gpu-runtime-metal.h"
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wstring-concatenation"
-#endif
 static char const *const sample_solid_source[] = {
 #include "generated-metal/filter-sample-gpu-shader.inc.h"
 };
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
 
 typedef struct sample_solid_params {
     int32_t width, height, clip_x, clip_y;

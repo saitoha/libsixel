@@ -5,8 +5,9 @@
 #if defined(HAVE_METAL)
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
-#if defined(__aarch64__)
-#include <arm_neon.h>
+#include "simd-config.h"
+#if SIXEL_SIMD_NEON_A64 && SIXEL_SIMD_LITTLE_ENDIAN
+# include <arm_neon.h>
 #endif
 #include <pthread.h>
 #include <stdint.h>
@@ -15,16 +16,9 @@
 #include "gpu-program.h"
 #include "gpu-runtime-metal.h"
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wstring-concatenation"
-#endif
 static char const *const decoder_gpu_source[] = {
 #include "generated-metal/decoder-gpu-shader.inc.h"
 };
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
 
 typedef struct decoder_gpu_segment {
     uint32_t start, end, band, seg;
@@ -159,7 +153,7 @@ decoder_gpu_split(unsigned char const *body, uint32_t length,
     uint32_t p;
     uint32_t i;
     unsigned char ch;
-#if defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64 && SIXEL_SIMD_LITTLE_ENDIAN
     uint8x16_t dollar;
     uint8x16_t dash;
     uint8x16_t escape;
@@ -175,7 +169,7 @@ decoder_gpu_split(unsigned char const *body, uint32_t length,
     seg = 0u;
     start = 0u;
     p = 0u;
-#if defined(__aarch64__)
+#if SIXEL_SIMD_NEON_A64 && SIXEL_SIMD_LITTLE_ENDIAN
     dollar = vdupq_n_u8('$');
     dash = vdupq_n_u8('-');
     escape = vdupq_n_u8(0x1b);

@@ -2699,6 +2699,7 @@ else
     if test x$ax_cv_have_var_attribute_deprecated != x; then
         attr_var_deprecated='__attribute__((deprecated))'
     fi
+    AX_GCC_FUNC_ATTRIBUTE([always_inline])
     AX_GCC_FUNC_ATTRIBUTE([deprecated])
     if test x$ax_cv_have_func_attribute_deprecated != x; then
         attr_func_deprecated='__attribute__((deprecated))'

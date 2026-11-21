@@ -264,6 +264,9 @@
 /* Define to 1 if you have the `fsync' function. */
 #undef HAVE_FSYNC
 
+/* Define to 1 if the system has the `always_inline' function attribute */
+#undef HAVE_FUNC_ATTRIBUTE_ALWAYS_INLINE
+
 /* Define to 1 if the system has the `deprecated' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
 

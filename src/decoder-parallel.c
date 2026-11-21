@@ -47,6 +47,7 @@
 #include "compat_stub.h"
 #include "options.h"
 #include "pthread-once.h"
+#include "simd-config.h"
 #include "threading.h"
 
 /*
@@ -682,15 +683,18 @@ sixel_decoder_parallel_reserve_columns(sixel_decoder_worker_context_t *context,
     return 0;
 }
 
-#if defined(__aarch64__) && defined(__ARM_NEON)
-#include <arm_neon.h>
+#if SIXEL_SIMD_NEON_A64 && SIXEL_SIMD_LITTLE_ENDIAN
+# include <arm_neon.h>
 
 /* Store literal bytes sixteen at a time without a branch per column: the run
  * length comes from the first non-literal lane, and lanes past it carry a
  * zero pattern, which leaves their columns unchanged. Short runs dominate
  * dithered bodies, so the run end no longer costs a mispredicted loop exit.
  * Returns the number of bytes consumed; run_end bounds input and columns. */
-static inline __attribute__((always_inline)) int
+#if HAVE_FUNC_ATTRIBUTE_ALWAYS_INLINE
+__attribute__((always_inline))
+#endif
+static inline int
 sixel_parallel_literal_block(unsigned char const *p,
                              unsigned char const *run_end,
                              uint64_t *column, uint64_t color, int *rows)
@@ -718,7 +722,7 @@ sixel_parallel_literal_block(unsigned char const *p,
     uint8x16_t t;
     uint8x16_t m;
     uint64x2_t folded;
-    uint64_t stops;
+    uint8x16_t lengths;
     uint64_t any;
     int n;
     int k;
@@ -732,9 +736,10 @@ sixel_parallel_literal_block(unsigned char const *p,
     any = 0;
     while (run_end - p >= 16) {
         c = vsubq_u8(vld1q_u8(p), vdupq_n_u8('?'));
-        stops = ~vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(
-            vreinterpretq_u16_u8(vcleq_u8(c, vdupq_n_u8(63))), 4)), 0);
-        n = stops == 0 ? 16 : __builtin_ctzll(stops) >> 2;
+        /* A valid lane contributes 16, a terminator its byte offset. */
+        lengths = vbslq_u8(vcleq_u8(c, vdupq_n_u8(63)), vdupq_n_u8(16),
+                           order);
+        n = vminvq_u8(lengths);
         keep = vcltq_u8(order, vdupq_n_u8((uint8_t)n));
         c = vandq_u8(c, keep);
         folded = vreinterpretq_u64_u8(c);
@@ -1060,7 +1065,7 @@ parser_name(sixel_decoder_worker_context_t *context) \
             /* Up to three digits cannot overflow: read four bytes at once, \
              * locate the first non-digit and combine the digits without a \
              * branch per digit. Longer numbers take the checked loop. */ \
-            if (limit - p >= 4) { \
+            if (SIXEL_SIMD_LITTLE_ENDIAN && limit - p >= 4) { \
                 memcpy(&word, p, sizeof(word)); \
                 nondigit = ((word + 0x46464646u) | (word - 0x30303030u)) & \
                     0x80808080u; \
@@ -1068,7 +1073,10 @@ parser_name(sixel_decoder_worker_context_t *context) \
                 nondigit = 0; \
             } \
             if (nondigit != 0) { \
-                digits = __builtin_ctz(nondigit) >> 3; \
+                /* Count leading digit bytes before the first stop bit. */ \
+                digits = ((nondigit & 0xffu) == 0) + \
+                         ((nondigit & 0xffffu) == 0) + \
+                         ((nondigit & 0xffffffu) == 0); \
                 word = (uint32_t)((uint64_t)(word - 0x30303030u) << \
                     (32 - 8 * digits)); \
                 value = (int)((word >> 8) & 0xffu) * 100 + \
