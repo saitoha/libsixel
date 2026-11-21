@@ -464,6 +464,7 @@ endif
 if have_vulkan
   srcs += ['gpu-runtime-vulkan.c', 'gpu-palette-vulkan.c',
            'gpu-compute-vulkan.c', 'gpu-dequant-vulkan.c',
+           'filter-sample-vulkan.c',
            'progressive-gpu-vulkan.c',
            'retained-plane-vulkan.c',
            'encoder-body-gpu-vulkan.c',

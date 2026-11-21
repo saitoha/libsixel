@@ -5653,6 +5653,9 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
     int index;
     int scoped;
     sixel_planner_node_kind_t kind;
+#if defined(HAVE_VULKAN)
+    sixel_frame_t *preplan_input;
+#endif
 
     status = SIXEL_OK;
     height = 0;
@@ -5662,6 +5665,9 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+#if defined(HAVE_VULKAN)
+    preplan_input = context->frame;
+#endif
 
     context->clip_config.clip_x = context->encoder->clipx;
     context->clip_config.clip_y = context->encoder->clipy;
@@ -5861,6 +5867,13 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
     if (scoped) {
         sixel_thread_budget_leave(&budget);
     }
+#if defined(HAVE_VULKAN)
+    if (context->encoder->method_for_diffuse == SIXEL_DIFFUSE_LSO2) {
+        sixel_filter_sample_vulkan_finish_preplan(preplan_input,
+            SIXEL_SUCCEEDED(status) && context->pre_plan.count == 0 &&
+            context->frame == preplan_input);
+    }
+#endif
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -6580,6 +6593,11 @@ sixel_encoder_sample_frame(
     config.palette_sample_target = encoder->palette_sample_target;
     config.skip_solid = encoder->palette_sample_solid == 0;
     config.gpu_policy = encoder->gpu_policy;
+    config.share_gpu_input = palette_source == NULL && source ==
+        SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME &&
+        encoder->method_for_diffuse == SIXEL_DIFFUSE_LSO2 &&
+        sixel_encoder_gpu_diffusion_eligible(encoder,
+            encoder->method_for_diffuse);
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_SAMPLE,
                                                  &config,

@@ -48,6 +48,7 @@ vulkan_policies = [
   '../lookup-policy-delaunay-gpu.glsl',
 ]
 vulkan_stages = [
+  '../filter-sample-gpu.glsl',
   '../gpu-dequant-fast4.glsl',
   '../palette-kmeans-gpu.glsl',
   '../retained-plane-gpu.glsl',

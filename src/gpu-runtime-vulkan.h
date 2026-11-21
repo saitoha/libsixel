@@ -69,6 +69,8 @@ typedef struct sixel_vk_buffer {
     VkDeviceSize capacity;
     /* The mapping needs sixel_vk_buffer_invalidate() before host reads. */
     int noncoherent;
+    /* The shader's buffer allocation belongs to a DEVICE_LOCAL type. */
+    int device_local;
 } sixel_vk_buffer_t;
 
 SIXEL_INTERNAL_API void sixel_vk_lock(void);

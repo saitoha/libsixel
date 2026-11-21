@@ -762,6 +762,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	dither/dispatch/0021_filter_dither_transparent_mask_fence_parallel.c \
 	encoder/pipeline/0052_filter_binning_stream_alpha_zero_disabled.c \
 	palette/sampling/0004_filter_sample_parallel_exact.c \
+	palette/sampling/sample_vulkan_exact.c \
+	palette/sampling/sample_vulkan_exact.h \
+	palette/sampling/0105_sample_vulkan_random.c \
+	palette/sampling/0106_sample_vulkan_edge.c \
+	palette/sampling/0107_sample_vulkan_headroom.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 	_support/processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -2125,6 +2130,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/dispatch/test_runner-0021_filter_dither_transparent_mask_fence_parallel.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0052_filter_binning_stream_alpha_zero_disabled.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0004_filter_sample_parallel_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-sample_vulkan_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0105_sample_vulkan_random.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0106_sample_vulkan_edge.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0107_sample_vulkan_headroom.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0027_gpu_return.$(OBJEXT) \
@@ -3361,6 +3370,7 @@ am__objects_2 = .runner-batches/test_runner-batch_encoder_indexed_0185.inc.$(OBJ
 	.runner-batches/test_runner-batch_palette_heckbert_0085.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_heckbert_0120.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_heckbert_0127.inc.$(OBJEXT) \
+	.runner-batches/test_runner-batch_palette_heckbert_0138.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_kcenter_0004.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_kmeans_0001.inc.$(OBJEXT) \
 	.runner-batches/test_runner-batch_palette_kmeans_0024.inc.$(OBJEXT) \
@@ -3982,6 +3992,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0085.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0120.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0127.inc.Po \
+	.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0138.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_kcenter_0004.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_kmeans_0001.inc.Po \
 	.runner-batches/$(DEPDIR)/test_runner-batch_palette_kmeans_0024.inc.Po \
@@ -5290,6 +5301,10 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	palette/sampling/$(DEPDIR)/test_runner-0034_palette_sampling_indexed_frame.Po \
 	palette/sampling/$(DEPDIR)/test_runner-0038_sampling_small_solid.Po \
 	palette/sampling/$(DEPDIR)/test_runner-0039_sampling_auto_pal8_retention.Po \
+	palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Po \
+	palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Po \
+	palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Po \
+	palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po \
 	palette/snap-policy/$(DEPDIR)/test_runner-0001_snap_output_grid.Po \
 	palette/snap-policy/$(DEPDIR)/test_runner-0003_snap_partial_once.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
@@ -9362,6 +9377,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_FILTER_DITHER_TRANSPARENT_MASK_FENCE_PARALLEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_FILTER_BINNING_STREAM_ALPHA_ZERO_DISABLED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_FILTER_SAMPLE_PARALLEL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SAMPLE_VULKAN_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0105_SAMPLE_VULKAN_RANDOM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0106_SAMPLE_VULKAN_EDGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_SAMPLE_VULKAN_HEADROOM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PERTURB_API \
@@ -12334,6 +12353,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/dispatch/0021_filter_dither_transparent_mask_fence_parallel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0052_filter_binning_stream_alpha_zero_disabled.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0004_filter_sample_parallel_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/sample_vulkan_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/sample_vulkan_exact.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0105_sample_vulkan_random.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0106_sample_vulkan_edge.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0107_sample_vulkan_headroom.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -14140,6 +14164,7 @@ runner_batches = \
     .runner-batches/batch_palette_heckbert_0085.inc.c \
     .runner-batches/batch_palette_heckbert_0120.inc.c \
     .runner-batches/batch_palette_heckbert_0127.inc.c \
+    .runner-batches/batch_palette_heckbert_0138.inc.c \
     .runner-batches/batch_palette_kcenter_0004.inc.c \
     .runner-batches/batch_palette_kmeans_0001.inc.c \
     .runner-batches/batch_palette_kmeans_0024.inc.c \
@@ -19223,7 +19248,9 @@ batch_palette_heckbert_0127 = \
     palette/heckbert/0134_heckbert_reuse.c \
     palette/heckbert/0135_quant_palette_ordinary_float_heckbert_average.c \
     palette/heckbert/0136_quant_palette_ordinary_float_heckbert_histogram.c \
-    palette/heckbert/0137_heckbert_polish_auto_average.c \
+    palette/heckbert/0137_heckbert_polish_auto_average.c
+
+batch_palette_heckbert_0138 = \
     palette/heckbert/0138_heckbert_once.c \
     palette/heckbert/0139_heckbert_unique.c
 
@@ -22028,6 +22055,18 @@ encoder/pipeline/test_runner-0052_filter_binning_stream_alpha_zero_disabled.$(OB
 	encoder/pipeline/$(am__dirstamp) \
 	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
 palette/sampling/test_runner-0004_filter_sample_parallel_exact.$(OBJEXT):  \
+	palette/sampling/$(am__dirstamp) \
+	palette/sampling/$(DEPDIR)/$(am__dirstamp)
+palette/sampling/test_runner-sample_vulkan_exact.$(OBJEXT):  \
+	palette/sampling/$(am__dirstamp) \
+	palette/sampling/$(DEPDIR)/$(am__dirstamp)
+palette/sampling/test_runner-0105_sample_vulkan_random.$(OBJEXT):  \
+	palette/sampling/$(am__dirstamp) \
+	palette/sampling/$(DEPDIR)/$(am__dirstamp)
+palette/sampling/test_runner-0106_sample_vulkan_edge.$(OBJEXT):  \
+	palette/sampling/$(am__dirstamp) \
+	palette/sampling/$(DEPDIR)/$(am__dirstamp)
+palette/sampling/test_runner-0107_sample_vulkan_headroom.$(OBJEXT):  \
 	palette/sampling/$(am__dirstamp) \
 	palette/sampling/$(DEPDIR)/$(am__dirstamp)
 _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT):  \
@@ -26251,6 +26290,9 @@ $(top_builddir)/converters/test_runner-path.$(OBJEXT):  \
 .runner-batches/test_runner-batch_palette_heckbert_0127.inc.$(OBJEXT):  \
 	.runner-batches/$(am__dirstamp) \
 	.runner-batches/$(DEPDIR)/$(am__dirstamp)
+.runner-batches/test_runner-batch_palette_heckbert_0138.inc.$(OBJEXT):  \
+	.runner-batches/$(am__dirstamp) \
+	.runner-batches/$(DEPDIR)/$(am__dirstamp)
 .runner-batches/test_runner-batch_palette_kcenter_0004.inc.$(OBJEXT):  \
 	.runner-batches/$(am__dirstamp) \
 	.runner-batches/$(DEPDIR)/$(am__dirstamp)
@@ -27081,6 +27123,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0085.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0120.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0127.inc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0138.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_kcenter_0004.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_kmeans_0001.inc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@.runner-batches/$(DEPDIR)/test_runner-batch_palette_kmeans_0024.inc.Po@am__quote@ # am--include-marker
@@ -28389,6 +28432,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0034_palette_sampling_indexed_frame.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0038_sampling_small_solid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0039_sampling_auto_pal8_retention.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/snap-policy/$(DEPDIR)/test_runner-0001_snap_output_grid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/snap-policy/$(DEPDIR)/test_runner-0003_snap_partial_once.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
@@ -36508,6 +36555,62 @@ palette/sampling/test_runner-0004_filter_sample_parallel_exact.obj: palette/samp
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0004_filter_sample_parallel_exact.c' object='palette/sampling/test_runner-0004_filter_sample_parallel_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0004_filter_sample_parallel_exact.obj `if test -f 'palette/sampling/0004_filter_sample_parallel_exact.c'; then $(CYGPATH_W) 'palette/sampling/0004_filter_sample_parallel_exact.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0004_filter_sample_parallel_exact.c'; fi`
+
+palette/sampling/test_runner-sample_vulkan_exact.o: palette/sampling/sample_vulkan_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-sample_vulkan_exact.o -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Tpo -c -o palette/sampling/test_runner-sample_vulkan_exact.o `test -f 'palette/sampling/sample_vulkan_exact.c' || echo '$(srcdir)/'`palette/sampling/sample_vulkan_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Tpo palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/sample_vulkan_exact.c' object='palette/sampling/test_runner-sample_vulkan_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-sample_vulkan_exact.o `test -f 'palette/sampling/sample_vulkan_exact.c' || echo '$(srcdir)/'`palette/sampling/sample_vulkan_exact.c
+
+palette/sampling/test_runner-sample_vulkan_exact.obj: palette/sampling/sample_vulkan_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-sample_vulkan_exact.obj -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Tpo -c -o palette/sampling/test_runner-sample_vulkan_exact.obj `if test -f 'palette/sampling/sample_vulkan_exact.c'; then $(CYGPATH_W) 'palette/sampling/sample_vulkan_exact.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/sample_vulkan_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Tpo palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/sample_vulkan_exact.c' object='palette/sampling/test_runner-sample_vulkan_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-sample_vulkan_exact.obj `if test -f 'palette/sampling/sample_vulkan_exact.c'; then $(CYGPATH_W) 'palette/sampling/sample_vulkan_exact.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/sample_vulkan_exact.c'; fi`
+
+palette/sampling/test_runner-0105_sample_vulkan_random.o: palette/sampling/0105_sample_vulkan_random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0105_sample_vulkan_random.o -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Tpo -c -o palette/sampling/test_runner-0105_sample_vulkan_random.o `test -f 'palette/sampling/0105_sample_vulkan_random.c' || echo '$(srcdir)/'`palette/sampling/0105_sample_vulkan_random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Tpo palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0105_sample_vulkan_random.c' object='palette/sampling/test_runner-0105_sample_vulkan_random.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0105_sample_vulkan_random.o `test -f 'palette/sampling/0105_sample_vulkan_random.c' || echo '$(srcdir)/'`palette/sampling/0105_sample_vulkan_random.c
+
+palette/sampling/test_runner-0105_sample_vulkan_random.obj: palette/sampling/0105_sample_vulkan_random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0105_sample_vulkan_random.obj -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Tpo -c -o palette/sampling/test_runner-0105_sample_vulkan_random.obj `if test -f 'palette/sampling/0105_sample_vulkan_random.c'; then $(CYGPATH_W) 'palette/sampling/0105_sample_vulkan_random.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0105_sample_vulkan_random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Tpo palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0105_sample_vulkan_random.c' object='palette/sampling/test_runner-0105_sample_vulkan_random.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0105_sample_vulkan_random.obj `if test -f 'palette/sampling/0105_sample_vulkan_random.c'; then $(CYGPATH_W) 'palette/sampling/0105_sample_vulkan_random.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0105_sample_vulkan_random.c'; fi`
+
+palette/sampling/test_runner-0106_sample_vulkan_edge.o: palette/sampling/0106_sample_vulkan_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0106_sample_vulkan_edge.o -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Tpo -c -o palette/sampling/test_runner-0106_sample_vulkan_edge.o `test -f 'palette/sampling/0106_sample_vulkan_edge.c' || echo '$(srcdir)/'`palette/sampling/0106_sample_vulkan_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Tpo palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0106_sample_vulkan_edge.c' object='palette/sampling/test_runner-0106_sample_vulkan_edge.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0106_sample_vulkan_edge.o `test -f 'palette/sampling/0106_sample_vulkan_edge.c' || echo '$(srcdir)/'`palette/sampling/0106_sample_vulkan_edge.c
+
+palette/sampling/test_runner-0106_sample_vulkan_edge.obj: palette/sampling/0106_sample_vulkan_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0106_sample_vulkan_edge.obj -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Tpo -c -o palette/sampling/test_runner-0106_sample_vulkan_edge.obj `if test -f 'palette/sampling/0106_sample_vulkan_edge.c'; then $(CYGPATH_W) 'palette/sampling/0106_sample_vulkan_edge.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0106_sample_vulkan_edge.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Tpo palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0106_sample_vulkan_edge.c' object='palette/sampling/test_runner-0106_sample_vulkan_edge.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0106_sample_vulkan_edge.obj `if test -f 'palette/sampling/0106_sample_vulkan_edge.c'; then $(CYGPATH_W) 'palette/sampling/0106_sample_vulkan_edge.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0106_sample_vulkan_edge.c'; fi`
+
+palette/sampling/test_runner-0107_sample_vulkan_headroom.o: palette/sampling/0107_sample_vulkan_headroom.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0107_sample_vulkan_headroom.o -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Tpo -c -o palette/sampling/test_runner-0107_sample_vulkan_headroom.o `test -f 'palette/sampling/0107_sample_vulkan_headroom.c' || echo '$(srcdir)/'`palette/sampling/0107_sample_vulkan_headroom.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Tpo palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0107_sample_vulkan_headroom.c' object='palette/sampling/test_runner-0107_sample_vulkan_headroom.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0107_sample_vulkan_headroom.o `test -f 'palette/sampling/0107_sample_vulkan_headroom.c' || echo '$(srcdir)/'`palette/sampling/0107_sample_vulkan_headroom.c
+
+palette/sampling/test_runner-0107_sample_vulkan_headroom.obj: palette/sampling/0107_sample_vulkan_headroom.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0107_sample_vulkan_headroom.obj -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Tpo -c -o palette/sampling/test_runner-0107_sample_vulkan_headroom.obj `if test -f 'palette/sampling/0107_sample_vulkan_headroom.c'; then $(CYGPATH_W) 'palette/sampling/0107_sample_vulkan_headroom.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0107_sample_vulkan_headroom.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Tpo palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0107_sample_vulkan_headroom.c' object='palette/sampling/test_runner-0107_sample_vulkan_headroom.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0107_sample_vulkan_headroom.obj `if test -f 'palette/sampling/0107_sample_vulkan_headroom.c'; then $(CYGPATH_W) 'palette/sampling/0107_sample_vulkan_headroom.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0107_sample_vulkan_headroom.c'; fi`
 
 _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o: _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o -MD -MP -MF _support/processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo -c -o _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o `test -f '_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c' || echo '$(srcdir)/'`_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c
@@ -53812,6 +53915,20 @@ $(top_builddir)/converters/test_runner-path.obj: $(top_builddir)/converters/path
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='.runner-batches/batch_palette_heckbert_0127.inc.c' object='.runner-batches/test_runner-batch_palette_heckbert_0127.inc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o .runner-batches/test_runner-batch_palette_heckbert_0127.inc.obj `if test -f '.runner-batches/batch_palette_heckbert_0127.inc.c'; then $(CYGPATH_W) '.runner-batches/batch_palette_heckbert_0127.inc.c'; else $(CYGPATH_W) '$(srcdir)/.runner-batches/batch_palette_heckbert_0127.inc.c'; fi`
+
+.runner-batches/test_runner-batch_palette_heckbert_0138.inc.o: .runner-batches/batch_palette_heckbert_0138.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_palette_heckbert_0138.inc.o -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0138.inc.Tpo -c -o .runner-batches/test_runner-batch_palette_heckbert_0138.inc.o `test -f '.runner-batches/batch_palette_heckbert_0138.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_palette_heckbert_0138.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0138.inc.Tpo .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0138.inc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='.runner-batches/batch_palette_heckbert_0138.inc.c' object='.runner-batches/test_runner-batch_palette_heckbert_0138.inc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o .runner-batches/test_runner-batch_palette_heckbert_0138.inc.o `test -f '.runner-batches/batch_palette_heckbert_0138.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_palette_heckbert_0138.inc.c
+
+.runner-batches/test_runner-batch_palette_heckbert_0138.inc.obj: .runner-batches/batch_palette_heckbert_0138.inc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_palette_heckbert_0138.inc.obj -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0138.inc.Tpo -c -o .runner-batches/test_runner-batch_palette_heckbert_0138.inc.obj `if test -f '.runner-batches/batch_palette_heckbert_0138.inc.c'; then $(CYGPATH_W) '.runner-batches/batch_palette_heckbert_0138.inc.c'; else $(CYGPATH_W) '$(srcdir)/.runner-batches/batch_palette_heckbert_0138.inc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0138.inc.Tpo .runner-batches/$(DEPDIR)/test_runner-batch_palette_heckbert_0138.inc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='.runner-batches/batch_palette_heckbert_0138.inc.c' object='.runner-batches/test_runner-batch_palette_heckbert_0138.inc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o .runner-batches/test_runner-batch_palette_heckbert_0138.inc.obj `if test -f '.runner-batches/batch_palette_heckbert_0138.inc.c'; then $(CYGPATH_W) '.runner-batches/batch_palette_heckbert_0138.inc.c'; else $(CYGPATH_W) '$(srcdir)/.runner-batches/batch_palette_heckbert_0138.inc.c'; fi`
 
 .runner-batches/test_runner-batch_palette_kcenter_0004.inc.o: .runner-batches/batch_palette_kcenter_0004.inc.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT .runner-batches/test_runner-batch_palette_kcenter_0004.inc.o -MD -MP -MF .runner-batches/$(DEPDIR)/test_runner-batch_palette_kcenter_0004.inc.Tpo -c -o .runner-batches/test_runner-batch_palette_kcenter_0004.inc.o `test -f '.runner-batches/batch_palette_kcenter_0004.inc.c' || echo '$(srcdir)/'`.runner-batches/batch_palette_kcenter_0004.inc.c

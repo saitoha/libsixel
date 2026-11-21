@@ -84,6 +84,7 @@ sixel_filter_sample_solid_gpu(unsigned char const *pixels,
                               int clip_y,
                               int clip_width,
                               int clip_height,
+                              sixel_frame_t *share_owner,
                               unsigned int *cells)
 {
     sample_solid_params_t params;
@@ -95,6 +96,7 @@ sixel_filter_sample_solid_gpu(unsigned char const *pixels,
     NSUInteger lanes;
     SIXELSTATUS status;
 
+    (void)share_owner;
     if (pixels == NULL || cells == NULL || width <= 0 || height <= 0
             || clip_width <= 0 || clip_height <= 0
             || (size_t)width * (size_t)height > UINT32_MAX / 3u)
