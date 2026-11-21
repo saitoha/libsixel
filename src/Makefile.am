@@ -23,6 +23,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/dither-policy-sierra3-gpu.metal \
     $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/filter-sample-gpu.metal \
+    $(srcdir)/decoder-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
     $(srcdir)/lookup-policy-none-fractional-gpu.metal \
     $(srcdir)/lookup-policy-eytzinger-fractional-gpu.metal \
@@ -236,6 +237,7 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-dither-policy-sierra3-gpu-metal.lo \
     libsixel_la-retained-plane-metal.lo \
     libsixel_la-filter-sample-metal.lo \
+    libsixel_la-decoder-gpu-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-none-gpu.lo \
     libsixel_la-lookup-policy-eytzinger-gpu.lo \
@@ -755,6 +757,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/decoder.h \
                 $(srcdir)/decoder-parallel.c \
                 $(srcdir)/decoder-parallel.h \
+                $(srcdir)/decoder-gpu.h \
                 $(srcdir)/decoder-image.h \
                 $(srcdir)/fromsixel-internal.h \
                 $(srcdir)/decoder-ormode.h \
@@ -837,6 +840,7 @@ $(srcdir)/gpu-palette-metal.m \
 $(srcdir)/encoder-body-gpu-metal.m \
 $(srcdir)/retained-plane-metal.m \
 $(srcdir)/filter-sample-metal.m \
+$(srcdir)/decoder-gpu-metal.m \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/palette-heckbert-gpu-metal.m \
 $(srcdir)/progressive-gpu-metal.m

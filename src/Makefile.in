@@ -136,6 +136,7 @@ host_triplet = @host@
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/encoder-body-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/retained-plane-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/filter-sample-metal.m \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/decoder-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-heckbert-gpu-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/progressive-gpu-metal.m
@@ -514,13 +515,14 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/mapfile.h $(srcdir)/drcs.c $(srcdir)/drcs.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
 	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
-	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-image.h \
-	$(srcdir)/fromsixel-internal.h $(srcdir)/decoder-ormode.h \
-	$(srcdir)/decoder-columns.h $(srcdir)/decoder-simd.h \
-	$(srcdir)/simd-config.h $(srcdir)/options.c \
-	$(srcdir)/options.h $(srcdir)/options-registry.c \
-	$(srcdir)/options-registry.h $(srcdir)/path.c $(srcdir)/path.h \
-	$(srcdir)/stb_image.h $(srcdir)/writer.c $(srcdir)/writer.h \
+	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-gpu.h \
+	$(srcdir)/decoder-image.h $(srcdir)/fromsixel-internal.h \
+	$(srcdir)/decoder-ormode.h $(srcdir)/decoder-columns.h \
+	$(srcdir)/decoder-simd.h $(srcdir)/simd-config.h \
+	$(srcdir)/options.c $(srcdir)/options.h \
+	$(srcdir)/options-registry.c $(srcdir)/options-registry.h \
+	$(srcdir)/path.c $(srcdir)/path.h $(srcdir)/stb_image.h \
+	$(srcdir)/writer.c $(srcdir)/writer.h \
 	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
 	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
@@ -563,7 +565,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/gpu-palette-metal.m \
 	$(srcdir)/encoder-body-gpu-metal.m \
 	$(srcdir)/retained-plane-metal.m \
-	$(srcdir)/filter-sample-metal.m \
+	$(srcdir)/filter-sample-metal.m $(srcdir)/decoder-gpu-metal.m \
 	$(srcdir)/palette-kmeans-metal.m \
 	$(srcdir)/palette-heckbert-gpu-metal.m \
 	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
@@ -599,6 +601,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-body-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-sample-metal.lo \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert-gpu-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu-metal.lo
@@ -873,6 +876,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-compat_stub.Plo \
 	./$(DEPDIR)/libsixel_la-components.Plo \
 	./$(DEPDIR)/libsixel_la-cpu.Plo \
+	./$(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo \
 	./$(DEPDIR)/libsixel_la-decoder-parallel.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
 	./$(DEPDIR)/libsixel_la-delta-residual.Plo \
@@ -1456,6 +1460,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/dither-policy-sierra3-gpu.metal \
     $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/filter-sample-gpu.metal \
+    $(srcdir)/decoder-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
     $(srcdir)/lookup-policy-none-fractional-gpu.metal \
     $(srcdir)/lookup-policy-eytzinger-fractional-gpu.metal \
@@ -1654,6 +1659,7 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-dither-policy-sierra3-gpu-metal.lo \
     libsixel_la-retained-plane-metal.lo \
     libsixel_la-filter-sample-metal.lo \
+    libsixel_la-decoder-gpu-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-none-gpu.lo \
     libsixel_la-lookup-policy-eytzinger-gpu.lo \
@@ -2123,6 +2129,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-image.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromsixel-internal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-ormode.h \
@@ -2447,6 +2454,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-components.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-cpu.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-delta-residual.Plo@am__quote@ # am--include-marker
@@ -4493,6 +4501,13 @@ libsixel_la-filter-sample-metal.lo: filter-sample-metal.m
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-filter-sample-metal.lo `test -f 'filter-sample-metal.m' || echo '$(srcdir)/'`filter-sample-metal.m
 
+libsixel_la-decoder-gpu-metal.lo: decoder-gpu-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-decoder-gpu-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-decoder-gpu-metal.Tpo -c -o libsixel_la-decoder-gpu-metal.lo `test -f 'decoder-gpu-metal.m' || echo '$(srcdir)/'`decoder-gpu-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-decoder-gpu-metal.Tpo $(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='decoder-gpu-metal.m' object='libsixel_la-decoder-gpu-metal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-decoder-gpu-metal.lo `test -f 'decoder-gpu-metal.m' || echo '$(srcdir)/'`decoder-gpu-metal.m
+
 libsixel_la-palette-kmeans-metal.lo: palette-kmeans-metal.m
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-palette-kmeans-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmeans-metal.Tpo -c -o libsixel_la-palette-kmeans-metal.lo `test -f 'palette-kmeans-metal.m' || echo '$(srcdir)/'`palette-kmeans-metal.m
 @am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-kmeans-metal.Tpo $(DEPDIR)/libsixel_la-palette-kmeans-metal.Plo
@@ -4730,6 +4745,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-components.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-delta-residual.Plo
@@ -5030,6 +5046,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-components.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-delta-residual.Plo

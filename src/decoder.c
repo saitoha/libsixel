@@ -3337,6 +3337,25 @@ static SIXELSTATUS sixel_decoder_decode_pixels_dequant_terminated_attempts(
     return status;
 }
 
+/* Kept band columns may be parsed on the device when the GPU policy allows
+ * it.  Returns OPTIONS, or SCRATCH carrying the internal GPU flags. */
+static sixel_decode_options_t const *
+decoder_gpu_decode_options(sixel_decoder_t const *decoder,
+                           sixel_decode_options_t const *options,
+                           sixel_decode_options_t *scratch)
+{
+    if (options == NULL || decoder->gpu_policy == SIXEL_GPU_POLICY_OFF ||
+            options->preferred_pixelformat != SIXEL_PIXELFORMAT_BANDCOLUMNS) {
+        return options;
+    }
+    *scratch = *options;
+    scratch->flags |= SIXEL_DECODE_PIXELS_OPTION_GPU_INTERNAL;
+    if (decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
+        scratch->flags |= SIXEL_DECODE_PIXELS_OPTION_GPU_FORCE_INTERNAL;
+    }
+    return scratch;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode_body_mapped(
     sixel_decoder_t *decoder, unsigned char const *body, size_t body_size,
@@ -3344,6 +3363,7 @@ sixel_decoder_decode_body_mapped(
     sixel_palette_transform_t const *transform, sixel_decode_result_t *result)
 {
     sixel_thread_budget_scope_t policy_scope;
+    sixel_decode_options_t gpu_options;
     SIXELSTATUS status;
 
     if (decoder == NULL || result == NULL) {
@@ -3358,6 +3378,7 @@ sixel_decoder_decode_body_mapped(
     }
     sixel_threading_object_enter(&policy_scope, &decoder->threading, 1);
     sixel_threading_scope_set_resident(&policy_scope, decoder->resident);
+    options = decoder_gpu_decode_options(decoder, options, &gpu_options);
     status = sixel_decode_pixels_body_mapped(body, body_size, params, nparams,
                                              options, transform, result,
                                              decoder->allocator);
@@ -3372,6 +3393,7 @@ sixel_decoder_decode_mapped(
     sixel_palette_transform_t const *transform, sixel_decode_result_t *result)
 {
     sixel_thread_budget_scope_t policy_scope;
+    sixel_decode_options_t gpu_options;
     SIXELSTATUS status;
     unsigned char *workbuf;
     unsigned char *rgba_pixels;
@@ -3441,6 +3463,7 @@ sixel_decoder_decode_mapped(
         goto end;
     }
     if (decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
+        options = decoder_gpu_decode_options(decoder, options, &gpu_options);
         status = sixel_decode_pixels_mapped(data, size, options, transform,
                                             result, decoder->allocator);
         goto end;
