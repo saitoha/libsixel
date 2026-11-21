@@ -36,6 +36,7 @@
 #define sixel_palette_heckbert_entry_weight \
     policy_sixel_palette_heckbert_entry_weight
 #define findBoxBoundariesAndWeight policy_findBoxBoundariesAndWeight
+#define findBoxBoundariesAndWeightNeon3 policy_findBoxBoundariesAndWeightNeon3
 #define sortAxisFractions policy_sortAxisFractions
 #define sortBoxByAxisBuckets policy_sortBoxByAxisBuckets
 #define sixel_heckbert_axis_weights policy_sixel_heckbert_axis_weights
@@ -58,11 +59,13 @@
     policy_sixel_palette_heckbert_compute_box_median
 #define sixel_heckbert_sse policy_sixel_heckbert_sse
 #define sixel_heckbert_box_sse policy_sixel_heckbert_box_sse
+#define sixel_heckbert_box_sse_neon3 policy_sixel_heckbert_box_sse_neon3
 #define sixel_palette_heckbert_split_is_degenerate \
     policy_sixel_palette_heckbert_split_is_degenerate
 #define sixel_palette_heckbert_split_attempt \
     policy_sixel_palette_heckbert_split_attempt
 #define splitBox policy_splitBox
+#define sixel_palette_heckbert_solve_gpu policy_sixel_palette_heckbert_solve_gpu
 #define mediancut policy_mediancut
 #define sixel_heckbert_native_compare policy_sixel_heckbert_native_compare
 #define sixel_heckbert_native_histogram policy_sixel_heckbert_native_histogram
@@ -121,6 +124,7 @@
 #undef newBoxVector
 #undef sixel_palette_heckbert_entry_weight
 #undef findBoxBoundariesAndWeight
+#undef findBoxBoundariesAndWeightNeon3
 #undef sortAxisFractions
 #undef sortBoxByAxisBuckets
 #undef sixel_heckbert_axis_weights
@@ -140,9 +144,11 @@
 #undef sixel_palette_heckbert_compute_box_median
 #undef sixel_heckbert_sse
 #undef sixel_heckbert_box_sse
+#undef sixel_heckbert_box_sse_neon3
 #undef sixel_palette_heckbert_split_is_degenerate
 #undef sixel_palette_heckbert_split_attempt
 #undef splitBox
+#undef sixel_palette_heckbert_solve_gpu
 #undef mediancut
 #undef sixel_heckbert_native_compare
 #undef sixel_heckbert_native_histogram

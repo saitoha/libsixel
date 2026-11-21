@@ -217,6 +217,9 @@ function count_brace_close(s, t) {
     return gsub(/\}/, "", t)
 }
 function emit_private(name, namespace, resolved) {
+    if (file == src_dir "palette-heckbert.c" && namespace == "ordinary") {
+        heckbert_statics[name] = 1
+    }
     resolved = (name in macro_alias) ? macro_alias[name] : name
     if (namespace == "tag") {
         resolved = "tag:" resolved
@@ -309,6 +312,7 @@ function start_signature(line,   candidate, search) {
 FNR == 1 {
     file = FILENAME
     delete macro_alias
+    define_text = ""
     in_comment = 0
     is_test = index(file, tests_root) == 1
     in_typedef = 0
@@ -318,12 +322,17 @@ FNR == 1 {
 }
 {
     line = trim(strip_comments($0))
-    if (line == "") {
+    if (line == "" && define_text == "") {
         next
     }
 
-    if (line ~ /^#[[:space:]]*define[[:space:]]+/) {
-        macro = line
+    if (define_text != "" || line ~ /^#[[:space:]]*define[[:space:]]+/) {
+        define_text = define_text == "" ? line : define_text " " line
+        if (sub(/\\$/, "", define_text)) {
+            next
+        }
+        macro = define_text
+        define_text = ""
         sub(/^#[[:space:]]*define[[:space:]]+/, "", macro)
         if (macro ~ /^[A-Za-z_][A-Za-z0-9_]*[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*$/) {
             split(macro, macro_parts, /[[:space:]]+/)
@@ -337,6 +346,11 @@ FNR == 1 {
         sub(/[[:space:]].*$/, "", macro)
         delete macro_alias[macro]
         next
+    }
+    if (is_test && line ~ /^#[[:space:]]*include[[:space:]]+"src\/palette-heckbert\.c"$/) {
+        # The production unit was read before the test sources. Its private
+        # helpers are defined again using the aliases active at this include.
+        for (helper in heckbert_statics) emit_private(helper, "ordinary")
     }
     if (is_test && line ~ /^#[[:space:]]*include[[:space:]]+"src\/cms\.c"$/) {
         # These helpers are defined inside every private copy of cms.c.
