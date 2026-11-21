@@ -29,6 +29,8 @@ families for:
 This workflow is the main evidence that a source change is broadly compatible.
 Do not treat one passing job as a substitute for the required job families.
 
+The `vcpkg-msvc-autotools` matrix has a 240-minute job budget for dependency setup, compilation and the complete codec test inventory. MSYS process startup and serial Autotools test dispatch can exceed 90 minutes while tests continue to complete. Individual test deadlines still detect hangs; the job budget does not relax their assertions or time limits.
+
 ### WIC installer validation
 
 The `extension-wic-msys2` jobs explicitly enable the [WIC codec](../programs/wic-codec.md) for Autotools and Meson on native Windows MinGW. Their existing `check_target` matrix field selects `make -C wic check-installation` or `meson compile -C builddir check-wic-installation`. The build targets own sequential execution even when the outer build is parallel; the shared CI action has no WIC-specific parameter, individual test names or expected test counts. Ordinary jobs retain the default-disabled extension.
@@ -57,16 +59,11 @@ The shared artifact upload already includes `_artifacts`, TAP `.log`/`.trs` and 
 
 ### Experimental configurations
 
-`.github/workflows/experimental.yml` exercises less conventional Windows build
-combinations and targeted Clang sanitizer families. These jobs expose undefined
-behavior, truncation, sign changes, object-bound errors, control-flow issues,
-and portability gaps that ordinary builds may not diagnose.
+`.github/workflows/experimental.yml` builds and installs libsixel using the official Windows Emscripten SDK, Meson and Ninja. The smoke test runs the installed WebAssembly converters through Node.js and checks the quality of a PNG round trip.
 
 An experimental failure can identify a real defect. Classify it from the
 compiler or runtime evidence rather than dismissing it because the primary
 matrix is green.
-
-The experimental MSVC/vcpkg matrix has a 240-minute job budget for dependency setup, compilation and the complete codec test inventory. MSYS process startup and serial Autotools test dispatch can exceed 90 minutes while tests continue to complete. Individual test deadlines still detect hangs; the job budget does not relax their assertions or time limits.
 
 ### Fuzzing
 

@@ -64,13 +64,18 @@ require_fixed 'label: Autotools-ubuntu-x86_64-mingw-w64-x86_64-win32-wine64-stat
     .github/workflows/ci.yml
 require_fixed 'SIXEL_RUNTIME=wine' .github/workflows/ci.yml
 
-# Windows-hosted Emscripten remains an explicit gap until a public row exists.
+require_fixed 'label: Meson-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2' \
+    .github/workflows/ci.yml
+
+# The Windows-hosted Emscripten smoke test belongs to the experimental workflow.
+require_fixed '  emscripten-windows:' .github/workflows/experimental.yml
 windows_emscripten=$(awk '
 function inspect() {
     if (label ~ /emscripten/ && runner ~ /^windows/) {
         print label " -> " runner
     }
 }
+/^  emscripten-windows:$/ { print "emscripten-windows" }
 /^          - label: / {
     inspect()
     label=$0
@@ -85,22 +90,11 @@ function inspect() {
 END { inspect() }
 ' "$src_root/.github/workflows/ci.yml")
 test -z "$windows_emscripten" ||
-    fail "Windows-hosted Emscripten row requires policy update: $windows_emscripten"
+    fail "Windows-hosted Emscripten belongs in the experimental workflow: $windows_emscripten"
 require_fixed 'label: Autotools-ubuntu-aarch64-emscripten-static' \
     .github/workflows/ci.yml
 require_fixed 'label: Autotools-macos-aarch64-emscripten-static' \
     .github/workflows/ci.yml
-
-# The MSYS2/Meson MSVC adapter is dormant until an active row adopts it.
-meson_msys_msvc=$(awk '
-/^          - label: Meson-msys2/ && /msvc/ {
-    label=$0
-    sub(/^          - label: /, "", label)
-    print label
-}
-' "$src_root/.github/workflows/ci.yml")
-test -z "$meson_msys_msvc" ||
-    fail "Meson/MSYS2/MSVC row requires matrix policy update: $meson_msys_msvc"
 
 # MSYS2 must distinguish path-bearing argv from MSVC slash options.
 # shellcheck disable=SC2016
