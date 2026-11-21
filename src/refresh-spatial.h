@@ -21,9 +21,11 @@ typedef struct sixel_refresh_spatial_hooks {
     void *context;
 } sixel_refresh_spatial_hooks_t;
 
-/* Submit at most every four encoded frames, replacing pending work. Never
- * wait for map generation. Missing or older-than-eight-frame maps use A1.
- * A reset (frame zero) drains the old producer before accepting new input. */
+/* Submit at most every four encoded frames, replacing pending work. Normally
+ * never wait for map generation; the internal deterministic test switch waits
+ * for the preceding submitted map at the next frame boundary. Missing or
+ * older-than-eight-frame maps use A1. A reset (frame zero) drains the old
+ * producer before accepting new input. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_refresh_spatial_prepare(sixel_refresh_spatial_t **state,
     sixel_allocator_t *allocator, unsigned char const *rgb,
