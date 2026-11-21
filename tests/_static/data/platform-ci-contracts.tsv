@@ -1,5 +1,6 @@
 # coverage	label	buildtool	runner	exec_type	msystem	required-token-1	required-token-2
 WPATH-01	Meson-cmd-x86_64-msvc-x86_64	meson	windows-latest	cmd	-	-	-
+WPATH-01	Meson-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2	meson	windows-latest	msys2	MSYS	--native-file build-aux/meson-native/msvc.ini	--native-file build-aux/meson-native/msvc-vcpkg.ini
 WPATH-01	Autotools-msys2-msys-msvc	autotools	windows-latest	msys2	MSYS	CC=cl	--host=x86_64-pc-windows-msvc
 WPATH-01	Autotools-msys2-msys-vs_clangcl	autotools	windows-latest	msys2	MSYS	CC=clang-cl	--host=x86_64-pc-windows-msvc
 WPATH-01	Autotools-cygwin64-msvc	autotools	windows-latest	cygwin	-	CC=cl	--host=x86_64-pc-windows-msvc

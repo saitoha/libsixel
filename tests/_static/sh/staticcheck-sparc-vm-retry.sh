@@ -67,7 +67,7 @@ END {
             exit 1
         }
     }
-}' "$1/.github/workflows/experimental.yml" >&2 || {
+}' "$1/.github/workflows/ci.yml" >&2 || {
     echo 'not ok 1 - SPARC retries only VM preparation'
     exit 0
 }

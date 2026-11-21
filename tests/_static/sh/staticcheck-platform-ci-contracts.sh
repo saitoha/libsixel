@@ -91,39 +91,6 @@ while IFS="$tab" read -r coverage label buildtool runner exec_type msystem \
     require_record_token "$required2" "$record" "$label"
 done < "$contracts"
 
-# These two incomplete combinations are policy gaps, not CI-backed support.
-windows_emscripten=$(awk '
-function inspect() {
-    if (label ~ /emscripten/ && runner ~ /^windows/) {
-        print label " -> " runner
-    }
-}
-/^          - label: / {
-    inspect()
-    label=$0
-    sub(/^          - label: /, "", label)
-    runner=""
-    next
-}
-/^            runner: / {
-    runner=$0
-    sub(/^            runner: /, "", runner)
-}
-END { inspect() }
-' "$workflow")
-test -z "$windows_emscripten" ||
-    fail "Windows-hosted Emscripten requires a policy update: $windows_emscripten"
-
-meson_msys_msvc=$(awk '
-/^          - label: Meson-msys2/ && /msvc/ {
-    label=$0
-    sub(/^          - label: /, "", label)
-    print label
-}
-' "$workflow")
-test -z "$meson_msys_msvc" ||
-    fail "Meson/MSYS2/MSVC requires a policy update: $meson_msys_msvc"
-
 test "$failed" -eq 0 || {
     echo "not ok 1 - platform CI records match documented tuples"
     exit 1

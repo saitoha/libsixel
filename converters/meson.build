@@ -34,7 +34,9 @@ src_build_dir = join_paths(meson.project_build_root(), 'src')
 
 img2sixel_opt = get_option('img2sixel')
 sixel2png_opt = get_option('sixel2png')
-emscripten_split_mode = host_system == 'emscripten' and not get_option('emscripten_single_file')
+# Meson installs both the .js executable and its .wasm sidecar on Windows.
+# The shell launchers provide extensionless command names on POSIX hosts.
+emscripten_split_mode = host_system == 'emscripten' and not windows_emscripten_build and not get_option('emscripten_single_file')
 emscripten_tool_install_dir = get_option('bindir')
 if emscripten_split_mode
   emscripten_tool_install_dir = join_paths(get_option('libexecdir'), 'libsixel')
@@ -94,8 +96,8 @@ if img2sixel_opt.enabled()
   # `unsetenv`).
   # MSVC-based environments under MSYS2 may satisfy some Unix probes while
   # still failing to compile the harness sources because `unistd.h` is absent.
-  # Gate these helpers on the concrete API surface they require.
-  img2sixel_cli_fuzz_supported = cc.has_header('unistd.h')
+  # Gate the harnesses on the APIs and the shell their run targets require.
+  img2sixel_cli_fuzz_supported = sh.found() and cc.has_header('unistd.h')
   if img2sixel_cli_fuzz_supported
     img2sixel_cli_fuzz_supported = cc.has_function('setenv',
       prefix: '#include <stdlib.h>',
@@ -117,7 +119,7 @@ if img2sixel_opt.enabled()
       args: libsixel_posix_defs)
   endif
   if not img2sixel_cli_fuzz_supported
-    message('img2sixel AFL persistent CLI harnesses are disabled: required POSIX APIs are unavailable on this toolchain')
+    message('img2sixel AFL persistent CLI harnesses are disabled: a POSIX shell and POSIX APIs are required')
   endif
 
   if img2sixel_cli_fuzz_supported

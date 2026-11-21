@@ -259,6 +259,144 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+  icx-x86_64:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Meson-ubuntu-24.04-x86_64-icx-2026.1
+            runner: ubuntu-24.04
+
+          - label: Meson-windows-2022-x86_64-icx-2026.1
+            runner: windows-2022
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+      ONEAPI_CACHE_REVISION: '1'
+      ONEAPI_LINUX_PACKAGE_VERSION: 2026.1.1-325
+      ONEAPI_WINDOWS_COMPONENT: intel.oneapi.win.cpp-dpcpp-common
+      ONEAPI_WINDOWS_TOOLKIT_URL: >-
+        https://registrationcenter-download.intel.com/akdlm/IRC_NAS/4144bec3-82ce-4672-bd71-5c93a79cd5e7/intel-oneapi-toolkit-2026.1.0.191_offline.exe
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Cache Intel oneAPI compiler (Linux)
+        if: runner.os == 'Linux'
+        id: cache-oneapi-linux
+        uses: actions/cache@v5
+        with:
+          path: /opt/intel/oneapi/compiler
+          key: >-
+            oneapi-linux-x86_64-${{ env.ONEAPI_LINUX_PACKAGE_VERSION }}-${{ env.ONEAPI_CACHE_REVISION }}
+
+      - name: Install build prerequisites (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y \
+            --no-install-recommends ca-certificates gpg meson ninja-build
+
+      - name: Install Intel oneAPI compiler (Linux)
+        if: >-
+          ${{ runner.os == 'Linux'
+              && steps.cache-oneapi-linux.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl --fail --location --retry 5 \
+            https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+            | gpg --dearmor > /tmp/oneapi-archive-keyring.gpg
+          sudo install -m 0644 /tmp/oneapi-archive-keyring.gpg \
+            /usr/share/keyrings/oneapi-archive-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main' \
+            | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y \
+            --no-install-recommends \
+            "intel-oneapi-compiler-dpcpp-cpp=$ONEAPI_LINUX_PACKAGE_VERSION"
+
+      - name: Build and run with icx (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Intel's environment script reads optional unset variables.
+          set +u
+          . /opt/intel/oneapi/compiler/latest/env/vars.sh
+          set -u
+          test "$(uname -m)" = x86_64
+          icx --version
+          icx -dumpmachine
+          CC=icx meson setup builddir-icx \
+            -Ddefault_library=static \
+            -Dtests=false \
+            -Dpng=disabled \
+            -Djpeg=disabled \
+            -Dtiff=disabled \
+            -Dwebp=disabled \
+            -Dlibrsvg=disabled \
+            -Dgd=disabled \
+            -Dgdk_pixbuf2=disabled \
+            -Dlcms2=disabled \
+            -Dcurl=disabled \
+            -Dfetch=disabled
+          meson compile -C builddir-icx -v img2sixel sixel2png
+          builddir-icx/converters/img2sixel --version
+          builddir-icx/converters/sixel2png --version
+
+      - name: Cache Intel oneAPI compiler (Windows)
+        if: runner.os == 'Windows'
+        id: cache-oneapi-windows
+        uses: actions/cache@v5
+        with:
+          path: |
+            C:\Program Files (x86)\Intel\oneAPI\setvars-vcvarsall.bat
+            C:\Program Files (x86)\Intel\oneAPI\compiler
+          key: >-
+            oneapi-windows-x86_64-2026.1.0-${{ env.ONEAPI_CACHE_REVISION }}
+
+      - name: Install Intel oneAPI compiler (Windows)
+        if: >-
+          ${{ runner.os == 'Windows'
+              && steps.cache-oneapi-windows.outputs.cache-hit != 'true' }}
+        shell: cmd
+        run: |
+          curl.exe --fail --location --retry 5 --retry-delay 5 --output "%RUNNER_TEMP%\oneapi.exe" --url "%ONEAPI_WINDOWS_TOOLKIT_URL%"
+          start "" /b /wait "%RUNNER_TEMP%\oneapi.exe" -s -x -f "%RUNNER_TEMP%\oneapi-extracted" --log "%RUNNER_TEMP%\oneapi-extract.log"
+          if errorlevel 1 exit /b %errorlevel%
+          start "" /b /wait "%RUNNER_TEMP%\oneapi-extracted\bootstrapper.exe" -s --action install --components=%ONEAPI_WINDOWS_COMPONENT% --eula=accept -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir="%RUNNER_TEMP%"
+          if errorlevel 1 exit /b %errorlevel%
+          del "%RUNNER_TEMP%\oneapi.exe"
+          rmdir /s /q "%RUNNER_TEMP%\oneapi-extracted"
+
+      - name: Install build prerequisites (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: python -m pip install meson ninja
+
+      - name: Build and run with icx (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars-vcvarsall.bat" vs2022
+          for /f "tokens=* usebackq" %%f in (`dir /b "C:\Program Files (x86)\Intel\oneAPI\compiler\" ^| findstr /V latest ^| sort`) do set "ONEAPI_COMPILER_VERSION=%%f"
+          call "C:\Program Files (x86)\Intel\oneAPI\compiler\%ONEAPI_COMPILER_VERSION%\env\vars.bat"
+          if not "%PROCESSOR_ARCHITECTURE%" == "AMD64" exit /b 1
+          where icx
+          icx --version
+          set "CC=icx"
+          meson setup builddir-icx -Ddefault_library=static -Dtests=false -Dpng=disabled -Djpeg=disabled -Dtiff=disabled -Dwebp=disabled -Dlibrsvg=disabled -Dgd=disabled -Dgdk_pixbuf2=disabled -Dlcms2=disabled -Dcurl=disabled -Dfetch=disabled
+          meson compile -C builddir-icx -v img2sixel sixel2png
+          builddir-icx\converters\img2sixel.exe --version
+          builddir-icx\converters\sixel2png.exe --version
+
   staticcheck:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -5428,6 +5566,294 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
+  vcpkg-msvc-autotools:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    # MSYS process startup and the full codec test matrix exceed 90 minutes
+    # while still making progress. Keep a finite budget for build and tests.
+    timeout-minutes: 240
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-no-lcms2
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --without-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2-1-of-4
+            test_shard: 1/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2-2-of-4
+            test_shard: 2/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2-3-of-4
+            test_shard: 3/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2-4-of-4
+            test_shard: 4/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2-1-of-4
+            test_shard: 1/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2-2-of-4
+            test_shard: 2/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2-3-of-4
+            test_shard: 3/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2-4-of-4
+            test_shard: 4/4
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
+          - label: Meson-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --native-file build-aux/meson-native/msvc.ini
+              --native-file build-aux/meson-native/msvc-vcpkg.ini
+              -Dpng=enabled
+              -Djpeg=enabled
+              -Dtiff=enabled
+              -Dwebp=enabled
+              -Dlcms2=enabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              make
+              meson
+              ninja
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch -ErrorAction Continue
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
   core-meson-ubuntu:
     needs: [coverage-meson]
     name: ${{ matrix.label }}
@@ -6671,6 +7097,781 @@ jobs:
         shell: bash
         run: git config --global core.autocrlf false
 
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  FunctionSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-FunctionSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=function
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-FunctionSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=function
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  ImplicitIntegerTruncationSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-ImplicitIntegerTruncationSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=implicit-integer-truncation
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-ImplicitIntegerTruncationSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=implicit-integer-truncation
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  ImplicitIntegerSignChangeSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-ImplicitIntegerSignChangeSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=implicit-integer-sign-change
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-ImplicitIntegerSignChangeSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=implicit-integer-sign-change
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  UnsignedIntegerOverflowSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-UnsignedIntegerOverflowSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=unsigned-integer-overflow
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-UnsignedIntegerOverflowSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=unsigned-integer-overflow
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  LocalBoundsSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-LocalBoundsSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=local-bounds
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-LocalBoundsSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=local-bounds
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  PointerOverflowSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-PointerOverflowSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=pointer-overflow
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-PointerOverflowSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=pointer-overflow
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  FloatCastOverflowSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-FloatCastOverflowSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=float-cast-overflow
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-FloatCastOverflowSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=float-cast-overflow
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  CFIICallSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-CFIICallSan-lto-thin
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+              AR=llvm-ar
+              RANLIB=llvm-ranlib
+              LDFLAGS='-fuse-ld=lld'
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-lto=thin
+              --enable-sanitizer=cfi-icall
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              lld
+              llvm
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-CFIICallSan-lto-thin
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+              AR=llvm-ar
+              RANLIB=llvm-ranlib
+              LDFLAGS='-fuse-ld=lld'
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Ddefault_library=static
+              -Db_lto=true
+              -Db_lto_mode=thin
+              -Dexperimental_sanitizer=cfi-icall
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              lld
+              llvm
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  ObjectSizeSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-ObjectSizeSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=object-size
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-ObjectSizeSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=object-size
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  IntegerSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-IntegerSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=integer
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-IntegerSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=integer
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  FloatDivideByZeroSan:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-24.04-arm
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-clang-FloatDivideByZeroSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=float-divide-by-zero
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-clang-FloatDivideByZeroSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=float-divide-by-zero
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
@@ -9450,6 +10651,154 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+  multiarch-linux:
+    if: github.event_name != 'schedule'
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - label: Autotools-debian-trixie-ppc64le-gcc
+            buildtool: autotools
+            platform: linux/ppc64le
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Meson-debian-trixie-ppc64le-gcc
+            buildtool: meson
+            platform: linux/ppc64le
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Autotools-debian-trixie-s390x-gcc
+            buildtool: autotools
+            platform: linux/s390x
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Meson-debian-trixie-s390x-gcc
+            buildtool: meson
+            platform: linux/s390x
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Autotools-debian-trixie-riscv64-gcc
+            buildtool: autotools
+            platform: linux/riscv64
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          - label: Meson-debian-trixie-riscv64-gcc
+            buildtool: meson
+            platform: linux/riscv64
+            image: debian:trixie-20260713@sha256:fac46bff2e02f51425b6e33b0e1169f55dfb053d83511ca28aa50c09fd5ed7a4
+
+          # Debian 13 dropped MIPS. Keep this target on the dated Debian 12
+          # image so the job remains explicit legacy-architecture evidence.
+          - label: Autotools-debian-bookworm-mips64le-gcc-legacy
+            buildtool: autotools
+            platform: linux/mips64le
+            image: debian:bookworm-20260713@sha256:9344f8b8992482f80cba753f323adeaf17690076c095ccff6cc9536be98185dc
+
+          - label: Meson-debian-bookworm-mips64le-gcc-legacy
+            buildtool: meson
+            platform: linux/mips64le
+            image: debian:bookworm-20260713@sha256:9344f8b8992482f80cba753f323adeaf17690076c095ccff6cc9536be98185dc
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up target-architecture execution
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+        with:
+          cache-image: false
+          image: tonistiigi/binfmt:latest@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0
+          platforms: mips64le,ppc64le,riscv64,s390x
+
+      - name: Build and test inside the target architecture
+        env:
+          BUILD_TOOL: ${{ matrix.buildtool }}
+          TARGET_IMAGE: ${{ matrix.image }}
+          TARGET_PLATFORM: ${{ matrix.platform }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          docker run \
+            --rm \
+            --platform "$TARGET_PLATFORM" \
+            --env BUILD_TOOL \
+            --env CI=true \
+            --env DEBIAN_FRONTEND=noninteractive \
+            --env GITHUB_WORKSPACE \
+            --env LC_ALL=C \
+            --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE:ro" \
+            --workdir "$GITHUB_WORKSPACE" \
+            "$TARGET_IMAGE" \
+            sh -euxc '
+              attempt=1
+              while test "$attempt" -le 3; do
+                if apt-get -o Acquire::Retries=3 update &&
+                   apt-get -o Acquire::Retries=3 install -y \
+                     --no-install-recommends \
+                     autoconf automake build-essential \
+                     libtool make meson ninja-build pkg-config python3; then
+                  break
+                fi
+                test "$attempt" -lt 3
+                sleep $((attempt * 10))
+                attempt=$((attempt + 1))
+              done
+
+              uname -a
+              dpkg --print-architecture
+              getconf LONG_BIT
+              cc -dumpmachine
+
+              # The generic runners own the complete suite and its large
+              # aggregate test binary. These emulated guests run existing
+              # black-box contracts through target-native converter binaries.
+              set -- \
+                cli/img2sixel/0002_version.t \
+                cli/img2sixel/0007_basic_stdin_snake.t \
+                cli/img2sixel/0019_basic_parallel_cli_override.t \
+                cli/sixel2png/0006_stdin_default_output.t \
+                cli/output-format/0006_gray8_output.t \
+                encoder/sixel-output/0003_direct_sixel_encode.t \
+                palette/mapfile-io/0109_mapfile_export_act_256_color_count.t \
+                writer/png/0007_builtin_ihdr_crc.t \
+                decoder/parser/0122_issue220_dcs_signed_integer_overflow.t
+
+              rm -rf /tmp/libsixel-build
+              mkdir /tmp/libsixel-build
+              if test "$BUILD_TOOL" = autotools; then
+                cd /tmp/libsixel-build
+                "$GITHUB_WORKSPACE/configure" \
+                  --disable-dependency-tracking \
+                  --disable-tests
+                make -j2 V=1 -C src
+                make -j2 V=1 -C converters
+                IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+                SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+              else
+                meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
+                  -Dtests=false
+                meson compile -C /tmp/libsixel-build -j 2 -v \
+                  img2sixel sixel2png
+                IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+                SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+              fi
+              export IMG2SIXEL_PATH SIXEL2PNG_PATH
+              export HAVE_IMG2SIXEL=1 HAVE_SIXEL2PNG=1
+              export TOP_BUILDDIR=/tmp/libsixel-build
+              export TOP_SRCDIR="$GITHUB_WORKSPACE"
+              for smoke_test in "$@"; do
+                ARTIFACT_LOCAL_DIR="/tmp/libsixel-artifacts/${smoke_test%.*}"
+                export ARTIFACT_LOCAL_DIR
+                sh "$GITHUB_WORKSPACE/tests/meson-tap-exitcode-wrapper.sh" \
+                  "$GITHUB_WORKSPACE/tests/$smoke_test"
+              done
+            '
+
   haiku:
     concurrency:
       group: libsixel-vm
@@ -9780,6 +11129,186 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  sparc64-netbsd:
+    if: github.event_name != 'schedule'
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - label: Autotools-netbsd-11.0-sparc64-system-cc
+            buildtool: autotools
+
+          - label: Meson-netbsd-11.0-sparc64-system-cc
+            buildtool: meson
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Fetch GNU make for NetBSD/sparc64
+        if: matrix.buildtool == 'autotools'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Fetch on the host so the guest can install without mirror lookup.
+          mkdir -p .tmp/netbsd-sparc64
+          cd .tmp/netbsd-sparc64
+          package=gmake-4.4.1.tgz
+          package_path=packages/NetBSD/sparc64/11.0_2026Q2/All/$package
+          package_sha=d10d53aac64a9a5e75c9c19c24be211dce8177ebef6ffc5821d07e1d4d691d8e
+          # Use independent HTTPS endpoints. Only publish verified bytes.
+          for mirror in https://cdn.netbsd.org/pub/pkgsrc \
+                        https://ftp.netbsd.org/pub/pkgsrc \
+                        https://ftp.jaist.ac.jp/pub/pkgsrc; do
+            if curl --fail --location --connect-timeout 15 --max-time 60 \
+                "$mirror/$package_path" --output "$package.part" &&
+                printf '%s  %s\n' "$package_sha" "$package.part" | sha256sum -c -; then
+              mv "$package.part" "$package"
+              exit 0
+            fi
+          done
+          printf 'Could not fetch a verified NetBSD/sparc64 %s\n' "$package" >&2
+          exit 1
+
+      # Retry provisioning only; the build below is outside both attempts.
+      - name: Prepare NetBSD/sparc64 (attempt 1)
+        id: sparc_prepare_1
+        continue-on-error: true
+        timeout-minutes: 25
+        uses: vmactions/netbsd-vm@20ee93a005c9fc78743e6e05269f4cb023b87413 # v1.5.0
+        with:
+          arch: sparc64
+          copyback: false
+          cpu: 2
+          mem: 4096
+          release: '11.0'
+          sync: scp
+          # The action syncs $HOME/work, including runner.temp, into the VM.
+          # Keep live disk images outside that tree to avoid copying them.
+          data-dir: $HOME/.cache/libsixel-sparc-vm-1
+          prepare: |
+            set -eux
+            if test '${{ matrix.buildtool }}' = autotools; then
+              /usr/sbin/pkg_add -u "$GITHUB_WORKSPACE/.tmp/netbsd-sparc64/gmake-4.4.1.tgz"
+            else
+              /usr/sbin/pkg_add -u meson ninja-build
+            fi
+
+      - name: Reset failed SPARC VM before retry
+        if: steps.sparc_prepare_1.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This dedicated runner hosts only the SPARC provisioning attempt.
+          # Kill the failed guest before starting another snapshot; remove
+          # its aliases because SSH otherwise selects the first stale port.
+          if pgrep -f '(^|/)qemu-system-sparc64( |$)' >/dev/null; then
+            pkill -TERM -f '(^|/)qemu-system-sparc64( |$)' || test "$?" -eq 1
+            for attempt in 1 2 3 4 5; do
+              pgrep -f '(^|/)qemu-system-sparc64( |$)' >/dev/null || break
+              sleep "$attempt"
+            done
+            if pgrep -f '(^|/)qemu-system-sparc64( |$)' >/dev/null; then
+              pkill -KILL -f '(^|/)qemu-system-sparc64( |$)' || test "$?" -eq 1
+            fi
+          fi
+          for config in "$HOME"/.ssh/config.d/*.conf; do
+            test -f "$config" || continue
+            if awk '$1 == "Host" { for (i = 2; i <= NF; ++i) if ($i == "netbsd") found = 1 } END { exit !found }' "$config"; then
+              rm -f "$config"
+            fi
+          done
+
+      - name: Prepare NetBSD/sparc64 (attempt 2)
+        id: sparc_prepare_2
+        if: steps.sparc_prepare_1.outcome == 'failure'
+        timeout-minutes: 25
+        uses: vmactions/netbsd-vm@20ee93a005c9fc78743e6e05269f4cb023b87413 # v1.5.0
+        with:
+          disable-cache: true
+          arch: sparc64
+          copyback: false
+          cpu: 2
+          mem: 4096
+          release: '11.0'
+          sync: scp
+          data-dir: $HOME/.cache/libsixel-sparc-vm-2
+          prepare: |
+            set -eux
+            if test '${{ matrix.buildtool }}' = autotools; then
+              /usr/sbin/pkg_add -u "$GITHUB_WORKSPACE/.tmp/netbsd-sparc64/gmake-4.4.1.tgz"
+            else
+              /usr/sbin/pkg_add -u meson ninja-build
+            fi
+
+      - name: Build and test inside NetBSD/sparc64
+        if: steps.sparc_prepare_1.outcome == 'success' || steps.sparc_prepare_2.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o ConnectTimeout=60 \
+            -o ServerAliveInterval=30 -o ServerAliveCountMax=6 \
+            netbsd sh -e <<'SIXEL_SPARC_BUILD'
+            cd "$GITHUB_WORKSPACE"
+            set -eux
+            uname -a
+            cc -dumpmachine
+            file /bin/sh
+            # SPARC64 uses full-system TCG emulation on x86_64 runners. Keep
+            # this ABI/runtime probe focused by avoiding optimizer cost.
+            CFLAGS='-O0 -g0'
+            export CFLAGS
+            # Keep the same target-executed black-box contracts as the Linux
+            # emulation matrix while generic runners own the aggregate tests.
+            set -- \
+              cli/img2sixel/0002_version.t \
+              cli/img2sixel/0007_basic_stdin_snake.t \
+              cli/img2sixel/0019_basic_parallel_cli_override.t \
+              cli/sixel2png/0006_stdin_default_output.t \
+              cli/output-format/0006_gray8_output.t \
+              encoder/sixel-output/0003_direct_sixel_encode.t \
+              palette/mapfile-io/0109_mapfile_export_act_256_color_count.t \
+              writer/png/0007_builtin_ihdr_crc.t \
+              decoder/parser/0122_issue220_dcs_signed_integer_overflow.t
+            rm -rf /tmp/libsixel-build
+            mkdir /tmp/libsixel-build
+            if test '${{ matrix.buildtool }}' = autotools; then
+              cd /tmp/libsixel-build
+              "$GITHUB_WORKSPACE/configure" \
+                --disable-dependency-tracking \
+                --disable-tests
+              gmake -j2 V=1 -C src
+              gmake -j2 V=1 -C converters
+              IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+              SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+            else
+              meson setup /tmp/libsixel-build "$GITHUB_WORKSPACE" \
+                -Dtests=false
+              meson compile -C /tmp/libsixel-build -j 2 -v \
+                img2sixel sixel2png
+              IMG2SIXEL_PATH=/tmp/libsixel-build/converters/img2sixel
+              SIXEL2PNG_PATH=/tmp/libsixel-build/converters/sixel2png
+            fi
+            export IMG2SIXEL_PATH SIXEL2PNG_PATH
+            export HAVE_IMG2SIXEL=1 HAVE_SIXEL2PNG=1
+            export TOP_BUILDDIR=/tmp/libsixel-build
+            export TOP_SRCDIR="$GITHUB_WORKSPACE"
+            for smoke_test in "$@"; do
+              ARTIFACT_LOCAL_DIR="/tmp/libsixel-artifacts/${smoke_test%.*}"
+              export ARTIFACT_LOCAL_DIR
+              sh "$GITHUB_WORKSPACE/tests/meson-tap-exitcode-wrapper.sh" \
+                "$GITHUB_WORKSPACE/tests/$smoke_test"
+            done
+          SIXEL_SPARC_BUILD
 
   dragonflybsd:
     concurrency:

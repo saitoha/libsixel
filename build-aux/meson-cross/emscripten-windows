@@ -1,0 +1,16 @@
+[binaries]
+c = 'emcc.exe'
+# Use the SDK's LLVM tools directly for long archive commands.
+ar = 'llvm-ar.exe'
+strip = 'llvm-strip.exe'
+nm = 'llvm-nm.exe'
+exe_wrapper = 'node.exe'
+
+[properties]
+needs_exe_wrapper = true
+
+[host_machine]
+system = 'emscripten'
+cpu_family = 'wasm32'
+cpu = 'wasm32'
+endian = 'little'

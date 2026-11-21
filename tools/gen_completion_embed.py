@@ -16,6 +16,7 @@ The resulting header defines two C arrays that mirror the input files.
 
 import argparse
 import pathlib
+import shutil
 import sys
 from typing import Iterable, List
 
@@ -70,6 +71,8 @@ def main(argv: List[str]) -> int:
     parser.add_argument("output", type=pathlib.Path)
     parser.add_argument("bash_source", type=pathlib.Path)
     parser.add_argument("zsh_source", type=pathlib.Path)
+    parser.add_argument("--copy-to", type=pathlib.Path,
+                        help="Mirror the generated header for amalgamation.")
     args = parser.parse_args(argv)
 
     try:
@@ -77,6 +80,9 @@ def main(argv: List[str]) -> int:
         zsh_text = _read_text(args.zsh_source)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         _write_header(args.output, bash_text, zsh_text)
+        if args.copy_to is not None:
+            args.copy_to.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(args.output, args.copy_to)
     except OSError as exc:
         print(f"gen_completion_embed.py: {exc}", file=sys.stderr)
         return 1

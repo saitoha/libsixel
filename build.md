@@ -365,10 +365,6 @@ meson setup builddir
 | `-Demscripten_single_file=` | boolean, `false` | Add `-sSINGLE_FILE=1` for Emscripten builds. |
 | `-Demscripten_wasm_bigint=` | boolean, `false` | Add `-sWASM_BIGINT=1` for Emscripten builds. |
 | `-Demscripten_assertions=` | boolean, `true` | Keep Emscripten assertions enabled (`false` adds `-sASSERTIONS=0`). |
-
-For Emscripten targets with `-Demscripten_single_file=false`, Meson installs
-the JS wrappers and `.wasm` sidecars into `libexecdir/libsixel` and installs
-`bindir` launchers that execute those wrappers via `node`.
 | `-Db_lto=` | base option, `false` | Meson base option for link-time optimization. |
 | `-Db_lto_mode=` | base option, `default` | LTO mode (`default`/`thin`; `thin` requires compatible toolchain). |
 | `-Db_pgo=` | base option, `off` | Meson base option for profile-guided optimization (`generate`/`use`). |
@@ -386,6 +382,28 @@ meson test -C builddir
 meson install -C builddir  # may require sudo on Unix-like systems
 meson compile -C builddir installcheck  # optional: tests installed commands
 ```
+
+### Windows Emscripten SDK (Meson)
+
+On x64 Windows, use `cmd.exe` with the official Windows SDK, Python, Meson, Ninja, and an AWK executable for the public header generator. The following example uses the Emscripten 7.0.0 SDK and the AWK executable bundled with Git for Windows.
+
+```bat
+git clone --depth 1 --branch 7.0.0 https://github.com/emscripten-core/emsdk.git
+call emsdk\emsdk.bat install 7.0.0
+call emsdk\emsdk.bat activate 7.0.0
+call emsdk\emsdk_env.bat
+set "PATH=%CD%\emsdk\upstream\bin;%PATH%"
+(echo [binaries]
+ echo awk = 'C:/Program Files/Git/usr/bin/awk.exe'
+) > wasm-native.ini
+meson setup wasm-build --native-file wasm-native.ini --cross-file build-aux/meson-cross/emscripten-windows ^
+  --prefix / -Ddefault_library=static -Dauto_features=disabled -Dthreads=enabled -Dtests=false
+meson compile -C wasm-build
+meson install -C wasm-build --no-rebuild --destdir "%CD%\wasm-install"
+node wasm-install\bin\img2sixel.js --version
+```
+
+Set the AWK path in `wasm-native.ini` to match your installation. The SDK's batch files configure the environment, and Meson and Ninja invoke `emcc.exe` directly. This build uses the builtin image loaders and disables the POSIX TAP suite. Meson installs the `.js` programs and their `.wasm` sidecars into `bindir` on Windows. On POSIX hosts with split output, it installs the runtime files into `libexecdir/libsixel` and adds Node launchers to `bindir`.
 
 ### Static analyzer builds (Meson)
 

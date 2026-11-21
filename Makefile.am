@@ -79,6 +79,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
     build-aux/msvc-lib-response.sh \
     build-aux/cosmoar-meson build-aux/cosmoar-response.awk \
     build-aux/emscripten-node-stdio.js \
+    build-aux/meson-cross/emscripten-windows \
     build-aux/test-runner-amalgamation-defines.awk \
     build-aux/clean-test-logs.sh \
     build-aux/list-tree-files.sh \

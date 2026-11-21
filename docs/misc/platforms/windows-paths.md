@@ -16,7 +16,7 @@ This is a convergence policy, not a claim that the active matrix is already a co
 
 ## Compatibility status matrix
 
-The matrix uses four evidence levels. **CI-backed** means an active public job builds and runs the applicable tests. **Dormant infrastructure** means a dedicated adapter was started and remains maintained, but no active public row currently invokes it. **Structural only** means source or build-system branches anticipate the combination without an end-to-end Windows run. **Candidate** means the toolchain combination is theoretically possible, but this repository has neither an active job nor a dedicated, proven handoff. These labels describe repository evidence, not whether an external toolchain vendor permits the combination.
+The matrix records the evidence available for each combination. **CI-backed** means an active public job builds and runs the applicable tests. **Dormant infrastructure** means a dedicated adapter was started and remains maintained, but no active public row currently invokes it. **Structural only** means source or build-system branches anticipate the combination without an end-to-end Windows run. **Candidate** means the toolchain combination is theoretically possible, but this repository has neither an active job nor a dedicated, proven handoff. These labels describe repository evidence, not whether an external toolchain vendor permits the combination.
 
 ### Build and test driver matrix
 
@@ -24,22 +24,23 @@ The matrix uses four evidence levels. **CI-backed** means an active public job b
 | --- | --- | --- | --- | --- | --- |
 | Native Windows command environment | `cl` | MSVC ABI and CRT | Not maintained in this driver | **CI-backed** | x86_64 and AArch64 jobs; binding, analysis, PGO, unity, and distribution variants also use this family |
 | Native Windows command environment | `clang-cl` | MSVC ABI and CRT | Not maintained in this driver | **Candidate** | Compiler mode is supported elsewhere, but no active native-command Meson row proves this pairing |
-| MSYS2 `MSYS` shell | `cl` | MSVC ABI and CRT | **CI-backed** | **Dormant infrastructure** | The Meson selective-argv wrapper is present in the public action, but no active matrix row invokes it |
-| MSYS2 `MSYS` shell | `clang-cl` | MSVC ABI and CRT | **CI-backed** | **Candidate** | The current dormant Meson wrapper resolves `cl.exe`; it is not evidence for a Meson `clang-cl` row |
+| MSYS2 `MSYS` shell | `cl` | MSVC ABI and CRT | **CI-backed** | **CI-backed** | The Meson vcpkg job uses the selective-argv wrapper and enables PNG, JPEG, TIFF, WebP and lcms2 |
+| MSYS2 `MSYS` shell | `clang-cl` | MSVC ABI and CRT | **CI-backed** | **Candidate** | The active Meson row uses `cl.exe` |
 | Cygwin shell | `cl`, `clang-cl`, or `clang --driver-mode=cl` | MSVC ABI and CRT | **CI-backed** | **Candidate** | Autotools has active build/test and coverage variants; no Meson-to-MSVC Cygwin row is active |
 | MSYS2 `MINGW32`, `MINGW64`, or `UCRT64` shell | GCC | MinGW-w64 Windows ABI with the environment's MSVCRT/UCRT family | **CI-backed** | **CI-backed** | Active rows cover 32-bit, 64-bit, UCRT, coverage, unity, and feature variants, but not every variant on every runtime family |
 | MSYS2 `CLANG64` shell | GNU-style `clang` | MinGW-w64 Windows ABI with UCRT | **CI-backed** | **CI-backed** | Active build/test, coverage, distribution, and sanitizer variants |
 | MSYS2 `MSYS` shell | GCC | MSYS POSIX ABI and runtime | **CI-backed** | **CI-backed** | This is an MSYS executable, not a MinGW executable merely because the host is Windows |
 | Cygwin shell | GCC | Cygwin POSIX ABI and runtime | **CI-backed** | **CI-backed** | Active Autotools and Meson build/test variants |
 | Cygwin shell | MinGW-w64 GCC or GNU-style Clang | Native MinGW-w64 Windows ABI | **Candidate** | **Candidate** | Cross-toolchainable in principle, but no dedicated public job or maintained handoff proves it |
-| Windows native, MSYS2, or Cygwin driver | Emscripten Clang | WebAssembly with Emscripten runtime | **Structural only** | **Structural only** | Emscripten is CI-backed from Linux and macOS; Windows-hosted configure, build, Node launch, and path behavior are not verified end to end |
+| Native Windows command environment | Emscripten Clang | WebAssembly with Emscripten runtime | **Structural only** | **Experimental smoke** | The experimental workflow builds and installs the x64 SDK configuration and runs the converters under Node.js |
+| MSYS2 or Cygwin shell | Emscripten Clang | WebAssembly with Emscripten runtime | **Structural only** | **Structural only** | Windows-hosted smoke coverage uses the native command environment |
 
 ### Produced-artifact execution matrix
 
 | Produced artifact | Execution environment | Status | What is actually proved |
 | --- | --- | --- | --- |
 | MSVC-ABI executable | Native Windows, launched from the native command environment | **CI-backed** | Native Meson build and test execution |
-| MSVC-ABI executable | Native Windows, launched from MSYS2 or Cygwin | **CI-backed** | Autotools configure, build, path handoff, DLL discovery, and test execution across the runtime boundary |
+| MSVC-ABI executable | Native Windows, launched from MSYS2 or Cygwin | **CI-backed** | Autotools exercises MSYS2 and Cygwin. Meson exercises MSYS2 through the MSVC/vcpkg job |
 | MSVC-ABI executable | Wine on Linux or macOS | **Candidate** | No active public row; MSVC redistributable and Wine behavior are not part of the current support proof |
 | MinGW-w64 executable | Native Windows, launched from MSYS2 | **CI-backed** | GCC and CLANG64 artifacts run on Windows with the selected MinGW/UCRT environment |
 | MinGW-w64 executable | Wine on Linux | **CI-backed** | Autotools cross-builds exercise both win32-thread and posix-thread MinGW-w64 variants through `SIXEL_RUNTIME=wine` |
@@ -47,9 +48,7 @@ The matrix uses four evidence levels. **CI-backed** means an active public job b
 | MSYS executable | MSYS runtime on Windows | **CI-backed** | Native MSYS GCC artifacts run under the runtime that owns `/x` mounts |
 | Cygwin or MSYS executable | Wine | Not maintained | No active row or compatibility promise covers these POSIX runtime DLLs under Wine |
 | Emscripten WebAssembly artifact | Node.js on Linux or macOS | **CI-backed** | Autotools and Meson build and test the Emscripten target on non-Windows hosts |
-| Emscripten WebAssembly artifact | Node.js on Windows | **Structural only** | The `NODERAWFS` path branch anticipates Windows drive paths, but Windows-hosted Emscripten has no active public CI row |
-
-The dormant Meson-under-MSYS2 adapter and Windows-hosted Emscripten branch are the clearest started-but-unfinished combinations. They must not be presented as CI-backed, but deleting them as apparently unused code would also discard deliberate progress toward the all-meaningful-combinations policy.
+| Emscripten WebAssembly artifact | Node.js on Windows | **Experimental smoke** | Installed converters perform a PNG round trip with the built-in loader |
 
 ## Keep the driver and target identities separate
 
@@ -139,7 +138,7 @@ The path layer was established and narrowed through `e388ab2dc` (`cygwin_conv_pa
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| WPATH-01 | Public CI retains representative native, MSYS2, Cygwin, MinGW, UCRT, CLANG64, MSVC-Clang, and Wine-driven combinations as complete matrix tuples while Windows-hosted Emscripten remains an explicit uncovered combination. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh), [tests/_static/sh/staticcheck-platform-ci-contracts.sh](../../../tests/_static/sh/staticcheck-platform-ci-contracts.sh) |
+| WPATH-01 | Public CI retains representative native, MSYS2, Cygwin, MinGW, UCRT, CLANG64, MSVC-Clang, and Wine-driven combinations as complete matrix tuples and keeps the Windows-hosted Emscripten smoke job in the experimental workflow. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh), [tests/_static/sh/staticcheck-platform-ci-contracts.sh](../../../tests/_static/sh/staticcheck-platform-ci-contracts.sh) |
 | WPATH-02 | The MSYS2-to-MSVC build boundary retains Visual Studio tool provenance, selective conversion of path-bearing argv forms, and suppression of a second automatic conversion. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh) |
 | WPATH-03 | Autotools and Meson retain executable, libtool-wrapper, DLL-search, path-separator, executable-suffix, and runtime-prefix handoff points needed by mixed-runtime tests. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh) |
 | WPATH-04 | Both application path implementations retain the two-phase ownership API, target-directed conversion, mixed-path recovery, pseudo-path preservation, Wine exclusion, and converter/amalgamation symbol split. | [tests/_static/sh/staticcheck-windows-path-compat.sh](../../../tests/_static/sh/staticcheck-windows-path-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
