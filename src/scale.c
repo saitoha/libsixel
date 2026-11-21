@@ -131,6 +131,19 @@
 #if SIXEL_SIMD_NEON
 # include <arm_neon.h>
 # define SIXEL_USE_NEON 1
+
+/* Use lane intrinsics with both vector and aggregate NEON typedefs. An
+ * RGB pixel has only three readable bytes, even at the end of a row. */
+static inline uint32x4_t
+sixel_neon_load_rgb_u32(unsigned char const *pixel)
+{
+    uint32x4_t lanes;
+
+    lanes = vdupq_n_u32(0);
+    lanes = vsetq_lane_u32(pixel[0], lanes, 0);
+    lanes = vsetq_lane_u32(pixel[1], lanes, 1);
+    return vsetq_lane_u32(pixel[2], lanes, 2);
+}
 #endif
 
 #if !defined(MAX)
@@ -536,6 +549,9 @@ scale_horizontal_row(
     double weight;
     double total;
     double offsets[8];
+#if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
+    unsigned char const *psrc;
+#endif
 #if !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
@@ -639,7 +655,7 @@ scale_horizontal_row(
                              : (x + 0.5) * dstw / srcw - center_x;
                 weight = f_resample(fabs(diff_x));
                 pos = (y * srcw + x) * depth;
-                const unsigned char *psrc = src + pos;
+                psrc = src + pos;
 #if defined(SIXEL_USE_SSE2)
                 pixel128 = psrc[0] | (psrc[1] << 8) | (psrc[2] << 16);
                 pixi128 = _mm_cvtsi32_si128((int)pixel128);
@@ -649,7 +665,7 @@ scale_horizontal_row(
                 wv128 = _mm_set1_ps((float)weight);
                 acc128 = _mm_add_ps(acc128, _mm_mul_ps(pixf128, wv128));
 #else /* NEON */
-                pix32_neon = (uint32x4_t){psrc[0], psrc[1], psrc[2], 0};
+                pix32_neon = sixel_neon_load_rgb_u32(psrc);
                 pixf_neon = vcvtq_f32_u32(pix32_neon);
                 wv_neon = vdupq_n_f32((float)weight);
                 acc_neon = vmlaq_f32(acc_neon, pixf_neon, wv_neon);
@@ -738,6 +754,9 @@ scale_vertical_row(
     double weight;
     double total;
     double offsets[8];
+#if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
+    unsigned char const *psrc;
+#endif
 #if !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
@@ -835,7 +854,7 @@ scale_vertical_row(
                              : (y + 0.5) * dsth / srch - center_y;
                 weight = f_resample(fabs(diff_y));
                 pos = (y * dstw + w) * depth;
-                const unsigned char *psrc = tmp + pos;
+                psrc = tmp + pos;
 #if defined(SIXEL_USE_SSE2)
                 pixel128 = psrc[0] | (psrc[1] << 8) | (psrc[2] << 16);
                 pixi128 = _mm_cvtsi32_si128((int)pixel128);
@@ -845,7 +864,7 @@ scale_vertical_row(
                 wv128 = _mm_set1_ps((float)weight);
                 acc128 = _mm_add_ps(acc128, _mm_mul_ps(pixf128, wv128));
 #else /* NEON */
-                pix32_neon = (uint32x4_t){psrc[0], psrc[1], psrc[2], 0};
+                pix32_neon = sixel_neon_load_rgb_u32(psrc);
                 pixf_neon = vcvtq_f32_u32(pix32_neon);
                 wv_neon = vdupq_n_f32((float)weight);
                 acc_neon = vmlaq_f32(acc_neon, pixf_neon, wv_neon);

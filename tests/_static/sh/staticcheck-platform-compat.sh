@@ -303,6 +303,20 @@ require_fixed 'result = _stat64i32(libc_path,' src/compat_stub.c
 require_fixed '# if defined(_USE_32BIT_TIME_T)' src/compat_stub.c
 require_fixed 'result = _stat32(libc_path,' src/compat_stub.c
 require_fixed 'handle = _beginthreadex(NULL, 0,' src/threading.c
+
+# MSVC ARM64 represents NEON vectors as aggregates with different members.
+sh "$source_files_helper" "$src_root/src" --name '*.c' --name '*.h' \
+    --exec awk '
+    FNR == 1 { older = previous = "" }
+    older " " previous " " $0 ~ /\([[:space:]]*(u?int|float|poly|bfloat)[0-9]+x[0-9]+_t[[:space:]]*\)[[:space:]]*\{/ {
+        print FILENAME ":" FNR ": use intrinsics to construct NEON vectors"
+        bad = 1
+        older = previous = ""
+        next
+    }
+    { older = previous; previous = $0 }
+    END { exit bad }
+    ' || fail 'NEON vector compound literals are compiler-dependent'
 # The shell variables are part of the configure.ac text being asserted.
 # shellcheck disable=SC2016
 require_fixed 'AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"' configure.ac
