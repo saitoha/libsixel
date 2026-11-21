@@ -3584,6 +3584,7 @@ typedef struct sixel_palette_heckbert_colormap_request {
     int *merge_mode;
 } sixel_palette_heckbert_colormap_request_t;
 
+#if defined(HAVE_METAL)
 /* Solve every split with the quant/heckbert.gpu component. On success the
  * table holds the boxes' entries in box order and bv the boxes in sumcompare
  * order, as the CPU loop leaves them. FEATURE_ERROR leaves both untouched so
@@ -3696,6 +3697,8 @@ end:
     return status;
 }
 
+#endif
+
 static SIXELSTATUS
 mediancut(tupletable2 const colorfreqtable,
           unsigned int depth,
@@ -3744,7 +3747,9 @@ mediancut(tupletable2 const colorfreqtable,
     struct sixel_pca_sort_entry *pca_workspace;
     unsigned int pca_workspace_capacity;
     unsigned char *axis_keys;
+#if defined(HAVE_METAL)
     int gpu_policy;
+#endif
 
     status = SIXEL_FALSE;
     bv = NULL;
@@ -3809,6 +3814,10 @@ mediancut(tupletable2 const colorfreqtable,
     }
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
+    /* Only Metal implements the optional Heckbert solver. Other backends
+     * keep CPU median cut even when GPU palette application is required;
+     * an absent solver must not disable the rest of the GPU pipeline. */
+#if defined(HAVE_METAL)
     /* Policy tests drive mediancut without a palette object. */
     gpu_policy = request->palette != NULL
         ? SIXEL_PALETTE_CONTEXT(request->palette)->gpu_policy
@@ -3829,6 +3838,7 @@ mediancut(tupletable2 const colorfreqtable,
             goto end;
         }
     }
+#endif
     while (boxes < working_colors && multicolorBoxesExist) {
         /* Return revoked loans before the next solver job. */
         sixel_thread_work_checkpoint();
