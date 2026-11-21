@@ -10,7 +10,7 @@ lookup(color candidate, completed palette) -> palette index
 
 It is not a SIXEL wire-format term and does not mean reading a palette register whose index is already known.
 
-All named GPU lookup policies support spatial [GPU diffusion](../dithering/README.md) over an emitted RGB8 palette; lookup `auto` resolves to `ordered`. FHEDT still requires its supported GPU settings. Fractional code-value queries in `[0,255]^3` are separate from native float32 image and colorspace support.
+All named GPU lookup policies support spatial [GPU diffusion](../dithering/README.md) over an emitted RGB8 palette. FHEDT still requires its supported GPU settings. Fractional code-value queries in `[0,255]^3` are separate from native float32 image and colorspace support.
 
 | Fractional GPU policies | Search semantics |
 | --- | --- |
@@ -43,7 +43,7 @@ The quantization model selected by `-Q` chooses the palette. The dithering metho
 --lookup-policy=POLICY
 ```
 
-The short option is the two-character spelling `-~`; there is no `--~` long option. The encoder default is `auto`, which currently resolves to `vptree`. An explicit `auto` value is a dispatch request and is not another search algorithm.
+The short option is `-~` and the encoder default is `auto`. CPU application normally selects `vptree`. GPU application selects `ordered` for spatial diffusion and exhaustive `none` for byte queries, including frames that skip diffusion when the palette is exact. The same automatic selection applies in synchronous and queued playback. Explicitly named lookup policies retain their search semantics.
 
 An explicit lookup policy applies during palette application with generated palettes and with all three fixed-palette selectors: mapfiles selected by `-m`, built-in palettes selected by `-b`, and monochrome selected by `-e`. Outside the selected extended float path, a text mapfile retains its historical direct-scan behavior when no lookup policy is explicitly supplied; explicit lookup is the opt-in that enables the selected backend for that already completed palette.
 

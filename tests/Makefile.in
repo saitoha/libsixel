@@ -775,6 +775,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	dither/lso2-gpu/0079_queue_sample_unavailable.c \
 	dither/lso2-gpu/0080_queue_sample_live.c \
 	dither/lso2-gpu/0081_queue_sample_tail.c \
+	dither/lso2-gpu/0086_auto_lookup_color_transition.c \
+	dither/fs-gpu/0015_auto_diffusion_gpu_policy.c \
 	dither/lso2-gpu/0064_pipeline_sample_stale.c \
 	dither/lso2-gpu/0065_pipeline_sample_short.c \
 	dither/lso2-gpu/0066_pipeline_sample_tail.c \
@@ -2095,6 +2097,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0079_queue_sample_unavailable.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0080_queue_sample_live.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0081_queue_sample_tail.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0064_pipeline_sample_stale.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0065_pipeline_sample_short.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/lso2-gpu/test_runner-0066_pipeline_sample_tail.$(OBJEXT) \
@@ -4732,6 +4736,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/fs-gpu/$(DEPDIR)/test_runner-0006_reject_perturbation.Po \
 	dither/fs-gpu/$(DEPDIR)/test_runner-0007_reject_low_clamp.Po \
 	dither/fs-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po \
+	dither/fs-gpu/$(DEPDIR)/test_runner-0015_auto_diffusion_gpu_policy.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0008_statistics.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0009_playback_force.Po \
 	dither/gpu-direct/$(DEPDIR)/test_runner-0029_lso2_palette256.Po \
@@ -4770,6 +4775,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0080_queue_sample_live.Po \
 	dither/lso2-gpu/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po \
+	dither/lso2-gpu/$(DEPDIR)/test_runner-0086_auto_lookup_color_transition.Po \
 	dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po \
 	dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po \
 	dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po \
@@ -5875,10 +5881,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_RETAINED_PARTIAL_RUN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_RETAINED_FULL_RESOLVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_RETAINED_PARTIAL_RESOLVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_AUTO_DIFFUSION_GPU_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_RETAINED_FULL_RUN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_RETAINED_PARTIAL_RUN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_RETAINED_FULL_RESOLVE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_RETAINED_PARTIAL_RESOLVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_AUTO_LOOKUP_COLOR_TRANSITION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_SELECTED_FRAME_EXPORT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
@@ -12162,6 +12170,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0079_queue_sample_unavailable.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0080_queue_sample_live.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0081_queue_sample_tail.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0086_auto_lookup_color_transition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/fs-gpu/0015_auto_diffusion_gpu_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0064_pipeline_sample_stale.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0065_pipeline_sample_short.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/lso2-gpu/0066_pipeline_sample_tail.c \
@@ -21825,6 +21835,12 @@ dither/lso2-gpu/test_runner-0080_queue_sample_live.$(OBJEXT):  \
 dither/lso2-gpu/test_runner-0081_queue_sample_tail.$(OBJEXT):  \
 	dither/lso2-gpu/$(am__dirstamp) \
 	dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.$(OBJEXT):  \
+	dither/lso2-gpu/$(am__dirstamp) \
+	dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
+dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.$(OBJEXT):  \
+	dither/fs-gpu/$(am__dirstamp) \
+	dither/fs-gpu/$(DEPDIR)/$(am__dirstamp)
 dither/lso2-gpu/test_runner-0064_pipeline_sample_stale.$(OBJEXT):  \
 	dither/lso2-gpu/$(am__dirstamp) \
 	dither/lso2-gpu/$(DEPDIR)/$(am__dirstamp)
@@ -27527,6 +27543,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0006_reject_perturbation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0007_reject_low_clamp.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0008_reject_negative_deadzone.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/fs-gpu/$(DEPDIR)/test_runner-0015_auto_diffusion_gpu_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0008_statistics.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0009_playback_force.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/gpu-direct/$(DEPDIR)/test_runner-0029_lso2_palette256.Po@am__quote@ # am--include-marker
@@ -27565,6 +27582,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0079_queue_sample_unavailable.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0080_queue_sample_live.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0081_queue_sample_tail.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/lso2-gpu/$(DEPDIR)/test_runner-0086_auto_lookup_color_transition.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/perturb/$(DEPDIR)/test_runner-0001_perturb_weights.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/perturb/$(DEPDIR)/test_runner-0002_perturb_api.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/perturb/$(DEPDIR)/test_runner-0003_perturb_row_8bit.Po@am__quote@ # am--include-marker
@@ -36259,6 +36277,34 @@ dither/lso2-gpu/test_runner-0081_queue_sample_tail.obj: dither/lso2-gpu/0081_que
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0081_queue_sample_tail.c' object='dither/lso2-gpu/test_runner-0081_queue_sample_tail.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0081_queue_sample_tail.obj `if test -f 'dither/lso2-gpu/0081_queue_sample_tail.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0081_queue_sample_tail.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0081_queue_sample_tail.c'; fi`
+
+dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.o: dither/lso2-gpu/0086_auto_lookup_color_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.o -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0086_auto_lookup_color_transition.Tpo -c -o dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.o `test -f 'dither/lso2-gpu/0086_auto_lookup_color_transition.c' || echo '$(srcdir)/'`dither/lso2-gpu/0086_auto_lookup_color_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0086_auto_lookup_color_transition.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0086_auto_lookup_color_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0086_auto_lookup_color_transition.c' object='dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.o `test -f 'dither/lso2-gpu/0086_auto_lookup_color_transition.c' || echo '$(srcdir)/'`dither/lso2-gpu/0086_auto_lookup_color_transition.c
+
+dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.obj: dither/lso2-gpu/0086_auto_lookup_color_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.obj -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0086_auto_lookup_color_transition.Tpo -c -o dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.obj `if test -f 'dither/lso2-gpu/0086_auto_lookup_color_transition.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0086_auto_lookup_color_transition.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0086_auto_lookup_color_transition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/lso2-gpu/$(DEPDIR)/test_runner-0086_auto_lookup_color_transition.Tpo dither/lso2-gpu/$(DEPDIR)/test_runner-0086_auto_lookup_color_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/lso2-gpu/0086_auto_lookup_color_transition.c' object='dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/lso2-gpu/test_runner-0086_auto_lookup_color_transition.obj `if test -f 'dither/lso2-gpu/0086_auto_lookup_color_transition.c'; then $(CYGPATH_W) 'dither/lso2-gpu/0086_auto_lookup_color_transition.c'; else $(CYGPATH_W) '$(srcdir)/dither/lso2-gpu/0086_auto_lookup_color_transition.c'; fi`
+
+dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.o: dither/fs-gpu/0015_auto_diffusion_gpu_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.o -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0015_auto_diffusion_gpu_policy.Tpo -c -o dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.o `test -f 'dither/fs-gpu/0015_auto_diffusion_gpu_policy.c' || echo '$(srcdir)/'`dither/fs-gpu/0015_auto_diffusion_gpu_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0015_auto_diffusion_gpu_policy.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0015_auto_diffusion_gpu_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0015_auto_diffusion_gpu_policy.c' object='dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.o `test -f 'dither/fs-gpu/0015_auto_diffusion_gpu_policy.c' || echo '$(srcdir)/'`dither/fs-gpu/0015_auto_diffusion_gpu_policy.c
+
+dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.obj: dither/fs-gpu/0015_auto_diffusion_gpu_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.obj -MD -MP -MF dither/fs-gpu/$(DEPDIR)/test_runner-0015_auto_diffusion_gpu_policy.Tpo -c -o dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.obj `if test -f 'dither/fs-gpu/0015_auto_diffusion_gpu_policy.c'; then $(CYGPATH_W) 'dither/fs-gpu/0015_auto_diffusion_gpu_policy.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0015_auto_diffusion_gpu_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/fs-gpu/$(DEPDIR)/test_runner-0015_auto_diffusion_gpu_policy.Tpo dither/fs-gpu/$(DEPDIR)/test_runner-0015_auto_diffusion_gpu_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/fs-gpu/0015_auto_diffusion_gpu_policy.c' object='dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/fs-gpu/test_runner-0015_auto_diffusion_gpu_policy.obj `if test -f 'dither/fs-gpu/0015_auto_diffusion_gpu_policy.c'; then $(CYGPATH_W) 'dither/fs-gpu/0015_auto_diffusion_gpu_policy.c'; else $(CYGPATH_W) '$(srcdir)/dither/fs-gpu/0015_auto_diffusion_gpu_policy.c'; fi`
 
 dither/lso2-gpu/test_runner-0064_pipeline_sample_stale.o: dither/lso2-gpu/0064_pipeline_sample_stale.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/lso2-gpu/test_runner-0064_pipeline_sample_stale.o -MD -MP -MF dither/lso2-gpu/$(DEPDIR)/test_runner-0064_pipeline_sample_stale.Tpo -c -o dither/lso2-gpu/test_runner-0064_pipeline_sample_stale.o `test -f 'dither/lso2-gpu/0064_pipeline_sample_stale.c' || echo '$(srcdir)/'`dither/lso2-gpu/0064_pipeline_sample_stale.c

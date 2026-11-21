@@ -850,10 +850,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "      force -> require a supported GPU path and fail otherwise\n"
         "    encoder sub-option:\n"
         "      :palette_threshold=PIXELS (:PPIXELS)\n"
-        "      set the auto-policy minimum palette-apply pixel count\n"
-        "    gates -Qkmeans:backend=gpu|auto and accelerates "
-        "RGB8 palette apply\n"
-        "    for none, eytzinger, blockcull, gridlut and ordered lookup\n"
+        "      set the auto-policy minimum for positional palette apply\n"
+        "    gates -Qkmeans:backend=gpu|auto and eligible GPU stages\n"
+        "    -d auto resolves FS or Atkinson before GPU selection\n"
+        "    RGB8 GPU lookup auto uses ordered for spatial diffusion\n"
+        "    and direct search for positional palette apply\n"
     },
     {
         'j',
@@ -2547,7 +2548,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_GPU_PALETTE_THRESHOLD",
-        "set the minimum palette-apply pixel count for --gpu-policy=auto.\n"
+        "set the positional palette-apply cutoff for --gpu-policy=auto.\n"
         "Invalid values keep the built-in default 262144. The -G\n"
         "palette_threshold suboption (short form PPIXELS) takes precedence."
     },

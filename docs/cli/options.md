@@ -105,7 +105,7 @@ Defaults are chosen so that most users never need an advanced option. The [encod
 | `-v`, `--verbose` | basic | Print diagnostic information and the processing plan. | [Diagnostics](diagnostics.md) |
 | `-=`, `--threading-policy` | advanced | Object-owned worker budget, stage and frame scheduling controls. | [Threading policy](threading-policy.md) |
 | `-.`, `--precision-policy` | advanced | Precision policy: `auto`, `8bit` palette application, or `float32`. | [Encoder working precision](../encoder/precision/README.md) |
-| `-G`, `--gpu-policy` | advanced | Use the GPU for palette application where supported. | [Metal palette application](../encoder/palette-application/lookup-policy/measurements/README.md#metal-paletteapply-performance) |
+| `-G`, `--gpu-policy` | advanced | Control GPU execution in supported encoder stages. The default is `off`. | [Dithering](../encoder/palette-application/dithering/README.md#auto-palette-size-selection), [Lookup](../encoder/palette-application/lookup-policy/README.md#options), [GPU k-means](../encoder/palette-construction/gpu-kmeans.md) |
 | `-j`, `--runtime-policy` | advanced | Process-wide SIMD and scheduling tuning. | [Runtime execution policy](runtime-policy.md) |
 | `-x`, `--diagnostics` | advanced | Diagnostic presentation and trace topics. | [Diagnostics](diagnostics.md) |
 | `-J`, `--log-path` | advanced | Write a JSON timeline log. | [Diagnostics](diagnostics.md) |

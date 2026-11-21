@@ -1324,14 +1324,11 @@ sixel_encoder_effective_diffuse(sixel_encoder_t const *encoder)
     return encoder->method_for_diffuse;
 }
 
-SIXEL_INTERNAL_API int
-sixel_encoder_diffuse_on_gpu(sixel_encoder_t const *encoder)
+static int
+sixel_encoder_gpu_diffusion_eligible(sixel_encoder_t const *encoder,
+                                    int method)
 {
-    sixel_gpu_device_interface_t *device;
-    int kind;
-    int served;
-
-    switch (encoder->method_for_diffuse) {
+    switch (method) {
     case SIXEL_DIFFUSE_LSO2:
         /* The LSO2 GPU coefficients assume serpentine order. */
         if (encoder->method_for_scan == SIXEL_SCAN_RASTER) return 0;
@@ -1354,13 +1351,20 @@ sixel_encoder_diffuse_on_gpu(sixel_encoder_t const *encoder)
     default:
         return 0;
     }
-    if (encoder->gpu_policy == SIXEL_GPU_POLICY_OFF ||
-            encoder->precision_requested == SIXEL_OPTION_PRECISION_FLOAT32 ||
-            encoder->prefer_float32 ||
-            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
-            encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
-        return 0;
-    }
+    return encoder->gpu_policy != SIXEL_GPU_POLICY_OFF &&
+        encoder->precision_requested != SIXEL_OPTION_PRECISION_FLOAT32 &&
+        !encoder->prefer_float32 &&
+        encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
+        encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR;
+}
+
+static int
+sixel_encoder_gpu_diffusion_lookup_available(sixel_encoder_t const *encoder,
+                                             int kind)
+{
+    sixel_gpu_device_interface_t *device;
+    int served;
+
     device = NULL;
     if (sixel_gpu_device_acquire(&device) != SIXEL_OK) {
         return 0;
@@ -1369,13 +1373,24 @@ sixel_encoder_diffuse_on_gpu(sixel_encoder_t const *encoder)
      * for AUTO. Without that policy's program on the device, the automatic
      * policy keeps the CPU component, which a declined frame falls back to;
      * FORCE keeps the GPU component and reports the refusal. */
-    kind = encoder->lut_policy == SIXEL_LUT_POLICY_AUTO
-        ? SIXEL_LUT_POLICY_ORDERED : encoder->lut_policy;
+    if (kind == SIXEL_LUT_POLICY_AUTO) {
+        kind = SIXEL_LUT_POLICY_ORDERED;
+    }
     served = encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE ||
         sixel_gpu_lookup_has_program(kind,
             device->vtbl->program_format(device));
     device->vtbl->unref(device);
     return served;
+}
+
+SIXEL_INTERNAL_API int
+sixel_encoder_diffuse_on_gpu(sixel_encoder_t const *encoder)
+{
+    /* Before the palette is known, AUTO is only a planning estimate. */
+    return sixel_encoder_gpu_diffusion_eligible(encoder,
+        encoder->method_for_diffuse) &&
+        sixel_encoder_gpu_diffusion_lookup_available(encoder,
+            encoder->lut_policy);
 }
 
 /* The palette stage may resolve another lookup than the encoder option (a
@@ -1386,28 +1401,18 @@ static int
 sixel_encoder_dither_lookup_on_gpu(sixel_encoder_t const *encoder,
     sixel_dither_t const *dither)
 {
-    sixel_gpu_device_interface_t *device;
     sixel_lookup_policy_configuration_t configuration;
-    int kind;
-    int served;
 
     if (encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
-        return 1;
+        return sixel_encoder_gpu_diffusion_lookup_available(encoder,
+            dither->lut_policy);
     }
     if (sixel_dither_get_lookup_configuration(dither,
             SIXEL_PIXELFORMAT_RGB888, &configuration) != SIXEL_OK) {
         return 0;
     }
-    kind = dither->lut_policy == SIXEL_LUT_POLICY_AUTO
-        ? SIXEL_LUT_POLICY_ORDERED : configuration.kind;
-    device = NULL;
-    if (sixel_gpu_device_acquire(&device) != SIXEL_OK) {
-        return 0;
-    }
-    served = sixel_gpu_lookup_has_program(kind,
-        device->vtbl->program_format(device));
-    device->vtbl->unref(device);
-    return served;
+    return sixel_encoder_gpu_diffusion_lookup_available(encoder,
+        configuration.kind);
 }
 
 /* Keep the trace independent of numeric diffusion ABI values. */
@@ -6133,8 +6138,13 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
     sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
-    context->dither->diffuse_on_gpu = skip_palette_diffusion == 0 &&
-        sixel_encoder_diffuse_on_gpu(context->encoder) &&
+    /* AUTO has now resolved against the selected palette. Decide the
+     * backend from the effective method without changing the request. */
+    context->dither->diffuse_on_gpu =
+        context->dither->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+        context->current_colorspace == SIXEL_COLORSPACE_GAMMA &&
+        sixel_encoder_gpu_diffusion_eligible(context->encoder,
+            context->dither->method_for_diffuse) &&
         sixel_encoder_dither_lookup_on_gpu(context->encoder,
             context->dither);
     context->dither->clamp_policy = context->encoder->clamp_policy;

@@ -215,11 +215,13 @@ choose the upper-level GPU accelerator policy.
 GPU stages with CPU fallback; \fBforce\fP requires supported GPU execution
 for selected GPU stages and palette application.
 K-means additionally requires \fB-Qkmeans:backend=gpu|auto\fP.
-RGB8 palette application supports none, eytzinger, blockcull, gridlut and
-ordered lookup with none, a_dither, x_dither or bluenoise dithering.
+With eligible gamma RGB8 input, automatic diffusion selects FS or Atkinson
+before choosing a backend. Automatic GPU lookup uses ordered for spatial
+diffusion and direct search for positional application, including frames
+that skip diffusion because their palette is exact.
 The encoder suboption \fB:palette_threshold=PIXELS\fP, with short form
 \fB:PPIXELS\fP, sets the minimum image size used by \fBauto\fP
-for palette application only, without gating GPU k-means.
+for positional palette application.
 .TP 5
 .B \-j \fIPOLICY[:KEY=VALUE]\fP, \-\-runtime\-policy=\fIPOLICY[:KEY=VALUE]\fP
 choose process-wide runtime tuning.  \fIPOLICY\fP is \fBauto\fP,

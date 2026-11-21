@@ -279,9 +279,12 @@ sixel_dither_lookup_preparers(sixel_dither_t *dither,
     status = sixel_dither_get_lookup_configuration(dither,
         request->pixelformat, &configuration);
     if (SIXEL_FAILED(status)) return status;
-    if (dither->diffuse_on_gpu &&
-            dither->lut_policy == SIXEL_LUT_POLICY_AUTO) {
-        configuration.kind = SIXEL_LUT_POLICY_ORDERED;
+    if (configuration.kind == SIXEL_LUT_POLICY_AUTO) {
+        /* Diffusion uses fractional queries. Byte application uses the
+         * same exhaustive lookup as the synchronous GPU adapter, including
+         * when an exact palette skips diffusion inside queued playback. */
+        configuration.kind = dither->diffuse_on_gpu
+            ? SIXEL_LUT_POLICY_ORDERED : SIXEL_LUT_POLICY_NONE;
     }
     if (dither->gpu_lookup == NULL || memcmp(&configuration,
             &dither->gpu_lookup_configuration, sizeof(configuration)) != 0) {

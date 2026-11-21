@@ -248,10 +248,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_RETAINED_PARTIAL_RUN \
     -DBUILD_TEST_0013_RETAINED_FULL_RESOLVE \
     -DBUILD_TEST_0014_RETAINED_PARTIAL_RESOLVE \
+    -DBUILD_TEST_0015_AUTO_DIFFUSION_GPU_POLICY \
     -DBUILD_TEST_0082_RETAINED_FULL_RUN \
     -DBUILD_TEST_0083_RETAINED_PARTIAL_RUN \
     -DBUILD_TEST_0084_RETAINED_FULL_RESOLVE \
     -DBUILD_TEST_0085_RETAINED_PARTIAL_RESOLVE \
+    -DBUILD_TEST_0086_AUTO_LOOKUP_COLOR_TRANSITION \
     -DBUILD_TEST_0084_SELECTED_FRAME_EXPORT \
     -DBUILD_TEST_0020_RELATIVE_BEFORE_CACHED_FLOAT \
     -DBUILD_TEST_0021_RELATIVE_BEFORE_CACHED_BYTE \
@@ -6507,6 +6509,8 @@ test_runner_SOURCES = \
     dither/lso2-gpu/0079_queue_sample_unavailable.c \
     dither/lso2-gpu/0080_queue_sample_live.c \
     dither/lso2-gpu/0081_queue_sample_tail.c \
+    dither/lso2-gpu/0086_auto_lookup_color_transition.c \
+    dither/fs-gpu/0015_auto_diffusion_gpu_policy.c \
     dither/lso2-gpu/0064_pipeline_sample_stale.c \
     dither/lso2-gpu/0065_pipeline_sample_short.c \
     dither/lso2-gpu/0066_pipeline_sample_tail.c \

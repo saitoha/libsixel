@@ -5881,10 +5881,12 @@ int test_dither_fs_gpu_0011(int, char **);
 int test_dither_fs_gpu_0012(int, char **);
 int test_dither_fs_gpu_0013(int, char **);
 int test_dither_fs_gpu_0014(int, char **);
+int test_dither_fs_gpu_0015(int, char **);
 int test_dither_lso2_gpu_0082(int, char **);
 int test_dither_lso2_gpu_0083(int, char **);
 int test_dither_lso2_gpu_0084(int, char **);
 int test_dither_lso2_gpu_0085(int, char **);
+int test_dither_lso2_gpu_0086(int, char **);
 int test_dither_atkinson_gpu_0011(int, char **);
 int test_dither_atkinson_gpu_0012(int, char **);
 int test_dither_atkinson_gpu_0013(int, char **);
@@ -5923,6 +5925,8 @@ static test_entry_t const test_entries[] = {
       test_dither_fs_gpu_0013 },
     { "dither/fs-gpu/0014_retained_partial_resolve",
       test_dither_fs_gpu_0014 },
+    { "dither/fs-gpu/0015_auto_diffusion_gpu_policy",
+      test_dither_fs_gpu_0015 },
     { "dither/lso2-gpu/0082_retained_full_run",
       test_dither_lso2_gpu_0082 },
     { "dither/lso2-gpu/0083_retained_partial_run",
@@ -5931,6 +5935,8 @@ static test_entry_t const test_entries[] = {
       test_dither_lso2_gpu_0084 },
     { "dither/lso2-gpu/0085_retained_partial_resolve",
       test_dither_lso2_gpu_0085 },
+    { "dither/lso2-gpu/0086_auto_lookup_color_transition",
+      test_dither_lso2_gpu_0086 },
     { "dither/atkinson-gpu/0011_retained_full_run",
       test_dither_atkinson_gpu_0011 },
     { "dither/atkinson-gpu/0012_retained_partial_run",

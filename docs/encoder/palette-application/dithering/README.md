@@ -197,9 +197,9 @@ those of the selected policy. This rule explains why `auto` is excluded from
 the measured policy sweep: including it would duplicate Atkinson at `K=8` and
 `K=16`, then Floyd--Steinberg at the remaining measured sizes.
 
-Use `auto` when compatibility with libsixel's normal selection rule matters.
-Select a concrete policy when output reproducibility must not change if the
-palette size crosses 16.
+The encoder applies `-G` after selecting the effective method. Eligible gamma RGB8 frames can run the selected method's GPU component under `-G auto` or `-G force`. GPU admission uses the same options as an explicit request for that method. If GPU preparation declines under `-G auto`, the same method can run on the CPU before output or retained history changes. An exact palette can skip diffusion for the current frame, with [lookup selected for that frame](../lookup-policy/README.md#options).
+
+Use `auto` when the palette-size selection is desired. Select a concrete policy to keep the same method as the palette size crosses 16.
 
 ## `none`: nearest color without error shaping
 

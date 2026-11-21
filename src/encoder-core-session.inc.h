@@ -175,13 +175,15 @@ sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
     double rgb[3];
     void *object;
     size_t pixels, i;
-    int channel, threads;
+    int channel, threads, gpu_policy;
     SIXELSTATUS status;
 
     dither = request->dither;
     output = request->output;
     session = output->session;
     threads = sixel_threads_resolve();
+    gpu_policy = dither->gpu_policy;
+prepare:
     source = NULL;
     wire = NULL;
     apply = NULL;
@@ -276,7 +278,7 @@ sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
         ? allocation.dither_threads : 1;
     prepare.band_height = allocation.band_height;
     prepare.band_overlap = allocation.overlap;
-    prepare.gpu_policy = dither->gpu_policy;
+    prepare.gpu_policy = gpu_policy;
     prepare.gpu_auto_threshold = dither->gpu_palette_threshold;
     status = sixel_dither_lookup_preparers(dither, &prepare);
     if (status != SIXEL_OK) goto end;
@@ -305,6 +307,18 @@ end:
     if (prepare.gpu_lookup != NULL)
         prepare.gpu_lookup->vtbl->unref(prepare.gpu_lookup);
     if (prepare.device != NULL) prepare.device->vtbl->unref(prepare.device);
+    /* Both methods selected by automatic diffusion have CPU components.
+     * AUTO may retry a declined GPU preparation here, before
+     * acquiring history or starting a writer. Execution errors propagate. */
+    if ((status == SIXEL_FALSE || status == SIXEL_FEATURE_ERROR) &&
+            gpu_policy == SIXEL_GPU_POLICY_AUTO &&
+            dither->diffuse_on_gpu &&
+            (dither->method_for_diffuse == SIXEL_DIFFUSE_FS ||
+             dither->method_for_diffuse == SIXEL_DIFFUSE_ATKINSON)) {
+        dither->diffuse_on_gpu = 0;
+        gpu_policy = SIXEL_GPU_POLICY_OFF;
+        goto prepare;
+    }
     return status;
 }
 
