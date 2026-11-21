@@ -680,6 +680,106 @@ sixel_decoder_parallel_reserve_columns(sixel_decoder_worker_context_t *context,
     return 0;
 }
 
+#if defined(__aarch64__) && defined(__ARM_NEON)
+#include <arm_neon.h>
+
+/* Store literal bytes sixteen at a time without a branch per column: the run
+ * length comes from the first non-literal lane, and lanes past it carry a
+ * zero pattern, which leaves their columns unchanged. Short runs dominate
+ * dithered bodies, so the run end no longer costs a mispredicted loop exit.
+ * Returns the number of bytes consumed; run_end bounds input and columns. */
+static inline __attribute__((always_inline)) int
+sixel_parallel_literal_block(unsigned char const *p,
+                             unsigned char const *run_end,
+                             uint64_t *column, uint64_t color, int *rows)
+{
+    static uint8_t const lane_order[16] = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+    };
+    static uint8_t const pair_spread[16] = {
+        0, 0, 0, 0, 0, 0, 0, 0xff, 1, 1, 1, 1, 1, 1, 1, 0xff
+    };
+    static uint8_t const row_bits[16] = {
+        1, 2, 4, 8, 16, 32, 0, 0, 1, 2, 4, 8, 16, 32, 0, 0
+    };
+    static uint8_t const paint_lane[16] = {
+        0, 0, 0, 0, 0, 0, 0xff, 0, 0, 0, 0, 0, 0, 0, 0xff, 0
+    };
+    unsigned char const *start;
+    uint8x16_t order;
+    uint8x16_t spread;
+    uint8x16_t bitsel;
+    uint8x16_t paint;
+    uint8x16_t colorv;
+    uint8x16_t c;
+    uint8x16_t keep;
+    uint8x16_t t;
+    uint8x16_t m;
+    uint64x2_t folded;
+    uint64_t stops;
+    uint64_t any;
+    int n;
+    int k;
+
+    start = p;
+    order = vld1q_u8(lane_order);
+    spread = vld1q_u8(pair_spread);
+    bitsel = vld1q_u8(row_bits);
+    paint = vld1q_u8(paint_lane);
+    colorv = vreinterpretq_u8_u64(vdupq_n_u64(color));
+    any = 0;
+    while (run_end - p >= 16) {
+        c = vsubq_u8(vld1q_u8(p), vdupq_n_u8('?'));
+        stops = ~vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(
+            vreinterpretq_u16_u8(vcleq_u8(c, vdupq_n_u8(63))), 4)), 0);
+        n = stops == 0 ? 16 : __builtin_ctzll(stops) >> 2;
+        keep = vcltq_u8(order, vdupq_n_u8((uint8_t)n));
+        c = vandq_u8(c, keep);
+        folded = vreinterpretq_u64_u8(c);
+        any |= vgetq_lane_u64(folded, 0) | vgetq_lane_u64(folded, 1);
+        for (k = 0; k < 8; k += 2) {
+            t = vqtbl1q_u8(c, vaddq_u8(spread, vdupq_n_u8((uint8_t)k)));
+            m = vtstq_u8(t, bitsel);
+            vst1q_u8((uint8_t *)(column + k), vorrq_u8(
+                vbslq_u8(m, colorv, vld1q_u8((uint8_t *)(column + k))),
+                vandq_u8(t, paint)));
+        }
+        if (n > 8) {
+            for (k = 8; k < 16; k += 2) {
+                t = vqtbl1q_u8(c, vaddq_u8(spread, vdupq_n_u8((uint8_t)k)));
+                m = vtstq_u8(t, bitsel);
+                vst1q_u8((uint8_t *)(column + k), vorrq_u8(
+                    vbslq_u8(m, colorv, vld1q_u8((uint8_t *)(column + k))),
+                    vandq_u8(t, paint)));
+            }
+        }
+        p += n;
+        column += n;
+        if (n < 16) {
+            break;
+        }
+    }
+    any |= any >> 32;
+    any |= any >> 16;
+    any |= any >> 8;
+    *rows = (int)(any & 63u);
+    return (int)(p - start);
+}
+#else
+static inline int
+sixel_parallel_literal_block(unsigned char const *p,
+                             unsigned char const *run_end,
+                             uint64_t *column, uint64_t color, int *rows)
+{
+    (void)p;
+    (void)run_end;
+    (void)column;
+    (void)color;
+    *rows = 0;
+    return 0;
+}
+#endif
+
 /* Highest and lowest set row of a six-bit sixel pattern (index 0 unused). */
 static signed char const sixel_parallel_top_row[64] = {
     -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -701,6 +801,31 @@ static signed char const sixel_parallel_low_row[64] = {
  * function parameter, even forced inlining lets Clang reshape the ordinary
  * token loop before the capture checks disappear. Literal instantiations
  * preserve its original code generation without duplicating the parser. */
+/* Fold the current band's OR-ed row patterns into the paint extents. */
+#define SIXEL_DECODER_PARALLEL_FOLD_BAND_ROWS() \
+    do { \
+        if (band_set_rows != 0 && \
+                pos_y + sixel_parallel_top_row[band_set_rows] > \
+                    last_set_row) { \
+            last_set_row = pos_y + sixel_parallel_top_row[band_set_rows]; \
+        } \
+        if (band_painted_rows != 0 && \
+                pos_y + sixel_parallel_top_row[band_painted_rows] > \
+                    last_painted_row) { \
+            last_painted_row = \
+                pos_y + sixel_parallel_top_row[band_painted_rows]; \
+        } \
+        if (band_low_rows != 0 && (first_painted_row < 0 || \
+                pos_y + sixel_parallel_low_row[band_low_rows] < \
+                    first_painted_row)) { \
+            first_painted_row = \
+                pos_y + sixel_parallel_low_row[band_low_rows]; \
+        } \
+        band_set_rows = 0; \
+        band_painted_rows = 0; \
+        band_low_rows = 0; \
+    } while (0)
+
 #define SIXEL_DECODER_PARALLEL_PARSER(parser_name, capture) \
 static int \
 parser_name(sixel_decoder_worker_context_t *context) \
@@ -727,13 +852,21 @@ parser_name(sixel_decoder_worker_context_t *context) \
     int width; \
     int starts_after_newline; \
     int status; \
-    int r; \
     int retain; \
     int columns_band; \
     int first_painted_row; \
     int last_painted_row; \
     int last_set_row; \
     int max_color_index; \
+    int band_index; \
+    int band_set_rows; \
+    int band_painted_rows; \
+    int band_low_rows; \
+    unsigned char *run_end; \
+    uint32_t word; \
+    uint32_t nondigit; \
+    int digits; \
+    uint64_t *column; \
     \
     /* Packet contract fields cannot change while this worker is running. \
      * Hoist them out of run/select loops, including the ordinary case. */ \
@@ -753,6 +886,13 @@ parser_name(sixel_decoder_worker_context_t *context) \
     last_painted_row = (-1); \
     last_set_row = (-1); \
     max_color_index = (-1); \
+    /* Row extents are gathered per band as OR-ed six-bit patterns: the band \
+     * top is fixed, so its highest and lowest rows follow from the ORs and \
+     * are folded into the extents whenever the band ends. */ \
+    band_index = 0; \
+    band_set_rows = 0; \
+    band_painted_rows = 0; \
+    band_low_rows = 0; \
     \
     if (context->logger != NULL) { \
         sixel_timeline_logger_logf(context->logger, \
@@ -844,12 +984,12 @@ parser_name(sixel_decoder_worker_context_t *context) \
             if (pos_x > INT_MAX - repeat) { \
                 goto end; \
             } \
-            if (retain && pos_y / 6 != columns_band) { \
+            if (retain && band_index != columns_band) { \
                 if (sixel_decoder_parallel_reserve_columns(context, \
-                                                           pos_y / 6) != 0) { \
+                                                           band_index) != 0) { \
                     goto end; \
                 } \
-                columns_band = pos_y / 6; \
+                columns_band = band_index; \
                 columns = columns_band < context->column_capacity ? \
                     context->columns + \
                         (size_t)columns_band * (size_t)width : NULL; \
@@ -857,15 +997,23 @@ parser_name(sixel_decoder_worker_context_t *context) \
             /* One word update per literal; aggregate the six row bits once \
              * per run, preserving unset-column cursor movement. */ \
             if (retain && repeat == 1 && pos_x < width && columns != NULL) { \
-                do { \
-                    bits = *cursor++ - '?'; \
+                /* Bound the run by both the input and the row once, so the \
+                 * loop carries one pointer test and the byte class test. */ \
+                run_end = limit - cursor < width - pos_x ? \
+                    limit : cursor + (width - pos_x); \
+                p = cursor + sixel_parallel_literal_block(cursor, run_end, \
+                    columns + pos_x, color, &rows); \
+                column = columns + pos_x + (p - cursor); \
+                while (p < run_end && (unsigned int)(*p - '?') <= 63u) { \
+                    bits = *p++ - '?'; \
                     mask = sixel_column_row_masks[bits]; \
-                    columns[pos_x] = (columns[pos_x] & ~mask) | \
-                        (color & mask) | ((uint64_t)bits << 48); \
+                    *column = (*column & ~mask) | (color & mask) | \
+                        ((uint64_t)bits << 48); \
+                    ++column; \
                     rows |= bits; \
-                    ++pos_x; \
-                } while (cursor < limit && *cursor >= '?' && *cursor <= '~' && \
-                         pos_x < width); \
+                } \
+                pos_x += (int)(p - cursor); \
+                cursor = p; \
             } else { \
                 bits = ch - '?'; \
                 rows = bits; \
@@ -887,22 +1035,16 @@ parser_name(sixel_decoder_worker_context_t *context) \
                 ++cursor; \
             } \
             if (rows != 0) { \
-                r = sixel_parallel_top_row[rows]; \
-                if (pos_y > INT_MAX - r) { \
+                if (pos_y > INT_MAX - 5 && \
+                        pos_y > INT_MAX - sixel_parallel_top_row[rows]) { \
                     goto end; \
                 } \
-                if (pos_y + r > last_set_row) { \
-                    last_set_row = pos_y + r; \
-                } \
+                band_set_rows |= rows; \
                 if (effective_repeat > 0) { \
-                    if (last_set_row > last_painted_row) { \
-                        last_painted_row = last_set_row; \
-                    } \
-                    r = sixel_parallel_low_row[rows]; \
-                    if (first_painted_row < 0 || \
-                            pos_y + r < first_painted_row) { \
-                        first_painted_row = pos_y + r; \
-                    } \
+                    /* The highest row set so far in this band, as the \
+                     * per-run maximum of the set rows recorded it. */ \
+                    band_painted_rows = band_set_rows; \
+                    band_low_rows |= rows; \
                     if (color_index > max_color_index) { \
                         max_color_index = color_index; \
                     } \
@@ -913,12 +1055,31 @@ parser_name(sixel_decoder_worker_context_t *context) \
         if (ch == '#' || ch == '!') { \
             value = 0; \
             p = cursor + 1; \
-            while (p < limit && *p >= '0' && *p <= '9') { \
-                if (value > 6553 || (value == 6553 && \
-                        (*p - '0') > (ch == '#' ? 6 : 5))) { \
-                    goto end; \
+            /* Up to three digits cannot overflow: read four bytes at once, \
+             * locate the first non-digit and combine the digits without a \
+             * branch per digit. Longer numbers take the checked loop. */ \
+            if (limit - p >= 4) { \
+                memcpy(&word, p, sizeof(word)); \
+                nondigit = ((word + 0x46464646u) | (word - 0x30303030u)) & \
+                    0x80808080u; \
+            } else { \
+                nondigit = 0; \
+            } \
+            if (nondigit != 0) { \
+                digits = __builtin_ctz(nondigit) >> 3; \
+                word = (uint32_t)((uint64_t)(word - 0x30303030u) << \
+                    (32 - 8 * digits)); \
+                value = (int)((word >> 8) & 0xffu) * 100 + \
+                    (int)((word >> 16) & 0xffu) * 10 + (int)(word >> 24); \
+                p += digits; \
+            } else { \
+                while (p < limit && *p >= '0' && *p <= '9') { \
+                    if (value > 6553 || (value == 6553 && \
+                            (*p - '0') > (ch == '#' ? 6 : 5))) { \
+                        goto end; \
+                    } \
+                    value = value * 10 + (*p++ - '0'); \
                 } \
-                value = value * 10 + (*p++ - '0'); \
             } \
             if (capture && \
                     (p == cursor + 1 || value >= SIXEL_PALETTE_MAX_DECODER || \
@@ -937,6 +1098,18 @@ parser_name(sixel_decoder_worker_context_t *context) \
                 color = sixel_column_color((unsigned int)color_index); \
             } else { \
                 repeat = value > 0 ? value : 1; \
+                /* A repeated empty sixel only advances the cursor once its \
+                 * band storage exists; the run path adds nothing else. */ \
+                if (p < limit && *p == '?' && \
+                        (!retain || band_index == columns_band)) { \
+                    if (pos_x > INT_MAX - repeat) { \
+                        goto end; \
+                    } \
+                    pos_x += repeat; \
+                    repeat = 1; \
+                    cursor = p + 1; \
+                    continue; \
+                } \
             } \
             cursor = p; \
             continue; \
@@ -960,7 +1133,9 @@ parser_name(sixel_decoder_worker_context_t *context) \
             if (pos_y > INT_MAX - 6) { \
                 goto end; \
             } \
+            SIXEL_DECODER_PARALLEL_FOLD_BAND_ROWS(); \
             pos_y += 6; \
+            ++band_index; \
             continue; \
         } \
         if (capture) { \
@@ -1006,6 +1181,7 @@ parser_name(sixel_decoder_worker_context_t *context) \
     } \
     status = 0; \
 end: \
+    SIXEL_DECODER_PARALLEL_FOLD_BAND_ROWS(); \
     context->first_painted_row = first_painted_row; \
     context->last_painted_row = last_painted_row; \
     context->last_set_row = last_set_row; \
