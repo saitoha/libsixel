@@ -79,6 +79,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
     build-aux/msvc-lib-response.sh \
     build-aux/cosmoar-meson build-aux/cosmoar-response.awk \
     build-aux/emscripten-node-stdio.js \
+    tools/embed-shader.py tools/gen_6cells_h.py \
     build-aux/meson-cross/emscripten-windows \
     build-examples/example-build-emcc.sh \
     build-examples/example-build-emcc.cmd \

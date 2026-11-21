@@ -37,15 +37,11 @@ if has_var_attr_deprecated
 endif
 
 sixel_h = configure_file(input: 'sixel.h.in', output: 'sixel.h', configuration: inc_conf)
-awk_prog = find_program('/usr/xpg4/bin/awk', 'nawk', 'awk', native: true)
 sixcells_h = custom_target(
   '6cells.h',
   input: '6cells.idl',
   output: '6cells.h',
-  command: [awk_prog, '-f',
-            join_paths(meson.project_source_root(), 'tools',
-                       'gen_6cells_h.awk'),
-            '@INPUT@'],
+  command: [python3, files('../tools/gen_6cells_h.py'), '@INPUT@'],
   capture: true,
   install: true,
   install_tag: 'devel',

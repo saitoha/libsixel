@@ -9294,6 +9294,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin tools/compa
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-c-ast.sh \
     _static/python/staticcheck_c_ast.py \
+    _static/python/check_meson_generators.py \
 	_static/sh/staticcheck-private-includes.sh \
     _static/sh/staticcheck-loader-cms-boundary.sh \
     _static/sh/staticcheck-stb-dll-linkage.sh \

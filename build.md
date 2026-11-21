@@ -384,9 +384,9 @@ meson compile -C builddir installcheck  # optional: tests installed commands
 
 ### Windows Emscripten SDK (Meson)
 
-On x64 Windows, use `cmd.exe` with the official Windows SDK, Python, Meson, Ninja, and an AWK executable for the public header generator. The following example uses the Emscripten 7.0.0 SDK and the AWK executable bundled with Git for Windows.
+On x64 Windows, use `cmd.exe` with the official Windows SDK, Python, Meson and Ninja. The following example uses the Emscripten 7.0.0 SDK.
 
-Run `build-examples\example-build-emcc.cmd` from `cmd.exe` to build, stage and test the converters. From Git Bash, `build-examples/example-build-emcc.sh` launches the same Windows example. Use `SIXEL_EMCC_AWK` to point to a custom AWK installation. The Windows example uses the built-in image loaders and runs the installed converter smoke test.
+Run `build-examples\example-build-emcc.cmd` from `cmd.exe` to build, stage and test the converters. From Git Bash, `build-examples/example-build-emcc.sh` launches the same Windows example. The Windows example uses the built-in image loaders and runs the installed converter smoke test.
 
 For a manual build:
 
@@ -396,17 +396,14 @@ call emsdk\emsdk.bat install 7.0.0
 call emsdk\emsdk.bat activate 7.0.0
 call emsdk\emsdk_env.bat
 set "PATH=%CD%\emsdk\upstream\bin;%PATH%"
-(echo [binaries]
- echo awk = 'C:/Program Files/Git/usr/bin/awk.exe'
-) > wasm-native.ini
-meson setup wasm-build --native-file wasm-native.ini --cross-file build-aux/meson-cross/emscripten-windows ^
+meson setup wasm-build --cross-file build-aux/meson-cross/emscripten-windows ^
   --prefix / -Ddefault_library=static -Dauto_features=disabled -Dthreads=enabled -Dtests=false
 meson compile -C wasm-build
 meson install -C wasm-build --no-rebuild --destdir "%CD%\wasm-install"
 node wasm-install\bin\img2sixel.js --version
 ```
 
-Set the AWK path in `wasm-native.ini` to match your installation. The SDK's batch files configure the environment, and Meson and Ninja invoke `emcc.exe` directly. This build uses the builtin image loaders and disables the POSIX TAP suite. Meson installs the `.js` programs and their `.wasm` sidecars into `bindir` on Windows. On POSIX hosts with split output, it installs the runtime files into `libexecdir/libsixel` and adds Node launchers to `bindir`.
+The SDK's batch files configure the environment, and Meson and Ninja invoke `emcc.exe` directly. This build uses the builtin image loaders and disables the POSIX TAP suite. Meson installs the `.js` programs and their `.wasm` sidecars into `bindir` on Windows. On POSIX hosts with split output, it installs the runtime files into `libexecdir/libsixel` and adds Node launchers to `bindir`.
 
 ### Static analyzer builds (Meson)
 

@@ -65,8 +65,7 @@ if have_vulkan
     vulkan_headers += custom_target(name + '-vulkan-shader',
       input: input,
       output: name + '-shader.inc.h',
-      command: [sh, metal_embed, '@INPUT@', '@OUTPUT@'],
-      depend_files: metal_encoder,
+      command: [python3, shader_embed, '@INPUT@', '@OUTPUT@'],
       build_by_default: true)
   endforeach
   if have_vulkan_prebuilt_spirv

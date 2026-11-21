@@ -213,8 +213,9 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 endif
 
 env = environment()
-# The TAP directive tests render and launch the driver from its template.
-env.set('AWK', awk_prog.full_path())
+# The TAP directive tests use AWK to render the driver from its template.
+test_awk = find_program('/usr/xpg4/bin/awk', 'nawk', 'awk', native: true)
+env.set('AWK', test_awk.full_path())
 env.set('SED', find_program('sed', native: true).full_path())
 env.set('SIXEL_TEST_CONFIG_SHELL', sh.full_path())
 env.prepend('PATH', meson.project_source_root() / 'build-aux/compare')
@@ -227,6 +228,10 @@ endif
 foreach setting : base_env_settings
   env.set(setting[0], setting[1])
 endforeach
+
+test('meson-generator-parity', python3,
+  args: [files('_static/python/check_meson_generators.py'),
+         meson.project_source_root(), test_awk.full_path()])
 
 # palette/heckbert: include the score and bounds AVX2 scalar-equivalence
 # cases.

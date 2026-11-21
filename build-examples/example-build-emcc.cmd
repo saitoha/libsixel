@@ -8,15 +8,8 @@ set "EMSDK_CMD=1"
 
 if not defined EMSDK_VERSION set "EMSDK_VERSION=7.0.0"
 if not defined SIXEL_EMCC_BUILD_DIR set "SIXEL_EMCC_BUILD_DIR=%~dp0build-emcc-windows"
-if not defined SIXEL_EMCC_AWK set "SIXEL_EMCC_AWK=%ProgramFiles%\Git\usr\bin\awk.exe"
-
-if not exist "%SIXEL_EMCC_AWK%" (
-  echo Set SIXEL_EMCC_AWK to the path to awk.exe. >&2
-  exit /b 1
-)
 for %%I in ("%~dp0..") do set "TOP_SRCDIR=%%~fI"
 for %%I in ("%SIXEL_EMCC_BUILD_DIR%") do set "SIXEL_EMCC_BUILD_DIR=%%~fI"
-for %%I in ("%SIXEL_EMCC_AWK%") do set "SIXEL_EMCC_AWK=%%~fI"
 set "PATH=%TOP_SRCDIR%\.local\bin;%PATH%"
 
 if defined SIXEL_EMSDK_DIR goto setup_sdk
@@ -38,17 +31,9 @@ if defined EMSDK set "PATH=%EMSDK:/=\%\upstream\bin;%PATH%"
 emcc.exe --version || exit /b 1
 
 if not exist "%SIXEL_EMCC_BUILD_DIR%" mkdir "%SIXEL_EMCC_BUILD_DIR%" || exit /b 1
-rem Expose the header generator without putting Git Bash on the compiler path.
-setlocal EnableDelayedExpansion
-(
-  echo [binaries]
-  echo awk = '!SIXEL_EMCC_AWK:\=/!'
-) > "!SIXEL_EMCC_BUILD_DIR!\native.ini" || exit /b 1
-endlocal
 set "SIXEL_EMCC_RECONFIGURE="
 if exist "%SIXEL_EMCC_BUILD_DIR%\meson-private\coredata.dat" set "SIXEL_EMCC_RECONFIGURE=--reconfigure"
 meson setup %SIXEL_EMCC_RECONFIGURE% "%SIXEL_EMCC_BUILD_DIR%" "%TOP_SRCDIR%" ^
-  --native-file "%SIXEL_EMCC_BUILD_DIR%\native.ini" ^
   --cross-file "%TOP_SRCDIR%\build-aux\meson-cross\emscripten-windows" ^
   --prefix / -Ddefault_library=static -Dauto_features=disabled -Dthreads=enabled -Dtests=false || exit /b 1
 meson compile -C "%SIXEL_EMCC_BUILD_DIR%" || exit /b 1
