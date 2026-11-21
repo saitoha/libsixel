@@ -5577,6 +5577,8 @@ batch_palette_heckbert_0120 = \
 batch_palette_heckbert_0127 = \
     palette/heckbert/0151_score_avx2_edge.c \
     palette/heckbert/0150_score_avx2_random.c \
+    palette/heckbert/0153_bounds_avx2_edge.c \
+    palette/heckbert/0152_bounds_avx2_random.c \
     palette/heckbert/0127_heckbert_sources.c \
     palette/heckbert/0128_quant_palette_ordinary_float_heckbert_ward.c \
     palette/heckbert/0129_heckbert_snap.c \
