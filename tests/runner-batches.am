@@ -6068,7 +6068,15 @@ if !WANT_AMALGAMATED_TOOLS
 # An explicit edge from each wrapper to its members also works with
 # --disable-dependency-tracking. Automake includes the tests source directory
 # in VPATH builds. Put the operand on a second line for long case names.
-$(foreach batch,$(runner_batches),$(eval $(batch): $(call runner_batch_members,$(batch))))
+# Some preprocessors resolve nested quoted includes from the primary source.
+# Each batch has one category, so add that original source directory only to
+# the batch object. This also covers VPATH builds with generated wrappers.
+define runner_batch_rule
+$(1): $(call runner_batch_members,$(1))
+$(dir $(1))$(patsubst %.c,test_runner-%.$(OBJEXT),$(notdir $(1))): test_runner_CPPFLAGS += \
+    -I"$(srcdir)/$(dir $(firstword $(call runner_batch_members,$(1))))"
+endef
+$(foreach batch,$(runner_batches),$(eval $(call runner_batch_rule,$(batch))))
 $(runner_batches): $(srcdir)/runner-batches.am
 	$(AM_V_GEN)test -d .runner-batches || $(MKDIR_P) .runner-batches
 	$(AM_V_at)printf '#include \\\n"%s"\n' $(call runner_batch_members,$@) >$@.tmp && mv -f $@.tmp $@

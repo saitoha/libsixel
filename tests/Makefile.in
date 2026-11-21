@@ -56060,7 +56060,15 @@ check-php: prepare-binding-artifacts
 # An explicit edge from each wrapper to its members also works with
 # --disable-dependency-tracking. Automake includes the tests source directory
 # in VPATH builds. Put the operand on a second line for long case names.
-@WANT_AMALGAMATED_TOOLS_FALSE@$(foreach batch,$(runner_batches),$(eval $(batch): $(call runner_batch_members,$(batch))))
+# Some preprocessors resolve nested quoted includes from the primary source.
+# Each batch has one category, so add that original source directory only to
+# the batch object. This also covers VPATH builds with generated wrappers.
+@WANT_AMALGAMATED_TOOLS_FALSE@define runner_batch_rule
+@WANT_AMALGAMATED_TOOLS_FALSE@$(1): $(call runner_batch_members,$(1))
+@WANT_AMALGAMATED_TOOLS_FALSE@$(dir $(1))$(patsubst %.c,test_runner-%.$(OBJEXT),$(notdir $(1))): test_runner_CPPFLAGS += \
+@WANT_AMALGAMATED_TOOLS_FALSE@    -I"$(srcdir)/$(dir $(firstword $(call runner_batch_members,$(1))))"
+@WANT_AMALGAMATED_TOOLS_FALSE@endef
+@WANT_AMALGAMATED_TOOLS_FALSE@$(foreach batch,$(runner_batches),$(eval $(call runner_batch_rule,$(batch))))
 @WANT_AMALGAMATED_TOOLS_FALSE@$(runner_batches): $(srcdir)/runner-batches.am
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(AM_V_GEN)test -d .runner-batches || $(MKDIR_P) .runner-batches
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(AM_V_at)printf '#include \\\n"%s"\n' $(call runner_batch_members,$@) >$@.tmp && mv -f $@.tmp $@
