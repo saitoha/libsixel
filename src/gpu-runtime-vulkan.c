@@ -625,6 +625,8 @@ sixel_vk_buffer_reserve_kind(sixel_vk_runtime_t *runtime,
     buffer->capacity = size;
     buffer->noncoherent =
         !(host_flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    buffer->device_local =
+        (flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0;
     return SIXEL_OK;
 }
 

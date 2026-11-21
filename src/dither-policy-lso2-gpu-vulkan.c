@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "dither-policy-lso2-gpu.h"
+#include "filter-sample.h"
 #include "gpu-palette-vulkan.h"
 #include "gpu-runtime-vulkan.h"
 #include "encode-result.h"
@@ -757,7 +758,8 @@ static void
 lso2_gpu_vk_bind_locked(sixel_vk_runtime_t *runtime,
     lso2_gpu_vk_plan_t *plan, sixel_vk_buffer_t const *workspace,
     sixel_vk_buffer_t const *retained_rgb,
-    sixel_vk_buffer_t const *retained_valid)
+    sixel_vk_buffer_t const *retained_valid,
+    sixel_vk_buffer_t const *source_input)
 {
     lso2_gpu_vk_state_t *state;
     sixel_vk_buffer_t const *bound[LSO2_GPU_VK_BINDINGS + 4];
@@ -769,6 +771,7 @@ lso2_gpu_vk_bind_locked(sixel_vk_runtime_t *runtime,
     for (i = 0; i < LSO2_GPU_VK_BINDINGS; ++i) {
         bound[i] = &plan->bundle.buffers[i];
     }
+    if (source_input != NULL) bound[LSO2_GPU_VK_SOURCE] = source_input;
     bound[LSO2_GPU_VK_PHASE] = &state->phase;
     bound[LSO2_GPU_VK_POSITIONS] = &state->positions;
     bound[LSO2_GPU_VK_WORKSPACE] = workspace != NULL ? workspace
@@ -855,9 +858,11 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
     sixel_gpu_lookup_binding_interface_t *binding;
     sixel_gpu_lookup_binding_view_t binding_view;
     sixel_vk_runtime_t *runtime;
+    sixel_frame_t *shared_owner;
     sixel_vk_buffer_t *buffers;
     sixel_vk_buffer_t const *workspace;
     sixel_vk_buffer_t const *retained_rgb, *retained_valid;
+    sixel_vk_buffer_t const *source_input;
     sixel_vk_buffer_t const *frame_indexes, *frame_skip;
     lso2_gpu_vk_params_t params;
     VkCommandBuffer command;
@@ -866,6 +871,7 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
     double started, staged, waited;
     uint32_t invalid, count;
     int pass, kernel, locked;
+    int shared_slot;
     SIXELSTATUS status, finish;
 
     if (request == NULL || (mode != LSO2_GPU_VK_RESOLVE_ONLY &&
@@ -956,6 +962,9 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
     command = VK_NULL_HANDLE;
     runtime = NULL;
     locked = 0;
+    shared_slot = -1;
+    source_input = NULL;
+    shared_owner = NULL;
     memset(&binding_view, 0, sizeof(binding_view));
     if (mode != LSO2_GPU_VK_RESOLVE_ONLY) {
         status = plan->lookup->vtbl->begin(plan->lookup, &binding);
@@ -986,11 +995,18 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
-    /* Host-written inputs land in mapped memory (host-visible VRAM when
-     * available); state planes never leave the device. */
+    /* The sample scan may have copied this preprocessed RGB frame to VRAM.
+     * Keep its owner pinned until this submission has completed. */
     if (mode != LSO2_GPU_VK_RESOLVE_ONLY) {
-        memcpy(buffers[LSO2_GPU_VK_SOURCE].mapped, source.pixels,
-            (size_t)pixels * 3U);
+        shared_slot = sixel_filter_sample_vulkan_borrow_locked(
+            source.pixels, (size_t)pixels * 3U, &source_input);
+        if (source_input == NULL) {
+            memcpy(buffers[LSO2_GPU_VK_SOURCE].mapped, source.pixels,
+                (size_t)pixels * 3U);
+        } else if (runtime->debug) {
+            fprintf(stderr, "LSXSAMSHARE|borrow=%p|slot=%d\n",
+                (void *)source.pixels, shared_slot);
+        }
         if (transparency.transparent_mask != NULL) {
             memcpy(buffers[LSO2_GPU_VK_TRANSPARENT].mapped,
                 transparency.transparent_mask, (size_t)pixels);
@@ -1018,7 +1034,7 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
     invalid = 0;
     memcpy(buffers[LSO2_GPU_VK_INVALID].mapped, &invalid, sizeof(invalid));
     lso2_gpu_vk_bind_locked(runtime, plan, workspace, retained_rgb,
-        retained_valid);
+        retained_valid, source_input);
 
     staged = sixel_vk_now_ms();
     status = sixel_vk_command_begin(runtime, &command);
@@ -1026,8 +1042,10 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
         goto end;
     }
     if (mode != LSO2_GPU_VK_RESOLVE_ONLY) {
-        sixel_vk_buffer_record_upload(command, &buffers[LSO2_GPU_VK_SOURCE],
-            pixels * 3U);
+        if (source_input == NULL) {
+            sixel_vk_buffer_record_upload(command,
+                &buffers[LSO2_GPU_VK_SOURCE], pixels * 3U);
+        }
         sixel_vk_buffer_record_upload(command,
             &buffers[LSO2_GPU_VK_TRANSPARENT], pixels);
         sixel_vk_buffer_record_upload(command,
@@ -1158,12 +1176,17 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
     status = SIXEL_OK;
 
 end:
+    if (locked) {
+        shared_owner =
+            sixel_filter_sample_vulkan_release_locked(shared_slot);
+    }
     if (command != VK_NULL_HANDLE) {
         sixel_vk_command_free(runtime, command);
     }
     if (locked) {
         sixel_vk_unlock();
     }
+    sixel_frame_unref(shared_owner);
     /* Submitted work is always drained above before the lease ends; only a
      * completed build is published. */
     finish = SIXEL_OK;

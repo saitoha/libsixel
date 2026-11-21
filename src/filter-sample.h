@@ -29,6 +29,9 @@
 
 #include "filter.h"
 #include "timeline-logger.h"
+#if defined(HAVE_VULKAN)
+#include "gpu-runtime-vulkan.h"
+#endif
 
 /*
  * Sample filter configuration. The planner fills this before wiring the
@@ -66,6 +69,8 @@ typedef struct sixel_filter_sample_config {
     /* SIXEL_GPU_POLICY_*: any policy but OFF may scan solid regions on
      * the GPU; the CPU scans when no device takes it. */
     int gpu_policy;
+    /* Stage a loaded RGB frame for reuse if the pre-plan leaves it intact. */
+    int share_gpu_input;
 } sixel_filter_sample_config_t;
 
 SIXELSTATUS
@@ -112,8 +117,8 @@ sixel_filter_sample_init(sixel_filter_t *filter,
 /*
  * Scan the RGB888 clip of PIXELS for solid points on the device, leaving
  * in CELLS (SIXEL_SAMPLE_SOLID_CELLS records of a count and four channel
- * sums) exactly the histogram the CPU scan builds.  Fails, leaving CELLS
- * unspecified, when no device is available or another scan holds it.
+ * sums) exactly the histogram the CPU scan builds. Fails, leaving CELLS
+ * unspecified, when no device is available or allocation or dispatch fails.
  */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_sample_solid_gpu(
@@ -124,7 +129,38 @@ sixel_filter_sample_solid_gpu(
     int                 /* in */   clip_y,
     int                 /* in */   clip_width,
     int                 /* in */   clip_height,
+    sixel_frame_t       /* in */  *share_owner,
     unsigned int        /* out */ *cells);
+
+#if defined(HAVE_VULKAN)
+/* Completed GPU time and elapsed wall time are sampled at frame boundaries.
+ * The window and separate enter/leave thresholds avoid per-frame flapping. */
+typedef struct sixel_sample_vulkan_headroom {
+    unsigned long long last_busy_ns;
+    unsigned long long last_wall_ns;
+    unsigned int frames;
+    double load;
+    int windows;
+    int gpu;
+} sixel_sample_vulkan_headroom_t;
+SIXEL_INTERNAL_API int
+sixel_filter_sample_vulkan_headroom_step(
+    sixel_sample_vulkan_headroom_t *state, int gpu_policy,
+    unsigned long long busy_ns, unsigned long long wall_ns);
+SIXEL_INTERNAL_API int
+sixel_filter_sample_vulkan_choose(int gpu_policy);
+/* These leases are protected by the Vulkan runtime lock. A held source
+ * frame keeps the key's pixel address unique until the dither consumes it. */
+SIXEL_INTERNAL_API int
+sixel_filter_sample_vulkan_borrow_locked(
+    unsigned char const *pixels, size_t length,
+    sixel_vk_buffer_t const **buffer);
+SIXEL_INTERNAL_API sixel_frame_t *
+sixel_filter_sample_vulkan_release_locked(int slot);
+SIXEL_INTERNAL_API void
+sixel_filter_sample_vulkan_finish_preplan(sixel_frame_t *owner,
+    int unchanged);
+#endif
 
 /*
  * Two solid colors nearer than this are the same UI element as far as the

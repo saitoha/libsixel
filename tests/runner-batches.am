@@ -506,6 +506,7 @@ runner_batches = \
     .runner-batches/batch_palette_heckbert_0085.inc.c \
     .runner-batches/batch_palette_heckbert_0120.inc.c \
     .runner-batches/batch_palette_heckbert_0127.inc.c \
+    .runner-batches/batch_palette_heckbert_0138.inc.c \
     .runner-batches/batch_palette_heckbert_0150.inc.c \
     .runner-batches/batch_palette_kcenter_0004.inc.c \
     .runner-batches/batch_palette_kmeans_0001.inc.c \
@@ -5586,7 +5587,9 @@ batch_palette_heckbert_0127 = \
     palette/heckbert/0134_heckbert_reuse.c \
     palette/heckbert/0135_quant_palette_ordinary_float_heckbert_average.c \
     palette/heckbert/0136_quant_palette_ordinary_float_heckbert_histogram.c \
-    palette/heckbert/0137_heckbert_polish_auto_average.c \
+    palette/heckbert/0137_heckbert_polish_auto_average.c
+
+batch_palette_heckbert_0138 = \
     palette/heckbert/0138_heckbert_once.c \
     palette/heckbert/0139_heckbert_unique.c
 

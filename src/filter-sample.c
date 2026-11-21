@@ -1187,6 +1187,7 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
                                  unsigned char *out,
                                  unsigned int out_max,
                                  int gpu,
+                                 sixel_frame_t *share_owner,
                                  sixel_allocator_t *allocator,
                                  sixel_timeline_logger_t *logger)
 {
@@ -1231,15 +1232,20 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
     if (cells == NULL) {
         return 0u;
     }
-#if defined(HAVE_METAL)
-    /* The device scan covers the common unmasked RGB frame. */
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+    /* The device scan covers the common unmasked RGB frame. Vulkan needs
+     * both recent GPU headroom and a dither that reuses its input upload. */
     if (gpu && mask == NULL && depth == 3
             && sizeof(*cells) == 5u * sizeof(unsigned int)
             && (size_t)clip_width * (size_t)clip_height
                >= sixel_runtime_policy_sample_min_pixels(524288u)
+#if defined(HAVE_VULKAN)
+            && share_owner != NULL
+            && sixel_filter_sample_vulkan_choose(gpu)
+#endif
             && sixel_filter_sample_solid_gpu(pixels, width, height,
                    clip_x, clip_y, clip_width, clip_height,
-                   &cells[0].count) == SIXEL_OK) {
+                   share_owner, &cells[0].count) == SIXEL_OK) {
         goto select;
     }
 #else
@@ -1289,7 +1295,7 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
         }
         sixel_allocator_free(allocator, partial);
     }
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 select:
 #endif
     for (cell = 0; cell < SIXEL_SAMPLE_SOLID_CELLS; ++cell) {
@@ -1391,7 +1397,7 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
 {
     return sixel_filter_sample_collect_solid(pixels, width, height, depth,
         mask, clip_x, clip_y, clip_width, clip_height, out, out_max,
-        0, allocator, NULL);
+        0, NULL, allocator, NULL);
 }
 
 static SIXELSTATUS
@@ -1439,6 +1445,7 @@ sixel_filter_sample_copy_frame(
     size_t dst_index;
     sixel_filter_sample_job_t ctx;
     unsigned char *normalized_src_pixels;
+    sixel_frame_t *share_owner;
     unsigned char solid[SIXEL_SAMPLE_SOLID_MAX * 4u];
     unsigned int solid_count;
     unsigned int solid_weight;
@@ -1486,6 +1493,7 @@ sixel_filter_sample_copy_frame(
     mask_size = 0u;
     dst_index = 0u;
     normalized_src_pixels = NULL;
+    share_owner = NULL;
 
     if (frame == NULL || sample_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1643,6 +1651,14 @@ sixel_filter_sample_copy_frame(
      * are appended to it and the extra rows have to be accounted for here.
      */
     solid_count = 0u;
+    /* The pre-plan will confirm whether this loaded RGB storage remains
+     * unchanged. Keep the owner alive until dither or eviction. */
+    if (config != NULL && config->share_gpu_input &&
+            config->source ==
+                SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME &&
+            src_pixels == sixel_frame_get_pixels(frame)) {
+        share_owner = frame;
+    }
     if (config == NULL || !config->skip_solid) {
         solid_count = sixel_filter_sample_collect_solid(src_pixels,
                                                        src_width,
@@ -1658,6 +1674,7 @@ sixel_filter_sample_copy_frame(
                                                        config != NULL &&
                                                        config->gpu_policy !=
                                                        SIXEL_GPU_POLICY_OFF,
+                                                       share_owner,
                                                        allocator, logger);
     }
     if (solid_count > 0u) {
