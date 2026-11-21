@@ -1,10 +1,11 @@
 fs = import('fs')
 
 # Collect all sample images so `meson dist` ships the full corpus.
-# The corpus has one fixed category level; globbing needs no external enumerator.
-pngsuite_result = run_command('sh', '-c',
-  'cd "$1" && printf "%s\\n" pngsuite/*/*.png',
-  'pngsuite-list', meson.current_source_dir(), check: true)
+pngsuite_result = run_command(python3, '-c',
+  'from pathlib import Path; import sys; ' +
+  'root = Path(sys.argv[1]); ' +
+  'print("\\n".join(sorted(p.relative_to(root).as_posix() for p in root.glob("pngsuite/*/*.png"))))',
+  meson.current_source_dir(), check: true)
 pngsuite_output = pngsuite_result.stdout().strip()
 pngsuite_list = pngsuite_output.split('\n')
 pngsuite_images = []
@@ -46,4 +47,4 @@ root_images = files('README.md',
   'snake.tiff',
   'vimperator3.png')
 
-meson.add_dist_script('sh', '-c', 'true', pngsuite_images + root_images)
+meson.add_dist_script(python3, '-c', 'pass', pngsuite_images + root_images)

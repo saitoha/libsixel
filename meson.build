@@ -32,6 +32,7 @@ project('libsixel',
         ])
 
 host_system = host_machine.system()
+windows_emscripten_build = build_machine.system() == 'windows' and host_system == 'emscripten'
 cc = meson.get_compiler('c')
 # Streams and allocated memory cross the libsixel DLL boundary. Plain builds
 # otherwise omit CRT flags and silently give each module a private static CRT.
@@ -2812,14 +2813,16 @@ if perl_opt.enabled() and perl.found()
   endif
 endif
 
-# Build the embedded completion header once so both the converter targets and
-# the amalgamated translation unit can consume the same generated artifact.
-sh = find_program('sh')
+# The Windows SDK can build from cmd.exe without sh when shell-based targets
+# such as TAP and amalgamation are disabled.
+sh = find_program('sh', required: not windows_emscripten_build or
+  get_option('tests') or fuzz_enabled or amalgamated_sources_enabled or
+  have_vulkan or shebang_enabled)
 meson_prog = find_program('meson', required: true)
-python3 = find_program('python3', required: true)
-gen_completion = join_paths(
-  meson.project_source_root(), 'tools', 'gen_completion_embed.py'
-)
+python3 = ci_probe
+
+# Build the embedded completion header once for the converter and amalgamation.
+gen_completion = files('tools/gen_completion_embed.py')
 completion_inputs = files(
   'converters/shell-completion/bash/img2sixel',
   'converters/shell-completion/zsh/_img2sixel',
@@ -2827,16 +2830,8 @@ completion_inputs = files(
 completion_embed = custom_target('completion_embed.h',
   input: completion_inputs,
   output: 'completion_embed.h',
-  command: [
-    sh, '-c',
-    'set -eu; out="$1"; bash_in="$2"; zsh_in="$3"; conv_dir="$4"; ' +
-    'mkdir -p "${conv_dir}"; ' +
-    '"$5" "$6" "${out}" "${bash_in}" "${zsh_in}"; ' +
-    'cp "${out}" "${conv_dir}/completion_embed.h"',
-    'completion_embed', '@OUTPUT@', '@INPUT0@', '@INPUT1@',
-    meson.project_build_root() / 'converters',
-    python3, gen_completion,
-  ],
+  command: [python3, gen_completion, '@OUTPUT@', '@INPUT0@', '@INPUT1@',
+    '--copy-to', meson.project_build_root() / 'converters/completion_embed.h'],
   build_by_default: true,
   install: false,
 )
@@ -2979,8 +2974,9 @@ if get_option('tests') and have_quicklook_extension
     '--suite', 'quicklook-installed', '--print-errorlogs'])
 endif
 
-run_target('installcheck',
-  command: [sh, '-c', '''
+if sh.found()
+  run_target('installcheck',
+    command: [sh, '-c', '''
 set -eu
 
 meson_bin="$1"
@@ -3103,7 +3099,8 @@ fi
             get_option('tests') ? 'yes' : 'no',
             (host_machine.system() == 'windows' or
              host_machine.system() == 'cygwin') ? '.exe' : ''] + extension_installcheck_command,
-  depends: wic_installcheck_deps)
+    depends: wic_installcheck_deps)
+endif
 
 if fuzz_enabled
   subdir('fuzz')
