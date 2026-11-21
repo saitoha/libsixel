@@ -1,72 +1,80 @@
 #!/bin/sh
 
-set -euovx
+set -eu
 
-SCRIPTDIR=$(cd $(dirname "${0}") && pwd)
-if which cygpath; then
-  SCRIPTDIR=$(cygpath -u "${SCRIPTDIR}")
+scriptdir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+os=$(uname -s)
+case "$os" in
+  CYGWIN*|MINGW*|MSYS*)
+    # Run the example through native cmd without rewriting its switches.
+    cd "$scriptdir"
+    MSYS2_ARG_CONV_EXCL='*' exec cmd.exe /d /c example-build-emcc.cmd
+    ;;
+esac
+
+srcdir=$(CDPATH='' cd "$scriptdir/.." && pwd)
+if test -f "$srcdir/config.status"; then
+  printf '%s\n' 'Use an unconfigured source tree for an out-of-tree Autotools build.' >&2
+  exit 1
 fi
-EMSDK=${SCRIPTDIR}/emsdk-$(uname -s)-$(uname -m)
-BUILDDIR="${SCRIPTDIR}"/build-emcc
-rm -rf "${BUILDDIR}"
-mkdir -p "${BUILDDIR}"
-SHEBANG_FILE="${BUILDDIR}"/emscripten-node-shebang
-printf '#!/usr/bin/env node\n' > "${SHEBANG_FILE}"
+PATH="$srcdir/.local/bin:$PATH"
+export PATH
+builddir=${SIXEL_EMCC_BUILD_DIR:-"$scriptdir/build-emcc"}
+sdk_version=${EMSDK_VERSION:-7.0.0}
 
-if ! which emcc; then
-  if [ ! -d "${EMSDK}/.git" ]; then
-    git clone --depth 1 https://github.com/emscripten-core/emsdk.git "${EMSDK}"
+if test -n "${SIXEL_EMSDK_DIR:-}" || ! command -v emcc >/dev/null 2>&1; then
+  sdkdir=${SIXEL_EMSDK_DIR:-"$scriptdir/emsdk-$os-$(uname -m)"}
+  if test ! -f "$sdkdir/emsdk_env.sh"; then
+    git clone --depth 1 --branch "$sdk_version" \
+      https://github.com/emscripten-core/emsdk.git "$sdkdir"
   fi
-  [ -f "${EMSDK}"/emsdk_env.sh ] || exit 1
-  sh "${EMSDK}"/emsdk install latest
-  sh "${EMSDK}"/emsdk activate latest
-  SAVED_PWD=$(pwd)
-  cd "${EMSDK}"
+  "$sdkdir/emsdk" install "$sdk_version"
+  "$sdkdir/emsdk" activate "$sdk_version"
+  # The SDK's environment script resolves its location from the working
+  # directory in POSIX shells that do not expose the sourced filename.
+  saved_pwd=$PWD
+  cd "$sdkdir"
+  # shellcheck source=/dev/null
   . ./emsdk_env.sh
-  cd "${SAVED_PWD}"
-elif [ -f "${EMSDK}"/emsdk_env.sh ]; then
-  SAVED_PWD=$(pwd)
-  cd "${EMSDK}"
-  . ./emsdk_env.sh
-  cd "${SAVED_PWD}"
-  which emcc
+  cd "$saved_pwd"
 fi
 
-# MSYS/Cygwin shells ship Emscripten helper entrypoints only as .bat files,
-# so create small shell wrappers that forward to the .bat via `cmd //c`.
-UNAME_LOWER=$(uname -s | tr '[:upper:]' '[:lower:]')
-if echo "${UNAME_LOWER}" | grep -Eq 'msys|mingw|cygwin'; then
-  EMSCRIPTEN_BINDIR="${EMSDK}/upstream/emscripten"
-  EMSCRIPTEN_WRAPPERDIR="${BUILDDIR}/emscripten-msys-wrappers"
-  mkdir -p "${EMSCRIPTEN_WRAPPERDIR}"
-
-  # These cover the autotools flow: configure, make, archive, strip.
-  for tool in emconfigure emmake emcc emar emranlib emstrip emnm; do
-    bat_path="${EMSCRIPTEN_BINDIR}/${tool}.bat"
-    wrapper_path="${EMSCRIPTEN_WRAPPERDIR}/${tool}"
-    if [ -f "${bat_path}" ]; then
-      chmod +x "${bat_path}"
-      cat > "${wrapper_path}" <<EOF
-#!/bin/sh
-cmd //c "${bat_path}" "\$@"
-EOF
-      chmod +x "${wrapper_path}"
-    fi
-  done
-
-  PATH="${EMSCRIPTEN_WRAPPERDIR}:${PATH}"
+# Autotools probes the LLVM utilities in addition to the Emscripten drivers.
+if test -n "${EMSDK:-}"; then
+  PATH="$EMSDK/upstream/bin:$PATH"
   export PATH
 fi
 
-cd "${BUILDDIR}" && (
-CC=emcc \
-../../configure \
+case ${SIXEL_EMCC_CHECK:-0} in
+  0) test_option=--disable-tests ;;
+  1) test_option=--enable-tests ;;
+  *) printf '%s\n' 'SIXEL_EMCC_CHECK must be 0 or 1' >&2; exit 2 ;;
+esac
+
+mkdir -p "$builddir"
+cd "$builddir"
+printf '#!/usr/bin/env node\n' > emscripten-node-shebang
+
+# Keep pkg-config probes in the SDK sysroot instead of the build machine.
+CFLAGS="${CFLAGS:--O1 -g}" emconfigure "$srcdir/configure" \
   --host=wasm32-unknown-emscripten \
-  --with-shebang-file="${SHEBANG_FILE}" \
+  --with-shebang-file="$PWD/emscripten-node-shebang" \
+  --disable-dependency-tracking \
   --disable-shared \
   --with-png \
   --with-jpeg \
-  --without-librsvg
-make all V=1
-make check
-)
+  --without-tiff \
+  --without-webp \
+  --without-librsvg \
+  --without-libfetch \
+  "$test_option"
+"${MAKE:-make}" all
+
+converters/img2sixel -o example.six "$srcdir/images/snake.png"
+converters/sixel2png -i example.six -o example.png
+assessment/lsqa -m ms-ssim -b ms-ssim:min=0.98 \
+  "$srcdir/images/snake.png" example.png
+
+if test "$test_option" = --enable-tests; then
+  "${MAKE:-make}" check
+fi

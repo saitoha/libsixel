@@ -222,9 +222,9 @@ SCAN_BUILD="$(command -v scan-build || command -v scan-build-18 || command -v sc
 
 ### Emscripten (Autotools)
 
-`emscripten/build-emcc.sh` is included as a **sample helper** that wraps the
-steps below.  For a transparent, reproducible setup without the script, follow
-this manual procedure.
+Run [`build-examples/example-build-emcc.sh`](build-examples/example-build-emcc.sh) on Linux or macOS from an unconfigured source tree to build static converters with the SDK's PNG and JPEG ports and verify a PNG → SIXEL → PNG round trip. Set `SIXEL_EMCC_CHECK=1` to run the full Autotools test suite as well. The script uses an active `emcc` if available and otherwise installs SDK 7.0.0 by default. Set `SIXEL_EMSDK_DIR` to select an SDK checkout or `SIXEL_EMCC_BUILD_DIR` to select the output directory.
+
+The equivalent manual Autotools procedure is:
 
 1. **Install and activate Emscripten SDK** (skip if you already have `emcc`):
 
@@ -285,8 +285,7 @@ this manual procedure.
    ```
 
 Re-run the configure and build steps after updating Emscripten or changing
-configuration flags.  `emscripten/build-emcc.sh` can still be used as a quick
-reference or automated example of the same sequence.
+configuration flags.
 
 ## Building with Meson
 
@@ -386,6 +385,10 @@ meson compile -C builddir installcheck  # optional: tests installed commands
 ### Windows Emscripten SDK (Meson)
 
 On x64 Windows, use `cmd.exe` with the official Windows SDK, Python, Meson, Ninja, and an AWK executable for the public header generator. The following example uses the Emscripten 7.0.0 SDK and the AWK executable bundled with Git for Windows.
+
+Run `build-examples\example-build-emcc.cmd` from `cmd.exe` to build, stage and test the converters. From Git Bash, `build-examples/example-build-emcc.sh` launches the same Windows example. Use `SIXEL_EMCC_AWK` to point to a custom AWK installation. The Windows example uses the built-in image loaders and runs the installed converter smoke test.
+
+For a manual build:
 
 ```bat
 git clone --depth 1 --branch 7.0.0 https://github.com/emscripten-core/emsdk.git
