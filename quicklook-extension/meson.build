@@ -79,7 +79,9 @@ quicklook_core = static_library(
   'sixelquicklookcore',
   srcs,
   include_directories: [project_inc, include_directories('../src')],
-  c_args: common_c_args + ['-DSIXEL_DECODE_PIXELS_NO_FAST4=1'],
+  # The standalone core only links the CPU decoder.
+  c_args: common_c_args + ['-DSIXEL_DECODE_PIXELS_NO_FAST4=1',
+                           '-DSIXEL_DECODE_PIXELS_NO_GPU=1'],
   install: false)
 
 preview = executable(

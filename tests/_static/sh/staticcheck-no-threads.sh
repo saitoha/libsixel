@@ -11,7 +11,7 @@ cc_bin=${CC:-cc}
     echo 'ok 1 # SKIP configured headers or C compiler unavailable'
     exit 0
 }
-config_dir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-encoder-config.XXXXXX") || {
+config_dir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-no-threads-config.XXXXXX") || {
     echo 'not ok 1 - cannot prepare no-threads configuration'
     exit 0
 }
@@ -43,12 +43,19 @@ END { exit !found || threaded }
     echo 'not ok 1 - encoder builds with SIXEL_ENABLE_THREADS undefined'
     exit 0
 }
-# Compile the registered GPU test with unused-function warnings enabled.
+# Compile the decoder and a registered GPU test with unused-function warnings.
+"$cc_bin" -std=c99 -DHAVE_CONFIG_H -fsyntax-only -Wunused-function -Werror \
+    -I"$config_dir" -I"$build_root/include" -I"$src_root/include" \
+    "$src_root/src/fromsixel.c" || {
+    echo 'not ok 1 - serial decoder excludes threaded helpers'
+    exit 0
+}
+
 "$cc_bin" -std=c99 -DHAVE_CONFIG_H -fsyntax-only -Wunused-function -Werror \
     -I"$config_dir" -I"$build_root/include" -I"$src_root/include" \
     -I"$src_root" "$src_root/tests/encoder/indexed/0184_core_gpu_body.c" || {
     echo 'not ok 1 - GPU-body test helpers require thread support'
     exit 0
 }
-echo 'ok 1 - encoder and test build with SIXEL_ENABLE_THREADS undefined'
+echo 'ok 1 - encoder, decoder and test build without thread support'
 exit 0

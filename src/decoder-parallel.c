@@ -2683,7 +2683,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int trust_raster_size;
     int undither_prepared;
     int gather_keep;
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) && !defined(SIXEL_DECODE_PIXELS_NO_GPU)
     int gpu_outside;
 #endif
 
@@ -2741,7 +2741,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
         goto cleanup;
     }
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) && !defined(SIXEL_DECODE_PIXELS_NO_GPU)
     /* A kept band-column block of an ordinary body can be parsed on the
      * device; it declines anything the workers would treat specially. */
     if ((decode_flags & SIXEL_DECODE_PIXELS_OPTION_GPU_INTERNAL) != 0U &&
