@@ -2321,6 +2321,20 @@ int test_decoder_0025_decoder_paint_create_failure_clean(int argc,
 int test_decoder_0026_parallel_converging_bands(int argc,
                                                            char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
+int test_retained_avx2_backend(int argc, char **argv);
+int test_retained_avx2_palette_256_rgb(int argc, char **argv);
+int test_retained_avx2_mixed_rgb(int argc, char **argv);
+int test_retained_avx2_mixed_valid(int argc, char **argv);
+int test_retained_avx2_mixed_paint(int argc, char **argv);
+int test_retained_avx2_mixed_count(int argc, char **argv);
+int test_retained_avx2_mixed_refinement(int argc, char **argv);
+int test_retained_avx2_all_keep_rgb(int argc, char **argv);
+int test_retained_avx2_exact_keep_refinement(int argc, char **argv);
+int test_retained_avx2_all_approximate_refinement(int argc, char **argv);
+int test_retained_avx2_short_palette_sentinel(int argc, char **argv);
+int test_retained_avx2_without_skip_rgb(int argc, char **argv);
+int test_retained_avx2_tail_rgb(int argc, char **argv);
+int test_retained_avx2_partial_rows_rgb(int argc, char **argv);
 int test_retained_neon_palette_256_rgb(int argc, char **argv);
 int test_retained_neon_mixed_rgb(int argc, char **argv);
 int test_retained_neon_mixed_valid(int argc, char **argv);
@@ -10616,6 +10630,34 @@ static test_entry_t const test_entries[] = {
     { "decoder/0026_parallel_converging_bands",
       test_decoder_0026_parallel_converging_bands },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
+    { "encoder/indexed/0185_retained_avx2_backend",
+      test_retained_avx2_backend },
+    { "encoder/indexed/0186_retained_avx2_palette_256_rgb",
+      test_retained_avx2_palette_256_rgb },
+    { "encoder/indexed/0187_retained_avx2_mixed_rgb",
+      test_retained_avx2_mixed_rgb },
+    { "encoder/indexed/0188_retained_avx2_mixed_valid",
+      test_retained_avx2_mixed_valid },
+    { "encoder/indexed/0189_retained_avx2_mixed_paint",
+      test_retained_avx2_mixed_paint },
+    { "encoder/indexed/0190_retained_avx2_mixed_count",
+      test_retained_avx2_mixed_count },
+    { "encoder/indexed/0191_retained_avx2_mixed_refinement",
+      test_retained_avx2_mixed_refinement },
+    { "encoder/indexed/0192_retained_avx2_all_keep_rgb",
+      test_retained_avx2_all_keep_rgb },
+    { "encoder/indexed/0193_retained_avx2_exact_keep_refinement",
+      test_retained_avx2_exact_keep_refinement },
+    { "encoder/indexed/0194_retained_avx2_all_approximate_refinement",
+      test_retained_avx2_all_approximate_refinement },
+    { "encoder/indexed/0195_retained_avx2_short_palette_sentinel",
+      test_retained_avx2_short_palette_sentinel },
+    { "encoder/indexed/0196_retained_avx2_without_skip_rgb",
+      test_retained_avx2_without_skip_rgb },
+    { "encoder/indexed/0197_retained_avx2_tail_rgb",
+      test_retained_avx2_tail_rgb },
+    { "encoder/indexed/0198_retained_avx2_partial_rows_rgb",
+      test_retained_avx2_partial_rows_rgb },
     { "encoder/indexed/0085_retained_neon_palette_256_rgb",
       test_retained_neon_palette_256_rgb },
     { "encoder/indexed/0086_retained_neon_mixed_rgb",

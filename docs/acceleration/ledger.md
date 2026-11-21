@@ -26,7 +26,7 @@ Rows are sorted by ID. The prefix names the stage: `DECODE` for the SIXEL decode
 | REFRESH-LUMA | Compute luma for spatial refresh | done | planned | planned | done | planned | n/a | n/a | |
 | REFRESH-SOBEL | Sobel magnitude for spatial refresh | done | done | planned | done | planned | n/a | n/a | |
 | RETAINED-EXPAND | Expand retained canvas rows on the GPU | done | n/a | n/a | n/a | n/a | done | done | |
-| RETAINED-ROWS | Gather retained rows through the palette table | done | done | planned | planned | planned | n/a | n/a | |
+| RETAINED-ROWS | Gather retained rows through the palette table | done | done | planned | done | planned | n/a | n/a | |
 | SAMPLE-SOLID-ADD | Add solid sample points to their histogram cells | done | done | planned | planned | planned | n/a | n/a | |
 | SAMPLE-VARY-POINTS | Test whether sample points lie in a solid region | done | done | done | done | planned | done | planned | Metal scans the whole frame on the device for large frames. |
 | SAMPLE-VARY-RGB | Test RGB sample points through channel planes and table lookups | done | done | n/a | done | planned | n/a | n/a | SSE2 has no byte shuffle; the AVX2 port uses `vpshufb`. |
