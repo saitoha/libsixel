@@ -12,6 +12,28 @@ echo '1..1'
 src_root=$1
 registry_file="$src_root/src/options-registry.c"
 completion_file="$src_root/converters/completion_utils.c"
+
+# The gain test compares two encodes on the GPU. Require the same literal
+# built-in palette in both commands so palette generation cannot affect it.
+awk '
+/^(short|env)_trace=/ {
+    command = $0
+    sub(/_trace=.*/, "", command)
+}
+command != "" && match($0, /[[:space:]]-b[[:space:]]+[[:alnum:]_-]+/) {
+    palette[command] = substr($0, RSTART, RLENGTH)
+    sub(/^[[:space:]]*-b[[:space:]]+/, "", palette[command])
+    palettes[command]++
+}
+/>"\$\{(short|env)_output\}"/ { command = "" }
+END {
+    exit palettes["short"] != 1 || palettes["env"] != 1 ||
+        palette["short"] != palette["env"]
+}
+' "$src_root/tests/cli/dither-options/0043_diffusion_lso2_gain_image_regression.t" || {
+    echo 'not ok 1 - both LSO2 gain commands use the same built-in palette'
+    exit 0
+}
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-image-coverage-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
