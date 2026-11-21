@@ -141,6 +141,8 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	encoder/highcolor/0086_byte_fs_neighborhood.c \
+	encoder/highcolor/0087_byte_atkinson_neighborhood.c \
 	_support/lso2-gpu/retained_common.c \
 	_support/processing/delta-refresh/spatial_test_common.c \
 	delta/refresh/0100_custom_band_periods.c \
@@ -338,7 +340,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/quant/palette/delta_fixed_common.c \
 	_support/quant/palette/delta_native_common.c \
 	_support/quant/palette/export_capture_common.c \
-	writer/png/color_test_common.c writer/png/color_test_common.h \
+	writer/png/color_test_common.c \
+	writer/png/0035_argb8888_samples.c \
+	writer/png/0036_bgra8888_samples.c \
+	writer/png/0037_abgr8888_samples.c \
+	writer/png/0038_xrgb8888_samples.c \
+	writer/png/0039_rgbx8888_samples.c \
+	writer/png/0040_xbgr8888_samples.c \
+	writer/png/0041_bgrx8888_samples.c \
+	writer/png/0042_height_limit.c writer/png/color_test_common.h \
 	$(top_srcdir)/assessment/assessment.c \
 	$(top_srcdir)/assessment/color.c \
 	$(top_srcdir)/assessment/scielab.c \
@@ -1513,6 +1523,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/path.c
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/highcolor/test_runner-0086_byte_fs_neighborhood.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/lso2-gpu/test_runner-retained_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-spatial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0100_custom_band_periods.$(OBJEXT) \
@@ -1710,6 +1722,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/test_runner-delta_native_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/quant/palette/test_runner-export_capture_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-color_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0035_argb8888_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0036_bgra8888_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0037_abgr8888_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0038_xrgb8888_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0039_rgbx8888_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0040_xbgr8888_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0041_bgrx8888_samples.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0042_height_limit.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-color.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-scielab.$(OBJEXT) \
@@ -4816,6 +4836,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/allocation/$(DEPDIR)/test_runner-0002_allocation_controls.Po \
 	encoder/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Po \
 	encoder/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Po \
+	encoder/highcolor/$(DEPDIR)/test_runner-0086_byte_fs_neighborhood.Po \
+	encoder/highcolor/$(DEPDIR)/test_runner-0087_byte_atkinson_neighborhood.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0020_writer_failed_body.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0041_core_unpublished_rows.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0042_core_early_finish.Po \
@@ -5201,6 +5223,14 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	platform/threadpool/$(DEPDIR)/test_runner-0003_thread_policy.Po \
 	platform/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Po \
 	platform/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Po \
+	writer/png/$(DEPDIR)/test_runner-0035_argb8888_samples.Po \
+	writer/png/$(DEPDIR)/test_runner-0036_bgra8888_samples.Po \
+	writer/png/$(DEPDIR)/test_runner-0037_abgr8888_samples.Po \
+	writer/png/$(DEPDIR)/test_runner-0038_xrgb8888_samples.Po \
+	writer/png/$(DEPDIR)/test_runner-0039_rgbx8888_samples.Po \
+	writer/png/$(DEPDIR)/test_runner-0040_xbgr8888_samples.Po \
+	writer/png/$(DEPDIR)/test_runner-0041_bgrx8888_samples.Po \
+	writer/png/$(DEPDIR)/test_runner-0042_height_limit.Po \
 	writer/png/$(DEPDIR)/test_runner-color_test_common.Po \
 	writer/snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po
 am__mv = mv -f
@@ -7747,6 +7777,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0081_PACKED_MASK_RETRY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_PACKED_HANDOFF_PLAN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_PACKED_PNG_P3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_BYTE_FS_NEIGHBORHOOD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0087_BYTE_ATKINSON_NEIGHBORHOOD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HIGHCOLOR_PACKED_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HIGHCOLOR_PNG_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HIGHCOLOR_MASK_COMMON \
@@ -8039,6 +8071,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_DCI_P3_DIRECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_ADOBE_RGB_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_DCI_P3_SNAPSHOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_ARGB8888_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_BGRA8888_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_ABGR8888_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_XRGB8888_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_RGBX8888_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_XBGR8888_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_BGRX8888_SAMPLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_HEIGHT_LIMIT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0143_ADOBE_LIBPNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0144_DCI_LIBPNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -11532,6 +11572,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = \
 @WANT_AMALGAMATED_TOOLS_FALSE@    test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/highcolor/0086_byte_fs_neighborhood.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/highcolor/0087_byte_atkinson_neighborhood.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/lso2-gpu/retained_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/spatial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0100_custom_band_periods.c \
@@ -11732,6 +11774,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/delta_native_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/export_capture_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/color_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0035_argb8888_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0036_bgra8888_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0037_abgr8888_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0038_xrgb8888_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0039_rgbx8888_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0040_xbgr8888_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0041_bgrx8888_samples.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0042_height_limit.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/color.c \
@@ -19562,6 +19612,18 @@ lookup/delaunay/libfloatlookuptests_la-0012_delaunay_float_bulk.lo:  \
 
 libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
+encoder/highcolor/$(am__dirstamp):
+	@$(MKDIR_P) encoder/highcolor
+	@: >>encoder/highcolor/$(am__dirstamp)
+encoder/highcolor/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) encoder/highcolor/$(DEPDIR)
+	@: >>encoder/highcolor/$(DEPDIR)/$(am__dirstamp)
+encoder/highcolor/test_runner-0086_byte_fs_neighborhood.$(OBJEXT):  \
+	encoder/highcolor/$(am__dirstamp) \
+	encoder/highcolor/$(DEPDIR)/$(am__dirstamp)
+encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.$(OBJEXT):  \
+	encoder/highcolor/$(am__dirstamp) \
+	encoder/highcolor/$(DEPDIR)/$(am__dirstamp)
 _support/lso2-gpu/$(am__dirstamp):
 	@$(MKDIR_P) _support/lso2-gpu
 	@: >>_support/lso2-gpu/$(am__dirstamp)
@@ -20373,6 +20435,30 @@ writer/png/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) writer/png/$(DEPDIR)
 	@: >>writer/png/$(DEPDIR)/$(am__dirstamp)
 writer/png/test_runner-color_test_common.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0035_argb8888_samples.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0036_bgra8888_samples.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0037_abgr8888_samples.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0038_xrgb8888_samples.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0039_rgbx8888_samples.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0040_xbgr8888_samples.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0041_bgrx8888_samples.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0042_height_limit.$(OBJEXT):  \
 	writer/png/$(am__dirstamp) \
 	writer/png/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/assessment/$(am__dirstamp):
@@ -26123,6 +26209,7 @@ mostlyclean-compile:
 	-rm -f dither/sierra3-gpu/*.$(OBJEXT)
 	-rm -f dither/stucki-gpu/*.$(OBJEXT)
 	-rm -f encoder/allocation/*.$(OBJEXT)
+	-rm -f encoder/highcolor/*.$(OBJEXT)
 	-rm -f encoder/indexed/*.$(OBJEXT)
 	-rm -f encoder/ormode/*.$(OBJEXT)
 	-rm -f encoder/pipeline/*.$(OBJEXT)
@@ -27623,6 +27710,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/allocation/$(DEPDIR)/test_runner-0002_allocation_controls.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/highcolor/$(DEPDIR)/test_runner-0086_byte_fs_neighborhood.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/highcolor/$(DEPDIR)/test_runner-0087_byte_atkinson_neighborhood.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0020_writer_failed_body.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0041_core_unpublished_rows.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0042_core_early_finish.Po@am__quote@ # am--include-marker
@@ -28008,6 +28097,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0003_thread_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0035_argb8888_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0036_bgra8888_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0037_abgr8888_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0038_xrgb8888_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0039_rgbx8888_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0040_xbgr8888_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0041_bgrx8888_samples.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0042_height_limit.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-color_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po@am__quote@ # am--include-marker
 
@@ -28101,6 +28198,34 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+encoder/highcolor/test_runner-0086_byte_fs_neighborhood.o: encoder/highcolor/0086_byte_fs_neighborhood.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/highcolor/test_runner-0086_byte_fs_neighborhood.o -MD -MP -MF encoder/highcolor/$(DEPDIR)/test_runner-0086_byte_fs_neighborhood.Tpo -c -o encoder/highcolor/test_runner-0086_byte_fs_neighborhood.o `test -f 'encoder/highcolor/0086_byte_fs_neighborhood.c' || echo '$(srcdir)/'`encoder/highcolor/0086_byte_fs_neighborhood.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/highcolor/$(DEPDIR)/test_runner-0086_byte_fs_neighborhood.Tpo encoder/highcolor/$(DEPDIR)/test_runner-0086_byte_fs_neighborhood.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/highcolor/0086_byte_fs_neighborhood.c' object='encoder/highcolor/test_runner-0086_byte_fs_neighborhood.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/highcolor/test_runner-0086_byte_fs_neighborhood.o `test -f 'encoder/highcolor/0086_byte_fs_neighborhood.c' || echo '$(srcdir)/'`encoder/highcolor/0086_byte_fs_neighborhood.c
+
+encoder/highcolor/test_runner-0086_byte_fs_neighborhood.obj: encoder/highcolor/0086_byte_fs_neighborhood.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/highcolor/test_runner-0086_byte_fs_neighborhood.obj -MD -MP -MF encoder/highcolor/$(DEPDIR)/test_runner-0086_byte_fs_neighborhood.Tpo -c -o encoder/highcolor/test_runner-0086_byte_fs_neighborhood.obj `if test -f 'encoder/highcolor/0086_byte_fs_neighborhood.c'; then $(CYGPATH_W) 'encoder/highcolor/0086_byte_fs_neighborhood.c'; else $(CYGPATH_W) '$(srcdir)/encoder/highcolor/0086_byte_fs_neighborhood.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/highcolor/$(DEPDIR)/test_runner-0086_byte_fs_neighborhood.Tpo encoder/highcolor/$(DEPDIR)/test_runner-0086_byte_fs_neighborhood.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/highcolor/0086_byte_fs_neighborhood.c' object='encoder/highcolor/test_runner-0086_byte_fs_neighborhood.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/highcolor/test_runner-0086_byte_fs_neighborhood.obj `if test -f 'encoder/highcolor/0086_byte_fs_neighborhood.c'; then $(CYGPATH_W) 'encoder/highcolor/0086_byte_fs_neighborhood.c'; else $(CYGPATH_W) '$(srcdir)/encoder/highcolor/0086_byte_fs_neighborhood.c'; fi`
+
+encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.o: encoder/highcolor/0087_byte_atkinson_neighborhood.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.o -MD -MP -MF encoder/highcolor/$(DEPDIR)/test_runner-0087_byte_atkinson_neighborhood.Tpo -c -o encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.o `test -f 'encoder/highcolor/0087_byte_atkinson_neighborhood.c' || echo '$(srcdir)/'`encoder/highcolor/0087_byte_atkinson_neighborhood.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/highcolor/$(DEPDIR)/test_runner-0087_byte_atkinson_neighborhood.Tpo encoder/highcolor/$(DEPDIR)/test_runner-0087_byte_atkinson_neighborhood.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/highcolor/0087_byte_atkinson_neighborhood.c' object='encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.o `test -f 'encoder/highcolor/0087_byte_atkinson_neighborhood.c' || echo '$(srcdir)/'`encoder/highcolor/0087_byte_atkinson_neighborhood.c
+
+encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.obj: encoder/highcolor/0087_byte_atkinson_neighborhood.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.obj -MD -MP -MF encoder/highcolor/$(DEPDIR)/test_runner-0087_byte_atkinson_neighborhood.Tpo -c -o encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.obj `if test -f 'encoder/highcolor/0087_byte_atkinson_neighborhood.c'; then $(CYGPATH_W) 'encoder/highcolor/0087_byte_atkinson_neighborhood.c'; else $(CYGPATH_W) '$(srcdir)/encoder/highcolor/0087_byte_atkinson_neighborhood.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/highcolor/$(DEPDIR)/test_runner-0087_byte_atkinson_neighborhood.Tpo encoder/highcolor/$(DEPDIR)/test_runner-0087_byte_atkinson_neighborhood.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/highcolor/0087_byte_atkinson_neighborhood.c' object='encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/highcolor/test_runner-0087_byte_atkinson_neighborhood.obj `if test -f 'encoder/highcolor/0087_byte_atkinson_neighborhood.c'; then $(CYGPATH_W) 'encoder/highcolor/0087_byte_atkinson_neighborhood.c'; else $(CYGPATH_W) '$(srcdir)/encoder/highcolor/0087_byte_atkinson_neighborhood.c'; fi`
 
 _support/lso2-gpu/test_runner-retained_common.o: _support/lso2-gpu/retained_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/lso2-gpu/test_runner-retained_common.o -MD -MP -MF _support/lso2-gpu/$(DEPDIR)/test_runner-retained_common.Tpo -c -o _support/lso2-gpu/test_runner-retained_common.o `test -f '_support/lso2-gpu/retained_common.c' || echo '$(srcdir)/'`_support/lso2-gpu/retained_common.c
@@ -30859,6 +30984,118 @@ writer/png/test_runner-color_test_common.obj: writer/png/color_test_common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/color_test_common.c' object='writer/png/test_runner-color_test_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-color_test_common.obj `if test -f 'writer/png/color_test_common.c'; then $(CYGPATH_W) 'writer/png/color_test_common.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/color_test_common.c'; fi`
+
+writer/png/test_runner-0035_argb8888_samples.o: writer/png/0035_argb8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0035_argb8888_samples.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0035_argb8888_samples.Tpo -c -o writer/png/test_runner-0035_argb8888_samples.o `test -f 'writer/png/0035_argb8888_samples.c' || echo '$(srcdir)/'`writer/png/0035_argb8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0035_argb8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0035_argb8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0035_argb8888_samples.c' object='writer/png/test_runner-0035_argb8888_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0035_argb8888_samples.o `test -f 'writer/png/0035_argb8888_samples.c' || echo '$(srcdir)/'`writer/png/0035_argb8888_samples.c
+
+writer/png/test_runner-0035_argb8888_samples.obj: writer/png/0035_argb8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0035_argb8888_samples.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0035_argb8888_samples.Tpo -c -o writer/png/test_runner-0035_argb8888_samples.obj `if test -f 'writer/png/0035_argb8888_samples.c'; then $(CYGPATH_W) 'writer/png/0035_argb8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0035_argb8888_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0035_argb8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0035_argb8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0035_argb8888_samples.c' object='writer/png/test_runner-0035_argb8888_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0035_argb8888_samples.obj `if test -f 'writer/png/0035_argb8888_samples.c'; then $(CYGPATH_W) 'writer/png/0035_argb8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0035_argb8888_samples.c'; fi`
+
+writer/png/test_runner-0036_bgra8888_samples.o: writer/png/0036_bgra8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0036_bgra8888_samples.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0036_bgra8888_samples.Tpo -c -o writer/png/test_runner-0036_bgra8888_samples.o `test -f 'writer/png/0036_bgra8888_samples.c' || echo '$(srcdir)/'`writer/png/0036_bgra8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0036_bgra8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0036_bgra8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0036_bgra8888_samples.c' object='writer/png/test_runner-0036_bgra8888_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0036_bgra8888_samples.o `test -f 'writer/png/0036_bgra8888_samples.c' || echo '$(srcdir)/'`writer/png/0036_bgra8888_samples.c
+
+writer/png/test_runner-0036_bgra8888_samples.obj: writer/png/0036_bgra8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0036_bgra8888_samples.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0036_bgra8888_samples.Tpo -c -o writer/png/test_runner-0036_bgra8888_samples.obj `if test -f 'writer/png/0036_bgra8888_samples.c'; then $(CYGPATH_W) 'writer/png/0036_bgra8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0036_bgra8888_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0036_bgra8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0036_bgra8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0036_bgra8888_samples.c' object='writer/png/test_runner-0036_bgra8888_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0036_bgra8888_samples.obj `if test -f 'writer/png/0036_bgra8888_samples.c'; then $(CYGPATH_W) 'writer/png/0036_bgra8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0036_bgra8888_samples.c'; fi`
+
+writer/png/test_runner-0037_abgr8888_samples.o: writer/png/0037_abgr8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0037_abgr8888_samples.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0037_abgr8888_samples.Tpo -c -o writer/png/test_runner-0037_abgr8888_samples.o `test -f 'writer/png/0037_abgr8888_samples.c' || echo '$(srcdir)/'`writer/png/0037_abgr8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0037_abgr8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0037_abgr8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0037_abgr8888_samples.c' object='writer/png/test_runner-0037_abgr8888_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0037_abgr8888_samples.o `test -f 'writer/png/0037_abgr8888_samples.c' || echo '$(srcdir)/'`writer/png/0037_abgr8888_samples.c
+
+writer/png/test_runner-0037_abgr8888_samples.obj: writer/png/0037_abgr8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0037_abgr8888_samples.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0037_abgr8888_samples.Tpo -c -o writer/png/test_runner-0037_abgr8888_samples.obj `if test -f 'writer/png/0037_abgr8888_samples.c'; then $(CYGPATH_W) 'writer/png/0037_abgr8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0037_abgr8888_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0037_abgr8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0037_abgr8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0037_abgr8888_samples.c' object='writer/png/test_runner-0037_abgr8888_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0037_abgr8888_samples.obj `if test -f 'writer/png/0037_abgr8888_samples.c'; then $(CYGPATH_W) 'writer/png/0037_abgr8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0037_abgr8888_samples.c'; fi`
+
+writer/png/test_runner-0038_xrgb8888_samples.o: writer/png/0038_xrgb8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0038_xrgb8888_samples.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0038_xrgb8888_samples.Tpo -c -o writer/png/test_runner-0038_xrgb8888_samples.o `test -f 'writer/png/0038_xrgb8888_samples.c' || echo '$(srcdir)/'`writer/png/0038_xrgb8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0038_xrgb8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0038_xrgb8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0038_xrgb8888_samples.c' object='writer/png/test_runner-0038_xrgb8888_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0038_xrgb8888_samples.o `test -f 'writer/png/0038_xrgb8888_samples.c' || echo '$(srcdir)/'`writer/png/0038_xrgb8888_samples.c
+
+writer/png/test_runner-0038_xrgb8888_samples.obj: writer/png/0038_xrgb8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0038_xrgb8888_samples.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0038_xrgb8888_samples.Tpo -c -o writer/png/test_runner-0038_xrgb8888_samples.obj `if test -f 'writer/png/0038_xrgb8888_samples.c'; then $(CYGPATH_W) 'writer/png/0038_xrgb8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0038_xrgb8888_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0038_xrgb8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0038_xrgb8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0038_xrgb8888_samples.c' object='writer/png/test_runner-0038_xrgb8888_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0038_xrgb8888_samples.obj `if test -f 'writer/png/0038_xrgb8888_samples.c'; then $(CYGPATH_W) 'writer/png/0038_xrgb8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0038_xrgb8888_samples.c'; fi`
+
+writer/png/test_runner-0039_rgbx8888_samples.o: writer/png/0039_rgbx8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0039_rgbx8888_samples.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0039_rgbx8888_samples.Tpo -c -o writer/png/test_runner-0039_rgbx8888_samples.o `test -f 'writer/png/0039_rgbx8888_samples.c' || echo '$(srcdir)/'`writer/png/0039_rgbx8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0039_rgbx8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0039_rgbx8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0039_rgbx8888_samples.c' object='writer/png/test_runner-0039_rgbx8888_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0039_rgbx8888_samples.o `test -f 'writer/png/0039_rgbx8888_samples.c' || echo '$(srcdir)/'`writer/png/0039_rgbx8888_samples.c
+
+writer/png/test_runner-0039_rgbx8888_samples.obj: writer/png/0039_rgbx8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0039_rgbx8888_samples.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0039_rgbx8888_samples.Tpo -c -o writer/png/test_runner-0039_rgbx8888_samples.obj `if test -f 'writer/png/0039_rgbx8888_samples.c'; then $(CYGPATH_W) 'writer/png/0039_rgbx8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0039_rgbx8888_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0039_rgbx8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0039_rgbx8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0039_rgbx8888_samples.c' object='writer/png/test_runner-0039_rgbx8888_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0039_rgbx8888_samples.obj `if test -f 'writer/png/0039_rgbx8888_samples.c'; then $(CYGPATH_W) 'writer/png/0039_rgbx8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0039_rgbx8888_samples.c'; fi`
+
+writer/png/test_runner-0040_xbgr8888_samples.o: writer/png/0040_xbgr8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0040_xbgr8888_samples.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0040_xbgr8888_samples.Tpo -c -o writer/png/test_runner-0040_xbgr8888_samples.o `test -f 'writer/png/0040_xbgr8888_samples.c' || echo '$(srcdir)/'`writer/png/0040_xbgr8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0040_xbgr8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0040_xbgr8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0040_xbgr8888_samples.c' object='writer/png/test_runner-0040_xbgr8888_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0040_xbgr8888_samples.o `test -f 'writer/png/0040_xbgr8888_samples.c' || echo '$(srcdir)/'`writer/png/0040_xbgr8888_samples.c
+
+writer/png/test_runner-0040_xbgr8888_samples.obj: writer/png/0040_xbgr8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0040_xbgr8888_samples.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0040_xbgr8888_samples.Tpo -c -o writer/png/test_runner-0040_xbgr8888_samples.obj `if test -f 'writer/png/0040_xbgr8888_samples.c'; then $(CYGPATH_W) 'writer/png/0040_xbgr8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0040_xbgr8888_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0040_xbgr8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0040_xbgr8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0040_xbgr8888_samples.c' object='writer/png/test_runner-0040_xbgr8888_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0040_xbgr8888_samples.obj `if test -f 'writer/png/0040_xbgr8888_samples.c'; then $(CYGPATH_W) 'writer/png/0040_xbgr8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0040_xbgr8888_samples.c'; fi`
+
+writer/png/test_runner-0041_bgrx8888_samples.o: writer/png/0041_bgrx8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0041_bgrx8888_samples.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0041_bgrx8888_samples.Tpo -c -o writer/png/test_runner-0041_bgrx8888_samples.o `test -f 'writer/png/0041_bgrx8888_samples.c' || echo '$(srcdir)/'`writer/png/0041_bgrx8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0041_bgrx8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0041_bgrx8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0041_bgrx8888_samples.c' object='writer/png/test_runner-0041_bgrx8888_samples.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0041_bgrx8888_samples.o `test -f 'writer/png/0041_bgrx8888_samples.c' || echo '$(srcdir)/'`writer/png/0041_bgrx8888_samples.c
+
+writer/png/test_runner-0041_bgrx8888_samples.obj: writer/png/0041_bgrx8888_samples.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0041_bgrx8888_samples.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0041_bgrx8888_samples.Tpo -c -o writer/png/test_runner-0041_bgrx8888_samples.obj `if test -f 'writer/png/0041_bgrx8888_samples.c'; then $(CYGPATH_W) 'writer/png/0041_bgrx8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0041_bgrx8888_samples.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0041_bgrx8888_samples.Tpo writer/png/$(DEPDIR)/test_runner-0041_bgrx8888_samples.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0041_bgrx8888_samples.c' object='writer/png/test_runner-0041_bgrx8888_samples.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0041_bgrx8888_samples.obj `if test -f 'writer/png/0041_bgrx8888_samples.c'; then $(CYGPATH_W) 'writer/png/0041_bgrx8888_samples.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0041_bgrx8888_samples.c'; fi`
+
+writer/png/test_runner-0042_height_limit.o: writer/png/0042_height_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0042_height_limit.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0042_height_limit.Tpo -c -o writer/png/test_runner-0042_height_limit.o `test -f 'writer/png/0042_height_limit.c' || echo '$(srcdir)/'`writer/png/0042_height_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0042_height_limit.Tpo writer/png/$(DEPDIR)/test_runner-0042_height_limit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0042_height_limit.c' object='writer/png/test_runner-0042_height_limit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0042_height_limit.o `test -f 'writer/png/0042_height_limit.c' || echo '$(srcdir)/'`writer/png/0042_height_limit.c
+
+writer/png/test_runner-0042_height_limit.obj: writer/png/0042_height_limit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0042_height_limit.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0042_height_limit.Tpo -c -o writer/png/test_runner-0042_height_limit.obj `if test -f 'writer/png/0042_height_limit.c'; then $(CYGPATH_W) 'writer/png/0042_height_limit.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0042_height_limit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0042_height_limit.Tpo writer/png/$(DEPDIR)/test_runner-0042_height_limit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0042_height_limit.c' object='writer/png/test_runner-0042_height_limit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0042_height_limit.obj `if test -f 'writer/png/0042_height_limit.c'; then $(CYGPATH_W) 'writer/png/0042_height_limit.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0042_height_limit.c'; fi`
 
 $(top_builddir)/assessment/test_runner-assessment.o: $(top_builddir)/assessment/assessment.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-assessment.o -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo -c -o $(top_builddir)/assessment/test_runner-assessment.o `test -f '$(top_builddir)/assessment/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/assessment.c
@@ -53968,6 +54205,8 @@ distclean-generic:
 	-$(am__rm_f) dither/stucki-gpu/$(am__dirstamp)
 	-$(am__rm_f) encoder/allocation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) encoder/allocation/$(am__dirstamp)
+	-$(am__rm_f) encoder/highcolor/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) encoder/highcolor/$(am__dirstamp)
 	-$(am__rm_f) encoder/indexed/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) encoder/indexed/$(am__dirstamp)
 	-$(am__rm_f) encoder/ormode/$(DEPDIR)/$(am__dirstamp)

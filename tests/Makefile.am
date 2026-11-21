@@ -2114,6 +2114,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0081_PACKED_MASK_RETRY \
     -DBUILD_TEST_0082_PACKED_HANDOFF_PLAN \
     -DBUILD_TEST_0083_PACKED_PNG_P3 \
+    -DBUILD_TEST_0086_BYTE_FS_NEIGHBORHOOD \
+    -DBUILD_TEST_0087_BYTE_ATKINSON_NEIGHBORHOOD \
     -DBUILD_HIGHCOLOR_PACKED_COMMON \
     -DBUILD_HIGHCOLOR_PNG_COMMON \
     -DBUILD_HIGHCOLOR_MASK_COMMON \
@@ -2406,6 +2408,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0032_DCI_P3_DIRECT \
     -DBUILD_TEST_0033_ADOBE_RGB_SNAPSHOT \
     -DBUILD_TEST_0034_DCI_P3_SNAPSHOT \
+    -DBUILD_TEST_0035_ARGB8888_SAMPLES \
+    -DBUILD_TEST_0036_BGRA8888_SAMPLES \
+    -DBUILD_TEST_0037_ABGR8888_SAMPLES \
+    -DBUILD_TEST_0038_XRGB8888_SAMPLES \
+    -DBUILD_TEST_0039_RGBX8888_SAMPLES \
+    -DBUILD_TEST_0040_XBGR8888_SAMPLES \
+    -DBUILD_TEST_0041_BGRX8888_SAMPLES \
+    -DBUILD_TEST_0042_HEIGHT_LIMIT \
     -DBUILD_TEST_0143_ADOBE_LIBPNG \
     -DBUILD_TEST_0144_DCI_LIBPNG \
     -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -5871,6 +5881,8 @@ nodist_test_runner_SOURCES = $(runner_batches)
 
 test_runner_SOURCES = \
     test_runner.c \
+    encoder/highcolor/0086_byte_fs_neighborhood.c \
+    encoder/highcolor/0087_byte_atkinson_neighborhood.c \
     _support/lso2-gpu/retained_common.c \
     _support/processing/delta-refresh/spatial_test_common.c \
     delta/refresh/0100_custom_band_periods.c \
@@ -6071,6 +6083,14 @@ test_runner_SOURCES = \
     _support/quant/palette/delta_native_common.c \
     _support/quant/palette/export_capture_common.c \
     writer/png/color_test_common.c \
+    writer/png/0035_argb8888_samples.c \
+    writer/png/0036_bgra8888_samples.c \
+    writer/png/0037_abgr8888_samples.c \
+    writer/png/0038_xrgb8888_samples.c \
+    writer/png/0039_rgbx8888_samples.c \
+    writer/png/0040_xbgr8888_samples.c \
+    writer/png/0041_bgrx8888_samples.c \
+    writer/png/0042_height_limit.c \
     writer/png/color_test_common.h \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \

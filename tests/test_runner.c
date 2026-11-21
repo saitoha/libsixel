@@ -356,6 +356,14 @@ int test_named_output_0033(int argc, char **argv);
 int test_named_output_0034(int argc, char **argv);
 int test_png_color_0030(int argc, char **argv);
 int test_png_color_0031(int argc, char **argv);
+int test_png_packed_argb(int argc, char **argv);
+int test_png_packed_bgra(int argc, char **argv);
+int test_png_packed_abgr(int argc, char **argv);
+int test_png_packed_xrgb(int argc, char **argv);
+int test_png_packed_rgbx(int argc, char **argv);
+int test_png_packed_xbgr(int argc, char **argv);
+int test_png_packed_bgrx(int argc, char **argv);
+int test_png_height_limit(int argc, char **argv);
 int test_png_color_0026(int argc, char **argv);
 int test_png_color_0027(int argc, char **argv);
 int test_png_color_0028(int argc, char **argv);
@@ -1525,6 +1533,8 @@ int test_highcolor_0080(int argc, char **argv);
 int test_highcolor_0081(int argc, char **argv);
 int test_highcolor_0082(int argc, char **argv);
 int test_highcolor_0083(int argc, char **argv);
+int test_highcolor_0086(int argc, char **argv);
+int test_highcolor_0087(int argc, char **argv);
 int test_png_snapshot_0001(int argc, char **argv);
 int test_png_snapshot_0002(int argc, char **argv);
 int test_png_snapshot_0003(int argc, char **argv);
@@ -8184,6 +8194,9 @@ static test_entry_t const test_entries[] = {
     { "codec/highcolor/0081_packed_mask_retry", test_highcolor_0081 },
     { "codec/highcolor/0082_packed_handoff_plan", test_highcolor_0082 },
     { "codec/highcolor/0083_packed_png_p3", test_highcolor_0083 },
+    { "encoder/highcolor/0086_byte_fs_neighborhood", test_highcolor_0086 },
+    { "encoder/highcolor/0087_byte_atkinson_neighborhood",
+      test_highcolor_0087 },
     { "codec/png_snapshot/0024_highcolor_srgb_byte", test_png_snapshot_0024 },
     { "codec/png_snapshot/0025_highcolor_srgb_float", test_png_snapshot_0025 },
     { "codec/png_snapshot/0026_highcolor_p3_rgb", test_png_snapshot_0026 },
@@ -10393,6 +10406,14 @@ static test_entry_t const test_entries[] = {
       test_named_output_0034 },
     { "writer/png/0030_adobe_rgb_snapshot", test_png_color_0030 },
     { "writer/png/0031_dci_p3_snapshot", test_png_color_0031 },
+    { "writer/png/0035_argb8888_samples", test_png_packed_argb },
+    { "writer/png/0036_bgra8888_samples", test_png_packed_bgra },
+    { "writer/png/0037_abgr8888_samples", test_png_packed_abgr },
+    { "writer/png/0038_xrgb8888_samples", test_png_packed_xrgb },
+    { "writer/png/0039_rgbx8888_samples", test_png_packed_rgbx },
+    { "writer/png/0040_xbgr8888_samples", test_png_packed_xbgr },
+    { "writer/png/0041_bgrx8888_samples", test_png_packed_bgrx },
+    { "writer/png/0042_height_limit", test_png_height_limit },
     { "writer/png/0026_adobe_rgb_indexed", test_png_color_0026 },
     { "writer/png/0027_dci_p3_indexed", test_png_color_0027 },
     { "writer/png/0028_adobe_rgb_direct", test_png_color_0028 },

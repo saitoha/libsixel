@@ -88,6 +88,38 @@ end:
 }
 
 int
+test_highcolor_diffusion_neighborhood(unsigned char *pixels,
+                                     int width, int height, int method,
+                                     int const *expected)
+{
+    sixel_dither_t *dither;
+    sixel_output_t *output;
+    hc_stream_t stream;
+    int ok;
+
+    dither = NULL;
+    output = NULL;
+    stream.size = 0;
+    ok = 0;
+    if (SIXEL_FAILED(sixel_dither_new(&dither, -1, NULL)) ||
+            SIXEL_FAILED(sixel_output_new(&output, hc_write, &stream, NULL))) {
+        goto end;
+    }
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGB888);
+    sixel_dither_set_diffusion_type(dither, method);
+    sixel_output_set_palette_type(output, SIXEL_PALETTETYPE_RGB);
+    if (SIXEL_SUCCEEDED(sixel_encode(pixels, width, height, 0,
+                                    dither, output))) {
+        ok = hc_decode(&stream, width, height, expected, 1, 0);
+    }
+
+end:
+    sixel_output_unref(output);
+    sixel_dither_unref(dither);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 test_highcolor_output(int scenario)
 {
     /* Independent analytic references: sRGB transfer at .25/.5/.75,

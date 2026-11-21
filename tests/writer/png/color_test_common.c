@@ -334,6 +334,64 @@ png_color_write(char const *path, int mode)
 }
 
 int
+png_packed_roundtrip(char const *path, unsigned char *packed, int format,
+                     int has_transparency)
+{
+    static unsigned char const rgb[] = {24, 83, 151, 190, 33, 62};
+    unsigned char data[512];
+    edge_frame_probe_t *probe;
+    edge_loader_options_t options;
+    FILE *file;
+    size_t length;
+    SIXELSTATUS status;
+    int ok;
+
+    status = sixel_helper_write_image_file(packed, 2, 1, NULL, format,
+                                          path, SIXEL_FORMAT_PNG, NULL);
+    if (SIXEL_FAILED(status)) {
+        return EXIT_FAILURE;
+    }
+    file = sixel_compat_fopen(path, "rb");
+    if (file == NULL) {
+        return EXIT_FAILURE;
+    }
+    length = fread(data, 1u, sizeof(data), file);
+    fclose(file);
+    if (length == sizeof(data)) {
+        return EXIT_FAILURE;
+    }
+
+    probe = calloc(1u, sizeof(*probe));
+    if (probe == NULL) {
+        return EXIT_FAILURE;
+    }
+    edge_loader_options_init(&options);
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+    options.use_palette = 0;
+    options.set_prefer_float32 = 1;
+    options.prefer_float32 = 0;
+    ok = edge_load_buffer_options("PNG packed samples", data, length,
+            &options, probe, &status) == 0 && status == SIXEL_OK &&
+        probe->callback_count == 1 && probe->width[0] == 2 &&
+        probe->height[0] == 1 &&
+        probe->pixelformat[0] == SIXEL_PIXELFORMAT_RGB888 &&
+        probe->rgb_size[0] == sizeof(rgb) &&
+        memcmp(probe->rgb[0], rgb, sizeof(rgb)) == 0;
+    if (has_transparency) {
+        ok = ok && probe->mask_size[0] == 2u &&
+            probe->mask[0][0] == 1u && probe->mask[0][1] == 0u;
+    } else {
+        ok = ok && probe->mask_size[0] == 0u;
+    }
+    if (!ok) {
+        fprintf(stderr, "incorrect PNG samples for packed format %d\n",
+                format);
+    }
+    free(probe);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 png_color_raw(void)
 {
     static unsigned char const input[] =

@@ -10574,9 +10574,6 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     }
 
     target_active = aggressive_prune ? 2u : 4u;
-    if (target_active < 1u) {
-        target_active = 1u;
-    }
     if (*active_count <= target_active || point_count == 0u) {
         return SIXEL_OK;
     }

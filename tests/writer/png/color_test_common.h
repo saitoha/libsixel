@@ -7,6 +7,7 @@ int png_snapshot_check(int p3, int hls);
 int png_snapshot_direct_check(int p3, int hls);
 int png_color_check(int expected_space, int direct, int sample_case);
 int png_color_write(char const *path, int mode);
+int png_packed_roundtrip(char const *, unsigned char *, int, int);
 int png_color_raw(void);
 int png_color_profile(void);
 #endif

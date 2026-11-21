@@ -368,6 +368,7 @@ png_write_color(FILE *fp, int srgb, unsigned char const *icc, size_t length)
 }
 #endif  /* !HAVE_LIBPNG */
 
+/* The caller dispatches packed layouts that need conversion. */
 static SIXELSTATUS
 sixel_writer_convert_to_rgba(
     unsigned char       *dst,
@@ -376,11 +377,11 @@ sixel_writer_convert_to_rgba(
     int                  width,
     int                  height)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
-    size_t count = 0u;
-    size_t index = 0u;
-    unsigned char const *cursor = NULL;
-    unsigned char *output = NULL;
+    SIXELSTATUS status;
+    size_t count;
+    size_t index;
+    unsigned char const *cursor;
+    unsigned char *output;
 
     count = (size_t)width * (size_t)height;
     cursor = src;
@@ -388,12 +389,6 @@ sixel_writer_convert_to_rgba(
 
     for (index = 0u; index < count; ++index) {
         switch (src_pixelformat) {
-        case SIXEL_PIXELFORMAT_RGBA8888:
-            output[0] = cursor[0];
-            output[1] = cursor[1];
-            output[2] = cursor[2];
-            output[3] = cursor[3];
-            break;
         case SIXEL_PIXELFORMAT_ARGB8888:
             output[0] = cursor[1];
             output[1] = cursor[2];
@@ -443,7 +438,6 @@ sixel_writer_convert_to_rgba(
         cursor += 4;
         output += 4;
     }
-
     status = SIXEL_OK;
 
 end:
@@ -688,13 +682,8 @@ write_png_to_file(
                 max_index = pixels[i];
             }
         }
+        /* The expanded byte indices bound the entry count to 1 through 256. */
         palette_entries = max_index + 1;
-        if (palette_entries < 1) {
-            palette_entries = 1;
-        }
-        if (palette_entries > SIXEL_PALETTE_MAX) {
-            palette_entries = SIXEL_PALETTE_MAX;
-        }
     }
 
     if (logger_prepared) {
@@ -1179,10 +1168,10 @@ sixel_write_image_color(
         goto end;
     }
 
-    if (width > SIXEL_HEIGHT_LIMIT) {
+    if (height > SIXEL_HEIGHT_LIMIT) {
         sixel_helper_set_additional_message(
-            "sixel_encode: bad width parameter."
-            " (width > SIXEL_HEIGHT_LIMIT)");
+            "sixel_encode: bad height parameter."
+            " (height > SIXEL_HEIGHT_LIMIT)");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -1199,14 +1188,6 @@ sixel_write_image_color(
         sixel_helper_set_additional_message(
             "sixel_encode: bad width parameter."
             " (width < 1)");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-
-    if (height < 1) {
-        sixel_helper_set_additional_message(
-            "sixel_encode: bad height parameter."
-            " (height < 1)");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
