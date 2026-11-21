@@ -19,7 +19,10 @@ function valid(meson, makefile, tap, install) {
         index(install, "pkgconfig = os.environ.get(\047SIXEL_TEST_PKG_CONFIG\047)") &&
         index(install, "shell = os.environ.get(\047SIXEL_TEST_CONFIG_SHELL\047)") &&
         index(install, "pkgconfig_command = [shell, \047-c\047, \047exec \"$@\"\047, \047pkg-config\047, pkgconfig]") &&
-        index(install, "PKG_CONFIG_SYSROOT_DIR=stage.as_posix()") &&
+        index(install, "PKG_CONFIG_PATH=\047.\047") &&
+        index(install, "cwd=str(packages[0].parent)") &&
+        index(install, "sysroot = stage.as_posix()") &&
+        index(install, "PKG_CONFIG_SYSROOT_DIR=sysroot") &&
         !index(install, "shutil.which(") &&
         index(tap, "test -n \"${SIXEL_TEST_PKG_CONFIG-}\"") &&
         index(tap, "\"${SIXEL_TEST_PKG_CONFIG}\" --static --cflags --libs") &&
@@ -42,7 +45,10 @@ END {
     gsub(/\$\(PKG_CONFIG\)/, "pkg-config", unconfigured)
     rediscovered = install
     sub(/pkgconfig = os.environ.get\([^)]*\)/, "pkgconfig = shutil.which(\047pkg-config\047)", rediscovered)
+    drive_path = install
+    sub(/PKG_CONFIG_PATH=\047\.\047/, "PKG_CONFIG_PATH=str(packages[0].parent)", drive_path)
     exit !valid(meson, makefile, tap, install) ||
+        valid(meson, makefile, tap, drive_path) ||
         valid(meson, makefile, bare, install) ||
         valid(unchecked, makefile, tap, install) ||
         valid(meson, unconfigured, tap, install) ||
