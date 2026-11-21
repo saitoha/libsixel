@@ -371,13 +371,14 @@ edge_load_chunk(char const *label,
     return result;
 }
 
-int
-edge_load_buffer_options(char const *label,
-                         unsigned char const *buffer,
-                         size_t buffer_size,
-                         edge_loader_options_t const *options,
-                         edge_frame_probe_t *probe,
-                         SIXELSTATUS *load_status)
+static int
+edge_load_buffer_custom(char const *label,
+                        unsigned char const *buffer,
+                        size_t buffer_size,
+                        edge_loader_options_t const *options,
+                        sixel_load_image_function callback,
+                        void *callback_context,
+                        SIXELSTATUS *load_status)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -389,7 +390,7 @@ edge_load_buffer_options(char const *label,
     chunk = NULL;
     result = 1;
     if (label == NULL || buffer == NULL || buffer_size == 0u ||
-        options == NULL || probe == NULL || load_status == NULL) {
+        options == NULL || callback == NULL || load_status == NULL) {
         return 1;
     }
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -406,11 +407,8 @@ edge_load_buffer_options(char const *label,
         fprintf(stderr, "%s: memory chunk creation failed\n", label);
         goto cleanup;
     }
-    result = edge_load_chunk(label,
-                             chunk,
-                             options,
-                             probe,
-                             load_status);
+    result = edge_load_chunk_custom(label, chunk, options, allocator,
+                                    callback, callback_context, load_status);
 
 cleanup:
     if (chunk != NULL) {
@@ -418,6 +416,22 @@ cleanup:
     }
     sixel_allocator_unref(allocator);
     return result;
+}
+
+int
+edge_load_buffer_options(char const *label,
+                         unsigned char const *buffer,
+                         size_t buffer_size,
+                         edge_loader_options_t const *options,
+                         edge_frame_probe_t *probe,
+                         SIXELSTATUS *load_status)
+{
+    if (probe == NULL) {
+        return 1;
+    }
+    memset(probe, 0, sizeof(*probe));
+    return edge_load_buffer_custom(label, buffer, buffer_size, options,
+                                   edge_capture_frame, probe, load_status);
 }
 
 int
@@ -1062,23 +1076,35 @@ edge_expect_rgb(char const *label,
     return 0;
 }
 
+/* Rejection tests need to observe a callback, without reserving raster or
+ * mask storage on the stack of the calling test. */
+static SIXELSTATUS
+edge_note_frame(sixel_frame_t *frame, void *data)
+{
+    int *saw_frame;
+
+    (void)frame;
+    saw_frame = (int *)data;
+    *saw_frame = 1;
+    return SIXEL_OK;
+}
+
 int
 edge_expect_failure(char const *label,
                     unsigned char const *buffer,
                     size_t buffer_size)
 {
-    edge_frame_probe_t probe;
+    edge_loader_options_t options;
     SIXELSTATUS status;
     int result;
+    int saw_frame;
 
-    memset(&probe, 0, sizeof(probe));
+    edge_loader_options_init(&options);
+    options.require_static = 1;
+    saw_frame = 0;
     status = SIXEL_FALSE;
-    result = edge_load_buffer(label,
-                              buffer,
-                              buffer_size,
-                              1,
-                              &probe,
-                              &status);
+    result = edge_load_buffer_custom(label, buffer, buffer_size, &options,
+                                     edge_note_frame, &saw_frame, &status);
     if (result != 0) {
         return result;
     }
@@ -1087,7 +1113,7 @@ edge_expect_failure(char const *label,
                 label);
         return 1;
     }
-    if (probe.callback_count != 0) {
+    if (saw_frame) {
         fprintf(stderr, "%s: malformed stream emitted a frame\n", label);
         return 1;
     }

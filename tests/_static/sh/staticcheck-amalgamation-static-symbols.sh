@@ -31,6 +31,8 @@ unit_files=$tmpdir/unit_files.txt
 raw_symbols=$tmpdir/raw_symbols.tsv
 symbols=$tmpdir/symbols.tsv
 duplicates=$tmpdir/duplicates.tsv
+cms_copy_issues=$tmpdir/cms-copy-issues.log
+: > "$cms_copy_issues"
 
 awk -v src_base="$src_root/src" '
 {
@@ -144,7 +146,7 @@ fi
 # Keep parsing state local to each translation unit while reusing one process.
 # Loading argv from the inventory also avoids the host command-length limit.
 awk -v units="$unit_files" -v tests_root="$src_root/tests/" \
-    -v src_dir="$src_root/src/" '
+    -v src_dir="$src_root/src/" -v cms_issues="$cms_copy_issues" '
 function add_unit(path,    line, fragment) {
     if (path in scanned) return
     scanned[path] = 1
@@ -336,6 +338,21 @@ FNR == 1 {
         delete macro_alias[macro]
         next
     }
+    if (is_test && line ~ /^#[[:space:]]*include[[:space:]]+"src\/cms\.c"$/) {
+        # These helpers are defined inside every private copy of cms.c.
+        # Check aliases at the include site, where the compiler sees them.
+        cms_count = split("sixel_cms_prepare_bpc sixel_cms_apply_bpc " \
+            "sixel_cms_builtin_black_y sixel_cms_rgb_output_bpc " \
+            "sixel_cdef_black_y", cms_names, " ")
+        for (n = 1; n <= cms_count; ++n) {
+            original = cms_names[n]
+            alias = macro_alias[original]
+            if (alias == "" || alias == original || alias in cms_aliases) {
+                print "# " file ":" FNR ": needs a unique alias for " original > cms_issues
+            }
+            cms_aliases[alias] = 1
+        }
+    }
     if (line ~ /^#/) {
         next
     }
@@ -440,6 +457,12 @@ FNR == 1 {
     }
 }
 ' > "$raw_symbols"
+
+if test -s "$cms_copy_issues"; then
+    cat "$cms_copy_issues"
+    echo 'not ok 1 - CMS test copies isolate their BPC symbols'
+    exit 0
+fi
 
 if test ! -s "$raw_symbols"; then
     echo "ok 1 - amalgamation static symbols and test types are unique"

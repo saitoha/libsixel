@@ -303,6 +303,20 @@ require_fixed 'result = _stat64i32(libc_path,' src/compat_stub.c
 require_fixed '# if defined(_USE_32BIT_TIME_T)' src/compat_stub.c
 require_fixed 'result = _stat32(libc_path,' src/compat_stub.c
 require_fixed 'handle = _beginthreadex(NULL, 0,' src/threading.c
+
+# MSVC ARM64 represents NEON vectors as aggregates with different members.
+sh "$source_files_helper" "$src_root/src" --name '*.c' --name '*.h' \
+    --exec awk '
+    FNR == 1 { older = previous = "" }
+    older " " previous " " $0 ~ /\([[:space:]]*(u?int|float|poly|bfloat)[0-9]+x[0-9]+_t[[:space:]]*\)[[:space:]]*\{/ {
+        print FILENAME ":" FNR ": use intrinsics to construct NEON vectors"
+        bad = 1
+        older = previous = ""
+        next
+    }
+    { older = previous; previous = $0 }
+    END { exit bad }
+    ' || fail 'NEON vector compound literals are compiler-dependent'
 # The shell variables are part of the configure.ac text being asserted.
 # shellcheck disable=SC2016
 require_fixed 'AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"' configure.ac
@@ -334,6 +348,23 @@ require_fixed "emscripten_fetch_flag = '-sFETCH=1'" meson.build
 require_fixed 'emscripten_get_compiler_setting("NODERAWFS")' src/path.c
 require_fixed 'fetch = emscripten_fetch(&attr, url);' src/chunk.c
 require_fixed '#if defined(O_EXCL) && !defined(__EMSCRIPTEN__)' src/decoder.c
+# Parsed pass counts belong to caller storage when decodes share an object.
+awk '
+/^struct sixel_decoder \{/ { active = 1; found = 1 }
+active && /input_passes/ { shared = 1 }
+active && /^};/ { active = 0 }
+END { exit !found || shared }
+' "$src_root/src/decoder.h" ||
+    fail 'decoder objects must not store per-call input pass counts'
+# Reject callbacks record frame presence without storing an entire raster.
+awk '
+/^edge_expect_failure\(/ { active = 1; found = 1 }
+active && /edge_frame_probe_t|edge_load_buffer(_options)?\(/ { capture = 1 }
+active && /edge_load_buffer_custom\(/ { dispatch = 1 }
+active && /^}/ { active = 0 }
+END { exit !found || !dispatch || capture }
+' "$src_root/tests/_support/loader/builtin/loader_builtin_memory_test_common.c" ||
+    fail 'loader rejection tests must not reserve a frame capture'
 require_fixed 'AC_PATH_PROG([RANLIB], [emranlib], [ranlib])' configure.ac
 require_fixed 'AC_PATH_PROGS([AR], [emar emer], [ar])' configure.ac
 require_fixed "ar = 'emar'" build-aux/meson-cross/emscripten
@@ -375,6 +406,23 @@ require_fixed "cc.compiles('#define SIXEL_PROBE_TARGET_AVX2 '" meson.build
 require_fixed '#if SIXEL_SIMD_AVX2' src/refresh-spatial.c
 require_fixed '#define SIXEL_REFRESH_SPATIAL_TARGET_AVX2 SIXEL_TARGET_AVX2' \
     src/refresh-spatial.c
+# Win64 guarantees 16-byte stack alignment. A 256-bit vector return can
+# use a hidden result slot that MinGW accesses with an aligned AVX store.
+if grep -Eq '^[[:space:]]*static[[:space:]]+(SIXEL_REFRESH_SPATIAL|SIXEL_SAMPLE)_TARGET_AVX2[[:space:]]+__m256(i|d)?([[:space:]]|$)' \
+    "$src_root/src/refresh-spatial.c" "$src_root/src/filter-sample.c"; then
+    fail 'AVX2 spatial and sampling helpers must not return 256-bit vectors'
+fi
+# New sample options must have defined defaults in C test fixtures.
+if grep -En '^[[:space:]]*sixel_filter_sample_config_t[[:space:]]+[[:alnum:]_]+[[:space:]]*;' \
+    "$src_root"/tests/palette/sampling/*.c \
+    "$src_root"/tests/_support/quant/palette/sampling_float/*.c; then
+    fail 'initialize sample filter configurations at declaration'
+fi
+# AVX2 sampling loads full words from bitmaps with a partial last word.
+require_fixed 'above[((3 * 31 + 1) * 4 + 32) / 8 + 4] = {0};' \
+    src/filter-sample.c
+require_fixed 'below[((3 * 31 + 1) * 4 + 32) / 8 + 4] = {0};' \
+    src/filter-sample.c
 require_fixed "#include \"\$srcdir/build-aux/fhedt-heap-probe.c\"" configure.ac
 require_fixed "cc.run(files('build-aux/fhedt-heap-probe.c')[0]" meson.build
 require_fixed '#if defined(SIXEL_SPLIT_FHEDT_DISTANCE_GRID)' \

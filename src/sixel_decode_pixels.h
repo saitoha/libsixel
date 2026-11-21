@@ -72,7 +72,8 @@ sixel_sequence_next(sixel_sequence_decoder_t *decoder,
 SIXEL_INTERNAL_API void
 sixel_sequence_close(sixel_sequence_decoder_t *decoder);
 
-/* Compose an explicitly declared capture through EOF, preserving paint RGB. */
+/* Compose an explicitly declared capture through EOF, preserving paint RGB.
+ * If requested, report the pass count for this sequence. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
     sixel_palette_transform_t const *transform, unsigned char **pixels,

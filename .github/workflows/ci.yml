@@ -9458,6 +9458,7 @@ jobs:
     needs: [netbsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.buildtool == 'meson' && 30 || 60 }}
     env:
       SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE: 1
     strategy:

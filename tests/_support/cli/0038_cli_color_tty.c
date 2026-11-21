@@ -62,6 +62,10 @@
  * Successful replies do not consume this budget. Timeout scripts still
  * assert an absolute bound below the independent two-second watchdog. */
 #define COLOR_TTY_REPLY_TIMEOUT_MS 500
+/* SUB classification needs a scheduled peer and a completed query wait.
+ * Give that exchange its own budget; silent/flood test the short deadline. */
+#define COLOR_TTY_SUB_CANCEL_TIMEOUT_MS 2000
+#define COLOR_TTY_SUB_CANCEL_WATCHDOG_SECONDS 8
 
 static volatile sig_atomic_t color_tty_cancelled;
 static volatile sig_atomic_t color_tty_inject_signal;
@@ -326,6 +330,7 @@ static int color_tty_child(char const *name, int command, int report)
     char filler[4096];
     int flags;
     int pipes[2];
+    int sub_cancel;
     int output_copy;
     int other_master;
     int other_slave;
@@ -336,6 +341,7 @@ static int color_tty_child(char const *name, int command, int report)
 
     tty = NULL;
     mode_changed = 0;
+    sub_cancel = strcmp(name, "sub-cancel") == 0;
     color_tty_cancelled = 0;
     color_tty_inject_signal = 0;
     memset(&action, 0, sizeof(action));
@@ -345,7 +351,7 @@ static int color_tty_child(char const *name, int command, int report)
     sigaction(SIGTERM, &action, NULL);
     sigaction(SIGUSR2, &action, NULL);
     /* A broken blocking-write implementation cannot hang the test suite. */
-    alarm(2);
+    alarm(sub_cancel ? COLOR_TTY_SUB_CANCEL_WATCHDOG_SECONDS : 2);
     flags = fcntl(STDOUT_FILENO, F_GETFL);
     memset(&original, 0, sizeof(original));
     if (tcgetattr(STDOUT_FILENO, &original) != 0 ||
@@ -580,11 +586,13 @@ static int color_tty_child(char const *name, int command, int report)
                                        strcmp(name, "policy-failure") == 0
                                            ? IMG2SIXEL_COLOR_POLICY
                                            : IMG2SIXEL_COLOR_CAPABILITY,
-                                       COLOR_TTY_REPLY_TIMEOUT_MS, &exchange);
-    /* The late peer waits for the query to finish before sending its reply.
-     * Keep that ordering check independent of how much CPU the child gets.
-     * The silent and flood scripts separately test elapsed time. */
-    if (strcmp(name, "late") != 0 &&
+                                       sub_cancel
+                                           ? COLOR_TTY_SUB_CANCEL_TIMEOUT_MS
+                                           : COLOR_TTY_REPLY_TIMEOUT_MS,
+                                       &exchange);
+    /* Only deadline tests assert elapsed time. Protocol scripts assert
+     * reply classification and byte ordering under the independent alarm. */
+    if ((strcmp(name, "silent") == 0 || strcmp(name, "flood") == 0) &&
         color_tty_now() - started > COLOR_TTY_REPLY_TIMEOUT_MS / 1000.0 + 0.25) {
         return color_tty_error("reply exceeded absolute deadline");
     }
@@ -602,7 +610,7 @@ static int color_tty_child(char const *name, int command, int report)
             exchange.parser.payload_size <= sizeof(exchange.parser.header)) {
             return color_tty_error("flood did not exercise payload draining");
         }
-    } else if (strcmp(name, "sub-cancel") == 0) {
+    } else if (sub_cancel) {
         if (result != IMG2SIXEL_COLOR_IO_PARTIAL || !exchange.received ||
             img2sixel_color_incomplete(&exchange.parser)) {
             return color_tty_error("SUB was lost before parser cancellation");
@@ -766,6 +774,9 @@ static int color_tty_script(char const *name, int master, int command,
         if (!color_tty_send(master, "\033P1;1\032", 6u)) {
             return 0;
         }
+        return color_tty_expect_timeout(master, COLOR_TTY_RECOVER,
+                   COLOR_TTY_SUB_CANCEL_WATCHDOG_SECONDS) &&
+               color_tty_expect(report, "d");
     } else if (strcmp(name, "flood") == 0) {
         if (!color_tty_send(master, "\033P1;1;1;0;2./r", 14u)) {
             return 0;

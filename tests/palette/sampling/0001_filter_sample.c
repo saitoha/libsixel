@@ -46,7 +46,7 @@ test_sample_stride_override(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_filter_t *filter;
-    sixel_filter_sample_config_t config;
+    sixel_filter_sample_config_t config = {0};
     sixel_frame_t *input_frame;
     sixel_sample_stream_t samples;
     sixel_frame_pixels_view_t input_view;
@@ -185,7 +185,7 @@ test_sample_respects_clip_region(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_filter_t *filter;
-    sixel_filter_sample_config_t config;
+    sixel_filter_sample_config_t config = {0};
     sixel_frame_t *input_frame;
     sixel_frame_t *sample_frame;
     sixel_frame_pixels_view_t input_view;
@@ -294,7 +294,7 @@ test_sample_full_frame_is_borrowed(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_filter_t *filter;
-    sixel_filter_sample_config_t config;
+    sixel_filter_sample_config_t config = {0};
     sixel_frame_t *input_frame;
     sixel_sample_stream_t samples;
     test_progress_t progress;
@@ -304,7 +304,6 @@ test_sample_full_frame_is_borrowed(void)
     filter = NULL;
     input_frame = NULL;
     sixel_sample_stream_init(&samples);
-    memset(&config, 0, sizeof(config));
     progress.began = 0;
     progress.progressed = 0;
     progress.completed = 0;

@@ -46,7 +46,7 @@ sampling_copy(int space)
     sixel_allocator_t *allocator;
     sixel_frame_t *frame;
     sixel_filter_t *filter;
-    sixel_filter_sample_config_t config;
+    sixel_filter_sample_config_t config = {0};
     sixel_sample_stream_t samples;
     float pixels[72];
     float saved[72];
@@ -59,7 +59,6 @@ sampling_copy(int space)
     frame = NULL;
     filter = NULL;
     ok = 0;
-    memset(&config, 0, sizeof(config));
     sixel_sample_stream_init(&samples);
     /* Binary fractions make copying, clipping and membership exact. Values
      * cross nominal bounds in every channel, including opponent axes. */

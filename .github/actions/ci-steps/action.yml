@@ -708,6 +708,8 @@ runs:
         if test "${{ fromJSON(inputs.matrix_json).skip_initial_build || 'false' }}" != true; then
           ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" V=1
         fi
+        # The extracted distcheck tree must configure with the selected tools.
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} \
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} -j"${{ steps.autotools_jobs.outputs.count }}" \
           SIXEL_TEST_SHARD=${{ fromJSON(inputs.matrix_json).test_shard || '' }} \
           ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
@@ -1235,16 +1237,30 @@ runs:
             # The runner is not a default target. Build it once before the
             # partitioned runs disable automatic test dependency rebuild.
             meson compile -C builddir test_runner
-            # Haiku occasionally raises EINVAL from Python asyncio subprocess
-            # creation in long meson test runs. Register one partition at
-            # a time so each test process remains short-lived.
+            # Keep Python asyncio test invocations short. Haiku can still
+            # reject a subprocess launch with B_BAD_VALUE in a short run.
             shard=1
             shard_count=16
             while test "${shard}" -le "${shard_count}"; do
               meson setup --reconfigure builddir \
                 -Dtest_shard="${shard}/${shard_count}"
-              meson test -C builddir --no-rebuild --num-processes 1 \
-                --print-errorlogs
+              shard_log=builddir/haiku-meson-test.log
+              for attempt in 1 2; do
+                test_status=0
+                meson test -C builddir --no-rebuild --num-processes 1 \
+                  --print-errorlogs >"${shard_log}" 2>&1 || test_status=$?
+                cat "${shard_log}"
+                if test "${test_status}" -eq 0; then
+                  break
+                fi
+                # Retry only a matching spawn error with no test failures.
+                if test "${attempt}" -eq 2 ||
+                   ! grep -Fqx 'OSError: [Errno -2147483643] Invalid Argument' "${shard_log}" ||
+                   ! grep -Eq '^Fail:[[:space:]]+0[[:space:]]*$' "${shard_log}"; then
+                  exit "${test_status}"
+                fi
+                printf 'Retrying Haiku Meson shard %s after a subprocess launch error\n' "${shard}" >&2
+              done
               shard=$((shard + 1))
             done
           else

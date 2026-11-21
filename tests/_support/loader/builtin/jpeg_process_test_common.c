@@ -216,8 +216,7 @@ jp_mutate(unsigned char *data, size_t *size, int mutation)
     return 0;
 }
 
-/* Keep the raster capture out of malformed-input calls. Their rejection
- * helper owns a capture too, and nesting both exceeds small target stacks. */
+/* Record raster samples only for cases with a decoded image to inspect. */
 static int
 jp_samples(int fixture, unsigned char const *data, size_t size)
 {

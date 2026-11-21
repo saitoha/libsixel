@@ -571,7 +571,11 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #define sixel_cms_pcs_to_device clf_cms_pcs_to_device
 #define sixel_cms_pcs_white clf_cms_pcs_white
 #define sixel_cms_profile_has_mpet clf_cms_profile_has_mpet
+#define sixel_cms_prepare_bpc clf_cms_prepare_bpc
+#define sixel_cms_apply_bpc clf_cms_apply_bpc
 #include "src/cms.c"
+#undef sixel_cms_apply_bpc
+#undef sixel_cms_prepare_bpc
 #undef sixel_cms_adapter_layout
 #undef sixel_cms_adapter_read
 #undef sixel_cms_adapter_write

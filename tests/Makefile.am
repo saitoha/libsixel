@@ -13968,6 +13968,8 @@ EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
     _static/sh/staticcheck-c-test-crt.sh \
     _static/awk/c-test-crt.awk \
     _static/sh/staticcheck-ci-configure-make.sh \
+    _static/sh/staticcheck-ci-apt-retry.sh \
+    _static/sh/staticcheck-cosmocc-meson-probes.sh \
     _static/sh/staticcheck-ci-install-path.sh \
     _static/sh/staticcheck-cosmocc-cache-digest.sh \
     _static/sh/staticcheck-ci-msvc-complete-build.sh \

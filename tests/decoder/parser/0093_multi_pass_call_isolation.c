@@ -14,11 +14,13 @@ int test_sequence_0083(int argc, char **argv)
     sixel_decoder_t *decoder;
     sixel_decode_result_t result;
     SIXELSTATUS status;
+    size_t input_passes;
     int ok;
 
     (void)argc;
     (void)argv;
     decoder = NULL;
+    input_passes = 0U;
     memset(&result, 0, sizeof(result));
     status = sixel_decoder_new(&decoder, NULL);
     if (SIXEL_FAILED(status)) {
@@ -29,16 +31,17 @@ int test_sequence_0083(int argc, char **argv)
     status = sixel_decoder_setopt(decoder,
         SIXEL_OPTFLAG_DECODE_INPUT_MODE, "6delta-progressive");
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_decoder_decode_pixels(decoder, first,
-            sizeof(first) - 1U, NULL, &result);
+        status = sixel_decoder_decode_mapped_with_pass_count(decoder, first,
+            sizeof(first) - 1U, NULL, NULL, &result, &input_passes);
     }
-    ok = SIXEL_SUCCEEDED(status) && result.pixels != NULL;
+    ok = SIXEL_SUCCEEDED(status) && result.pixels != NULL &&
+        input_passes == 1U;
     sixel_allocator_free(decoder->allocator, result.pixels);
     result.pixels = NULL;
-    status = sixel_decoder_decode_pixels(decoder, second,
-        sizeof(second) - 1U, NULL, &result);
+    status = sixel_decoder_decode_mapped_with_pass_count(decoder, second,
+        sizeof(second) - 1U, NULL, NULL, &result, &input_passes);
     ok = ok && SIXEL_FAILED(status) && result.pixels == NULL &&
-        decoder->input_passes == 0U;
+        input_passes == 0U;
     sixel_allocator_free(decoder->allocator, result.pixels);
     sixel_decoder_unref(decoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

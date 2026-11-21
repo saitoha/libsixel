@@ -15,9 +15,11 @@ int test_multi_pass_capture(char const *stream, size_t size,
     sixel_decode_options_t options;
     sixel_decode_result_t result;
     SIXELSTATUS status;
+    size_t input_passes;
     int ok;
 
     decoder = NULL;
+    input_passes = 0U;
     memset(&options, 0, sizeof(options));
     memset(&result, 0, sizeof(result));
     options.preferred_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
@@ -38,24 +40,25 @@ int test_multi_pass_capture(char const *stream, size_t size,
         decoder->dequantize_method = SIXEL_DEQUANTIZE_K_UNDITHER;
     }
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_decoder_decode_pixels(decoder,
-            (unsigned char const *)stream, size, &options, &result);
+        status = sixel_decoder_decode_mapped_with_pass_count(decoder,
+            (unsigned char const *)stream, size, &options, NULL, &result,
+            &input_passes);
     }
     if (expected == NULL) {
         ok = SIXEL_FAILED(status) && result.pixels == NULL &&
             result.width == 0 && result.height == 0 &&
-            decoder->input_passes == 0U;
+            input_passes == 0U;
     } else {
         ok = SIXEL_SUCCEEDED(status) && result.pixels != NULL &&
             result.width == width && result.height == height &&
-            decoder->input_passes == passes &&
+            input_passes == passes &&
             result.pixelformat == SIXEL_PIXELFORMAT_RGBA8888 &&
             result.stride == width * 4 &&
             memcmp(result.pixels, expected, (size_t)width * height * 4) == 0;
     }
     if (!ok) {
         fprintf(stderr, "capture status=%x geometry=%dx%d passes=%zu: %s\n",
-            status, result.width, result.height, decoder->input_passes,
+            status, result.width, result.height, input_passes,
             sixel_helper_get_additional_message());
     }
     sixel_allocator_free(decoder->allocator, result.pixels);

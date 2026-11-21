@@ -17640,13 +17640,11 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
                                   sixel_encoder_t *encoder,
                                   sixel_output_t *output, int playback)
 {
-    SIXELSTATUS status;
     int i;
+#if SIXEL_ENABLE_THREADS
+    SIXELSTATUS status;
     int result;
-
-    status = SIXEL_OK;
-    i = 0;
-    result = 0;
+#endif
 
     if (pipeline == NULL || encoder == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -17681,11 +17679,13 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->playback = NULL;
     pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_UNDECIDED;
 
+    /* A threadless pipeline uses serial handoff from the start. */
 #if !SIXEL_ENABLE_THREADS
+    (void)playback;
     pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_SERIAL;
     return SIXEL_OK;
-#endif  /* !SIXEL_ENABLE_THREADS */
-
+#else
+    status = SIXEL_OK;
     result = sixel_mutex_init(&pipeline->mutex);
     if (result != 0) {
         status = SIXEL_RUNTIME_ERROR;
@@ -17729,6 +17729,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
 
 end:
     return status;
+#endif  /* !SIXEL_ENABLE_THREADS */
 }
 
 
