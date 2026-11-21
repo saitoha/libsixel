@@ -5,7 +5,9 @@
  * a palette transform, for opaque and transparent images and a final band
  * the trusted raster cuts short.  A decode that cannot keep the columns (a
  * serial decode, or an untrusted raster the paint outgrows) returns RGBA8888
- * instead, and the CPU expansion helper rejects bad arguments.
+ * instead, and the CPU expansion helper rejects bad arguments.  With the GPU
+ * policy forced, kept columns, flags and fallbacks match the CPU workers word
+ * for word, including selections carried across carriage returns.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -21,6 +23,7 @@
 #define BAND_WIDTH 64
 #define BAND_BANDS 80
 #define BAND_HEIGHT (BAND_BANDS * 6 - 2)
+#define BAND_LONG_BANDS 40
 
 static char g_stream[65536];
 static size_t g_stream_size;
@@ -28,10 +31,11 @@ static unsigned int g_flags;
 
 /*
  * Every band carries a carriage return so the threaded gather has work.
- * holes leaves the upper rows of the second color run unpainted.
+ * holes leaves the upper rows of the second color run unpainted; carry
+ * paints it with the selection made before the carriage return.
  */
 static size_t
-band_build(char *out, size_t capacity, int p2, int holes)
+band_build(char *out, size_t capacity, int p2, int holes, int carry)
 {
     size_t used;
     int band;
@@ -45,9 +49,9 @@ band_build(char *out, size_t capacity, int p2, int holes)
     }
     used = (size_t)n;
     for (band = 0; band < BAND_BANDS; ++band) {
-        n = snprintf(out + used, capacity - used, "#1!%d~#3!%d~$#2!%d%c%s",
+        n = snprintf(out + used, capacity - used, "#1!%d~#3!%d~$%s!%d%c%s",
                      16 + band % 32, BAND_WIDTH - 16 - band % 32,
-                     8 + band % 48, holes ? 'p' : '~',
+                     carry ? "" : "#2", 8 + band % 48, holes ? 'p' : '~',
                      band + 1 < BAND_BANDS ? "-" : "");
         if (n < 0 || (size_t)n >= capacity - used) {
             return 0u;
@@ -55,6 +59,60 @@ band_build(char *out, size_t capacity, int p2, int holes)
         used += (size_t)n;
     }
     if (used + 2u >= capacity) {
+        return 0u;
+    }
+    out[used++] = '\033';
+    out[used++] = '\\';
+    return used;
+}
+
+/*
+ * Segments far longer than the device chunk: selections and repeats land
+ * mid-chunk, a second segment overlays the first, and a third carries its
+ * selection in from the segment before it.
+ */
+static size_t
+band_build_long(char *out, size_t capacity)
+{
+    size_t used;
+    int band;
+    int i;
+    int n;
+
+    n = snprintf(out, capacity,
+                 "\033P0;1q\"1;1;256;%d#1;2;100;0;0#2;2;0;60;100#3;2;0;80;0",
+                 BAND_LONG_BANDS * 6);
+    if (n < 0 || (size_t)n >= capacity) {
+        return 0u;
+    }
+    used = (size_t)n;
+    for (band = 0; band < BAND_LONG_BANDS; ++band) {
+        for (i = 0; i < 360 && n >= 0; ++i) {
+            if (i == 0 || i == 150 || i == 250) {
+                n = snprintf(out + used, capacity - used, "%s",
+                             i == 0 ? "#1" : "$");
+                used += n >= 0 ? (size_t)n : 0u;
+            }
+            if (i < 250 && i % 37 == 11) {
+                n = snprintf(out + used, capacity - used, "#%d",
+                             1 + (i / 37 + band) % 3);
+                used += n >= 0 ? (size_t)n : 0u;
+            }
+            if (i % 23 == 5) {
+                n = snprintf(out + used, capacity - used, "!%d",
+                             2 + i % 5);
+                used += n >= 0 ? (size_t)n : 0u;
+            }
+            if (used + 3u >= capacity) {
+                return 0u;
+            }
+            out[used++] = (char)(63 + (i * 7 + band * 5) % 64);
+        }
+        if (band + 1 < BAND_LONG_BANDS) {
+            out[used++] = '-';
+        }
+    }
+    if (n < 0 || used + 2u >= capacity) {
         return 0u;
     }
     out[used++] = '\033';
@@ -168,6 +226,50 @@ end:
     return ok;
 }
 
+/* The device parser must keep the CPU workers' columns and flags exactly. */
+static int
+band_check_gpu(sixel_decoder_t *cpu, sixel_decoder_t *gpu, int body,
+               char const *label)
+{
+    sixel_decode_result_t expect;
+    sixel_decode_result_t got;
+    size_t bytes;
+    int ok;
+
+    ok = 0;
+    memset(&got, 0, sizeof(got));
+    if (SIXEL_FAILED(band_decode(cpu, body, SIXEL_PIXELFORMAT_BANDCOLUMNS, NULL,
+                                 &expect))) {
+        fprintf(stderr, "%s: CPU decode failed\n", label);
+        return 0;
+    }
+    if (SIXEL_FAILED(band_decode(gpu, body, SIXEL_PIXELFORMAT_BANDCOLUMNS, NULL,
+                                 &got))) {
+        fprintf(stderr, "%s: GPU-policy decode failed\n", label);
+        goto end;
+    }
+    if (got.width != expect.width || got.height != expect.height ||
+            got.pixelformat != expect.pixelformat ||
+            got.stride != expect.stride || got.flags != expect.flags) {
+        fprintf(stderr, "%s: GPU-policy geometry or flags differ\n", label);
+        goto end;
+    }
+    bytes = expect.pixelformat == SIXEL_PIXELFORMAT_BANDCOLUMNS
+        ? SIXEL_BANDCOLUMNS_PALETTE_BYTES +
+            (size_t)((expect.height + 5) / 6) * (size_t)expect.stride
+        : (size_t)expect.height * (size_t)expect.stride;
+    if (memcmp(got.pixels, expect.pixels, bytes) != 0) {
+        fprintf(stderr, "%s: GPU-policy pixels differ\n", label);
+        goto end;
+    }
+    ok = 1;
+
+end:
+    free(expect.pixels);
+    free(got.pixels);
+    return ok;
+}
+
 /* keep_unpainted leaves unpainted destination bytes alone. */
 static int
 band_check_keep(sixel_decoder_t *decoder)
@@ -227,6 +329,7 @@ test_decoder_0112(int argc, char **argv)
 {
     sixel_decoder_t *threaded;
     sixel_decoder_t *serial;
+    sixel_decoder_t *gpu;
     sixel_palette_transform_t transform;
     unsigned char word[SIXEL_BANDCOLUMNS_PALETTE_BYTES + 8u];
     unsigned char rgba[4];
@@ -236,6 +339,7 @@ test_decoder_0112(int argc, char **argv)
     (void)argv;
     threaded = NULL;
     serial = NULL;
+    gpu = NULL;
     ok = 0;
     transform.context = NULL;
     transform.map_rgb = band_swap_red_blue;
@@ -248,17 +352,24 @@ test_decoder_0112(int argc, char **argv)
                 threaded, SIXEL_OPTFLAG_THREADING_POLICY, "greedy:B4")) ||
             SIXEL_FAILED(sixel_decoder_new(&serial, NULL)) ||
             SIXEL_FAILED(sixel_decoder_setopt(
-                serial, SIXEL_OPTFLAG_THREADING_POLICY, "greedy:B1"))) {
+                serial, SIXEL_OPTFLAG_THREADING_POLICY, "greedy:B1")) ||
+            SIXEL_FAILED(sixel_decoder_new(&gpu, NULL)) ||
+            SIXEL_FAILED(sixel_decoder_setopt(
+                gpu, SIXEL_OPTFLAG_THREADING_POLICY, "greedy:B4")) ||
+            SIXEL_FAILED(sixel_decoder_setopt(
+                gpu, SIXEL_OPTFLAG_GPU_POLICY, "force"))) {
         goto end;
     }
 
     /* Opaque, then transparent with holes, through both entries. */
-    g_stream_size = band_build(g_stream, sizeof(g_stream), 0, 0);
+    g_stream_size = band_build(g_stream, sizeof(g_stream), 0, 0, 0);
     if (g_stream_size == 0u ||
             !band_check(threaded, 0, NULL, 1, "opaque stream") ||
             !band_check(threaded, 1, NULL, 1, "opaque body") ||
             !band_check(threaded, 0, &transform, 1, "opaque transform") ||
-            !band_check(serial, 0, NULL, 0, "opaque serial")) {
+            !band_check(serial, 0, NULL, 0, "opaque serial") ||
+            !band_check_gpu(threaded, gpu, 0, "opaque gpu") ||
+            !band_check_gpu(threaded, gpu, 1, "opaque gpu body")) {
         goto end;
     }
     /* Untrusted, the last band paints past the raster and grows the image. */
@@ -267,13 +378,35 @@ test_decoder_0112(int argc, char **argv)
         goto end;
     }
     g_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
-    g_stream_size = band_build(g_stream, sizeof(g_stream), 1, 1);
+    g_stream_size = band_build(g_stream, sizeof(g_stream), 1, 1, 0);
     if (g_stream_size == 0u ||
             !band_check(threaded, 0, NULL, 1, "transparent stream") ||
             !band_check(threaded, 1, &transform, 1, "transparent body") ||
-            !band_check_keep(threaded)) {
+            !band_check_keep(threaded) ||
+            !band_check_gpu(threaded, gpu, 0, "transparent gpu")) {
         goto end;
     }
+    g_stream_size = band_build(g_stream, sizeof(g_stream), 1, 0, 1);
+    if (g_stream_size == 0u ||
+            !band_check(threaded, 0, NULL, 1, "carried stream") ||
+            !band_check_gpu(threaded, gpu, 0, "carried gpu") ||
+            !band_check_gpu(threaded, gpu, 1, "carried gpu body")) {
+        goto end;
+    }
+    g_stream_size = band_build_long(g_stream, sizeof(g_stream));
+    if (g_stream_size == 0u ||
+            !band_check(threaded, 0, NULL, 1, "long stream") ||
+            !band_check_gpu(threaded, gpu, 0, "long gpu") ||
+            !band_check_gpu(threaded, gpu, 1, "long gpu body")) {
+        goto end;
+    }
+    g_stream_size = band_build(g_stream, sizeof(g_stream), 1, 0, 1);
+    /* Untrusted paint past the raster leaves the device result unused. */
+    g_flags = 0u;
+    if (!band_check_gpu(threaded, gpu, 0, "grown gpu")) {
+        goto end;
+    }
+    g_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
 
     if (sixel_bandcolumns_to_rgba(NULL, 1, 1, rgba, 4u, 0) !=
                 SIXEL_BAD_ARGUMENT ||
@@ -294,6 +427,9 @@ end:
     }
     if (serial != NULL) {
         sixel_decoder_unref(serial);
+    }
+    if (gpu != NULL) {
+        sixel_decoder_unref(gpu);
     }
     sixel_set_decoder_threads(1);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

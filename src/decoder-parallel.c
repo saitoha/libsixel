@@ -37,7 +37,9 @@
 #include <sixel.h>
 
 #include "decoder.h"
+#include "decoder-gpu.h"
 #include "decoder-parallel.h"
+#include "sixel_decode_pixels.h"
 #if SIXEL_ENABLE_THREADS
 # include "decoder-columns.h"
 # include "timeline-logger.h"
@@ -2667,6 +2669,9 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int trust_raster_size;
     int undither_prepared;
     int gather_keep;
+#if defined(HAVE_METAL)
+    int gpu_outside;
+#endif
 
     status = SIXEL_RUNTIME_ERROR;
     gather_keep = 0;
@@ -2721,6 +2726,32 @@ sixel_decoder_parallel_request_start(int direct_mode,
         runtime_error = 1;
         goto cleanup;
     }
+
+#if defined(HAVE_METAL)
+    /* A kept band-column block of an ordinary body can be parsed on the
+     * device; it declines anything the workers would treat specially. */
+    if ((decode_flags & SIXEL_DECODE_PIXELS_OPTION_GPU_INTERNAL) != 0U &&
+            (undither == NULL || !undither->enabled) &&
+            image->capture == 0 && image->band_block != NULL &&
+            image->band_width == image->width &&
+            image->band_height == image->height &&
+            ((size_t)payload_len >= SIXEL_DECODER_GPU_MIN_BODY ||
+             (decode_flags &
+                 SIXEL_DECODE_PIXELS_OPTION_GPU_FORCE_INTERNAL) != 0U) &&
+            sixel_decoder_gpu_parse_columns(input, (size_t)length,
+                (size_t)payload_start, image->width, image->height,
+                initial_color_index, trust_raster_size,
+                (uint64_t *)(void *)(image->band_block +
+                    SIXEL_BANDCOLUMNS_PALETTE_BYTES),
+                &image->alpha_opaque, &gpu_outside) == SIXEL_OK) {
+        if (painted_outside_raster != NULL) {
+            *painted_outside_raster = gpu_outside;
+        }
+        image->band_kept = 1;
+        status = SIXEL_OK;
+        goto cleanup;
+    }
+#endif
 
     palette_limit = image->ncolors;
 

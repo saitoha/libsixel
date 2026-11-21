@@ -51,6 +51,11 @@
      SIXEL_DECODE_PIXELS_RESULT_BANDCOLUMNS_INTERNAL)
 /* Decode flag: keep band columns when every pixel can be represented. */
 #define SIXEL_DECODE_PIXELS_OPTION_BANDCOLUMNS_INTERNAL  0x40000000u
+/* Decode flag: the decoder's GPU policy allows parsing kept band columns on
+ * the device; the CPU workers still decide whatever the device declines. */
+#define SIXEL_DECODE_PIXELS_OPTION_GPU_INTERNAL          0x20000000u
+/* Decode flag: the GPU policy is FORCE; try the device for any body size. */
+#define SIXEL_DECODE_PIXELS_OPTION_GPU_FORCE_INTERNAL    0x10000000u
 
 /* Pull one complete paint into a retained canvas. Input bytes are borrowed
  * until close; returned RGBA is borrowed until the next call. Offsets include
