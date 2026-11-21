@@ -8,22 +8,25 @@
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
 }
-
-input_image="${TOP_SRCDIR}/images/vimperator3.png"
 
 echo "1..1"
 set -v
 
-# Successful forced execution proves availability without a separate probe.
+# A fixed palette isolates the default GPU lookup from palette construction.
+# Probe the explicit lookup only when forced execution fails.
 conversion_status=0
 probe_status=0
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6 \
+trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --env SIXEL_ENCODER_THREADING_POLICY=greedy \
+        --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6 \
         --env SIXEL_GPU_POLICY=force \
         --env SIXEL_DITHER_BLUENOISE_STRENGTH=0.4 \
-        -d bluenoise -p 256 -o /dev/null "${input_image}" || conversion_status=$?
+        -d bluenoise -b xterm256 -o /dev/null \
+        "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1) || conversion_status=$?
 test "$conversion_status" -eq 0 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --gpu-lookup-available none || probe_status=$?
 test "$probe_status" -ne 77 || {
@@ -35,7 +38,20 @@ test "$probe_status" -eq 0 || {
     exit 0
 }
 test "$conversion_status" -eq 0 || {
+    printf '%s\n' "$trace" >&2
     echo "not ok" 1 - "parallel forced GPU bluenoise default lookup failed"
+    exit 0
+}
+
+# Metal reports its direct or GEMM kernel, and Vulkan reports the lookup name.
+case "$trace" in
+    *'LSXGPU2|consumer=palette-apply|kernel=direct'*|\
+    *'LSXGPU2|consumer=palette-apply|kernel=gemm'*|\
+    *'LSXGPU2|consumer=palette-apply|kernel=none'*) true ;;
+    *) false ;;
+esac || {
+    printf '%s\n' "$trace" >&2
+    echo 'not ok 1 - default bluenoise lookup did not use GPU palette application'
     exit 0
 }
 

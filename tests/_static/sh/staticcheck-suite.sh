@@ -1270,6 +1270,10 @@ run_case_tap "staticcheck-metal-heckbert" \
     sh "$src_root/tests/_static/sh/staticcheck-metal-heckbert.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-gpu-default-lookup-tests" \
+    sh "$src_root/tests/_static/sh/staticcheck-gpu-default-lookup-tests.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-nightly-msvc-archiver" \
     sh "$src_root/tests/_static/sh/staticcheck-nightly-msvc-archiver.sh" \
     "$src_root" || fail_and_exit $?
