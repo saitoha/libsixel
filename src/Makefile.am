@@ -24,6 +24,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/filter-sample-gpu.metal \
     $(srcdir)/decoder-gpu.metal \
+    $(srcdir)/encoder-body-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
     $(srcdir)/lookup-policy-none-fractional-gpu.metal \
     $(srcdir)/lookup-policy-eytzinger-fractional-gpu.metal \
@@ -238,6 +239,7 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-retained-plane-metal.lo \
     libsixel_la-filter-sample-metal.lo \
     libsixel_la-decoder-gpu-metal.lo \
+    libsixel_la-encoder-body-gpu-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-none-gpu.lo \
     libsixel_la-lookup-policy-eytzinger-gpu.lo \

@@ -16,6 +16,7 @@ metal_sources = files(
   '../retained-plane-gpu.metal',
   '../filter-sample-gpu.metal',
   '../decoder-gpu.metal',
+  '../encoder-body-gpu.metal',
   '../dither-policy-lso2-gpu.metal',
   '../dither-policy-fs-gpu.metal',
   '../dither-policy-atkinson-gpu.metal',

@@ -872,6 +872,7 @@ parser_name(sixel_decoder_worker_context_t *context) \
     unsigned char *run_end; \
     uint32_t word; \
     uint32_t nondigit; \
+    uint64_t digit_bytes; \
     int digits; \
     uint64_t *column; \
     \
@@ -1065,19 +1066,23 @@ parser_name(sixel_decoder_worker_context_t *context) \
             /* Up to three digits cannot overflow: read four bytes at once, \
              * locate the first non-digit and combine the digits without a \
              * branch per digit. Longer numbers take the checked loop. */ \
+            nondigit = 0; \
+            digit_bytes = 0; \
             if (SIXEL_SIMD_LITTLE_ENDIAN && limit - p >= 4) { \
                 memcpy(&word, p, sizeof(word)); \
-                nondigit = ((word + 0x46464646u) | (word - 0x30303030u)) & \
-                    0x80808080u; \
-            } else { \
-                nondigit = 0; \
+                /* The mask only uses the low 32 bits. Bias the difference \
+                 * by 2^32 to keep both operations in range. */ \
+                digit_bytes = (uint64_t)word + (UINT64_C(1) << 32) - \
+                    0x30303030u; \
+                nondigit = (uint32_t)(((uint64_t)word + 0x46464646u) | \
+                    digit_bytes) & 0x80808080u; \
             } \
             if (nondigit != 0) { \
                 /* Count leading digit bytes before the first stop bit. */ \
                 digits = ((nondigit & 0xffu) == 0) + \
                          ((nondigit & 0xffffu) == 0) + \
                          ((nondigit & 0xffffffu) == 0); \
-                word = (uint32_t)((uint64_t)(word - 0x30303030u) << \
+                word = (uint32_t)((digit_bytes & UINT32_MAX) << \
                     (32 - 8 * digits)); \
                 value = (int)((word >> 8) & 0xffu) * 100 + \
                     (int)((word >> 16) & 0xffu) * 10 + (int)(word >> 24); \
