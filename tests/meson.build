@@ -228,6 +228,7 @@ foreach setting : base_env_settings
   env.set(setting[0], setting[1])
 endforeach
 
+# palette/heckbert: include the score AVX2 scalar-equivalence cases.
 # Collect test runner sources under tests/ dynamically so additions/removals
 # do not require manual Meson updates.
 # The installed-WIC probe is a standalone Windows executable owned by wic/.
