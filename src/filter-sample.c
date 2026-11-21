@@ -477,6 +477,102 @@ sixel_filter_sample_vary_points_avx2(unsigned char const *pixels,
 }
 #endif
 
+
+#if SIXEL_SAMPLE_AVX2
+/* Pack five RGB points, spaced three pixels apart, into each 128-bit
+ * lane. The upper lane starts five points later. Shuffles never cross a
+ * lane boundary; their high bits suppress bytes from the other loads.
+ * The unused last byte of each lane is zero. The final load reaches byte
+ * 92 from p, so callers must leave room for that complete load. Pass the
+ * result explicitly to avoid the Win64 hidden vector-return slot. */
+/* Accel: SAMPLE-VARY-RGB avx2 */
+static SIXEL_SAMPLE_TARGET_AVX2 inline void
+sixel_sample_rgb10_avx2(unsigned char const *p, __m256i *out)
+{
+    __m256i a;
+    __m256i b;
+    __m256i c;
+    __m256i ma;
+    __m256i mb;
+    __m256i mc;
+
+    a = _mm256_inserti128_si256(
+        _mm256_castsi128_si256(_mm_loadu_si128((__m128i const *)p)),
+        _mm_loadu_si128((__m128i const *)(p + 45)), 1);
+    b = _mm256_inserti128_si256(
+        _mm256_castsi128_si256(_mm_loadu_si128((__m128i const *)(p + 16))),
+        _mm_loadu_si128((__m128i const *)(p + 61)), 1);
+    c = _mm256_inserti128_si256(
+        _mm256_castsi128_si256(_mm_loadu_si128((__m128i const *)(p + 32))),
+        _mm_loadu_si128((__m128i const *)(p + 77)), 1);
+    ma = _mm256_broadcastsi128_si256(_mm_setr_epi8(
+        0, 1, 2, 9, 10, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1));
+    mb = _mm256_broadcastsi128_si256(_mm_setr_epi8(
+        -1, -1, -1, -1, -1, -1, 2, 3, 4, 11, 12, 13, -1, -1, -1, -1));
+    mc = _mm256_broadcastsi128_si256(_mm_setr_epi8(
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 4, 5, 6, -1));
+    *out = _mm256_or_si256(_mm256_shuffle_epi8(a, ma),
+        _mm256_or_si256(_mm256_shuffle_epi8(b, mb),
+                        _mm256_shuffle_epi8(c, mc)));
+}
+
+/* Test ten RGB centres without calculating differences at intervening
+ * pixels. Each point keeps its three channels together, so a three-bit
+ * mask reduces the tolerance result. Horizontal and vertical violations
+ * may come from different channels: reduce each axis before combining.
+ * Requires 2 <= x0, x0 + 32 < width and 2 <= y < height - 2. */
+/* Accel: SAMPLE-VARY-RGB avx2 */
+static SIXEL_SAMPLE_TARGET_AVX2 void
+sixel_filter_sample_vary_points_rgb10_avx2(unsigned char const *pixels,
+                                           int width,
+                                           int x0,
+                                           int y,
+                                           unsigned char *both)
+{
+    unsigned char const *p;
+    ptrdiff_t row;
+    ptrdiff_t step;
+    __m256i centre;
+    __m256i before;
+    __m256i after;
+    __m256i low;
+    __m256i high;
+    __m256i spread;
+    __m256i tolerance;
+    __m256i zero;
+    unsigned int masks[2];
+    unsigned int bit;
+    int axis;
+    int k;
+
+    row = (ptrdiff_t)width * 3;
+    p = pixels + (size_t)y * (size_t)row + (size_t)x0 * 3u;
+    sixel_sample_rgb10_avx2(p, &centre);
+    tolerance = _mm256_set1_epi8((char)SIXEL_SAMPLE_SOLID_TOL);
+    zero = _mm256_setzero_si256();
+    for (axis = 0; axis < 2; ++axis) {
+        step = axis == 0 ? 3 : row;
+        sixel_sample_rgb10_avx2(p - step, &before);
+        sixel_sample_rgb10_avx2(p + step, &after);
+        low = _mm256_min_epu8(before, after);
+        high = _mm256_max_epu8(before, after);
+        sixel_sample_rgb10_avx2(p - 2 * step, &before);
+        sixel_sample_rgb10_avx2(p + 2 * step, &after);
+        low = _mm256_min_epu8(low, _mm256_min_epu8(before, after));
+        high = _mm256_max_epu8(high, _mm256_max_epu8(before, after));
+        spread = _mm256_max_epu8(_mm256_subs_epu8(centre, low),
+                                 _mm256_subs_epu8(high, centre));
+        masks[axis] = ~(unsigned int)_mm256_movemask_epi8(
+            _mm256_cmpeq_epi8(_mm256_subs_epu8(spread, tolerance), zero));
+    }
+    for (k = 0; k < 10; ++k) {
+        bit = (unsigned int)(k < 5 ? 3 * k : 16 + 3 * (k - 5));
+        both[k] = (unsigned char)(((masks[0] >> bit) & 7u) != 0
+                                  && ((masks[1] >> bit) & 7u) != 0);
+    }
+}
+#endif
+
 #if SIXEL_SAMPLE_NEON
 
 /* The same test for 15 RGB points x0, x0 + 3, ..., x0 + 42, computing only
@@ -785,7 +881,12 @@ sixel_filter_sample_worker(sixel_thread_pool_job_t job,
                     } else
 #endif
 #if SIXEL_SAMPLE_AVX2
-                    if (avx2 && chunk_points >= 5) {
+                    if (avx2 && depth == 3 && chunk_points >= 10
+                            && x + 32 < width) {
+                        chunk_points = 10;
+                        sixel_filter_sample_vary_points_rgb10_avx2(
+                            pixels, width, x, y, varies);
+                    } else if (avx2 && chunk_points >= 5) {
                         if (chunk_points > 32) {
                             chunk_points = 32;
                         }
