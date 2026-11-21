@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <vulkan/vulkan.h>
 #include <sixel.h>
+#include "gpu-statistics.h"
 
 /*
  * Process-wide Vulkan compute runtime. Initialization is lazy: nothing
@@ -113,6 +114,10 @@ SIXEL_INTERNAL_API int sixel_vk_has_cached_coherent(
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_host(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     VkDeviceSize size);
+/* A direct, cached mapping for a shader-written readback buffer. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_host_cached(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    VkDeviceSize size);
 /* Copy size bytes at the same offset of two buffers' device storage. */
 SIXEL_INTERNAL_API void sixel_vk_record_copy(VkCommandBuffer command,
     sixel_vk_buffer_t const *source, sixel_vk_buffer_t const *target,
@@ -188,5 +193,8 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_ring_wait(
     sixel_vk_runtime_t *runtime, int slot);
 
 SIXEL_INTERNAL_API double sixel_vk_now_ms(void);
+/* Each stage owns its state; callers hold the runtime lock. */
+SIXEL_INTERNAL_API int sixel_vk_headroom_choose_locked(
+    sixel_gpu_headroom_t *state, int gpu_policy);
 #endif
 #endif

@@ -29,6 +29,49 @@
 
 #include "gpu-statistics.h"
 
+int
+sixel_gpu_headroom_step(
+    sixel_gpu_headroom_t *state, int gpu_policy,
+    unsigned long long busy_ns, unsigned long long wall_ns)
+{
+    unsigned long long elapsed;
+    unsigned long long busy;
+    double load;
+
+    if (state == NULL) return 0;
+    if (gpu_policy == SIXEL_GPU_POLICY_OFF) {
+        memset(state, 0, sizeof(*state));
+        return 0;
+    }
+    if (state->last_wall_ns == 0 || wall_ns <= state->last_wall_ns ||
+            busy_ns < state->last_busy_ns) {
+        memset(state, 0, sizeof(*state));
+        state->last_busy_ns = busy_ns;
+        state->last_wall_ns = wall_ns;
+        return 0;
+    }
+    ++state->frames;
+    elapsed = wall_ns - state->last_wall_ns;
+    if (state->frames < 8 || elapsed < 20000000ULL)
+        return state->gpu;
+    busy = busy_ns - state->last_busy_ns;
+    load = (double)busy / (double)elapsed;
+    state->load = state->windows == 0 ? load :
+        (state->load + load) * 0.5;
+    ++state->windows;
+    state->frames = 0;
+    state->last_busy_ns = busy_ns;
+    state->last_wall_ns = wall_ns;
+    /* A GPU needs ample idle time before taking more work; once enabled,
+     * it stays there until device work consumes most of the frame window. */
+    if (state->windows >= 2 && state->load < 0.50)
+        state->gpu = 1;
+    else if (state->load > 0.70)
+        state->gpu = 0;
+    return state->gpu;
+}
+
+
 /* GPU backends exist only on pthread hosts (Metal on Apple, Vulkan on other
  * POSIX systems), so the static initializer needs no portable once-guard.
  * Builds without a backend keep a constant all-zero snapshot. */

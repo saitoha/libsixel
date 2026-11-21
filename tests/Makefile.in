@@ -766,7 +766,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	palette/sampling/sample_vulkan_exact.h \
 	palette/sampling/0105_sample_vulkan_random.c \
 	palette/sampling/0106_sample_vulkan_edge.c \
-	palette/sampling/0107_sample_vulkan_headroom.c \
+	palette/sampling/0107_gpu_headroom.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 	_support/processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -2133,7 +2133,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-sample_vulkan_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0105_sample_vulkan_random.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0106_sample_vulkan_edge.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0107_sample_vulkan_headroom.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0107_gpu_headroom.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0027_gpu_return.$(OBJEXT) \
@@ -5305,7 +5305,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	palette/sampling/$(DEPDIR)/test_runner-0039_sampling_auto_pal8_retention.Po \
 	palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Po \
 	palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Po \
-	palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Po \
+	palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Po \
 	palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po \
 	palette/snap-policy/$(DEPDIR)/test_runner-0001_snap_output_grid.Po \
 	palette/snap-policy/$(DEPDIR)/test_runner-0003_snap_partial_once.Po \
@@ -9382,7 +9382,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SAMPLE_VULKAN_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0105_SAMPLE_VULKAN_RANDOM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0106_SAMPLE_VULKAN_EDGE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_SAMPLE_VULKAN_HEADROOM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_GPU_HEADROOM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PERTURB_API \
@@ -12359,7 +12359,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/sample_vulkan_exact.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0105_sample_vulkan_random.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0106_sample_vulkan_edge.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0107_sample_vulkan_headroom.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0107_gpu_headroom.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -22073,7 +22073,7 @@ palette/sampling/test_runner-0105_sample_vulkan_random.$(OBJEXT):  \
 palette/sampling/test_runner-0106_sample_vulkan_edge.$(OBJEXT):  \
 	palette/sampling/$(am__dirstamp) \
 	palette/sampling/$(DEPDIR)/$(am__dirstamp)
-palette/sampling/test_runner-0107_sample_vulkan_headroom.$(OBJEXT):  \
+palette/sampling/test_runner-0107_gpu_headroom.$(OBJEXT):  \
 	palette/sampling/$(am__dirstamp) \
 	palette/sampling/$(DEPDIR)/$(am__dirstamp)
 _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT):  \
@@ -28445,7 +28445,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0039_sampling_auto_pal8_retention.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0105_sample_vulkan_random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/snap-policy/$(DEPDIR)/test_runner-0001_snap_output_grid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/snap-policy/$(DEPDIR)/test_runner-0003_snap_partial_once.Po@am__quote@ # am--include-marker
@@ -36609,19 +36609,19 @@ palette/sampling/test_runner-0106_sample_vulkan_edge.obj: palette/sampling/0106_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0106_sample_vulkan_edge.obj `if test -f 'palette/sampling/0106_sample_vulkan_edge.c'; then $(CYGPATH_W) 'palette/sampling/0106_sample_vulkan_edge.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0106_sample_vulkan_edge.c'; fi`
 
-palette/sampling/test_runner-0107_sample_vulkan_headroom.o: palette/sampling/0107_sample_vulkan_headroom.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0107_sample_vulkan_headroom.o -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Tpo -c -o palette/sampling/test_runner-0107_sample_vulkan_headroom.o `test -f 'palette/sampling/0107_sample_vulkan_headroom.c' || echo '$(srcdir)/'`palette/sampling/0107_sample_vulkan_headroom.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Tpo palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0107_sample_vulkan_headroom.c' object='palette/sampling/test_runner-0107_sample_vulkan_headroom.o' libtool=no @AMDEPBACKSLASH@
+palette/sampling/test_runner-0107_gpu_headroom.o: palette/sampling/0107_gpu_headroom.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0107_gpu_headroom.o -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Tpo -c -o palette/sampling/test_runner-0107_gpu_headroom.o `test -f 'palette/sampling/0107_gpu_headroom.c' || echo '$(srcdir)/'`palette/sampling/0107_gpu_headroom.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Tpo palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0107_gpu_headroom.c' object='palette/sampling/test_runner-0107_gpu_headroom.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0107_sample_vulkan_headroom.o `test -f 'palette/sampling/0107_sample_vulkan_headroom.c' || echo '$(srcdir)/'`palette/sampling/0107_sample_vulkan_headroom.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0107_gpu_headroom.o `test -f 'palette/sampling/0107_gpu_headroom.c' || echo '$(srcdir)/'`palette/sampling/0107_gpu_headroom.c
 
-palette/sampling/test_runner-0107_sample_vulkan_headroom.obj: palette/sampling/0107_sample_vulkan_headroom.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0107_sample_vulkan_headroom.obj -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Tpo -c -o palette/sampling/test_runner-0107_sample_vulkan_headroom.obj `if test -f 'palette/sampling/0107_sample_vulkan_headroom.c'; then $(CYGPATH_W) 'palette/sampling/0107_sample_vulkan_headroom.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0107_sample_vulkan_headroom.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Tpo palette/sampling/$(DEPDIR)/test_runner-0107_sample_vulkan_headroom.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0107_sample_vulkan_headroom.c' object='palette/sampling/test_runner-0107_sample_vulkan_headroom.obj' libtool=no @AMDEPBACKSLASH@
+palette/sampling/test_runner-0107_gpu_headroom.obj: palette/sampling/0107_gpu_headroom.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0107_gpu_headroom.obj -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Tpo -c -o palette/sampling/test_runner-0107_gpu_headroom.obj `if test -f 'palette/sampling/0107_gpu_headroom.c'; then $(CYGPATH_W) 'palette/sampling/0107_gpu_headroom.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0107_gpu_headroom.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Tpo palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0107_gpu_headroom.c' object='palette/sampling/test_runner-0107_gpu_headroom.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0107_sample_vulkan_headroom.obj `if test -f 'palette/sampling/0107_sample_vulkan_headroom.c'; then $(CYGPATH_W) 'palette/sampling/0107_sample_vulkan_headroom.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0107_sample_vulkan_headroom.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0107_gpu_headroom.obj `if test -f 'palette/sampling/0107_gpu_headroom.c'; then $(CYGPATH_W) 'palette/sampling/0107_gpu_headroom.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0107_gpu_headroom.c'; fi`
 
 _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o: _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o -MD -MP -MF _support/processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo -c -o _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o `test -f '_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c' || echo '$(srcdir)/'`_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c

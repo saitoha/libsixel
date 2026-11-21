@@ -1557,6 +1557,8 @@ SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
     $(srcdir)/palette-kmeans-gpu.glsl \
     $(srcdir)/retained-plane-gpu.glsl \
     $(srcdir)/encoder-body-gpu.glsl \
+    $(srcdir)/encoder-body-emit-gpu.glsl \
+    $(srcdir)/encoder-body-copy-gpu.glsl \
     $(srcdir)/progressive-gpu-scan.glsl \
     $(srcdir)/progressive-gpu-lookup.glsl
 

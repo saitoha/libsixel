@@ -2925,7 +2925,7 @@ int test_auto_native_0023(int argc, char **argv);
 int test_score_avx2_random(int argc, char **argv);
 int test_sample_vulkan_random(int argc, char **argv);
 int test_sample_vulkan_edge(int argc, char **argv);
-int test_sample_vulkan_headroom(int argc, char **argv);
+int test_gpu_headroom(int argc, char **argv);
 int test_score_avx2_edge(int argc, char **argv);
 int test_bounds_avx2_random(int argc, char **argv);
 int test_bounds_avx2_edge(int argc, char **argv);
@@ -12837,8 +12837,8 @@ static test_entry_t const test_entries[] = {
       test_sample_vulkan_random },
     { "palette/sampling/0106_sample_vulkan_edge",
       test_sample_vulkan_edge },
-    { "palette/sampling/0107_sample_vulkan_headroom",
-      test_sample_vulkan_headroom },
+    { "palette/sampling/0107_gpu_headroom",
+      test_gpu_headroom },
     { "palette/heckbert/0151_score_avx2_edge", test_score_avx2_edge },
     { "palette/heckbert/0152_bounds_avx2_random", test_bounds_avx2_random },
     { "palette/heckbert/0153_bounds_avx2_edge", test_bounds_avx2_edge },
