@@ -1,12 +1,12 @@
 #!/bin/sh
 # Policy: docs/ci/design.md
 # Policy: docs/testing/staticcheck.md
-# Haiku slices must not execute a missing non-default C test runner.
+# Haiku slices require a built C test runner and a bounded spawn retry.
 set -eux
 echo '1..1'
 set -v
 awk '
-function check(text,    n, lines, i, built, tested, line, strict) {
+function check(text,    n, lines, i, built, tested, line, strict, bounded) {
     n = split(text, lines, "\n")
     for (i = 1; i <= n; ++i) {
         line = lines[i]
@@ -14,8 +14,9 @@ function check(text,    n, lines, i, built, tested, line, strict) {
         if (line ~ /^#/) continue
         if (line == "set -eux") strict = 1
         if (line == "meson compile -C builddir test_runner" && strict) built = 1
+        if (line == "for attempt in 1 2; do") bounded = 1
         if (line ~ /^meson test / && line ~ /--no-rebuild/) {
-            if (!built) return 0
+            if (!built || !bounded) return 0
             ++tested
         }
     }
@@ -23,8 +24,10 @@ function check(text,    n, lines, i, built, tested, line, strict) {
 }
 BEGIN {
     build = "set -eux\nmeson compile -C builddir test_runner"
-    test = "meson test -C builddir --no-rebuild --num-processes 1\n"
-    if (!check(build "\n" test) || check(test) || check(test build) ||
+    test_line = "meson test -C builddir --no-rebuild --num-processes 1\n"
+    test = "for attempt in 1 2; do\n" test_line "done\n"
+    if (!check(build "\n" test) || check(build "\n" test_line) ||
+        check(test) || check(test build) ||
         check("meson compile -C builddir test_runner\n" test) ||
         check(build " || true\n" test)) {
         # The last control has a different command line, not a valid build.
@@ -45,8 +48,8 @@ END {
     exit failed
 }
 ' "$1/.github/actions/ci-steps/action.yml" || {
-    echo 'not ok 1 - Haiku builds test dependencies before no-rebuild slices'
+    echo 'not ok 1 - Haiku slices require built dependencies and a bounded retry'
     exit 0
 }
-echo 'ok 1 - Haiku builds test dependencies before no-rebuild slices'
+echo 'ok 1 - Haiku slices require built dependencies and a bounded retry'
 exit 0
