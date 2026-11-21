@@ -3,7 +3,7 @@
 // Copyright (c) 2026 libsixel developers. See `AUTHORS`.
 //
 // This file is libsixel 6cells IDL.  Its surface is intentionally close to
-// OMG IDL and MIDL, but tools/gen_6cells_h.awk is the only supported compiler.
+// OMG IDL and MIDL, with project compilers in tools/gen_6cells_h.awk and tools/gen_6cells_h.py.
 
 /*
  * Attribute contract:

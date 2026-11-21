@@ -713,9 +713,9 @@ foreach f: wflags
 endforeach
 
 # Enable warnings-as-errors only in CI so local builds stay flexible.
-ci_probe = find_program('python3', 'python', required: true)
+python3 = find_program('python3', 'python', required: true)
 ci_env = run_command(
-  ci_probe,
+  python3,
   '-c',
   'import os, sys; sys.stdout.write(os.getenv("CI", ""))',
   check: false
@@ -725,14 +725,14 @@ ci_env = run_command(
 # caller exports LLVM_PROFILE_FILE into a directory that does not exist yet.
 if get_option('b_pgo') == 'generate'
   llvm_profile_file = run_command(
-    ci_probe,
+    python3,
     '-c',
     'import os, sys; sys.stdout.write(os.getenv("LLVM_PROFILE_FILE", ""))',
     check: false
   ).stdout().strip()
   if llvm_profile_file != ''
     run_command(
-      ci_probe,
+      python3,
       '-c',
       'import os, sys; p = sys.argv[1]; d = os.path.dirname(p); ' +
       'os.makedirs(d, exist_ok=True) if d else None',
@@ -2819,7 +2819,6 @@ sh = find_program('sh', required: not windows_emscripten_build or
   get_option('tests') or fuzz_enabled or amalgamated_sources_enabled or
   have_vulkan or shebang_enabled)
 meson_prog = find_program('meson', required: true)
-python3 = ci_probe
 
 # Build the embedded completion header once for the converter and amalgamation.
 gen_completion = files('tools/gen_completion_embed.py')

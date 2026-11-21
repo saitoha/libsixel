@@ -274,8 +274,7 @@ Change the source and regenerate with the existing generator instead.
 
 Representative examples:
 
-- `include/6cells.h` is generated from `include/6cells.idl` by
-  `tools/gen_6cells_h.awk`.
+- `include/6cells.h` is generated from `include/6cells.idl` by `tools/gen_6cells_h.awk`. Meson generates the build-tree header with `tools/gen_6cells_h.py`. Keep both generators in sync when changing the IDL syntax or generated declarations.
 - The component factory registry is generated from class-id annotations by
   `tools/gen_factory_classid_gperf.awk`, which creates
   `src/classid-factory.gperf`; `gperf` then generates

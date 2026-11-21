@@ -65,23 +65,12 @@ metal_sources = files(
   '../lookup-policy-5bit-gpu.metal',
   '../lookup-policy-6bit-gpu.metal',
 )
-metal_embed = files('../../tools/embed-metal.sh')
-metal_encoder = files('../../tools/embed-metal.awk')
-# Some common sources include these fragments even when Metal is unavailable.
-# Let Meson capture the existing AWK encoder's output on Windows Emscripten.
-if windows_emscripten_build
-  metal_embed_command = [awk_prog, '-f', metal_encoder, '@INPUT@']
-else
-  metal_embed_command = [sh, metal_embed, '@INPUT@', '@OUTPUT@']
-endif
+shader_embed = files('../../tools/embed-shader.py')
 foreach input : metal_sources
   name = fs.stem(input)
   metal_headers += custom_target(name + '-shader',
     input: input,
     output: name + '-shader.inc.h',
-    command: metal_embed_command,
-    capture: windows_emscripten_build,
-    env: {'LC_ALL': 'C'},
-    depend_files: metal_encoder,
+    command: [python3, shader_embed, '@INPUT@', '@OUTPUT@'],
     build_by_default: true)
 endforeach
