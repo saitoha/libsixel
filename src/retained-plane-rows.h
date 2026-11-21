@@ -18,6 +18,8 @@ typedef struct sixel_retained_rows {
     int width;
     size_t stride;
     int neon;
+    int avx2;
+    int packed_rgb[256];
     unsigned char lut[3][256];
 } sixel_retained_rows_t;
 

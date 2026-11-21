@@ -3,6 +3,7 @@
 # definitions, feature macros or private implementation copies individually
 # in test_runner_SOURCES. Keep each case in exactly one inventory.
 runner_batches = \
+    .runner-batches/batch_encoder_indexed_0185.inc.c \
     .runner-batches/batch_assessment_delta_e_0002.inc.c \
     .runner-batches/batch_assessment_sciede2000_0001.inc.c \
     .runner-batches/batch_assessment_scielab_0002.inc.c \
@@ -547,6 +548,22 @@ runner_batches = \
     .runner-batches/batch_writer_snapshot_0019.inc.c \
     .runner-batches/batch_writer_snapshot_0022.inc.c \
     .runner-batches/batch_writer_snapshot_0024.inc.c
+
+batch_encoder_indexed_0185 = \
+    encoder/indexed/0185_retained_avx2_backend.c \
+    encoder/indexed/0186_retained_avx2_palette_256_rgb.c \
+    encoder/indexed/0187_retained_avx2_mixed_rgb.c \
+    encoder/indexed/0188_retained_avx2_mixed_valid.c \
+    encoder/indexed/0189_retained_avx2_mixed_paint.c \
+    encoder/indexed/0190_retained_avx2_mixed_count.c \
+    encoder/indexed/0191_retained_avx2_mixed_refinement.c \
+    encoder/indexed/0192_retained_avx2_all_keep_rgb.c \
+    encoder/indexed/0193_retained_avx2_exact_keep_refinement.c \
+    encoder/indexed/0194_retained_avx2_all_approximate_refinement.c \
+    encoder/indexed/0195_retained_avx2_short_palette_sentinel.c \
+    encoder/indexed/0196_retained_avx2_without_skip_rgb.c \
+    encoder/indexed/0197_retained_avx2_tail_rgb.c \
+    encoder/indexed/0198_retained_avx2_partial_rows_rgb.c
 
 batch_assessment_delta_e_0002 = \
     assessment/delta-e/0002_same_physical_coordinates.c \
