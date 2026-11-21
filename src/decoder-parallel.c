@@ -113,6 +113,8 @@ typedef struct sixel_decoder_worker_context {
      * image_buffer_finalize_normal_columns(). */
     int gather_bands;
     int gather_alpha_opaque;
+    /* Copy columns into the image's band block instead of RGBA pixels. */
+    int gather_keep;
 } sixel_decoder_worker_context_t;
 
 typedef struct sixel_decoder_local_chunk {
@@ -1025,6 +1027,44 @@ SIXEL_DECODER_PARALLEL_PARSER(sixel_decoder_parallel_capture_parse, 1)
  * every pixel passed through one of them and their answers are the image's.
  * One nonopaque band settles it either way, since nothing paints after gather.
  */
+/* Publish disjoint bands into the band-column block.  Returns whether every
+ * pixel of those bands below height was painted, like the RGBA gather. */
+static int
+sixel_decoder_parallel_keep_columns(image_buffer_t *image,
+                                    uint64_t const *source,
+                                    int first, int end)
+{
+    uint64_t *columns;
+    uint64_t need;
+    uint64_t all;
+    size_t width;
+    size_t count;
+    size_t i;
+    int rows;
+    int band;
+    int opaque;
+
+    width = (size_t)image->width;
+    columns = (uint64_t *)(void *)(image->band_block +
+        SIXEL_BANDCOLUMNS_PALETTE_BYTES) + (size_t)first * width;
+    count = (size_t)(end - first) * width;
+    memcpy(columns, source, count * sizeof(uint64_t));
+    opaque = 1;
+    for (band = first; band < end && opaque; ++band) {
+        rows = image->height - band * 6;
+        if (rows > 6) {
+            rows = 6;
+        }
+        need = ((UINT64_C(1) << rows) - 1u) << 48;
+        all = need;
+        for (i = 0; i < width; ++i) {
+            all &= columns[(size_t)(band - first) * width + i];
+        }
+        opaque = all == need;
+    }
+    return opaque;
+}
+
 static int
 sixel_decoder_parallel_gather_alpha(
     sixel_decoder_worker_context_t const *contexts, int threads,
@@ -1095,8 +1135,10 @@ sixel_decoder_parallel_direct_worker(void *arg)
                 end = (context->height + 5) / 6;
             }
             context->gather_bands = end > first ? end - first : 0;
-            context->gather_alpha_opaque =
-                image_buffer_finalize_normal_columns(context->image,
+            context->gather_alpha_opaque = context->gather_keep
+                ? sixel_decoder_parallel_keep_columns(context->image,
+                    context->columns, first, end)
+                : image_buffer_finalize_normal_columns(context->image,
                     context->columns, first, end);
             if (context->logger != NULL) {
                 sixel_timeline_logger_logf(context->logger,
@@ -2448,8 +2490,10 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int max_color_index;
     int trust_raster_size;
     int undither_prepared;
+    int gather_keep;
 
     status = SIXEL_RUNTIME_ERROR;
+    gather_keep = 0;
     prepare_status = SIXEL_OK;
     workers = NULL;
     resident = NULL;
@@ -2627,6 +2671,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
         contexts[i].undither = undither_prepared ? undither : NULL;
         /* Initialize every owner before any worker can allocate columns. */
         contexts[i].columns = NULL;
+        contexts[i].gather_keep = 0;
         contexts_ready = i + 1;
     }
 
@@ -2719,10 +2764,14 @@ sixel_decoder_parallel_request_start(int direct_mode,
              * so even partial thread creation leaves the initialized shared
              * pixels and paint mask untouched for serial fallback.
              */
+            gather_keep = image->band_block != NULL &&
+                image->band_width == image->width &&
+                image->band_height == image->height;
             for (i = 0; i < threads; ++i) {
                 contexts[i].result = (-1);
                 contexts[i].gather_bands = 0;
                 contexts[i].gather_alpha_opaque = (-1);
+                contexts[i].gather_keep = gather_keep;
                 contexts[i].direct_mode_kind = SIXEL_DECODER_DIRECT_GATHER;
                 if (sixel_decoder_parallel_inject_failure("gather", i)) {
                     status = SIXEL_RUNTIME_ERROR;
@@ -2782,6 +2831,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
             status = SIXEL_OK;
             image->alpha_opaque =
                 sixel_decoder_parallel_gather_alpha(contexts, threads, image);
+            image->band_kept = gather_keep;
         }
         goto cleanup;
     }

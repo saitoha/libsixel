@@ -60,6 +60,16 @@ typedef struct image_buffer {
     /* After a successful RGBA decode: 1 when every alpha byte is 255, 0 when
      * one is not, -1 when the final pass did not establish it. */
     int alpha_opaque;
+    /* Band-column output (SIXEL_PIXELFORMAT_BANDCOLUMNS): requested by the
+     * caller; the block holds the palette header and then the columns, and
+     * is allocated before parallel workers start, while the RGBA pixels are
+     * still untouched.  band_kept says the gather filled it in place of the
+     * RGBA pixels, which then hold nothing. */
+    int keep_columns;
+    unsigned char *band_block;
+    int band_width;
+    int band_height;
+    int band_kept;
 } image_buffer_t;
 
 /*

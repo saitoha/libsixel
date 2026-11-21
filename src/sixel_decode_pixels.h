@@ -43,9 +43,14 @@
  */
 #define SIXEL_DECODE_PIXELS_RESULT_ALPHA_KNOWN_INTERNAL  0x40000000u
 #define SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL 0x80000000u
+/* The pixels are a band-column buffer, not RGBA. */
+#define SIXEL_DECODE_PIXELS_RESULT_BANDCOLUMNS_INTERNAL  0x20000000u
 #define SIXEL_DECODE_PIXELS_RESULT_INTERNAL_MASK \
     (SIXEL_DECODE_PIXELS_RESULT_ALPHA_KNOWN_INTERNAL | \
-     SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL)
+     SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL | \
+     SIXEL_DECODE_PIXELS_RESULT_BANDCOLUMNS_INTERNAL)
+/* Decode flag: keep band columns when every pixel can be represented. */
+#define SIXEL_DECODE_PIXELS_OPTION_BANDCOLUMNS_INTERNAL  0x40000000u
 
 /* Pull one complete paint into a retained canvas. Input bytes are borrowed
  * until close; returned RGBA is borrowed until the next call. Offsets include

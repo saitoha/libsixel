@@ -168,10 +168,14 @@ image_buffer_release_columns(image_buffer_t *image,
     }
     if (allocator != NULL) {
         sixel_allocator_free(allocator, image->normal_columns);
+        sixel_allocator_free(allocator, image->band_block);
     } else {
         free(image->normal_columns);
+        free(image->band_block);
     }
     image->normal_columns = NULL;
+    image->band_block = NULL;
+    image->band_kept = 0;
 }
 
 /* Select depth and mask handling outside the pixel loops. Blending with the
@@ -937,6 +941,10 @@ image_buffer_init(
     image->ormode_planes = NULL;
     image->ormode_high_planes = NULL;
     image->normal_columns = NULL;
+    image->band_block = NULL;
+    image->band_width = 0;
+    image->band_height = 0;
+    image->band_kept = 0;
     image->pixels.p = (unsigned char *)sixel_allocator_malloc(allocator, size);
     if (depth == 4U) {
         image->ncolors = (-1);
@@ -1272,6 +1280,38 @@ image_buffer_expand_rows(unsigned char **pixels, size_t stride,
     sixel_allocator_free(allocator, *pixels);
     *pixels = expanded;
     return SIXEL_OK;
+}
+
+/* Band-column output needs pristine RGBA pixels: no serial columns, no paint
+ * before the workers' anchor (paint after it is parsed again by them), and no
+ * row expansion or OR mode later.  Allocate the
+ * output block before the workers start so the gather can fill it. */
+static void
+image_buffer_prepare_band_block(image_buffer_t *image,
+                                parser_context_t const *context,
+                                sixel_allocator_t *allocator)
+{
+    size_t words;
+
+    if (!image->keep_columns || image->band_block != NULL) {
+        return;
+    }
+    if (context->normal_disabled || context->ormode ||
+            context->changing_aspect || context->vertical_scale != 1 ||
+            image->normal_columns != NULL || image->capture != 0 ||
+            image->paint_mask != NULL) {
+        image->keep_columns = 0;
+        return;
+    }
+    words = (size_t)image->width * (size_t)((image->height + 5) / 6);
+    image->band_block = (unsigned char *)sixel_allocator_calloc(
+        allocator, 1u, SIXEL_BANDCOLUMNS_PALETTE_BYTES + words * 8u);
+    if (image->band_block == NULL) {
+        image->keep_columns = 0;
+        return;
+    }
+    image->band_width = image->width;
+    image->band_height = image->height;
 }
 
 /* Constant-aspect painters use unscaled rows. Expand their materialized
@@ -1966,6 +2006,7 @@ sixel_decode_raw_body(
                                                                allocator);
                         context->normal_disabled = 1;
                     }
+                    image_buffer_prepare_band_block(image, context, allocator);
                     status = sixel_decoder_parallel_request_start(
                         image->depth == 4U ? 1: 0,
                         context->ormode,
@@ -2026,6 +2067,7 @@ sixel_decode_raw_body(
                                                                allocator);
                         context->normal_disabled = 1;
                     }
+                    image_buffer_prepare_band_block(image, context, allocator);
                     status = sixel_decoder_parallel_request_start(
                         image->depth == 4U ? 1: 0,
                         context->ormode,
@@ -2180,6 +2222,8 @@ sixel_decode_raw_body(
                                                                    allocator);
                             context->normal_disabled = 1;
                         }
+                        image_buffer_prepare_band_block(image, context,
+                                                        allocator);
                         status = sixel_decoder_parallel_request_start(
                             image->depth == 4U ? 1: 0,
                             context->ormode,
@@ -2664,6 +2708,10 @@ sequence_raster_parameters:
                         context->attributed_pv > 0) {
                     raster_ready = 1;
                 }
+                if (context->painted) {
+                    /* Workers start here and never repaint what came before. */
+                    image->keep_columns = 0;
+                }
                 parallel_anchor = p;
 #endif  /* SIXEL_ENABLE_THREADS */
 raster_done:
@@ -2861,6 +2909,10 @@ sequence_color_parameters:
                                 context->palette_transform, 0);
                     }
 #if SIXEL_ENABLE_THREADS
+                    if (context->painted) {
+                        /* Workers start here and never repaint what came before. */
+                        image->keep_columns = 0;
+                    }
                     parallel_anchor = p;
 #endif  /* SIXEL_ENABLE_THREADS */
                 }
@@ -3105,6 +3157,11 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
     image->ormode_high_planes = NULL;
     image->normal_columns = NULL;
     image->alpha_opaque = -1;
+    image->keep_columns = 0;
+    image->band_block = NULL;
+    image->band_width = 0;
+    image->band_height = 0;
+    image->band_kept = 0;
 
     logger = NULL;
     logger_prepared = 0;
@@ -3175,6 +3232,9 @@ retry:
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    image->keep_columns = (decode_flags &
+        SIXEL_DECODE_PIXELS_OPTION_BANDCOLUMNS_INTERNAL) != 0U &&
+        depth == 4 && !keep_paint_mask && undither == NULL;
 
     if (transform != NULL) {
         /* Defaults above 255 are all white. A pure transform needs only one
@@ -3277,6 +3337,11 @@ retry:
         if (undither == NULL) {
             status = image_buffer_expand_vertical(image, context, allocator,
                                                    NULL);
+        }
+        if (image->band_block != NULL && !image->band_kept) {
+            /* The workers did not fill it; the RGBA pixels are the result. */
+            sixel_allocator_free(allocator, image->band_block);
+            image->band_block = NULL;
         }
     }
     if (SIXEL_FAILED(status)) {
@@ -3648,6 +3713,11 @@ sixel_decode_kundither_fast4_with_options(unsigned char *p,
     image->ormode_planes = NULL;
     image->ormode_high_planes = NULL;
     image->normal_columns = NULL;
+    image->keep_columns = 0;
+    image->band_block = NULL;
+    image->band_width = 0;
+    image->band_height = 0;
+    image->band_kept = 0;
 
     undither.enabled = 1;
     undither.direct_output = direct_output != 0;
@@ -4869,6 +4939,24 @@ sixel_decode_direct_mapped(
         if (image->alpha_opaque > 0) {
             *result_flags |= SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL;
         }
+    }
+    if (image->band_kept && palette == NULL) {
+        unsigned char *header;
+
+        header = image->band_block;
+        for (n = 0; n < 256; ++n) {
+            header[n * 4 + 0] = (unsigned char)(image->palette[n] >> 16);
+            header[n * 4 + 1] = (unsigned char)(image->palette[n] >> 8);
+            header[n * 4 + 2] = (unsigned char)image->palette[n];
+            header[n * 4 + 3] = 255u;
+        }
+        if (result_flags != NULL) {
+            *result_flags |= SIXEL_DECODE_PIXELS_RESULT_BANDCOLUMNS_INTERNAL;
+        }
+        sixel_allocator_free(allocator, image->pixels.p);
+        image->pixels.p = image->band_block;
+        image->band_block = NULL;
+        image->band_kept = 0;
     }
     if (palette != NULL && ncolors != NULL) {
         *ncolors = alloc_size = image->ncolors;

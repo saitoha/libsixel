@@ -152,6 +152,12 @@ Register selection consumes the stored mapped color without mapping it again. La
 
 Mapping leaves alpha, paint masks, raster policy, and result flags unchanged. The caller supplies `options->bgcolor` directly in the output RGB basis; the callback does not process that background. No CMS, gamut mapping, or color-distance model is supplied by this interface. CPU/GPU reconstruction evaluates similarity and interpolation on the mapped RGB values. Mapping after reconstruction is a different operation and is not guaranteed to produce the same samples. Returning RGB8 adds the output-basis rounding inherent in that representation but does not re-encode colors through SIXEL's percentage palette syntax.
 
+### Band-column output
+
+A caller that expands or composites decoded pixels itself, for example on a GPU, can ask the mapped entry points for the decoder's own band columns with `preferred_pixelformat = SIXEL_PIXELFORMAT_BANDCOLUMNS`; `SIXEL_HAVE_DECODE_BANDCOLUMNS` marks the support. The buffer begins with 256 RGBA palette entries (`SIXEL_BANDCOLUMNS_PALETTE_BYTES`), already mapped by any palette transform, followed by `ceil(height / 6)` bands of `width` host-order 64-bit words; the stride is `width * 8`. Word `x` of band `b` holds the palette index of row `6b + r` in bits `8r` to `8r + 7` and sets bit `48 + r` when that pixel was painted. Unpainted pixels, and rows of the last band below `height`, are transparent, so `SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE` carries the same meaning as for RGBA8888.
+
+The decoder keeps the columns only when a threaded gather has produced every word from an untouched canvas: no OR-mode, no aspect scaling, no paint before parallel work starts, and no raster growth after the column block was sized. Otherwise it returns RGBA8888, so a caller must read `result->pixelformat`. `sixel_bandcolumns_to_rgba()` expands a column buffer on the CPU into caller-owned rows; with `keep_unpainted` it leaves the destination bytes of unpainted pixels unchanged, which is a source-over fold of the frame.
+
 ## Stateful reconstruction, resize, and PNG output
 
 The stateful decoder used by `sixel2png` adds output policy after protocol parsing. These stages can change memory representation or image samples; they do not retroactively change what the SIXEL parser observed.
@@ -318,6 +324,7 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-49 | Selections, repeats and carriage returns consumed inside band runs decode as the general parser decodes them, including abandoned selections, wide registers, width edges, trusted clipping, extents and tokens cut by the end of input, in ordinary and OR mode. | [tests/decoder/parser/0119_token_fast_lane.t](../../../tests/decoder/parser/0119_token_fast_lane.t) |
 | DP-50 | The shared NEON helper header excludes GNU-only scalar builtins. | [tests/_static/sh/staticcheck-decoder-neon-portability.sh](../../../tests/_static/sh/staticcheck-decoder-neon-portability.sh) |
 | DP-51 | The opaque flag the final pass establishes agrees with the returned alpha bytes for full and partial bands, holes inside and past a SIMD block, carriage returns, grown canvases and trusted clipping, serially and with threaded gathers. | [tests/decoder/parser/0123_final_pass_alpha_serial.t](../../../tests/decoder/parser/0123_final_pass_alpha_serial.t) and [tests/decoder/parser/0125_final_pass_alpha_threaded.t](../../../tests/decoder/parser/0125_final_pass_alpha_threaded.t) |
+| DP-52 | Band-column output expands to the RGBA8888 decode of the same stream through both mapped entries, with and without a palette transform, for opaque and transparent images and a trusted raster that cuts the last band short; serial decodes and an untrusted raster the paint outgrows return RGBA8888, and `keep_unpainted` leaves unpainted destination bytes alone. | [tests/decoder/parser/0126_band_columns.t](../../../tests/decoder/parser/0126_band_columns.t) |
 
 ### Coverage boundary
 

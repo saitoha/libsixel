@@ -254,6 +254,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_PIXELFORMAT_PAL2     (SIXEL_FORMATTYPE_PALETTE   | 0x01) /* 2bpp palette */
 #define SIXEL_PIXELFORMAT_PAL4     (SIXEL_FORMATTYPE_PALETTE   | 0x02) /* 4bpp palette */
 #define SIXEL_PIXELFORMAT_PAL8     (SIXEL_FORMATTYPE_PALETTE   | 0x03) /* 8bpp palette */
+/* SIXEL band columns, a decode-only output; see sixel_decode_result_t. */
+#define SIXEL_PIXELFORMAT_BANDCOLUMNS (SIXEL_FORMATTYPE_PALETTE | 0x30)
 
 /* palette type */
 #define SIXEL_PALETTETYPE_AUTO     0   /* choose palette type automatically */
@@ -1476,6 +1478,26 @@ typedef struct sixel_decode_options {
     unsigned char bgcolor[3];  /* RGB background for RGB/X output */
 } sixel_decode_options_t;
 
+/*
+ * Band columns keep the decoder's own representation, for callers that
+ * expand or composite on their own (for example on a GPU).  Request them
+ * with preferred_pixelformat = SIXEL_PIXELFORMAT_BANDCOLUMNS.  The decoder
+ * keeps them only when it can vouch for every pixel in that form; otherwise
+ * it returns RGBA8888, so callers must check result->pixelformat.
+ *
+ * The buffer starts with 256 palette entries, 4 bytes each in R, G, B, A
+ * order with A = 255, already mapped by any palette transform.  It is
+ * followed by ceil(height / 6) bands of width uint64_t words in host byte
+ * order, at offset SIXEL_BANDCOLUMNS_PALETTE_BYTES; stride is width * 8.
+ * Word x of band b covers pixels (x, 6b) to (x, 6b + 5).  Bits 8r to 8r + 7
+ * hold the palette index of row 6b + r, and bit 48 + r is set when that
+ * pixel was painted.  Unpainted pixels, and rows below height in the last
+ * band, are transparent: RGBA8888 output would hold 0, 0, 0, 0 there.
+ * ALPHA_OPAQUE means every pixel below height was painted.
+ */
+#define SIXEL_HAVE_DECODE_BANDCOLUMNS 1
+#define SIXEL_BANDCOLUMNS_PALETTE_BYTES 1024u
+
 typedef struct sixel_decode_result {
     unsigned char *pixels;     /* decoded pixel buffer */
     int width;                 /* image width */
@@ -1525,6 +1547,20 @@ sixel_decode_pixels_body_mapped(unsigned char const *body,
                                 sixel_palette_transform_t const *transform,
                                 sixel_decode_result_t *result,
                                 sixel_allocator_t *allocator);
+
+/*
+ * Expand a SIXEL_PIXELFORMAT_BANDCOLUMNS buffer into RGBA8888 rows.  Painted
+ * pixels are always written.  Unpainted pixels are left untouched when
+ * keep_unpainted is nonzero (source-over), else they are set to 0, 0, 0, 0,
+ * which reproduces RGBA8888 decode output.  dst_stride is in bytes.
+ */
+SIXELAPI SIXELSTATUS
+sixel_bandcolumns_to_rgba(unsigned char const /* in */ *buffer,
+                          int                 /* in */ width,
+                          int                 /* in */ height,
+                          unsigned char       /* out */ *dst,
+                          size_t              /* in */ dst_stride,
+                          int                 /* in */ keep_unpainted);
 
 SIXELAPI SIXELSTATUS
 sixel_decode_pixels(unsigned char const /* in */ *data,

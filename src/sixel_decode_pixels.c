@@ -31,6 +31,7 @@
 
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_STDINT_H
@@ -310,6 +311,10 @@ sixel_decode_pixels_finish_rgba(unsigned char **decoded,
     if (output_bg == NULL) {
         output_bg = default_bg;
     }
+    if (pixelformat == SIXEL_PIXELFORMAT_BANDCOLUMNS) {
+        /* The decoder could not keep its columns; RGBA says so. */
+        pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    }
 
     depth = sixel_decode_pixels_depth(pixelformat);
     if (depth == 0) {
@@ -352,6 +357,82 @@ sixel_decode_pixels_finish_rgba(unsigned char **decoded,
     result->stride = width * depth;
     result->flags = result_flags;
 
+    return SIXEL_OK;
+}
+
+/* Hand out a kept band-column buffer as it is. */
+static void
+sixel_decode_pixels_finish_columns(unsigned char **decoded, int width,
+                                   int height, unsigned int result_flags,
+                                   sixel_decode_result_t *result)
+{
+    unsigned int flags;
+
+    flags = result_flags & ~SIXEL_DECODE_PIXELS_RESULT_INTERNAL_MASK;
+    if ((result_flags & SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE_INTERNAL) !=
+            0U) {
+        flags |= SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE;
+    }
+    result->pixels = *decoded;
+    result->width = width;
+    result->height = height;
+    result->pixelformat = SIXEL_PIXELFORMAT_BANDCOLUMNS;
+    result->stride = width * 8;
+    result->flags = flags;
+    *decoded = NULL;
+}
+
+static int
+sixel_decode_pixels_request_depth(int pixelformat, unsigned int *decode_flags)
+{
+    if (pixelformat == SIXEL_PIXELFORMAT_BANDCOLUMNS) {
+        *decode_flags |= SIXEL_DECODE_PIXELS_OPTION_BANDCOLUMNS_INTERNAL;
+        return 4;
+    }
+    return sixel_decode_pixels_depth(pixelformat);
+}
+
+SIXELAPI SIXELSTATUS
+sixel_bandcolumns_to_rgba(unsigned char const *buffer, int width, int height,
+                          unsigned char *dst, size_t dst_stride,
+                          int keep_unpainted)
+{
+    uint64_t const *columns;
+    uint32_t lut[256];
+    uint32_t value;
+    uint64_t word;
+    unsigned char *row;
+    size_t w;
+    int band;
+    int rows;
+    int r;
+    int x;
+
+    if (buffer == NULL || dst == NULL || width <= 0 || height <= 0 ||
+            dst_stride < (size_t)width * 4u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memcpy(lut, buffer, sizeof(lut));
+    columns = (uint64_t const *)(void const *)(buffer +
+        SIXEL_BANDCOLUMNS_PALETTE_BYTES);
+    w = (size_t)width;
+    for (band = 0; band * 6 < height; ++band) {
+        rows = height - band * 6 < 6 ? height - band * 6 : 6;
+        for (r = 0; r < rows; ++r) {
+            row = dst + ((size_t)band * 6u + (size_t)r) * dst_stride;
+            for (x = 0; x < width; ++x) {
+                word = columns[(size_t)band * w + (size_t)x];
+                if ((word >> (48 + r)) & 1u) {
+                    value = lut[(word >> (r * 8)) & 255u];
+                } else if (keep_unpainted) {
+                    continue;
+                } else {
+                    value = 0u;
+                }
+                memcpy(row + (size_t)x * 4u, &value, sizeof(value));
+            }
+        }
+    }
     return SIXEL_OK;
 }
 
@@ -480,7 +561,7 @@ sixel_decode_pixels_mapped(
         bg = options->bgcolor;
     }
 
-    depth = sixel_decode_pixels_depth(pixelformat);
+    depth = sixel_decode_pixels_request_depth(pixelformat, &decode_flags);
     if (depth == 0) {
         sixel_helper_set_additional_message(
             "sixel_decode_pixels: unsupported output pixelformat.");
@@ -532,6 +613,13 @@ sixel_decode_pixels_mapped(
         }
     }
 
+    if ((result_flags & SIXEL_DECODE_PIXELS_RESULT_BANDCOLUMNS_INTERNAL) !=
+            0U) {
+        sixel_decode_pixels_finish_columns(&decoded, width, height,
+                                           result_flags, result);
+        status = SIXEL_OK;
+        goto cleanup;
+    }
     status = sixel_decode_pixels_finish_rgba(&decoded,
                                              width,
                                              height,
@@ -618,7 +706,7 @@ sixel_decode_pixels_body_mapped(
         bg = options->bgcolor;
     }
 
-    depth = sixel_decode_pixels_depth(pixelformat);
+    depth = sixel_decode_pixels_request_depth(pixelformat, &decode_flags);
     if (depth == 0) {
         sixel_helper_set_additional_message(
             "sixel_decode_pixels_body: unsupported output pixelformat.");
@@ -653,6 +741,13 @@ sixel_decode_pixels_body_mapped(
         goto cleanup;
     }
 
+    if ((result_flags & SIXEL_DECODE_PIXELS_RESULT_BANDCOLUMNS_INTERNAL) !=
+            0U) {
+        sixel_decode_pixels_finish_columns(&decoded, width, height,
+                                           result_flags, result);
+        status = SIXEL_OK;
+        goto cleanup;
+    }
     status = sixel_decode_pixels_finish_rgba(&decoded,
                                              width,
                                              height,
