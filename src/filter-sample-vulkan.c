@@ -190,6 +190,8 @@ sixel_filter_sample_solid_gpu(unsigned char const *pixels,
     runtime = sixel_vk_runtime_get_locked();
     status = SIXEL_FEATURE_ERROR;
     if (runtime == NULL) goto end;
+    /* A separate palette source has no dither owner. Its pixels are copied
+     * into the stage input and remain valid through the submission fence. */
     slot = -1;
     input = &sample_buffers[0];
     if (share_owner != NULL) {
