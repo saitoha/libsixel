@@ -16,9 +16,15 @@ enum png_stream_fault {
     PNG_STREAM_ICC_COMPRESSION_FAILURE = 1024,
     PNG_STREAM_ICCP_ALLOCATION_FAILURE = 2048,
     PNG_STREAM_LIBPNG_WRITE_STRUCT_FAILURE = 4096,
-    PNG_STREAM_LIBPNG_INFO_STRUCT_FAILURE = 8192
+    PNG_STREAM_LIBPNG_INFO_STRUCT_FAILURE = 8192,
+    PNG_STREAM_INDEXED_COMPRESSION_FAILURE = 16384,
+    PNG_STREAM_DIRECT_PNG_ALLOCATION_FAILURE = 32768
 };
 
 int png_test_stream_fault(int faults);
+unsigned char *png_test_stb_fail_output_allocation(
+    unsigned char const *pixels, int stride, int width, int height,
+    int components, int *length);
+int png_test_stb_released_compressed_data(void);
 
 #endif

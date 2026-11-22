@@ -215,6 +215,7 @@ STBIWDEF void stbi_flip_vertically_on_write(int flip_boolean);
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <errno.h>
 
 #if defined(STBIW_MALLOC) && defined(STBIW_FREE) && (defined(STBIW_REALLOC) || defined(STBIW_REALLOC_SIZED))
 // ok
@@ -1192,6 +1193,7 @@ STBIWDEF unsigned char *stbi_write_png_to_mem(const unsigned char *pixels, int s
    unsigned char *out,*o, *filt, *zlib;
    signed char *line_buffer;
    int j,zlen;
+   int saved_errno;
 
    if (stride_bytes == 0)
       stride_bytes = x * n;
@@ -1238,7 +1240,13 @@ STBIWDEF unsigned char *stbi_write_png_to_mem(const unsigned char *pixels, int s
 
    // each tag requires 12 bytes of overhead
    out = (unsigned char *) STBIW_MALLOC(8 + 12+13 + 12+zlen + 12);
-   if (!out) return 0;
+   if (!out) {
+      /* Keep the allocation error available to the caller after cleanup. */
+      saved_errno = errno;
+      STBIW_FREE(zlib);
+      errno = saved_errno;
+      return 0;
+   }
    *out_len = 8 + 12+13 + 12+zlen + 12;
 
    o=out;

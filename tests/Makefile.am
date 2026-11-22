@@ -50,6 +50,8 @@ SERIAL_TESTS = \
 
 COPY_TESTS = $(TESTS)
 check_PROGRAMS = test_runner
+# The allocator-instrumented stb copy requires its own translation unit.
+dist_test_runner_SOURCES = writer/png/0065_direct_png_allocation_failure.c
 
 TEST_EXTENSIONS = .t .py .rb .pl .php
 
@@ -2463,6 +2465,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0062_ICCP_ALLOCATION_FAILURE \
     -DBUILD_TEST_0063_LIBPNG_WRITE_STRUCT_FAILURE \
     -DBUILD_TEST_0064_LIBPNG_INFO_STRUCT_FAILURE \
+    -DBUILD_TEST_0066_INDEXED_COMPRESSION_FAILURE \
     -DBUILD_TEST_0143_ADOBE_LIBPNG \
     -DBUILD_TEST_0144_DCI_LIBPNG \
     -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -6185,6 +6188,7 @@ test_runner_SOURCES = \
     writer/png/0062_iccp_allocation_failure.c \
     writer/png/0063_libpng_write_struct_failure.c \
     writer/png/0064_libpng_info_struct_failure.c \
+    writer/png/0066_indexed_compression_failure.c \
     writer/png/color_test_common.h \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \
