@@ -222,6 +222,45 @@ sixel_icc_add_product(double *sum, double *residual, double a, double b)
 #endif
 }
 
+/* Twice the signed area in xy. Keep the rounding tails of the six
+ * products and sums: a primary exactly on an edge must give zero, while
+ * the adjacent binary64 coordinate has a real signed contribution. */
+double
+sixel_icc_xy_area(double const a[2], double const b[2], double const p[2])
+{
+    double const *v[3] = {a, b, p};
+    double terms[12], expansion[12];
+    double carry, term, rounded, residual;
+    int i, j, n, used;
+
+    for (i = 0; i < 6; ++i) {
+        j = i / 2;
+        terms[2 * i] = terms[2 * i + 1] = 0.0;
+        sixel_icc_add_product(&terms[2 * i], &terms[2 * i + 1],
+            i % 2 ? -v[j][1] : v[j][0], v[(j + 1) % 3][1 - i % 2]);
+    }
+    used = 0;
+    for (i = 0; i < 12; ++i) {
+        carry = terms[i];
+        n = 0;
+        for (j = 0; j < used; ++j) {
+            term = expansion[j];
+            rounded = carry + term;
+            residual = fabs(carry) >= fabs(term) ? (carry - rounded) + term :
+                                                   (term - rounded) + carry;
+            if (residual != 0.0) {
+                expansion[n++] = residual;
+            }
+            carry = rounded;
+        }
+        if (carry != 0.0) {
+            expansion[n++] = carry;
+        }
+        used = n;
+    }
+    return used == 0 ? 0.0 : expansion[used - 1];
+}
+
 static double
 sixel_icc_mpe_lerp(double from, double to, double fraction)
 {

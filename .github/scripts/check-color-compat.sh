@@ -213,6 +213,12 @@ set -- \
     frame/storage/0049_packed_rgb_float_encoder.t \
     frame/storage/0050_permuted_primaries.t \
     frame/storage/0051_declared_palette_storage.t \
+    frame/storage/0052_profiled_destination_range.t \
+    frame/storage/0053_bytes_to_bgr888.t \
+    frame/storage/0054_padded_rgb_encoder.t \
+    palette/fixed/0103_monochrome_auto_gpu.t \
+    frame/storage/0055_collinear_primary.t \
+    frame/storage/0056_palette_count_before_pointer.t \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \

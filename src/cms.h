@@ -361,12 +361,11 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 SIXEL_INTERNAL_API int
 sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);
 
-/* Bit (3 * source + destination) denotes matching RGB chromaticities. */
-#define SIXEL_CDEF_SRGB_AXES 0x1ffu
-#define SIXEL_CDEF_SRGB_IDENTITY 0x111u
-#define SIXEL_CDEF_SRGB_NEUTRAL 0x200u
+#define SIXEL_CDEF_SRGB_MATRIX   1u
+#define SIXEL_CDEF_SRGB_IDENTITY 2u
+#define SIXEL_CDEF_SRGB_NEUTRAL  4u
 
-/* Compose an analytic RGB matrix when the returned axes are shared. */
+/* Retrieve the analytic transform for a source sharing the sRGB white. */
 SIXEL_INTERNAL_API unsigned int
 sixel_cdef_srgb_matrix(sixel_color_def_t const *source,
                        sixel_color_def_t const *srgb, double m[9]);
@@ -391,6 +390,12 @@ sixel_cdef_transfer(sixel_color_def_t const *definition,
 
 SIXEL_INTERNAL_API void
 sixel_cdef_free(sixel_color_def_t *definition);
+
+/* Render an RGB frame sample through to the final storage boundary. */
+SIXEL_INTERNAL_API int
+sixel_cdef_frame_sample(sixel_color_def_t const *source,
+                        sixel_color_def_t const *srgb, double const rgb[3],
+                        int space, int store_float, double output[3]);
 
 /* XYZ is D50 PCS (Y=1); an ICC slot supplies its rendering semantics.
  * The absolute intent accounts for media white at the XYZ boundary.

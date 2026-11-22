@@ -155,6 +155,7 @@ cmf_apply(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cdef_pcs_scale cmf_local_22
 #define sixel_cdef_rgb cmf_local_23
 #define sixel_cdef_to_xyz cmf_local_24
+#define sixel_cdef_frame_sample cmf_local_24_frame
 #define sixel_cms_allocate_profile cmf_local_25
 #define sixel_cms_apply_backend cmf_local_26
 #define sixel_cms_apply_matrix3 cmf_local_27
@@ -433,6 +434,11 @@ sixel_cdef_transfer(sixel_color_def_t const *definition,
 SIXEL_INTERNAL_API void
 sixel_cdef_free(sixel_color_def_t *definition);
 SIXEL_INTERNAL_API int
+sixel_cdef_frame_sample(sixel_color_def_t const *source,
+                        sixel_color_def_t const *srgb, double const rgb[3],
+                        int space, int store_float, double output[3]);
+
+SIXEL_INTERNAL_API int
 sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                    double const rgb[3], double xyz[3], int intent);
 SIXEL_INTERNAL_API int
@@ -556,6 +562,7 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale
 #undef sixel_cdef_rgb
+#undef sixel_cdef_frame_sample
 #undef sixel_cdef_to_xyz
 #undef sixel_cms_allocate_profile
 #undef sixel_cms_apply_backend

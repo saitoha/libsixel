@@ -301,6 +301,7 @@ af_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define sixel_cdef_pcs_scale af_local_22
 #define sixel_cdef_rgb af_local_23
 #define sixel_cdef_to_xyz af_local_24
+#define sixel_cdef_frame_sample af_local_24_frame
 #define sixel_cms_allocate_profile af_local_25
 #define sixel_cms_apply_backend af_local_26
 #define sixel_cms_apply_matrix3 af_local_27
@@ -600,6 +601,11 @@ sixel_cdef_transfer(sixel_color_def_t const *definition,
 SIXEL_INTERNAL_API void
 sixel_cdef_free(sixel_color_def_t *definition);
 SIXEL_INTERNAL_API int
+sixel_cdef_frame_sample(sixel_color_def_t const *source,
+                        sixel_color_def_t const *srgb, double const rgb[3],
+                        int space, int store_float, double output[3]);
+
+SIXEL_INTERNAL_API int
 sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                    double const rgb[3], double xyz[3], int intent);
 SIXEL_INTERNAL_API int
@@ -751,6 +757,7 @@ af_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale
 #undef sixel_cdef_rgb
+#undef sixel_cdef_frame_sample
 #undef sixel_cdef_to_xyz
 #undef sixel_cms_allocate_profile
 #undef sixel_cms_apply_backend

@@ -6760,6 +6760,7 @@ struct sixel_color_def {
     size_t length;
     sixel_icc_profile_t icc;
     int matrix_valid;
+    double srgb_matrix[9];
     unsigned int srgb_invariants;
 };
 
@@ -6825,6 +6826,8 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
     double target_cone[3];
     double column[3];
     double cone[3];
+    double const *a, *b;
+    double white_area;
     int i;
     int j;
 
@@ -6873,14 +6876,26 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
     if (trc == SIXEL_COLOR_TRC_SRGB) {
         definition->srgb_invariants = SIXEL_CDEF_SRGB_NEUTRAL;
     }
-    /* Shared axes depend on chromaticities and adaptation, independently
-     * of the curves that decode the source samples. */
+    /* With a common white the RGB mixing coefficients are barycentric
+     * weights in xy. The native Y scale divided by primary y gives
+     * X+Y+Z; white y normalizes this to the adopted white. Evaluating the
+     * signed area directly preserves zero and near-zero contributions. */
     if (xy[0] == srgb[0] && xy[1] == srgb[1]) {
-        for (i = 0; i < 3; ++i) {
-            for (j = 0; j < 3; ++j) {
-                if (xy[2 + i * 2] == srgb[2 + j * 2] &&
-                    xy[3 + i * 2] == srgb[3 + j * 2]) {
-                    definition->srgb_invariants |= 1u << (3 * i + j);
+        definition->srgb_invariants |= SIXEL_CDEF_SRGB_MATRIX;
+        if (memcmp(xy + 2, srgb + 2, 6u * sizeof(double)) == 0) {
+            definition->srgb_invariants |= SIXEL_CDEF_SRGB_IDENTITY;
+            for (i = 0; i < 3; ++i) {
+                definition->srgb_matrix[4 * i] = 1.0;
+            }
+        } else {
+            for (i = 0; i < 3; ++i) {
+                a = srgb + 2 + 2 * ((i + 1) % 3);
+                b = srgb + 2 + 2 * ((i + 2) % 3);
+                white_area = sixel_icc_xy_area(a, b, xy);
+                for (j = 0; j < 3; ++j) {
+                    definition->srgb_matrix[3 * i + j] =
+                        sixel_icc_xy_area(a, b, xy + 2 + 2 * j) / white_area *
+                        matrix[3 + j] * (xy[1] / xy[3 + 2 * j]);
                 }
             }
         }
@@ -7163,7 +7178,8 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
     }
     if (a == NULL || b == NULL) {
         return (a == NULL ? b : a)->srgb_invariants ==
-            (SIXEL_CDEF_SRGB_IDENTITY | SIXEL_CDEF_SRGB_NEUTRAL);
+            (SIXEL_CDEF_SRGB_MATRIX | SIXEL_CDEF_SRGB_IDENTITY |
+             SIXEL_CDEF_SRGB_NEUTRAL);
     }
     if (a->bytes != NULL || b->bytes != NULL) {
         return a->bytes != NULL && b->bytes != NULL &&
@@ -7176,31 +7192,13 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
          memcmp(a->gamma, b->gamma, sizeof(a->gamma)) == 0);
 }
 
-/* Compose the relative transform once per frame. A shared source primary
- * lies on its destination axis. Its off-axis coefficients are exactly zero,
- * including for a very bright source beside an arbitrarily faint one. */
+/* Copy the native-white transform once per frame, before rendering. */
 unsigned int
 sixel_cdef_srgb_matrix(sixel_color_def_t const *source,
                        sixel_color_def_t const *srgb, double m[9])
 {
-    int row, col, k;
-    unsigned int axes;
-
-    if (srgb == NULL || !(source->srgb_invariants & SIXEL_CDEF_SRGB_AXES)) {
-        return source->srgb_invariants;
-    }
-    for (row = 0; row < 3; ++row) {
-        for (col = 0; col < 3; ++col) {
-            m[row * 3 + col] = 0.0;
-            axes = (source->srgb_invariants >> (3 * col)) & 7u;
-            if (axes != 0u && !(axes & (1u << row))) {
-                continue;
-            }
-            for (k = 0; k < 3; ++k) {
-                m[row * 3 + col] += srgb->from_xyz[row * 3 + k] *
-                    source->to_xyz[k * 3 + col];
-            }
-        }
+    if (srgb != NULL && (source->srgb_invariants & SIXEL_CDEF_SRGB_MATRIX)) {
+        memcpy(m, source->srgb_matrix, sizeof(source->srgb_matrix));
     }
     return source->srgb_invariants;
 }
@@ -7304,8 +7302,10 @@ sixel_cdef_linearized(sixel_color_def_t const *definition)
         memcpy(linear->to_xyz, definition->to_xyz, sizeof(linear->to_xyz));
         memcpy(linear->from_xyz, definition->from_xyz,
             sizeof(linear->from_xyz));
+        memcpy(linear->srgb_matrix, definition->srgb_matrix,
+               sizeof(linear->srgb_matrix));
         linear->srgb_invariants = definition->srgb_invariants &
-            SIXEL_CDEF_SRGB_AXES;
+            (SIXEL_CDEF_SRGB_MATRIX | SIXEL_CDEF_SRGB_IDENTITY);
         linear->matrix_valid = 1;
         linear->trc = SIXEL_COLOR_TRC_POWER;
         linear->gamma[0] = linear->gamma[1] = linear->gamma[2] = 1.0;
@@ -7368,11 +7368,31 @@ sixel_cdef_slots(unsigned int slots[2], sixel_icc_profile_t const *profile,
     return count;
 }
 
+static int
+sixel_cdef_matrix_xyz(sixel_color_def_t const *definition, double const rgb[3],
+                      double result[3])
+{
+    double linear[3];
+    int i;
+
+    if (definition->bytes != NULL) {
+        for (i = 0; i < 3; ++i) {
+            if (!sixel_icc_curve_device(&definition->icc.curves[i], rgb[i],
+                                        0, &linear[i])) {
+                return 0;
+            }
+        }
+    } else if (!sixel_cdef_transfer(definition, rgb, linear, 0)) {
+        return 0;
+    }
+    sixel_cdef_matrix(definition->to_xyz, linear, result);
+    return sixel_cdef_finite(result);
+}
+
 int
 sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                    double const rgb[3], double xyz[3], int intent)
 {
-    double linear[3];
     /* A successful evaluator replaces all components. Keep an incomplete
      * result invalid rather than allowing it to masquerade as black. */
     double result[3] = {NAN, NAN, NAN};
@@ -7405,16 +7425,10 @@ sixel_cdef_to_xyz(sixel_color_def_t const *definition,
             /* A tag can be present and still fail for this sample.
              * Use the retained matrix unless the profile requires a LUT. */
             if (!definition->matrix_valid ||
-                (count > 0 && definition->icc.lut_only)) {
+                (count > 0 && definition->icc.lut_only) ||
+                !sixel_cdef_matrix_xyz(definition, rgb, result)) {
                 return 0;
             }
-            for (i = 0; i < 3; ++i) {
-                if (!sixel_icc_curve_device(&definition->icc.curves[i],
-                                               rgb[i], 0, &linear[i])) {
-                    return 0;
-                }
-            }
-            sixel_cdef_matrix(definition->to_xyz, linear, result);
         }
         if (intent == SIXEL_CMS_INTENT_ABSOLUTE_COLORIMETRIC) {
             white = sixel_cms_media_white(&definition->icc);
@@ -7422,11 +7436,8 @@ sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                 result[i] *= white[i] / sixel_cms_pcs_white[i];
             }
         }
-    } else {
-        if (!sixel_cdef_transfer(definition, rgb, linear, 0)) {
-            return 0;
-        }
-        sixel_cdef_matrix(definition->to_xyz, linear, result);
+    } else if (!sixel_cdef_matrix_xyz(definition, rgb, result)) {
+        return 0;
     }
     if (!sixel_cdef_finite(result)) {
         return 0;
@@ -7500,6 +7511,72 @@ sixel_cdef_from_xyz(sixel_color_def_t const *definition,
     }
     memcpy(rgb, result, sizeof(result));
     return 1;
+}
+
+/* Accept a frame candidate only when its final coordinates can be stored.
+ * The byte writer clips finite extended values; floats retain their range. */
+static int
+sixel_cdef_frame_result(sixel_color_def_t const *srgb, double const xyz[3],
+                        int space, int store_float, double output[3])
+{
+    double encoded[3];
+
+    if (!sixel_cdef_from_xyz(srgb, xyz, encoded,
+                             SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
+        return 0;
+    }
+    if (space == SIXEL_COLORSPACE_GAMMA) {
+        memcpy(output, encoded, sizeof(encoded));
+    } else if (!sixel_color_convert(output, encoded,
+                                    SIXEL_COLORSPACE_GAMMA, space)) {
+        return 0;
+    }
+    return sixel_cdef_finite(output) && (!store_float ||
+        (fabs(output[0]) <= FLT_MAX && fabs(output[1]) <= FLT_MAX &&
+         fabs(output[2]) <= FLT_MAX));
+}
+
+int
+sixel_cdef_frame_sample(sixel_color_def_t const *source,
+                        sixel_color_def_t const *srgb, double const rgb[3],
+                        int space, int store_float, double output[3])
+{
+    static unsigned int const slots[] = {1u, 0u};
+    unsigned int slot;
+    size_t i;
+    sixel_icc_path_t path;
+    double xyz[3];
+
+    if (!sixel_cdef_finite(rgb)) {
+        return 0;
+    }
+    if (source->bytes == NULL) {
+        return sixel_cdef_matrix_xyz(source, rgb, xyz) &&
+            sixel_cdef_frame_result(srgb, xyz, space, store_float, output);
+    }
+    /* Frames prefer relative, then perceptual. Exhaust each intent's MPE,
+     * legacy LUT and available matrix/TRC before moving to the next one.
+     * Frame ICC definitions have RGB device channels. */
+    for (i = 0; i < sizeof(slots) / sizeof(slots[0]); ++i) {
+        slot = slots[i];
+        path = sixel_icc_device_to_pcs(xyz, rgb, 3u, &source->icc, slot, 0);
+        if (path != SIXEL_ICC_PATH_NONE &&
+            sixel_cdef_frame_result(srgb, xyz, space, store_float, output)) {
+            return 1;
+        }
+        if (path == SIXEL_ICC_PATH_MPET &&
+            sixel_icc_device_to_pcs(xyz, rgb, 3u, &source->icc, slot, 1) &&
+            sixel_cdef_frame_result(srgb, xyz, space, store_float, output)) {
+            return 1;
+        }
+        if (source->matrix_valid && (!source->icc.lut_only ||
+            !sixel_cms_has_slot(&source->icc, slot, 0)) &&
+            sixel_cdef_matrix_xyz(source, rgb, xyz) &&
+            sixel_cdef_frame_result(srgb, xyz, space, store_float, output)) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int

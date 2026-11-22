@@ -1416,7 +1416,7 @@ read_four_cells(unsigned char *samples, int format, unsigned char *palette,
         SIXEL_FAILED(sixel_output_new(&output, playback_test_write,
             &wire, NULL)) ||
         SIXEL_FAILED(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
-            "off")) ||
+            option == SIXEL_OPTFLAG_MONOCHROME ? "auto" : "off")) ||
         (option && SIXEL_FAILED(sixel_encoder_setopt(encoder, option,
                                                      value)))) {
         goto end;
@@ -1428,13 +1428,21 @@ read_four_cells(unsigned char *samples, int format, unsigned char *palette,
             &flags, NULL)) || w != 4 || h != 1) {
         goto end;
     }
+    if (option == SIXEL_OPTFLAG_MONOCHROME &&
+        memchr(wire.bytes, '#', wire.size) != NULL) {
+        goto end;
+    }
     memset(rgba, 0, 16);
     for (i = 0; i < 4; ++i) {
         if (mask == NULL || mask[i]) {
-            if (indices[i] >= n) {
-                goto end;
+            /* Monochrome paints with the terminal foreground, whose RGB
+             * color is independent of the encoded image. */
+            if (option != SIXEL_OPTFLAG_MONOCHROME) {
+                if (indices[i] >= n) {
+                    goto end;
+                }
+                memcpy(rgba + 4 * i, colors + 3 * indices[i], 3);
             }
-            memcpy(rgba + 4 * i, colors + 3 * indices[i], 3);
             rgba[4 * i + 3] = 255;
         }
     }
@@ -1628,9 +1636,10 @@ test_permuted_primaries(int linear, int cycle)
 }
 
 static int
-test_palette_recount(void)
+test_palette_recount(int count_first)
 {
     unsigned char *indices = calloc(1, 1), *palette = calloc(4, 3);
+    unsigned char *replacement;
     sixel_frame_t *frame = NULL;
     sixel_frame_interface_t *iface;
     size_t bytes;
@@ -1639,10 +1648,15 @@ test_palette_recount(void)
     if (indices == NULL || palette == NULL ||
         SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
         SIXEL_FAILED(sixel_frame_init(frame, indices, 1, 1,
-            SIXEL_PIXELFORMAT_PAL8, palette, 4))) {
+            SIXEL_PIXELFORMAT_PAL8, count_first ? NULL : palette,
+            count_first ? -1 : 4))) {
         free(indices);
         free(palette);
         goto end;
+    }
+    if (count_first) {
+        sixel_frame_set_ncolors(frame, 4);
+        sixel_frame_set_palette(frame, palette);
     }
     iface = sixel_frame_as_interface(frame);
     if (SIXEL_FAILED(iface->vtbl->measure_storage(iface, &bytes)) ||
@@ -1656,9 +1670,141 @@ test_palette_recount(void)
         bytes == 13) {
         result = EXIT_SUCCESS;
     }
+    if (count_first && result == EXIT_SUCCESS) {
+        /* A smaller replacement must drop the old allocation extent. */
+        replacement = calloc(1, 3);
+        result = EXIT_FAILURE;
+        if (replacement != NULL) {
+            sixel_frame_set_palette(frame, replacement);
+            free(palette);
+            if (SIXEL_SUCCEEDED(iface->vtbl->measure_storage(iface, &bytes))
+                && bytes == 4) {
+                result = EXIT_SUCCESS;
+            }
+        }
+    }
 end:
     sixel_frame_unref(frame);
     return result;
+}
+
+static int
+test_byte_bgr(int indexed)
+{
+    unsigned char rgb[] = {255, 0, 0, 23, 47, 89};
+    unsigned char indices[] = {0, 1};
+    unsigned char expected[] = {0, 0, 255, 89, 47, 23};
+    unsigned char original[] = {255, 0, 0, 23, 47, 89};
+    sixel_frame_t *frame = NULL;
+    int ok;
+
+    ok = SIXEL_SUCCEEDED(sixel_frame_new(&frame, NULL)) &&
+        SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame,
+            indexed ? indices : rgb, 2, 1, indexed ? SIXEL_PIXELFORMAT_PAL8 :
+            SIXEL_PIXELFORMAT_RGB888, indexed ? rgb : NULL, indexed ? 2 : -1))
+        && SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+            SIXEL_PIXELFORMAT_BGR888)) &&
+        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_BGR888 &&
+        memcmp(sixel_frame_get_pixels(frame), expected, sizeof(expected)) == 0
+        && memcmp(rgb, original, sizeof(rgb)) == 0;
+    sixel_frame_unref(frame);
+    return !ok;
+}
+
+static int
+test_padded_output(void)
+{
+    static int const formats[] = {
+        SIXEL_PIXELFORMAT_XRGB8888, SIXEL_PIXELFORMAT_RGBX8888,
+        SIXEL_PIXELFORMAT_XBGR8888, SIXEL_PIXELFORMAT_BGRX8888
+    };
+    unsigned char rgb[] = {255, 0, 0, 0, 255, 0, 0, 0, 255, 80, 64, 32};
+    unsigned char padded[16], expected[16], actual[16];
+    int options[] = {0, SIXEL_OPTFLAG_PRECISION_POLICY,
+                     SIXEL_OPTFLAG_WORKING_COLORSPACE};
+    char const *values[] = {NULL, "float32", "oklab"};
+    int f, i, j, mode, offset;
+
+    for (mode = 0; mode < 3; ++mode) {
+        if (read_four_cells(rgb, SIXEL_PIXELFORMAT_RGB888, NULL, -1,
+                            options[mode], values[mode], expected)) {
+            return 1;
+        }
+        for (f = 0; f < 4; ++f) {
+            offset = 1 - f % 2;
+            for (i = 0; i < 4; ++i) {
+                /* Zero and full padding must both leave the cell opaque. */
+                padded[4 * i + (offset ? 0 : 3)] = (unsigned char)(85 * i);
+                for (j = 0; j < 3; ++j) {
+                    padded[4 * i + offset + j] =
+                        rgb[3 * i + (f < 2 ? j : 2 - j)];
+                }
+            }
+            if (read_four_cells(padded, formats[f], NULL, -1, options[mode],
+                                values[mode], actual) ||
+                memcmp(expected, actual, sizeof(actual)) != 0) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+static int
+test_auto_mono(void)
+{
+    unsigned char samples[] = {0, 1, 0, 1};
+    unsigned char palette[] = {0, 0, 0, 255, 255, 255};
+    unsigned char rgba[16];
+
+    /* read_four_cells also checks for a register-free monochrome stream. */
+    return read_four_cells(samples, SIXEL_PIXELFORMAT_PAL8, palette, -1,
+        SIXEL_OPTFLAG_MONOCHROME, NULL, rgba) ||
+        rgba[3] != 0 || rgba[7] != 255 || rgba[11] != 0 || rgba[15] != 255;
+}
+
+static int
+test_collinear_primary(int adjacent)
+{
+    double xy[] = {.3127, .329, .504, .438, .30, .60, .15, .06};
+    double gamma[] = {1, 1, 1};
+    float samples[257 * 3];
+    unsigned char const *out;
+    sixel_color_def_t *def;
+    sixel_frame_interface_t *iface;
+    sixel_frame_t *frame = NULL;
+    int i, ok;
+
+    /* The red xy is exactly 3/5 sRGB red plus 2/5 sRGB green in binary64.
+     * Its blue contribution is zero at every intensity. One step below
+     * that edge has a positive blue contribution, visible at high gain. */
+    if (adjacent) {
+        xy[3] = nextafter(xy[3], 0.0);
+    }
+    for (i = 0; i <= 256; ++i) {
+        samples[i * 3] = i == 256 ? 1e8f : (float)i / 255.0f;
+        samples[i * 3 + 1] = .25f;
+        samples[i * 3 + 2] = .5f;
+    }
+    def = sixel_cdef_rgb(xy, SIXEL_COLOR_TRC_SRGB, gamma);
+    ok = def != NULL && SIXEL_SUCCEEDED(sixel_frame_new(&frame, NULL)) &&
+        SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, samples, 257, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1));
+    if (ok) {
+        iface = sixel_frame_as_interface(frame);
+        ok = SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, def)) &&
+            SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+                SIXEL_PIXELFORMAT_RGB888));
+    }
+    if (ok) {
+        out = sixel_frame_get_pixels(frame);
+        for (i = adjacent ? 256 : 0; i <= 256; ++i) {
+            ok = ok && out[3 * i + 2] == (adjacent ? 255 : 128);
+        }
+    }
+    sixel_cdef_free(def);
+    sixel_frame_unref(frame);
+    return !ok;
 }
 
 int
@@ -1700,7 +1846,25 @@ test_frame_0014_clone_float(int argc, char **argv)
                test_permuted_primaries(0, 1) || test_permuted_primaries(1, 1);
     }
     if (argc == 2 && strcmp(argv[1], "palette-recount") == 0) {
-        return test_palette_recount();
+        return test_palette_recount(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "profiled-range") == 0) {
+        return icc_numeric_frame_storage_fallback_test();
+    }
+    if (argc == 2 && strcmp(argv[1], "byte-bgr") == 0) {
+        return test_byte_bgr(0) || test_byte_bgr(1);
+    }
+    if (argc == 2 && strcmp(argv[1], "padded-rgb") == 0) {
+        return test_padded_output();
+    }
+    if (argc == 2 && strcmp(argv[1], "auto-mono") == 0) {
+        return test_auto_mono();
+    }
+    if (argc == 2 && strcmp(argv[1], "collinear") == 0) {
+        return test_collinear_primary(0) || test_collinear_primary(1);
+    }
+    if (argc == 2 && strcmp(argv[1], "count-first") == 0) {
+        return test_palette_recount(1);
     }
     if (argc == 2 && strcmp(argv[1], "indexed-direct-mask") == 0) {
         for (i = 0; i < 2; ++i) {
