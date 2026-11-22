@@ -154,6 +154,7 @@ amalgamation_units = files(
   '../src/dither-diffusion.wgsl',
   '../src/dither-diffusion-batch.wgsl',
   '../src/dither-diffusion-fixed.wgsl',
+  '../src/dither-diffusion-pack.wgsl',
   '../src/dither-diffusion-point.wgsl',
   '../src/dither-policy-a-dither.wgsl',
   '../src/dither-policy-atkinson.wgsl',

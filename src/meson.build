@@ -523,6 +523,7 @@ if webgpu
     'dither-diffusion',
     'dither-diffusion-batch',
     'dither-diffusion-fixed',
+    'dither-diffusion-pack',
     'dither-diffusion-point',
     'dither-policy-a-dither',
     'dither-policy-atkinson',

@@ -73,23 +73,35 @@ async function verify() {
         return 'ok 1 # SKIP no WebGPU adapter';
     const proto = GPUComputePassEncoder.prototype;
     const original = proto.dispatchWorkgroups;
-    let dispatches = 0;
+    const map = GPUBuffer.prototype.mapAsync;
+    const grids = [], reads = [];
+    GPUBuffer.prototype.mapAsync = function (mode, ...args) {
+        if (mode === GPUMapMode.READ) reads.push(this.size);
+        return map.call(this, mode, ...args);
+    };
     proto.dispatchWorkgroups = function (...args) {
-        ++dispatches;
+        grids.push(args.slice(0, 2).join("x"));
         return original.apply(this, args);
     };
     try {
         for (const [lookup, method, expected] of cases) {
-            const before = dispatches;
+            const before = grids.length;
+            reads.length = 0;
             const bytes = await convert('force', method, lookup);
             const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
             const hex = Array.from(digest, b => b.toString(16).padStart(2, '0')).join('');
-            // Initialization, eight ordered phase passes and a final gather.
-            if (dispatches - before < 10 || hex !== expected)
+            // Builders precede initialization. Point phases select one of
+            // four 1024-position buckets; the collective keeps its 8x8 tile.
+            const phases = grids.slice(-9, -1);
+            const shape = lookup === 'blockcull' ? '3x2' : '16x1';
+            // 221 indexes padded to a word plus the validation word.
+            if (grids.length - before < 10 || !phases.every(g => g === shape) ||
+                    reads.at(-1) !== 228 || hex !== expected)
                 throw Error(lookup + '/' + method + ' dispatch or output differs');
         }
         return 'ok 1 - WebGPU diffusion matches Vulkan';
     } finally {
+        GPUBuffer.prototype.mapAsync = map;
         proto.dispatchWorkgroups = original;
     }
 }

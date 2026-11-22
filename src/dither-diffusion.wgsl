@@ -44,9 +44,6 @@ fn sender(x: i32, y: i32) -> vec4f {
 fn diffuse_sample(x: u32, y: u32) -> vec4f {
     if (x >= params.width || y >= params.height) { return vec4f(-1); }
     let pass_id = params.pass_id;
-    if (pass_id > 0u && pass_id < 9u && phase(x, y) != (pass_id - 1u) % 4u) {
-        return vec4f(-1);
-    }
     let i = y * params.width + x;
     let word = pixels[i];
     if ((word >> 24u) != 0u) { return vec4f(0); }
@@ -65,7 +62,8 @@ fn diffuse_write(x: u32, y: u32, sample: vec4f, best: u32) {
         return;
     }
     let i = y * params.width + x;
-    var state = vec4f(0);
+    // Transparent pixels contribute zero error and carry skip code one.
+    var state = vec4f(0, 0, 0, 65536);
     if (params.pass_id == 9u) {
         var packed = 65536u;
         if (sample.w > 0.0) { packed = u32(plane_a[i].w) | (best << 8u); }

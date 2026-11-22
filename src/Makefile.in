@@ -2372,6 +2372,7 @@ webgpu_shaders = \
     dither-diffusion.wgsl \
     dither-diffusion-batch.wgsl \
     dither-diffusion-fixed.wgsl \
+    dither-diffusion-pack.wgsl \
     dither-diffusion-point.wgsl \
     dither-policy-a-dither.wgsl \
     dither-policy-atkinson.wgsl \
