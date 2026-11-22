@@ -1806,10 +1806,12 @@ sixel_frame_quantize_float_rgb(sixel_frame_t *frame)
             memcpy(output, input, sizeof(output));
             converted = isfinite(input[0]) && isfinite(input[1]) &&
                         isfinite(input[2]);
+        } else if (frame->format.coordinates == SIXEL_COLORSPACE_SMPTEC) {
+            converted = sixel_color_from_output(output, input,
+                SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_GAMMA);
         } else {
             converted = sixel_color_convert(output, input,
-                frame->format.coordinates,
-                                            SIXEL_COLORSPACE_GAMMA);
+                frame->format.coordinates, SIXEL_COLORSPACE_GAMMA);
         }
         if (!converted) {
             sixel_allocator_free(frame->allocator, pixels);
@@ -1868,7 +1870,7 @@ sixel_frame_render_profiled(sixel_frame_t const *frame, int target,
     }
     /* Exact sRGB coordinates must reach the byte-rounding boundary intact. */
     srgb = NULL;
-    if (!sixel_cdef_is_srgb(frame->format.rgb)) {
+    if (!sixel_cdef_same_rgb(frame->format.rgb, NULL)) {
         srgb = sixel_cdef_name("srgb");
         if (srgb == NULL) {
             return SIXEL_BAD_ALLOCATION;
@@ -1980,7 +1982,12 @@ sixel_frame_set_pixelformat(
     if (frame->format.rgb != NULL && frame->pixels.f32ptr != NULL) {
         return sixel_frame_convert_profiled(frame, pixelformat);
     }
-    if (pixelformat == sixel_frame_format(frame)) {
+    /* SMPTE-C shares an RGB storage code with gamma sRGB. A request for
+     * sRGB must resolve the coordinates even when the layout matches. */
+    if (pixelformat == sixel_frame_format(frame) &&
+        ((pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+          pixelformat != SIXEL_PIXELFORMAT_RGB888) ||
+         frame->format.coordinates == SIXEL_COLORSPACE_GAMMA)) {
         return SIXEL_OK;
     }
     if (frame->pixels.u8ptr == NULL) {
@@ -2765,6 +2772,8 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
     size_t index;
     size_t base;
     int float_pixelformat;
+    int source_space;
+    int target_space;
     int step;
     int index_r;
     int index_g;
@@ -2883,8 +2892,10 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
     }
 
     byte_pixels = frame->pixels.u8ptr;
-    float_pixelformat =
-        sixel_frame_float_pixelformat_for_colorspace(frame->format.coordinates);
+    source_space = frame->format.coordinates;
+    target_space = sixel_pixelformat_get_colorspace(target);
+    float_pixelformat = sixel_frame_float_pixelformat_for_colorspace(
+        source_space);
 
     /* Unpack indexed rows into scratch. Neither this step nor a later
      * coordinate conversion may publish a partial change to the frame. */
@@ -2893,6 +2904,7 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
     palette_entries = sixel_frame_palette_entries(frame);
     if (step == 0) {
         indices = byte_pixels;
+        source_space = SIXEL_COLORSPACE_GAMMA;
         float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
         if (frame->format.layout != SIXEL_PIXELFORMAT_PAL8) {
             unpacked = sixel_allocator_malloc(frame->allocator, pixel_total);
@@ -2934,10 +2946,9 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
             sixel_pixelformat_byte_to_float(float_pixelformat, 2, b8);
     }
 
-    if (float_pixelformat != target) {
+    if (source_space != target_space) {
         status = sixel_color_convert_frame_rgbf32(float_pixels, pixel_total,
-            sixel_pixelformat_get_colorspace(float_pixelformat),
-            sixel_pixelformat_get_colorspace(target));
+                                                  source_space, target_space);
         if (SIXEL_FAILED(status)) {
             goto failed;
         }

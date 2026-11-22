@@ -357,8 +357,9 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
                       unsigned char **bytes, size_t *length,
                       sixel_allocator_t *allocator);
 
+/* NULL denotes the implicit gamma sRGB model in an RGB comparison. */
 SIXEL_INTERNAL_API int
-sixel_cdef_is_srgb(sixel_color_def_t const *definition);
+sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);
 
 SIXEL_INTERNAL_API size_t
 sixel_cdef_storage(sixel_color_def_t const *definition);
