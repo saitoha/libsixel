@@ -8,17 +8,18 @@
 #include "src/cms.h"
 #include "src/loader-common.h"
 #include "tests/data/color-numeric/icc.h"
+#include "tests/data/color-numeric/paired-lut.h"
 #include "tests/data/color-numeric/opponents.h"
 #include "tests/data/color-numeric/vectors.h"
 
 /* Promotion allocates float triplets before unpacking the two PAL1 rows.
  * Reject only the unpack allocation so the first allocation must unwind. */
-static int fail_unpack;
+static int fail_six_bytes;
 
 static void *
 profile_frame_malloc(size_t size)
 {
-    return fail_unpack && size == 6 ? NULL : malloc(size);
+    return fail_six_bytes && size == 6 ? NULL : malloc(size);
 }
 
 static int
@@ -44,7 +45,7 @@ test_packed_retry(void)
         goto end;
     }
     iface = sixel_frame_as_interface(frame);
-    fail_unpack = 1;
+    fail_six_bytes = 1;
     if (iface->vtbl->set_pixelformat(iface, SIXEL_PIXELFORMAT_RGBFLOAT32)
             != SIXEL_BAD_ALLOCATION ||
         SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
@@ -53,7 +54,7 @@ test_packed_retry(void)
         indices[0] != 0xa0 || indices[1] != 0x40) {
         goto end;
     }
-    fail_unpack = 0;
+    fail_six_bytes = 0;
     if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
             SIXEL_PIXELFORMAT_RGBFLOAT32)) ||
         SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
@@ -69,9 +70,165 @@ test_packed_retry(void)
     }
     result = EXIT_SUCCESS;
 end:
-    fail_unpack = 0;
+    fail_six_bytes = 0;
     sixel_frame_unref(frame);
     sixel_allocator_unref(allocator);
+    return result;
+}
+
+/* Only the first pixel is painted. decode_raw reports two defined colors
+ * and uses index 255 in the second pixel. A clone copies the declared
+ * palette, so both paths must resolve the same unpainted default. */
+static int
+test_raw_palette(void)
+{
+    unsigned char wire[] = "\033Pq\"1;1;2;1#0;2;100;0;0@?\033\\";
+    unsigned char const expected[] = {255, 0, 0, 253, 253, 253};
+    unsigned char *pixels = NULL;
+    unsigned char *palette = NULL;
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_interface_t *clone = NULL;
+    sixel_frame_pixels_view_t view;
+    int width, height, colors;
+    int result = EXIT_FAILURE;
+    int i;
+
+    if (SIXEL_FAILED(sixel_decode_raw(wire, (int)sizeof(wire) - 1,
+            &pixels, &width, &height, &palette, &colors, NULL)) ||
+        width != 2 || height != 1 || colors != 2 ||
+        pixels[0] != 0 || pixels[1] != 255 ||
+        SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init(frame, pixels, width, height,
+            SIXEL_PIXELFORMAT_PAL8, palette, colors))) {
+        goto end;
+    }
+    pixels = palette = NULL;
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(iface->vtbl->clone(iface, NULL, &clone)) ||
+        SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.pixels_float32 == NULL || view.pixels_float32[0] != 1 ||
+        view.pixels_float32[1] != 0 || view.pixels_float32[2] != 0) {
+        goto end;
+    }
+    /* Inverse sRGB transfer at 253 / 255. */
+    for (i = 3; i < 6; ++i) {
+        if (!(fabs(view.pixels_float32[i] - .9822505503) < 1e-6)) {
+            goto end;
+        }
+    }
+    if (SIXEL_SUCCEEDED(clone->vtbl->set_pixelformat(clone,
+            SIXEL_PIXELFORMAT_RGB888)) &&
+        SIXEL_SUCCEEDED(clone->vtbl->get_pixels(clone, &view)) &&
+        view.pixels != NULL && memcmp(view.pixels, expected, 6) == 0) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    if (clone != NULL) {
+        clone->vtbl->unref(clone);
+    }
+    sixel_frame_unref(frame);
+    free(pixels);
+    free(palette);
+    return result;
+}
+
+static int
+test_profile_colorspace_lut(void)
+{
+    unsigned char bytes[sizeof(color_paired_lut)];
+    float pixel[3] = {.1f, .2f, .3f};
+    /* Every A2B0 CLUT vertex encodes D50 XYZ (.25, .5, .75).
+     * Multiply by the inverse D50-adapted sRGB primary matrix. */
+    double const expected[] = {-.3930784364, .7384529717, .9578093449};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    sixel_color_def_t *profile;
+    int c;
+    int result = EXIT_FAILURE;
+
+    memcpy(bytes, color_paired_lut, sizeof(bytes));
+    memcpy(bytes + 12, "spac", 4);
+    profile = sixel_cdef_icc(bytes, sizeof(bytes));
+    if (profile == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixel, 1, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(iface->vtbl->set_rgb_definition(iface, profile)) ||
+        SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.pixels_float32 == NULL) {
+        goto end;
+    }
+    for (c = 0; c < 3; ++c) {
+        if (!(fabs(view.pixels_float32[c] - expected[c]) < 1e-6)) {
+            goto end;
+        }
+    }
+    result = EXIT_SUCCESS;
+end:
+    sixel_frame_unref(frame);
+    sixel_cdef_free(profile);
+    return result;
+}
+
+static int
+test_profile_byte_resize_retry(void)
+{
+    float pixel[] = {.4f, .5f, .6f};
+    /* Encoded Display P3 to gamma sRGB, rounded directly to RGB888. */
+    unsigned char const expected[] = {95, 128, 156, 95, 128, 156};
+    sixel_allocator_t *allocator = NULL;
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    sixel_color_def_t *p3;
+    sixel_color_def_t const *original;
+    int result = EXIT_FAILURE;
+
+    p3 = sixel_cdef_name("display-p3");
+    if (p3 == NULL || SIXEL_FAILED(sixel_allocator_new(&allocator,
+            profile_frame_malloc, calloc, realloc, free)) ||
+        SIXEL_FAILED(sixel_frame_new(&frame, allocator)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixel, 1, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(iface->vtbl->set_rgb_definition(iface, p3)) ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view))) {
+        goto end;
+    }
+    original = view.rgb_definition;
+    fail_six_bytes = 1;
+    if (iface->vtbl->resize(iface, 2, 1, SIXEL_RES_NEAREST) !=
+            SIXEL_BAD_ALLOCATION ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.rgb_definition != original || view.pixels_float32 != pixel ||
+        view.width != 1 || view.height != 1 ||
+        pixel[0] != .4f || pixel[1] != .5f || pixel[2] != .6f) {
+        goto end;
+    }
+    fail_six_bytes = 0;
+    if (SIXEL_SUCCEEDED(iface->vtbl->resize(iface, 2, 1,
+            SIXEL_RES_NEAREST)) &&
+        SIXEL_SUCCEEDED(iface->vtbl->get_pixels(iface, &view)) &&
+        view.width == 2 && view.height == 1 && view.rgb_definition == NULL &&
+        view.pixelformat == SIXEL_PIXELFORMAT_RGB888 && view.pixels != NULL &&
+        memcmp(view.pixels, expected, sizeof(expected)) == 0) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    fail_six_bytes = 0;
+    sixel_frame_unref(frame);
+    sixel_allocator_unref(allocator);
+    sixel_cdef_free(p3);
     return result;
 }
 
@@ -208,6 +365,15 @@ test_frame_0014_clone_float(int argc, char **argv)
     int c;
     int result;
 
+    if (argc == 2 && strcmp(argv[1], "raw-palette") == 0) {
+        return test_raw_palette();
+    }
+    if (argc == 2 && strcmp(argv[1], "profile-lut") == 0) {
+        return test_profile_colorspace_lut();
+    }
+    if (argc == 2 && strcmp(argv[1], "byte-resize-retry") == 0) {
+        return test_profile_byte_resize_retry();
+    }
     if (argc == 2 && strcmp(argv[1], "packed-retry") == 0) {
         return test_packed_retry();
     }

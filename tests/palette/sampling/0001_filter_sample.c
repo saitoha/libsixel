@@ -16,6 +16,7 @@
 
 #include <sixel.h>
 
+#include "src/cms.h"
 #include "src/filter-factory.h"
 #include "src/filter-sample.h"
 #include "src/filter.h"
@@ -368,13 +369,84 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
+/* Crop to red and release the source. The grid sample must still carry
+ * the Display P3 red primary, including its negative linear sRGB channels. */
+static int
+test_profiled_grid(void)
+{
+    float pixels[] = {0, 1, 0, 1, 0, 0};
+    double const red[] = {1.2249401763, -.0420569547, -.0196375546};
+    sixel_frame_t *frame = NULL;
+    sixel_allocator_t *allocator = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    sixel_sample_stream_t samples;
+    sixel_filter_sample_config_t config = {0};
+    sixel_filter_t *filter = NULL;
+    sixel_color_def_t *profile;
+    int c;
+    int result = EXIT_FAILURE;
+
+    profile = sixel_cdef_name("display-p3");
+    sixel_sample_stream_init(&samples);
+    config.policy = SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
+    config.source = SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME;
+    config.clip_x = 1;
+    config.clip_width = config.clip_height = 1;
+    if (profile == NULL || SIXEL_FAILED(make_allocator(&allocator)) ||
+        SIXEL_FAILED(sixel_frame_new(&frame, allocator)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1)) ||
+        SIXEL_FAILED(sixel_filter_factory_create_by_name("sample", &config,
+                                                         &filter))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(iface->vtbl->set_rgb_definition(iface, profile)) ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view))) {
+        goto end;
+    }
+    sixel_filter_bind_input(filter, &frame, view.pixelformat, view.colorspace);
+    sixel_filter_bind_sample_output(filter, &samples, view.pixelformat,
+                                    view.colorspace);
+    if (SIXEL_FAILED(sixel_filter_run(filter, allocator, NULL)) ||
+        samples.frame == NULL || samples.frame == frame) {
+        goto end;
+    }
+    sixel_frame_unref(frame);
+    frame = NULL;
+    iface = sixel_frame_as_interface(samples.frame);
+    if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.width != 1 || view.height != 1 || view.rgb_definition == NULL ||
+        SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.pixels_float32 == NULL) {
+        goto end;
+    }
+    for (c = 0; c < 3; ++c) {
+        if (!(fabs(view.pixels_float32[c] - red[c]) < 1e-5)) {
+            goto end;
+        }
+    }
+    result = EXIT_SUCCESS;
+end:
+    sixel_filter_free(filter);
+    sixel_sample_stream_dispose(&samples);
+    sixel_frame_unref(frame);
+    sixel_allocator_unref(allocator);
+    sixel_cdef_free(profile);
+    return result;
+}
+
 int
 test_filter_0002_filter_sample(int argc, char **argv)
 {
     int success;
 
-    (void) argc;
-    (void) argv;
+    if (argc == 2 && strcmp(argv[1], "profiled-grid") == 0) {
+        return test_profiled_grid();
+    }
 
     success = 1;
 
