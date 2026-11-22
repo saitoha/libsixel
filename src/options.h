@@ -343,6 +343,8 @@ sixel_test_environment_palette_disable_tables(void);
 SIXEL_INTERNAL_API int
 sixel_test_environment_refresh_spatial_deterministic(void);
 SIXEL_INTERNAL_API char const *
+sixel_test_environment_gpu_headroom(void);
+SIXEL_INTERNAL_API char const *
 sixel_test_environment_decoder_parallel_failure(void);
 SIXEL_INTERNAL_API char const *
 sixel_test_environment_palette_job_failure(void);

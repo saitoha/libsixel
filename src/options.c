@@ -2237,6 +2237,7 @@ typedef enum sixel_test_environment_key {
     SIXEL_TEST_ENVIRONMENT_LIBWEBP_FORCE_RGB,
     SIXEL_TEST_ENVIRONMENT_PALETTE_DISABLE_TABLES,
     SIXEL_TEST_ENVIRONMENT_REFRESH_SPATIAL_DETERMINISTIC,
+    SIXEL_TEST_ENVIRONMENT_GPU_HEADROOM,
     SIXEL_TEST_ENVIRONMENT_DECODER_PARALLEL_FAILURE,
     SIXEL_TEST_ENVIRONMENT_PALETTE_JOB_FAILURE,
     SIXEL_TEST_ENVIRONMENT_PALETTE_QUANTIZER_FAILURE,
@@ -2278,6 +2279,10 @@ g_test_environment_definitions[] = {
     {
         "_SIXEL_TEST_REFRESH_SPATIAL_DETERMINISTIC",
         SIXEL_TEST_ENVIRONMENT_BOOLEAN
+    },
+    {
+        "_SIXEL_TEST_GPU_HEADROOM",
+        SIXEL_TEST_ENVIRONMENT_STRING
     },
     {
         "_SIXEL_TEST_DECODER_PARALLEL_FAILURE",
@@ -2405,6 +2410,13 @@ sixel_test_environment_refresh_spatial_deterministic(void)
 {
     return sixel_test_environment_boolean(
         SIXEL_TEST_ENVIRONMENT_REFRESH_SPATIAL_DETERMINISTIC);
+}
+
+char const *
+sixel_test_environment_gpu_headroom(void)
+{
+    return sixel_test_environment_string(
+        SIXEL_TEST_ENVIRONMENT_GPU_HEADROOM);
 }
 
 char const *
