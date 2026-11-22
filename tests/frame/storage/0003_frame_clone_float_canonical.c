@@ -233,6 +233,61 @@ end:
     return result;
 }
 
+/* Decode SMPTE-C with exponent 2.2, transform its D65 primaries to
+ * sRGB, then apply the sRGB transfer. The byte source has blue 64/255. */
+static int
+test_smptec_to_srgb(int byte_source, int target)
+{
+    static double const expected[][3] = {
+        {.78376865, .21796907, .06316951},
+        {.78402677, .21994704, .23991341}
+    };
+    static unsigned char const quantized[][3] = {{200, 56, 16}, {200, 56, 61}};
+    unsigned char bytes[] = {204, 51, 64};
+    float pixel[] = {.8f, .2f, .1f};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    int result = EXIT_FAILURE;
+    int c;
+
+    if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame,
+            byte_source ? (void *)bytes : (void *)pixel, 1, 1,
+            byte_source ? SIXEL_PIXELFORMAT_RGB888 :
+                          SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_SMPTEC);
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface, target)) ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        view.pixelformat != target || view.rgb_definition != NULL) {
+        goto end;
+    }
+    if (target == SIXEL_PIXELFORMAT_RGB888) {
+        if (view.pixels == NULL ||
+            memcmp(view.pixels, quantized[byte_source], 3) != 0) {
+            goto end;
+        }
+    } else {
+        if (view.pixels_float32 == NULL) {
+            goto end;
+        }
+        for (c = 0; c < 3; ++c) {
+            if (!(fabs(view.pixels_float32[c] - expected[byte_source][c])
+                    < 2e-7)) {
+                goto end;
+            }
+        }
+    }
+    result = EXIT_SUCCESS;
+end:
+    sixel_frame_unref(frame);
+    return result;
+}
+
 static int
 test_srgb_byte_tie(void)
 {
@@ -400,6 +455,11 @@ test_frame_0014_clone_float(int argc, char **argv)
     int c;
     int result;
 
+    if (argc == 3) {
+        return test_smptec_to_srgb(strcmp(argv[1], "smptec-byte") == 0,
+            strcmp(argv[2], "rgb888") == 0 ? SIXEL_PIXELFORMAT_RGB888 :
+                                             SIXEL_PIXELFORMAT_RGBFLOAT32);
+    }
     if (argc == 2 && strcmp(argv[1], "srgb-byte-tie") == 0) {
         return test_srgb_byte_tie();
     }

@@ -79,6 +79,13 @@ set -- \
     encoder/pipeline/0126_encode_bytes_g4_levels.t \
     encoder/pipeline/0127_encode_bytes_bgr888_pixels.t \
     encoder/planning/0194_default_display_p3_pixels.t \
+    encoder/playback-palette/0025_palette_source_different_primaries.t \
+    encoder/playback-palette/0026_palette_source_explicit_srgb.t \
+    encoder/playback-palette/0027_palette_source_implicit_srgb.t \
+    encoder/playback-palette/0028_palette_source_equal_primaries.t \
+    encoder/playback-palette/0029_palette_source_different_transfer.t \
+    encoder/playback-palette/0030_palette_source_same_icc.t \
+    encoder/playback-palette/0031_palette_source_different_icc.t \
     frame/alpha/0005_frame_alpha_clone.t \
     frame/alpha/0012_frame_alpha_resolve_allocation_atomic.t \
     frame/alpha/0016_frame_float_clone_color.t \
@@ -100,6 +107,10 @@ set -- \
     frame/storage/0020_profile_srgb_byte_tie.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
+    frame/storage/0023_smptec_float_to_rgbfloat32.t \
+    frame/storage/0024_smptec_float_to_rgb888.t \
+    frame/storage/0025_smptec_byte_to_rgbfloat32.t \
+    frame/storage/0026_smptec_byte_to_rgb888.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \

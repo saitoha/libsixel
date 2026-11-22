@@ -277,7 +277,7 @@ af_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define load_with_libtiff af_local_11
 #define loader_can_try_libtiff af_local_12
 #define sixel_cdef_clone af_local_13
-#define sixel_cdef_is_srgb af_local_13_is_srgb
+#define sixel_cdef_same_rgb af_local_13_same_rgb
 #define sixel_cdef_storage af_local_13_storage
 #define sixel_cdef_linearized af_local_linearized
 #define sixel_cdef_separable af_local_linearized_separable
@@ -580,7 +580,7 @@ SIXEL_INTERNAL_API int
 sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
                   char const **icc_path, int *intent);
 SIXEL_INTERNAL_API int
-sixel_cdef_is_srgb(sixel_color_def_t const *definition);
+sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);
 
 SIXEL_INTERNAL_API size_t
 sixel_cdef_storage(sixel_color_def_t const *definition);
@@ -722,7 +722,7 @@ af_linear(unsigned char *pixels, int width, int height, int format,
 #undef load_tiff
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
-#undef sixel_cdef_is_srgb
+#undef sixel_cdef_same_rgb
 #undef sixel_cdef_storage
 #undef sixel_cdef_clone
 #undef sixel_cdef_separable

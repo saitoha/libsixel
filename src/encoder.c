@@ -21021,6 +21021,36 @@ sixel_playback_release_reservation(sixel_playback_t *playback,
     }
 }
 
+/* Playback samples the palette source in the displayed frame's encoding.
+ * PROFILE_RGB identifies a kind of view; each view carries its own model. */
+static int
+sixel_playback_palette_source_matches(sixel_frame_t *frame,
+                                      sixel_frame_t *source)
+{
+    sixel_frame_pixels_view_t image;
+    sixel_frame_pixels_view_t palette;
+    int image_space;
+    int palette_space;
+
+    if (source == frame ||
+        SIXEL_FAILED(sixel_encoder_frame_get_pixels_view(frame, &image)) ||
+        SIXEL_FAILED(sixel_encoder_frame_get_pixels_view(source, &palette)) ||
+        palette.width <= 0 || palette.height <= 0 ||
+        (palette.pixels == NULL && palette.pixels_float32 == NULL) ||
+        (image.pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0 ||
+        image.pixelformat != palette.pixelformat) {
+        return 0;
+    }
+    /* An unprofiled gamma RGB frame supplies the implicit sRGB model.
+     * Other fixed coordinates must still agree, including SMPTE-C. */
+    image_space = image.rgb_definition ? SIXEL_COLORSPACE_GAMMA :
+                                         image.colorspace;
+    palette_space = palette.rgb_definition ? SIXEL_COLORSPACE_GAMMA :
+                                             palette.colorspace;
+    return image_space == palette_space &&
+        sixel_cdef_same_rgb(image.rgb_definition, palette.rgb_definition);
+}
+
 SIXELAPI SIXELSTATUS
 sixel_playback_submit_reserved(sixel_playback_t *playback,
                                sixel_playback_ticket_t *ticket,
@@ -21049,16 +21079,8 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
             ? options->struct_size : sizeof(defaults));
     }
     if (defaults.palette_source != NULL &&
-            (defaults.palette_source == frame ||
-             sixel_frame_get_width(defaults.palette_source) <= 0 ||
-             sixel_frame_get_height(defaults.palette_source) <= 0 ||
-             sixel_frame_get_pixels(defaults.palette_source) == NULL ||
-             (sixel_frame_get_pixelformat(frame) &
-                 SIXEL_FORMATTYPE_PALETTE) != 0 ||
-             sixel_frame_get_pixelformat(defaults.palette_source) !=
-                 sixel_frame_get_pixelformat(frame) ||
-             sixel_frame_get_colorspace(defaults.palette_source) !=
-                 sixel_frame_get_colorspace(frame))) {
+        !sixel_playback_palette_source_matches(frame,
+                                               defaults.palette_source)) {
         sixel_playback_release_reservation(playback, ticket);
         return SIXEL_BAD_ARGUMENT;
     }
