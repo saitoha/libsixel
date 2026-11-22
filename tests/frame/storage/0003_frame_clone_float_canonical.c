@@ -1117,7 +1117,11 @@ test_frame_0014_clone_float(int argc, char **argv)
     if (argc == 2 && strcmp(argv[1], "crop-alpha-storage") == 0) {
         return test_crop_storage(2);
     }
-    if (argc == 3) {
+    if (argc == 3 &&
+        (strcmp(argv[1], "smptec-byte") == 0 ||
+         strcmp(argv[1], "smptec-float") == 0) &&
+        (strcmp(argv[2], "rgb888") == 0 ||
+         strcmp(argv[2], "rgbfloat32") == 0)) {
         return test_smptec_to_srgb(strcmp(argv[1], "smptec-byte") == 0,
             strcmp(argv[2], "rgb888") == 0 ? SIXEL_PIXELFORMAT_RGB888 :
                                              SIXEL_PIXELFORMAT_RGBFLOAT32);
@@ -1155,8 +1159,15 @@ test_frame_0014_clone_float(int argc, char **argv)
     if (argc == 2 && strcmp(argv[1], "packed-retry") == 0) {
         return test_packed_retry();
     }
-    if (argc == 2) {
+    if (argc == 2 && (strcmp(argv[1], "srgb") == 0 ||
+                      strcmp(argv[1], "p3") == 0 ||
+                      strcmp(argv[1], "icc") == 0 ||
+                      strcmp(argv[1], "retry") == 0)) {
         return test_profile_frame(argv[1]);
+    }
+    if (argc != 1) {
+        fprintf(stderr, "Unknown frame storage test arguments\n");
+        return EXIT_FAILURE;
     }
     for (i = 0; i < 10; ++i) {
         for (c = 0; c < 3; ++c) {

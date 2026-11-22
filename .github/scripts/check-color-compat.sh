@@ -74,6 +74,62 @@ set -- \
     color/bpc/0037_output_bpc_libpng_on_indices.t \
     color/bpc/0038_output_bpc_builtin_off_float.t \
     color/bpc/0039_output_bpc_libpng_off_float.t \
+    color/icc/0005_icc_builtin_device_to_device_intent_paths.t \
+    color/icc/0048_absolute_equal_white.t \
+    color/icc/0049_absolute_after_missing_relative.t \
+    color/icc/0050_absolute_unpaired.t \
+    color/icc/0051_mpet_curve_log_range.t \
+    color/icc/0052_mpet_curve_sample_endpoint.t \
+    color/icc/0053_status_mpet_slot3_supported.t \
+    color/icc/0086_mpet_legacy_color.t \
+    color/icc/0087_mpet_fallback_from_absolute.t \
+    color/icc/0088_mpet_fallback_to_absolute.t \
+    color/icc/0089_mpet_matrix_target_intent.t \
+    color/icc/0090_mpet_raw_lab_target.t \
+    color/icc/0091_colorspace_lab_slot_zero_forward.t \
+    color/icc/0092_colorspace_lab_slot_zero_reverse.t \
+    color/icc/0093_mpet_high_dimensional_clut.t \
+    color/icc/0094_mpet_legacy_slot_pair.t \
+    color/icc/0095_mpet_lab_neutral_forward.t \
+    color/icc/0096_mpet_lab_neutral_reverse.t \
+    color/icc/0097_mpet_reachable_legacy_pair.t \
+    color/icc/0098_colorspace_legacy_rgb8.t \
+    color/icc/0099_mpet_definition_absolute_fallback_forward.t \
+    color/icc/0100_mpet_definition_absolute_fallback_reverse.t \
+    color/icc/0101_mpet_rgba_allocation_failure.t \
+    color/icc/0102_mpet_rgba_scratch_reuse.t \
+    color/icc/0103_mpet_simplex_zero_weight.t \
+    color/icc/0104_mpet_lab_pcs_neutral_forward.t \
+    color/icc/0105_mpet_lab_pcs_neutral_reverse.t \
+    color/icc/0106_colorspace_legacy_gray8.t \
+    color/icc/0107_mpet_legacy_reverse_precedence.t \
+    color/icc/0108_owned_mpet_matrix_fallback_forward.t \
+    color/icc/0109_owned_mpet_matrix_fallback_reverse.t \
+    color/icc/0110_mpet_float_storage_fallback.t \
+    color/icc/0111_mpet_simplex_cancellation.t \
+    color/icc/0112_mpet_simplex_cancellation_chain.t \
+    color/icc/0113_mpet_gray_scratch.t \
+    color/icc/0114_colorspace_legacy_float_pair.t \
+    color/icc/0115_colorspace_legacy_byte_float_pair.t \
+    color/icc/0116_mpet_before_later_legacy.t \
+    color/icc/0117_mpet_shared_tag_budget.t \
+    color/icc/0118_mpet_distinct_tag_budget.t \
+    color/icc/0119_mpet_reverse_failure_fallback.t \
+    color/icc/0120_mpet_absolute_storage_fallback.t \
+    color/icc/0121_mpet_matrix_small_residual.t \
+    color/icc/0122_mpet_clut_small_residual.t \
+    color/icc/0123_mpet_absolute_forward_snap.t \
+    color/icc/0124_mpet_absolute_reverse_snap.t \
+    color/icc/0125_mpet_absolute_forward_gamut.t \
+    color/icc/0126_mpet_absolute_reverse_gamut.t \
+    color/icc/0127_mpet_png_storage_fallback.t \
+    color/icc/0128_mpet_curve_small_residual.t \
+    color/icc/0129_mpet_legacy_mixed_float.t \
+    color/icc/0130_mpet_legacy_mixed_byte.t \
+    color/icc/0131_mpet_matrix_product_residual.t \
+    color/icc/0132_mpet_simplex_weight_residual.t \
+    color/icc/0133_mpet_nonrelative_snap.t \
+    color/icc/0134_mpet_nonrelative_gamut.t \
     decoder/parser/0106_normal_columns_wide_fallback.t \
     encoder/pipeline/0124_encode_bytes_g1_levels.t \
     encoder/pipeline/0125_encode_bytes_g2_levels.t \
