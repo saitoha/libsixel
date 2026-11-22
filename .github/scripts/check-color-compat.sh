@@ -117,6 +117,8 @@ set -- \
     frame/storage/0026_smptec_byte_to_rgb888.t \
     frame/storage/0027_display_p3_byte_tie.t \
     frame/storage/0028_builtin_sixel_palette_storage.t \
+    frame/storage/0029_d60_neutral_byte_tie.t \
+    frame/storage/0030_profile_relative_lut_precedence.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \
