@@ -671,6 +671,7 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     int target_pixelformat;
     int scale_pixelformat;
     int scale_input_pixelformat;
+    int scale_colorspace;
     int prefer_float32 = 0;
     int prefer_float32_effective;
     int float_resize_required;
@@ -687,7 +688,6 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     }
 
     resize_mode = SIXEL_PLANNER_RESIZE_MODE_PRESERVE;
-    colorspace_after_scale = 0;
     colorspace_before_scale = 0;
     working_colorspace_effective =
         sixel_encoder_frame_working_colorspace(encoder, frame);
@@ -730,8 +730,9 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     /* Preserve the requested work precision even when resize itself uses
      * preserve or a temporary linear buffer instead of float-work mode. */
     prefer_float32_effective = prefer_float32;
-    scale_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    scale_input_pixelformat = sixel_frame_get_pixelformat(frame);
+    scale_pixelformat = source_pixelformat;
+    scale_input_pixelformat = source_pixelformat;
+    scale_colorspace = source_colorspace;
     float_resize_required = (planner->scale_active != 0) ? 1 : 0;
     source_width = sixel_frame_get_width(frame);
     source_height = sixel_frame_get_height(frame);
@@ -813,17 +814,17 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
         }
         scale_pixelformat = scale_input_pixelformat;
 
-        colorspace_before_scale = (sixel_frame_get_pixelformat(frame)
-                                   != scale_input_pixelformat);
-        colorspace_after_scale = (target_pixelformat
-                                  != scale_pixelformat);
-    } else {
-        colorspace_before_scale = 0;
-        colorspace_after_scale = (target_pixelformat
-                                  != sixel_frame_get_pixelformat(frame));
-        scale_pixelformat = sixel_frame_get_pixelformat(frame);
-        scale_input_pixelformat = sixel_frame_get_pixelformat(frame);
+        colorspace_before_scale = source_pixelformat != scale_pixelformat;
+        if (colorspace_before_scale) {
+            scale_colorspace = sixel_pixelformat_get_colorspace(
+                scale_input_pixelformat);
+        }
     }
+    /* A preserve resize keeps the source coordinates, as does skipping
+     * resize entirely. Profiled RGB and gamma sRGB share RGBFLOAT32
+     * storage but need a color conversion before palette lookup. */
+    colorspace_after_scale = target_pixelformat != scale_pixelformat ||
+        working_colorspace_effective != scale_colorspace;
 
     if (encoder->verbose != 0) {
         fprintf(stderr,
