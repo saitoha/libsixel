@@ -47,6 +47,11 @@ struct sixel_frame {
         unsigned char *u8ptr;       /* loaded pixel data (byte) */
         float *f32ptr;              /* loaded pixel data (float32) */
     } pixels;
+    /* In-place crops keep backing storage beyond the logical rectangle.
+     * Zero means the current layout describes the entire plane. Coverage
+     * is either a binary mask or a straight alpha plane. */
+    size_t pixel_extent;            /* retained pixel bytes */
+    size_t coverage_extent;         /* retained coverage bytes */
     unsigned char *palette;         /* loaded palette data */
     int owns_pixels;                /* frame releases pixel storage */
     int owns_palette;               /* frame releases palette storage */

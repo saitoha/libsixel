@@ -181,6 +181,111 @@ end:
     return result;
 }
 
+/* Use the actual adopted plane sizes. The profile's footprint can vary with
+ * the build, but it is identical on the source and its one-pixel clone. */
+static int
+test_crop_storage(int coverage)
+{
+    enum { side = 256, count = side * side };
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface, *clone = NULL;
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t mask = {0};
+    sixel_frame_alpha_t alpha = {0};
+    sixel_color_def_t *p3 = NULL;
+    float *pixels, *adopted;
+    size_t before, retained, compact, stride, extra;
+    int result = EXIT_FAILURE;
+
+    pixels = calloc(count, 3 * sizeof(float));
+    adopted = pixels;
+    p3 = sixel_cdef_name("display-p3");
+    if (pixels == NULL || p3 == NULL ||
+        SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init(frame, (unsigned char *)pixels,
+            side, side, SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    pixels = NULL;
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(iface->vtbl->set_rgb_definition(iface, p3))) {
+        goto end;
+    }
+    extra = 0;
+    if (coverage == 1) {
+        mask.transparent = -1;
+        mask.transparent_mask_size = count;
+        mask.transparent_mask = calloc(count, 1);
+        if (mask.transparent_mask == NULL) {
+            goto end;
+        }
+        mask.transparent_mask[count - 1] = 1;
+        if (SIXEL_FAILED(iface->vtbl->set_transparency(iface, &mask))) {
+            goto end;
+        }
+        mask.transparent_mask = NULL;
+        extra = 1;
+    } else if (coverage == 2) {
+        alpha.values = calloc(count, sizeof(float));
+        alpha.count = count;
+        if (alpha.values == NULL ||
+            SIXEL_FAILED(iface->vtbl->set_alpha(iface, &alpha))) {
+            goto end;
+        }
+        alpha.values = NULL;
+        extra = sizeof(float);
+    }
+
+    stride = 3 * sizeof(float) + extra;
+    if (SIXEL_FAILED(iface->vtbl->measure_storage(iface, &before)) ||
+        before < count * stride ||
+        (coverage && SIXEL_FAILED(iface->vtbl->clip(iface, side - 2,
+            side - 2, 2, 2))) ||
+        SIXEL_FAILED(iface->vtbl->clip(iface, coverage ? 1 : side - 1,
+            coverage ? 1 : side - 1, 1, 1)) ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.width != 1 || view.height != 1 || view.pixels_float32 != adopted ||
+        SIXEL_FAILED(iface->vtbl->measure_storage(iface, &retained)) ||
+        retained != before ||
+        SIXEL_FAILED(iface->vtbl->clone(iface, NULL, &clone)) ||
+        SIXEL_FAILED(clone->vtbl->measure_storage(clone, &compact)) ||
+        compact != before - (count - 1) * stride) {
+        goto end;
+    }
+    /* Detaching a coverage plane releases its entire original allocation.
+     * Converting the cropped pixels then leaves just one RGB888 triplet. */
+    if (coverage == 1) {
+        mask.transparent_mask_size = 0;
+        if (SIXEL_FAILED(iface->vtbl->set_transparency(iface, &mask))) {
+            goto end;
+        }
+    } else if (coverage == 2) {
+        alpha.count = 0;
+        if (SIXEL_FAILED(iface->vtbl->set_alpha(iface, &alpha))) {
+            goto end;
+        }
+    }
+    if (SIXEL_FAILED(iface->vtbl->measure_storage(iface, &retained)) ||
+        retained != before - count * extra ||
+        SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
+            SIXEL_PIXELFORMAT_RGB888)) ||
+        SIXEL_FAILED(iface->vtbl->measure_storage(iface, &retained)) ||
+        retained != 3) {
+        goto end;
+    }
+    result = EXIT_SUCCESS;
+end:
+    free(alpha.values);
+    free(mask.transparent_mask);
+    free(pixels);
+    if (clone != NULL) {
+        clone->vtbl->unref(clone);
+    }
+    sixel_frame_unref(frame);
+    sixel_cdef_free(p3);
+    return result;
+}
+
 /* Promotion allocates float triplets before unpacking the two PAL1 rows.
  * Reject only the unpack allocation so the first allocation must unwind. */
 static int fail_six_bytes;
@@ -747,6 +852,15 @@ test_frame_0014_clone_float(int argc, char **argv)
     }
     if (argc == 2 && strcmp(argv[1], "packed-clone") == 0) {
         return test_packed_rows(1);
+    }
+    if (argc == 2 && strcmp(argv[1], "crop-storage") == 0) {
+        return test_crop_storage(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "crop-mask-storage") == 0) {
+        return test_crop_storage(1);
+    }
+    if (argc == 2 && strcmp(argv[1], "crop-alpha-storage") == 0) {
+        return test_crop_storage(2);
     }
     if (argc == 3) {
         return test_smptec_to_srgb(strcmp(argv[1], "smptec-byte") == 0,

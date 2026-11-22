@@ -324,6 +324,7 @@ sixel_frame_release_owned_pixels(sixel_frame_t *frame)
         sixel_allocator_free(frame->allocator, pixels);
     }
     frame->pixels.u8ptr = NULL;
+    frame->pixel_extent = 0;
     frame->owns_pixels = 1;
 }
 
@@ -369,6 +370,7 @@ sixel_frame_release_replaced_pixels(sixel_frame_t *frame,
             sixel_allocator_free(frame->allocator, pixels);
         }
         frame->pixels.u8ptr = NULL;
+        frame->pixel_extent = 0;
         frame->owns_pixels = 1;
     }
 }
@@ -560,6 +562,7 @@ sixel_frame_vtbl_set_transparency(
     if (storage->transparent_mask != NULL &&
         storage->transparent_mask != transparency->transparent_mask) {
         sixel_allocator_free(storage->allocator, storage->transparent_mask);
+        storage->coverage_extent = 0;
     }
     storage->transparent = transparency->transparent;
     storage->alpha_zero_is_transparent =
@@ -624,6 +627,7 @@ sixel_frame_vtbl_set_alpha(sixel_frame_interface_t *frame,
     }
     if (storage->alpha != alpha->values) {
         sixel_allocator_free(storage->allocator, storage->alpha);
+        storage->coverage_extent = 0;
     }
     storage->alpha = alpha->values;
     storage->alpha_count = alpha->count;
@@ -699,6 +703,7 @@ sixel_frame_resolve_alpha(sixel_frame_t *frame,
     sixel_allocator_free(frame->allocator, frame->alpha);
     frame->alpha = NULL;
     frame->alpha_count = 0u;
+    frame->coverage_extent = 0;
     sixel_allocator_free(frame->allocator, frame->transparent_mask);
     if (!has_hidden) {
         sixel_allocator_free(frame->allocator, mask);
@@ -854,6 +859,7 @@ sixel_frame_unpack_alpha(sixel_frame_t *frame,
     sixel_allocator_free(frame->allocator, frame->transparent_mask);
     frame->transparent_mask = mask;
     frame->transparent_mask_size = mask != NULL ? count : 0u;
+    frame->coverage_extent = 0;
     sixel_frame_assign_format(frame, require_float
         ? SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_RGB888);
     return SIXEL_OK;
@@ -1054,7 +1060,7 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
     sixel_frame_transparency_t transparency;
     size_t pixel_bytes;
     size_t palette_bytes;
-    size_t mask_bytes;
+    size_t coverage_bytes;
     size_t total;
 
     status = SIXEL_BAD_ARGUMENT;
@@ -1062,7 +1068,7 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
     memset(&transparency, 0, sizeof(transparency));
     pixel_bytes = 0u;
     palette_bytes = 0u;
-    mask_bytes = 0u;
+    coverage_bytes = 0u;
     total = 0u;
 
     if (frame == NULL || storage_bytes == NULL) {
@@ -1085,6 +1091,9 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
         return status;
     }
 
+    if (pixel_bytes < frame->pixel_extent) {
+        pixel_bytes = frame->pixel_extent;
+    }
     if (view.palette != NULL && view.ncolors > 0) {
         if (view.ncolors > SIXEL_PALETTE_MAX ||
             (size_t)view.ncolors > SIZE_MAX / 3u) {
@@ -1094,7 +1103,7 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
     }
     if (transparency.transparent_mask != NULL &&
         transparency.transparent_mask_size > 0u) {
-        mask_bytes = transparency.transparent_mask_size;
+        coverage_bytes = transparency.transparent_mask_size;
     }
 
     total = sixel_cdef_storage(view.rgb_definition);
@@ -1106,14 +1115,17 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     total += palette_bytes;
-    if (total > SIZE_MAX - mask_bytes) {
+    if (frame->alpha_count > (SIZE_MAX - coverage_bytes) / sizeof(float)) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    total += mask_bytes;
-    if (frame->alpha_count > (SIZE_MAX - total) / sizeof(float)) {
+    coverage_bytes += frame->alpha_count * sizeof(float);
+    if (coverage_bytes < frame->coverage_extent) {
+        coverage_bytes = frame->coverage_extent;
+    }
+    if (total > SIZE_MAX - coverage_bytes) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    total += frame->alpha_count * sizeof(float);
+    total += coverage_bytes;
 
     *storage_bytes = total;
     return SIXEL_OK;
@@ -1581,6 +1593,7 @@ sixel_frame_init_common(
     sixel_allocator_free(frame->allocator, frame->alpha);
     frame->alpha = NULL;
     frame->alpha_count = 0u;
+    frame->coverage_extent = 0;
     status = SIXEL_OK;
 
 end:
@@ -2373,10 +2386,9 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             *dst++ = *(frame->palette + *p * 3 + 1);
             *dst++ = *(frame->palette + *p * 3 + 2);
         }
-        if (frame->owns_pixels != 0) {
-            sixel_allocator_free(frame->allocator, raw_pixels);
-        }
+        sixel_frame_release_owned_pixels(frame);
         frame->pixels.u8ptr = normalized_pixels;
+        frame->pixel_extent = size;
         frame->owns_pixels = 1;
         sixel_frame_assign_format(
             frame,
@@ -2410,9 +2422,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             memcpy(dst, color, 3u);
             dst += 3;
         }
-        if (frame->owns_pixels != 0) {
-            sixel_allocator_free(frame->allocator, raw_pixels);
-        }
+        sixel_frame_release_owned_pixels(frame);
         frame->pixels.u8ptr = normalized_pixels;
         frame->owns_pixels = 1;
         sixel_frame_assign_format(
@@ -2638,6 +2648,7 @@ sixel_frame_resize_transparent_mask(
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
         frame->transparent_mask = NULL;
         frame->transparent_mask_size = 0u;
+        frame->coverage_extent = 0;
         frame->alpha_zero_is_transparent = 0;
         return SIXEL_OK;
     }
@@ -2952,9 +2963,7 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
         frame->transparent = -1;
     }
     sixel_allocator_free(frame->allocator, unpacked);
-    if (frame->owns_pixels != 0) {
-        sixel_allocator_free(frame->allocator, byte_pixels);
-    }
+    sixel_frame_release_owned_pixels(frame);
     frame->pixels.f32ptr = float_pixels;
     frame->owns_pixels = 1;
     sixel_frame_assign_format(frame, target);
@@ -3113,6 +3122,7 @@ sixel_frame_resize(
     }
     frame->transparent_mask = resized_mask;
     frame->transparent_mask_size = resized_mask_size;
+    frame->coverage_extent = 0;
     frame->alpha_zero_is_transparent = has_transparent != 0 ? 1 : 0;
     resized_mask = NULL;
     resized_mask_size = 0u;
@@ -3151,18 +3161,15 @@ sixel_frame_resize_float32(
     size_t pixel_total;
     size_t size;
     float *scaled_frame;
-    float *old_pixels;
     unsigned char *resized_mask;
     int depth;
     int depth_bytes;
     int target_pixelformat;
     size_t resized_mask_size;
     int has_transparent;
-    int old_pixels_owned;
 
     status = SIXEL_FALSE;
     scaled_frame = NULL;
-    old_pixels = NULL;
     resized_mask = NULL;
     pixel_total = 0u;
     size = 0u;
@@ -3171,7 +3178,6 @@ sixel_frame_resize_float32(
     target_pixelformat = sixel_frame_format(frame);
     resized_mask_size = 0u;
     has_transparent = 0;
-    old_pixels_owned = 0;
 
     /* Continuous coverage needs an alpha-aware resampler. Current loader
      * delivery resolves it before encoder geometry; never resize RGB alone. */
@@ -3294,15 +3300,10 @@ sixel_frame_resize_float32(
         goto end;
     }
 
-    old_pixels = frame->pixels.f32ptr;
-    old_pixels_owned = frame->owns_pixels;
+    sixel_frame_release_owned_pixels(frame);
     frame->pixels.f32ptr = scaled_frame;
     frame->owns_pixels = 1;
     scaled_frame = NULL;
-    if (old_pixels_owned != 0) {
-        sixel_allocator_free(frame->allocator, old_pixels);
-    }
-    old_pixels = NULL;
     if (frame->transparent_mask != NULL) {
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
         frame->transparent_mask = NULL;
@@ -3310,6 +3311,7 @@ sixel_frame_resize_float32(
     }
     frame->transparent_mask = resized_mask;
     frame->transparent_mask_size = resized_mask_size;
+    frame->coverage_extent = 0;
     frame->alpha_zero_is_transparent = has_transparent != 0 ? 1 : 0;
     resized_mask = NULL;
     resized_mask_size = 0u;
@@ -3376,6 +3378,7 @@ sixel_frame_clip_transparent_mask(
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
         frame->transparent_mask = NULL;
         frame->transparent_mask_size = 0u;
+        frame->coverage_extent = 0;
         frame->alpha_zero_is_transparent = 0;
         return SIXEL_OK;
     }
@@ -3403,8 +3406,12 @@ sixel_frame_clip_transparent_mask(
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
         frame->transparent_mask = NULL;
         frame->transparent_mask_size = 0u;
+        frame->coverage_extent = 0;
         frame->alpha_zero_is_transparent = 0;
     } else {
+        if (frame->coverage_extent < src_pixel_count) {
+            frame->coverage_extent = src_pixel_count;
+        }
         frame->transparent_mask_size = dst_pixel_count;
         frame->alpha_zero_is_transparent = 1;
     }
@@ -3482,7 +3489,7 @@ sixel_frame_clip(
     unsigned char *raw_pixels;
     int src_width;
     int src_height;
-    int raw_pixels_owned;
+    size_t pixel_bytes;
     int alpha_y;
 
     sixel_frame_ref(frame);
@@ -3490,7 +3497,6 @@ sixel_frame_clip(
     raw_pixels = frame->pixels.u8ptr;
     src_width = frame->width;
     src_height = frame->height;
-    raw_pixels_owned = frame->owns_pixels;
 
     /*
      * Float crop is an exact storage move, including nonfinite samples.
@@ -3554,9 +3560,7 @@ sixel_frame_clip(
             sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
-        if (raw_pixels_owned != 0) {
-            sixel_allocator_free(frame->allocator, raw_pixels);
-        }
+        sixel_frame_release_owned_pixels(frame);
         frame->pixels.u8ptr = normalized_pixels;
         frame->owns_pixels = 1;
         raw_pixels = normalized_pixels;
@@ -3565,6 +3569,13 @@ sixel_frame_clip(
         break;
     }
 
+    /* Save the capacity before changing the dimensions. Packed inputs now
+     * occupy an unpacked plane, and repeated crops keep the first extent. */
+    status = sixel_pixelformat_buffer_bytes(src_width, src_height,
+                                           frame->format.layout, &pixel_bytes);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     status = clip(raw_pixels,
                   frame->width,
                   frame->height,
@@ -3595,7 +3606,13 @@ sixel_frame_clip(
                 frame->alpha + ((size_t)y + alpha_y) * src_width + x,
                 (size_t)width * sizeof(float));
         }
+        if (frame->coverage_extent < frame->alpha_count * sizeof(float)) {
+            frame->coverage_extent = frame->alpha_count * sizeof(float);
+        }
         frame->alpha_count = (size_t)width * (size_t)height;
+    }
+    if (frame->pixel_extent < pixel_bytes) {
+        frame->pixel_extent = pixel_bytes;
     }
     frame->width = width;
     frame->height = height;
