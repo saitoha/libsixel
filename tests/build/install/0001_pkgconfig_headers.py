@@ -6,6 +6,7 @@
 import argparse
 import os
 from pathlib import Path
+import re
 import shlex
 import subprocess
 import tempfile
@@ -71,8 +72,11 @@ def check(args):
                      env=env, cwd=str(packages[0].parent))
         # pkgconf can substitute a sysroot containing spaces verbatim.
         # Use a sentinel that cannot appear in a path while splitting flags.
-        flags = [flag.replace('\0', sysroot) for flag in
-                 shlex.split(cflags.replace(sysroot, '\0'))]
+        # A native Windows prefix keeps its drive after the sysroot, while
+        # DESTDIR staging drops that drive; drop it the same way here.
+        marked = re.sub(r'\0[A-Za-z]:(?=[/\\])', '\0',
+                        cflags.replace(sysroot, '\0'))
+        flags = [flag.replace('\0', sysroot) for flag in shlex.split(marked)]
         headers = list(stage.rglob('sixel.h'))
         if len(headers) != 1:
             raise RuntimeError('expected exactly one staged sixel.h')

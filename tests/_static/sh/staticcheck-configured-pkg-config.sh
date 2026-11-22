@@ -23,6 +23,7 @@ function valid(meson, makefile, tap, install) {
         index(install, "cwd=str(packages[0].parent)") &&
         index(install, "sysroot = stage.as_posix()") &&
         index(install, "PKG_CONFIG_SYSROOT_DIR=sysroot") &&
+        index(install, "re.sub(r\047\\0[A-Za-z]:(?=[/\\\\])\047, \047\\0\047,") &&
         !index(install, "shutil.which(") &&
         index(tap, "test -n \"${SIXEL_TEST_PKG_CONFIG-}\"") &&
         index(tap, "\"${SIXEL_TEST_PKG_CONFIG}\" --static --cflags --libs") &&
@@ -47,8 +48,11 @@ END {
     sub(/pkgconfig = os.environ.get\([^)]*\)/, "pkgconfig = shutil.which(\047pkg-config\047)", rediscovered)
     drive_path = install
     sub(/PKG_CONFIG_PATH=\047\.\047/, "PKG_CONFIG_PATH=str(packages[0].parent)", drive_path)
+    drive_kept = install
+    sub(/re\.sub\(/, "re.subn(", drive_kept)
     exit !valid(meson, makefile, tap, install) ||
         valid(meson, makefile, tap, drive_path) ||
+        valid(meson, makefile, tap, drive_kept) ||
         valid(meson, makefile, bare, install) ||
         valid(unchecked, makefile, tap, install) ||
         valid(meson, unconfigured, tap, install) ||
