@@ -3463,14 +3463,10 @@ static SIXELSTATUS sixel_decode_raw_with_options_internal(
     }
 
     *ncolors = alloc_size = image->ncolors;
-    if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
-        /*
-         * Keep the returned palette backed by the decoder's full default
-         * table for internal writers that still inspect byte-valued raw
-         * pixels. The public color range remains [0, *ncolors); larger pixel
-         * values are transparent/unpainted sentinels, not palette entries.
-         */
-        alloc_size = SIXEL_PALETTE_MAX_DECODER;
+    /* Byte pixels can reference any of the first 256 entries, including
+     * the unpainted sentinel. Also return every declared wide register. */
+    if (alloc_size < SIXEL_PALETTE_MAX) {
+        alloc_size = SIXEL_PALETTE_MAX;
     }
     *palette = (unsigned char *)sixel_allocator_malloc(
         allocator,
@@ -3483,10 +3479,6 @@ static SIXELSTATUS sixel_decode_raw_with_options_internal(
         status = SIXEL_BAD_ALLOCATION;
         goto error;
     }
-    /*
-     * Copy the full palette table so default entries remain initialized.
-     * This keeps unused slots valid when the image uses fewer colors.
-     */
     for (n = 0; n < alloc_size; ++n) {
         (*palette)[n * 3 + 0] = image->palette[n] >> 16 & 0xff;
         (*palette)[n * 3 + 1] = image->palette[n] >> 8 & 0xff;

@@ -296,6 +296,8 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-215 | SMPTE-C float samples convert to gamma sRGB RGB888 values and tags. | [tests/frame/storage/0024_smptec_float_to_rgb888.t](../../../tests/frame/storage/0024_smptec_float_to_rgb888.t) |
 | FP-216 | SMPTE-C byte samples convert to gamma sRGB RGBFLOAT32 values and tags. | [tests/frame/storage/0025_smptec_byte_to_rgbfloat32.t](../../../tests/frame/storage/0025_smptec_byte_to_rgbfloat32.t) |
 | FP-217 | SMPTE-C byte samples convert to gamma sRGB RGB888 values and tags. | [tests/frame/storage/0026_smptec_byte_to_rgb888.t](../../../tests/frame/storage/0026_smptec_byte_to_rgb888.t) |
+| FP-218 | Display P3 neutral samples round at the exact RGB888 boundary. | [tests/frame/storage/0027_display_p3_byte_tie.t](../../../tests/frame/storage/0027_display_p3_byte_tie.t) |
+| FP-219 | Builtin SIXEL frame storage includes its retained byte palette. | [tests/frame/storage/0028_builtin_sixel_palette_storage.t](../../../tests/frame/storage/0028_builtin_sixel_palette_storage.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

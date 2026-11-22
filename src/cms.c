@@ -7162,6 +7162,18 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
          memcmp(a->gamma, b->gamma, sizeof(a->gamma)) == 0);
 }
 
+/* Equal encoded channels represent the same neutral when both analytic
+ * endpoints have the same white adaptation and the sRGB transfer curve.
+ * An ICC LUT can map that triplet to an arbitrary color. */
+int
+sixel_cdef_same_srgb_neutrals(sixel_color_def_t const *a,
+                             sixel_color_def_t const *b)
+{
+    return a != NULL && b != NULL && a->bytes == NULL && b->bytes == NULL &&
+        a->trc == SIXEL_COLOR_TRC_SRGB && b->trc == SIXEL_COLOR_TRC_SRGB &&
+        memcmp(a->adaptation, b->adaptation, sizeof(a->adaptation)) == 0;
+}
+
 size_t
 sixel_cdef_storage(sixel_color_def_t const *definition)
 {
