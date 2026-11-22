@@ -2227,6 +2227,7 @@ sixel_dither_new(
     (*ppdither)->origcolors = (-1);
     (*ppdither)->keycolor = (-1);
     (*ppdither)->keycolor_reserved = 0;
+    (*ppdither)->indexed_palette_colors = 0;
     sixel_dither_clear_transparent_bgcolor_hint(*ppdither);
     (*ppdither)->optimized = 0;
     (*ppdither)->bodyonly = 0;

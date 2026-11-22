@@ -169,7 +169,7 @@ sixel_indexed_core_prepare(sixel_encoder_core_t *self,
     core->body->has_gri_arg_limit = !!request->options.has_gri_arg_limit;
     core->body->encode_policy = request->options.encode_policy;
     core->body->ormode = core->options.ormode;
-    core->body->keycolor_reserved = desc->keycolor_reserved;
+    core->body->emit_keyed_palette = desc->keycolor_reserved;
     core->body->transparent_offset_left = desc->encoded_x;
     core->body->transparent_offset_top = desc->encoded_y;
     core->body->encoded_width = desc->encoded_width;
@@ -315,7 +315,7 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
     }
     request.registers = core->gpu_registers;
     request.selectors = ncolors != 2 || desc->keycolor == -1 ||
-        body->keycolor_reserved;
+        body->emit_keyed_palette;
     request.limited = body->has_gri_arg_limit;
     request.gpu_policy = core->gpu_body
         ? SIXEL_GPU_POLICY_AUTO : SIXEL_GPU_POLICY_OFF;

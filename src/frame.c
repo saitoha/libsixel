@@ -1614,7 +1614,7 @@ sixel_frame_init_common(
     sixel_frame_release_replaced_palette(frame, palette, old_palette_owned);
     frame->palette = palette;
     frame->owns_palette = owns_palette != 0 ? 1 : 0;
-    frame->ncolors = ncolors;
+    sixel_frame_set_ncolors(frame, ncolors);
     frame->alpha_zero_is_transparent = 0;
     if (frame->transparent_mask != NULL) {
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
@@ -1755,6 +1755,12 @@ sixel_frame_set_ncolors(
     sixel_frame_t  /* in */ *frame,
     int            /* in */ ncolors)
 {
+    /* A count change does not replace the palette allocation. Remember
+     * its declared capacity until the pointer itself is replaced. */
+    if (frame->palette != NULL && ncolors <= SIXEL_PALETTE_MAX &&
+        ncolors > frame->palette_extent) {
+        frame->palette_extent = ncolors;
+    }
     frame->ncolors = ncolors;
 }
 
@@ -1843,29 +1849,31 @@ sixel_frame_render_fixed_rgb888(sixel_frame_t const *frame,
 
 static int
 sixel_frame_apply_shared_matrix(sixel_color_def_t const *source,
-                               double const m[9], double const input[3],
+                               double const m[9], int const anchor[3],
+                               double const input[3],
                                double out[3], int space, unsigned int flags)
 {
     double linear[3], rgb[3];
-    int c, a, b, unchanged;
+    int c, a, b, ref, unchanged;
 
     if (!sixel_cdef_transfer(source, input, linear, 0)) {
         return 0;
     }
     for (c = 0; c < 3; ++c) {
-        a = (c + 1) % 3;
-        b = (c + 2) % 3;
-        /* Equal relative whites give a unit row sum. Subtract a neutral
-         * of linear[c]: if neither other primary contributes, this
-         * component is exactly linear[c], even at a byte rounding tie. */
-        unchanged = (m[3 * c + a] == 0.0 || linear[a] == linear[c]) &&
-                    (m[3 * c + b] == 0.0 || linear[b] == linear[c]);
-        rgb[c] = unchanged ? linear[c] :
+        ref = anchor[c];
+        a = (ref + 1) % 3;
+        b = (ref + 2) % 3;
+        /* Relative whites give a unit row sum. When every contributing
+         * source has the same value, preserve it exactly. A permutation
+         * row has just one contributor, possibly at a different index. */
+        unchanged = (m[3 * c + a] == 0.0 || linear[a] == linear[ref]) &&
+                    (m[3 * c + b] == 0.0 || linear[b] == linear[ref]);
+        rgb[c] = unchanged ? linear[ref] :
             m[3 * c] * linear[0] + m[3 * c + 1] * linear[1] +
             m[3 * c + 2] * linear[2];
         if (space == SIXEL_COLORSPACE_GAMMA) {
             out[c] = unchanged && (flags & SIXEL_CDEF_SRGB_NEUTRAL) ?
-                input[c] : sixel_color_encode_srgb(rgb[c]);
+                input[ref] : sixel_color_encode_srgb(rgb[c]);
         }
     }
     if (space == SIXEL_COLORSPACE_GAMMA) {
@@ -1892,6 +1900,7 @@ sixel_frame_render_float(sixel_frame_t const *frame, int target,
     unsigned int invariants;
     float const *sample;
     double shared_matrix[9];
+    int anchor[3];
     int shared;
     double xyz[3];
     double rgb[3];
@@ -1926,6 +1935,12 @@ sixel_frame_render_float(sixel_frame_t const *frame, int target,
     invariants = sixel_cdef_srgb_matrix(frame->format.rgb, srgb,
                                        shared_matrix);
     shared = srgb != NULL && (invariants & SIXEL_CDEF_SRGB_AXES);
+    if (shared) {
+        for (c = 0; c < 3; ++c) {
+            anchor[c] = shared_matrix[3 * c] != 0.0 ? 0 :
+                        shared_matrix[3 * c + 1] != 0.0 ? 1 : 2;
+        }
+    }
     pixels = sixel_allocator_malloc(frame->allocator, bytes);
     if (pixels == NULL) {
         sixel_cdef_free(srgb);
@@ -1943,7 +1958,7 @@ sixel_frame_render_float(sixel_frame_t const *frame, int target,
          * supply PCS when there is no usable relative path. */
         if (shared) {
             if (!sixel_frame_apply_shared_matrix(frame->format.rgb,
-                    shared_matrix, rgb, output, space, invariants)) {
+                    shared_matrix, anchor, rgb, output, space, invariants)) {
                 goto invalid;
             }
         } else {
@@ -1993,16 +2008,35 @@ invalid:
 }
 
 
+/* Exchange red and blue in owned byte triplets without another buffer. */
+static void
+sixel_frame_swap_rb(unsigned char *pixels, size_t count)
+{
+    unsigned char blue;
+
+    for (; count != 0; --count, pixels += 3) {
+        blue = pixels[2];
+        pixels[2] = pixels[0];
+        pixels[0] = blue;
+    }
+}
+
 static SIXELSTATUS
 sixel_frame_convert_float(sixel_frame_t *frame, int target)
 {
     unsigned char *pixels;
     SIXELSTATUS status;
 
-    status = sixel_frame_render_float(frame, target, &pixels);
+    status = sixel_frame_render_float(frame,
+        target == SIXEL_PIXELFORMAT_BGR888 ? SIXEL_PIXELFORMAT_RGB888 : target,
+        &pixels);
     if (SIXEL_SUCCEEDED(status)) {
         sixel_frame_release_owned_pixels(frame);
-        if (target == SIXEL_PIXELFORMAT_RGB888) {
+        if (target == SIXEL_PIXELFORMAT_BGR888) {
+            sixel_frame_swap_rb(pixels,
+                (size_t)frame->width * (size_t)frame->height);
+        }
+        if (!SIXEL_PIXELFORMAT_IS_FLOAT32(target)) {
             frame->pixels.u8ptr = pixels;
         } else {
             frame->pixels.f32ptr = (float *)(void *)pixels;
@@ -2101,7 +2135,7 @@ sixel_frame_set_pixelformat(
         sixel_frame_assign_format(frame, pixelformat);
         return SIXEL_OK;
     }
-    if (pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) &&
         frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         return sixel_frame_convert_float(frame, pixelformat);
     }
@@ -2115,6 +2149,11 @@ sixel_frame_set_pixelformat(
     if (working_pixelformat != pixelformat &&
         sixel_frame_unpacked_format(working_pixelformat) == pixelformat) {
         status = sixel_frame_unpack_rows(frame, pixelformat);
+        /* PAL8 is a layout request for indices. The palette still
+         * describes the same colors in the original coordinates. */
+        if (pixelformat == SIXEL_PIXELFORMAT_PAL8) {
+            return status;
+        }
     } else if (pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
         working_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         status = sixel_frame_convert_to_rgb888(frame);
@@ -2449,9 +2488,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     int format;
     int entries;
     unsigned char *src;
-    unsigned char *p;
     unsigned char *raw_pixels;
-    unsigned char blue;
     unsigned char const *source_pixels;
     float *float_pixels;
 
@@ -2549,11 +2586,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         /* encode_bytes already copied these triplets. Reorder owned
          * storage in place and keep the transfer function unchanged. */
         if (frame->owns_pixels) {
-            for (p = raw_pixels; p != raw_pixels + pixel_count * 3u; p += 3) {
-                blue = p[0];
-                p[0] = p[2];
-                p[2] = blue;
-            }
+            sixel_frame_swap_rb(raw_pixels, pixel_count);
             frame->format.layout = SIXEL_PIXELFORMAT_RGB888;
             break;
         }
@@ -2884,6 +2917,7 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
     unsigned char r8;
     unsigned char g8;
     unsigned char b8;
+    sixel_rgb_reader_t packed_reader = NULL;
 
     step = 0;
     index_r = 0;
@@ -2906,6 +2940,13 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
         }
         index_g = 1;
         index_b = 2;
+        break;
+    case SIXEL_PIXELFORMAT_RGB555:
+    case SIXEL_PIXELFORMAT_BGR555:
+    case SIXEL_PIXELFORMAT_RGB565:
+    case SIXEL_PIXELFORMAT_BGR565:
+        packed_reader = sixel_pixelformat_rgb_reader(frame->format.layout);
+        step = 2;
         break;
     case SIXEL_PIXELFORMAT_RGB888:
         step = 3;
@@ -3042,9 +3083,13 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
         } else {
             pixel = byte_pixels + index * (size_t)step;
         }
-        r8 = *(pixel + (size_t)index_r);
-        g8 = *(pixel + (size_t)index_g);
-        b8 = *(pixel + (size_t)index_b);
+        if (packed_reader != NULL) {
+            packed_reader(pixel, &r8, &g8, &b8);
+        } else {
+            r8 = pixel[index_r];
+            g8 = pixel[index_g];
+            b8 = pixel[index_b];
+        }
 
         base = index * 3U;
         float_pixels[base + 0U] =
