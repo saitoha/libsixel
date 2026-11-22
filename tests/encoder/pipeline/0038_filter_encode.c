@@ -586,6 +586,10 @@ test_filter_0010_filter_encode(int argc, char **argv)
     if (argc == 2) {
         return test_encode_packed_gray(argv[1], 0);
     }
+    if (argc != 1) {
+        fprintf(stderr, "Unknown filter encode test arguments\n");
+        return EXIT_FAILURE;
+    }
 
     success = 1;
 
