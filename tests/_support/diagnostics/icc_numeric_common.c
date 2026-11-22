@@ -643,6 +643,111 @@ iccn_make_mpet_samples(unsigned char *bytes)
     return iccn_finish_mpet_element(bytes, 184u);
 }
 
+static int
+iccn_frame_storage(sixel_frame_interface_t *iface, unsigned char const *bytes,
+                   size_t length, size_t *storage)
+{
+    sixel_color_def_t *definition;
+    SIXELSTATUS status;
+
+    definition = sixel_cdef_icc(bytes, length);
+    if (definition == NULL) {
+        return 0;
+    }
+    status = iface->vtbl->set_rgb_definition(iface, definition);
+    sixel_cdef_free(definition);
+    return SIXEL_SUCCEEDED(status) &&
+        SIXEL_SUCCEEDED(iface->vtbl->measure_storage(iface, storage));
+}
+
+int
+icc_mpet_frame_storage_test(void)
+{
+    unsigned char bytes[ICCN_MPET_TEST_BYTES];
+    float pixel[3] = {0};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    size_t length;
+    size_t storage[3];
+    size_t retained;
+    int i;
+    int result = EXIT_FAILURE;
+
+    length = iccn_make_mpet_samples(bytes);
+    if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixel, 1, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    for (i = 0; i < 3; ++i) {
+        /* Keep the frame and ICC envelope the same size. First expose only
+         * the legacy tags, then the shared MPE, then reject its final segment
+         * after the sampled segments have already been allocated. */
+        iccn_be32(bytes + 128u, i == 0 ? 2u : 4u);
+        if (i == 2) {
+            memcpy(bytes + ICCN_CURF_OFFSET + 120u, "bad!", 4u);
+        }
+        if (!iccn_frame_storage(iface, bytes, length, &storage[i])) {
+            goto end;
+        }
+    }
+    /* Both tags share one encoded copy. Two element positions share one
+     * curve set, and all three channels share its five segments. */
+    retained = length - ICCN_MPET_OFFSET + 2u * sizeof(sixel_icc_mpe_t)
+        + 3u * sizeof(sixel_icc_mpe_curve_t)
+        + 5u * sizeof(sixel_icc_mpe_segment_t) + 3u * sizeof(double);
+    if (storage[1] == storage[0] + retained && storage[2] == storage[0]) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    sixel_frame_unref(frame);
+    return result;
+}
+
+int
+icc_segmented_frame_storage_test(void)
+{
+    unsigned char bytes[sizeof(color_icc)];
+    unsigned char *curve;
+    float pixel[3] = {0};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    size_t parametric;
+    size_t segmented;
+    int c;
+    int result = EXIT_FAILURE;
+
+    if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixel, 1, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    memcpy(bytes, color_icc, sizeof(bytes));
+    if (!iccn_frame_storage(iface, bytes, sizeof(bytes), &parametric)) {
+        goto end;
+    }
+    /* Both representations retain one sampled table per channel. Only the
+     * segmented parser needs temporary breakpoint and segment arrays. */
+    for (c = 0; c < 3; ++c) {
+        curve = bytes + iccn_read32(bytes + 136u + (3u + c) * 12u);
+        memset(curve, 0, 32u);
+        memcpy(curve, "segm", 4u);
+        iccn_be32(curve + 8u, 2u);
+        iccn_be32(curve + 12u, 0x8000u);
+        iccn_be32(curve + 20u, 0x10000u);
+        iccn_be32(curve + 28u, 0x10000u);
+    }
+    if (iccn_frame_storage(iface, bytes, sizeof(bytes), &segmented) &&
+        segmented == parametric) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    sixel_frame_unref(frame);
+    return result;
+}
+
 int
 icc_mpet_curve_samples_test(void)
 {
