@@ -23,10 +23,12 @@ static struct {
     int faults;
     int opened;
     int writes;
-    int idat_header_written;
+    char const *chunk_to_fail;
+    int chunk_header_written;
     int short_writes;
     int flushes;
     int closed;
+    int fail_next_allocation;
     int failed_allocations;
     int backend_releases;
     int invalid;
@@ -59,17 +61,18 @@ png_stream_fault_write(void const *bytes, size_t size, size_t count, FILE *fp)
     }
     if (count != 0u &&
         ((png_stream_probe.faults & PNG_STREAM_SHORT_WRITE) ||
-         png_stream_probe.idat_header_written)) {
+         png_stream_probe.chunk_header_written)) {
         ++png_stream_probe.short_writes;
         errno = ENOSPC;
         return count - 1u;
     }
     /* The chunk type ends the header write in both backends. Let that
      * complete, then fail the first data write after it. */
-    if ((png_stream_probe.faults & PNG_STREAM_IDAT_SHORT_WRITE) &&
+    if (png_stream_probe.chunk_to_fail != NULL &&
         size == 1u && (count == 4u || count == 8u) &&
-        memcmp((unsigned char const *)bytes + count - 4u, "IDAT", 4u) == 0) {
-        png_stream_probe.idat_header_written = 1;
+        memcmp((unsigned char const *)bytes + count - 4u,
+               png_stream_probe.chunk_to_fail, 4u) == 0) {
+        png_stream_probe.chunk_header_written = 1;
     }
     return count;
 }
@@ -108,8 +111,10 @@ png_stream_fault_malloc(size_t size)
     size_t i;
     void *ptr;
 
-    if ((png_stream_probe.faults & PNG_STREAM_ALLOCATION_FAILURE) &&
-        png_stream_probe.opened != 0) {
+    if (png_stream_probe.fail_next_allocation ||
+        ((png_stream_probe.faults & PNG_STREAM_ALLOCATION_FAILURE) &&
+         png_stream_probe.opened != 0)) {
+        png_stream_probe.fail_next_allocation = 0;
         ++png_stream_probe.failed_allocations;
         return NULL;
     }
@@ -261,27 +266,45 @@ png_test_stream_fault(int faults)
     unsigned char rgba[] = {255, 24, 83, 151};
     unsigned char palette[] = {0, 0, 0, 255, 255, 255};
     sixel_allocator_t *allocator;
+    sixel_color_def_t *definition;
+    sixel_writer_color_t color;
     SIXELSTATUS status;
     SIXELSTATUS expected;
     char const *diagnostic;
     char const *actual;
     int named;
     int open_failed;
+    int icc_export_failed;
     int allocation_failed;
     int before_write;
     int write_failed;
-    int idat_failed;
+    int iccp_failed;
     int flush_failed;
+    int expected_opens;
+    int expected_backend_releases;
 
     named = (faults & PNG_STREAM_STDOUT) == 0;
     open_failed = (faults & PNG_STREAM_OPEN_FAILURE) != 0;
+    icc_export_failed = (faults & PNG_STREAM_ICC_EXPORT_FAILURE) != 0;
     allocation_failed = (faults & PNG_STREAM_ALLOCATION_FAILURE) != 0;
-    before_write = open_failed || allocation_failed;
-    idat_failed = (faults & PNG_STREAM_IDAT_SHORT_WRITE) != 0;
-    write_failed = idat_failed || (faults & PNG_STREAM_SHORT_WRITE) != 0;
+    before_write = open_failed || allocation_failed || icc_export_failed;
+    iccp_failed = (faults & PNG_STREAM_ICCP_SHORT_WRITE) != 0;
     flush_failed = (faults & PNG_STREAM_FLUSH_FAILURE) != 0;
     memset(&png_stream_probe, 0, sizeof(png_stream_probe));
     png_stream_probe.faults = faults;
+    if (iccp_failed) {
+        png_stream_probe.chunk_to_fail = "iCCP";
+    } else if (faults & PNG_STREAM_IDAT_SHORT_WRITE) {
+        png_stream_probe.chunk_to_fail = "IDAT";
+    }
+    write_failed = png_stream_probe.chunk_to_fail != NULL ||
+                   (faults & PNG_STREAM_SHORT_WRITE) != 0;
+    expected_opens = named && !icc_export_failed;
+    expected_backend_releases = !before_write;
+#if !PNG_STREAM_FAULT_LIBPNG
+    /* The tagged direct path owns the ICC and image compression buffers. */
+    expected_backend_releases += iccp_failed;
+#endif
     /* A non-stdout FILE pointer identifies a writer-owned stream. The
      * substitutes never perform I/O on either process stream. */
     png_stream_probe.stream = named ? stderr : stdout;
@@ -291,17 +314,38 @@ png_test_stream_fault(int faults)
         return EXIT_FAILURE;
     }
 
-    /* The flush probe exercises direct PNG storage. The other probes
-     * exercise index expansion and indexed backend-owned resources. */
-    status = png_fault_write_image_file(
-        flush_failed ? rgba : indexed, 1, 1, flush_failed ? NULL : palette,
-        flush_failed ? SIXEL_PIXELFORMAT_ARGB8888 : SIXEL_PIXELFORMAT_PAL1,
-        named ? "png-fault.png" : "-", SIXEL_FORMAT_PNG, allocator);
+    if (iccp_failed || icc_export_failed) {
+        definition = sixel_cdef_name("display-p3");
+        if (definition == NULL) {
+            sixel_allocator_unref(allocator);
+            return EXIT_FAILURE;
+        }
+        color.srgb = 0;
+        color.definition = definition;
+        /* The next caller allocation exports the profile before opening
+         * the destination. Seed the diagnostic to detect a stale message. */
+        png_stream_probe.fail_next_allocation = icc_export_failed;
+        sixel_helper_set_additional_message("earlier failure");
+        status = png_fault_write_image_color(
+            rgba, 1, 1, NULL, SIXEL_PIXELFORMAT_RGBA8888, "png-fault.png",
+            NULL, SIXEL_FORMAT_PNG, &color, allocator);
+        sixel_cdef_free(definition);
+    } else {
+        /* The flush probe uses direct storage. Untagged write probes use
+         * packed indices to cover the separate indexed backend buffers. */
+        status = png_fault_write_image_file(
+            flush_failed ? rgba : indexed, 1, 1, flush_failed ? NULL : palette,
+            flush_failed ? SIXEL_PIXELFORMAT_ARGB8888 : SIXEL_PIXELFORMAT_PAL1,
+            named ? "png-fault.png" : "-", SIXEL_FORMAT_PNG, allocator);
+    }
     sixel_allocator_unref(allocator);
     if (open_failed) {
         expected = SIXEL_LIBC_ERROR | (EACCES & 0xff);
         /* Keep the diagnostic distinct from a call in the lexical lint. */
         diagnostic = "fopen" "() failed.";
+    } else if (icc_export_failed) {
+        expected = SIXEL_BAD_ALLOCATION;
+        diagnostic = "PNG ICC profile allocation failed.";
     } else if (allocation_failed) {
         expected = SIXEL_BAD_ALLOCATION;
         diagnostic = "write_png_to_file: sixel_allocator_malloc() failed";
@@ -324,23 +368,25 @@ png_test_stream_fault(int faults)
     if (status != expected || actual == NULL ||
         strcmp(actual, diagnostic) != 0 ||
         png_stream_probe.invalid || png_stream_probe.live != 0 ||
-        png_stream_probe.backend_releases != !before_write ||
-        png_stream_probe.opened != named ||
-        png_stream_probe.closed != (named && !open_failed) ||
-        png_stream_probe.failed_allocations != allocation_failed ||
+        png_stream_probe.backend_releases != expected_backend_releases ||
+        png_stream_probe.opened != expected_opens ||
+        png_stream_probe.closed != (expected_opens && !open_failed) ||
+        png_stream_probe.failed_allocations !=
+            (allocation_failed || icc_export_failed) ||
         (png_stream_probe.writes == 0) != before_write ||
-        png_stream_probe.idat_header_written != idat_failed ||
+        png_stream_probe.chunk_header_written !=
+            (png_stream_probe.chunk_to_fail != NULL) ||
         png_stream_probe.short_writes != write_failed ||
-        (write_failed && !idat_failed && png_stream_probe.writes != 1) ||
+        ((faults & PNG_STREAM_SHORT_WRITE) && png_stream_probe.writes != 1) ||
         png_stream_probe.flushes != !(before_write || write_failed)) {
         fprintf(stderr,
                 "PNG stream fault %d: status=0x%x expected=0x%x, "
-                "message=%s, opens=%d writes=%d idat=%d short=%d "
+                "message=%s, opens=%d writes=%d chunk=%d short=%d "
                 "flushes=%d closes=%d failed allocations=%d live=%d "
                 "backend releases=%d invalid=%d\n",
                 faults, (unsigned int)status, (unsigned int)expected,
                 actual != NULL ? actual : "(null)", png_stream_probe.opened,
-                png_stream_probe.writes, png_stream_probe.idat_header_written,
+                png_stream_probe.writes, png_stream_probe.chunk_header_written,
                 png_stream_probe.short_writes, png_stream_probe.flushes,
                 png_stream_probe.closed, png_stream_probe.failed_allocations,
                 png_stream_probe.live, png_stream_probe.backend_releases,

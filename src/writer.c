@@ -1237,6 +1237,10 @@ sixel_write_image_color(
             status = sixel_cdef_export_icc(color->definition, &icc,
                                           &icc_length, allocator);
             if (SIXEL_FAILED(status)) {
+                if (status == SIXEL_BAD_ALLOCATION) {
+                    sixel_helper_set_additional_message(
+                        "PNG ICC profile allocation failed.");
+                }
                 goto end;
             }
         }

@@ -379,6 +379,8 @@ int test_png_stream_0054(int argc, char **argv);
 int test_png_stream_0055(int argc, char **argv);
 int test_png_stream_0056(int argc, char **argv);
 int test_png_stream_0057(int argc, char **argv);
+int test_png_stream_0058(int argc, char **argv);
+int test_png_stream_0059(int argc, char **argv);
 int test_png_color_0026(int argc, char **argv);
 int test_png_color_0027(int argc, char **argv);
 int test_png_color_0028(int argc, char **argv);
@@ -10517,6 +10519,10 @@ static test_entry_t const test_entries[] = {
       test_png_stream_0056 },
     { "writer/png/0057_post_open_allocation_cleanup",
       test_png_stream_0057 },
+    { "writer/png/0058_iccp_short_write_cleanup",
+      test_png_stream_0058 },
+    { "writer/png/0059_icc_export_allocation_failure",
+      test_png_stream_0059 },
     { "writer/png/0026_adobe_rgb_indexed", test_png_color_0026 },
     { "writer/png/0027_dci_p3_indexed", test_png_color_0027 },
     { "writer/png/0028_adobe_rgb_direct", test_png_color_0028 },
