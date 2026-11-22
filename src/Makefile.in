@@ -149,7 +149,9 @@ host_triplet = @host@
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_carbon.c
 
 @WITH_SHEBANG_FILE_TRUE@am__append_11 = $(SIXEL_SHEBANG_STAMP)
-@HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_12 = $(srcdir)/gpu-palette-webgpu.c
+@HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_12 = $(srcdir)/dither-diffusion-webgpu.c \
+@HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@    $(srcdir)/gpu-palette-webgpu.c
+
 @HAVE_WEBGPU_TRUE@am__append_13 = $(webgpu_headers)
 @HAVE_WEBGPU_TRUE@am__append_14 = $(webgpu_headers)
 subdir = src
@@ -574,7 +576,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans-metal.m \
 	$(srcdir)/palette-heckbert-gpu-metal.m \
 	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
-	$(srcdir)/clipboard_carbon.c $(srcdir)/gpu-palette-webgpu.c
+	$(srcdir)/clipboard_carbon.c \
+	$(srcdir)/dither-diffusion-webgpu.c \
+	$(srcdir)/gpu-palette-webgpu.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-runtime-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-compute-vulkan.lo \
@@ -613,7 +617,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu-metal.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_macos.lo
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_5 = libsixel_la-clipboard_carbon.lo
-@HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_6 = libsixel_la-gpu-palette-webgpu.lo
+@HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_6 = libsixel_la-dither-diffusion-webgpu.lo \
+@HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette-webgpu.lo
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encode-result.lo \
@@ -890,6 +895,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-carry.Plo \
 	./$(DEPDIR)/libsixel_la-dither-clamp.Plo \
 	./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
+	./$(DEPDIR)/libsixel_la-dither-diffusion-webgpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-metal.Plo \
@@ -2266,9 +2272,10 @@ libsixel_la_LIBADD = $(FLOAT_LOOKUP_LIB) -lm \
 
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf $(srcdir)/classid-factory.gperf \
-	$(srcdir)/classid-service.gperf $(webgpu_shaders) lso2-gpu.key \
-	$(SIXEL_METAL_INPUTS) generated-metal/meson.build \
-	$(SIXEL_VULKAN_INPUTS) generated-vulkan/meson.build
+	$(srcdir)/classid-service.gperf dither-diffusion-webgpu.h \
+	$(webgpu_shaders) lso2-gpu.key $(SIXEL_METAL_INPUTS) \
+	generated-metal/meson.build $(SIXEL_VULKAN_INPUTS) \
+	generated-vulkan/meson.build
 GPERF_OPT = --ignore-case --language=ANSI-C
 GPERF_FACTORY_CLASSID_OPT = --language=ANSI-C \
                   -m5 \
@@ -2361,21 +2368,76 @@ SERVICEID_CLASSID_INPUTS = \
 
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = 
-webgpu_shaders = gpu-palette.wgsl dither-policy-none.wgsl \
-    dither-policy-a-dither.wgsl dither-policy-x-dither.wgsl \
-    dither-policy-bluenoise.wgsl lookup-policy-none.wgsl lookup-policy-cell.wgsl \
-    lookup-policy-5bit.wgsl lookup-policy-6bit.wgsl lookup-policy-eytzinger.wgsl \
-    lookup-policy-mahalanobis.wgsl lookup-policy-ordered.wgsl
+webgpu_shaders = \
+    dither-diffusion.wgsl \
+    dither-diffusion-batch.wgsl \
+    dither-diffusion-fixed.wgsl \
+    dither-diffusion-point.wgsl \
+    dither-policy-a-dither.wgsl \
+    dither-policy-atkinson.wgsl \
+    dither-policy-bluenoise.wgsl \
+    dither-policy-burkes.wgsl \
+    dither-policy-fs.wgsl \
+    dither-policy-jajuni.wgsl \
+    dither-policy-lso2.wgsl \
+    dither-policy-none.wgsl \
+    dither-policy-sierra1.wgsl \
+    dither-policy-sierra2.wgsl \
+    dither-policy-sierra3.wgsl \
+    dither-policy-stucki.wgsl \
+    dither-policy-x-dither.wgsl \
+    gpu-palette.wgsl \
+    gpu-palette-batch.wgsl \
+    gpu-palette-point.wgsl \
+    lookup-policy-5bit.wgsl \
+    lookup-policy-6bit.wgsl \
+    lookup-policy-blockcull.wgsl \
+    lookup-policy-cell.wgsl \
+    lookup-policy-cell-candidates.wgsl \
+    lookup-policy-certlut.wgsl \
+    lookup-policy-delaunay.wgsl \
+    lookup-policy-eytzinger.wgsl \
+    lookup-policy-fhedt.wgsl \
+    lookup-policy-gridlut.wgsl \
+    lookup-policy-mahalanobis.wgsl \
+    lookup-policy-none.wgsl \
+    lookup-policy-ordered.wgsl \
+    lookup-policy-rbc.wgsl \
+    lookup-policy-table.wgsl \
+    lookup-policy-vptree.wgsl
 
 @HAVE_WEBGPU_TRUE@webgpu_headers = $(webgpu_shaders:.wgsl=-wgsl.inc.h)
 # Depend on generated headers without overriding Automake's compile recipes
 # for individual objects. This also supports direct parallel library builds.
-@HAVE_WEBGPU_TRUE@webgpu_consumers = libsixel_la-dither-policy-none-gpu.lo \
-@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-a-dither-gpu.lo libsixel_la-dither-policy-x-dither-gpu.lo \
-@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-bluenoise-gpu.lo libsixel_la-lookup-policy-none-gpu.lo \
-@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-5bit-gpu.lo libsixel_la-lookup-policy-6bit-gpu.lo \
-@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-eytzinger-gpu.lo libsixel_la-lookup-policy-mahalanobis-gpu.lo \
-@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-ordered-gpu.lo
+@HAVE_WEBGPU_TRUE@webgpu_consumers = \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-diffusion-webgpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-a-dither-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-atkinson-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-bluenoise-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-burkes-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-fs-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-jajuni-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-lso2-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-none-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-sierra1-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-sierra2-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-sierra3-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-stucki-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-x-dither-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-gpu-palette-webgpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-5bit-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-6bit-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-blockcull-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-certlut-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-delaunay-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-eytzinger-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-fhedt-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-gridlut-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-mahalanobis-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-none-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-ordered-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-rbc-gpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-vptree-gpu.lo
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -2495,6 +2557,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-carry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-clamp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-diffusion-webgpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-metal.Plo@am__quote@ # am--include-marker
@@ -4415,6 +4478,13 @@ libsixel_la-clipboard_carbon.lo: clipboard_carbon.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-clipboard_carbon.lo `test -f 'clipboard_carbon.c' || echo '$(srcdir)/'`clipboard_carbon.c
 
+libsixel_la-dither-diffusion-webgpu.lo: dither-diffusion-webgpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-diffusion-webgpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-diffusion-webgpu.Tpo -c -o libsixel_la-dither-diffusion-webgpu.lo `test -f 'dither-diffusion-webgpu.c' || echo '$(srcdir)/'`dither-diffusion-webgpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-diffusion-webgpu.Tpo $(DEPDIR)/libsixel_la-dither-diffusion-webgpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-diffusion-webgpu.c' object='libsixel_la-dither-diffusion-webgpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-diffusion-webgpu.lo `test -f 'dither-diffusion-webgpu.c' || echo '$(srcdir)/'`dither-diffusion-webgpu.c
+
 libsixel_la-gpu-palette-webgpu.lo: gpu-palette-webgpu.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette-webgpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette-webgpu.Tpo -c -o libsixel_la-gpu-palette-webgpu.lo `test -f 'gpu-palette-webgpu.c' || echo '$(srcdir)/'`gpu-palette-webgpu.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-palette-webgpu.Tpo $(DEPDIR)/libsixel_la-gpu-palette-webgpu.Plo
@@ -4802,6 +4872,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-carry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-diffusion-webgpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-metal.Plo
@@ -5105,6 +5176,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-carry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-diffusion-webgpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson-gpu-metal.Plo

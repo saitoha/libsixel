@@ -33,23 +33,23 @@ static struct {
 } const gpu_lookup_registrations[] = {
     { SIXEL_LUT_POLICY_NONE, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_none_create },
-    { SIXEL_LUT_POLICY_DELAUNAY, GPU_METAL | GPU_VULKAN,
+    { SIXEL_LUT_POLICY_DELAUNAY, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_delaunay_create },
     { SIXEL_LUT_POLICY_ORDERED, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_ordered_create },
-    { SIXEL_LUT_POLICY_VPTREE, GPU_METAL | GPU_VULKAN,
+    { SIXEL_LUT_POLICY_VPTREE, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_vptree_create },
-    { SIXEL_LUT_POLICY_RBC, GPU_METAL | GPU_VULKAN,
+    { SIXEL_LUT_POLICY_RBC, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_rbc_create },
     { SIXEL_LUT_POLICY_MAHALANOBIS, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_mahalanobis_create },
-    { SIXEL_LUT_POLICY_CERTLUT, GPU_METAL | GPU_VULKAN,
+    { SIXEL_LUT_POLICY_CERTLUT, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_certlut_create },
     { SIXEL_LUT_POLICY_EYTZINGER, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_eytzinger_create },
-    { SIXEL_LUT_POLICY_GRIDLUT, GPU_METAL | GPU_VULKAN,
+    { SIXEL_LUT_POLICY_GRIDLUT, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_gridlut_create },
-    { SIXEL_LUT_POLICY_BLOCKCULL, GPU_METAL | GPU_VULKAN,
+    { SIXEL_LUT_POLICY_BLOCKCULL, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_blockcull_create }
 };
 
@@ -66,7 +66,7 @@ static struct {
       sixel_gpu_lookup_5bit_create },
     { SIXEL_LUT_POLICY_6BIT, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_6bit_create },
-    { SIXEL_LUT_POLICY_FHEDT, GPU_METAL | GPU_VULKAN,
+    { SIXEL_LUT_POLICY_FHEDT, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_fhedt_create }
 };
 

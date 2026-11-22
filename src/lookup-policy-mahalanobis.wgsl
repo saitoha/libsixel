@@ -17,3 +17,15 @@ fn lookup(query: vec3i) -> u32 {
     }
     return best & 255u;
 }
+
+fn lookup_fractional(q: vec3f) -> u32 {
+    var best = 0u;
+    var minimum = 1e30f;
+    for (var i = 0u; i < arrayLength(&palette); i++) {
+        let p = palette[i];
+        let gap = q - vec3f(f32(p & 255u), f32((p >> 8u) & 255u), f32(p >> 16u));
+        let d = dot(gap, gap);
+        if (d < minimum) { minimum = d; best = i; }
+    }
+    return best;
+}

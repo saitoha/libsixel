@@ -20,6 +20,14 @@ static char const * const gridlut_vulkan_chunks[] = {
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
+#if defined(HAVE_WEBGPU)
+static char const *const gridlut_webgpu_chunks[] = {
+#include <lookup-policy-table-wgsl.inc.h>
+#include <lookup-policy-gridlut-wgsl.inc.h>
+#include <lookup-policy-cell-candidates-wgsl.inc.h>
+};
+#endif
+
 typedef struct gridlut_plan {
     sixel_gpu_lookup_plan_interface_t iface;
     sixel_atomic_u32_t ref;
@@ -35,6 +43,8 @@ typedef struct gridlut_plan {
     gpu_metal_lookup_program_t metal;
     sixel_gpu_lookup_build_pass_t pass;
     int vulkan;
+    int webgpu;
+    size_t webgpu_size;
     int busy;
     int valid;
 } gridlut_plan_t;
@@ -89,6 +99,23 @@ gridlut_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (gridlut_plan_t const *)self;
     memset(view, 0, sizeof(*view));
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->logical_name = "gridlut";
+        view->query_kind = plan->query_kind;
+        view->chunks = gridlut_webgpu_chunks;
+        view->chunk_count = sizeof(gridlut_webgpu_chunks) /
+            sizeof(gridlut_webgpu_chunks[0]);
+        view->ncolors = plan->count;
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->workspace_size = plan->webgpu_size;
+        view->build_passes = &plan->pass;
+        view->build_pass_count = 1;
+        return SIXEL_OK;
+    }
+#endif
 #if defined(HAVE_VULKAN)
     /* Vulkan owns both queries. Its builder uses the constant to retain
      * the respective Metal byte and fractional cell bounds. */
@@ -222,7 +249,7 @@ gridlut_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE &&
                 !plan->vulkan ? 1 : 266240, &plan->workspace);
@@ -286,6 +313,7 @@ gridlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_palette_entries_view_t entries;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -296,9 +324,14 @@ gridlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
@@ -345,6 +378,7 @@ gridlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
         /* The Vulkan builder constant is a uint32 word, independent of
          * the C enum's storage. Metal keeps its existing builder ABI. */
         plan->fractional = request->query_kind ==
@@ -359,6 +393,15 @@ gridlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->pass.threads[0] = 32;
         plan->pass.groups[1] = plan->pass.groups[2] = 1;
         plan->pass.threads[1] = plan->pass.threads[2] = 1;
+#if defined(HAVE_WEBGPU)
+        /* Builders and table layout belong to this lookup component. */
+        if (webgpu) {
+            plan->webgpu_size = (4096U * 8U) * sizeof(uint32_t);
+            plan->pass = (sixel_gpu_lookup_build_pass_t){
+                "gridlut_build", { 64, 1, 1 }, { 64, 1, 1 }
+            };
+        }
+#endif
         if (preparer->cached != NULL) {
             gridlut_plan_unref(&preparer->cached->iface);
         }

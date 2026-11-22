@@ -6,6 +6,53 @@
 #include "dither-policy-lso2-gpu.h"
 #include "sixel_atomic.h"
 
+#if defined(HAVE_WEBGPU)
+#include "dither-diffusion-webgpu.h"
+#include "lso2-gpu-coefficients.h"
+
+static void
+lso2_webgpu_weights(sixel_dither_policy_prepare_request_t const *configuration,
+    float *weights)
+{
+    size_t i, j, k, knots;
+    double gain;
+    float ratio;
+
+    memset(weights, 0, 256U * 8U * sizeof(float));
+    knots = sizeof(lso2_gpu_gain_knots) / sizeof(*lso2_gpu_gain_knots);
+    k = 0;
+    for (i = 0; i < 256; ++i) {
+        gain = 1.0;
+        if (configuration->options.lso2_gain ==
+                SIXEL_LSO2_GAIN_SMALL_ERROR) {
+            while (k + 2 < knots &&
+                    (double)i > lso2_gpu_gain_knots[k + 1][0]) {
+                ++k;
+            }
+            gain = lso2_gpu_gain_knots[k][1] +
+                (lso2_gpu_gain_knots[k + 1][1] -
+                 lso2_gpu_gain_knots[k][1]) *
+                ((double)i - lso2_gpu_gain_knots[k][0]) /
+                (lso2_gpu_gain_knots[k + 1][0] -
+                 lso2_gpu_gain_knots[k][0]);
+        }
+        for (j = 0; j < 6; ++j) {
+            /* Preserve the measured float ratio, then one double gain
+             * and one float rounding. No coefficient row is edited by
+             * hand. */
+            ratio = (float)lso2_gpu_ratios[i][j] /
+                (float)lso2_gpu_ratios[i][6];
+            weights[8U * i + j] = (float)((double)ratio * gain);
+        }
+    }
+}
+
+static char const *const lso2_webgpu_chunks[] = {
+#include <dither-policy-lso2-wgsl.inc.h>
+#include <dither-diffusion-wgsl.inc.h>
+};
+#endif
+
 typedef struct lso2_gpu_preparer {
     sixel_gpu_dither_preparer_interface_t iface;
     sixel_atomic_u32_t ref;
@@ -89,6 +136,11 @@ lso2_gpu_prepare(sixel_gpu_dither_preparer_interface_t const *self,
 #elif defined(HAVE_VULKAN)
     return sixel_dither_lso2_gpu_vulkan_prepare(preparer->allocator,
         &preparer->configuration, request, result);
+#elif defined(HAVE_WEBGPU)
+    return sixel_diffusion_webgpu_prepare(preparer->allocator,
+        &preparer->configuration, request, result, lso2_webgpu_chunks,
+        sizeof(lso2_webgpu_chunks) / sizeof(lso2_webgpu_chunks[0]),
+        lso2_webgpu_weights);
 #else
     return SIXEL_FEATURE_ERROR;
 #endif

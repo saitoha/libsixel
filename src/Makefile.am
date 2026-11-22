@@ -1089,31 +1089,88 @@ endif
 
 include $(top_srcdir)/build-aux/dependency-bootstrap.am
 
-webgpu_shaders = gpu-palette.wgsl dither-policy-none.wgsl \
-    dither-policy-a-dither.wgsl dither-policy-x-dither.wgsl \
-    dither-policy-bluenoise.wgsl lookup-policy-none.wgsl lookup-policy-cell.wgsl \
-    lookup-policy-5bit.wgsl lookup-policy-6bit.wgsl lookup-policy-eytzinger.wgsl \
-    lookup-policy-mahalanobis.wgsl lookup-policy-ordered.wgsl
+webgpu_shaders = \
+    dither-diffusion.wgsl \
+    dither-diffusion-batch.wgsl \
+    dither-diffusion-fixed.wgsl \
+    dither-diffusion-point.wgsl \
+    dither-policy-a-dither.wgsl \
+    dither-policy-atkinson.wgsl \
+    dither-policy-bluenoise.wgsl \
+    dither-policy-burkes.wgsl \
+    dither-policy-fs.wgsl \
+    dither-policy-jajuni.wgsl \
+    dither-policy-lso2.wgsl \
+    dither-policy-none.wgsl \
+    dither-policy-sierra1.wgsl \
+    dither-policy-sierra2.wgsl \
+    dither-policy-sierra3.wgsl \
+    dither-policy-stucki.wgsl \
+    dither-policy-x-dither.wgsl \
+    gpu-palette.wgsl \
+    gpu-palette-batch.wgsl \
+    gpu-palette-point.wgsl \
+    lookup-policy-5bit.wgsl \
+    lookup-policy-6bit.wgsl \
+    lookup-policy-blockcull.wgsl \
+    lookup-policy-cell.wgsl \
+    lookup-policy-cell-candidates.wgsl \
+    lookup-policy-certlut.wgsl \
+    lookup-policy-delaunay.wgsl \
+    lookup-policy-eytzinger.wgsl \
+    lookup-policy-fhedt.wgsl \
+    lookup-policy-gridlut.wgsl \
+    lookup-policy-mahalanobis.wgsl \
+    lookup-policy-none.wgsl \
+    lookup-policy-ordered.wgsl \
+    lookup-policy-rbc.wgsl \
+    lookup-policy-table.wgsl \
+    lookup-policy-vptree.wgsl
 
 if HAVE_WEBGPU
 if !WANT_AMALGAMATED_LIB
-libsixel_la_SOURCES += $(srcdir)/gpu-palette-webgpu.c
+libsixel_la_SOURCES += $(srcdir)/dither-diffusion-webgpu.c \
+    $(srcdir)/gpu-palette-webgpu.c
 endif
 webgpu_headers = $(webgpu_shaders:.wgsl=-wgsl.inc.h)
 BUILT_SOURCES += $(webgpu_headers)
 CLEANFILES += $(webgpu_headers)
 # Depend on generated headers without overriding Automake's compile recipes
 # for individual objects. This also supports direct parallel library builds.
-webgpu_consumers = libsixel_la-dither-policy-none-gpu.lo \
-    libsixel_la-dither-policy-a-dither-gpu.lo libsixel_la-dither-policy-x-dither-gpu.lo \
-    libsixel_la-dither-policy-bluenoise-gpu.lo libsixel_la-lookup-policy-none-gpu.lo \
-    libsixel_la-lookup-policy-5bit-gpu.lo libsixel_la-lookup-policy-6bit-gpu.lo \
-    libsixel_la-lookup-policy-eytzinger-gpu.lo libsixel_la-lookup-policy-mahalanobis-gpu.lo \
-    libsixel_la-lookup-policy-ordered-gpu.lo
+webgpu_consumers = \
+    libsixel_la-dither-diffusion-webgpu.lo \
+    libsixel_la-dither-policy-a-dither-gpu.lo \
+    libsixel_la-dither-policy-atkinson-gpu.lo \
+    libsixel_la-dither-policy-bluenoise-gpu.lo \
+    libsixel_la-dither-policy-burkes-gpu.lo \
+    libsixel_la-dither-policy-fs-gpu.lo \
+    libsixel_la-dither-policy-jajuni-gpu.lo \
+    libsixel_la-dither-policy-lso2-gpu.lo \
+    libsixel_la-dither-policy-none-gpu.lo \
+    libsixel_la-dither-policy-sierra1-gpu.lo \
+    libsixel_la-dither-policy-sierra2-gpu.lo \
+    libsixel_la-dither-policy-sierra3-gpu.lo \
+    libsixel_la-dither-policy-stucki-gpu.lo \
+    libsixel_la-dither-policy-x-dither-gpu.lo \
+    libsixel_la-gpu-palette-webgpu.lo \
+    libsixel_la-lookup-policy-5bit-gpu.lo \
+    libsixel_la-lookup-policy-6bit-gpu.lo \
+    libsixel_la-lookup-policy-blockcull-gpu.lo \
+    libsixel_la-lookup-policy-certlut-gpu.lo \
+    libsixel_la-lookup-policy-delaunay-gpu.lo \
+    libsixel_la-lookup-policy-eytzinger-gpu.lo \
+    libsixel_la-lookup-policy-fhedt-gpu.lo \
+    libsixel_la-lookup-policy-gridlut-gpu.lo \
+    libsixel_la-lookup-policy-mahalanobis-gpu.lo \
+    libsixel_la-lookup-policy-none-gpu.lo \
+    libsixel_la-lookup-policy-ordered-gpu.lo \
+    libsixel_la-lookup-policy-rbc-gpu.lo \
+    libsixel_la-lookup-policy-vptree-gpu.lo
 $(webgpu_consumers): $(webgpu_headers)
 %-wgsl.inc.h: $(srcdir)/%.wgsl $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
 	$(AM_V_GEN)AWK="$(AWK)" $(SHELL) $(top_srcdir)/tools/embed-metal.sh "$<" "$@"
 endif
 
+EXTRA_DIST += dither-diffusion-webgpu.h
 EXTRA_DIST += $(webgpu_shaders) lso2-gpu.key $(SIXEL_METAL_INPUTS) generated-metal/meson.build \
     $(SIXEL_VULKAN_INPUTS) generated-vulkan/meson.build

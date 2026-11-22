@@ -31,3 +31,8 @@ fn lookup(query: vec3i) -> u32 {
     atomicStore(&cell_cache[slot], (key << 9u) | (best + 1u));
     return best;
 }
+
+fn lookup_fractional(q: vec3f) -> u32 {
+    // Every cell boundary is integral, including the first half-width cell.
+    return lookup(vec3i(clamp(q, vec3f(0), vec3f(255))));
+}

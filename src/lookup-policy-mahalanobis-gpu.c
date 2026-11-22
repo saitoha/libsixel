@@ -291,8 +291,7 @@ mahal_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #endif
     webgpu = 0;
 #if defined(HAVE_WEBGPU)
-    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0 &&
-        request->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE;
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0;
 #endif
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {

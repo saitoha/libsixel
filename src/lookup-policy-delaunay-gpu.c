@@ -20,6 +20,13 @@ static char const * const delaunay_vulkan_chunks[] = {
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
+#if defined(HAVE_WEBGPU)
+static char const *const delaunay_webgpu_chunks[] = {
+#include <lookup-policy-table-wgsl.inc.h>
+#include <lookup-policy-delaunay-wgsl.inc.h>
+};
+#endif
+
 typedef struct delaunay_plan {
     sixel_gpu_lookup_plan_interface_t iface;
     sixel_atomic_u32_t ref;
@@ -33,6 +40,8 @@ typedef struct delaunay_plan {
     sixel_lookup_policy_configuration_t configuration;
     gpu_metal_lookup_program_t metal;
     int vulkan;
+    int webgpu;
+    size_t webgpu_size;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[3];
@@ -88,6 +97,23 @@ delaunay_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (delaunay_plan_t const *)self;
     memset(view, 0, sizeof(*view));
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->logical_name = "delaunay";
+        view->query_kind = plan->query_kind;
+        view->chunks = delaunay_webgpu_chunks;
+        view->chunk_count = sizeof(delaunay_webgpu_chunks) /
+            sizeof(delaunay_webgpu_chunks[0]);
+        view->ncolors = plan->count;
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->workspace_size = plan->webgpu_size;
+        view->build_passes = plan->passes;
+        view->build_pass_count = 2;
+        return SIXEL_OK;
+    }
+#endif
 #if defined(HAVE_VULKAN)
     /* Both query kinds use this policy's GPU-built conservative graph. */
     if (plan->vulkan) {
@@ -218,7 +244,7 @@ delaunay_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE && !plan->vulkan
                 ? 1 :
@@ -284,6 +310,7 @@ delaunay_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     unsigned int width, pass;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -294,9 +321,14 @@ delaunay_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
@@ -343,6 +375,7 @@ delaunay_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
         plan->metal.configuration = &plan->configuration;
         plan->metal.implementation = sixel_lookup_delaunay_gpu_metal();
         plan->configuration.kind = SIXEL_LUT_POLICY_DELAUNAY;
@@ -363,6 +396,20 @@ delaunay_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             plan->passes[pass].groups[1] = plan->passes[pass].groups[2] = 1;
             plan->passes[pass].threads[1] = plan->passes[pass].threads[2] = 1;
         }
+#if defined(HAVE_WEBGPU)
+        /* Builders and table layout belong to this lookup component. */
+        if (webgpu) {
+            plan->webgpu_size = (14U * plan->count) * sizeof(uint32_t);
+            plan->passes[0] = (sixel_gpu_lookup_build_pass_t){
+                "delaunay_bounds", { (plan->count + 63U) / 64U, 1, 1 },
+                { 64, 1, 1 }
+            };
+            plan->passes[1] = (sixel_gpu_lookup_build_pass_t){
+                "delaunay_edges", { (plan->count + 63U) / 64U, 1, 1 },
+                { 64, 1, 1 }
+            };
+        }
+#endif
         if (preparer->cached != NULL) {
             delaunay_plan_unref(&preparer->cached->iface);
         }

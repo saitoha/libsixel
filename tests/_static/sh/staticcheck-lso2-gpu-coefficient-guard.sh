@@ -7,15 +7,15 @@ echo '1..1'
 set -v
 awk '
 function valid(text) {
-    return text ~ /^#if defined\(HAVE_METAL\) \|\| defined\(HAVE_VULKAN\)\n/ &&
-        text ~ /\n#endif \/\* HAVE_METAL \|\| HAVE_VULKAN \*\/\n$/ &&
+    return text ~ /^#if defined\(HAVE_METAL\) \|\| defined\(HAVE_VULKAN\) \|\| defined\(HAVE_WEBGPU\)\n/ &&
+        text ~ /\n#endif \/\* HAVE_METAL \|\| HAVE_VULKAN \|\| HAVE_WEBGPU \*\/\n$/ &&
         text !~ /\n#[ \t]*(if|else|elif|endif)[^\n]*\n[^\n]/
 }
 function generator_valid(text,    begin, end, table) {
     begin = "printf \047%s\\n\047 \047#if defined(HAVE_METAL) || " \
-        "defined(HAVE_VULKAN)\047\n"
+        "defined(HAVE_VULKAN) || defined(HAVE_WEBGPU)\047\n"
     end = "printf \047%s\\n\047 \047#endif /* HAVE_METAL || " \
-        "HAVE_VULKAN */\047\n"
+        "HAVE_VULKAN || HAVE_WEBGPU */\047\n"
     table = "\"$AWK\" -v NAME=lso2_gpu_ratios"
     return index(text, begin) && index(text, table) > index(text, begin) &&
         substr(text, length(text) - length(end) + 1) == end
@@ -30,8 +30,8 @@ END {
     sub(/HAVE_METAL/, "HAVE_THREADS", changed_script)
     removed = header
     sub(/^#if[^\n]*\n/, "", removed)
-    premature = "#if defined(HAVE_METAL) || defined(HAVE_VULKAN)\n" \
-        "#endif\nint table[2];\n#endif /* HAVE_METAL || HAVE_VULKAN */\n"
+    premature = "#if defined(HAVE_METAL) || defined(HAVE_VULKAN) || defined(HAVE_WEBGPU)\n" \
+        "#endif\nint table[2];\n#endif /* HAVE_METAL || HAVE_VULKAN || HAVE_WEBGPU */\n"
     exit !valid(header) || valid(removed) || valid(premature) ||
         valid("") || !generator_valid(script) || generator_valid(changed_script)
 }

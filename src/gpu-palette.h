@@ -184,6 +184,9 @@ typedef struct sixel_gpu_palette_request {
 
 #if defined(HAVE_WEBGPU)
 SIXEL_INTERNAL_API int sixel_webgpu_available(void);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webgpu_check_lookup(sixel_gpu_lookup_program_view_t const *,
+    sixel_gpu_lookup_query_kind_t);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_webgpu_apply(
     sixel_gpu_palette_request_t const *request);
 #endif

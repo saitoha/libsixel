@@ -22,6 +22,13 @@ static char const * const rbc_vulkan_chunks[] = {
  *
  * The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
+#if defined(HAVE_WEBGPU)
+static char const *const rbc_webgpu_chunks[] = {
+#include <lookup-policy-table-wgsl.inc.h>
+#include <lookup-policy-rbc-wgsl.inc.h>
+};
+#endif
+
 typedef struct rbc_plan {
     sixel_gpu_lookup_plan_interface_t iface;
     sixel_atomic_u32_t ref;
@@ -34,6 +41,8 @@ typedef struct rbc_plan {
     sixel_gpu_lookup_query_kind_t query_kind;
     uint32_t fractional;
     int vulkan;
+    int webgpu;
+    size_t webgpu_size;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[3];
@@ -89,6 +98,23 @@ rbc_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (rbc_plan_t const *)self;
     memset(view, 0, sizeof(*view));
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->logical_name = "rbc";
+        view->query_kind = plan->query_kind;
+        view->chunks = rbc_webgpu_chunks;
+        view->chunk_count = sizeof(rbc_webgpu_chunks) /
+            sizeof(rbc_webgpu_chunks[0]);
+        view->ncolors = plan->count;
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->workspace_size = plan->webgpu_size;
+        view->build_passes = plan->passes;
+        view->build_pass_count = 1;
+        return SIXEL_OK;
+    }
+#endif
     view->program_format = "metal.lookup-rgb8.v1";
     view->logical_name = "rbc";
     view->chunks = rbc_chunks;
@@ -200,7 +226,7 @@ rbc_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             69936U * sizeof(uint32_t), &plan->workspace);
     }
@@ -263,6 +289,7 @@ rbc_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_palette_entries_view_t entries;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -277,9 +304,14 @@ rbc_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
     }
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->ncolors < 1 || request->ncolors > 256) {
@@ -322,6 +354,7 @@ rbc_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
         /* The constant is a uint32 word on Metal and Vulkan alike,
          * independent of C enum storage. */
         plan->fractional = request->query_kind ==
@@ -342,6 +375,15 @@ rbc_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->passes[2].threads[0] = 128;
         plan->passes[2].groups[1] = plan->passes[2].groups[2] = 1;
         plan->passes[2].threads[1] = plan->passes[2].threads[2] = 1;
+#if defined(HAVE_WEBGPU)
+        /* Builders and table layout belong to this lookup component. */
+        if (webgpu) {
+            plan->webgpu_size = (16U * 259U) * sizeof(uint32_t);
+            plan->passes[0] = (sixel_gpu_lookup_build_pass_t){
+                "rbc_build", { 1, 1, 1 }, { 16, 1, 1 }
+            };
+        }
+#endif
         if (preparer->cached != NULL) {
             rbc_plan_unref(&preparer->cached->iface);
         }

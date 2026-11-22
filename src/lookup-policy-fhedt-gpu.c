@@ -26,6 +26,13 @@ static char const * const fhedt_vulkan_chunks[] = {
 
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
+#if defined(HAVE_WEBGPU)
+static char const *const fhedt_webgpu_chunks[] = {
+#include <lookup-policy-table-wgsl.inc.h>
+#include <lookup-policy-fhedt-wgsl.inc.h>
+};
+#endif
+
 typedef struct fhedt_plan {
     sixel_gpu_lookup_plan_interface_t iface;
     sixel_atomic_u32_t ref;
@@ -49,6 +56,8 @@ typedef struct fhedt_plan {
     sixel_gpu_lookup_build_pass_t passes[6];
     size_t pass_count;
     int vulkan;
+    int webgpu;
+    size_t webgpu_size;
     int busy;
     int valid;
 } fhedt_plan_t;
@@ -190,6 +199,25 @@ fhedt_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (fhedt_plan_t const *)self;
     memset(view, 0, sizeof(*view));
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->logical_name = "fhedt";
+        view->query_kind = plan->query_kind;
+        view->chunks = fhedt_webgpu_chunks;
+        view->chunk_count = sizeof(fhedt_webgpu_chunks) /
+            sizeof(fhedt_webgpu_chunks[0]);
+        view->ncolors = plan->count;
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->constants = plan->constants;
+        view->constants_size = 3U * sizeof(uint32_t);
+        view->workspace_size = plan->webgpu_size;
+        view->build_passes = plan->passes;
+        view->build_pass_count = 3;
+        return SIXEL_OK;
+    }
+#endif
 #if defined(HAVE_VULKAN)
     if (plan->vulkan) {
         view->program_format = "vulkan.lookup-rgb8.v1";
@@ -326,8 +354,8 @@ fhedt_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) fhedt_borrow(plan);
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) fhedt_borrow(plan);
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             plan->workspace_size, &plan->workspace);
     }
@@ -445,6 +473,7 @@ fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     size_t r, cells, i;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -455,9 +484,14 @@ fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
@@ -546,10 +580,26 @@ fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE)
             plan->workspace_size = 1;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
 #if defined(HAVE_VULKAN)
         if (vulkan) fhedt_vulkan_layout(plan);
 #endif
         memcpy(plan->palette, entries.entries, plan->count * 3U);
+#if defined(HAVE_WEBGPU)
+        /* Builders and table layout belong to this lookup component. */
+        if (webgpu) {
+            plan->webgpu_size = (2U * r * r * r) * sizeof(uint32_t);
+            plan->passes[0] = (sixel_gpu_lookup_build_pass_t){
+                "fhedt_x", { r * r / 32U, 1, 1 }, { 32, 1, 1 }
+            };
+            plan->passes[1] = (sixel_gpu_lookup_build_pass_t){
+                "fhedt_y", { r * r / 32U, 1, 1 }, { 32, 1, 1 }
+            };
+            plan->passes[2] = (sixel_gpu_lookup_build_pass_t){
+                "fhedt_z", { r * r / 32U, 1, 1 }, { 32, 1, 1 }
+            };
+        }
+#endif
         if (preparer->cached != NULL) {
             fhedt_plan_unref(&preparer->cached->iface);
         }

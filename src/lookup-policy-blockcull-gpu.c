@@ -34,6 +34,15 @@ static sixel_gpu_lookup_batch_dispatch_t const blockcull_batch = {
     "blockcull_fractional", { 8, 8 }, { 32, 1, 1 }
 };
 
+#if defined(HAVE_WEBGPU)
+static char const *const blockcull_webgpu_chunks[] = {
+#include <lookup-policy-blockcull-wgsl.inc.h>
+};
+static sixel_gpu_lookup_batch_dispatch_t const blockcull_webgpu_batch = {
+    "lookup_pair", { 8, 8 }, { 32, 1, 1 }
+};
+#endif
+
 typedef struct blockcull_plan {
     sixel_gpu_lookup_plan_interface_t iface;
     sixel_atomic_u32_t ref;
@@ -47,6 +56,7 @@ typedef struct blockcull_plan {
     sixel_lookup_policy_configuration_t configuration;
     gpu_metal_lookup_program_t metal;
     int vulkan;
+    int webgpu;
     int busy;
     int valid;
 } blockcull_plan_t;
@@ -101,6 +111,21 @@ blockcull_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (blockcull_plan_t const *)self;
     memset(view, 0, sizeof(*view));
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->logical_name = "blockcull";
+        view->query_kind = plan->query_kind;
+        view->chunks = blockcull_webgpu_chunks;
+        view->chunk_count = sizeof(blockcull_webgpu_chunks) /
+            sizeof(blockcull_webgpu_chunks[0]);
+        view->ncolors = plan->count;
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->batch = &blockcull_webgpu_batch;
+        return SIXEL_OK;
+    }
+#endif
 #if defined(HAVE_VULKAN)
     if (plan->vulkan) {
         view->program_format = "vulkan.lookup-rgb8.v1";
@@ -230,7 +255,7 @@ blockcull_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             1, &plan->workspace);
     }
@@ -295,6 +320,7 @@ blockcull_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_palette_entries_view_t entries;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -305,16 +331,22 @@ blockcull_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
     }
-    if ((vulkan || request->query_kind == SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL)
+    if ((vulkan || webgpu ||
+            request->query_kind == SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL)
             && !request->allow_batch) return SIXEL_FEATURE_ERROR;
     if (request->ncolors < 1 || request->ncolors > 256) {
         return SIXEL_BAD_ARGUMENT;
@@ -356,6 +388,7 @@ blockcull_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
         plan->metal.configuration = &plan->configuration;
         plan->metal.implementation = sixel_lookup_blockcull_gpu_metal();
         plan->configuration.kind = SIXEL_LUT_POLICY_BLOCKCULL;

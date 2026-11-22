@@ -7,6 +7,15 @@
 #include "dither-policy-sierra3-gpu.h"
 #include "sixel_atomic.h"
 
+#if defined(HAVE_WEBGPU)
+#include "dither-diffusion-webgpu.h"
+static char const *const sierra3_webgpu_chunks[] = {
+#include <dither-policy-sierra3-wgsl.inc.h>
+#include <dither-diffusion-fixed-wgsl.inc.h>
+#include <dither-diffusion-wgsl.inc.h>
+};
+#endif
+
 typedef struct sierra3_gpu_preparer {
     sixel_gpu_dither_preparer_interface_t iface;
     sixel_atomic_u32_t ref;
@@ -99,6 +108,11 @@ sierra3_gpu_prepare(sixel_gpu_dither_preparer_interface_t const *self,
 #elif defined(HAVE_VULKAN)
     return sixel_dither_sierra3_gpu_vulkan_prepare(preparer->allocator,
         &preparer->configuration, request, result);
+#elif defined(HAVE_WEBGPU)
+    return sixel_diffusion_webgpu_prepare(preparer->allocator,
+        &preparer->configuration, request, result, sierra3_webgpu_chunks,
+        sizeof(sierra3_webgpu_chunks) / sizeof(sierra3_webgpu_chunks[0]),
+        NULL);
 #else
     return SIXEL_FEATURE_ERROR;
 #endif

@@ -7,13 +7,13 @@
 <script type="module">
 // SPDX-License-Identifier: MIT
 // A thread-disabled CLI must report errors that occur after the asynchronous
-// adapter request resumes main, including a lookup unsupported by WebGPU.
+// adapter request resumes main, including unsupported FHEDT axis weights.
 const tap = document.getElementById('tap');
 if (!await navigator.gpu?.requestAdapter()) {
     tap.append('ok 1 # SKIP no WebGPU adapter\n');
 } else {
     createConverter({
-        arguments: ['--gpu-policy=force', '--lookup-policy=vptree',
+        arguments: ['--gpu-policy=force', '--lookup-policy=fhedt:weights=3/1/1',
             '-dnone', '-bxterm256', '-o', 'output.six', 'input.ppm'],
         preRun: [module => module.FS.writeFile('input.ppm',
             'P6\n1 1\n255\nabc')],

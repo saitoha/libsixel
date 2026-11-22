@@ -11,6 +11,13 @@
 #include "gpu-palette.h"
 #include "gpu-statistics.h"
 
+static char const *const palette_point_main[] = {
+#include <gpu-palette-point-wgsl.inc.h>
+};
+static char const *const palette_batch_main[] = {
+#include <gpu-palette-batch-wgsl.inc.h>
+};
+
 /* Keep these scalar words in the same order as WGSL Params. */
 typedef struct webgpu_params {
     uint32_t count, first, width;
@@ -31,7 +38,7 @@ struct sixel_gpu_program {
  * cross the C prepare/run boundary. Never hold a Wasm heap view over await. */
 EM_JS(int, webgpu_device_state, (void), {
     if (!globalThis.navigator?.gpu) return -1;
-    return Module['sixelWebGPU'] ? 1 : 0;
+    return Module['sixelWebGPU']?.paletteBuffers ? 1 : 0;
 })
 
 EM_ASYNC_JS(int, webgpu_open, (void), {
@@ -59,8 +66,11 @@ EM_ASYNC_JS(int, webgpu_open, (void), {
                 code += UTF8ToString(HEAPU32[(address >>> 2) + i]);
             return code;
         }
-        state.getPipeline = async (lookup, nlookup, dither, ndither) => {
-            const code = chunks(lookup, nlookup) + chunks(dither, ndither);
+        state.chunks = chunks;
+        state.getPipeline = async (lookup, nlookup, dither, ndither,
+                                   entry, ne) => {
+            const code = chunks(lookup, nlookup) + chunks(dither, ndither) +
+                         chunks(entry, ne);
             if (state.code === code) return state.pipeline;
             const module = device.createShaderModule({code});
             const pipeline = await device.createComputePipelineAsync({
@@ -80,13 +90,153 @@ EM_ASYNC_JS(int, webgpu_open, (void), {
     }
 })
 
+typedef char webgpu_build_pass_words[
+    sizeof(sixel_gpu_lookup_build_pass_t) == 7U * sizeof(uint32_t) &&
+    offsetof(sixel_gpu_lookup_build_pass_t, groups) == sizeof(uint32_t)
+    ? 1 : -1];
+
+/* Tables are device-local and immutable after their last builder pass.
+ * A worker can reuse a table only with identical shader, palette, constants
+ * and dispatch geometry. Other live calls retain their own buffer handle. */
+EM_JS(void, webgpu_install_tables, (void), {
+    const state = Module['sixelWebGPU'], device = state.device;
+    state.table = async (chunks, nc, pp, colors, cp, cb, size, bp, count) => {
+        if (!size) return null;
+        if (size > device.limits.maxStorageBufferBindingSize ||
+            size > device.limits.maxBufferSize) throw Error('lookup capacity');
+        const passes = [];
+        for (let i = 0; i < count; ++i) {
+            const at = (bp >>> 2) + i * 7;
+            passes.push([UTF8ToString(HEAPU32[at]), HEAPU32[at + 1],
+                HEAPU32[at + 2], HEAPU32[at + 3]]);
+        }
+        const code = state.chunks(chunks, nc);
+        const key = JSON.stringify([size, passes,
+            Array.from(HEAPU8.subarray(pp >>> 0, (pp >>> 0) + 3 * colors)),
+            Array.from(HEAPU8.subarray(cp >>> 0, (cp >>> 0) + cb))]);
+        const prev = state.lookupTable;
+        function lease(owner) {
+            ++owner.users;
+            return {buffer:owner.table,release:() => {
+                if (--owner.users === 0 && state.lookupTable !== owner)
+                    owner.table.destroy();
+            }};
+        }
+        if (prev && code === prev.code && key === prev.key) return lease(prev);
+        const names = passes.map(p => p[0]).join(',');
+        let builders = state.builders;
+        if (!builders || code !== builders.code || names !== builders.names) {
+            const entries = [1,7,8].map(binding => ({binding,
+                visibility: GPUShaderStage.COMPUTE,
+                buffer:{type:binding === 8 ? 'storage' : 'read-only-storage'}
+            }));
+            const layout = device.createBindGroupLayout({entries});
+            const pl = device.createPipelineLayout({bindGroupLayouts:[layout]});
+            const module = device.createShaderModule({code});
+            const pipes = await Promise.all(passes.map(([entryPoint]) =>
+                device.createComputePipelineAsync({layout:pl,
+                    compute:{module, entryPoint}})));
+            state.builders = builders = {code,names,entries,layout,pipes};
+        }
+        const {entries,layout,pipes} = builders;
+        const usage = GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST;
+        let pal, constants, table, valid, oom;
+        device.pushErrorScope('out-of-memory');
+        device.pushErrorScope('validation');
+        try {
+            pal = device.createBuffer({size:4 * colors, usage});
+            constants = device.createBuffer({size:Math.max(cb,4), usage});
+            table = device.createBuffer({size, usage:GPUBufferUsage.STORAGE});
+            const packed = new Uint32Array(colors);
+            for (let i = 0; i < colors; ++i) {
+                const p = (pp >>> 0) + 3 * i;
+                packed[i] = HEAPU8[p] | HEAPU8[p+1] << 8 | HEAPU8[p+2] << 16;
+            }
+            device.queue.writeBuffer(pal, 0, packed);
+            if (cb) state.writeBytes(constants, 0, cp, cb);
+            const group = device.createBindGroup({layout, entries:
+                [pal,constants,table].map((buffer,i) =>
+                    ({binding:entries[i].binding,resource:{buffer}}))});
+            const enc = device.createCommandEncoder();
+            passes.forEach((p,i) => {
+                const pass = enc.beginComputePass();
+                pass.setPipeline(pipes[i]);
+                pass.setBindGroup(0, group);
+                pass.dispatchWorkgroups(p[1],p[2],p[3]);
+                pass.end();
+            });
+            device.queue.submit([enc.finish()]);
+        } catch (error) {
+            table?.destroy();
+            throw error;
+        } finally {
+            valid = device.popErrorScope();
+            oom = device.popErrorScope();
+            pal?.destroy();
+            constants?.destroy();
+        }
+        const errors = await Promise.all([valid,oom]);
+        if (errors.some(Boolean)) {
+            table.destroy();
+            throw Error('lookup builder failed');
+        }
+        const old = state.lookupTable;
+        if (old && !old.users) old.table.destroy();
+        state.lookupTable = {code,key,table,users:0};
+        return lease(state.lookupTable);
+    };
+})
+
+/* Pass the caller's list by reference so partially allocated buffers are
+ * destroyed even if allocation throws before the full set is ready. */
+EM_JS(void, webgpu_install_buffers, (void), {
+    const state = Module['sixelWebGPU'], device = state.device;
+    state.paletteBuffers = (buffers, count, colors, corrected,
+                            noiseBytes, nbytes) => {
+        function buffer(size, usage) {
+            const b = device.createBuffer({size, usage});
+            buffers.push(b);
+        }
+        const U = GPUBufferUsage;
+        const length = Math.ceil(count / 4) * 4;
+        // Lease the previous frame's buffers when the binding sizes match.
+        // A concurrent call cannot reuse them until mapAsync has completed.
+        if (state.idle) {
+            if (state.idle.count === count && state.idle.colors === colors &&
+                    state.idle.saveQuery === !!corrected &&
+                    state.idle.noiseBytes === noiseBytes &&
+                    state.idle.nbytes === nbytes)
+                buffers.push(...state.idle.buffers);
+            else
+                for (const b of state.idle.buffers) b.destroy();
+            state.idle = null;
+        }
+        if (!buffers.length) {
+            buffer(Math.ceil(3 * count / 4) * 4, U.STORAGE | U.COPY_DST);
+            buffer(4 * colors, U.STORAGE | U.COPY_DST);
+            buffer(length, U.STORAGE | U.COPY_SRC | U.COPY_DST);
+            buffer(48, U.UNIFORM | U.COPY_DST);
+            buffer(4, U.STORAGE | U.COPY_SRC | U.COPY_DST);
+            buffer(corrected ? count * 4 : 4, U.STORAGE | U.COPY_SRC);
+            buffer(length + 4 + (corrected ? count * 4 : 0),
+                   U.MAP_READ | U.COPY_DST);
+            if (noiseBytes) buffer(noiseBytes, U.STORAGE | U.COPY_DST);
+            if (nbytes) buffer(nbytes, U.STORAGE | U.COPY_DST);
+        }
+    };
+})
+
 int
 sixel_webgpu_available(void)
 {
     int state;
 
     state = webgpu_device_state();
-    return state > 0 || (state == 0 && webgpu_open());
+    if (state != 0) return state > 0;
+    if (!webgpu_open()) return 0;
+    webgpu_install_tables();
+    webgpu_install_buffers();
+    return 1;
 }
 
 EM_JS_DEPS(sixel_webgpu_deps, "$UTF8ToString")
@@ -96,49 +246,28 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
     unsigned char const *palette, int colors, unsigned char *dest,
     unsigned int count, webgpu_params_t const *uniforms, uint32_t *corrected,
     unsigned char const *tile, unsigned char const *gradient,
-    unsigned int gradient_size, void const *constants, unsigned int nbytes), {
-    let buffers = [], scoped = false;
+    unsigned int gradient_size, void const *constants, unsigned int nbytes,
+    unsigned int ws, sixel_gpu_lookup_build_pass_t const *passes,
+    unsigned int npasses,
+    char const *const *entry, int nentry, int batch), {
+    let buffers = [], scoped = false, table;
     const state = Module['sixelWebGPU'];
     if (!state) return 0;
     const device = state.device;
     try {
         const pipeline = await state.getPipeline(lookup, nlookup,
-                                                 dither, ndither);
+                                               dither, ndither, entry, nentry);
+        table = await state.table(lookup, nlookup, palette, colors,
+            constants, nbytes, ws, passes, npasses);
         if (!count) return 1;
         device.pushErrorScope('out-of-memory');
         device.pushErrorScope('validation');
         scoped = true;
-        function buffer(size, usage) {
-            const b = device.createBuffer({size, usage});
-            buffers.push(b);
-        }
         const U = GPUBufferUsage;
         const length = Math.ceil(count / 4) * 4;
-        // Lease the previous frame's buffers when the binding sizes match.
-        // A concurrent call cannot reuse them until mapAsync has completed.
         const noiseBytes = tile ? 4096 + Math.ceil(gradient_size / 4) * 4 : 0;
-        if (state.idle) {
-            if (state.idle.count === count && state.idle.colors === colors &&
-                    state.idle.saveQuery === !!corrected &&
-                    state.idle.noiseBytes === noiseBytes &&
-                    state.idle.nbytes === nbytes)
-                buffers = state.idle.buffers;
-            else
-                for (const b of state.idle.buffers) b.destroy();
-            state.idle = null;
-        }
-        if (!buffers.length) {
-            buffer(Math.ceil(3 * count / 4) * 4, U.STORAGE | U.COPY_DST);
-            buffer(4 * colors, U.STORAGE | U.COPY_DST);
-            buffer(length, U.STORAGE | U.COPY_SRC);
-            buffer(48, U.UNIFORM | U.COPY_DST);
-            buffer(4, U.STORAGE | U.COPY_SRC | U.COPY_DST);
-            buffer(corrected ? count * 4 : 4, U.STORAGE | U.COPY_SRC);
-            buffer(length + 4 + (corrected ? count * 4 : 0),
-                   U.MAP_READ | U.COPY_DST);
-            if (noiseBytes) buffer(noiseBytes, U.STORAGE | U.COPY_DST);
-            if (nbytes) buffer(nbytes, U.STORAGE | U.COPY_DST);
-        }
+        state.paletteBuffers(buffers, count, colors, corrected, noiseBytes,
+                             nbytes);
         const [input, pal, output, params, invalidIndex, queries, staging] =
             buffers;
         state.writeBytes(input, 0, rgb, 3 * count);
@@ -151,6 +280,7 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
         state.writeBytes(params, 0, uniforms, 48);
         const entries = [input, pal, output, params, invalidIndex, queries]
             .map((b, binding) => ({binding, resource: {buffer: b}}));
+        if (table) entries.push({binding:8,resource:{buffer:table.buffer}});
         if (tile) {
             const noise = buffers[7];
             state.writeBytes(noise, 0, tile, 4096);
@@ -167,10 +297,19 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
         });
         const enc = device.createCommandEncoder();
         enc.clearBuffer(invalidIndex);
+        if (batch) enc.clearBuffer(output);
         const pass = enc.beginComputePass();
         pass.setPipeline(pipeline);
         pass.setBindGroup(0, group);
-        pass.dispatchWorkgroups(Math.ceil(count / 256));
+        if (batch) {
+            const first = HEAPU32[(uniforms >>> 2) + 1];
+            const width = HEAPU32[(uniforms >>> 2) + 2];
+            const rows = Math.ceil(((first % width) + count) / width);
+            const tiles = Math.ceil(width / 8) * Math.ceil(rows / 8);
+            const limit = device.limits.maxComputeWorkgroupsPerDimension;
+            const pitch = Math.min(tiles, limit);
+            pass.dispatchWorkgroups(pitch,Math.ceil(tiles / pitch));
+        } else pass.dispatchWorkgroups(Math.ceil(count / 256));
         pass.end();
         enc.copyBufferToBuffer(output, 0, staging, 0, length);
         enc.copyBufferToBuffer(invalidIndex, 0, staging, length, 4);
@@ -204,6 +343,7 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
             await device.popErrorScope();
             await device.popErrorScope();
         }
+        table?.release();
         for (const b of buffers) b.destroy();
     }
 })
@@ -245,6 +385,43 @@ sixel_gpu_device_acquire(sixel_gpu_device_interface_t **result)
     return *result != NULL ? SIXEL_OK : SIXEL_FEATURE_ERROR;
 }
 
+/* All WebGPU consumers use the same lookup ABI. The provider supplies
+ * either point queries or a collective over two queries per lane of an
+ * 8 x 8 tile. Builders bind packed RGB at 1, constants at 7 and scratch
+ * at 8. Only the provider knows the contents of that scratch. */
+SIXELSTATUS
+sixel_webgpu_check_lookup(sixel_gpu_lookup_program_view_t const *view,
+    sixel_gpu_lookup_query_kind_t kind)
+{
+    sixel_gpu_lookup_batch_dispatch_t const *batch;
+    size_t i;
+
+    batch = view->batch;
+    if (view->program_format == NULL ||
+            strcmp(view->program_format, "webgpu.lookup-rgb8.v1") ||
+            view->query_kind != kind ||
+            (batch && (batch->entry_point == NULL ||
+                strcmp(batch->entry_point, "lookup_pair") ||
+                batch->tile[0] != 8 || batch->tile[1] != 8 ||
+                batch->threads[0] != 32 || batch->threads[1] != 1 ||
+                batch->threads[2] != 1)))
+        return SIXEL_FEATURE_ERROR;
+    if (view->palette == NULL || view->ncolors < 1 || view->ncolors > 256 ||
+            view->palette_size < 3U * view->ncolors || !view->chunks ||
+            !view->chunk_count || view->chunk_count > INT_MAX ||
+            view->constants_size % 4U ||
+            (view->constants_size && !view->constants) ||
+            (view->workspace_size == 0) != (view->build_pass_count == 0) ||
+            (view->build_pass_count && !view->build_passes))
+        return SIXEL_BAD_ARGUMENT;
+    for (i = 0; i < view->chunk_count; ++i)
+        if (view->chunks[i] == NULL) return SIXEL_BAD_ARGUMENT;
+    for (i = 0; i < view->build_pass_count; ++i)
+        if (view->build_passes[i].entry_point == NULL)
+            return SIXEL_BAD_ARGUMENT;
+    return SIXEL_OK;
+}
+
 SIXELSTATUS
 sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
     sixel_gpu_lookup_plan_interface_t *lookup,
@@ -262,24 +439,20 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
         return SIXEL_FEATURE_ERROR;
     status = lookup->vtbl->describe(lookup, &view);
     if (status != SIXEL_OK) return status;
-    if (view.program_format == NULL ||
-            strcmp(view.program_format, webgpu_format(device)) != 0 ||
-            view.query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE ||
-            view.workspace_size || view.build_pass_count ||
-            view.constants_size > UINT_MAX || view.constants_size % 4U ||
-            (view.constants_size && view.constants == NULL) ||
-            view.batch != NULL)
-        return SIXEL_FEATURE_ERROR;
-    if (view.palette == NULL || view.ncolors < 1 || view.ncolors > 256 ||
-            view.palette_size < 3U * view.ncolors || view.chunks == NULL ||
-            !view.chunk_count || view.chunk_count > INT_MAX)
-        return SIXEL_BAD_ARGUMENT;
+    status = sixel_webgpu_check_lookup(&view, SIXEL_GPU_LOOKUP_QUERY_BYTE);
+    if (status != SIXEL_OK) return status;
     /* Probe before selecting the plan so AUTO can still choose the CPU if
      * the browser declines the adapter or cannot compile this program. */
     if (!sixel_webgpu_available() ||
             !webgpu_dispatch(view.chunks, (int)view.chunk_count,
-                dither->suffix, (int)dither->suffix_count, NULL, NULL, 0,
-                NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 0)) {
+                dither->suffix, (int)dither->suffix_count, NULL, view.palette,
+                view.ncolors, NULL, 0, NULL, NULL, NULL, NULL, 0,
+                view.constants, view.constants_size, view.workspace_size,
+                view.build_passes, view.build_pass_count,
+                view.batch ? palette_batch_main : palette_point_main,
+                view.batch ? sizeof(palette_batch_main) / sizeof(char *) :
+                    sizeof(palette_point_main) / sizeof(char *),
+                view.batch != NULL)) {
         sixel_helper_set_additional_message(
             "WebGPU adapter or compute pipeline unavailable.");
         return SIXEL_FEATURE_ERROR;
@@ -428,7 +601,14 @@ sixel_webgpu_apply(sixel_gpu_palette_request_t const *r)
                 r->palette, r->ncolors, r->dest + first,
                 (unsigned int)count, &params, corrected, r->bluenoise_tile,
                 gradient, (unsigned int)gradient_size, program->view.constants,
-                (unsigned int)program->view.constants_size)) {
+                (unsigned int)program->view.constants_size,
+                program->view.workspace_size, program->view.build_passes,
+                program->view.build_pass_count,
+                program->view.batch ? palette_batch_main : palette_point_main,
+                program->view.batch ?
+                    sizeof(palette_batch_main) / sizeof(char *) :
+                    sizeof(palette_point_main) / sizeof(char *),
+                program->view.batch != NULL)) {
             sixel_helper_set_additional_message(
                 "WebGPU palette dispatch or readback failed.");
             status = SIXEL_FEATURE_ERROR;

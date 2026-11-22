@@ -41,3 +41,36 @@ fn lookup(query: vec3i) -> u32 {
     }
     return best;
 }
+
+fn lookup_fractional(query: vec3f) -> u32 {
+    let key = dot(query, vec3f(1));
+    let count = arrayLength(&sorted);
+    var low = 0u;
+    var high = count;
+    while (low < high) {
+        let mid = low + (high - low) / 2u;
+        if (dot(vec3f(color(mid)), vec3f(1)) < key) { low = mid + 1u; }
+        else { high = mid; }
+    }
+    let rank = min(low, count - 1u);
+    var best = sorted[rank];
+    let gap = query - vec3f(color(rank));
+    var distance = dot(gap, gap);
+    var left = true;
+    var right = true;
+    for (var step = 1u; step <= 6u; step++) {
+        for (var side = 0u; side < 2u; side++) {
+            let r = select(rank - step, rank + step, side == 1u);
+            if (r >= count || !select(left, right, side == 1u)) { continue; }
+            let d = query - vec3f(color(r));
+            let projection = dot(d, vec3f(1));
+            if (projection * projection > distance) {
+                if (side == 0u) { left = false; } else { right = false; }
+            } else if (dot(d, d) < distance || (dot(d, d) == distance && sorted[r] < best)) {
+                best = sorted[r];
+                distance = dot(d, d);
+            }
+        }
+    }
+    return best;
+}

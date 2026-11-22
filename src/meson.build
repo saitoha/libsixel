@@ -28,6 +28,7 @@ srcs = [
   'retained-plane-gpu.c',
   'retained-plane-gpu.h',
   'gpu-runtime-metal.h',
+  'dither-diffusion-webgpu.h',
   'gpu-runtime-vulkan.h',
   'gpu-compute-vulkan.h',
   'gpu-palette-vulkan.h',
@@ -516,14 +517,46 @@ else
 endif
 if webgpu
   if not amalgamated_lib_enabled
-    libsixel_sources += files('gpu-palette-webgpu.c')
+    libsixel_sources += files('dither-diffusion-webgpu.c', 'gpu-palette-webgpu.c')
   endif
-  foreach name : ['lookup-policy-none', 'gpu-palette', 'dither-policy-none',
-                  'dither-policy-a-dither', 'dither-policy-x-dither',
-                  'dither-policy-bluenoise', 'lookup-policy-5bit',
-                  'lookup-policy-6bit', 'lookup-policy-cell',
-                  'lookup-policy-eytzinger', 'lookup-policy-mahalanobis',
-                  'lookup-policy-ordered']
+  foreach name : [
+    'dither-diffusion',
+    'dither-diffusion-batch',
+    'dither-diffusion-fixed',
+    'dither-diffusion-point',
+    'dither-policy-a-dither',
+    'dither-policy-atkinson',
+    'dither-policy-bluenoise',
+    'dither-policy-burkes',
+    'dither-policy-fs',
+    'dither-policy-jajuni',
+    'dither-policy-lso2',
+    'dither-policy-none',
+    'dither-policy-sierra1',
+    'dither-policy-sierra2',
+    'dither-policy-sierra3',
+    'dither-policy-stucki',
+    'dither-policy-x-dither',
+    'gpu-palette',
+    'gpu-palette-batch',
+    'gpu-palette-point',
+    'lookup-policy-5bit',
+    'lookup-policy-6bit',
+    'lookup-policy-blockcull',
+    'lookup-policy-cell',
+    'lookup-policy-cell-candidates',
+    'lookup-policy-certlut',
+    'lookup-policy-delaunay',
+    'lookup-policy-eytzinger',
+    'lookup-policy-fhedt',
+    'lookup-policy-gridlut',
+    'lookup-policy-mahalanobis',
+    'lookup-policy-none',
+    'lookup-policy-ordered',
+    'lookup-policy-rbc',
+    'lookup-policy-table',
+    'lookup-policy-vptree',
+  ]
     libsixel_sources += custom_target(name + '-wgsl',
       input: name + '.wgsl', output: name + '-wgsl.inc.h',
       command: [python3, shader_embed, '@INPUT@', '@OUTPUT@'])
