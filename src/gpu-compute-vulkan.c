@@ -5,7 +5,261 @@
 #if defined(HAVE_VULKAN)
 #include <stdio.h>
 #include <string.h>
+#include "compat_stub.h"
 #include "gpu-compute-vulkan.h"
+
+int
+sixel_vk_submission_init(sixel_vk_submission_t *stage)
+{
+    return pthread_mutex_init(&stage->gate, NULL) == 0;
+}
+
+void
+sixel_vk_submission_enter(sixel_vk_submission_t *stage)
+{
+    (void)pthread_mutex_lock(&stage->gate);
+}
+
+void
+sixel_vk_submission_leave(sixel_vk_submission_t *stage)
+{
+    (void)pthread_mutex_unlock(&stage->gate);
+}
+
+void
+sixel_vk_submission_destroy(sixel_vk_runtime_t *runtime,
+    sixel_vk_submission_t *stage)
+{
+    vkDestroyQueryPool(runtime->device, stage->timestamps, NULL);
+    vkDestroyFence(runtime->device, stage->fence, NULL);
+    vkDestroyCommandPool(runtime->device, stage->pool, NULL);
+    stage->timestamps = VK_NULL_HANDLE;
+    stage->fence = VK_NULL_HANDLE;
+    stage->command = VK_NULL_HANDLE;
+    stage->pool = VK_NULL_HANDLE;
+    (void)pthread_mutex_destroy(&stage->gate);
+}
+
+SIXELSTATUS
+sixel_vk_submission_begin(sixel_vk_runtime_t *runtime,
+    sixel_vk_submission_t *stage, VkCommandBuffer *command)
+{
+    VkCommandPoolCreateInfo pool_info;
+    VkCommandBufferAllocateInfo allocate;
+    VkFenceCreateInfo fence_info;
+    VkQueryPoolCreateInfo query_info;
+    VkCommandBufferBeginInfo begin_info;
+
+    *command = VK_NULL_HANDLE;
+    if (stage->pool == VK_NULL_HANDLE) {
+        memset(&pool_info, 0, sizeof(pool_info));
+        pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        pool_info.queueFamilyIndex = runtime->queue_family;
+        if (vkCreateCommandPool(runtime->device, &pool_info, NULL,
+                &stage->pool) != VK_SUCCESS)
+            return SIXEL_RUNTIME_ERROR;
+        memset(&allocate, 0, sizeof(allocate));
+        allocate.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocate.commandPool = stage->pool;
+        allocate.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocate.commandBufferCount = 1;
+        if (vkAllocateCommandBuffers(runtime->device, &allocate,
+                &stage->command) != VK_SUCCESS)
+            return SIXEL_RUNTIME_ERROR;
+        memset(&fence_info, 0, sizeof(fence_info));
+        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        if (vkCreateFence(runtime->device, &fence_info, NULL,
+                &stage->fence) != VK_SUCCESS)
+            return SIXEL_RUNTIME_ERROR;
+        if (runtime->timestamps_supported) {
+            memset(&query_info, 0, sizeof(query_info));
+            query_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+            query_info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+            query_info.queryCount = 2;
+            /* Timing is optional; failure leaves wall time as the metric. */
+            (void)vkCreateQueryPool(runtime->device, &query_info, NULL,
+                &stage->timestamps);
+        }
+    }
+    if (stage->command == VK_NULL_HANDLE ||
+            stage->fence == VK_NULL_HANDLE ||
+            vkResetCommandBuffer(stage->command, 0) != VK_SUCCESS)
+        return SIXEL_RUNTIME_ERROR;
+    memset(&begin_info, 0, sizeof(begin_info));
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    if (vkBeginCommandBuffer(stage->command, &begin_info) != VK_SUCCESS)
+        return SIXEL_RUNTIME_ERROR;
+    *command = stage->command;
+    if (stage->timestamps != VK_NULL_HANDLE) {
+        vkCmdResetQueryPool(*command, stage->timestamps, 0, 2);
+        vkCmdWriteTimestamp(*command, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            stage->timestamps, 0);
+    }
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_submission_submit_and_wait(sixel_vk_runtime_t *runtime,
+    sixel_vk_submission_t *stage, VkCommandBuffer command)
+{
+    VkSubmitInfo submit;
+    VkResult result;
+    uint64_t stamps[2];
+    unsigned long long busy;
+    double started;
+
+    if (stage->timestamps != VK_NULL_HANDLE)
+        vkCmdWriteTimestamp(command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            stage->timestamps, 1);
+    if (vkEndCommandBuffer(command) != VK_SUCCESS ||
+            vkResetFences(runtime->device, 1, &stage->fence) != VK_SUCCESS)
+        return SIXEL_RUNTIME_ERROR;
+    memset(&submit, 0, sizeof(submit));
+    submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit.commandBufferCount = 1;
+    submit.pCommandBuffers = &command;
+    started = sixel_vk_now_ms();
+    result = vkQueueSubmit(runtime->queue, 1, &submit, stage->fence);
+    if (result != VK_SUCCESS) {
+        sixel_helper_set_additional_message(
+            "vulkan: command submission failed.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    /* stage->gate protects the in-flight command, descriptors and staging.
+     * The shared queue needs serialization only through vkQueueSubmit. */
+    sixel_vk_unlock();
+    result = vkWaitForFences(runtime->device, 1, &stage->fence, VK_TRUE,
+        UINT64_MAX);
+    sixel_vk_lock();
+    if (result != VK_SUCCESS) {
+        sixel_helper_set_additional_message(
+            "vulkan: command completion failed.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    busy = (unsigned long long)((sixel_vk_now_ms() - started) * 1e6);
+    if (stage->timestamps != VK_NULL_HANDLE &&
+            vkGetQueryPoolResults(runtime->device, stage->timestamps, 0, 2,
+                sizeof(stamps), stamps, sizeof(stamps[0]),
+                VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT)
+                == VK_SUCCESS)
+        busy = (unsigned long long)((double)((stamps[1] - stamps[0]) &
+            runtime->timestamp_mask) * runtime->timestamp_period);
+    stage->last_busy_ms = (double)busy / 1e6;
+    runtime->last_busy_ms = stage->last_busy_ms;
+    sixel_gpu_statistics_record(busy);
+    return SIXEL_OK;
+}
+
+void
+sixel_vk_ring_submission_enter(sixel_vk_ring_submission_t *stage)
+{
+    (void)pthread_mutex_lock(&stage->gate);
+}
+
+void
+sixel_vk_ring_submission_leave(sixel_vk_ring_submission_t *stage)
+{
+    (void)pthread_mutex_unlock(&stage->gate);
+}
+
+SIXELSTATUS
+sixel_vk_ring_submission_begin(sixel_vk_runtime_t *runtime,
+    sixel_vk_ring_submission_t *stage, int slot,
+    VkCommandBuffer *command)
+{
+    VkCommandPoolCreateInfo pool_info;
+    VkCommandBufferAllocateInfo allocate;
+    VkFenceCreateInfo fence_info;
+    VkCommandBufferBeginInfo begin_info;
+    int i;
+
+    *command = VK_NULL_HANDLE;
+    if (slot < 0 || slot >= SIXEL_VK_RING) return SIXEL_BAD_ARGUMENT;
+    if (stage->pool == VK_NULL_HANDLE) {
+        memset(&pool_info, 0, sizeof(pool_info));
+        pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        pool_info.queueFamilyIndex = runtime->queue_family;
+        if (vkCreateCommandPool(runtime->device, &pool_info, NULL,
+                &stage->pool) != VK_SUCCESS)
+            return SIXEL_RUNTIME_ERROR;
+        memset(&allocate, 0, sizeof(allocate));
+        allocate.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocate.commandPool = stage->pool;
+        allocate.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocate.commandBufferCount = SIXEL_VK_RING;
+        if (vkAllocateCommandBuffers(runtime->device, &allocate,
+                stage->commands) != VK_SUCCESS)
+            return SIXEL_RUNTIME_ERROR;
+        memset(&fence_info, 0, sizeof(fence_info));
+        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        for (i = 0; i < SIXEL_VK_RING; ++i) {
+            if (vkCreateFence(runtime->device, &fence_info, NULL,
+                    &stage->fences[i]) != VK_SUCCESS)
+                return SIXEL_RUNTIME_ERROR;
+        }
+    }
+    if (vkResetCommandBuffer(stage->commands[slot], 0) != VK_SUCCESS)
+        return SIXEL_RUNTIME_ERROR;
+    memset(&begin_info, 0, sizeof(begin_info));
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    if (vkBeginCommandBuffer(stage->commands[slot], &begin_info)
+            != VK_SUCCESS)
+        return SIXEL_RUNTIME_ERROR;
+    *command = stage->commands[slot];
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_ring_submission_submit(sixel_vk_runtime_t *runtime,
+    sixel_vk_ring_submission_t *stage, int slot)
+{
+    VkSubmitInfo submit;
+
+    if (slot < 0 || slot >= SIXEL_VK_RING) return SIXEL_BAD_ARGUMENT;
+    if (vkEndCommandBuffer(stage->commands[slot]) != VK_SUCCESS ||
+            vkResetFences(runtime->device, 1, &stage->fences[slot])
+                != VK_SUCCESS)
+        return SIXEL_RUNTIME_ERROR;
+    memset(&submit, 0, sizeof(submit));
+    submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit.commandBufferCount = 1;
+    submit.pCommandBuffers = &stage->commands[slot];
+    stage->submitted_ms[slot] = sixel_vk_now_ms();
+    if (vkQueueSubmit(runtime->queue, 1, &submit, stage->fences[slot])
+            != VK_SUCCESS) {
+        sixel_helper_set_additional_message(
+            "vulkan: command submission failed.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_ring_submission_wait(sixel_vk_runtime_t *runtime,
+    sixel_vk_ring_submission_t *stage, int slot)
+{
+    VkResult result;
+    double busy;
+
+    if (slot < 0 || slot >= SIXEL_VK_RING) return SIXEL_BAD_ARGUMENT;
+    sixel_vk_unlock();
+    result = vkWaitForFences(runtime->device, 1, &stage->fences[slot],
+        VK_TRUE, UINT64_MAX);
+    sixel_vk_lock();
+    if (result != VK_SUCCESS) {
+        sixel_helper_set_additional_message(
+            "vulkan: command completion failed.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    busy = sixel_vk_now_ms() - stage->submitted_ms[slot];
+    runtime->last_busy_ms = busy;
+    sixel_gpu_statistics_record((unsigned long long)(busy * 1e6));
+    return SIXEL_OK;
+}
 
 void
 sixel_vk_compute_destroy(sixel_vk_runtime_t *runtime,

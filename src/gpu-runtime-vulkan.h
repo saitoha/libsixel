@@ -13,7 +13,8 @@
  * instance creation alone scans every installed ICD.
  *
  * Every function below except sixel_vk_lock() requires the caller to hold
- * the runtime lock; one queue and one command pool are shared serially.
+ * the runtime lock. One queue is shared; each submitting stage owns its
+ * command pool, buffers and fences through gpu-compute-vulkan.h.
  *
  * Environment:
  *   SIXEL_VULKAN_DEVICE  physical-device index or name substring
@@ -30,26 +31,15 @@ typedef struct sixel_vk_runtime {
     VkDevice device;
     VkQueue queue;
     uint32_t queue_family;
-    VkCommandPool command_pool;
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceMemoryProperties memory;
-    /* Two timestamps bracket every submission for sixel_gpu_get_statistics;
-     * without timestamp support the submit/wait wall time is recorded. */
-    VkQueryPool timestamps;
+    /* Without timestamp support submit/wait wall time is recorded. */
+    int timestamps_supported;
     uint64_t timestamp_mask;
     double timestamp_period;
     /* Device time of the latest submission in milliseconds, or its
      * submit/wait wall time without timestamps; for debug breakdowns. */
     double last_busy_ms;
-    /* Reused by every submission under sixel_vk_lock(); allocating and
-     * destroying them per frame cost about 0.5 ms on a discrete GPU. */
-    VkCommandBuffer command;
-    VkFence fence;
-    /* A ring for work that overlaps the host: each slot owns a command
-     * buffer and a fence, and submitted_ms brackets its wall time. */
-    VkCommandBuffer ring[SIXEL_VK_RING];
-    VkFence ring_fences[SIXEL_VK_RING];
-    double ring_submitted_ms[SIXEL_VK_RING];
     int debug;
     /* Optional for 64-bit progressive canvas positions and strata. */
     int shader_int64;
@@ -73,6 +63,7 @@ typedef struct sixel_vk_buffer {
     /* The shader's buffer allocation belongs to a DEVICE_LOCAL type. */
     int device_local;
 } sixel_vk_buffer_t;
+typedef struct sixel_vk_submission sixel_vk_submission_t;
 
 SIXEL_INTERNAL_API void sixel_vk_lock(void);
 SIXEL_INTERNAL_API void sixel_vk_unlock(void);
@@ -126,7 +117,8 @@ SIXEL_INTERNAL_API void sixel_vk_record_copy(VkCommandBuffer command,
  * preserving its bytes. Prefer host-visible VRAM; never expose a staging
  * pointer as shared memory because host writes must reach future kernels. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_make_shared(
-    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer);
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    sixel_vk_submission_t *submission);
 /* Device-local storage the host never maps (mapped stays NULL), for
  * intermediate tables that shaders both write and read. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_device(
@@ -166,31 +158,6 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_shader_module_compose(
     sixel_vk_runtime_t *runtime, char const *name,
     sixel_vk_source_part_t const *parts, size_t part_count,
     VkShaderModule *module);
-
-/* command_begin resets and opens the runtime's single primary command
- * buffer and the statistics bracket; the caller records work while holding
- * sixel_vk_lock(); submit_and_wait closes the bracket, submits, waits on the
- * runtime's fence and adds the GPU time to the statistics. command_free is
- * kept for symmetry: the buffer is reused by the next command_begin. */
-SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_submit_and_wait(
-    sixel_vk_runtime_t *runtime, VkCommandBuffer command);
-SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_command_begin(
-    sixel_vk_runtime_t *runtime, VkCommandBuffer *command);
-SIXEL_INTERNAL_API void sixel_vk_command_free(
-    sixel_vk_runtime_t *runtime, VkCommandBuffer command);
-
-/* Pipelined submission through ring slot slot (0 .. SIXEL_VK_RING - 1).
- * ring_begin resets and opens the slot's command buffer, which must not be
- * in flight; ring_submit closes and submits it without waiting; ring_wait
- * waits for its fence and adds the submit-to-completion wall time to the
- * statistics. Every submitted slot must be waited for before the caller
- * releases sixel_vk_lock() or reuses the slot. */
-SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_ring_begin(
-    sixel_vk_runtime_t *runtime, int slot, VkCommandBuffer *command);
-SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_ring_submit(
-    sixel_vk_runtime_t *runtime, int slot);
-SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_ring_wait(
-    sixel_vk_runtime_t *runtime, int slot);
 
 SIXEL_INTERNAL_API double sixel_vk_now_ms(void);
 /* Each stage owns its state; callers hold the runtime lock. */

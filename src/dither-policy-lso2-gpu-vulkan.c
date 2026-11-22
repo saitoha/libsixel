@@ -20,6 +20,7 @@
 #include "dither-policy-lso2-gpu.h"
 #include "filter-sample.h"
 #include "gpu-palette-vulkan.h"
+#include "gpu-compute-vulkan.h"
 #include "gpu-runtime-vulkan.h"
 #include "encode-result.h"
 #include "palette.h"
@@ -154,6 +155,8 @@ typedef struct lso2_gpu_vk_plan {
 } lso2_gpu_vk_plan_t;
 
 static lso2_gpu_vk_state_t lso2_gpu_vk_state;
+static sixel_vk_submission_t lso2_gpu_vk_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 static lso2_gpu_vk_code_t *lso2_gpu_vk_codes;
 static size_t lso2_gpu_vk_code_count;
 static lso2_gpu_vk_bundle_t lso2_gpu_vk_idle[LSO2_GPU_VK_IDLE];
@@ -988,6 +991,7 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
     }
 
     started = sixel_vk_now_ms();
+    sixel_vk_submission_enter(&lso2_gpu_vk_submission);
     sixel_vk_lock();
     locked = 1;
     runtime = sixel_vk_runtime_get_locked();
@@ -1037,7 +1041,8 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
         retained_valid, source_input);
 
     staged = sixel_vk_now_ms();
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &lso2_gpu_vk_submission,
+        &command);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1132,7 +1137,8 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_PIPELINE_STAGE_HOST_BIT, VK_ACCESS_HOST_READ_BIT);
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &lso2_gpu_vk_submission, command);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1180,11 +1186,9 @@ end:
         shared_owner =
             sixel_filter_sample_vulkan_release_locked(shared_slot);
     }
-    if (command != VK_NULL_HANDLE) {
-        sixel_vk_command_free(runtime, command);
-    }
     if (locked) {
         sixel_vk_unlock();
+        sixel_vk_submission_leave(&lso2_gpu_vk_submission);
     }
     sixel_frame_unref(shared_owner);
     /* Submitted work is always drained above before the lease ends; only a

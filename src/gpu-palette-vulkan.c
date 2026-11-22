@@ -43,6 +43,7 @@
 #include "gpu-palette-vulkan.h"
 #include "gpu-program.h"
 #include "gpu-runtime-vulkan.h"
+#include "gpu-compute-vulkan.h"
 #include "loader-common.h"
 #include "sixel_atomic.h"
 #include "bluenoise_64x64.h"
@@ -169,6 +170,10 @@ typedef struct sixel_gpu_vulkan_palette_state {
 } sixel_gpu_vulkan_palette_state_t;
 
 static sixel_gpu_vulkan_palette_state_t g_sixel_vk_palette;
+static sixel_vk_ring_submission_t palette_submission =
+    SIXEL_VK_RING_SUBMISSION_INITIALIZER;
+static sixel_vk_submission_t promotion_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 static sixel_gpu_vulkan_compiled_t *g_sixel_vk_compiled;
 static size_t g_sixel_vk_compiled_count;
 
@@ -216,10 +221,13 @@ sixel_gpu_vulkan_buffer_shared_memory(
     if (memory == NULL) return SIXEL_BAD_ARGUMENT;
     *memory = NULL;
     buffer = (sixel_gpu_vulkan_native_buffer_t *)self;
+    sixel_vk_submission_enter(&promotion_submission);
     sixel_vk_lock();
-    status = sixel_vk_buffer_make_shared(buffer->runtime, &buffer->storage);
+    status = sixel_vk_buffer_make_shared(buffer->runtime, &buffer->storage,
+        &promotion_submission);
     if (status == SIXEL_OK) *memory = buffer->storage.mapped;
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&promotion_submission);
     return status;
 }
 
@@ -1181,6 +1189,7 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
         goto end;
     }
 
+    sixel_vk_ring_submission_enter(&palette_submission);
     sixel_vk_lock();
     locked = 1;
     runtime = sixel_vk_runtime_get_locked();
@@ -1401,7 +1410,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             chunk->rows = request->height - next < rows
                 ? request->height - next : rows;
             chunk->sequence = submitted;
-            status = sixel_vk_ring_begin(runtime, slot, &command);
+            status = sixel_vk_ring_submission_begin(runtime,
+                &palette_submission, slot, &command);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -1515,7 +1525,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
                     VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
                 VK_PIPELINE_STAGE_HOST_BIT, VK_ACCESS_HOST_READ_BIT);
-            status = sixel_vk_ring_submit(runtime, slot);
+            status = sixel_vk_ring_submission_submit(runtime,
+                &palette_submission, slot);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -1531,7 +1542,8 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
             }
         }
         chunk = &chunks[head];
-        status = sixel_vk_ring_wait(runtime, head);
+        status = sixel_vk_ring_submission_wait(runtime,
+            &palette_submission, head);
         chunk->inflight = 0;
         if (hooks != NULL) {
             ++hooks->completed_chunks;
@@ -1626,7 +1638,8 @@ end:
      * submitted range can still write. */
     for (slot = 0; slot < SIXEL_VK_RING; ++slot) {
         if (chunks[slot].inflight) {
-            (void)sixel_vk_ring_wait(runtime, slot);
+            (void)sixel_vk_ring_submission_wait(runtime,
+                &palette_submission, slot);
             chunks[slot].inflight = 0;
             if (hooks != NULL) {
                 ++hooks->completed_chunks;
@@ -1635,6 +1648,7 @@ end:
     }
     if (locked) {
         sixel_vk_unlock();
+        sixel_vk_ring_submission_leave(&palette_submission);
     }
     if (binding != NULL) {
         (void)binding->vtbl->finish(binding, status);

@@ -39,6 +39,7 @@
 #endif
 
 #include "compat_stub.h"
+#include "gpu-compute-vulkan.h"
 #include "gpu-runtime-vulkan.h"
 #include "gpu-statistics.h"
 
@@ -221,23 +222,6 @@ sixel_vk_select_device(sixel_vk_runtime_t *runtime)
 static void
 sixel_vk_runtime_teardown(sixel_vk_runtime_t *runtime)
 {
-    int slot;
-
-    if (runtime->timestamps != VK_NULL_HANDLE) {
-        vkDestroyQueryPool(runtime->device, runtime->timestamps, NULL);
-    }
-    if (runtime->fence != VK_NULL_HANDLE) {
-        vkDestroyFence(runtime->device, runtime->fence, NULL);
-    }
-    for (slot = 0; slot < SIXEL_VK_RING; ++slot) {
-        if (runtime->ring_fences[slot] != VK_NULL_HANDLE) {
-            vkDestroyFence(runtime->device, runtime->ring_fences[slot],
-                NULL);
-        }
-    }
-    if (runtime->command_pool != VK_NULL_HANDLE) {
-        vkDestroyCommandPool(runtime->device, runtime->command_pool, NULL);
-    }
     if (runtime->device != VK_NULL_HANDLE) {
         vkDestroyDevice(runtime->device, NULL);
     }
@@ -253,7 +237,6 @@ static void
 sixel_vk_timestamps_init(sixel_vk_runtime_t *runtime)
 {
     VkQueueFamilyProperties *families;
-    VkQueryPoolCreateInfo info;
     uint32_t count;
     uint32_t bits;
 
@@ -276,15 +259,7 @@ sixel_vk_timestamps_init(sixel_vk_runtime_t *runtime)
     if (bits == 0) {
         return;
     }
-    memset(&info, 0, sizeof(info));
-    info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
-    info.queryType = VK_QUERY_TYPE_TIMESTAMP;
-    info.queryCount = 2;
-    if (vkCreateQueryPool(runtime->device, &info, NULL, &runtime->timestamps)
-            != VK_SUCCESS) {
-        runtime->timestamps = VK_NULL_HANDLE;
-        return;
-    }
+    runtime->timestamps_supported = 1;
     runtime->timestamp_mask = bits >= 64 ? ~(uint64_t)0 :
         (((uint64_t)1 << bits) - 1U);
     runtime->timestamp_period =
@@ -300,12 +275,8 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
     VkPhysicalDeviceVulkan12Features features12;
     VkPhysicalDeviceFeatures2 features;
     VkDeviceCreateInfo device_info;
-    VkCommandPoolCreateInfo pool_info;
-    VkCommandBufferAllocateInfo command_info;
-    VkFenceCreateInfo fence_info;
     float priority;
     double started;
-    int slot;
 
     memset(runtime, 0, sizeof(*runtime));
     runtime->debug = sixel_vk_debug_enabled();
@@ -358,52 +329,13 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
     vkGetDeviceQueue(runtime->device, runtime->queue_family, 0,
         &runtime->queue);
 
-    memset(&pool_info, 0, sizeof(pool_info));
-    pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    pool_info.queueFamilyIndex = runtime->queue_family;
-    if (vkCreateCommandPool(runtime->device, &pool_info, NULL,
-            &runtime->command_pool) != VK_SUCCESS) {
-        runtime->command_pool = VK_NULL_HANDLE;
-        goto fail;
-    }
-    memset(&command_info, 0, sizeof(command_info));
-    command_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    command_info.commandPool = runtime->command_pool;
-    command_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    command_info.commandBufferCount = 1;
-    if (vkAllocateCommandBuffers(runtime->device, &command_info,
-            &runtime->command) != VK_SUCCESS) {
-        runtime->command = VK_NULL_HANDLE;
-        goto fail;
-    }
-    memset(&fence_info, 0, sizeof(fence_info));
-    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    if (vkCreateFence(runtime->device, &fence_info, NULL, &runtime->fence)
-            != VK_SUCCESS) {
-        runtime->fence = VK_NULL_HANDLE;
-        goto fail;
-    }
-    command_info.commandBufferCount = SIXEL_VK_RING;
-    if (vkAllocateCommandBuffers(runtime->device, &command_info,
-            runtime->ring) != VK_SUCCESS) {
-        memset(runtime->ring, 0, sizeof(runtime->ring));
-        goto fail;
-    }
-    for (slot = 0; slot < SIXEL_VK_RING; ++slot) {
-        if (vkCreateFence(runtime->device, &fence_info, NULL,
-                &runtime->ring_fences[slot]) != VK_SUCCESS) {
-            runtime->ring_fences[slot] = VK_NULL_HANDLE;
-            goto fail;
-        }
-    }
     sixel_vk_timestamps_init(runtime);
     sixel_gpu_statistics_set_device("vulkan", runtime->properties.deviceName);
     if (runtime->debug) {
         fprintf(stderr, "libsixel: vulkan using %s (init %.2f ms, "
             "timestamps %s)\n", runtime->properties.deviceName,
             sixel_vk_now_ms() - started,
-            runtime->timestamps != VK_NULL_HANDLE ? "on" : "off");
+            runtime->timestamps_supported ? "on" : "off");
     }
     return 1;
 
@@ -815,7 +747,7 @@ sixel_vk_buffer_reserve_device(sixel_vk_runtime_t *runtime,
 
 SIXELSTATUS
 sixel_vk_buffer_make_shared(sixel_vk_runtime_t *runtime,
-    sixel_vk_buffer_t *buffer)
+    sixel_vk_buffer_t *buffer, sixel_vk_submission_t *submission)
 {
     sixel_vk_buffer_t shared;
     VkMemoryPropertyFlags flags;
@@ -840,7 +772,7 @@ sixel_vk_buffer_make_shared(sixel_vk_runtime_t *runtime,
         goto end;
     }
     shared.capacity = buffer->capacity;
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, submission, &command);
     if (status != SIXEL_OK) goto end;
     sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
         VK_ACCESS_MEMORY_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -851,7 +783,8 @@ sixel_vk_buffer_make_shared(sixel_vk_runtime_t *runtime,
     sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_HOST_BIT,
         VK_ACCESS_HOST_READ_BIT);
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime, submission,
+        command);
     if (status == SIXEL_OK) {
         sixel_vk_buffer_release(runtime, buffer);
         *buffer = shared;
@@ -1147,159 +1080,6 @@ sixel_vk_shader_module_compose(sixel_vk_runtime_t *runtime, char const *name,
         "compiler is available.");
     return SIXEL_FEATURE_ERROR;
 #endif
-}
-
-SIXELSTATUS
-sixel_vk_command_begin(sixel_vk_runtime_t *runtime, VkCommandBuffer *command)
-{
-    VkCommandBufferBeginInfo begin_info;
-
-    *command = VK_NULL_HANDLE;
-    if (vkResetCommandBuffer(runtime->command, 0) != VK_SUCCESS) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-    memset(&begin_info, 0, sizeof(begin_info));
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    if (vkBeginCommandBuffer(runtime->command, &begin_info) != VK_SUCCESS) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-    *command = runtime->command;
-    if (runtime->timestamps != VK_NULL_HANDLE) {
-        vkCmdResetQueryPool(*command, runtime->timestamps, 0, 2);
-        vkCmdWriteTimestamp(*command, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-            runtime->timestamps, 0);
-    }
-    return SIXEL_OK;
-}
-
-void
-sixel_vk_command_free(sixel_vk_runtime_t *runtime, VkCommandBuffer command)
-{
-    /* The runtime owns the buffer; the next command_begin resets it. */
-    (void)runtime;
-    (void)command;
-}
-
-SIXELSTATUS
-sixel_vk_submit_and_wait(sixel_vk_runtime_t *runtime, VkCommandBuffer command)
-{
-    VkSubmitInfo submit;
-    VkFence fence;
-    VkResult result;
-    uint64_t stamps[2];
-    unsigned long long busy;
-    double started;
-
-    if (runtime->timestamps != VK_NULL_HANDLE) {
-        vkCmdWriteTimestamp(command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-            runtime->timestamps, 1);
-    }
-    if (vkEndCommandBuffer(command) != VK_SUCCESS) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-    fence = runtime->fence;
-    if (vkResetFences(runtime->device, 1, &fence) != VK_SUCCESS) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-    memset(&submit, 0, sizeof(submit));
-    submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit.commandBufferCount = 1;
-    submit.pCommandBuffers = &command;
-    started = sixel_vk_now_ms();
-    result = vkQueueSubmit(runtime->queue, 1, &submit, fence);
-    if (result == VK_SUCCESS) {
-        result = vkWaitForFences(runtime->device, 1, &fence, VK_TRUE,
-            UINT64_MAX);
-    }
-    if (result != VK_SUCCESS) {
-        sixel_helper_set_additional_message(
-            "vulkan: command submission failed.");
-        return SIXEL_RUNTIME_ERROR;
-    }
-    busy = (unsigned long long)((sixel_vk_now_ms() - started) * 1e6);
-    if (runtime->timestamps != VK_NULL_HANDLE &&
-            vkGetQueryPoolResults(runtime->device, runtime->timestamps, 0, 2,
-                sizeof(stamps), stamps, sizeof(stamps[0]),
-                VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT)
-                == VK_SUCCESS) {
-        busy = (unsigned long long)((double)((stamps[1] - stamps[0]) &
-            runtime->timestamp_mask) * runtime->timestamp_period);
-    }
-    runtime->last_busy_ms = (double)busy / 1e6;
-    sixel_gpu_statistics_record(busy);
-    return SIXEL_OK;
-}
-
-SIXELSTATUS
-sixel_vk_ring_begin(sixel_vk_runtime_t *runtime, int slot,
-    VkCommandBuffer *command)
-{
-    VkCommandBufferBeginInfo begin_info;
-
-    *command = VK_NULL_HANDLE;
-    if (slot < 0 || slot >= SIXEL_VK_RING) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (vkResetCommandBuffer(runtime->ring[slot], 0) != VK_SUCCESS) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-    memset(&begin_info, 0, sizeof(begin_info));
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    if (vkBeginCommandBuffer(runtime->ring[slot], &begin_info)
-            != VK_SUCCESS) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-    *command = runtime->ring[slot];
-    return SIXEL_OK;
-}
-
-SIXELSTATUS
-sixel_vk_ring_submit(sixel_vk_runtime_t *runtime, int slot)
-{
-    VkSubmitInfo submit;
-
-    if (slot < 0 || slot >= SIXEL_VK_RING) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (vkEndCommandBuffer(runtime->ring[slot]) != VK_SUCCESS ||
-            vkResetFences(runtime->device, 1, &runtime->ring_fences[slot])
-                != VK_SUCCESS) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-    memset(&submit, 0, sizeof(submit));
-    submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit.commandBufferCount = 1;
-    submit.pCommandBuffers = &runtime->ring[slot];
-    runtime->ring_submitted_ms[slot] = sixel_vk_now_ms();
-    if (vkQueueSubmit(runtime->queue, 1, &submit, runtime->ring_fences[slot])
-            != VK_SUCCESS) {
-        sixel_helper_set_additional_message(
-            "vulkan: command submission failed.");
-        return SIXEL_RUNTIME_ERROR;
-    }
-    return SIXEL_OK;
-}
-
-SIXELSTATUS
-sixel_vk_ring_wait(sixel_vk_runtime_t *runtime, int slot)
-{
-    double busy;
-
-    if (slot < 0 || slot >= SIXEL_VK_RING) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (vkWaitForFences(runtime->device, 1, &runtime->ring_fences[slot],
-            VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
-        sixel_helper_set_additional_message(
-            "vulkan: command completion failed.");
-        return SIXEL_RUNTIME_ERROR;
-    }
-    busy = sixel_vk_now_ms() - runtime->ring_submitted_ms[slot];
-    runtime->last_busy_ms = busy;
-    sixel_gpu_statistics_record((unsigned long long)(busy * 1e6));
-    return SIXEL_OK;
 }
 
 /* Sample completed device work once per frame, using each stage's own

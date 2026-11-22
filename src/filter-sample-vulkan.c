@@ -21,6 +21,8 @@ typedef struct sample_params {
 
 /* The process-wide runtime lock protects these reusable allocations. */
 static sixel_vk_compute_t sample_stage;
+static sixel_vk_submission_t sample_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 static sixel_vk_buffer_t sample_buffers[3];
 static VkQueryPool sample_times;
 static sixel_gpu_headroom_t sample_headroom;
@@ -182,6 +184,7 @@ sixel_filter_sample_solid_gpu(unsigned char const *pixels,
     groups = (params.points * params.rows + 511u) / 512u;
     entered = sixel_vk_now_ms();
     evicted_owner = NULL;
+    sixel_vk_submission_enter(&sample_submission);
     sixel_vk_lock();
     locked = sixel_vk_now_ms();
     runtime = sixel_vk_runtime_get_locked();
@@ -240,7 +243,7 @@ sixel_filter_sample_solid_gpu(unsigned char const *pixels,
     if (status != SIXEL_OK) goto end;
     status = sixel_vk_compute_bind(runtime, &sample_stage, bound);
     if (status != SIXEL_OK) goto end;
-    timing = runtime->debug && runtime->timestamps != VK_NULL_HANDLE;
+    timing = runtime->debug && runtime->timestamps_supported;
     if (timing && sample_times == VK_NULL_HANDLE) {
         memset(&query_info, 0, sizeof(query_info));
         query_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
@@ -251,7 +254,8 @@ sixel_filter_sample_solid_gpu(unsigned char const *pixels,
             timing = 0;
     }
     staged = sixel_vk_now_ms();
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &sample_submission,
+        &command);
     if (status != SIXEL_OK) goto end;
     if (timing) {
         vkCmdResetQueryPool(command, sample_times, 0, 4);
@@ -275,7 +279,8 @@ sixel_filter_sample_solid_gpu(unsigned char const *pixels,
     if (timing)
         vkCmdWriteTimestamp(command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
             sample_times, 3);
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &sample_submission, command);
     finished = sixel_vk_now_ms();
     if (status != SIXEL_OK) goto end;
     status = sixel_vk_buffer_invalidate(runtime, &sample_buffers[1],
@@ -308,6 +313,7 @@ sixel_filter_sample_solid_gpu(unsigned char const *pixels,
     }
 end:
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&sample_submission);
     sixel_frame_unref(evicted_owner);
     return status;
 }
