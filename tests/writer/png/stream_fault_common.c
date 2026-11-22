@@ -55,6 +55,11 @@ static size_t
 png_stream_fault_write(void const *bytes, size_t size, size_t count, FILE *fp)
 {
     ++png_stream_probe.writes;
+    /* The builtin IDAT probe denies allocations once writing starts. */
+    if (!PNG_STREAM_FAULT_LIBPNG &&
+        (png_stream_probe.faults & PNG_STREAM_IDAT_SHORT_WRITE)) {
+        png_stream_probe.fail_next_allocation = 1;
+    }
     if (fp != png_stream_probe.stream || png_stream_probe.closed ||
         png_stream_probe.short_writes != 0) {
         png_stream_probe.invalid = 1;

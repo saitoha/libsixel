@@ -604,7 +604,6 @@ write_png_to_file(
     unsigned char *png_data = NULL;
     unsigned char signature[8];
     unsigned char ihdr[13];
-    unsigned char *plte = NULL;
     int stride = 0;
     int png_len = 0;
     unsigned char *icc_compressed = NULL;
@@ -1054,20 +1053,8 @@ write_png_to_file(
             sixel_helper_set_additional_message("fwrite() failed.");
             goto end;
         }
-        plte = sixel_allocator_malloc(allocator,
-                                      (size_t)palette_entries * 3U);
-        if (plte == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            sixel_helper_set_additional_message(
-                "write_png_to_file: sixel_allocator_malloc() failed");
-            goto end;
-        }
-        for (i = 0; i < palette_entries; ++i) {
-            plte[i * 3 + 0] = palette[i * 3 + 0];
-            plte[i * 3 + 1] = palette[i * 3 + 1];
-            plte[i * 3 + 2] = palette[i * 3 + 2];
-        }
-        if (!sixel_builtin_png_write_chunk(output_fp, "PLTE", plte,
+        /* PLTE stores the input palette's packed RGB triples verbatim. */
+        if (!sixel_builtin_png_write_chunk(output_fp, "PLTE", palette,
                                            (size_t)palette_entries * 3U)) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fwrite() failed.");
@@ -1165,7 +1152,6 @@ end:
     SIXEL_PNG_IO_FREE(png_data);
     sixel_allocator_free(allocator, icc_chunk);
     sixel_allocator_free(allocator, filtered);
-    sixel_allocator_free(allocator, plte);
 #endif  /* SIXEL_WRITER_USE_LIBPNG */
     sixel_allocator_free(allocator, new_pixels);
     if (logger_prepared) {
