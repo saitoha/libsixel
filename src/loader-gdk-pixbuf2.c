@@ -714,11 +714,13 @@ gdkpixbuf_reset_frame_storage(sixel_frame_t *frame,
 
     sixel_allocator_free(allocator, frame->pixels.u8ptr);
     frame->pixels.u8ptr = NULL;
+    frame->pixel_extent = 0;
     sixel_allocator_free(allocator, frame->palette);
     frame->palette = NULL;
     sixel_allocator_free(allocator, frame->transparent_mask);
     frame->transparent_mask = NULL;
     frame->transparent_mask_size = 0u;
+    frame->coverage_extent = 0;
     frame->ncolors = -1;
     frame->transparent = -1;
     frame->alpha_zero_is_transparent = 0;

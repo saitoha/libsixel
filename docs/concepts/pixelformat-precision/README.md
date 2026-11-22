@@ -304,6 +304,9 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-223 | PAL8 promotion combines keyed and explicit coverage. | [tests/frame/alpha/0018_pal8_float_mask_union.t](../../../tests/frame/alpha/0018_pal8_float_mask_union.t) |
 | FP-224 | Packed frame storage counts each padded row and palette. | [tests/frame/storage/0031_packed_row_storage.t](../../../tests/frame/storage/0031_packed_row_storage.t) |
 | FP-225 | Packed frame clones copy exactly the padded rows. | [tests/frame/storage/0032_packed_row_clone.t](../../../tests/frame/storage/0032_packed_row_clone.t) |
+| FP-226 | An in-place Display P3 crop retains the original pixel allocation. | [tests/frame/storage/0033_profile_crop_storage.t](../../../tests/frame/storage/0033_profile_crop_storage.t) |
+| FP-227 | A cropped frame retains its mask allocation until replacement. | [tests/frame/storage/0034_mask_crop_storage.t](../../../tests/frame/storage/0034_mask_crop_storage.t) |
+| FP-228 | A cropped frame retains its straight alpha allocation until replacement. | [tests/frame/storage/0035_alpha_crop_storage.t](../../../tests/frame/storage/0035_alpha_crop_storage.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

@@ -123,6 +123,9 @@ set -- \
     frame/storage/0030_profile_relative_lut_precedence.t \
     frame/storage/0031_packed_row_storage.t \
     frame/storage/0032_packed_row_clone.t \
+    frame/storage/0033_profile_crop_storage.t \
+    frame/storage/0034_mask_crop_storage.t \
+    frame/storage/0035_alpha_crop_storage.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \

@@ -1597,6 +1597,7 @@ loader_frame_apply_orientation(sixel_frame_t *frame,
         sixel_allocator_free(allocator, src_bytes);
     }
 
+    frame->pixel_extent = 0;
     src_mask = frame->transparent_mask;
     dst_mask = NULL;
     if (src_mask != NULL) {
@@ -1604,6 +1605,7 @@ loader_frame_apply_orientation(sixel_frame_t *frame,
             sixel_allocator_free(allocator, src_mask);
             frame->transparent_mask = NULL;
             frame->transparent_mask_size = 0u;
+            frame->coverage_extent = 0;
         } else {
             dst_mask = (unsigned char *)sixel_allocator_malloc(allocator,
                                                                dst_pixel_count);
@@ -1627,6 +1629,7 @@ loader_frame_apply_orientation(sixel_frame_t *frame,
             }
             frame->transparent_mask = dst_mask;
             frame->transparent_mask_size = dst_pixel_count;
+            frame->coverage_extent = 0;
             sixel_allocator_free(allocator, src_mask);
         }
     }

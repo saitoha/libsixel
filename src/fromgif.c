@@ -1364,12 +1364,14 @@ gif_init_frame(
     sixel_allocator_free(allocator, old_pixels);
     sixel_allocator_free(allocator, old_palette);
     frame->pixels.u8ptr = NULL;
+    frame->pixel_extent = 0;
     sixel_frame_set_palette(frame, NULL);
     sixel_frame_set_ncolors(frame, -1);
     frame->alpha_zero_is_transparent = 0;
     sixel_allocator_free(allocator, frame->transparent_mask);
     frame->transparent_mask = NULL;
     frame->transparent_mask_size = 0u;
+    frame->coverage_extent = 0;
     sixel_frame_set_transparent(frame, -1);
 
     sixel_frame_set_delay(frame, pg->delay);
