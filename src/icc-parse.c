@@ -52,7 +52,8 @@
 #define SIXEL_ICC_MAX_PARSE_BYTES ((size_t)16u * 1024u * 1024u)
 
 typedef struct sixel_icc_parse_budget {
-    size_t remaining;
+    size_t remaining; /* Cumulative parse limit, including scratch. */
+    size_t retained;  /* Payload bytes owned by accepted paths. */
     char const *limit;
 } sixel_icc_parse_budget_t;
 
@@ -91,8 +92,8 @@ sixel_icc_parse_fits(sixel_icc_parse_budget_t *budget,
 }
 
 static void *
-sixel_icc_parse_alloc(sixel_icc_parse_budget_t *budget, size_t size,
-                      sixel_icc_issue_t *issue)
+sixel_icc_parse_scratch(sixel_icc_parse_budget_t *budget, size_t size,
+                        sixel_icc_issue_t *issue)
 {
     void *data;
 
@@ -104,6 +105,21 @@ sixel_icc_parse_alloc(sixel_icc_parse_budget_t *budget, size_t size,
         sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_ALLOCATION);
     } else {
         budget->remaining -= size;
+    }
+    return data;
+}
+
+/* Payloads use the same cumulative limit as scratch. If an optional
+ * path is discarded, its caller restores only the retained byte count. */
+static void *
+sixel_icc_parse_alloc(sixel_icc_parse_budget_t *budget, size_t size,
+                      sixel_icc_issue_t *issue)
+{
+    void *data;
+
+    data = sixel_icc_parse_scratch(budget, size, issue);
+    if (data != NULL) {
+        budget->retained += size;
     }
     return data;
 }
@@ -839,14 +855,14 @@ sixel_icc_parse_segmented_curve_tag(unsigned char const *tag_data,
         if (breakpoint_count > SIZE_MAX / sizeof(*breakpoints)) {
             return 0;
         }
-        breakpoints = (double *)sixel_icc_parse_alloc(budget,
+        breakpoints = (double *)sixel_icc_parse_scratch(budget,
             breakpoint_count * sizeof(*breakpoints), issue);
         if (breakpoints == NULL) {
             return 0;
         }
     }
 
-    segments = (sixel_icc_segm_segment_t *)sixel_icc_parse_alloc(budget,
+    segments = (sixel_icc_segm_segment_t *)sixel_icc_parse_scratch(budget,
         segment_count * sizeof(*segments), issue);
     if (segments == NULL) {
         free(breakpoints);
@@ -2064,6 +2080,7 @@ sixel_icc_parse_mpe_curve(unsigned char const *data, size_t length,
         return 0;
     }
     budget->remaining -= count * sizeof(*curve->segments);
+    budget->retained += count * sizeof(*curve->segments);
     curve->segment_count = count;
     for (i = 0u; i + 1u < count; ++i) {
         if (!sixel_icc_mpe_read_float(data + 12u + i * 4u,
@@ -2106,7 +2123,7 @@ sixel_icc_parse_mpe_curves(unsigned char const *data, sixel_icc_mpe_t *mpe,
 
     count = mpe->input_channels;
     start = 12u + count * 8u;
-    ranges = (sixel_icc_mpe_range_t *)sixel_icc_parse_alloc(
+    ranges = (sixel_icc_mpe_range_t *)sixel_icc_parse_scratch(
         budget, count * sizeof(*ranges), issue);
     if (ranges == NULL) {
         return 0;
@@ -2395,6 +2412,7 @@ sixel_icc_parse_mpet_slot(unsigned char const *profile_data,
                            sixel_icc_parse_budget_t *budget,
                            sixel_icc_issue_t *issue)
 {
+    size_t retained_before;
     size_t offset;
     size_t length;
     size_t i;
@@ -2422,6 +2440,7 @@ sixel_icc_parse_mpet_slot(unsigned char const *profile_data,
         }
     }
 
+    retained_before = budget->retained;
     failure = SIXEL_ICC_ISSUE_NONE;
     if (length < 4u || memcmp(profile_data + offset, "mpet", 4u) != 0) {
         /* Other payloads in slots 0–2 belong to the compatibility parser. */
@@ -2440,6 +2459,7 @@ sixel_icc_parse_mpet_slot(unsigned char const *profile_data,
         ++cache->count;
         return;
     }
+    budget->retained = retained_before;
     if (failure == SIXEL_ICC_ISSUE_UNSUPPORTED) {
         reason = length >= 4u &&
             memcmp(profile_data + offset, "mpet", 4u) == 0
@@ -2462,6 +2482,7 @@ sixel_icc_parse_pipeline(unsigned char const *profile_data,
                           sixel_icc_parse_budget_t *budget,
                           sixel_icc_issue_t *issue)
 {
+    size_t retained_before;
     size_t offset;
     size_t length;
     unsigned char const *payload;
@@ -2474,6 +2495,7 @@ sixel_icc_parse_pipeline(unsigned char const *profile_data,
         return 0;
     }
     payload = profile_data + offset;
+    retained_before = budget->retained;
     failure = SIXEL_ICC_ISSUE_NONE;
     if (length < 4u) {
         failure = SIXEL_ICC_ISSUE_MALFORMED;
@@ -2505,6 +2527,7 @@ sixel_icc_parse_pipeline(unsigned char const *profile_data,
         failure = SIXEL_ICC_ISSUE_UNSUPPORTED;
     }
 
+    budget->retained = retained_before;
     if (failure == SIXEL_ICC_ISSUE_NONE) {
         failure = SIXEL_ICC_ISSUE_MALFORMED;
     }
@@ -2638,6 +2661,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
     unsigned char const *pcs;
     sixel_icc_profile_t parsed;
     sixel_icc_parse_budget_t budget;
+    size_t retained_before_curves;
     sixel_icc_mpet_cache_t mpet_cache;
     sixel_icc_issue_t local_issue;
     sixel_icc_issue_t *issue;
@@ -2672,6 +2696,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
     size_t i;
 
     budget.remaining = SIXEL_ICC_MAX_PARSE_BYTES;
+    budget.retained = 0u;
     budget.limit = NULL;
     local_issue = SIXEL_ICC_ISSUE_NONE;
     issue = &local_issue;
@@ -2910,6 +2935,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                 goto fail;
             }
 
+            retained_before_curves = budget.retained;
             if (!sixel_icc_parse_curve_tag(profile_data,
                                            profile_size,
                                            rtrc_offset,
@@ -2930,6 +2956,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                     for (i = 0u; i < 3u; ++i) {
                         sixel_icc_curve_destroy(&parsed.curves[i]);
                     }
+                    budget.retained = retained_before_curves;
                     goto accepted;
                 }
                 goto fail;
@@ -3008,6 +3035,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                 goto fail;
             }
 
+            retained_before_curves = budget.retained;
             if (!sixel_icc_parse_curve_tag(profile_data,
                                            profile_size,
                                            ktrc_offset,
@@ -3016,6 +3044,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                 if (budget.limit == NULL &&
                     (has_forward_mpet || has_reverse_mpet)) {
                     sixel_icc_curve_destroy(&parsed.curves[0]);
+                    budget.retained = retained_before_curves;
                     goto accepted;
                 }
                 goto fail;
@@ -3132,7 +3161,7 @@ accepted:
     if (out_issue != NULL) {
         *out_issue = local_issue;
     }
-    parsed.allocated_bytes = SIXEL_ICC_MAX_PARSE_BYTES - budget.remaining;
+    parsed.allocated_bytes = budget.retained;
     *out_profile = parsed;
     return 1;
 

@@ -1848,7 +1848,6 @@ sixel_frame_render_profiled(sixel_frame_t const *frame, int target,
     size_t i;
     int c;
     int space;
-    double input[3];
     double xyz[3];
     double rgb[3];
     double output[3];
@@ -1867,9 +1866,13 @@ sixel_frame_render_profiled(sixel_frame_t const *frame, int target,
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    srgb = sixel_cdef_name("srgb");
-    if (srgb == NULL) {
-        return SIXEL_BAD_ALLOCATION;
+    /* Exact sRGB coordinates must reach the byte-rounding boundary intact. */
+    srgb = NULL;
+    if (!sixel_cdef_is_srgb(frame->format.rgb)) {
+        srgb = sixel_cdef_name("srgb");
+        if (srgb == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
     }
     pixels = sixel_allocator_malloc(frame->allocator, bytes);
     if (pixels == NULL) {
@@ -1880,17 +1883,18 @@ sixel_frame_render_profiled(sixel_frame_t const *frame, int target,
     space = sixel_pixelformat_get_colorspace(target);
     for (i = 0; i < count; ++i) {
         for (c = 0; c < 3; ++c) {
-            input[c] = frame->pixels.f32ptr[3 * i + c];
+            rgb[c] = frame->pixels.f32ptr[3 * i + c];
         }
         /* Prefer relative PCS or its matrix/TRC path. A frame has no
          * exclusive rendering intent; a forward-only A2B0 profile can
          * supply PCS when there is no usable relative path. */
-        if ((!sixel_cdef_to_xyz(frame->format.rgb, input, xyz,
-                                SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) &&
-             !sixel_cdef_to_xyz(frame->format.rgb, input, xyz,
-                                SIXEL_CMS_INTENT_PERCEPTUAL)) ||
-            !sixel_cdef_from_xyz(srgb, xyz, rgb,
-                                 SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
+        if (srgb != NULL &&
+            ((!sixel_cdef_to_xyz(frame->format.rgb, rgb, xyz,
+                                 SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) &&
+              !sixel_cdef_to_xyz(frame->format.rgb, rgb, xyz,
+                                 SIXEL_CMS_INTENT_PERCEPTUAL)) ||
+             !sixel_cdef_from_xyz(srgb, xyz, rgb,
+                                  SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC))) {
             goto invalid;
         }
         if (space == SIXEL_COLORSPACE_GAMMA) {

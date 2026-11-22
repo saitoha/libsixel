@@ -6760,6 +6760,7 @@ struct sixel_color_def {
     size_t length;
     sixel_icc_profile_t icc;
     int matrix_valid;
+    int is_srgb;
 };
 
 struct sixel_color_xform {
@@ -6785,6 +6786,25 @@ sixel_cdef_matrix(double const matrix[9], double const in[3], double out[3])
             matrix[row * 3 + 1] * in[1] + matrix[row * 3 + 2] * in[2];
     }
 }
+
+/* Named definitions contain the full colorimetry, not only a gamut label.
+ * DCI-P3 uses DCI white and power 2.6; Display P3 uses D65 and sRGB TRC.
+ * Adobe's decoding exponent is exactly 563/256, not rounded gamma 2.2. */
+static struct {
+    char const *name;
+    double xy[8];
+    sixel_color_trc_t trc;
+    double gamma[3];
+} const sixel_named_colors[SIXEL_NAMED_COLOR_COUNT] = {
+    { "srgb", {.3127, .3290, .64, .33, .30, .60, .15, .06},
+      SIXEL_COLOR_TRC_SRGB, {1.0, 1.0, 1.0} },
+    { "display-p3", {.3127, .3290, .68, .32, .265, .69, .15, .06},
+      SIXEL_COLOR_TRC_SRGB, {1.0, 1.0, 1.0} },
+    { "adobe-rgb", {.3127, .3290, .64, .33, .21, .71, .15, .06},
+      SIXEL_COLOR_TRC_POWER, {563.0 / 256.0, 563.0 / 256.0, 563.0 / 256.0} },
+    { "dci-p3", {.3140, .3510, .68, .32, .265, .69, .15, .06},
+      SIXEL_COLOR_TRC_POWER, {2.6, 2.6, 2.6} }
+};
 
 sixel_color_def_t *
 sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
@@ -6849,6 +6869,9 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
         }
     }
     definition->trc = trc;
+    definition->is_srgb = trc == SIXEL_COLOR_TRC_SRGB &&
+        memcmp(xy, sixel_named_colors[SIXEL_NAMED_COLOR_SRGB].xy,
+               sizeof(sixel_named_colors[SIXEL_NAMED_COLOR_SRGB].xy)) == 0;
     memcpy(definition->gamma, gamma, sizeof(definition->gamma));
     /* Adapt the native white and every primary exactly once to the PCS. */
     for (i = 0; i < 3; ++i) {
@@ -7042,25 +7065,6 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
     return SIXEL_OK;
 }
 
-/* Named definitions contain the full colorimetry, not only a gamut label.
- * DCI-P3 uses DCI white and power 2.6; Display P3 uses D65 and sRGB TRC.
- * Adobe's decoding exponent is exactly 563/256, not rounded gamma 2.2. */
-static struct {
-    char const *name;
-    double xy[8];
-    sixel_color_trc_t trc;
-    double gamma[3];
-} const sixel_named_colors[SIXEL_NAMED_COLOR_COUNT] = {
-    { "srgb", {.3127, .3290, .64, .33, .30, .60, .15, .06},
-      SIXEL_COLOR_TRC_SRGB, {1.0, 1.0, 1.0} },
-    { "display-p3", {.3127, .3290, .68, .32, .265, .69, .15, .06},
-      SIXEL_COLOR_TRC_SRGB, {1.0, 1.0, 1.0} },
-    { "adobe-rgb", {.3127, .3290, .64, .33, .21, .71, .15, .06},
-      SIXEL_COLOR_TRC_POWER, {563.0 / 256.0, 563.0 / 256.0, 563.0 / 256.0} },
-    { "dci-p3", {.3140, .3510, .68, .32, .265, .69, .15, .06},
-      SIXEL_COLOR_TRC_POWER, {2.6, 2.6, 2.6} }
-};
-
 char const *
 sixel_cdef_named_name(int identity)
 {
@@ -7133,6 +7137,14 @@ sixel_cdef_icc(void const *bytes, size_t length)
         }
     }
     return definition;
+}
+
+/* Only the analytic sRGB definition has identical encoded coordinates.
+ * ICC endpoints can contain intent-specific tables even with sRGB primaries. */
+int
+sixel_cdef_is_srgb(sixel_color_def_t const *definition)
+{
+    return definition != NULL && definition->is_srgb;
 }
 
 size_t

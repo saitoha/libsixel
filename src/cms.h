@@ -357,6 +357,9 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
                       unsigned char **bytes, size_t *length,
                       sixel_allocator_t *allocator);
 
+SIXEL_INTERNAL_API int
+sixel_cdef_is_srgb(sixel_color_def_t const *definition);
+
 SIXEL_INTERNAL_API size_t
 sixel_cdef_storage(sixel_color_def_t const *definition);
 
