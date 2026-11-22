@@ -50,6 +50,9 @@ fi
 
 # Name each mandatory observation so deleting or skipping one fails this job.
 set -- \
+    dither/fs-gpu/0016_auto_keep_playback.t \
+    dither/fs-gpu/0017_auto_composite_playback.t \
+    dither/fs-gpu/0018_auto_keep_delta_playback.t \
     cli/quantizer-options/0156_select_color_histgram_retired.t \
     cli/quantizer-options/0157_select_color_histogram_encode.t \
     cli/terminal-color/0040_save_0.t \
@@ -75,9 +78,7 @@ set -- \
     encoder/pipeline/0125_encode_bytes_g2_levels.t \
     encoder/pipeline/0126_encode_bytes_g4_levels.t \
     encoder/pipeline/0127_encode_bytes_bgr888_pixels.t \
-    dither/fs-gpu/0016_auto_keep_playback.t \
-    dither/fs-gpu/0017_auto_composite_playback.t \
-    dither/fs-gpu/0018_auto_keep_delta_playback.t \
+    encoder/planning/0194_default_display_p3_pixels.t \
     frame/alpha/0005_frame_alpha_clone.t \
     frame/alpha/0012_frame_alpha_resolve_allocation_atomic.t \
     frame/alpha/0016_frame_float_clone_color.t \

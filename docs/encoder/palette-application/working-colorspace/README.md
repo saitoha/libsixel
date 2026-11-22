@@ -40,7 +40,7 @@ Fixed palettes bypass `-X`, but they do not bypass `-W`: the supplied palette an
 
 ## Default and option coupling
 
-`-Wauto` follows the input frame coordinates: gamma RGB stays gamma, while linear RGB, Oklab, CIELAB and DIN99d keep their typed float32 coordinates. SMPTE-C input uses linear RGB because SMPTE-C is not a supported working metric. An explicit `--precision-policy=8bit` makes auto select gamma, the only supported byte-application space. Forced GPU palette application also selects gamma RGB888 when the working space and precision can be resolved to bytes. Explicit non-gamma `-W` retains its conflict with byte application, and explicit float requests retain their precision. `-Xauto`, including omission, follows the resolved working space. Thus `-Woklab` uses Oklab for both construction and application unless `-X` selects another space.
+\`-Wauto\` follows the input frame coordinates: gamma RGB stays gamma, while linear RGB, Oklab, CIELAB and DIN99d keep their typed float32 coordinates. SMPTE-C input and float32 RGB frames with an explicit color definition use linear sRGB. The encoder converts profiled samples using the frame’s definition before clustering and palette lookup. An explicit \`--precision-policy=8bit\` makes auto select gamma, the only supported byte-application space. Forced GPU palette application also selects gamma RGB888 when the working space and precision can be resolved to bytes. Explicit non-gamma \`-W\` retains its conflict with byte application, and explicit float requests retain their precision. \`-Xauto\`, including omission, follows the resolved working space. Thus \`-Woklab\` uses Oklab for both construction and application unless \`-X\` selects another space.
 
 An explicit non-auto `-X` is authoritative regardless of option order. Repeating either option with `auto` restores its automatic policy. AUTO resolves independently for each input frame; it does not keep the previous frame's space. A workspace change invalidates palette application state while preserving a fixed source palette that may have come from a non-rewindable stream. These commands therefore have the same split geometry:
 
@@ -240,6 +240,7 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-19 | Explicit linear working space selects the nearest colors in the same xterm16 palette by linear RGB distance. | [tests/palette/working-space/0149_cli_work_linear_lookup.t](../../../../tests/palette/working-space/0149_cli_work_linear_lookup.t) |
 | WC-20 | Raster Floyd–Steinberg feedback in gamma coordinates changes the second pixel's selected fixed-palette color. | [tests/palette/working-space/0150_cli_work_gamma_fs.t](../../../../tests/palette/working-space/0150_cli_work_gamma_fs.t) |
 | WC-21 | Raster Floyd–Steinberg feedback in linear coordinates changes the second pixel's selected fixed-palette color. | [tests/palette/working-space/0151_cli_work_linear_fs.t](../../../../tests/palette/working-space/0151_cli_work_linear_fs.t) |
+| WC-22 | With both working-space options omitted, encoding a Display P3 float32 frame reproduces the expected sRGB colors at every decoded pixel. | [tests/encoder/planning/0194_default_display_p3_pixels.t](../../../../tests/encoder/planning/0194_default_display_p3_pixels.t) |
 
 ### Coverage boundary
 
