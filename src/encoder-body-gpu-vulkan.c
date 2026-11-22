@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: MIT */
-/* Vulkan backend for encoder-body-gpu.h; the same two passes as
- * encoder-body-gpu-metal.m. */
+/* Vulkan span composition and optional spelling for encoder-body-gpu.h. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 #if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "encoder-body-gpu.h"
@@ -15,8 +15,22 @@
 static char const *const body_source[] = {
 #include "generated-vulkan/encoder-body-gpu-shader.inc.h"
 };
+static char const *const emit_source[] = {
+#include "generated-vulkan/encoder-body-emit-gpu-shader.inc.h"
+};
+static char const *const copy_source[] = {
+#include "generated-vulkan/encoder-body-copy-gpu-shader.inc.h"
+};
 static sixel_vk_compute_t body_classify_stage;
 static sixel_vk_compute_t body_spans_stage;
+static sixel_vk_compute_t body_lengths_stage;
+static sixel_vk_compute_t body_order_stage;
+static sixel_vk_compute_t body_order_group_stage;
+static sixel_vk_compute_t body_bases_stage;
+static sixel_vk_compute_t body_write_stage;
+static sixel_vk_compute_t body_copy_stage;
+/* The runtime lock protects this stage history independently of sampling. */
+static sixel_gpu_headroom_t body_headroom;
 
 typedef struct sixel_body_gpu_params {
     uint32_t width, height, encoded_width, encoded_height;
@@ -25,12 +39,42 @@ typedef struct sixel_body_gpu_params {
     uint32_t words, bands, has_mask, write_pass;
 } sixel_body_gpu_params_t;
 
+typedef struct sixel_body_gpu_emit_params {
+    uint32_t width, words, ncolors, bands;
+    uint32_t selectors, limited, nodes, group_limit;
+} sixel_body_gpu_emit_params_t;
+
+/* Keep Metal's column-bucket order in shared memory within Vulkan's
+ * 48 KiB workgroup budget. Larger bands use its serial order stage. */
+#define SIXEL_BODY_GROUP_NODES 2048U
+
 /* Binding order of encoder-body-gpu.glsl. */
 enum {
     BODY_OCCUPANCY, BODY_COUNTS, BODY_WIDTHS, BODY_NODE_FIRST,
     BODY_MAP_FIRST, BODY_NODES, BODY_MAP, BODY_INDEXES, BODY_MASK,
-    BODY_PARAMS, BODY_FIRST_SEEN, BODY_BINDINGS
+    BODY_PARAMS, BODY_FIRST_SEEN, BODY_BAND_FIRST, BODY_LENGTHS,
+    BODY_REGISTERS, BODY_COLUMNS, BODY_BITS, BODY_SORTED, BODY_ENTRIES,
+    BODY_BAND_SIZE, BODY_BAND_BYTES, BODY_BYTES, BODY_EMIT_PARAMS,
+    BODY_BYTES_HOST,
+    BODY_BINDINGS
 };
+#define BODY_SPAN_BINDINGS (BODY_FIRST_SEEN + 1)
+
+/* Binding order of encoder-body-emit-gpu.glsl. */
+static int const body_emit_slots[] = {
+    BODY_NODES, BODY_MAP, BODY_FIRST_SEEN, BODY_BAND_FIRST,
+    BODY_LENGTHS, BODY_REGISTERS, BODY_COLUMNS, BODY_BITS, BODY_SORTED,
+    BODY_ENTRIES, BODY_BAND_SIZE, BODY_BAND_BYTES, BODY_BYTES,
+    BODY_EMIT_PARAMS
+};
+#define BODY_EMIT_BINDINGS (sizeof(body_emit_slots) / \
+                            sizeof(body_emit_slots[0]))
+
+static int const body_copy_slots[] = {
+    BODY_BYTES, BODY_BYTES_HOST, BODY_BAND_BYTES, BODY_EMIT_PARAMS
+};
+#define BODY_COPY_BINDINGS (sizeof(body_copy_slots) / \
+                            sizeof(body_copy_slots[0]))
 
 struct sixel_body_gpu {
     sixel_vk_buffer_t buffers[BODY_BINDINGS];
@@ -44,7 +88,8 @@ sixel_body_gpu_host_written(int slot)
 {
     return slot == BODY_INDEXES || slot == BODY_MASK ||
         slot == BODY_PARAMS || slot == BODY_NODE_FIRST ||
-        slot == BODY_MAP_FIRST;
+        slot == BODY_MAP_FIRST || slot == BODY_BAND_FIRST ||
+        slot == BODY_REGISTERS || slot == BODY_EMIT_PARAMS;
 }
 
 /* Grow by half again so slowly growing frames do not reallocate each
@@ -60,10 +105,11 @@ sixel_body_gpu_reserve(sixel_vk_runtime_t *runtime, sixel_body_gpu_t *context,
     if (buffer->buffer != VK_NULL_HANDLE && buffer->capacity >= length)
         return SIXEL_OK;
     length += length / 2;
-    if (slot == BODY_OCCUPANCY)
-        return sixel_vk_buffer_reserve_device(runtime, buffer, length);
     if (sixel_body_gpu_host_written(slot))
         return sixel_vk_buffer_reserve(runtime, buffer, length, 1);
+    if (slot == BODY_OCCUPANCY ||
+            (slot >= BODY_LENGTHS && slot <= BODY_BAND_SIZE))
+        return sixel_vk_buffer_reserve_device(runtime, buffer, length);
     /* Emission reads nodes and maps in place, so they need cached memory. */
     return sixel_vk_buffer_reserve_readback(runtime, buffer, length);
 }
@@ -83,11 +129,40 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
     status = runtime == NULL ? SIXEL_FEATURE_ERROR :
         sixel_vk_compute_create(runtime, &body_classify_stage, body_source,
             sizeof(body_source) / sizeof(body_source[0]), "body_classify",
-            BODY_BINDINGS);
+            BODY_SPAN_BINDINGS);
     if (status == SIXEL_OK)
         status = sixel_vk_compute_create(runtime, &body_spans_stage,
             body_source, sizeof(body_source) / sizeof(body_source[0]),
-            "body_spans", BODY_BINDINGS);
+            "body_spans", BODY_SPAN_BINDINGS);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_create_local(runtime,
+            &body_lengths_stage,
+            emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
+            "body_emit_lengths", BODY_EMIT_BINDINGS, 256);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_create_local(runtime,
+            &body_order_stage,
+            emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
+            "body_emit_order", BODY_EMIT_BINDINGS, 1);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_create_local(runtime,
+            &body_order_group_stage,
+            emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
+            "body_emit_order_group", BODY_EMIT_BINDINGS, 256);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_create_local(runtime,
+            &body_bases_stage,
+            emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
+            "body_emit_bases", BODY_EMIT_BINDINGS, 256);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_create_local(runtime,
+            &body_write_stage,
+            emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
+            "body_emit_write", BODY_EMIT_BINDINGS, 256);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_create(runtime, &body_copy_stage,
+            copy_source, sizeof(copy_source) / sizeof(copy_source[0]),
+            "body_copy_bytes", BODY_COPY_BINDINGS);
     sixel_vk_unlock();
     if (SIXEL_FAILED(status)) {
         free(context);
@@ -128,6 +203,41 @@ sixel_body_gpu_bind(sixel_vk_runtime_t *runtime, sixel_body_gpu_t *context)
     return sixel_vk_compute_bind(runtime, &body_spans_stage, bound);
 }
 
+static SIXELSTATUS
+sixel_body_gpu_bind_emit(sixel_vk_runtime_t *runtime,
+    sixel_body_gpu_t *context)
+{
+    sixel_vk_buffer_t const *bound[BODY_EMIT_BINDINGS];
+    SIXELSTATUS status;
+    size_t i;
+
+    for (i = 0; i < BODY_EMIT_BINDINGS; ++i)
+        bound[i] = &context->buffers[body_emit_slots[i]];
+    status = sixel_vk_compute_bind(runtime, &body_lengths_stage, bound);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_bind(runtime, &body_order_stage, bound);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_bind(runtime, &body_order_group_stage,
+            bound);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_bind(runtime, &body_bases_stage, bound);
+    if (status == SIXEL_OK)
+        status = sixel_vk_compute_bind(runtime, &body_write_stage, bound);
+    return status;
+}
+
+static SIXELSTATUS
+sixel_body_gpu_bind_copy(sixel_vk_runtime_t *runtime,
+    sixel_body_gpu_t *context)
+{
+    sixel_vk_buffer_t const *bound[BODY_COPY_BINDINGS];
+    size_t i;
+
+    for (i = 0; i < BODY_COPY_BINDINGS; ++i)
+        bound[i] = &context->buffers[body_copy_slots[i]];
+    return sixel_vk_compute_bind(runtime, &body_copy_stage, bound);
+}
+
 static uint32_t
 sixel_body_gpu_groups(size_t threads)
 {
@@ -154,6 +264,13 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
     uint32_t const *widths;
     uint32_t *node_first;
     uint32_t *map_first;
+    sixel_body_gpu_emit_params_t emit;
+    uint32_t const *band_bytes;
+    uint64_t byte_bound;
+    uint64_t gap_bound;
+    uint32_t actual_bytes;
+    int spell;
+    int direct_copy;
     SIXELSTATUS status;
 
     buffers = context->buffers;
@@ -269,6 +386,77 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
             (size_t)map_total + SIXEL_BODY_MAP_TAIL);
     if (status != SIXEL_OK) return status;
 
+    /* The retained/sparse frame inputs do not affect spelling: the spans
+     * already encode painted cells and first-seen register order. Bound
+     * each node by its separator, selector, widest gap, and map cells.
+     * If a device cannot address the bound, retain the span-only path. */
+    gap_bound = request->limited != 0
+        ? 5U * (params->encoded_width / 255U) + 2U : 2U;
+    for (t = params->encoded_width; t > 0; t /= 10U) ++gap_bound;
+    byte_bound = params->bands + map_total +
+        nodes_total * (1U + 4U + gap_bound);
+    /* Spelling is byte-identical to CPU emission. Admit it only with
+     * sustained measured device headroom, independently of sampling. */
+    spell = body_headroom.gpu && request->registers != NULL &&
+        byte_bound <= UINT32_MAX &&
+        byte_bound <= runtime->properties.limits.maxStorageBufferRange;
+    direct_copy = 0;
+    if (spell) {
+        memset(&emit, 0, sizeof(emit));
+        emit.width = params->encoded_width;
+        emit.words = params->words;
+        emit.ncolors = params->ncolors;
+        emit.bands = params->bands;
+        emit.selectors = request->selectors != 0;
+        emit.limited = request->limited != 0;
+        emit.nodes = (uint32_t)nodes_total;
+        emit.group_limit = params->encoded_width <= 2048U
+            ? SIXEL_BODY_GROUP_NODES : 0U;
+        status = sixel_body_gpu_reserve(runtime, context, BODY_BAND_FIRST,
+            ((size_t)params->bands + 1U) * 4U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_REGISTERS, params->ncolors * 4U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_EMIT_PARAMS, sizeof(emit));
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_LENGTHS, (size_t)nodes_total * 4U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_COLUMNS, (size_t)params->bands *
+                (2U * (size_t)params->encoded_width + 1U) * 4U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_BITS, (size_t)params->bands * params->words * 4U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_SORTED, (size_t)nodes_total * 4U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_ENTRIES, (size_t)nodes_total * 16U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_BAND_SIZE, params->bands * 4U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_BAND_BYTES, ((size_t)params->bands + 1U) * 4U);
+        if (status == SIXEL_OK)
+            status = sixel_body_gpu_reserve(runtime, context,
+                BODY_BYTES, (size_t)byte_bound);
+        if (status != SIXEL_OK) return status;
+        /* A cached host mapping accepts the exact GPU-produced length.
+         * If unavailable, the safe bound is copied by transfer instead. */
+        direct_copy = sixel_vk_buffer_reserve_host_cached(runtime,
+            &buffers[BODY_BYTES_HOST], (size_t)byte_bound) == SIXEL_OK;
+        memcpy(buffers[BODY_BAND_FIRST].mapped, context->band_first,
+            ((size_t)params->bands + 1U) * 4U);
+        memcpy(buffers[BODY_REGISTERS].mapped, request->registers,
+            params->ncolors * 4U);
+        memcpy(buffers[BODY_EMIT_PARAMS].mapped, &emit, sizeof(emit));
+    }
+
     params->write_pass = 1;
     memcpy(buffers[BODY_PARAMS].mapped, params, sizeof(*params));
     status = sixel_body_gpu_bind(runtime, context);
@@ -281,28 +469,87 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
         pairs * 4U);
     sixel_vk_buffer_record_upload(command, &buffers[BODY_PARAMS],
         sizeof(*params));
+    if (spell) {
+        sixel_vk_buffer_record_upload(command, &buffers[BODY_BAND_FIRST],
+            ((size_t)params->bands + 1U) * 4U);
+        sixel_vk_buffer_record_upload(command, &buffers[BODY_REGISTERS],
+            params->ncolors * 4U);
+        sixel_vk_buffer_record_upload(command, &buffers[BODY_EMIT_PARAMS],
+            sizeof(emit));
+    }
     sixel_vk_compute_barrier(command);
     sixel_vk_compute_dispatch(command, &body_spans_stage,
         sixel_body_gpu_groups(pairs));
-    sixel_vk_compute_download_barrier(command);
-    if (nodes_total != 0)
-        sixel_vk_buffer_record_download(command, &buffers[BODY_NODES],
-            (size_t)nodes_total * sizeof(sixel_body_gpu_node_t));
-    if (map_total != 0)
-        sixel_vk_buffer_record_download(command, &buffers[BODY_MAP],
-            (size_t)map_total);
-    sixel_vk_buffer_record_download(command, &buffers[BODY_FIRST_SEEN],
-        pairs * 4U);
+    if (spell) {
+        /* Prefix and register buffers are uploaded before the stages read
+         * them; each barrier makes the preceding shader writes visible. */
+        status = sixel_body_gpu_bind_emit(runtime, context);
+        if (status != SIXEL_OK) return status;
+        sixel_vk_compute_barrier(command);
+        sixel_vk_compute_dispatch(command, &body_lengths_stage,
+            sixel_body_gpu_groups(nodes_total));
+        sixel_vk_compute_barrier(command);
+        sixel_vk_compute_dispatch(command, &body_order_stage,
+            params->bands);
+        sixel_vk_compute_barrier(command);
+        if (emit.group_limit != 0) {
+            sixel_vk_compute_dispatch(command, &body_order_group_stage,
+                params->bands);
+            sixel_vk_compute_barrier(command);
+        }
+        sixel_vk_compute_dispatch(command, &body_bases_stage, 1);
+        sixel_vk_compute_barrier(command);
+        sixel_vk_compute_dispatch(command, &body_write_stage,
+            sixel_body_gpu_groups(nodes_total));
+        sixel_vk_compute_download_barrier(command);
+        sixel_vk_buffer_record_download(command, &buffers[BODY_BAND_BYTES],
+            ((size_t)params->bands + 1U) * 4U);
+        if (direct_copy) {
+            status = sixel_body_gpu_bind_copy(runtime, context);
+            if (status != SIXEL_OK) return status;
+            sixel_vk_compute_barrier(command);
+            sixel_vk_compute_dispatch(command, &body_copy_stage,
+                sixel_body_gpu_groups(((size_t)byte_bound + 3U) / 4U));
+            sixel_vk_compute_download_barrier(command);
+        } else {
+            sixel_vk_buffer_record_download(command, &buffers[BODY_BYTES],
+                (size_t)byte_bound);
+        }
+    } else {
+        sixel_vk_compute_download_barrier(command);
+        if (nodes_total != 0)
+            sixel_vk_buffer_record_download(command, &buffers[BODY_NODES],
+                (size_t)nodes_total * sizeof(sixel_body_gpu_node_t));
+        if (map_total != 0)
+            sixel_vk_buffer_record_download(command, &buffers[BODY_MAP],
+                (size_t)map_total);
+        sixel_vk_buffer_record_download(command, &buffers[BODY_FIRST_SEEN],
+            pairs * 4U);
+    }
     status = sixel_vk_submit_and_wait(runtime, command);
-    if (status == SIXEL_OK)
-        status = sixel_vk_buffer_invalidate(runtime, &buffers[BODY_NODES],
-            (size_t)nodes_total * sizeof(sixel_body_gpu_node_t));
-    if (status == SIXEL_OK)
-        status = sixel_vk_buffer_invalidate(runtime, &buffers[BODY_MAP],
-            (size_t)map_total);
-    if (status == SIXEL_OK)
+    if (spell) {
+        if (status == SIXEL_OK)
+            status = sixel_vk_buffer_invalidate(runtime,
+                &buffers[BODY_BAND_BYTES],
+                ((size_t)params->bands + 1U) * 4U);
+        if (status != SIXEL_OK) return status;
+        band_bytes = (uint32_t const *)buffers[BODY_BAND_BYTES].mapped;
+        actual_bytes = band_bytes[params->bands];
+        if (actual_bytes > byte_bound) return SIXEL_RUNTIME_ERROR;
         status = sixel_vk_buffer_invalidate(runtime,
-            &buffers[BODY_FIRST_SEEN], pairs * 4U);
+            &buffers[direct_copy ? BODY_BYTES_HOST : BODY_BYTES],
+            actual_bytes);
+    } else {
+        if (status == SIXEL_OK)
+            status = sixel_vk_buffer_invalidate(runtime, &buffers[BODY_NODES],
+                (size_t)nodes_total * sizeof(sixel_body_gpu_node_t));
+        if (status == SIXEL_OK)
+            status = sixel_vk_buffer_invalidate(runtime, &buffers[BODY_MAP],
+                (size_t)map_total);
+        if (status == SIXEL_OK)
+            status = sixel_vk_buffer_invalidate(runtime,
+                &buffers[BODY_FIRST_SEEN], pairs * 4U);
+    }
     if (status != SIXEL_OK) return status;
 
     result->nodes = (sixel_body_gpu_node_t const *)buffers[BODY_NODES].mapped;
@@ -311,8 +558,10 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
     result->first_seen = (uint32_t const *)buffers[BODY_FIRST_SEEN].mapped;
     result->ncolors = (int)params->ncolors;
     result->band_count = (int)params->bands;
-    result->bytes = NULL;
-    result->band_bytes = NULL;
+    result->bytes = spell ? (unsigned char const *)
+        buffers[direct_copy ? BODY_BYTES_HOST : BODY_BYTES].mapped : NULL;
+    result->band_bytes = spell ? (uint32_t const *)
+        buffers[BODY_BAND_BYTES].mapped : NULL;
     return SIXEL_OK;
 }
 
@@ -357,8 +606,18 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
     }
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
-    status = runtime == NULL ? SIXEL_FEATURE_ERROR :
-        sixel_body_gpu_run_locked(runtime, context, request, &params, result);
+    if (runtime == NULL) {
+        status = SIXEL_FEATURE_ERROR;
+    } else {
+        sixel_vk_headroom_choose_locked(&body_headroom, request->gpu_policy);
+        status = sixel_body_gpu_run_locked(runtime, context, request,
+            &params, result);
+        if (runtime->debug && status == SIXEL_OK)
+            fprintf(stderr,
+                "LSXBODYCHOICE|gpu=%d|bands=%u|load=%.3f|windows=%d\n",
+                result->bytes != NULL, params.bands, body_headroom.load,
+                body_headroom.windows);
+    }
     sixel_vk_unlock();
     return status;
 }

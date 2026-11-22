@@ -133,20 +133,6 @@ sixel_filter_sample_solid_gpu(
     unsigned int        /* out */ *cells);
 
 #if defined(HAVE_VULKAN)
-/* Completed GPU time and elapsed wall time are sampled at frame boundaries.
- * The window and separate enter/leave thresholds avoid per-frame flapping. */
-typedef struct sixel_sample_vulkan_headroom {
-    unsigned long long last_busy_ns;
-    unsigned long long last_wall_ns;
-    unsigned int frames;
-    double load;
-    int windows;
-    int gpu;
-} sixel_sample_vulkan_headroom_t;
-SIXEL_INTERNAL_API int
-sixel_filter_sample_vulkan_headroom_step(
-    sixel_sample_vulkan_headroom_t *state, int gpu_policy,
-    unsigned long long busy_ns, unsigned long long wall_ns);
 SIXEL_INTERNAL_API int
 sixel_filter_sample_vulkan_choose(int gpu_policy);
 /* These leases are protected by the Vulkan runtime lock. A held source

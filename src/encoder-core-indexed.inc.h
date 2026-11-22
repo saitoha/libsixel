@@ -311,6 +311,8 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
     request.selectors = ncolors != 2 || desc->keycolor == -1 ||
         body->keycolor_reserved;
     request.limited = body->has_gri_arg_limit;
+    request.gpu_policy = core->gpu_body
+        ? SIXEL_GPU_POLICY_AUTO : SIXEL_GPU_POLICY_OFF;
     status = sixel_body_gpu_run(core->gpu, &request, &core->gpu_result);
     if (SIXEL_FAILED(status)) {
         core->gpu_unavailable = 1;

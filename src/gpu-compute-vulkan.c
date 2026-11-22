@@ -19,9 +19,9 @@ sixel_vk_compute_destroy(sixel_vk_runtime_t *runtime,
 }
 
 SIXELSTATUS
-sixel_vk_compute_create(sixel_vk_runtime_t *runtime,
+sixel_vk_compute_create_local(sixel_vk_runtime_t *runtime,
     sixel_vk_compute_t *stage, char const *const *chunks, size_t count,
-    char const *entry, unsigned int bindings)
+    char const *entry, unsigned int bindings, uint32_t local_size_x)
 {
     VkPhysicalDeviceLimits const *limits;
     VkDescriptorSetLayoutBinding slots[SIXEL_VK_COMPUTE_BINDINGS];
@@ -31,6 +31,8 @@ sixel_vk_compute_create(sixel_vk_runtime_t *runtime,
     VkDescriptorPoolCreateInfo pool_info;
     VkDescriptorSetAllocateInfo allocate;
     VkComputePipelineCreateInfo pipeline;
+    VkSpecializationMapEntry map;
+    VkSpecializationInfo specialization;
     VkShaderModule module;
     sixel_vk_source_part_t parts[2];
     char suffix[128];
@@ -102,6 +104,17 @@ sixel_vk_compute_create(sixel_vk_runtime_t *runtime,
     pipeline.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     pipeline.stage.module = module;
     pipeline.stage.pName = "main";
+    if (local_size_x != 0) {
+        memset(&map, 0, sizeof(map));
+        map.constantID = 0;
+        map.size = sizeof(local_size_x);
+        memset(&specialization, 0, sizeof(specialization));
+        specialization.mapEntryCount = 1;
+        specialization.pMapEntries = &map;
+        specialization.dataSize = sizeof(local_size_x);
+        specialization.pData = &local_size_x;
+        pipeline.stage.pSpecializationInfo = &specialization;
+    }
     pipeline.layout = stage->layout;
     if (vkCreateComputePipelines(runtime->device, VK_NULL_HANDLE, 1,
             &pipeline, NULL, &stage->pipeline) != VK_SUCCESS) goto end;
@@ -111,6 +124,15 @@ end:
     vkDestroyShaderModule(runtime->device, module, NULL);
     if (status != SIXEL_OK) sixel_vk_compute_destroy(runtime, stage);
     return status;
+}
+
+SIXELSTATUS
+sixel_vk_compute_create(sixel_vk_runtime_t *runtime,
+    sixel_vk_compute_t *stage, char const *const *chunks, size_t count,
+    char const *entry, unsigned int bindings)
+{
+    return sixel_vk_compute_create_local(runtime, stage, chunks, count,
+        entry, bindings, 0);
 }
 
 SIXELSTATUS

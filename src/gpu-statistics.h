@@ -13,4 +13,19 @@ SIXEL_INTERNAL_API void sixel_gpu_statistics_set_device(char const *backend,
 SIXEL_INTERNAL_API void sixel_gpu_statistics_record(
     unsigned long long busy_nanoseconds);
 
+/* Completed GPU time and elapsed wall time are sampled at frame boundaries.
+ * The window and separate enter/leave thresholds avoid per-frame flapping. */
+typedef struct sixel_gpu_headroom {
+    unsigned long long last_busy_ns;
+    unsigned long long last_wall_ns;
+    unsigned int frames;
+    double load;
+    int windows;
+    int gpu;
+} sixel_gpu_headroom_t;
+SIXEL_INTERNAL_API int
+sixel_gpu_headroom_step(
+    sixel_gpu_headroom_t *state, int gpu_policy,
+    unsigned long long busy_ns, unsigned long long wall_ns);
+
 #endif

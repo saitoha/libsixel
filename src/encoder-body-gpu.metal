@@ -111,7 +111,7 @@ static uint emit_run(device uchar *out, uint o, uchar s, uint c, uint limited) {
   return o;
 }
 /* One thread per span: the spelled length of its column values. */
-/* Accel: BODY-COMPOSE metal */
+/* Accel: BODY-SPELL metal */
 kernel void body_lengths(device const uint4 *nodes [[buffer(0)]],
                          device const uchar *map [[buffer(1)]],
                          device uint *lengths [[buffer(2)]],
@@ -133,7 +133,7 @@ kernel void body_lengths(device const uint4 *nodes [[buffer(0)]],
  * first remaining start at or after the cursor, and a new sweep begins
  * with '$' at the first remaining start. Each emitted span records its
  * node, its byte offset in the band, the cursor before it, and flags. */
-/* Accel: BODY-COMPOSE metal */
+/* Accel: BODY-SPELL metal */
 kernel void body_order(device const uint4 *nodes [[buffer(0)]],
                        device const uint *band_first [[buffer(1)]],
                        device const uint *first_seen [[buffer(2)]],
@@ -201,7 +201,7 @@ kernel void body_order(device const uint4 *nodes [[buffer(0)]],
 #define BODY_GROUP_NODES 4096
 #define BODY_GROUP_THREADS 256
 #define BODY_GROUP_COLUMNS 2048
-/* Accel: BODY-COMPOSE metal */
+/* Accel: BODY-SPELL metal */
 kernel void body_order_group(device const uint4 *nodes [[buffer(0)]],
                              device const uint *band_first [[buffer(1)]],
                              device const uint *first_seen [[buffer(2)]],
@@ -310,7 +310,7 @@ kernel void body_order_group(device const uint4 *nodes [[buffer(0)]],
   for (uint i = lo; i < hi; i++) { entries[first + i].y = pos; pos += spans[i]; }
 }
 /* Band offsets and the '-' that opens every band after the first. */
-/* Accel: BODY-COMPOSE metal */
+/* Accel: BODY-SPELL metal */
 kernel void body_bases(device const uint *band_size [[buffer(0)]],
                        device uint *band_bytes [[buffer(1)]],
                        device uchar *out [[buffer(2)]],
@@ -325,7 +325,7 @@ kernel void body_bases(device const uint *band_size [[buffer(0)]],
   }
   band_bytes[p.bands] = total;
 }
-/* Accel: BODY-COMPOSE metal */
+/* Accel: BODY-SPELL metal */
 kernel void body_write(device const uint4 *nodes [[buffer(0)]],
                        device const uchar *map [[buffer(1)]],
                        device const uint4 *entries [[buffer(2)]],

@@ -23,75 +23,26 @@ typedef struct sample_params {
 static sixel_vk_compute_t sample_stage;
 static sixel_vk_buffer_t sample_buffers[3];
 static VkQueryPool sample_times;
-static sixel_sample_vulkan_headroom_t sample_headroom;
-
-int
-sixel_filter_sample_vulkan_headroom_step(
-    sixel_sample_vulkan_headroom_t *state, int gpu_policy,
-    unsigned long long busy_ns, unsigned long long wall_ns)
-{
-    unsigned long long elapsed;
-    unsigned long long busy;
-    double load;
-
-    if (state == NULL) return 0;
-    if (gpu_policy == SIXEL_GPU_POLICY_OFF) {
-        memset(state, 0, sizeof(*state));
-        return 0;
-    }
-    if (state->last_wall_ns == 0 || wall_ns <= state->last_wall_ns ||
-            busy_ns < state->last_busy_ns) {
-        memset(state, 0, sizeof(*state));
-        state->last_busy_ns = busy_ns;
-        state->last_wall_ns = wall_ns;
-        return 0;
-    }
-    ++state->frames;
-    elapsed = wall_ns - state->last_wall_ns;
-    if (state->frames < 8 || elapsed < 20000000ULL)
-        return state->gpu;
-    busy = busy_ns - state->last_busy_ns;
-    load = (double)busy / (double)elapsed;
-    state->load = state->windows == 0 ? load :
-        (state->load + load) * 0.5;
-    ++state->windows;
-    state->frames = 0;
-    state->last_busy_ns = busy_ns;
-    state->last_wall_ns = wall_ns;
-    /* A GPU needs ample idle time before taking the scan; once enabled,
-     * it stays there until device work consumes most of the frame window. */
-    if (state->windows >= 2 && state->load < 0.50)
-        state->gpu = 1;
-    else if (state->load > 0.70)
-        state->gpu = 0;
-    return state->gpu;
-}
+static sixel_gpu_headroom_t sample_headroom;
 
 int
 sixel_filter_sample_vulkan_choose(int gpu_policy)
 {
     sixel_vk_runtime_t *runtime;
-    sixel_gpu_statistics_t statistics;
-    unsigned long long now_ns;
     int gpu;
 
-    if (gpu_policy == SIXEL_GPU_POLICY_OFF) return 0;
     sixel_vk_lock();
+    if (gpu_policy == SIXEL_GPU_POLICY_OFF) {
+        sixel_gpu_headroom_step(&sample_headroom, gpu_policy, 0, 0);
+        sixel_vk_unlock();
+        return 0;
+    }
     runtime = sixel_vk_runtime_get_locked();
     if (runtime == NULL) {
         sixel_vk_unlock();
         return 0;
     }
-    memset(&statistics, 0, sizeof(statistics));
-    if (sixel_gpu_get_statistics(&statistics) != SIXEL_OK ||
-            !statistics.available ||
-            strcmp(statistics.backend, "vulkan") != 0) {
-        sixel_vk_unlock();
-        return 0;
-    }
-    now_ns = (unsigned long long)(sixel_vk_now_ms() * 1000000.0);
-    gpu = sixel_filter_sample_vulkan_headroom_step(&sample_headroom,
-        gpu_policy, statistics.busy_nanoseconds, now_ns);
+    gpu = sixel_vk_headroom_choose_locked(&sample_headroom, gpu_policy);
     if (runtime->debug)
         fprintf(stderr, "LSXSAMCHOICE|gpu=%d|load=%.3f|windows=%d\n",
             gpu, sample_headroom.load, sample_headroom.windows);

@@ -688,6 +688,40 @@ sixel_vk_buffer_reserve_host(sixel_vk_runtime_t *runtime,
     return SIXEL_OK;
 }
 
+/* Shader writes to a cached host mapping need no size-known transfer copy.
+ * The caller invalidates noncoherent memory after its submission fence. */
+SIXELSTATUS
+sixel_vk_buffer_reserve_host_cached(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t *buffer, VkDeviceSize size)
+{
+    VkMemoryPropertyFlags flags;
+    SIXELSTATUS status;
+
+    size = size == 0 ? 4 : (size + 3U) & ~(VkDeviceSize)3U;
+    if (buffer->buffer != VK_NULL_HANDLE && buffer->capacity >= size)
+        return SIXEL_OK;
+    sixel_vk_buffer_release(runtime, buffer);
+    status = sixel_vk_allocate(runtime, size,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &buffer->buffer,
+        &buffer->memory, &flags);
+    if (SIXEL_FAILED(status)) return status;
+    if (vkMapMemory(runtime->device, buffer->memory, 0, VK_WHOLE_SIZE, 0,
+            &buffer->mapped) != VK_SUCCESS) {
+        buffer->mapped = NULL;
+        sixel_vk_buffer_release(runtime, buffer);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    buffer->capacity = size;
+    buffer->noncoherent =
+        (flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0;
+    buffer->device_local =
+        (flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0;
+    return SIXEL_OK;
+}
+
 void
 sixel_vk_record_copy(VkCommandBuffer command, sixel_vk_buffer_t const *source,
     sixel_vk_buffer_t const *target, VkDeviceSize offset, VkDeviceSize size)
@@ -1266,6 +1300,26 @@ sixel_vk_ring_wait(sixel_vk_runtime_t *runtime, int slot)
     runtime->last_busy_ms = busy;
     sixel_gpu_statistics_record((unsigned long long)(busy * 1e6));
     return SIXEL_OK;
+}
+
+/* Sample completed device work once per frame, using each stage's own
+ * history. Missing statistics keep the stage on the CPU. */
+int
+sixel_vk_headroom_choose_locked(sixel_gpu_headroom_t *state, int gpu_policy)
+{
+    sixel_gpu_statistics_t statistics;
+    unsigned long long now_ns;
+
+    memset(&statistics, 0, sizeof(statistics));
+    if (gpu_policy == SIXEL_GPU_POLICY_OFF ||
+            sixel_gpu_get_statistics(&statistics) != SIXEL_OK ||
+            !statistics.available ||
+            strcmp(statistics.backend, "vulkan") != 0) {
+        return sixel_gpu_headroom_step(state, SIXEL_GPU_POLICY_OFF, 0, 0);
+    }
+    now_ns = (unsigned long long)(sixel_vk_now_ms() * 1000000.0);
+    return sixel_gpu_headroom_step(state, gpu_policy,
+        statistics.busy_nanoseconds, now_ns);
 }
 
 #endif /* HAVE_VULKAN */

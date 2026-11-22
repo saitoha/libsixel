@@ -11,11 +11,11 @@
  * GPU band composition for the SIXEL body.  For a fully published indexed
  * frame it computes, per six-row band and palette register, the same color
  * spans the CPU compose builds (a gap of at most nine empty columns joins two
- * occupied runs) together with each span's six-bit column values.  Emission
- * stays on the CPU.  Nodes inside a band are listed by register then
- * column; first_seen gives each register's first row-major position in the
- * band (row * encoded_width + column), which callers use to reproduce the
- * CPU tie order between equal spans.
+ * occupied runs) together with each span's six-bit column values. Backends
+ * may also return spelled bytes; otherwise the CPU emits the spans. Nodes
+ * are listed by register then column; first_seen gives each register's first
+ * row-major position in the band (row * encoded_width + column) to reproduce
+ * the CPU tie order between equal spans.
  */
 
 /* Readable bytes past the end of every map, GPU or CPU, so emission may
@@ -54,6 +54,7 @@ typedef struct sixel_body_gpu_request {
     uint32_t const *registers;
     int selectors;
     int limited;
+    int gpu_policy;
 } sixel_body_gpu_request_t;
 
 /* Borrowed views into the context's buffers, valid until the next run or

@@ -3611,7 +3611,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_SAMPLE_VULKAN_EXACT \
     -DBUILD_TEST_0105_SAMPLE_VULKAN_RANDOM \
     -DBUILD_TEST_0106_SAMPLE_VULKAN_EDGE \
-    -DBUILD_TEST_0107_SAMPLE_VULKAN_HEADROOM \
+    -DBUILD_TEST_0107_GPU_HEADROOM \
     -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
     -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
     -DBUILD_TEST_0002_PERTURB_API \
@@ -6560,7 +6560,7 @@ test_runner_SOURCES = \
     palette/sampling/sample_vulkan_exact.h \
     palette/sampling/0105_sample_vulkan_random.c \
     palette/sampling/0106_sample_vulkan_edge.c \
-    palette/sampling/0107_sample_vulkan_headroom.c \
+    palette/sampling/0107_gpu_headroom.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
     _support/processing/filter/filter_transparent_mask_fence_test_common.c \
