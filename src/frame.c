@@ -1850,6 +1850,7 @@ sixel_frame_render_profiled(sixel_frame_t const *frame, int target,
     size_t i;
     int c;
     int space;
+    int same_neutrals;
     double xyz[3];
     double rgb[3];
     double output[3];
@@ -1876,6 +1877,7 @@ sixel_frame_render_profiled(sixel_frame_t const *frame, int target,
             return SIXEL_BAD_ALLOCATION;
         }
     }
+    same_neutrals = sixel_cdef_same_srgb_neutrals(frame->format.rgb, srgb);
     pixels = sixel_allocator_malloc(frame->allocator, bytes);
     if (pixels == NULL) {
         sixel_cdef_free(srgb);
@@ -1891,6 +1893,7 @@ sixel_frame_render_profiled(sixel_frame_t const *frame, int target,
          * exclusive rendering intent; a forward-only A2B0 profile can
          * supply PCS when there is no usable relative path. */
         if (srgb != NULL &&
+            !(same_neutrals && rgb[0] == rgb[1] && rgb[1] == rgb[2]) &&
             ((!sixel_cdef_to_xyz(frame->format.rgb, rgb, xyz,
                                  SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) &&
               !sixel_cdef_to_xyz(frame->format.rgb, rgb, xyz,

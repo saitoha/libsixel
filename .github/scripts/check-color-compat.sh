@@ -74,6 +74,7 @@ set -- \
     color/bpc/0037_output_bpc_libpng_on_indices.t \
     color/bpc/0038_output_bpc_builtin_off_float.t \
     color/bpc/0039_output_bpc_libpng_off_float.t \
+    decoder/parser/0106_normal_columns_wide_fallback.t \
     encoder/pipeline/0124_encode_bytes_g1_levels.t \
     encoder/pipeline/0125_encode_bytes_g2_levels.t \
     encoder/pipeline/0126_encode_bytes_g4_levels.t \
@@ -111,6 +112,8 @@ set -- \
     frame/storage/0024_smptec_float_to_rgb888.t \
     frame/storage/0025_smptec_byte_to_rgbfloat32.t \
     frame/storage/0026_smptec_byte_to_rgb888.t \
+    frame/storage/0027_display_p3_byte_tie.t \
+    frame/storage/0028_builtin_sixel_palette_storage.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \

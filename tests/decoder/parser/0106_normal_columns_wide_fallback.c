@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Wide selection retains earlier narrow paint at all three output depths. */
 #include <stdlib.h>
+#include <string.h>
 #include <sixel.h>
 
 SIXELSTATUS sixel_decode_wide(unsigned char *, int, unsigned short **,
@@ -33,6 +34,9 @@ test_decoder_0096(int argc, char **argv)
         &width, &height, &palette, &ncolors, NULL);
     if (SIXEL_FAILED(status) || width != 3 || height != 6 ||
             ncolors != 65536) { goto done; }
+    /* The byte pixels wrap, but all declared RGB registers remain public. */
+    if (palette == NULL || memcmp(palette + 3 * 256, "\0\xff\0", 3) ||
+            memcmp(palette + 3 * 65535, "\0\0\xff", 3)) { goto done; }
     for (y = 0; y < 6; ++y) {
         if (raw[y * 3] != 1 || raw[y * 3 + 1] != 0 ||
                 raw[y * 3 + 2] != 255) { goto done; }
