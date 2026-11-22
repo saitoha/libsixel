@@ -1,0 +1,92 @@
+name: Retry disconnected CI runners
+
+on:
+  workflow_run:
+    workflows: ['libsixel CI (build & test)']
+    types: [completed]
+
+permissions: {}
+
+concurrency:
+  group: ci-retry-disconnected-runner-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  rerun:
+    # The controller runs on the default branch and uses API metadata only.
+    if: >-
+      ${{ github.event.workflow_run.path == '.github/workflows/ci.yml'
+          && github.event.workflow_run.head_repository.full_name == github.repository
+          && github.event.workflow_run.run_attempt == 1
+          && github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      checks: read
+    steps:
+      - name: Retry jobs with the runner disconnect annotation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          actions_api="repos/${GITHUB_REPOSITORY}/actions"
+          run_api="$actions_api/runs/$RUN_ID"
+          jobs=$(gh api --paginate --slurp "$run_api/attempts/1/jobs?per_page=100")
+          failed_ids=$(jq -r '.[].jobs[] | select(.conclusion == "failure") | .id' <<< "$jobs")
+          if [[ -z "$failed_ids" ]]; then
+            exit 0
+          fi
+
+          mapfile -t failed_jobs <<< "$failed_ids"
+          disconnected_jobs=()
+          for job_id in "${failed_jobs[@]}"; do
+            # Match the GitHub job annotation. Test output can contain the
+            # same phrase without the hosted runner having disconnected.
+            annotations=$(gh api --paginate --slurp \
+              "repos/${GITHUB_REPOSITORY}/check-runs/$job_id/annotations?per_page=100")
+            disconnected=$(jq -r 'any(.[][]; .annotation_level == "failure" and .path == ".github"
+                and (.message | test("^The hosted runner lost communication with the server\\.(\\s|$)")))' \
+                <<< "$annotations")
+            if [[ "$disconnected" == true ]]; then
+              disconnected_jobs+=("$job_id")
+            fi
+          done
+
+          case ${#disconnected_jobs[@]} in
+            0)
+              echo "No failed jobs reported a hosted runner disconnect."
+              exit 0
+              ;;
+            1)
+              rerun_api="$actions_api/jobs/${disconnected_jobs[0]}/rerun"
+              ;;
+            *)
+              # GitHub exposes one-job and all-failed-jobs retries. Use the
+              # latter only if every failed job matches and every other job
+              # either succeeded or was skipped.
+              if [[ ${#disconnected_jobs[@]} != "${#failed_jobs[@]}" ]] ||
+                  jq -e 'any(.[].jobs[]; .conclusion != "failure"
+                    and .conclusion != "success" and .conclusion != "skipped")' \
+                    <<< "$jobs" >/dev/null; then
+                echo "::warning::Multiple disconnected jobs and other failures in run $RUN_ID. No selective batch retry is available."
+                exit 0
+              fi
+              rerun_api="$run_api/rerun-failed-jobs"
+              ;;
+          esac
+
+          # A manual retry or a second delivery may have advanced the attempt
+          # since the completion event was emitted.
+          run=$(gh api "$run_api")
+          if ! jq -e '.run_attempt == 1 and .status == "completed" and .conclusion == "failure"' \
+              <<< "$run" >/dev/null; then
+            echo "Run $RUN_ID is no longer on its first completed failed attempt."
+            exit 0
+          fi
+
+          gh api --method POST --silent "$rerun_api"
+          echo "Requested a retry for disconnected job IDs: ${disconnected_jobs[*]}"
