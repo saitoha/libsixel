@@ -4895,7 +4895,8 @@ sixel_encoder_clear_dither_cache(sixel_encoder_t *encoder)
 /* AUTO follows the typed source coordinates, independently of the previous
  * frame's resolved settings. Loader-side planner snapshots use this pure
  * query while an output worker may still be encoding the preceding frame.
- * SMPTE-C is an input/output definition, not a supported working metric. */
+ * Profile-defined RGB and SMPTE-C need conversion to linear sRGB before
+ * clustering and palette lookup can use their coordinates. */
 int
 sixel_encoder_frame_working_colorspace(sixel_encoder_t const *encoder,
                                       sixel_frame_t const *frame)
@@ -4912,8 +4913,11 @@ sixel_encoder_frame_working_colorspace(sixel_encoder_t const *encoder,
         return SIXEL_COLORSPACE_GAMMA;
     }
     colorspace = sixel_frame_get_colorspace((sixel_frame_t *)frame);
-    return colorspace == SIXEL_COLORSPACE_SMPTEC
-        ? SIXEL_COLORSPACE_LINEAR : colorspace;
+    if (colorspace == SIXEL_FRAME_COLORSPACE_PROFILE_RGB ||
+        colorspace == SIXEL_COLORSPACE_SMPTEC) {
+        return SIXEL_COLORSPACE_LINEAR;
+    }
+    return colorspace;
 }
 
 /* Resolve only at a frame boundary. Prepare-ahead leaves a different AUTO
