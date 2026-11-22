@@ -198,6 +198,14 @@ set -- \
     frame/storage/0040_linear_packed_gray_rgb888.t \
     frame/storage/0041_two_shared_primary_tie.t \
     frame/storage/0042_implicit_palette_crop_storage.t \
+    frame/alpha/0025_indexed_direct_mask.t \
+    frame/resize/0178_linear_dark_byte_resize.t \
+    frame/resize/0179_linear_byte_resize_retry.t \
+    frame/storage/0043_analytic_linear_identity.t \
+    frame/storage/0044_p3_shared_blue_independence.t \
+    frame/storage/0045_linear_palette_rgb888.t \
+    frame/storage/0046_linear_palette_rgbfloat32.t \
+    frame/alpha/0026_strip_linear_coordinates.t \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \

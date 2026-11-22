@@ -365,8 +365,10 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);
 #define SIXEL_CDEF_SRGB_AXES 7u
 #define SIXEL_CDEF_SRGB_NEUTRAL 8u
 
+/* Compose an analytic RGB matrix when the returned axes are shared. */
 SIXEL_INTERNAL_API unsigned int
-sixel_cdef_srgb_invariants(sixel_color_def_t const *definition);
+sixel_cdef_srgb_matrix(sixel_color_def_t const *source,
+                       sixel_color_def_t const *srgb, double m[9]);
 
 SIXEL_INTERNAL_API size_t
 sixel_cdef_storage(sixel_color_def_t const *definition);
