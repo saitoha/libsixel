@@ -72,7 +72,7 @@ sixel_pixelformat_get_colorspace(int pixelformat);
 int
 sixel_helper_compute_depth(int pixelformat);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_pixelformat_buffer_bytes(int width, int height, int pixelformat,
                                size_t *bytes);
 

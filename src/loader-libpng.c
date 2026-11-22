@@ -73,6 +73,7 @@
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "frame-private.h"
+#include "pixelformat.h"
 #include "frame-factory.h"
 #include "loader.h"
 #include "loader-libpng.h"
@@ -918,7 +919,7 @@ load_png(unsigned char      /* out */ **result,
     size_t raw16_size;
     int promote_to_float32;
     int i;
-    int depth;
+    size_t expected_row;
     int cms_converted;
     int background_converted;
     int has_tRNS_chunk;
@@ -1548,10 +1549,16 @@ load_png(unsigned char      /* out */ **result,
         }
         *pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     } else {
-        depth = sixel_helper_compute_depth(*pixelformat);
-        *result = (unsigned char *)
-            sixel_allocator_malloc(allocator,
-                                   (size_t)*psx * (size_t)*psy * (size_t)depth);
+        png_read_update_info(png_ptr, info_ptr);
+        rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+        status = sixel_pixelformat_buffer_bytes(*psx, 1, *pixelformat,
+                                                &expected_row);
+        if (SIXEL_FAILED(status) || rowbytes != expected_row) {
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
+        /* The frame adopts exactly the packed rows returned by libpng. */
+        *result = sixel_allocator_malloc(allocator, rowbytes * (size_t)*psy);
         if (*result == NULL) {
             sixel_helper_set_additional_message(
                 "load_png: sixel_allocator_malloc() failed.");
@@ -1567,20 +1574,8 @@ load_png(unsigned char      /* out */ **result,
             status = SIXEL_BAD_ALLOCATION;
             goto cleanup;
         }
-        switch (*pixelformat) {
-        case SIXEL_PIXELFORMAT_PAL1:
-        case SIXEL_PIXELFORMAT_PAL2:
-        case SIXEL_PIXELFORMAT_PAL4:
-            for (i = 0; i < *psy; ++i) {
-                rows[i] = *result + (size_t)i *
-                    (((size_t)depth * (size_t)*psx * bitdepth + 7u) / 8u);
-            }
-            break;
-        default:
-            for (i = 0; i < *psy; ++i) {
-                rows[i] = *result + (size_t)depth * (size_t)*psx * (size_t)i;
-            }
-            break;
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = *result + (size_t)i * rowbytes;
         }
 
         png_read_image(png_ptr, rows);
