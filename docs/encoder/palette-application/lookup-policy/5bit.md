@@ -58,12 +58,12 @@ Serial, worker-local parallel (`shared_instance=0`), and shared parallel (`share
 
 ## GPU application
 
-The Metal and Vulkan backends eagerly build all `32^3` entries at palette application. Each cell stores the nearest actual palette entry to the center of the byte values mapped to that cell by `q5`. The palette itself is not snapped to the grid. Distances use doubled integer coordinates so half-byte centers are represented exactly; equal distances choose the lowest palette index. Edge cells use their actual clipped byte intervals.
+The Metal, Vulkan and WebGPU backends eagerly build all `32^3` entries at palette application. Each cell stores the nearest actual palette entry to the center of the byte values mapped to that cell by `q5`. The palette itself is not snapped to the grid. Distances use doubled integer coordinates so half-byte centers are represented exactly; equal distances choose the lowest palette index. Edge cells use their actual clipped byte intervals.
 
 | Backend | Cell representative | Population | Query |
 | --- | --- | --- | --- |
 | CPU | First observed query | Lazy palette scan | Cached index, possibly traversal-dependent |
-| Metal / Vulkan | Center of the cell's integer byte interval | Complete table before application | One byte-table read, independent of traversal |
+| Metal / Vulkan / WebGPU | Center of the cell's integer byte interval | Complete table before application | One byte-table read, independent of traversal |
 
 Both are approximate for an arbitrary query inside a cell. CPU and GPU output can differ even with the same palette and dither settings; this path does not promise index equivalence to CPU memoization or exhaustive `none` lookup.
 
@@ -75,7 +75,7 @@ RGB888 application supports `none`, arithmetic `a`/`x`, and `bluenoise` ditherin
 
 The Metal implementation is [lookup-policy-5bit-gpu-metal.inc.h](../../../../src/lookup-policy-5bit-gpu-metal.inc.h). The [execution map](../../execution-map/README.md) describes component ownership.
 
-GPU diffusion uses an independent fractional program in [`lookup-policy-5bit-gpu.c`](../../../../src/lookup-policy-5bit-gpu.c) and [`lookup-policy-5bit-fractional-gpu.metal`](../../../../src/lookup-policy-5bit-fractional-gpu.metal). Vulkan byte and fractional queries use the policy-owned [`lookup-policy-5bit-gpu.glsl`](../../../../src/lookup-policy-5bit-gpu.glsl) program. The continuous query selects the rounded `5bit` address directly, without an intermediate RGB8 rounding. Representatives remain the centers of the integer byte intervals, preserving the declared approximation. The table is completely prebuilt; there is no first-query memoization.
+GPU diffusion uses an independent fractional program in [`lookup-policy-5bit-gpu.c`](../../../../src/lookup-policy-5bit-gpu.c) and [`lookup-policy-5bit-fractional-gpu.metal`](../../../../src/lookup-policy-5bit-fractional-gpu.metal). Vulkan byte and fractional queries use the policy-owned [`lookup-policy-5bit-gpu.glsl`](../../../../src/lookup-policy-5bit-gpu.glsl) program. WebGPU byte and fractional queries share the [WGSL cell-table builder and lookup](../../../../src/lookup-policy-cell.wgsl). The continuous query selects the rounded `5bit` address directly, without an intermediate RGB8 rounding. Representatives remain the centers of the integer byte intervals, preserving the declared approximation. The table is completely prebuilt; there is no first-query memoization.
 
 A process-wide idle slot belonging only to `5bit` shares completed workspace across preparers for Metal fractional queries and Vulkan byte/fractional queries, independent of CPU `shared_instance` and packing. Active bindings keep exclusive allocations and cannot overwrite another palette's table. Reuse requires matching device, palette count, ordered palette and successful completion. Completed solves return workspace to the slot while a deferred solution may still retain its frozen plan. The slot holds at most one idle 32 KiB allocation; in-flight plans may temporarily hold additional tables. The Metal byte executor retains its own cache. Neither cache can be borrowed, resized or invalidated by `6bit`.
 

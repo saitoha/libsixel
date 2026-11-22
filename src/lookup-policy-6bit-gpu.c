@@ -24,6 +24,7 @@ static char const * const lookup6_vulkan_chunks[] = {
 #if defined(HAVE_WEBGPU)
 static char const *const lookup6_webgpu_chunks[] = {
 #include <lookup-policy-6bit-wgsl.inc.h>
+#include <lookup-policy-table-wgsl.inc.h>
 #include <lookup-policy-cell-wgsl.inc.h>
 };
 #endif
@@ -211,6 +212,9 @@ lookup6_describe(sixel_gpu_lookup_plan_interface_t const *self,
         view->palette = plan->palette;
         view->palette_size = plan->count * 3U;
         view->ncolors = plan->count;
+        view->workspace_size = plan->workspace_size;
+        view->build_passes = plan->passes;
+        view->build_pass_count = plan->pass_count;
         return SIXEL_OK;
     }
 #endif
@@ -331,8 +335,8 @@ lookup6_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) lookup6_borrow(plan);
-    /* WebGPU memoizes cell centers in workgroup memory. */
+    /* WebGPU leases its device-local table from the browser backend. */
+    if (plan->workspace == NULL && !plan->webgpu) lookup6_borrow(plan);
     if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             plan->workspace_size, &plan->workspace);
@@ -473,10 +477,11 @@ lookup6_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->passes[0].threads[1] = plan->passes[0].threads[2] = 1;
         plan->vulkan = vulkan;
         plan->webgpu = webgpu;
-        if (vulkan) {
-            /* lookup-policy-6bit-gpu.glsl: one 64-wide invocation per
-             * cell for both query kinds. */
-            plan->passes[0].entry_point = "lookup_6bit_build";
+        if (vulkan || webgpu) {
+            /* Both builders assign one lane per cell in 64-lane groups.
+             * Byte and fractional lookups read the same packed indexes. */
+            plan->passes[0].entry_point = webgpu ? "cell_build" :
+                "lookup_6bit_build";
             plan->passes[0].groups[0] = plan->workspace_size / 64U;
             plan->passes[0].threads[0] = 64;
         } else if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {

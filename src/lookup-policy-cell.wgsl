@@ -1,35 +1,44 @@
 // SPDX-License-Identifier: MIT
-@group(0) @binding(1) var<storage, read> palette: array<u32>;
-// Each slot stores its complete cell key and a one-based palette index.
-// Simultaneous misses and hash collisions only repeat a deterministic scan.
-var<workgroup> cell_cache: array<atomic<u32>, 256>;
+const cell_shift = 8u - cell_bits;
+const cell_step = 1i << cell_shift;
+const cell_last = (1u << cell_bits) - 1u;
 
-fn lookup(query: vec3i) -> u32 {
-    let step = 1i << (8u - cell_bits);
-    let last = (1i << cell_bits) - 1;
-    let addr = min((query + step / 2) / step, vec3i(last));
-    let key = (u32(addr.x) << (2u * cell_bits)) |
-              (u32(addr.y) << cell_bits) | u32(addr.z);
-    let slot = (key ^ (key >> 8u) ^ (key >> 16u)) & 255u;
-    let hit = atomicLoad(&cell_cache[slot]);
-    if (hit != 0u && (hit >> 9u) == key) { return (hit & 511u) - 1u; }
+var<workgroup> cell_indexes: array<u32, 64>;
 
-    // The first and last buckets are clipped by rounding and saturation.
-    // Use twice the center to preserve half-byte centers exactly.
-    let low = max(addr * step - step / 2, vec3i(0));
-    let high = select((addr + 1) * step - step / 2 - 1, vec3i(255),
-                      addr == vec3i(last));
+@compute @workgroup_size(64)
+fn cell_build(@builtin(global_invocation_id) id: vec3u,
+              @builtin(local_invocation_index) lane: u32) {
+    let cell = id.x;
+    let address = vec3u(cell >> (2u * cell_bits), (cell >> cell_bits) & cell_last,
+                        cell & cell_last);
+    // Rounding and saturation clip the first and last buckets. Twice the
+    // center keeps half-byte centers exact, including at both boundaries.
+    let addr = vec3i(address);
+    let low = max(addr * cell_step - cell_step / 2, vec3i(0));
+    let high = select((addr + 1) * cell_step - cell_step / 2 - 1, vec3i(255),
+                      address == vec3u(cell_last));
+    let center2 = low + high;
     var best = 0u;
     var minimum = 2147483647i;
     for (var i = 0u; i < arrayLength(&palette); i++) {
-        let p = palette[i];
-        let rgb = vec3i(i32(p & 255u), i32((p >> 8u) & 255u), i32(p >> 16u));
-        let delta = low + high - 2 * rgb;
+        let delta = center2 - 2 * table_rgb(palette[i]);
         let d = dot(delta, delta);
         if (d < minimum) { minimum = d; best = i; }
     }
-    atomicStore(&cell_cache[slot], (key << 9u) | (best + 1u));
-    return best;
+    // Both table sizes are multiples of 64. Each fourth lane owns a
+    // complete storage word, so neighboring byte writes cannot race.
+    cell_indexes[lane] = best;
+    workgroupBarrier();
+    if (lane % 4u == 0u) {
+        table[cell / 4u] = best | (cell_indexes[lane + 1u] << 8u) |
+            (cell_indexes[lane + 2u] << 16u) | (cell_indexes[lane + 3u] << 24u);
+    }
+}
+
+fn lookup(query: vec3i) -> u32 {
+    let addr = min(vec3u(query + cell_step / 2) >> vec3u(cell_shift), vec3u(cell_last));
+    let cell = (addr.x << (2u * cell_bits)) | (addr.y << cell_bits) | addr.z;
+    return (table[cell / 4u] >> (8u * (cell % 4u))) & 255u;
 }
 
 fn lookup_fractional(q: vec3f) -> u32 {

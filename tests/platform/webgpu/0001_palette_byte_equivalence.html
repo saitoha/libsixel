@@ -41,7 +41,12 @@ async function verify() {
     if (!await navigator.gpu?.requestAdapter())
         return 'ok 1 # SKIP no WebGPU adapter';
     const original = GPUQueue.prototype.submit;
-    let submissions = 0;
+    const dispatch = GPUComputePassEncoder.prototype.dispatchWorkgroups;
+    let submissions = 0, multiGroupPasses = 0;
+    GPUComputePassEncoder.prototype.dispatchWorkgroups = function (...groups) {
+        if (groups.some(n => n > 1)) ++multiGroupPasses;
+        return dispatch.apply(this, groups);
+    };
     GPUQueue.prototype.submit = function (...args) {
         ++submissions;
         return original.apply(this, args);
@@ -96,19 +101,25 @@ async function verify() {
         expected.ordered = expected.mahalanobis;
         for (const [lookup, digests] of Object.entries(expected)) {
             for (const [i, method] of settings.entries()) {
-                const before = submissions;
+                const before = submissions, priorPasses = multiGroupPasses;
                 const policy = i === 0 ? 'auto:palette_threshold=0' : 'force';
                 const bytes = await convert(policy, method, lookup);
                 const digest = new Uint8Array(await crypto.subtle.digest(
                     'SHA-256', bytes));
                 const hex = Array.from(digest, b =>
                     b.toString(16).padStart(2, '0')).join('');
+                // The 221-pixel point apply takes one workgroup. Only the
+                // table builder spans multiple groups, once per fresh module.
+                if ((lookup === '5bit' || lookup === '6bit') &&
+                        multiGroupPasses - priorPasses !== 1)
+                    throw Error(lookup + ' did not build its cell table exactly once');
                 if (before === submissions || hex !== digests[i])
                     throw Error(lookup + '/' + method + ' differs from Vulkan');
             }
         }
         return 'ok 1 - WebGPU palette application preserves SIXEL bytes';
     } finally {
+        GPUComputePassEncoder.prototype.dispatchWorkgroups = dispatch;
         GPUQueue.prototype.submit = original;
     }
 }
