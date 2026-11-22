@@ -7139,12 +7139,27 @@ sixel_cdef_icc(void const *bytes, size_t length)
     return definition;
 }
 
-/* Only the analytic sRGB definition has identical encoded coordinates.
- * ICC endpoints can contain intent-specific tables even with sRGB primaries. */
+/* A missing RGB definition denotes encoded sRGB. Compare analytic models
+ * by their D50 colorants and active transfer parameters. ICC endpoints may
+ * also contain intent-specific tables, so compare their full payloads. */
 int
-sixel_cdef_is_srgb(sixel_color_def_t const *definition)
+sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
 {
-    return definition != NULL && definition->is_srgb;
+    if (a == b) {
+        return 1;
+    }
+    if (a == NULL || b == NULL) {
+        return a == NULL ? b->is_srgb : a->is_srgb;
+    }
+    if (a->bytes != NULL || b->bytes != NULL) {
+        return a->bytes != NULL && b->bytes != NULL &&
+            a->length == b->length &&
+            memcmp(a->bytes, b->bytes, a->length) == 0;
+    }
+    return a->trc == b->trc &&
+        memcmp(a->to_xyz, b->to_xyz, sizeof(a->to_xyz)) == 0 &&
+        (a->trc == SIXEL_COLOR_TRC_SRGB ||
+         memcmp(a->gamma, b->gamma, sizeof(a->gamma)) == 0);
 }
 
 size_t
