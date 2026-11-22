@@ -30,6 +30,12 @@ static char const *const d_bluenoise_prefix[] = {
 static char const *const d_bluenoise_suffix[] = {
 #include <generated-vulkan/dither-policy-bluenoise-gpu-shader.inc.h>
 };
+#elif defined(HAVE_WEBGPU)
+static char const *const d_bluenoise_prefix[] = { NULL };
+static char const *const d_bluenoise_suffix[] = {
+#include <dither-policy-bluenoise-wgsl.inc.h>
+#include <gpu-palette-wgsl.inc.h>
+};
 #else
 static char const *const d_bluenoise_prefix[] = { NULL };
 static char const *const d_bluenoise_suffix[] = { NULL };
@@ -197,6 +203,7 @@ d_bluenoise_resolve(sixel_gpu_palette_request_t *effective,
     effective->bluenoise_phase_y = conf.phase_y;
     effective->bluenoise_channel_rgb = conf.channel_rgb;
     effective->bluenoise_size = conf.size;
+    effective->bluenoise_tile = sixel_bn64;
     if (conf.size != SIXEL_BN_W) {
         sixel_helper_set_additional_message(
             "gpu palette apply: blue-noise size is not supported.");
@@ -393,6 +400,7 @@ d_bluenoise_execute(d_bluenoise_plan_t *plan,
     request.dest_buffer = run->result->gpu_indexes;
     request.accumulation_result_buffer = run->result->gpu_skip;
     request.accumulation_result_mask_size = run->result->pixels;
+    request.bluenoise_tile = sixel_bn64;
     request.bluenoise_strength_override = 1;
     request.bluenoise_strength = plan->configuration.options.bluenoise_strength;
     request.bluenoise_phase_override = 1;

@@ -3,6 +3,8 @@
 @group(0) @binding(2) var<storage, read_write> indexes: array<u32>;
 struct Params {
     count: u32, first: u32, width: u32, strength: f32, save_query: u32,
+    phase_x: u32, phase_y: u32, channel_rgb: u32, gradient_factor: f32,
+    gradient_size: u32, gradient_width: u32, gradient_height: u32,
 }
 @group(0) @binding(3) var<uniform> params: Params;
 @group(0) @binding(5) var<storage, read_write> queries: array<u32>;

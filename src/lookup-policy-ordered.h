@@ -32,6 +32,15 @@ extern "C" {
 #endif
 
 
+/* Sorted squared-distance keys for one row and 8 x 8 x 8 grid seeds. */
+SIXEL_INTERNAL_API void
+sixel_lookup_ordered_row(unsigned char const *palette, int ncolors,
+    int row, uint32_t *keys);
+
+SIXEL_INTERNAL_API void
+sixel_lookup_ordered_seeds(unsigned char const *palette, int ncolors,
+    unsigned char *seeds);
+
 /* @classid lookup/ordered.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_ordered_8bit_new(

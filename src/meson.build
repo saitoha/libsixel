@@ -519,7 +519,11 @@ if webgpu
     libsixel_sources += files('gpu-palette-webgpu.c')
   endif
   foreach name : ['lookup-policy-none', 'gpu-palette', 'dither-policy-none',
-                  'dither-policy-a-dither', 'dither-policy-x-dither']
+                  'dither-policy-a-dither', 'dither-policy-x-dither',
+                  'dither-policy-bluenoise', 'lookup-policy-5bit',
+                  'lookup-policy-6bit', 'lookup-policy-cell',
+                  'lookup-policy-eytzinger', 'lookup-policy-mahalanobis',
+                  'lookup-policy-ordered']
     libsixel_sources += custom_target(name + '-wgsl',
       input: name + '.wgsl', output: name + '-wgsl.inc.h',
       command: [python3, shader_embed, '@INPUT@', '@OUTPUT@'])

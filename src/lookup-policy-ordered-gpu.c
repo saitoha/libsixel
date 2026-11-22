@@ -17,6 +17,13 @@ static char const * const ordered_vulkan_chunks[] = {
 };
 #endif
 
+#if defined(HAVE_WEBGPU)
+#include "lookup-policy-ordered.h"
+static char const *const ordered_webgpu_chunks[] = {
+#include <lookup-policy-ordered-wgsl.inc.h>
+};
+#endif
+
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
 typedef struct ordered_plan {
@@ -30,9 +37,14 @@ typedef struct ordered_plan {
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
     int vulkan;
+    int webgpu;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
+#if defined(HAVE_WEBGPU)
+    /* 512 seed bytes, then one sorted row of count keys per register. */
+    uint32_t table[];
+#endif
 } ordered_plan_t;
 
 typedef struct ordered_binding {
@@ -102,6 +114,18 @@ ordered_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->palette = plan->palette;
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->chunks = ordered_webgpu_chunks;
+        view->chunk_count = sizeof(ordered_webgpu_chunks) /
+            sizeof(ordered_webgpu_chunks[0]);
+        view->constants = plan->table;
+        view->constants_size = 512U + sizeof(uint32_t) *
+            plan->count * plan->count;
+        return SIXEL_OK;
+    }
+#endif
     view->workspace_size = 163840U * sizeof(uint32_t);
     view->build_passes = plan->passes;
     view->build_pass_count = 2;
@@ -193,7 +217,7 @@ ordered_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             163840U * sizeof(uint32_t), &plan->workspace);
     }
@@ -257,6 +281,11 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     unsigned int width;
     char const *format;
     int vulkan;
+    int webgpu;
+    size_t plan_size;
+#if defined(HAVE_WEBGPU)
+    unsigned int row;
+#endif
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -267,9 +296,15 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0 &&
+        request->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
@@ -294,7 +329,10 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             plan->count != request->ncolors ||
             plan->query_kind != request->query_kind ||
             memcmp(plan->palette, entries.entries, request->ncolors * 3U)) {
-        plan = sixel_allocator_calloc(preparer->allocator, 1, sizeof(*plan));
+        plan_size = sizeof(*plan);
+        if (webgpu) plan_size += 512U + sizeof(uint32_t) *
+            request->ncolors * request->ncolors;
+        plan = sixel_allocator_calloc(preparer->allocator, 1, plan_size);
         if (plan == NULL) {
             sixel_mutex_unlock(&preparer->gate);
             return SIXEL_BAD_ALLOCATION;
@@ -316,7 +354,18 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
+#if defined(HAVE_WEBGPU)
+        if (webgpu) {
+            sixel_lookup_ordered_seeds(plan->palette, (int)plan->count,
+                (unsigned char *)plan->table);
+            for (row = 0; row < plan->count; ++row) {
+                sixel_lookup_ordered_row(plan->palette, (int)plan->count,
+                    (int)row, plan->table + 128U + row * plan->count);
+            }
+        }
+#endif
         width = 32;
         while (width < plan->count) width *= 2;
         plan->passes[0].entry_point = "ordered_build_rows";

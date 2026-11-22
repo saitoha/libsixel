@@ -1089,24 +1089,31 @@ endif
 
 include $(top_srcdir)/build-aux/dependency-bootstrap.am
 
+webgpu_shaders = gpu-palette.wgsl dither-policy-none.wgsl \
+    dither-policy-a-dither.wgsl dither-policy-x-dither.wgsl \
+    dither-policy-bluenoise.wgsl lookup-policy-none.wgsl lookup-policy-cell.wgsl \
+    lookup-policy-5bit.wgsl lookup-policy-6bit.wgsl lookup-policy-eytzinger.wgsl \
+    lookup-policy-mahalanobis.wgsl lookup-policy-ordered.wgsl
+
 if HAVE_WEBGPU
 if !WANT_AMALGAMATED_LIB
 libsixel_la_SOURCES += $(srcdir)/gpu-palette-webgpu.c
 endif
-webgpu_headers = lookup-policy-none-wgsl.inc.h gpu-palette-wgsl.inc.h \
-    dither-policy-none-wgsl.inc.h dither-policy-a-dither-wgsl.inc.h \
-    dither-policy-x-dither-wgsl.inc.h
+webgpu_headers = $(webgpu_shaders:.wgsl=-wgsl.inc.h)
 BUILT_SOURCES += $(webgpu_headers)
 CLEANFILES += $(webgpu_headers)
-libsixel_la-lookup-policy-none-gpu.lo: lookup-policy-none-wgsl.inc.h
-libsixel_la-dither-policy-none-gpu.lo: dither-policy-none-wgsl.inc.h gpu-palette-wgsl.inc.h
-libsixel_la-dither-policy-a-dither-gpu.lo: dither-policy-a-dither-wgsl.inc.h gpu-palette-wgsl.inc.h
-libsixel_la-dither-policy-x-dither-gpu.lo: dither-policy-x-dither-wgsl.inc.h gpu-palette-wgsl.inc.h
+# Depend on generated headers without overriding Automake's compile recipes
+# for individual objects. This also supports direct parallel library builds.
+webgpu_consumers = libsixel_la-dither-policy-none-gpu.lo \
+    libsixel_la-dither-policy-a-dither-gpu.lo libsixel_la-dither-policy-x-dither-gpu.lo \
+    libsixel_la-dither-policy-bluenoise-gpu.lo libsixel_la-lookup-policy-none-gpu.lo \
+    libsixel_la-lookup-policy-5bit-gpu.lo libsixel_la-lookup-policy-6bit-gpu.lo \
+    libsixel_la-lookup-policy-eytzinger-gpu.lo libsixel_la-lookup-policy-mahalanobis-gpu.lo \
+    libsixel_la-lookup-policy-ordered-gpu.lo
+$(webgpu_consumers): $(webgpu_headers)
 %-wgsl.inc.h: $(srcdir)/%.wgsl $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
 	$(AM_V_GEN)AWK="$(AWK)" $(SHELL) $(top_srcdir)/tools/embed-metal.sh "$<" "$@"
 endif
 
-EXTRA_DIST += lookup-policy-none.wgsl gpu-palette.wgsl dither-policy-none.wgsl \
-    dither-policy-a-dither.wgsl dither-policy-x-dither.wgsl
-EXTRA_DIST += lso2-gpu.key $(SIXEL_METAL_INPUTS) generated-metal/meson.build \
+EXTRA_DIST += $(webgpu_shaders) lso2-gpu.key $(SIXEL_METAL_INPUTS) generated-metal/meson.build \
     $(SIXEL_VULKAN_INPUTS) generated-vulkan/meson.build

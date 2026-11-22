@@ -162,6 +162,7 @@ typedef struct sixel_gpu_palette_request {
     /* Resolved with the selected arithmetic method's registry defaults. */
     int positional_strength_override;
     float positional_strength;
+    unsigned char const *bluenoise_tile;  /* Borrowed 64 x 64 noise tile. */
     int bluenoise_strength_override;
     float bluenoise_strength;
     int bluenoise_phase_override;

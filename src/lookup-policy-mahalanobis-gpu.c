@@ -17,8 +17,15 @@ static char const * const mahal_vulkan_chunks[] = {
 };
 #endif
 
+#if defined(HAVE_WEBGPU)
+static char const *const mahal_webgpu_chunks[] = {
+#include <lookup-policy-mahalanobis-wgsl.inc.h>
+};
+#endif
+
 /* Byte Mahalanobis lookup retains its exhaustive RGB metric. The GPU
- * packs a private four-wide palette; no covariance or other policy is used.
+ * scores four packed palette entries at once and keeps the lowest index
+ * on ties.
  *
  * The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
@@ -33,6 +40,7 @@ typedef struct mahal_plan {
     unsigned int count;
     sixel_gpu_lookup_query_kind_t query_kind;
     int vulkan;
+    int webgpu;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
@@ -105,6 +113,17 @@ mahal_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
     view->query_kind = plan->query_kind;
+#if defined(HAVE_WEBGPU)
+    /* The browser already binds packed RGB words at the palette binding.
+     * The lane index supplies the original register, including short tails. */
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->chunks = mahal_webgpu_chunks;
+        view->chunk_count = sizeof(mahal_webgpu_chunks) /
+            sizeof(mahal_webgpu_chunks[0]);
+        return SIXEL_OK;
+    }
+#endif
     view->workspace_size = 256U * sizeof(uint32_t);
     view->build_passes = plan->passes;
     view->build_pass_count = 1;
@@ -196,7 +215,7 @@ mahal_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             256U * sizeof(uint32_t), &plan->workspace);
     }
@@ -259,6 +278,7 @@ mahal_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_palette_entries_view_t entries;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -269,13 +289,19 @@ mahal_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0 &&
+        request->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE;
+#endif
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
             request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->ncolors < 1 || request->ncolors > 256) {
@@ -318,6 +344,7 @@ mahal_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         plan->passes[0].entry_point = "mahalanobis_build";
         plan->passes[0].groups[0] = 8;

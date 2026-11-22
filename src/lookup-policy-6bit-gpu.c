@@ -21,6 +21,13 @@ static char const * const lookup6_vulkan_chunks[] = {
 };
 #endif
 
+#if defined(HAVE_WEBGPU)
+static char const *const lookup6_webgpu_chunks[] = {
+#include <lookup-policy-6bit-wgsl.inc.h>
+#include <lookup-policy-cell-wgsl.inc.h>
+};
+#endif
+
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
 typedef struct lookup6_plan {
@@ -41,6 +48,7 @@ typedef struct lookup6_plan {
     sixel_gpu_lookup_build_pass_t passes[6];
     size_t pass_count;
     int vulkan;
+    int webgpu;
     int busy;
     int valid;
 } lookup6_plan_t;
@@ -192,6 +200,20 @@ lookup6_describe(sixel_gpu_lookup_plan_interface_t const *self,
         return SIXEL_OK;
     }
 #endif
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->logical_name = "6bit";
+        view->query_kind = plan->query_kind;
+        view->chunks = lookup6_webgpu_chunks;
+        view->chunk_count = sizeof(lookup6_webgpu_chunks) /
+            sizeof(lookup6_webgpu_chunks[0]);
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->ncolors = plan->count;
+        return SIXEL_OK;
+    }
+#endif
     /* Byte consumers receive this policy's native descriptor. Fractional
      * programs, builders and workspace are owned by this policy alone. */
     if (plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE) {
@@ -310,7 +332,8 @@ lookup6_begin(sixel_gpu_lookup_plan_interface_t *self,
     }
     status = SIXEL_OK;
     if (plan->workspace == NULL) lookup6_borrow(plan);
-    if (plan->workspace == NULL) {
+    /* WebGPU memoizes cell centers in workgroup memory. */
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             plan->workspace_size, &plan->workspace);
     }
@@ -373,6 +396,7 @@ lookup6_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_palette_entries_view_t entries;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -383,9 +407,15 @@ lookup6_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0 &&
+        request->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
@@ -443,6 +473,7 @@ lookup6_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->passes[0].groups[1] = plan->passes[0].groups[2] = 1;
         plan->passes[0].threads[1] = plan->passes[0].threads[2] = 1;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
         if (vulkan) {
             /* lookup-policy-6bit-gpu.glsl: one 64-wide invocation per
              * cell for both query kinds. */

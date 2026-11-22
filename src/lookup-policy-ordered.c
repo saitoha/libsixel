@@ -199,6 +199,49 @@ sixel_lookup_policy_ordered_sort(uint32_t *keys, int count)
     }
 }
 
+/* Both the CPU and browser byte consumers freeze the same ordering.
+ * Each owns the layout and lifetime of its prepared palette representation. */
+void
+sixel_lookup_ordered_row(unsigned char const *palette, int ncolors,
+    int row, uint32_t *keys)
+{
+    int i;
+
+    for (i = 0; i < ncolors; ++i) {
+        keys[i] = (sixel_lookup_policy_ordered_distance(
+            palette + row * 3, palette + i * 3) << 8) | (uint32_t)i;
+    }
+    sixel_lookup_policy_ordered_sort(keys, ncolors);
+}
+
+void
+sixel_lookup_ordered_seeds(unsigned char const *palette, int ncolors,
+    unsigned char *seeds)
+{
+    int cell, q[3], index, i, r, g, b, distance, minimum;
+
+    /* Rational cell centers scaled by sixteen avoid seed rounding bias.
+     * Seeds are only starting colors; query coordinates remain unchanged. */
+    for (cell = 0; cell < 512; ++cell) {
+        q[0] = (2 * (cell >> 6) + 1) * 255;
+        q[1] = (2 * ((cell >> 3) & 7) + 1) * 255;
+        q[2] = (2 * (cell & 7) + 1) * 255;
+        minimum = INT_MAX;
+        index = 0;
+        for (i = 0; i < ncolors; ++i) {
+            r = q[0] - (int)palette[i * 3] * 16;
+            g = q[1] - (int)palette[i * 3 + 1] * 16;
+            b = q[2] - (int)palette[i * 3 + 2] * 16;
+            distance = r * r + g * g + b * b;
+            if (distance < minimum) {
+                minimum = distance;
+                index = i;
+            }
+        }
+        seeds[cell] = (unsigned char)index;
+    }
+}
+
 static SIXELSTATUS
 sixel_lookup_policy_ordered_prepare_8bit(
     sixel_lookup_policy_interface_t *policy,
@@ -208,7 +251,7 @@ sixel_lookup_policy_ordered_prepare_8bit(
     SIXELSTATUS status;
     uint32_t keys[SIXEL_PALETTE_MAX];
     uint32_t key, packed;
-    int row, i, index, count, cell, q[3], r, g, b, distance, minimum;
+    int row, i, index, count;
 
     if (policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -230,12 +273,7 @@ sixel_lookup_policy_ordered_prepare_8bit(
            (size_t)request->reqcolor * 3U);
     object->ncolors = request->reqcolor;
     for (row = 0; row < object->ncolors; ++row) {
-        for (i = 0; i < object->ncolors; ++i) {
-            keys[i] = (sixel_lookup_policy_ordered_distance(
-                object->palette + row * 3, object->palette + i * 3) << 8)
-                | (uint32_t)i;
-        }
-        sixel_lookup_policy_ordered_sort(keys, object->ncolors);
+        sixel_lookup_ordered_row(object->palette, object->ncolors, row, keys);
         count = 0;
         for (i = 0; i < object->ncolors; ++i) {
             key = keys[i];
@@ -256,26 +294,8 @@ sixel_lookup_policy_ordered_prepare_8bit(
             ++count;
         }
     }
-    /* Rational cell centers scaled by sixteen avoid seed rounding bias.
-     * Seeds are only starting colors; query coordinates remain unchanged. */
-    for (cell = 0; cell < 512; ++cell) {
-        q[0] = (2 * (cell >> 6) + 1) * 255;
-        q[1] = (2 * ((cell >> 3) & 7) + 1) * 255;
-        q[2] = (2 * (cell & 7) + 1) * 255;
-        minimum = INT_MAX;
-        index = 0;
-        for (i = 0; i < object->ncolors; ++i) {
-            r = q[0] - (int)object->palette[i * 3] * 16;
-            g = q[1] - (int)object->palette[i * 3 + 1] * 16;
-            b = q[2] - (int)object->palette[i * 3 + 2] * 16;
-            distance = r * r + g * g + b * b;
-            if (distance < minimum) {
-                minimum = distance;
-                index = i;
-            }
-        }
-        object->seeds[cell] = (unsigned char)index;
-    }
+    sixel_lookup_ordered_seeds(object->palette, object->ncolors,
+        object->seeds);
     object->prepared = 1;
     return SIXEL_OK;
 }

@@ -348,12 +348,12 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
 
     effective_scan = SIXEL_SCAN_AUTO;
 #if defined(HAVE_WEBGPU)
+    /* The byte dither registry owns the per-backend shader fragments.
+     * Resolve the default lookup before consulting the provider registry. */
+    if (lut_policy == SIXEL_LUT_POLICY_AUTO) lut_policy = SIXEL_LUT_POLICY_NONE;
     if (!sixel_gpu_palette_policy_is_force(gpu_policy) &&
-            ((method_for_diffuse != SIXEL_DIFFUSE_NONE &&
-              method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
-              method_for_diffuse != SIXEL_DIFFUSE_X_DITHER) ||
-             (lut_policy != SIXEL_LUT_POLICY_AUTO &&
-              lut_policy != SIXEL_LUT_POLICY_NONE))) return 0;
+            !sixel_gpu_lookup_has_program(lut_policy,
+                "webgpu.lookup-rgb8.v1")) return 0;
 #endif
 #if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
     /* Decide before probing the device: a lookup policy without its own

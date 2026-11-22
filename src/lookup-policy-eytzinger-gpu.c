@@ -18,6 +18,12 @@ static char const * const eytzinger_vulkan_chunks[] = {
 };
 #endif
 
+#if defined(HAVE_WEBGPU)
+static char const *const eytzinger_webgpu_chunks[] = {
+#include <lookup-policy-eytzinger-wgsl.inc.h>
+};
+#endif
+
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
 typedef struct eytzinger_plan {
@@ -34,6 +40,10 @@ typedef struct eytzinger_plan {
     gpu_metal_lookup_program_t metal;
     sixel_gpu_lookup_build_pass_t pass;
     int vulkan;
+    int webgpu;
+#if defined(HAVE_WEBGPU)
+    uint32_t sorted[256];
+#endif
     int busy;
     int valid;
 } eytzinger_plan_t;
@@ -103,6 +113,22 @@ eytzinger_describe(sixel_gpu_lookup_plan_interface_t const *self,
         view->workspace_size = 1024;
         view->build_passes = &plan->pass;
         view->build_pass_count = 1;
+        return SIXEL_OK;
+    }
+#endif
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->logical_name = "eytzinger";
+        view->query_kind = plan->query_kind;
+        view->chunks = eytzinger_webgpu_chunks;
+        view->chunk_count = sizeof(eytzinger_webgpu_chunks) /
+            sizeof(eytzinger_webgpu_chunks[0]);
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->ncolors = plan->count;
+        view->constants = plan->sorted;
+        view->constants_size = plan->count * sizeof(plan->sorted[0]);
         return SIXEL_OK;
     }
 #endif
@@ -219,7 +245,7 @@ eytzinger_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE &&
                 !plan->vulkan ? 1 : 1024, &plan->workspace);
@@ -274,6 +300,29 @@ eytzinger_unref(sixel_gpu_lookup_preparer_interface_t *self)
     sixel_allocator_unref(allocator);
 }
 
+#if defined(HAVE_WEBGPU)
+/* Freeze the projection order once per palette. A stable insertion sort
+ * preserves the original register order when two projections coincide. */
+static void
+eytzinger_sort_palette(eytzinger_plan_t *plan)
+{
+    unsigned int i, j, key, prev;
+    unsigned char const *rgb;
+
+    for (i = 0; i < plan->count; ++i) {
+        rgb = plan->palette + 3U * i;
+        key = rgb[0] + rgb[1] + rgb[2];
+        for (j = i; j > 0; --j) {
+            prev = plan->sorted[j - 1];
+            rgb = plan->palette + 3U * prev;
+            if ((unsigned int)(rgb[0] + rgb[1] + rgb[2]) <= key) break;
+            plan->sorted[j] = prev;
+        }
+        plan->sorted[j] = i;
+    }
+}
+#endif
+
 static SIXELSTATUS
 eytzinger_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_lookup_execution_request_t const *request,
@@ -285,6 +334,7 @@ eytzinger_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_palette_entries_view_t entries;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -295,9 +345,15 @@ eytzinger_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0 &&
+        request->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
@@ -354,6 +410,10 @@ eytzinger_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->pass.groups[1] = plan->pass.groups[2] = 1;
         plan->pass.threads[1] = plan->pass.threads[2] = 1;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
+#if defined(HAVE_WEBGPU)
+        if (webgpu) eytzinger_sort_palette(plan);
+#endif
         if (vulkan) {
             /* lookup-policy-eytzinger-gpu.glsl: one 64-wide invocation per
              * palette entry. */

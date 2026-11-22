@@ -11,6 +11,15 @@
 #include "gpu-palette.h"
 #include "gpu-statistics.h"
 
+/* Keep these scalar words in the same order as WGSL Params. */
+typedef struct webgpu_params {
+    uint32_t count, first, width;
+    float strength;
+    uint32_t save_query, phase_x, phase_y, channel_rgb;
+    float gradient_factor;
+    uint32_t gradient_size, gradient_width, gradient_height;
+} webgpu_params_t;
+
 struct sixel_gpu_program {
     sixel_gpu_lookup_plan_interface_t *lookup;
     sixel_gpu_lookup_program_view_t view;
@@ -31,6 +40,36 @@ EM_ASYNC_JS(int, webgpu_open, (void), {
         if (!adapter) return 0;
         const device = await adapter.requestDevice();
         const state = {device};
+        // WebGPU copies whole words. Pad only the last word and never
+        // keep a typed view of the growable Wasm heap across an await.
+        state.writeBytes = (buffer, at, ptr, size) => {
+            const bulk = size - size % 4;
+            if (bulk)
+                device.queue.writeBuffer(buffer, at, HEAPU8, ptr >>> 0, bulk);
+            if (bulk < size) {
+                const tail = new Uint8Array(4);
+                const offset = (ptr >>> 0) + bulk;
+                tail.set(HEAPU8.subarray(offset, offset + size - bulk));
+                device.queue.writeBuffer(buffer, at + bulk, tail);
+            }
+        };
+        function chunks(address, length) {
+            let code = "";
+            for (let i = 0; i < length; ++i)
+                code += UTF8ToString(HEAPU32[(address >>> 2) + i]);
+            return code;
+        }
+        state.getPipeline = async (lookup, nlookup, dither, ndither) => {
+            const code = chunks(lookup, nlookup) + chunks(dither, ndither);
+            if (state.code === code) return state.pipeline;
+            const module = device.createShaderModule({code});
+            const pipeline = await device.createComputePipelineAsync({
+                layout: 'auto', compute: {module, entryPoint: 'main'}
+            });
+            state.code = code;
+            state.pipeline = pipeline;
+            return pipeline;
+        };
         Module['sixelWebGPU'] = state;
         device.lost.then(() => {
             if (Module['sixelWebGPU'] === state) delete Module['sixelWebGPU'];
@@ -55,29 +94,17 @@ EM_JS_DEPS(sixel_webgpu_deps, "$UTF8ToString")
 EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
     char const *const *dither, int ndither, unsigned char const *rgb,
     unsigned char const *palette, int colors, unsigned char *dest,
-    unsigned int count, unsigned int first, int width, float strength,
-    uint32_t *corrected), {
+    unsigned int count, webgpu_params_t const *uniforms, uint32_t *corrected,
+    unsigned char const *tile, unsigned char const *gradient,
+    unsigned int gradient_size, void const *constants, unsigned int nbytes), {
     let buffers = [], scoped = false;
     const state = Module['sixelWebGPU'];
     if (!state) return 0;
     const device = state.device;
     try {
-        function chunks(address, length) {
-            let code = "";
-            for (let i = 0; i < length; ++i)
-                code += UTF8ToString(HEAPU32[(address >>> 2) + i]);
-            return code;
-        }
-        const code = chunks(lookup, nlookup) + chunks(dither, ndither);
-        if (state.code !== code) {
-            const module = device.createShaderModule({code});
-            state.pipeline = await device.createComputePipelineAsync({
-                layout: 'auto', compute: {module, entryPoint: 'main'}
-            });
-            state.code = code;
-        }
+        const pipeline = await state.getPipeline(lookup, nlookup,
+                                                 dither, ndither);
         if (!count) return 1;
-        const pipeline = state.pipeline;
         device.pushErrorScope('out-of-memory');
         device.pushErrorScope('validation');
         scoped = true;
@@ -89,9 +116,12 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
         const length = Math.ceil(count / 4) * 4;
         // Lease the previous frame's buffers when the binding sizes match.
         // A concurrent call cannot reuse them until mapAsync has completed.
+        const noiseBytes = tile ? 4096 + Math.ceil(gradient_size / 4) * 4 : 0;
         if (state.idle) {
             if (state.idle.count === count && state.idle.colors === colors &&
-                    state.idle.saveQuery === !!corrected)
+                    state.idle.saveQuery === !!corrected &&
+                    state.idle.noiseBytes === noiseBytes &&
+                    state.idle.nbytes === nbytes)
                 buffers = state.idle.buffers;
             else
                 for (const b of state.idle.buffers) b.destroy();
@@ -101,40 +131,39 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
             buffer(Math.ceil(3 * count / 4) * 4, U.STORAGE | U.COPY_DST);
             buffer(4 * colors, U.STORAGE | U.COPY_DST);
             buffer(length, U.STORAGE | U.COPY_SRC);
-            buffer(32, U.UNIFORM | U.COPY_DST);
+            buffer(48, U.UNIFORM | U.COPY_DST);
             buffer(4, U.STORAGE | U.COPY_SRC | U.COPY_DST);
             buffer(corrected ? count * 4 : 4, U.STORAGE | U.COPY_SRC);
             buffer(length + 4 + (corrected ? count * 4 : 0),
                    U.MAP_READ | U.COPY_DST);
+            if (noiseBytes) buffer(noiseBytes, U.STORAGE | U.COPY_DST);
+            if (nbytes) buffer(nbytes, U.STORAGE | U.COPY_DST);
         }
         const [input, pal, output, params, invalidIndex, queries, staging] =
             buffers;
-        // writeBuffer requires whole words. Copy only the final 1-3 bytes
-        // to padding so an unaligned frame end never reads beyond the heap.
-        const bytes = 3 * count;
-        const bulk = bytes - bytes % 4;
-        if (bulk)
-            device.queue.writeBuffer(input, 0, HEAPU8, rgb >>> 0, bulk);
-        if (bytes > bulk) {
-            const tail = new Uint8Array(4);
-            const offset = (rgb >>> 0) + bulk;
-            tail.set(HEAPU8.subarray(offset, offset + bytes - bulk));
-            device.queue.writeBuffer(input, bulk, tail);
-        }
+        state.writeBytes(input, 0, rgb, 3 * count);
         const packed = new Uint32Array(colors);
         for (let i = 0; i < colors; ++i) {
             const p = (palette >>> 0) + i * 3;
             packed[i] = HEAPU8[p] | HEAPU8[p + 1] << 8 | HEAPU8[p + 2] << 16;
         }
         device.queue.writeBuffer(pal, 0, packed);
-        const words = new Uint32Array([count, first, width, 0, !!corrected]);
-        new Float32Array(words.buffer)[3] = strength;
-        device.queue.writeBuffer(params, 0, words);
-        const bindings = [input, pal, output, params, invalidIndex, queries];
+        state.writeBytes(params, 0, uniforms, 48);
+        const entries = [input, pal, output, params, invalidIndex, queries]
+            .map((b, binding) => ({binding, resource: {buffer: b}}));
+        if (tile) {
+            const noise = buffers[7];
+            state.writeBytes(noise, 0, tile, 4096);
+            state.writeBytes(noise, 4096, gradient, gradient_size);
+            entries.push({binding: 6, resource: {buffer: noise}});
+        }
+        if (nbytes) {
+            const b = buffers[tile ? 8 : 7];
+            state.writeBytes(b, 0, constants, nbytes);
+            entries.push({binding: 7, resource: {buffer: b}});
+        }
         const group = device.createBindGroup({
-            layout: pipeline.getBindGroupLayout(0),
-            entries: bindings.map((b, binding) => ({binding,
-                resource: {buffer: b}}))
+            layout: pipeline.getBindGroupLayout(0), entries
         });
         const enc = device.createCommandEncoder();
         enc.clearBuffer(invalidIndex);
@@ -163,7 +192,8 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
                         corrected >>> 2);
         staging.unmap();
         if (!state.idle) {
-            state.idle = {count, colors, buffers, saveQuery: !!corrected};
+            state.idle = {count, colors, buffers, noiseBytes, nbytes,
+                          saveQuery: !!corrected};
             buffers = [];
         }
         return 1;
@@ -236,7 +266,9 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
             strcmp(view.program_format, webgpu_format(device)) != 0 ||
             view.query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE ||
             view.workspace_size || view.build_pass_count ||
-            view.constants_size || view.batch != NULL)
+            view.constants_size > UINT_MAX || view.constants_size % 4U ||
+            (view.constants_size && view.constants == NULL) ||
+            view.batch != NULL)
         return SIXEL_FEATURE_ERROR;
     if (view.palette == NULL || view.ncolors < 1 || view.ncolors > 256 ||
             view.palette_size < 3U * view.ncolors || view.chunks == NULL ||
@@ -247,7 +279,7 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
     if (!sixel_webgpu_available() ||
             !webgpu_dispatch(view.chunks, (int)view.chunk_count,
                 dither->suffix, (int)dither->suffix_count, NULL, NULL, 0,
-                NULL, 0, 0, 0, 0.0f, NULL)) {
+                NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 0)) {
         sixel_helper_set_additional_message(
             "WebGPU adapter or compute pipeline unavailable.");
         return SIXEL_FEATURE_ERROR;
@@ -328,7 +360,9 @@ sixel_webgpu_apply(sixel_gpu_palette_request_t const *r)
 {
     sixel_gpu_program_t *program;
     sixel_gpu_lookup_binding_interface_t *binding;
-    size_t first, count, i;
+    webgpu_params_t params;
+    size_t first, count, i, gradient_size;
+    unsigned char const *gradient;
     uint32_t *corrected;
     unsigned char skip;
     int transparent;
@@ -356,6 +390,17 @@ sixel_webgpu_apply(sixel_gpu_palette_request_t const *r)
         corrected = malloc(sizeof(*corrected) * count);
         if (corrected == NULL) status = SIXEL_BAD_ALLOCATION;
     }
+    memset(&params, 0, sizeof(params));
+    params.width = (uint32_t)r->width;
+    params.strength = r->bluenoise_tile != NULL
+        ? r->bluenoise_strength : r->positional_strength;
+    params.save_query = corrected != NULL;
+    params.phase_x = (uint32_t)r->bluenoise_phase_x;
+    params.phase_y = (uint32_t)r->bluenoise_phase_y;
+    params.channel_rgb = r->bluenoise_channel_rgb != 0;
+    params.gradient_factor = r->bluenoise_gradient_factor;
+    params.gradient_width = (uint32_t)r->bluenoise_gradient_width;
+    params.gradient_height = (uint32_t)r->bluenoise_gradient_height;
     /* At most 3 MiB per upload and 4096 workgroups. Even the minimum
      * WebGPU limits suffice, regardless of the full frame dimensions. */
     for (first = 0; status == SIXEL_OK && first < r->pixel_count;
@@ -366,12 +411,24 @@ sixel_webgpu_apply(sixel_gpu_palette_request_t const *r)
         }
         count = r->pixel_count - first;
         if (count > 1048576U) count = 1048576U;
+        gradient_size = 0;
+        gradient = NULL;
+        if (r->bluenoise_tile && r->bluenoise_gradient_map &&
+                first < r->bluenoise_gradient_map_size) {
+            gradient = r->bluenoise_gradient_map + first;
+            gradient_size = r->bluenoise_gradient_map_size - first;
+            if (gradient_size > count) gradient_size = count;
+        }
+        params.gradient_size = (uint32_t)gradient_size;
+        params.first = (uint32_t)first;
+        params.count = (uint32_t)count;
         if (!webgpu_dispatch(program->view.chunks,
                 (int)program->view.chunk_count, program->dither->suffix,
                 (int)program->dither->suffix_count, r->pixels + first * 3U,
                 r->palette, r->ncolors, r->dest + first,
-                (unsigned int)count, (unsigned int)first, r->width,
-                r->positional_strength, corrected)) {
+                (unsigned int)count, &params, corrected, r->bluenoise_tile,
+                gradient, (unsigned int)gradient_size, program->view.constants,
+                (unsigned int)program->view.constants_size)) {
             sixel_helper_set_additional_message(
                 "WebGPU palette dispatch or readback failed.");
             status = SIXEL_FEATURE_ERROR;
