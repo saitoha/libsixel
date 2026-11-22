@@ -18,6 +18,7 @@ Rows are sorted by ID. The prefix names the stage: `DECODE` for the SIXEL decode
 | DECODE-FINALIZE | Final column pass of a decode, including the alpha test | done | done | planned | planned | planned | n/a | n/a | |
 | DECODE-LITERAL-RUN | Parse literal runs sixteen bytes at a time and short numbers without a branch per digit | done | done | planned | planned | planned | n/a | n/a | |
 | EMIT-BAND-CLASSIFY | Classify the colors present in each band | done | done | done | planned | planned | n/a | n/a | |
+| EMIT-COUNT-TABLE | Spell decimal counts and color selectors from a constant byte table | done | n/a | n/a | n/a | n/a | n/a | n/a | Portable scalar table lookup; GPU body spelling is covered by BODY-SPELL. |
 | EMIT-PUT-NODE | Copy node cells and find long runs while emitting a node | done | done | done | rejected | planned | n/a | n/a | A 32-lane AVX2 scan measured slower than SSE2: nodes are short and most lanes stay idle. |
 | HECKBERT-BOX-BOUNDS | Box bounds and weight over RGB tuples | done | done | planned | done | planned | n/a | n/a | |
 | HECKBERT-BOX-SCORE | Squared-error score of a box over RGB tuples | done | done | planned | done | planned | n/a | n/a | |

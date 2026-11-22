@@ -874,6 +874,7 @@ The IDs below map to existing assertions. A representative fixture establishes i
 | D6-277 | An exactly matching frame does not request refinement. | [tests/delta/palette/0124_delta_refine_exact.t](../../../tests/delta/palette/0124_delta_refine_exact.t) |
 | D6-278 | Approximate early keeps request refinement even when another opaque pixel is painted; the painted count is one. | [tests/delta/palette/0125_delta_refine_partial.t](../../../tests/delta/palette/0125_delta_refine_partial.t) |
 | D6-279 | Nonzero source transparency masks do not impersonate approximate delta keeps. | [tests/delta/output-representation/0091_delta_refine_source_mask.t](../../../tests/delta/output-representation/0091_delta_refine_source_mask.t) |
+| D6-292 | The profiling headroom pin selects GPU or CPU for automatic policy, while explicit GPU-off policy retains CPU. | [tests/palette/sampling/0108_gpu_headroom_pin.t](../../../tests/palette/sampling/0108_gpu_headroom_pin.t) |
 | DC-01 | query a early bypass | [tests/delta/comparison/0022_query_a_early_bypass.t](../../../tests/delta/comparison/0022_query_a_early_bypass.t) |
 | DC-02 | query a post replace | [tests/delta/comparison/0023_query_a_post_replace.t](../../../tests/delta/comparison/0023_query_a_post_replace.t) |
 | DC-03 | query a early keep | [tests/delta/comparison/0024_query_a_early_keep.t](../../../tests/delta/comparison/0024_query_a_early_keep.t) |

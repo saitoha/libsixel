@@ -81,6 +81,7 @@
 #include "compat_stub.h"
 #include "encoder-core-private.h"
 #include "encoder-core-packet.h"
+#include "encoder-count.h"
 #include "encode-result.h"
 #include "dither-policy-private.h"
 #include "output-factory.h"
@@ -2882,35 +2883,6 @@ sixel_put_run_reserved_long(unsigned char *p, int symbol, int count,
     while (ndigits > 0) *p++ = (unsigned char)digits[--ndigits];
     *p++ = (unsigned char)symbol;
     return p;
-}
-
-/* Write lead, the decimal digits of 0 <= value < 1000 and, unless tail is
- * negative, one tail byte, as one 5-byte store whose digit count selects
- * the advance. Nodes mix one-, two- and three-digit numbers, so this avoids
- * a mispredicted branch per digit. Callers reserve the 5 bytes. */
-static inline unsigned char *
-sixel_put_count_reserved(unsigned char *p, int lead, int value, int tail)
-{
-    uint64_t digits;
-    uint64_t word;
-    unsigned int ndigits;
-
-    ndigits = 1U + (value >= 10) + (value >= 100);
-    digits = (uint64_t)('0' + value / 100) |
-        (uint64_t)('0' + value / 10 % 10) << 8 |
-        (uint64_t)('0' + value % 10) << 16;
-    /* Drop leading zero digits; byte 0 then holds the first digit. */
-    digits >>= 8U * (3U - ndigits);
-    word = (uint64_t)(unsigned char)lead | digits << 8;
-    if (tail >= 0) {
-        word |= (uint64_t)(unsigned char)tail << (8U * (1U + ndigits));
-    }
-    p[0] = (unsigned char)word;
-    p[1] = (unsigned char)(word >> 8);
-    p[2] = (unsigned char)(word >> 16);
-    p[3] = (unsigned char)(word >> 24);
-    p[4] = (unsigned char)(word >> 32);
-    return p + 1 + ndigits + (tail >= 0);
 }
 
 static inline unsigned char *

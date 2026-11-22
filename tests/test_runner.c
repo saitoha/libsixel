@@ -1159,6 +1159,7 @@ int test_encode_run_0120(int argc, char **argv);
 int test_encode_run_0121(int argc, char **argv);
 int test_encode_run_0122(int argc, char **argv);
 int test_encode_run_0123(int argc, char **argv);
+int test_encode_count_0128(int argc, char **argv);
 int test_compose_0045(int argc, char **argv);
 int test_compose_0046(int argc, char **argv);
 int test_compose_0047(int argc, char **argv);
@@ -7584,6 +7585,7 @@ static test_entry_t const test_entries[] = {
       test_encode_run_0121 },
     { "encoder/pipeline/0122_run_gap_unlimited",
       test_encode_run_0122 },
+    { "encoder/pipeline/0128_count_table", test_encode_count_0128 },
     { "encoder/pipeline/0123_run_gap_limited",
       test_encode_run_0123 },
     { "encoder-core/0045_compose_gap_nine",

@@ -3613,6 +3613,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0106_SAMPLE_VULKAN_EDGE \
     -DBUILD_TEST_0107_GPU_HEADROOM \
     -DBUILD_TEST_0108_GPU_HEADROOM_PIN \
+    -DBUILD_TEST_0128_COUNT_TABLE \
     -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
     -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
     -DBUILD_TEST_0002_PERTURB_API \
@@ -6563,6 +6564,7 @@ test_runner_SOURCES = \
     palette/sampling/0106_sample_vulkan_edge.c \
     palette/sampling/0107_gpu_headroom.c \
     palette/sampling/0108_gpu_headroom_pin.c \
+    encoder/pipeline/0128_count_table.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
     _support/processing/filter/filter_transparent_mask_fence_test_common.c \
