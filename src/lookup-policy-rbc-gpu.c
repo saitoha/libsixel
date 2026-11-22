@@ -24,10 +24,12 @@ static char const * const rbc_vulkan_chunks[] = {
  * No other lookup can borrow this cache or depend on its table layout. */
 #if defined(HAVE_WEBGPU)
 static char const *const rbc_webgpu_chunks[] = {
-#include <lookup-policy-table-wgsl.inc.h>
 #include <lookup-policy-rbc-wgsl.inc.h>
 };
 #endif
+
+/* Packed members, assignments, counts, boxes, and 32^3 seeds and masks. */
+#define RBC_WORKSPACE_SIZE (69936U * sizeof(uint32_t))
 
 typedef struct rbc_plan {
     sixel_gpu_lookup_plan_interface_t iface;
@@ -42,7 +44,6 @@ typedef struct rbc_plan {
     uint32_t fractional;
     int vulkan;
     int webgpu;
-    size_t webgpu_size;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[3];
@@ -98,30 +99,19 @@ rbc_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (rbc_plan_t const *)self;
     memset(view, 0, sizeof(*view));
-#if defined(HAVE_WEBGPU)
-    if (plan->webgpu) {
-        view->program_format = "webgpu.lookup-rgb8.v1";
-        view->logical_name = "rbc";
-        view->query_kind = plan->query_kind;
-        view->chunks = rbc_webgpu_chunks;
-        view->chunk_count = sizeof(rbc_webgpu_chunks) /
-            sizeof(rbc_webgpu_chunks[0]);
-        view->ncolors = plan->count;
-        view->palette = plan->palette;
-        view->palette_size = plan->count * 3U;
-        view->workspace_size = plan->webgpu_size;
-        view->build_passes = plan->passes;
-        view->build_pass_count = 1;
-        return SIXEL_OK;
-    }
-#endif
     view->program_format = "metal.lookup-rgb8.v1";
     view->logical_name = "rbc";
     view->chunks = rbc_chunks;
     view->chunk_count = sizeof(rbc_chunks) / sizeof(rbc_chunks[0]);
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->chunks = rbc_webgpu_chunks;
+        view->chunk_count = sizeof(rbc_webgpu_chunks) /
+            sizeof(rbc_webgpu_chunks[0]);
+    }
+#endif
 #if defined(HAVE_VULKAN)
-    /* The Vulkan program keeps the same table, constant, passes and
-     * workspace. */
     if (plan->vulkan) {
         view->program_format = "vulkan.lookup-rgb8.v1";
         view->chunks = rbc_vulkan_chunks;
@@ -133,9 +123,11 @@ rbc_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
     view->query_kind = plan->query_kind;
-    view->constants = &plan->fractional;
-    view->constants_size = sizeof(plan->fractional);
-    view->workspace_size = 69936U * sizeof(uint32_t);
+    if (!plan->webgpu) {
+        view->constants = &plan->fractional;
+        view->constants_size = sizeof(plan->fractional);
+    }
+    view->workspace_size = RBC_WORKSPACE_SIZE;
     view->build_passes = plan->passes;
     view->build_pass_count = 3;
     return SIXEL_OK;
@@ -228,7 +220,7 @@ rbc_begin(sixel_gpu_lookup_plan_interface_t *self,
     status = SIXEL_OK;
     if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
-            69936U * sizeof(uint32_t), &plan->workspace);
+            RBC_WORKSPACE_SIZE, &plan->workspace);
     }
     if (SIXEL_FAILED(status)) {
         sixel_mutex_unlock(&plan->gate);
@@ -355,8 +347,7 @@ rbc_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->query_kind = request->query_kind;
         plan->vulkan = vulkan;
         plan->webgpu = webgpu;
-        /* The constant is a uint32 word on Metal and Vulkan alike,
-         * independent of C enum storage. */
+        /* Shader constants use uint32 words independently of enum storage. */
         plan->fractional = request->query_kind ==
             SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
@@ -370,20 +361,14 @@ rbc_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->passes[1].threads[0] = 32;
         plan->passes[1].groups[1] = plan->passes[1].groups[2] = 1;
         plan->passes[1].threads[1] = plan->passes[1].threads[2] = 1;
-        plan->passes[2].entry_point = "rbc_seed";
+        /* The WebGPU builder entry selects the mask domain. Lookup needs
+         * no per-frame binding for this build-time choice. */
+        plan->passes[2].entry_point = webgpu && plan->fractional
+            ? "rbc_seed_fractional" : "rbc_seed";
         plan->passes[2].groups[0] = 256;
         plan->passes[2].threads[0] = 128;
         plan->passes[2].groups[1] = plan->passes[2].groups[2] = 1;
         plan->passes[2].threads[1] = plan->passes[2].threads[2] = 1;
-#if defined(HAVE_WEBGPU)
-        /* Builders and table layout belong to this lookup component. */
-        if (webgpu) {
-            plan->webgpu_size = (16U * 259U) * sizeof(uint32_t);
-            plan->passes[0] = (sixel_gpu_lookup_build_pass_t){
-                "rbc_build", { 1, 1, 1 }, { 16, 1, 1 }
-            };
-        }
-#endif
         if (preparer->cached != NULL) {
             rbc_plan_unref(&preparer->cached->iface);
         }

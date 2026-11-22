@@ -97,6 +97,7 @@ async function paletteByteEquivalence(createConverter) {
         // These exact byte lookups choose the same register on distance ties.
         expected.ordered = expected.mahalanobis;
         expected.delaunay = expected.ordered;
+        expected.rbc = expected.ordered;
         for (const [lookup, digests] of Object.entries(expected)) {
             for (const [i, method] of settings.entries()) {
                 const before = submissions, priorPasses = multiGroupPasses.length;
@@ -113,10 +114,11 @@ async function paletteByteEquivalence(createConverter) {
             }
         }
         const short = await convert(createConverter, 'off', 'none', 'none', 'xterm16');
-        // Bounds and rows use one workgroup per palette entry. The 32^3
-        // and 16^3 seed tables take 256 and 32 groups of 128 cells.
+        // The 32^3 and 16^3 seed tables take 256 and 32 groups of 128 cells.
+        // RBC assigns the 16 colors in a single group before packing rows.
         for (const [lookup, groups] of [['ordered', '16,256'],
-                                        ['delaunay', '16,16,32']]) {
+                                        ['delaunay', '16,16,32'],
+                                        ['rbc', '16,256']]) {
             const before = multiGroupPasses.length;
             const gpu = await convert(createConverter, 'force', 'none', lookup, 'xterm16');
             if (multiGroupPasses.slice(before).join(',') !== groups ||

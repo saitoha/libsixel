@@ -83,9 +83,9 @@ one 8-bit query           Theta(K)
 
 `J` is capped at 16, but treating it as a named variable makes the design constraint visible. Good pivots and compact clusters make `V` small; broad or overlapping balls can leave nearly every member to scan.
 
-## Metal RGB8 execution
+## GPU RGB8 execution
 
-The RGB888 gamma-space GPU provider is independent of the CPU float cluster implementation and of other lookup policies. On Vulkan, [`lookup-policy-rbc-gpu.glsl`](../../../../src/lookup-policy-rbc-gpu.glsl) owns the same three passes, table and both queries. It preserves the CPU byte scan's unweighted squared RGB distance and first-index tie rule. The injected program supports 1 through 256 paintable colors; shared PaletteApply admission controls eligible dithers and delta views as described in the [execution map](../../execution-map/README.md#4-lookup-per-pixel-application-and-output).
+The RGB888 gamma-space GPU provider is independent of the CPU float cluster implementation and of other lookup policies. The [Metal](../../../../src/lookup-policy-rbc-gpu.metal), [Vulkan](../../../../src/lookup-policy-rbc-gpu.glsl) and [WebGPU](../../../../src/lookup-policy-rbc.wgsl) programs share the three preparation passes, table layout and query methods. The byte query preserves the CPU byte scan's unweighted squared RGB distance and first-index tie rule. The injected program supports 1 through 256 paintable colors; shared PaletteApply admission controls eligible dithers and delta views as described in the [execution map](../../execution-map/README.md#4-lookup-per-pixel-application-and-output).
 
 Three GPU passes prepare a private cluster table. The sequence separates each producer from its consumer before pixel lookup begins:
 
