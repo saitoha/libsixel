@@ -48,9 +48,9 @@ typedef struct fhedt_plan {
     char specialization[80];
     char const *chunks[1+sizeof(fhedt_chunks)/sizeof(*fhedt_chunks)];
     size_t workspace_size;
-    /* Metal reads constants; the Vulkan program reads vulkan_constants:
-     * shift, refine, dist2, resolution and the finished table's word
-     * offset in the workspace, followed by the byte-compaction flag. */
+    /* Metal uses shift, refine and dist2. WebGPU also uses a packed table
+     * word offset (zero for the raw labels). Vulkan uses shift, refine,
+     * dist2, resolution, a table word offset and a byte-compaction flag. */
     uint32_t constants[4];
     uint32_t vulkan_constants[6];
     sixel_gpu_lookup_build_pass_t passes[6];
@@ -211,10 +211,10 @@ fhedt_describe(sixel_gpu_lookup_plan_interface_t const *self,
         view->palette = plan->palette;
         view->palette_size = plan->count * 3U;
         view->constants = plan->constants;
-        view->constants_size = 3U * sizeof(uint32_t);
+        view->constants_size = sizeof(plan->constants);
         view->workspace_size = plan->webgpu_size;
         view->build_passes = plan->passes;
-        view->build_pass_count = 3;
+        view->build_pass_count = plan->pass_count;
         return SIXEL_OK;
     }
 #endif
@@ -586,9 +586,9 @@ fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #endif
         memcpy(plan->palette, entries.entries, plan->count * 3U);
 #if defined(HAVE_WEBGPU)
-        /* Builders and table layout belong to this lookup component. */
         if (webgpu) {
-            plan->webgpu_size = (2U * r * r * r) * sizeof(uint32_t);
+            plan->webgpu_size = 2U * cells * sizeof(uint32_t);
+            plan->pass_count = 3;
             plan->passes[0] = (sixel_gpu_lookup_build_pass_t){
                 "fhedt_x", { r * r / 32U, 1, 1 }, { 32, 1, 1 }
             };
@@ -598,6 +598,19 @@ fhedt_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             plan->passes[2] = (sixel_gpu_lookup_build_pass_t){
                 "fhedt_z", { r * r / 32U, 1, 1 }, { 32, 1, 1 }
             };
+            /* Z finishes in the first half. Reuse the second half for
+             * packed flags only when queries can refine the seed label.
+             * Tile the largest grid across two dispatch dimensions. */
+            if (plan->constants[1] &&
+                    (plan->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE ||
+                     r != 256)) {
+                plan->constants[3] = (uint32_t)cells;
+                plan->passes[3] = (sixel_gpu_lookup_build_pass_t){
+                    "fhedt_pack", { 2048, cells / (2048U * 128U), 1 },
+                    { 128, 1, 1 }
+                };
+                plan->pass_count = 4;
+            }
         }
 #endif
         if (preparer->cached != NULL) {

@@ -84,28 +84,48 @@ fn fhedt_y(@builtin(global_invocation_id) id: vec3u) { edt(id.x, 1u); }
 @compute @workgroup_size(32)
 fn fhedt_z(@builtin(global_invocation_id) id: vec3u) { edt(id.x, 2u); }
 
+// Reuse the Y pass's scratch space after Z has finished. Store the register
+// in bits 0–7, the six-neighbor boundary flag in bit 8 and zero cost in bit 9.
+@compute @workgroup_size(128)
+fn fhedt_pack(@builtin(global_invocation_id) id: vec3u,
+              @builtin(num_workgroups) groups: vec3u) {
+    let r = 256u >> config[0];
+    let at = id.x + id.y * (groups.x * 128u);
+    let cell = vec3u(at % r, (at / r) % r, at / (r * r));
+    let word = table[at];
+    let label = word & 255u;
+    var boundary = false;
+    var stride = 1u;
+    for (var a = 0u; a < 3u; a++) {
+        if ((cell[a] > 0u && (table[at - stride] & 255u) != label) ||
+            (cell[a] + 1u < r && (table[at + stride] & 255u) != label)) {
+            boundary = true;
+            break;
+        }
+        stride *= r;
+    }
+    table[config[3] + at] =
+        label | (u32(boundary) << 8u) | (u32((word >> 8u) == 0u) << 9u);
+}
+
 fn fhedt_query(q: vec3f, fractional: bool) -> u32 {
     let shift = vec3u(config[0]);
     let r = 256u >> config[0];
     let cell = vec3u(clamp(q, vec3f(0), vec3f(255))) >> shift;
     let at = cell.x + r * (cell.y + r * cell.z);
-    let word = table[at];
+    let lut = config[3];
+    let word = table[lut + at];
     var best = word & 255u;
-    if (config[1] == 0u || (r == 256u && !fractional) ||
-        (config[2] != 0u && (word >> 8u) == 0u &&
+    // Zero cost is sufficient for byte queries. A fractional query must
+    // also lie exactly on the seed before it can skip corner refinement.
+    if (lut == 0u || (word & 256u) == 0u ||
+        (config[2] != 0u && (word & 512u) != 0u &&
          (!fractional || all(q == vec3f(cell << shift))))) { return best; }
-    var boundary = false;
-    var stride = 1u;
-    for (var a = 0u; a < 3u; a++) {
-        if (cell[a] > 0u && (table[at - stride] & 255u) != best) { boundary = true; }
-        if (cell[a] + 1u < r && (table[at + stride] & 255u) != best) { boundary = true; }
-        stride *= r;
-    }
-    if (!boundary) { return best; }
     var minimum = 1e30f;
     for (var k = 0u; k < 8u; k++) {
-        let corner = min(cell + vec3u(k & 1u, (k >> 1u) & 1u, k >> 2u), vec3u(r - 1u));
-        let i = table[corner.x + r * (corner.y + r * corner.z)] & 255u;
+        let offset = vec3u(k & 1u, (k >> 1u) & 1u, k >> 2u);
+        let corner = min(cell + offset, vec3u(r - 1u));
+        let i = table[lut + corner.x + r * (corner.y + r * corner.z)] & 255u;
         let d = q - vec3f((vec3u(table_rgb(palette[i])) >> shift) << shift);
         let score = dot(d, d);
         if (score < minimum) { minimum = score; best = i; }

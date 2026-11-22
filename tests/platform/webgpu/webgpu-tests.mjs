@@ -131,6 +131,21 @@ async function paletteByteEquivalence(createConverter) {
                     gpu.length !== short.length || !gpu.every((v, i) => v === short[i]))
                 throw Error(lookup + ' short-palette builders or output differ');
         }
+        // R64 builds the boundary table only when refinement is enabled.
+        // The two Vulkan digests differ because refinement changes labels.
+        for (const [options, groups, digest] of [
+            ['', '128,128,128,2048',
+             '29b5dc8c2ae64f5d77d9a8eddae0729f6e9c18bdced23ae39f23bd1f3e000840'],
+            [':refine=0', '128,128,128',
+             'a236d33d785a16971185d88200d3677adfb52ce85671a7c6cd2435d45e832cc8'],
+        ]) {
+            const before = multiGroupPasses.length;
+            const gpu = await convert(createConverter, 'force', 'none',
+                'fhedt' + options, 'xterm16');
+            if (multiGroupPasses.slice(before).join(',') !== groups ||
+                    await sha256(gpu) !== digest)
+                throw Error('fhedt' + options + ' builders or output differ');
+        }
         return 'ok 1 - WebGPU palette application preserves SIXEL bytes';
     } finally {
         GPUComputePassEncoder.prototype.dispatchWorkgroups = dispatch;

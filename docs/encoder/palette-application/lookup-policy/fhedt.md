@@ -139,6 +139,8 @@ GPU diffusion uses an independent fractional provider with the same resolution, 
 
 [`lookup-policy-fhedt-gpu.c`](../../../../src/lookup-policy-fhedt-gpu.c) owns the fractional plan and [`lookup-policy-fhedt-fractional-gpu.metal`](../../../../src/lookup-policy-fhedt-fractional-gpu.metal) owns its independent builders and query. One leased allocation contains column heads, two packed grids and the output table: at R256/F1 it is about 160.3 MiB. A process-wide idle cache reuses completed workspace and table identity across preparers. Active bindings keep exclusive allocations; concurrent plans cannot overwrite each other's tables. A completed solve releases the workspace to that slot even while its deferred solution retains the frozen plan. The idle slot is always shared, independent of CPU `shared`; its retained capacity is bounded to one allocation. No source-frame residual enters that cache.
 
+WebGPU builds the same boundary and zero-distance flags for refined byte and fractional queries. After the Z transform finishes, a packing pass reuses the Y transform's scratch grid to store each label and its flags in a 32-bit cell. The apply shader can then decide whether to refine with a single table read. F0 and byte R256 queries read the Z transform's labels directly, so they skip the packing pass.
+
 ## Name and sources
 
 `fhedt` means Felzenszwalb-Huttenlocher Euclidean Distance Transform. The core linear-time lower-envelope algorithm comes from Pedro F. Felzenszwalb and Daniel P. Huttenlocher, [“Distance Transforms of Sampled Functions”](https://cs.brown.edu/people/pfelzens/papers/dt-final.pdf).
