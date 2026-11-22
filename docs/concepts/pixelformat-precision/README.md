@@ -307,6 +307,13 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-226 | An in-place Display P3 crop retains the original pixel allocation. | [tests/frame/storage/0033_profile_crop_storage.t](../../../tests/frame/storage/0033_profile_crop_storage.t) |
 | FP-227 | A cropped frame retains its mask allocation until replacement. | [tests/frame/storage/0034_mask_crop_storage.t](../../../tests/frame/storage/0034_mask_crop_storage.t) |
 | FP-228 | A cropped frame retains its straight alpha allocation until replacement. | [tests/frame/storage/0035_alpha_crop_storage.t](../../../tests/frame/storage/0035_alpha_crop_storage.t) |
+| FP-229 | RGB888 expansion preserves keyed and masked PAL8 pixels. | [tests/frame/alpha/0019_pal8_rgb888_mask.t](../../../tests/frame/alpha/0019_pal8_rgb888_mask.t) |
+| FP-230 | Float promotion preserves zero alpha in the decoded paint mask. | [tests/frame/alpha/0020_rgba_float_mask.t](../../../tests/frame/alpha/0020_rgba_float_mask.t) |
+| FP-231 | An unspecified palette count preserves PAL1 storage and clone colors. | [tests/frame/storage/0036_implicit_pal1_clone.t](../../../tests/frame/storage/0036_implicit_pal1_clone.t) |
+| FP-232 | Frame encoding preserves every G1 gray level. | [tests/encoder/pipeline/0129_encode_frame_g1_levels.t](../../../tests/encoder/pipeline/0129_encode_frame_g1_levels.t) |
+| FP-233 | Frame encoding preserves every G2 gray level. | [tests/encoder/pipeline/0130_encode_frame_g2_levels.t](../../../tests/encoder/pipeline/0130_encode_frame_g2_levels.t) |
+| FP-234 | Frame encoding preserves every G4 gray level. | [tests/encoder/pipeline/0131_encode_frame_g4_levels.t](../../../tests/encoder/pipeline/0131_encode_frame_g4_levels.t) |
+| FP-235 | Packed palette expansion preserves keyed and masked pixels. | [tests/frame/alpha/0021_packed_rgb888_mask.t](../../../tests/frame/alpha/0021_packed_rgb888_mask.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

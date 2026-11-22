@@ -374,10 +374,11 @@ cleanup:
 /* Decode the public encoder's stream into display-order RGB triplets.
  * The caller can compare image content independently of register numbering. */
 static int
-encode_bytes_to_rgb(unsigned char *source, int width, int height, int format,
-                    unsigned char *rgb)
+encode_to_rgb(int via_frame, unsigned char *source, int width, int height,
+              int format, unsigned char *rgb)
 {
     unsigned char wire[8192];
+    sixel_frame_t *frame = NULL;
     sixel_encoder_t *encoder = NULL;
     FILE *capture = NULL;
     unsigned char *indices = NULL;
@@ -396,11 +397,23 @@ encode_bytes_to_rgb(unsigned char *source, int width, int height, int format,
         goto end;
     }
     encoder->outfd = sixel_fileno(capture);
-    status = sixel_encoder_encode_bytes(encoder, source, width, height,
-                                        format, NULL, -1);
+    if (via_frame) {
+        status = sixel_frame_new(&frame, NULL);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_frame_init_borrowed(frame, source, width, height,
+                                               format, NULL, -1);
+        }
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_encoder_encode_frame(encoder, frame, NULL);
+        }
+        sixel_frame_unref(frame);
+    } else {
+        status = sixel_encoder_encode_bytes(encoder, source, width, height,
+                                            format, NULL, -1);
+    }
     encoder->outfd = 1;  /* The stream owns its descriptor. */
     if (status != SIXEL_OK) {
-        fprintf(stderr, "encode_bytes format 0x%x returned 0x%x: %s\n",
+        fprintf(stderr, "encode format 0x%x returned 0x%x: %s\n",
                 (unsigned)format, (unsigned)status,
                 sixel_helper_get_additional_message());
         goto end;
@@ -465,9 +478,9 @@ test_encode_bgr888(void)
             bgr[y][x][2] = color[0];
         }
     }
-    if (encode_bytes_to_rgb((unsigned char *)rgb, 5, 7,
+    if (encode_to_rgb(0, (unsigned char *)rgb, 5, 7,
             SIXEL_PIXELFORMAT_RGB888, (unsigned char *)decoded_rgb) != 0 ||
-        encode_bytes_to_rgb((unsigned char *)bgr, 5, 7,
+        encode_to_rgb(0, (unsigned char *)bgr, 5, 7,
             SIXEL_PIXELFORMAT_BGR888, (unsigned char *)decoded_bgr) != 0) {
         return EXIT_FAILURE;
     }
@@ -496,7 +509,7 @@ test_encode_bgr888(void)
  * after rounding to SIXEL percentages and decoding back to bytes.
  */
 static int
-test_encode_packed_gray(char const *name)
+test_encode_packed_gray(char const *name, int via_frame)
 {
     static struct {
         char const *name;
@@ -535,7 +548,7 @@ test_encode_packed_gray(char const *name)
         memcpy(source + (size_t)y * cases[mode].row_bytes,
                cases[mode].rows[y % 2], cases[mode].row_bytes);
     }
-    if (encode_bytes_to_rgb(source, 17, 6, cases[mode].format,
+    if (encode_to_rgb(via_frame, source, 17, 6, cases[mode].format,
                             (unsigned char *)decoded) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
@@ -564,11 +577,14 @@ test_filter_0010_filter_encode(int argc, char **argv)
 {
     int success;
 
+    if (argc == 3 && strcmp(argv[1], "frame") == 0) {
+        return test_encode_packed_gray(argv[2], 1);
+    }
     if (argc == 2 && strcmp(argv[1], "bgr888") == 0) {
         return test_encode_bgr888();
     }
     if (argc == 2) {
-        return test_encode_packed_gray(argv[1]);
+        return test_encode_packed_gray(argv[1], 0);
     }
 
     success = 1;

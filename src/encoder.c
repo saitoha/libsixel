@@ -2665,27 +2665,6 @@ sixel_encoder_frame_get_transparency(
 }
 
 static SIXELSTATUS
-sixel_encoder_frame_set_transparency(
-    sixel_frame_t *frame,
-    sixel_frame_transparency_t const *transparency)
-{
-    sixel_frame_interface_t *frame_if;
-
-    frame_if = NULL;
-    if (frame == NULL || transparency == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    frame_if = sixel_frame_as_interface(frame);
-    if (frame_if->vtbl == NULL ||
-        frame_if->vtbl->set_transparency == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    return frame_if->vtbl->set_transparency(frame_if, transparency);
-}
-
-static SIXELSTATUS
 sixel_encoder_frame_clone(sixel_frame_t const *frame,
                           sixel_allocator_t *allocator,
                           sixel_frame_t **frame_out)
@@ -3950,40 +3929,9 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
     sixel_frame_t *frame)
 {
     SIXELSTATUS status;
-    unsigned char *indices;
-    unsigned char *mask;
-    sixel_allocator_t *allocator;
-    sixel_frame_transparency_t transparency;
-    size_t pixel_count;
-    size_t index;
     int clip_active;
     int scale_active;
     int transparent_index;
-    int ncolors;
-    int has_transparent;
-    unsigned char palette_index;
-
-    status = SIXEL_OK;
-    indices = NULL;
-    mask = NULL;
-    allocator = NULL;
-    memset(&transparency, 0, sizeof(transparency));
-    pixel_count = 0u;
-    index = 0u;
-    clip_active = 0;
-    scale_active = 0;
-    transparent_index = -1;
-    ncolors = 0;
-    has_transparent = 0;
-    palette_index = 0u;
-
-    if (encoder == NULL || frame == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    allocator = encoder->allocator;
-    if (allocator == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
 
     clip_active = (encoder->clipwidth > 0 && encoder->clipheight > 0)
         ? 1
@@ -4007,73 +3955,10 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
         return SIXEL_OK;
     }
 
-    if (sixel_frame_get_width(frame) <= 0 ||
-        sixel_frame_get_height(frame) <= 0) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if ((size_t)sixel_frame_get_width(frame)
-        > SIZE_MAX / (size_t)sixel_frame_get_height(frame)) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    pixel_count = (size_t)sixel_frame_get_width(frame) *
-                  (size_t)sixel_frame_get_height(frame);
-
-    indices = sixel_frame_get_pixels(frame);
-    if (indices == NULL || sixel_frame_get_palette(frame) == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_promote_pal8_transparent_for_geometry: "
-            "indexed frame payload is missing.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    mask = (unsigned char *)sixel_allocator_malloc(allocator, pixel_count);
-    if (mask == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_promote_pal8_transparent_for_geometry: "
-            "sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    ncolors = sixel_frame_get_ncolors(frame);
-    for (index = 0u; index < pixel_count; ++index) {
-        palette_index = indices[index];
-        if (ncolors > 0 && (int)palette_index >= ncolors) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_promote_pal8_transparent_for_geometry: "
-                "palette index out of range.");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
-        if ((int)palette_index == transparent_index) {
-            mask[index] = 1u;
-            has_transparent = 1;
-        } else {
-            mask[index] = 0u;
-        }
-    }
-
     status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (SIXEL_SUCCEEDED(status)) {
+        sixel_frame_set_ncolors(frame, -1);
     }
-
-    transparency.transparent = (-1);
-    if (has_transparent != 0) {
-        transparency.transparent_mask = mask;
-        transparency.transparent_mask_size = pixel_count;
-        transparency.alpha_zero_is_transparent = 1;
-        mask = NULL;
-    } else {
-        transparency.alpha_zero_is_transparent = 0;
-    }
-    status = sixel_encoder_frame_set_transparency(frame, &transparency);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    sixel_frame_set_ncolors(frame, (-1));
-
-end:
-    sixel_allocator_free(allocator, mask);
     return status;
 }
 

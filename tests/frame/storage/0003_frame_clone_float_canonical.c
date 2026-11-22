@@ -18,13 +18,22 @@
 #include "tests/data/color-numeric/opponents.h"
 #include "tests/data/color-numeric/vectors.h"
 
-/* Each palette entry is red. Only the original index distinguishes coverage,
- * so matching decoded paint cannot be achieved by comparing RGB triplets. */
+/* Every pixel has the same color. Only the palette key, alpha channel and
+ * explicit mask distinguish the independently expected painted positions. */
 static int
-test_indexed_paint(int with_mask)
+test_converted_paint(int with_mask, int source, int target)
 {
     unsigned char indices[] = {1, 0, 0, 1};
     unsigned char palette[] = {255, 0, 0, 255, 0, 0};
+    unsigned char packed[] = {0x90};
+    unsigned char last[] = {255, 255, 255, 0, 255, 255, 255, 255,
+                            255, 255, 255, 127, 255, 255, 255, 0};
+    unsigned char first[] = {0, 255, 255, 255, 255, 255, 255, 255,
+                             127, 255, 255, 255, 0, 255, 255, 255};
+    unsigned char ga[] = {255, 0, 255, 255, 255, 127, 255, 0};
+    unsigned char ag[] = {0, 255, 255, 255, 127, 255, 0, 255};
+    unsigned char *samples;
+    int indexed = (source & SIXEL_FORMATTYPE_PALETTE) != 0;
     unsigned char expected[] = {0, 255, 255, 0};
     sixel_frame_t *frame = NULL;
     sixel_frame_interface_t *iface;
@@ -37,13 +46,23 @@ test_indexed_paint(int with_mask)
     unsigned int flags;
     int result = EXIT_FAILURE;
 
+    switch (source) {
+    case SIXEL_PIXELFORMAT_PAL8: samples = indices; break;
+    case SIXEL_PIXELFORMAT_PAL1: samples = packed; break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888: samples = first; break;
+    case SIXEL_PIXELFORMAT_GA88: samples = ga; break;
+    case SIXEL_PIXELFORMAT_AG88: samples = ag; break;
+    default: samples = last; break;
+    }
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_borrowed(frame, indices, 4, 1,
-            SIXEL_PIXELFORMAT_PAL8, palette, 2))) {
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, samples, 4, 1,
+            source, indexed ? palette : NULL, indexed ? 2 : -1))) {
         goto end;
     }
     iface = sixel_frame_as_interface(frame);
-    coverage.transparent = 1;
+    coverage.transparent = indexed ? 1 : -1;
+    coverage.alpha_zero_is_transparent = !indexed;
     if (with_mask) {
         coverage.transparent_mask = calloc(4, 1);
         if (coverage.transparent_mask == NULL) {
@@ -57,8 +76,7 @@ test_indexed_paint(int with_mask)
         free(coverage.transparent_mask);
         goto end;
     }
-    if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
-            SIXEL_PIXELFORMAT_RGBFLOAT32)) ||
+    if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface, target)) ||
         SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
         SIXEL_FAILED(sixel_output_new(&output, playback_test_write,
             &stream, NULL)) ||
@@ -82,6 +100,47 @@ end:
     free(stream.bytes);
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
+    sixel_frame_unref(frame);
+    return result;
+}
+
+/* Padding is nonzero. Only the two actual indices name palette entries. */
+static int
+test_implicit_palette(void)
+{
+    unsigned char row[] = {0x7f};
+    unsigned char palette[] = {255, 0, 0, 0, 255, 0};
+    float const expected[] = {1, 0, 0, 0, 1, 0};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface, *clone = NULL;
+    sixel_frame_pixels_view_t view;
+    size_t bytes;
+    int result = EXIT_FAILURE;
+
+    if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, row, 2, 1,
+            SIXEL_PIXELFORMAT_PAL1, palette, -1))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(iface->vtbl->measure_storage(iface, &bytes)) ||
+        bytes != sizeof(row) + sizeof(palette) ||
+        SIXEL_FAILED(iface->vtbl->clone(iface, NULL, &clone))) {
+        goto end;
+    }
+    /* A clone must retain its own colors after the source palette changes. */
+    memset(palette, 0, sizeof(palette));
+    if (SIXEL_SUCCEEDED(clone->vtbl->set_pixelformat(clone,
+            SIXEL_PIXELFORMAT_RGBFLOAT32)) &&
+        SIXEL_SUCCEEDED(clone->vtbl->get_pixels(clone, &view)) &&
+        view.pixels_float32 != NULL &&
+        memcmp(view.pixels_float32, expected, sizeof(expected)) == 0) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    if (clone != NULL) {
+        clone->vtbl->unref(clone);
+    }
     sixel_frame_unref(frame);
     return result;
 }
@@ -830,6 +889,11 @@ end:
 int
 test_frame_0014_clone_float(int argc, char **argv)
 {
+    static int const formats[] = {
+        SIXEL_PIXELFORMAT_RGBA8888, SIXEL_PIXELFORMAT_ARGB8888,
+        SIXEL_PIXELFORMAT_BGRA8888, SIXEL_PIXELFORMAT_ABGR8888,
+        SIXEL_PIXELFORMAT_GA88, SIXEL_PIXELFORMAT_AG88
+    };
     float pixels[30];
     float original[30];
     sixel_frame_t *frame;
@@ -842,10 +906,34 @@ test_frame_0014_clone_float(int argc, char **argv)
     int result;
 
     if (argc == 2 && strcmp(argv[1], "indexed-paint") == 0) {
-        return test_indexed_paint(0);
+        return test_converted_paint(0, SIXEL_PIXELFORMAT_PAL8,
+                                    SIXEL_PIXELFORMAT_RGBFLOAT32);
+    }
+    if (argc == 2 && strcmp(argv[1], "indexed-byte-mask") == 0) {
+        return test_converted_paint(1, SIXEL_PIXELFORMAT_PAL8,
+                                    SIXEL_PIXELFORMAT_RGB888);
+    }
+    if (argc == 2 && strcmp(argv[1], "rgba-float-mask") == 0) {
+        for (i = 0; i < sizeof(formats) / sizeof(formats[0]); ++i) {
+            if (test_converted_paint(0, formats[i],
+                    SIXEL_PIXELFORMAT_RGBFLOAT32) != EXIT_SUCCESS ||
+                test_converted_paint(1, formats[i],
+                    SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+        }
+        return EXIT_SUCCESS;
+    }
+    if (argc == 2 && strcmp(argv[1], "packed-byte-mask") == 0) {
+        return test_converted_paint(1, SIXEL_PIXELFORMAT_PAL1,
+                                    SIXEL_PIXELFORMAT_RGB888);
+    }
+    if (argc == 2 && strcmp(argv[1], "implicit-palette") == 0) {
+        return test_implicit_palette();
     }
     if (argc == 2 && strcmp(argv[1], "indexed-mask") == 0) {
-        return test_indexed_paint(1);
+        return test_converted_paint(1, SIXEL_PIXELFORMAT_PAL8,
+                                    SIXEL_PIXELFORMAT_RGBFLOAT32);
     }
     if (argc == 2 && strcmp(argv[1], "packed-storage") == 0) {
         return test_packed_rows(0);
