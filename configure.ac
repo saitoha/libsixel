@@ -1979,7 +1979,7 @@ AS_CASE([$host_os],
         [AS_IF([test "x$enable_emscripten_retain_compiler_settings" = "xyes"],
                [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sRETAIN_COMPILER_SETTINGS=1"])
          AS_IF([test "x$enable_emscripten_noderawfs" = "xyes"],
-               [SIXEL_EMSCRIPTEN_STDIO="`cd "$srcdir" && pwd`/build-aux/emscripten-node-stdio.js"
+               [SIXEL_EMSCRIPTEN_STDIO="`cd "$srcdir" && pwd`/build-aux/node-blocking-stdio.js"
                 EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sNODERAWFS=1 --pre-js $SIXEL_EMSCRIPTEN_STDIO"])
          AS_IF([test -n "$with_emscripten_stack_size"],
                [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sSTACK_SIZE=$with_emscripten_stack_size"])

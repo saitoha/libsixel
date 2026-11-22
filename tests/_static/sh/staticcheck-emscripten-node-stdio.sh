@@ -10,16 +10,16 @@ src_root=$1
 awk '
 /^[[:space:]]*(#|\/\/)/ { next }
 FILENAME ~ /configure.ac$/ {
-    if ($0 ~ /SIXEL_EMSCRIPTEN_STDIO=.*build-aux\/emscripten-node-stdio.js/) path = 1
+    if ($0 ~ /SIXEL_EMSCRIPTEN_STDIO=.*build-aux\/node-blocking-stdio.js/) path = 1
     if ($0 ~ /EMSCRIPTEN_LDFLAGS=.*-sNODERAWFS=1 --pre-js \$SIXEL_EMSCRIPTEN_STDIO/)
         autotools = 1
 }
 FILENAME ~ /meson.build$/ {
     if ($0 ~ /emscripten_ldflags.*-sNODERAWFS=1.*--pre-js/) meson = 1
-    if ($0 ~ /meson.current_source_dir.*build-aux\/emscripten-node-stdio.js/)
+    if ($0 ~ /meson.current_source_dir.*build-aux\/node-blocking-stdio.js/)
         meson_path = 1
 }
-FILENAME ~ /emscripten-node-stdio.js$/ {
+FILENAME ~ /node-blocking-stdio.js$/ {
     if ($0 ~ /process.versions.node/) node = 1
     if ($0 ~ /require\(.worker_threads.\).isMainThread/) main = 1
     if ($0 ~ /process.stdin, process.stdout, process.stderr/) streams = 1
@@ -43,7 +43,7 @@ END {
            count == 5 && meson_count == 4)
 }
 ' "$src_root/configure.ac" "$src_root/meson.build" \
-    "$src_root/build-aux/emscripten-node-stdio.js" \
+    "$src_root/build-aux/node-blocking-stdio.js" \
     "$src_root/build-aux/test-runner-link.am" \
     "$src_root/converters/Makefile.am" "$src_root/converters/meson.build" \
     "$src_root/assessment/Makefile.am" "$src_root/assessment/meson.build" \

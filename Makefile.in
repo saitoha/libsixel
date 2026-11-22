@@ -602,7 +602,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	build-aux/copy-test-dist.sh build-aux/test-runner-link.am \
 	build-aux/msvc-lib-response.sh build-aux/cosmoar-meson \
 	build-aux/cosmoar-response.awk \
-	build-aux/emscripten-node-stdio.js tools/embed-shader.py \
+	build-aux/node-blocking-stdio.js tools/embed-shader.py \
 	tools/gen_6cells_h.py build-aux/meson-cross/emscripten-windows \
 	build-aux/wasi-clang.py build-aux/wasi-launcher.sh.in \
 	build-aux/wasi-launcher.cmd.in build-aux/wasi-node-smoke.mjs \

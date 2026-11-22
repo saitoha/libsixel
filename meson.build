@@ -436,9 +436,9 @@ if host_system == 'emscripten'
     emscripten_ldflags += ['-sRETAIN_COMPILER_SETTINGS=1']
   endif
   if get_option('emscripten_noderawfs')
-    emscripten_link_depends = files('build-aux/emscripten-node-stdio.js')
+    emscripten_link_depends = files('build-aux/node-blocking-stdio.js')
     emscripten_ldflags += ['-sNODERAWFS=1', '--pre-js',
-      meson.current_source_dir() / 'build-aux/emscripten-node-stdio.js']
+      meson.current_source_dir() / 'build-aux/node-blocking-stdio.js']
   endif
 
   emscripten_stack_size = get_option('emscripten_stack_size')

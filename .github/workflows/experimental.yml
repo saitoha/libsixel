@@ -49,7 +49,7 @@ jobs:
           call build-examples\example-build-emcc.cmd
 
   wasi:
-    name: ${{ matrix.build_system }}-${{ matrix.platform }}-clang-wasi-static
+    name: ${{ matrix.build_system }}-${{ matrix.platform }}-clang-wasi-static${{ matrix.shard_label }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -61,16 +61,54 @@ jobs:
             platform: linux-x86_64
             wasmtime: x86_64-linux
             extension: tar.xz
+            make_jobs: 2
           - os: ubuntu-24.04
             build_system: Meson
             platform: linux-x86_64
             wasmtime: x86_64-linux
             extension: tar.xz
+          # Match the serial sharding used for the Autotools Emscripten TAP
+          # jobs on hosted macOS runners.
           - os: macos-15
             build_system: Autotools
             platform: macos-arm64
             wasmtime: aarch64-macos
             extension: tar.xz
+            make_jobs: 1
+            test_shard: 1/5
+            shard_label: -1-of-5
+          - os: macos-15
+            build_system: Autotools
+            platform: macos-arm64
+            wasmtime: aarch64-macos
+            extension: tar.xz
+            make_jobs: 1
+            test_shard: 2/5
+            shard_label: -2-of-5
+          - os: macos-15
+            build_system: Autotools
+            platform: macos-arm64
+            wasmtime: aarch64-macos
+            extension: tar.xz
+            make_jobs: 1
+            test_shard: 3/5
+            shard_label: -3-of-5
+          - os: macos-15
+            build_system: Autotools
+            platform: macos-arm64
+            wasmtime: aarch64-macos
+            extension: tar.xz
+            make_jobs: 1
+            test_shard: 4/5
+            shard_label: -4-of-5
+          - os: macos-15
+            build_system: Autotools
+            platform: macos-arm64
+            wasmtime: aarch64-macos
+            extension: tar.xz
+            make_jobs: 1
+            test_shard: 5/5
+            shard_label: -5-of-5
           - os: macos-15
             build_system: Meson
             platform: macos-arm64
@@ -130,7 +168,8 @@ jobs:
         if: matrix.build_system == 'Autotools'
         shell: bash
         env:
-          MAKEFLAGS: -j2
+          MAKEFLAGS: -j${{ matrix.make_jobs }}
+          SIXEL_TEST_SHARD: ${{ matrix.test_shard }}
         run: |
           export SIXEL_WASI_BUILD_DIR="$RUNNER_TEMP/libsixel-wasi-autotools"
           build-examples/example-build-wasi.sh --build-system autotools --check
@@ -139,7 +178,7 @@ jobs:
         if: failure() && matrix.build_system == 'Autotools'
         uses: actions/upload-artifact@v7
         with:
-          name: wasi-autotools-${{ matrix.platform }}-logs
+          name: wasi-autotools-${{ matrix.platform }}${{ matrix.shard_label }}-logs
           path: |
             ${{ runner.temp }}/libsixel-wasi-autotools/config.log
             ${{ runner.temp }}/libsixel-wasi-autotools/tests/test-suite.log

@@ -18155,7 +18155,7 @@ then :
 fi
          if test "x$enable_emscripten_noderawfs" = "xyes"
 then :
-  SIXEL_EMSCRIPTEN_STDIO="`cd "$srcdir" && pwd`/build-aux/emscripten-node-stdio.js"
+  SIXEL_EMSCRIPTEN_STDIO="`cd "$srcdir" && pwd`/build-aux/node-blocking-stdio.js"
                 EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sNODERAWFS=1 --pre-js $SIXEL_EMSCRIPTEN_STDIO"
 fi
          if test -n "$with_emscripten_stack_size"

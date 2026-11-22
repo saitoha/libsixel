@@ -236,7 +236,7 @@ The examples build static `wasm32-wasip1` modules with the built-in image codecs
 
 Pass `--check` to test a PNG → SIXEL → PNG pipe through the installed Wasmtime launchers. Pass `--check-wasmer` to run the same check with Wasmtime and Wasmer 7.5 or newer on `PATH`. To smoke-test the existing installation without rebuilding, pass `--smoke wasmer` or `--smoke node` and put the corresponding runtime on `PATH`. The Node smoke test uses Node.js 24 and its WASI Preview 1 API. On Windows, use binary-safe redirection such as `cmd.exe` when sending image bytes through a shell pipe.
 
-On Linux and macOS, run `build-examples/example-build-wasi.sh --build-system autotools --check` from an unconfigured source tree to build with the shipped `configure` script and GNU Make. This example defaults to `build-examples/build-wasi-autotools` and stages the same modules and launchers with `make install`. The check also runs the sixel2png CLI, lsqa video CLI, direct assessment, and spatial CIEDE2000 TAP suites through Wasmtime.
+On Linux and macOS, run `build-examples/example-build-wasi.sh --build-system autotools --check` from an unconfigured source tree to build with the shipped `configure` script and GNU Make. This example defaults to `build-examples/build-wasi-autotools` and stages the same modules and launchers with `make install`. The check runs the full Autotools TAP suite with Wasmtime executing the WASI binaries. Tests that require unavailable features report their reasons as TAP skips. Set `SIXEL_TEST_SHARD` to an index and count such as `1/5` to run one shard of the suite.
 
 ### Emscripten (Autotools)
 

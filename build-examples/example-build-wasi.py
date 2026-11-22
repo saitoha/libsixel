@@ -184,22 +184,13 @@ def build_autotools(source, build, stage, env, check):
     subprocess.run([make, "install", f"DESTDIR={stage}"],
                    cwd=build, env=build_env, check=True)
     if check:
-        test_root = source / "tests"
-        # Run the existing portable CLI and assessment suites through TAP.
-        suites = ("cli/sixel2png", "cli/lsqa-video",
-                  "assessment/direct", "assessment/sciede2000")
-        tests = sorted(path.relative_to(test_root).as_posix()
-                       for suite in suites for path in (test_root / suite).glob("*.t"))
-        if not tests:
-            sys.exit("No WASI TAP tests were found in the source tree.")
         build_env.update(
             PATH=os.pathsep.join((str(source / "build-aux"), build_env["PATH"])),
             SIXEL_RUNTIME="wasmtime-test-runner.sh",
             TOP_SRCDIR=str(source), TOP_BUILDDIR=str(build),
             TMPDIR=str(build),
         )
-        subprocess.run([make, "check", "TESTS=" + " ".join(tests)],
-                       cwd=build, env=build_env, check=True)
+        subprocess.run([make, "check"], cwd=build, env=build_env, check=True)
 
 
 def build_meson(source, build, stage, env):

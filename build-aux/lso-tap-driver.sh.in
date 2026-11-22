@@ -751,11 +751,13 @@ LC_ALL=C "$AM_TAP_AWK" \
      if (desc=="") desc=sprintf("test %d", n)
 
      # Directives
-     is_skip = (line ~ /#[ \t]*SKIP([[:space:]]|$)/)
      is_todo = (line ~ /#[ \t]*TODO([[:space:]]|$)/)
 
-     if (is_skip) {
+     if (match(line, /#[ \t]*SKIP([[:space:]]|$)/)) {
        skip++
+       # Keep the reason even when the TAP point has its own description.
+       reason=trim(substr(line, RSTART+RLENGTH))
+       if (reason != "") desc=reason
        printf(":test-result: SKIP %s\n", desc) > "'"$trs_file"'"
      } else if (is_todo) {
        # TODO directives are always expected-failure semantics in TAP.
@@ -892,7 +894,8 @@ __tap_directive__
             ok:*:SKIP|not:ok:SKIP)
                 saw_tap=1
                 skip=$((skip+1))
-                echo ":test-result: SKIP $directive_reason" >&2
+                desc=$directive_reason
+                echo ":test-result: SKIP $desc" >&2
                 continue
                 ;;
             ok:*:TODO|not:ok:TODO)

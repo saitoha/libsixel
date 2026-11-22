@@ -25,8 +25,8 @@ test "${HAVE_WINDOWS_H-0}" = 1 && {
     exit 0
 }
 
-test "${HAVE_EMSCRIPTEN_H-0}" = 1 && {
-    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP emscripten runtime may not deliver host SIGINT deterministically"
+test "${HAVE_FORK-}" = 1 && test "${SIXEL_HAVE_ENCODER_SIGINT_SYNC-}" = 1 || {
+    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP target lacks fork or encoder process signal synchronization"
     exit 0
 }
 

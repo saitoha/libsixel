@@ -3,6 +3,11 @@
 
 set -eux
 
+test "${HAVE_WASI_API_H-}" != 1 || {
+    printf '1..0 # SKIP WASI Preview 1 cannot set file modes for completion installation\n'
+    exit 0
+}
+
 command -v bash >/dev/null || {
     printf "1..0 # SKIP bash is not found\n";
     exit 0

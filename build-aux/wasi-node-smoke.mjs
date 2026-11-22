@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { argv, cwd } from 'node:process';
 import { WASI } from 'node:wasi';
-import './emscripten-node-stdio.js';
+import './node-blocking-stdio.js';
 
 const args = argv.slice(2);
 const wasi = new WASI({

@@ -12,8 +12,8 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-output_zero=$(mktemp)
-output_grad=$(mktemp)
+output_zero=$(mktemp "${TMPDIR:-/tmp}/libsixel-XXXXXX")
+output_grad=$(mktemp "${TMPDIR:-/tmp}/libsixel-XXXXXX")
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=0 \

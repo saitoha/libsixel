@@ -32,6 +32,25 @@ for parser in no yes; do
             echo 'not ok 1 - stderr changed TAP results or was discarded'
             exit 0
         }
+        # The skip reason comes from the TAP directive on stdout.
+        output=$(TOP_SRCDIR="$src_root" TOP_BUILDDIR="$tmpdir" \
+            SIXEL_TEST_SHELL=sh reduce_fork=$parser \
+            sh "$tmpdir/driver" --test-name skipped \
+            --stream-output="$stream" --log-file "$tmpdir/test.log" \
+            --trs-file "$tmpdir/test.trs" -- sh -c \
+            'printf "ok 1 # SKIP stderr\n" >&2
+             printf "1..1\nok 1 - signal test # SKIP no child processes\n"') || {
+            echo 'not ok 1 - skipped TAP point driver failed'
+            exit 0
+        }
+        printf '%s\n' "$output" | awk '
+            /^:test-result: SKIP no child processes$/ { metadata=1 }
+            /^             > no child processes$/ { console=1 }
+            END { exit !metadata || !console }
+        ' "$tmpdir/test.trs" - || {
+            echo 'not ok 1 - stdout TAP skip reason was lost'
+            exit 0
+        }
         TOP_SRCDIR="$src_root" TOP_BUILDDIR="$tmpdir" \
             SIXEL_TEST_SHELL=sh reduce_fork=$parser \
             sh "$tmpdir/driver" --test-name stderr-only \

@@ -15,8 +15,8 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_EMSCRIPTEN_H-0}" = 1 && {
-    printf "1..0 # SKIP emscripten runtime may exit before stop trace\n"
+test "${HAVE_FORK-}" = 1 && test "${SIXEL_HAVE_ENCODER_SIGINT_SYNC-}" = 1 || {
+    printf "1..0 # SKIP target lacks fork or encoder process signal synchronization\n"
     exit 0
 }
 
