@@ -4,7 +4,7 @@ using namespace metal;
 struct body_params {
   uint width; uint height; uint encoded_width; uint encoded_height;
   uint offset_left; uint offset_top; uint ncolors; int keycolor;
-  uint words; uint bands; uint has_mask; uint pad;
+  uint words; uint bands; uint has_mask; uint nodes;
 };
 /* Mark each painted source pixel in its (band, register) column bitmap. */
 /* Accel: BODY-COMPOSE metal */
@@ -30,9 +30,8 @@ static uint body_next(device const uint *o, uint words, uint limit, uint from) {
   while (bits == 0) { if (++w >= words) return limit; bits = o[w]; }
   return min(w * 32 + ctz(bits), limit);
 }
-/* One thread per (band, register).  The count pass sizes the spans and their
- * column values; the write pass stores them at the prefix offsets, together
- * with the register's first row-major position in the band. */
+/* One thread per (band, register). The count pass sizes the spans and map;
+ * the write pass records span boundaries and initializes first_seen. */
 /* Accel: BODY-COMPOSE metal */
 kernel void body_spans(device const uint *occupancy [[buffer(0)]],
                        device uint *counts [[buffer(1)]],
@@ -46,40 +45,91 @@ kernel void body_spans(device const uint *occupancy [[buffer(0)]],
                        constant body_params &p [[buffer(9)]],
                        constant uint &write_pass [[buffer(10)]],
                        device uint *first_seen [[buffer(11)]],
+                       device uint *node_band [[buffer(12)]],
                        uint t [[thread_position_in_grid]]) {
+  device const uint *o;
+  uint band;
+  uint c;
+  uint limit;
+  uint n;
+  uint used;
+  uint node_base;
+  uint map_base;
+  uint sx;
+  uint mx;
+  uint nx;
+
   if (t >= p.bands * p.ncolors) return;
-  device const uint *o = occupancy + t * p.words;
-  uint band = t / p.ncolors; uint c = t % p.ncolors;
-  uint limit = p.encoded_width;
-  uint n = 0; uint used = 0; uint first = 0xffffffffu;
-  uint node_base = write_pass != 0 ? node_first[t] : 0;
-  uint map_base = write_pass != 0 ? map_first[t] : 0;
-  uint sx = body_next(o, p.words, limit, 0);
+  o = occupancy + t * p.words;
+  band = t / p.ncolors;
+  c = t % p.ncolors;
+  limit = p.encoded_width;
+  n = 0;
+  used = 0;
+  node_base = write_pass != 0 ? node_first[t] : 0;
+  map_base = write_pass != 0 ? map_first[t] : 0;
+  sx = body_next(o, p.words, limit, 0);
   while (sx < limit) {
-    uint mx = sx + 1;
-    uint nx = body_next(o, p.words, limit, mx);
-    while (nx < limit && nx - mx <= 9) { mx = nx + 1; nx = body_next(o, p.words, limit, mx); }
+    mx = sx + 1;
+    nx = body_next(o, p.words, limit, mx);
+    while (nx < limit && nx - mx <= 9) {
+      mx = nx + 1;
+      nx = body_next(o, p.words, limit, mx);
+    }
     if (write_pass != 0) {
       nodes[node_base + n] = uint4(c, sx, mx, map_base + used);
-      for (uint x = sx; x < mx; x++) {
-        uint v = 0;
-        int sxp = (int)x - (int)p.offset_left;
-        if (sxp >= 0 && (uint)sxp < p.width) {
-          for (uint r = 0; r < 6; r++) {
-            int syp = (int)(band * 6 + r) - (int)p.offset_top;
-            if (syp < 0 || (uint)syp >= p.height) continue;
-            uint i = (uint)syp * p.width + (uint)sxp;
-            if (indexes[i] == c && (p.has_mask == 0 || mask[i] == 0)) v |= 1u << r;
-          }
-        }
-        if (v != 0) first = min(first, ctz(v) * p.encoded_width + x);
-        map[map_base + used + (x - sx)] = (uchar)v;
-      }
+      node_band[node_base + n] = band;
     }
-    used += mx - sx; n++; sx = nx;
+    used += mx - sx;
+    n++;
+    sx = nx;
   }
   if (write_pass == 0) { counts[t] = n; widths[t] = used; }
-  else first_seen[t] = first;
+  else first_seen[t] = 0xffffffffu;
+}
+/* A lane builds one span's six-row map. Splitting by span removes the
+ * serial six-row work from the (band, color) span discovery lane. */
+/* Accel: BODY-COMPOSE metal */
+kernel void body_map(device const uint4 *nodes [[buffer(0)]],
+                     device const uint *node_band [[buffer(1)]],
+                     device uchar *map [[buffer(2)]],
+                     device const uchar *indexes [[buffer(3)]],
+                     device const uchar *mask [[buffer(4)]],
+                     device atomic_uint *first_seen [[buffer(5)]],
+                     constant body_params &p [[buffer(6)]],
+                     uint t [[thread_position_in_grid]]) {
+  uint4 node;
+  uint band;
+  uint first;
+  uint x;
+  uint v;
+  uint r;
+  uint i;
+  int sxp;
+  int syp;
+
+  if (t >= p.nodes) return;
+  node = nodes[t];
+  band = node_band[t];
+  first = 0xffffffffu;
+  for (x = node.y; x < node.z; x++) {
+    v = 0;
+    sxp = (int)x - (int)p.offset_left;
+    if (sxp >= 0 && (uint)sxp < p.width) {
+      for (r = 0; r < 6; r++) {
+        syp = (int)(band * 6 + r) - (int)p.offset_top;
+        if (syp < 0 || (uint)syp >= p.height) continue;
+        i = (uint)syp * p.width + (uint)sxp;
+        if (indexes[i] == node.x &&
+            (p.has_mask == 0 || mask[i] == 0)) v |= 1u << r;
+      }
+    }
+    if (v != 0) first = min(first, ctz(v) * p.encoded_width + x);
+    map[node.w + x - node.y] = (uchar)v;
+  }
+  if (first != 0xffffffffu)
+    atomic_fetch_min_explicit(&first_seen[band * p.ncolors + node.x],
+                              first, memory_order_relaxed);
 }
 /* Emission. The spelling follows sixel_put_node: a run of at most three
  * cells repeats its symbol, a longer one is '!' count symbol, and the
