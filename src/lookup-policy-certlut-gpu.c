@@ -33,9 +33,7 @@ enum {
 };
 #if defined(HAVE_WEBGPU)
 static char const *const certlut_webgpu_chunks[] = {
-#include <lookup-policy-table-wgsl.inc.h>
 #include <lookup-policy-certlut-wgsl.inc.h>
-#include <lookup-policy-cell-candidates-wgsl.inc.h>
 };
 #endif
 
@@ -52,7 +50,6 @@ typedef struct certlut_plan {
     uint32_t fractional;
     int vulkan;
     int webgpu;
-    size_t webgpu_size;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
@@ -108,28 +105,19 @@ certlut_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (certlut_plan_t const *)self;
     memset(view, 0, sizeof(*view));
-#if defined(HAVE_WEBGPU)
-    if (plan->webgpu) {
-        view->program_format = "webgpu.lookup-rgb8.v1";
-        view->logical_name = "certlut";
-        view->query_kind = plan->query_kind;
-        view->chunks = certlut_webgpu_chunks;
-        view->chunk_count = sizeof(certlut_webgpu_chunks) /
-            sizeof(certlut_webgpu_chunks[0]);
-        view->ncolors = plan->count;
-        view->palette = plan->palette;
-        view->palette_size = plan->count * 3U;
-        view->workspace_size = plan->webgpu_size;
-        view->build_passes = plan->passes;
-        view->build_pass_count = 1;
-        return SIXEL_OK;
-    }
-#endif
     view->program_format = "metal.lookup-rgb8.v1";
     view->logical_name = "certlut";
     view->chunks = certlut_chunks;
     view->chunk_count = sizeof(certlut_chunks) /
         sizeof(certlut_chunks[0]);
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->chunks = certlut_webgpu_chunks;
+        view->chunk_count = sizeof(certlut_webgpu_chunks) /
+            sizeof(certlut_webgpu_chunks[0]);
+    }
+#endif
 #if defined(HAVE_VULKAN)
     /* Both programs retain the same table, constants and build passes. */
     if (plan->vulkan) {
@@ -143,8 +131,10 @@ certlut_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
     view->query_kind = plan->query_kind;
-    view->constants = &plan->fractional;
-    view->constants_size = sizeof(plan->fractional);
+    if (!plan->webgpu) {
+        view->constants = &plan->fractional;
+        view->constants_size = sizeof(plan->fractional);
+    }
     view->workspace_size = CERTLUT_WORDS * sizeof(uint32_t);
     view->build_passes = plan->passes;
     view->build_pass_count = 2;
@@ -374,24 +364,18 @@ certlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         plan->passes[0].entry_point = "certlut_pack";
-        plan->passes[0].groups[0] = 8;
+        /* WGSL writes one four-color vector per lane. */
+        plan->passes[0].groups[0] = webgpu ? 2 : 8;
         plan->passes[0].threads[0] = 32;
         plan->passes[0].groups[1] = plan->passes[0].groups[2] = 1;
         plan->passes[0].threads[1] = plan->passes[0].threads[2] = 1;
-        plan->passes[1].entry_point = "certlut_build";
+        /* Select the cell domain at build time without a query binding. */
+        plan->passes[1].entry_point = webgpu && plan->fractional
+            ? "certlut_build_fractional" : "certlut_build";
         plan->passes[1].groups[0] = CERTLUT_CELLS / 32;
         plan->passes[1].threads[0] = 32;
         plan->passes[1].groups[1] = plan->passes[1].groups[2] = 1;
         plan->passes[1].threads[1] = plan->passes[1].threads[2] = 1;
-#if defined(HAVE_WEBGPU)
-        /* Builders and table layout belong to this lookup component. */
-        if (webgpu) {
-            plan->webgpu_size = (4096U * 8U) * sizeof(uint32_t);
-            plan->passes[0] = (sixel_gpu_lookup_build_pass_t){
-                "certlut_build", { 64, 1, 1 }, { 64, 1, 1 }
-            };
-        }
-#endif
         if (preparer->cached != NULL) {
             certlut_plan_unref(&preparer->cached->iface);
         }

@@ -99,6 +99,7 @@ async function paletteByteEquivalence(createConverter) {
         expected.delaunay = expected.ordered;
         expected.rbc = expected.ordered;
         expected.vptree = expected.ordered;
+        expected.certlut = expected.ordered;
         for (const [lookup, digests] of Object.entries(expected)) {
             for (const [i, method] of settings.entries()) {
                 const before = submissions, priorPasses = multiGroupPasses.length;
@@ -120,7 +121,8 @@ async function paletteByteEquivalence(createConverter) {
         for (const [lookup, groups] of [['ordered', '16,256'],
                                         ['delaunay', '16,16,32'],
                                         ['rbc', '16,256'],
-                                        ['vptree', '16,256']]) {
+                                        ['vptree', '16,256'],
+                                        ['certlut', '2,128']]) {
             const before = multiGroupPasses.length;
             const gpu = await convert(createConverter, 'force', 'none', lookup, 'xterm16');
             if (multiGroupPasses.slice(before).join(',') !== groups ||
