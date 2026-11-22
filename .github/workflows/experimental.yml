@@ -20,6 +20,50 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
+  midnightbsd:
+    concurrency:
+      group: libsixel-vm
+      queue: max
+      cancel-in-progress: false
+    name: Autotools-midnightbsd-4.0.9-amd64-smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Build and smoke test the converters on MidnightBSD
+        uses: vmactions/midnightbsd-vm@23c48792239f8b168c99af04818d95322ac6aa8b # v1.0.9
+        with:
+          release: '4.0.9'
+          arch: x86_64
+          cpu: 2
+          mem: 4096
+          copyback: false
+          prepare: |
+            set -eux
+            mport install gmake
+          run: |
+            set -eux
+            uname -srm
+            test "$(uname -s)" = MidnightBSD
+            test "$(uname -m)" = amd64
+            cc -dumpmachine
+
+            build_dir=$(mktemp -d)
+            cd "$build_dir"
+            "$GITHUB_WORKSPACE/configure" --disable-dependency-tracking --disable-tests
+            gmake -j2 -C src
+            gmake -j2 -C converters
+
+            converters/img2sixel "$GITHUB_WORKSPACE/tests/data/inputs/snake_64.ppm" > roundtrip.six
+            converters/sixel2png -i roundtrip.six -o roundtrip.png
+            # Check the PNG signature and IHDR dimensions, then read all pixels back.
+            png_header=$(od -An -tx1 -N24 roundtrip.png | tr -d '[:space:]')
+            test "$png_header" = 89504e470d0a1a0a0000000d494844520000004000000040
+            converters/img2sixel roundtrip.png >/dev/null
+
   emscripten-windows:
     name: Meson-windows-x86_64-emscripten-static
     runs-on: windows-2025
