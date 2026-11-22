@@ -555,6 +555,29 @@ runs:
         echo "$PWD/emsdk/upstream/emscripten" >> "$GITHUB_PATH"
         echo "$PWD/emsdk/upstream/bin" >> "$GITHUB_PATH"
 
+    - name: Set up Node.js for WebGPU tests
+      if: fromJSON(inputs.matrix_json).webgpu_tests
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+        package-manager-cache: false
+
+    - name: Install Dawn and select the Lavapipe ICD
+      if: fromJSON(inputs.matrix_json).webgpu_tests
+      shell: bash
+      run: |
+        # Lavapipe runs WGSL compute on hosted runners without a physical GPU.
+        drivers=(/usr/share/vulkan/icd.d/lvp_icd*.json)
+        test -f "${drivers[0]}"
+        runtime_dir=$(mktemp -d "$RUNNER_TEMP/webgpu-runtime.XXXXXX")
+        npm install --prefix "$RUNNER_TEMP/webgpu-node" \
+          --no-save --package-lock=false --ignore-scripts webgpu@0.6.2
+        {
+          echo "VK_DRIVER_FILES=${drivers[0]}"
+          echo "XDG_RUNTIME_DIR=$runtime_dir"
+          echo "NODE_PATH=$RUNNER_TEMP/webgpu-node/node_modules"
+        } >> "$GITHUB_ENV"
+
     - name: Install pip packages
       if: ${{ fromJSON(inputs.matrix_json).pip_packages != '' }}
       shell: bash
@@ -699,6 +722,49 @@ runs:
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }} -Dtest_shard=${{ fromJSON(inputs.matrix_json).test_shard || '1/1' }}
         meson compile -C builddir -v
         meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+
+    - name: Verify every WebGPU case ran
+      if: fromJSON(inputs.matrix_json).webgpu_tests
+      shell: bash
+      env:
+        BUILDTOOL: ${{ fromJSON(inputs.matrix_json).buildtool }}
+      run: |
+        # A TAP skip is supported locally. Require a passing assertion in CI.
+        python3 - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+
+        tests = sorted(Path("tests/platform/webgpu").glob("[0-9]*.t"))
+        if os.environ["BUILDTOOL"] == "autotools":
+            def passed(test):
+                report = test.with_suffix(".trs")
+                return report.is_file() and any(
+                    line.startswith(":test-result: PASS ")
+                    for line in report.read_text().splitlines()
+                )
+        else:
+            log = Path("builddir/meson-logs/testlog.json")
+            results = {}
+            for line in log.read_text().splitlines():
+                row = json.loads(line)
+                results[row["name"].rsplit(" / ", 1)[-1]] = row
+
+            def passed(test):
+                row = results.get(test.relative_to("tests").as_posix(), {})
+                return row.get("result") == "OK" and any(
+                    line.startswith("ok 1 - ")
+                    for line in row.get("stdout", "").splitlines()
+                )
+
+        if not tests:
+            raise SystemExit("No WebGPU test cases found")
+        missing = [str(test) for test in tests if not passed(test)]
+        if missing:
+            raise SystemExit("WebGPU cases without a passing TAP assertion: "
+                             + ", ".join(missing))
+        print(f"Verified {len(tests)} WebGPU tests passed")
+        PY
 
     - name: Build and test (Autotools, msys2)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}
