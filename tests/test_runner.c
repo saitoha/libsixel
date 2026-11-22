@@ -2256,6 +2256,9 @@ int test_frame_0018_resampling(int argc, char **argv);
 int test_frame_0054_geometry(int argc, char **argv);
 int test_frame_0098_dynamic(int argc, char **argv);
 int test_frame_0178_byte(int argc, char **argv);
+int test_frame_format_0066_normalize_bgr555_channels(int, char **);
+int test_frame_format_0067_normalize_din99d_chroma(int, char **);
+int test_frame_format_0068_normalize_g2_empty_width(int, char **);
 int test_apng_0001_float(int argc, char **argv);
 int test_apng_byte_0117(int argc, char **argv);
 int test_apng_byte_0118(int argc, char **argv);
@@ -9280,6 +9283,12 @@ static test_entry_t const test_entries[] = {
     { "frame/0054_float_geometry_state", test_frame_0054_geometry },
     { "frame/0098_float_dynamic_range", test_frame_0098_dynamic },
     { "frame/0178_float_byte_boundary", test_frame_0178_byte },
+    { "frame/format/0066_normalize_bgr555_channels",
+      test_frame_format_0066_normalize_bgr555_channels },
+    { "frame/format/0067_normalize_din99d_chroma",
+      test_frame_format_0067_normalize_din99d_chroma },
+    { "frame/format/0068_normalize_g2_empty_width",
+      test_frame_format_0068_normalize_g2_empty_width },
     { "apng/0001_float", test_apng_0001_float },
     { "frame/0239_alpha", test_frame_0239_alpha },
     { "frame/0003_frame_transparent_mask_clip",

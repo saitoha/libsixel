@@ -953,6 +953,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/processing/frame/0054_frame_float_geometry_state.c \
 	_support/processing/frame/0098_frame_float_dynamic_range.c \
 	_support/processing/frame/0178_frame_float_byte_boundary.c \
+	frame/format/0066_normalize_bgr555_channels.c \
+	frame/format/0067_normalize_din99d_chroma.c \
+	frame/format/0068_normalize_g2_empty_width.c \
 	_support/processing/frame/0239_frame_alpha_plane.c \
 	_support/loader/builtin/apng/0001_float_alpha.c \
 	_support/processing/frame/frame_transparent_mask_resize_test_common.c \
@@ -2331,6 +2334,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/frame/test_runner-0054_frame_float_geometry_state.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/frame/test_runner-0098_frame_float_dynamic_range.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/frame/test_runner-0178_frame_float_byte_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	frame/format/test_runner-0066_normalize_bgr555_channels.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	frame/format/test_runner-0067_normalize_din99d_chroma.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	frame/format/test_runner-0068_normalize_g2_empty_width.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/frame/test_runner-0239_frame_alpha_plane.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/loader/builtin/apng/test_runner-0001_float_alpha.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/frame/test_runner-frame_transparent_mask_resize_test_common.$(OBJEXT) \
@@ -5149,6 +5155,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po \
 	frame/crop/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	frame/crop/$(DEPDIR)/test_runner-0002_frame_transparent_mask_clip.Po \
+	frame/format/$(DEPDIR)/test_runner-0066_normalize_bgr555_channels.Po \
+	frame/format/$(DEPDIR)/test_runner-0067_normalize_din99d_chroma.Po \
+	frame/format/$(DEPDIR)/test_runner-0068_normalize_g2_empty_width.Po \
 	frame/resize/$(DEPDIR)/test_runner-0001_filter_resize.Po \
 	frame/resize/$(DEPDIR)/test_runner-0002_frame_transparent_mask_resize.Po \
 	frame/resize/$(DEPDIR)/test_runner-0003_frame_transparent_mask_resize_bilinear.Po \
@@ -9510,6 +9519,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_FRAME_FLOAT_GEOMETRY_STATE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_FRAME_FLOAT_DYNAMIC_RANGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0178_FRAME_FLOAT_BYTE_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_NORMALIZE_BGR555_CHANNELS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_NORMALIZE_DIN99D_CHROMA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_NORMALIZE_G2_EMPTY_WIDTH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0239_FRAME_ALPHA_PLANE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FLOAT_ALPHA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
@@ -12618,6 +12630,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/frame/0054_frame_float_geometry_state.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/frame/0098_frame_float_dynamic_range.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/frame/0178_frame_float_byte_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    frame/format/0066_normalize_bgr555_channels.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    frame/format/0067_normalize_din99d_chroma.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    frame/format/0068_normalize_g2_empty_width.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/frame/0239_frame_alpha_plane.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/loader/builtin/apng/0001_float_alpha.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/frame/frame_transparent_mask_resize_test_common.c \
@@ -22772,6 +22787,21 @@ _support/processing/frame/test_runner-0098_frame_float_dynamic_range.$(OBJEXT): 
 _support/processing/frame/test_runner-0178_frame_float_byte_boundary.$(OBJEXT):  \
 	_support/processing/frame/$(am__dirstamp) \
 	_support/processing/frame/$(DEPDIR)/$(am__dirstamp)
+frame/format/$(am__dirstamp):
+	@$(MKDIR_P) frame/format
+	@: >>frame/format/$(am__dirstamp)
+frame/format/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) frame/format/$(DEPDIR)
+	@: >>frame/format/$(DEPDIR)/$(am__dirstamp)
+frame/format/test_runner-0066_normalize_bgr555_channels.$(OBJEXT):  \
+	frame/format/$(am__dirstamp) \
+	frame/format/$(DEPDIR)/$(am__dirstamp)
+frame/format/test_runner-0067_normalize_din99d_chroma.$(OBJEXT):  \
+	frame/format/$(am__dirstamp) \
+	frame/format/$(DEPDIR)/$(am__dirstamp)
+frame/format/test_runner-0068_normalize_g2_empty_width.$(OBJEXT):  \
+	frame/format/$(am__dirstamp) \
+	frame/format/$(DEPDIR)/$(am__dirstamp)
 _support/processing/frame/test_runner-0239_frame_alpha_plane.$(OBJEXT):  \
 	_support/processing/frame/$(am__dirstamp) \
 	_support/processing/frame/$(DEPDIR)/$(am__dirstamp)
@@ -26703,6 +26733,7 @@ mostlyclean-compile:
 	-rm -f encoder/sixel-output/*.$(OBJEXT)
 	-rm -f extension/gdk-pixbuf-loader/*.$(OBJEXT)
 	-rm -f frame/crop/*.$(OBJEXT)
+	-rm -f frame/format/*.$(OBJEXT)
 	-rm -f frame/resize/*.$(OBJEXT)
 	-rm -f frame/storage/*.$(OBJEXT)
 	-rm -f frame/timeline/*.$(OBJEXT)
@@ -28401,6 +28432,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0007_loader_plugin_integration.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@frame/crop/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@frame/crop/$(DEPDIR)/test_runner-0002_frame_transparent_mask_clip.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@frame/format/$(DEPDIR)/test_runner-0066_normalize_bgr555_channels.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@frame/format/$(DEPDIR)/test_runner-0067_normalize_din99d_chroma.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@frame/format/$(DEPDIR)/test_runner-0068_normalize_g2_empty_width.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@frame/resize/$(DEPDIR)/test_runner-0001_filter_resize.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@frame/resize/$(DEPDIR)/test_runner-0002_frame_transparent_mask_resize.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@frame/resize/$(DEPDIR)/test_runner-0003_frame_transparent_mask_resize_bilinear.Po@am__quote@ # am--include-marker
@@ -39318,6 +39352,48 @@ _support/processing/frame/test_runner-0178_frame_float_byte_boundary.obj: _suppo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/frame/0178_frame_float_byte_boundary.c' object='_support/processing/frame/test_runner-0178_frame_float_byte_boundary.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/frame/test_runner-0178_frame_float_byte_boundary.obj `if test -f '_support/processing/frame/0178_frame_float_byte_boundary.c'; then $(CYGPATH_W) '_support/processing/frame/0178_frame_float_byte_boundary.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/frame/0178_frame_float_byte_boundary.c'; fi`
+
+frame/format/test_runner-0066_normalize_bgr555_channels.o: frame/format/0066_normalize_bgr555_channels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT frame/format/test_runner-0066_normalize_bgr555_channels.o -MD -MP -MF frame/format/$(DEPDIR)/test_runner-0066_normalize_bgr555_channels.Tpo -c -o frame/format/test_runner-0066_normalize_bgr555_channels.o `test -f 'frame/format/0066_normalize_bgr555_channels.c' || echo '$(srcdir)/'`frame/format/0066_normalize_bgr555_channels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) frame/format/$(DEPDIR)/test_runner-0066_normalize_bgr555_channels.Tpo frame/format/$(DEPDIR)/test_runner-0066_normalize_bgr555_channels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame/format/0066_normalize_bgr555_channels.c' object='frame/format/test_runner-0066_normalize_bgr555_channels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o frame/format/test_runner-0066_normalize_bgr555_channels.o `test -f 'frame/format/0066_normalize_bgr555_channels.c' || echo '$(srcdir)/'`frame/format/0066_normalize_bgr555_channels.c
+
+frame/format/test_runner-0066_normalize_bgr555_channels.obj: frame/format/0066_normalize_bgr555_channels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT frame/format/test_runner-0066_normalize_bgr555_channels.obj -MD -MP -MF frame/format/$(DEPDIR)/test_runner-0066_normalize_bgr555_channels.Tpo -c -o frame/format/test_runner-0066_normalize_bgr555_channels.obj `if test -f 'frame/format/0066_normalize_bgr555_channels.c'; then $(CYGPATH_W) 'frame/format/0066_normalize_bgr555_channels.c'; else $(CYGPATH_W) '$(srcdir)/frame/format/0066_normalize_bgr555_channels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) frame/format/$(DEPDIR)/test_runner-0066_normalize_bgr555_channels.Tpo frame/format/$(DEPDIR)/test_runner-0066_normalize_bgr555_channels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame/format/0066_normalize_bgr555_channels.c' object='frame/format/test_runner-0066_normalize_bgr555_channels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o frame/format/test_runner-0066_normalize_bgr555_channels.obj `if test -f 'frame/format/0066_normalize_bgr555_channels.c'; then $(CYGPATH_W) 'frame/format/0066_normalize_bgr555_channels.c'; else $(CYGPATH_W) '$(srcdir)/frame/format/0066_normalize_bgr555_channels.c'; fi`
+
+frame/format/test_runner-0067_normalize_din99d_chroma.o: frame/format/0067_normalize_din99d_chroma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT frame/format/test_runner-0067_normalize_din99d_chroma.o -MD -MP -MF frame/format/$(DEPDIR)/test_runner-0067_normalize_din99d_chroma.Tpo -c -o frame/format/test_runner-0067_normalize_din99d_chroma.o `test -f 'frame/format/0067_normalize_din99d_chroma.c' || echo '$(srcdir)/'`frame/format/0067_normalize_din99d_chroma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) frame/format/$(DEPDIR)/test_runner-0067_normalize_din99d_chroma.Tpo frame/format/$(DEPDIR)/test_runner-0067_normalize_din99d_chroma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame/format/0067_normalize_din99d_chroma.c' object='frame/format/test_runner-0067_normalize_din99d_chroma.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o frame/format/test_runner-0067_normalize_din99d_chroma.o `test -f 'frame/format/0067_normalize_din99d_chroma.c' || echo '$(srcdir)/'`frame/format/0067_normalize_din99d_chroma.c
+
+frame/format/test_runner-0067_normalize_din99d_chroma.obj: frame/format/0067_normalize_din99d_chroma.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT frame/format/test_runner-0067_normalize_din99d_chroma.obj -MD -MP -MF frame/format/$(DEPDIR)/test_runner-0067_normalize_din99d_chroma.Tpo -c -o frame/format/test_runner-0067_normalize_din99d_chroma.obj `if test -f 'frame/format/0067_normalize_din99d_chroma.c'; then $(CYGPATH_W) 'frame/format/0067_normalize_din99d_chroma.c'; else $(CYGPATH_W) '$(srcdir)/frame/format/0067_normalize_din99d_chroma.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) frame/format/$(DEPDIR)/test_runner-0067_normalize_din99d_chroma.Tpo frame/format/$(DEPDIR)/test_runner-0067_normalize_din99d_chroma.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame/format/0067_normalize_din99d_chroma.c' object='frame/format/test_runner-0067_normalize_din99d_chroma.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o frame/format/test_runner-0067_normalize_din99d_chroma.obj `if test -f 'frame/format/0067_normalize_din99d_chroma.c'; then $(CYGPATH_W) 'frame/format/0067_normalize_din99d_chroma.c'; else $(CYGPATH_W) '$(srcdir)/frame/format/0067_normalize_din99d_chroma.c'; fi`
+
+frame/format/test_runner-0068_normalize_g2_empty_width.o: frame/format/0068_normalize_g2_empty_width.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT frame/format/test_runner-0068_normalize_g2_empty_width.o -MD -MP -MF frame/format/$(DEPDIR)/test_runner-0068_normalize_g2_empty_width.Tpo -c -o frame/format/test_runner-0068_normalize_g2_empty_width.o `test -f 'frame/format/0068_normalize_g2_empty_width.c' || echo '$(srcdir)/'`frame/format/0068_normalize_g2_empty_width.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) frame/format/$(DEPDIR)/test_runner-0068_normalize_g2_empty_width.Tpo frame/format/$(DEPDIR)/test_runner-0068_normalize_g2_empty_width.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame/format/0068_normalize_g2_empty_width.c' object='frame/format/test_runner-0068_normalize_g2_empty_width.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o frame/format/test_runner-0068_normalize_g2_empty_width.o `test -f 'frame/format/0068_normalize_g2_empty_width.c' || echo '$(srcdir)/'`frame/format/0068_normalize_g2_empty_width.c
+
+frame/format/test_runner-0068_normalize_g2_empty_width.obj: frame/format/0068_normalize_g2_empty_width.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT frame/format/test_runner-0068_normalize_g2_empty_width.obj -MD -MP -MF frame/format/$(DEPDIR)/test_runner-0068_normalize_g2_empty_width.Tpo -c -o frame/format/test_runner-0068_normalize_g2_empty_width.obj `if test -f 'frame/format/0068_normalize_g2_empty_width.c'; then $(CYGPATH_W) 'frame/format/0068_normalize_g2_empty_width.c'; else $(CYGPATH_W) '$(srcdir)/frame/format/0068_normalize_g2_empty_width.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) frame/format/$(DEPDIR)/test_runner-0068_normalize_g2_empty_width.Tpo frame/format/$(DEPDIR)/test_runner-0068_normalize_g2_empty_width.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame/format/0068_normalize_g2_empty_width.c' object='frame/format/test_runner-0068_normalize_g2_empty_width.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o frame/format/test_runner-0068_normalize_g2_empty_width.obj `if test -f 'frame/format/0068_normalize_g2_empty_width.c'; then $(CYGPATH_W) 'frame/format/0068_normalize_g2_empty_width.c'; else $(CYGPATH_W) '$(srcdir)/frame/format/0068_normalize_g2_empty_width.c'; fi`
 
 _support/processing/frame/test_runner-0239_frame_alpha_plane.o: _support/processing/frame/0239_frame_alpha_plane.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/frame/test_runner-0239_frame_alpha_plane.o -MD -MP -MF _support/processing/frame/$(DEPDIR)/test_runner-0239_frame_alpha_plane.Tpo -c -o _support/processing/frame/test_runner-0239_frame_alpha_plane.o `test -f '_support/processing/frame/0239_frame_alpha_plane.c' || echo '$(srcdir)/'`_support/processing/frame/0239_frame_alpha_plane.c
@@ -55507,6 +55583,8 @@ distclean-generic:
 	-$(am__rm_f) extension/gdk-pixbuf-loader/$(am__dirstamp)
 	-$(am__rm_f) frame/crop/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) frame/crop/$(am__dirstamp)
+	-$(am__rm_f) frame/format/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) frame/format/$(am__dirstamp)
 	-$(am__rm_f) frame/resize/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) frame/resize/$(am__dirstamp)
 	-$(am__rm_f) frame/storage/$(DEPDIR)/$(am__dirstamp)

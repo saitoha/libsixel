@@ -3689,6 +3689,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0054_FRAME_FLOAT_GEOMETRY_STATE \
     -DBUILD_TEST_0098_FRAME_FLOAT_DYNAMIC_RANGE \
     -DBUILD_TEST_0178_FRAME_FLOAT_BYTE_BOUNDARY \
+    -DBUILD_TEST_0066_NORMALIZE_BGR555_CHANNELS \
+    -DBUILD_TEST_0067_NORMALIZE_DIN99D_CHROMA \
+    -DBUILD_TEST_0068_NORMALIZE_G2_EMPTY_WIDTH \
     -DBUILD_TEST_0239_FRAME_ALPHA_PLANE \
     -DBUILD_TEST_0001_FLOAT_ALPHA \
     -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
@@ -6769,6 +6772,9 @@ test_runner_SOURCES = \
     _support/processing/frame/0054_frame_float_geometry_state.c \
     _support/processing/frame/0098_frame_float_dynamic_range.c \
     _support/processing/frame/0178_frame_float_byte_boundary.c \
+    frame/format/0066_normalize_bgr555_channels.c \
+    frame/format/0067_normalize_din99d_chroma.c \
+    frame/format/0068_normalize_g2_empty_width.c \
     _support/processing/frame/0239_frame_alpha_plane.c \
     _support/loader/builtin/apng/0001_float_alpha.c \
     _support/processing/frame/frame_transparent_mask_resize_test_common.c \

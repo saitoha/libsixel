@@ -277,19 +277,9 @@ float
 sixel_pixelformat_float_channel_range(int pixelformat,
                                       int channel)
 {
-    float minimum;
-    float maximum;
-    float range;
-
-    minimum = sixel_pixelformat_float_channel_min_internal(pixelformat,
-                                                           channel);
-    maximum = sixel_pixelformat_float_channel_max_internal(pixelformat,
-                                                           channel);
-    range = maximum - minimum;
-    if (range <= 0.0f) {
-        range = 1.0f;
-    }
-    return range;
+    /* Every supported channel and the default [0, 1] has positive range. */
+    return sixel_pixelformat_float_channel_max_internal(pixelformat, channel) -
+           sixel_pixelformat_float_channel_min_internal(pixelformat, channel);
 }
 
 float
@@ -707,20 +697,6 @@ sixel_rgb_from_din99dfloat32(unsigned char const *data,
 }
 
 
-static void
-sixel_rgb_from_unknown(unsigned char const *data,
-                       unsigned char *r,
-                       unsigned char *g,
-                       unsigned char *b)
-{
-    (void)data;
-
-    *r = 0;
-    *g = 0;
-    *b = 0;
-}
-
-
 static sixel_rgb_reader_t
 sixel_select_rgb_reader(int pixelformat)
 {
@@ -769,10 +745,8 @@ sixel_select_rgb_reader(int pixelformat)
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
         return sixel_rgb_from_din99dfloat32;
     default:
-        break;
+        return NULL;
     }
-
-    return sixel_rgb_from_unknown;
 }
 
 
@@ -850,13 +824,12 @@ static void
 expand_rgb(unsigned char *restrict dst,
            unsigned char const *restrict src,
            int width, int height,
-           int pixelformat, int depth)
+           sixel_rgb_reader_t reader, int depth)
 {
     int x;
     int y;
     int dst_stride;
     int src_stride;
-    sixel_rgb_reader_t reader;
     unsigned char const *src_row;
     unsigned char const *src_pixel;
     unsigned char *dst_row;
@@ -866,17 +839,9 @@ expand_rgb(unsigned char *restrict dst,
     unsigned char b;
 
     /*
-     * Select the reader once to avoid per-pixel branching. The lookup
-     * maps each pixelformat to a dedicated decoder so the inner loop
-     * only performs pointer math and byte stores.
-     */
-    reader = sixel_select_rgb_reader(pixelformat);
-
-    /*
      * Pre-compute strides to avoid repeated multiplications in the
-     * inner loop. The caller guarantees that the buffers are large
-     * enough, so we can advance pointers by depth/3 bytes per pixel
-     * instead of recalculating offsets each time.
+     * inner loop. Advance by depth bytes per source pixel and three
+     * bytes per destination pixel.
      */
     dst_stride = width * 3;
     src_stride = width * depth;
@@ -1205,19 +1170,17 @@ expand_palette(unsigned char *restrict dst,
                unsigned char const *restrict src,
                int width, int height, int const pixelformat)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
     int bpp;
 
     /*
-     * Reject empty dimensions early. An empty row or column would make the
-     * byte count calculations negative and does not represent a valid image
-     * to expand.
+     * Packed rows require positive dimensions. Reject empty images and
+     * negative sizes before calculating row strides and unpacking the
+     * source.
      */
     if (width <= 0 || height <= 0) {
         sixel_helper_set_additional_message(
             "expand_palette: width and height must be positive.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
+        return SIXEL_BAD_ARGUMENT;
     }
 
     /* Only packed formats reach this helper. The public entry handles
@@ -1231,15 +1194,10 @@ expand_palette(unsigned char *restrict dst,
     case SIXEL_PIXELFORMAT_G2:
         bpp = 2;
         break;
-    case SIXEL_PIXELFORMAT_PAL4:
-    case SIXEL_PIXELFORMAT_G4:
+    default:
+        /* PAL4 and G4 are the remaining packed formats. */
         bpp = 4;
         break;
-    default:
-        status = SIXEL_BAD_ARGUMENT;
-        sixel_helper_set_additional_message(
-            "expand_palette: invalid pixelformat.");
-        goto end;
     }
 
 #if HAVE_DEBUG
@@ -1260,18 +1218,12 @@ expand_palette(unsigned char *restrict dst,
         switch (bpp) {
         case 1:
             sixel_expand_palette_bpp1(dst, src, width, height);
-            status = SIXEL_OK;
             break;
         case 2:
             sixel_expand_palette_bpp2(dst, src, width, height);
-            status = SIXEL_OK;
-            break;
-        case 4:
-            sixel_expand_palette_bpp4(dst, src, width, height);
-            status = SIXEL_OK;
             break;
         default:
-            status = SIXEL_BAD_ARGUMENT;
+            sixel_expand_palette_bpp4(dst, src, width, height);
             break;
         }
     } else {
@@ -1286,11 +1238,9 @@ expand_palette(unsigned char *restrict dst,
          * concurrent writes to the static lookup buffers.
          */
         sixel_expand_palette_fallback(dst, src, width, height, bpp);
-        status = SIXEL_OK;
     }
 
-end:
-    return status;
+    return SIXEL_OK;
 }
 
 /* Expand a packed row directly into G8. Each valid code times scale is
@@ -1361,83 +1311,35 @@ sixel_helper_normalize_pixelformat(
     int                 /* in */  width,            /* width of source image */
     int                 /* in */  height)           /* height of source image */
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_rgb_reader_t reader;
     int depth;
 
     switch (src_pixelformat) {
-    case SIXEL_PIXELFORMAT_G8:
-        expand_rgb(dst, src, width, height, src_pixelformat, 1);
-        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        break;
-    case SIXEL_PIXELFORMAT_RGB565:
-    case SIXEL_PIXELFORMAT_RGB555:
-    case SIXEL_PIXELFORMAT_BGR565:
-    case SIXEL_PIXELFORMAT_BGR555:
-    case SIXEL_PIXELFORMAT_GA88:
-    case SIXEL_PIXELFORMAT_AG88:
-        expand_rgb(dst, src, width, height, src_pixelformat, 2);
-        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        break;
-    case SIXEL_PIXELFORMAT_RGB888:
-    case SIXEL_PIXELFORMAT_BGR888:
-        expand_rgb(dst, src, width, height, src_pixelformat, 3);
-        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        break;
-    case SIXEL_PIXELFORMAT_RGBFLOAT32:
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        depth = sixel_helper_compute_depth(src_pixelformat);
-        if (depth <= 0) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        expand_rgb(dst, src, width, height, src_pixelformat, depth);
-        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        break;
-    case SIXEL_PIXELFORMAT_RGBA8888:
-    case SIXEL_PIXELFORMAT_ARGB8888:
-    case SIXEL_PIXELFORMAT_BGRA8888:
-    case SIXEL_PIXELFORMAT_ABGR8888:
-    case SIXEL_PIXELFORMAT_XRGB8888:
-    case SIXEL_PIXELFORMAT_RGBX8888:
-    case SIXEL_PIXELFORMAT_XBGR8888:
-    case SIXEL_PIXELFORMAT_BGRX8888:
-        expand_rgb(dst, src, width, height, src_pixelformat, 4);
-        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        break;
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
         *dst_pixelformat = SIXEL_PIXELFORMAT_PAL8;
-        status = expand_palette(dst, src, width, height, src_pixelformat);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        break;
+        return expand_palette(dst, src, width, height, src_pixelformat);
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
         *dst_pixelformat = SIXEL_PIXELFORMAT_G8;
-        status = expand_palette(dst, src, width, height, src_pixelformat);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        break;
+        return expand_palette(dst, src, width, height, src_pixelformat);
     case SIXEL_PIXELFORMAT_PAL8:
         memcpy(dst, src, (size_t)(width * height));
         *dst_pixelformat = src_pixelformat;
-        break;
+        return SIXEL_OK;
     default:
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
+        /* Select the reader once and reject unsupported formats here. */
+        reader = sixel_select_rgb_reader(src_pixelformat);
+        if (reader == NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        depth = sixel_helper_compute_depth(src_pixelformat);
+        expand_rgb(dst, src, width, height, reader, depth);
+        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        return SIXEL_OK;
     }
-
-    status = SIXEL_OK;
-
-end:
-    return status;
 }
 
 
