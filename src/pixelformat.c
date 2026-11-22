@@ -386,11 +386,6 @@ sixel_pixelformat_byte_to_float(int pixelformat,
     return (float)value / 255.0f;
 }
 
-typedef void (*sixel_rgb_reader_t)(unsigned char const *data,
-                                    unsigned char *r,
-                                    unsigned char *g,
-                                    unsigned char *b);
-
 
 static unsigned int
 sixel_rgb_read16(unsigned char const *data)
@@ -705,8 +700,8 @@ sixel_rgb_from_din99dfloat32(unsigned char const *data,
 }
 
 
-static sixel_rgb_reader_t
-sixel_select_rgb_reader(int pixelformat)
+sixel_rgb_reader_t
+sixel_pixelformat_rgb_reader(int pixelformat)
 {
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB555:
@@ -1384,7 +1379,7 @@ sixel_helper_normalize_pixelformat(
         return SIXEL_OK;
     default:
         /* Select the reader once and reject unsupported formats here. */
-        reader = sixel_select_rgb_reader(src_pixelformat);
+        reader = sixel_pixelformat_rgb_reader(src_pixelformat);
         if (reader == NULL) {
             return SIXEL_BAD_ARGUMENT;
         }

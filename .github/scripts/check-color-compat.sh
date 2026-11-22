@@ -206,6 +206,13 @@ set -- \
     frame/storage/0045_linear_palette_rgb888.t \
     frame/storage/0046_linear_palette_rgbfloat32.t \
     frame/alpha/0026_strip_linear_coordinates.t \
+    palette/fixed/0100_monochrome_sixel_mode_no_palette_slots.t \
+    frame/alpha/0027_keyed_palette_registers.t \
+    frame/storage/0047_linear_index_unpack.t \
+    frame/storage/0048_float_to_bgr888.t \
+    frame/storage/0049_packed_rgb_float_encoder.t \
+    frame/storage/0050_permuted_primaries.t \
+    frame/storage/0051_declared_palette_storage.t \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \

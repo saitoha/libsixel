@@ -65,6 +65,14 @@ sixel_pixelformat_byte_to_float(int pixelformat,
                                 int channel,
                                 unsigned char value);
 
+typedef void (*sixel_rgb_reader_t)(unsigned char const *data,
+                                    unsigned char *r,
+                                    unsigned char *g,
+                                    unsigned char *b);
+
+sixel_rgb_reader_t
+sixel_pixelformat_rgb_reader(int pixelformat);
+
 /* Return the coordinate colorspace encoded by a pixel format. */
 SIXEL_INTERNAL_API int
 sixel_pixelformat_get_colorspace(int pixelformat);

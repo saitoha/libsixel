@@ -334,6 +334,12 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-253 | Linear palette entries expand to sRGB bytes and visible SIXEL colors. | [tests/frame/storage/0045_linear_palette_rgb888.t](../../../tests/frame/storage/0045_linear_palette_rgb888.t) |
 | FP-254 | Linear palette entries expand to sRGB floats and visible SIXEL colors. | [tests/frame/storage/0046_linear_palette_rgbfloat32.t](../../../tests/frame/storage/0046_linear_palette_rgbfloat32.t) |
 | FP-255 | Stripping opaque alpha preserves linear coordinates until byte conversion. | [tests/frame/alpha/0026_strip_linear_coordinates.t](../../../tests/frame/alpha/0026_strip_linear_coordinates.t) |
+| FP-256 | Keyed color frames emit the visible palette register. | [tests/frame/alpha/0027_keyed_palette_registers.t](../../../tests/frame/alpha/0027_keyed_palette_registers.t) |
+| FP-257 | Unpacking linear palette indices preserves their coordinates. | [tests/frame/storage/0047_linear_index_unpack.t](../../../tests/frame/storage/0047_linear_index_unpack.t) |
+| FP-258 | Float RGB converts to encoded BGR bytes. | [tests/frame/storage/0048_float_to_bgr888.t](../../../tests/frame/storage/0048_float_to_bgr888.t) |
+| FP-259 | Packed RGB matches RGB888 in float working spaces. | [tests/frame/storage/0049_packed_rgb_float_encoder.t](../../../tests/frame/storage/0049_packed_rgb_float_encoder.t) |
+| FP-260 | Permuted RGB primaries preserve exact channel independence. | [tests/frame/storage/0050_permuted_primaries.t](../../../tests/frame/storage/0050_permuted_primaries.t) |
+| FP-261 | Reducing the declared palette size preserves retained storage. | [tests/frame/storage/0051_declared_palette_storage.t](../../../tests/frame/storage/0051_declared_palette_storage.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

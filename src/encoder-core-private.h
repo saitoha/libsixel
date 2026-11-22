@@ -89,15 +89,9 @@ struct sixel_output {
     int encode_policy;
     int ormode;
     int transparent_policy;
-    /*
-     * Non-zero when the transparency key was appended by the encoder itself
-     * (6delta reserves one) rather than coming from a caller-supplied
-     * two-color mono palette.  The legacy "two colors and one is the key"
-     * shortcut -- emit neither a color definition nor a color selector and let
-     * the terminal paint with whatever register is current -- is only correct
-     * for the latter, so this flag turns it off.
-     */
-    int keycolor_reserved;
+    /* Emit the specified registers even for two colors with a key.
+     * Only a foreground mask uses the terminal's current color. */
+    int emit_keyed_palette;
     /* Borrowed for one normal encode only, in source pixel coordinates.
      * Fixed palettes can occupy all 256 indexes, so omitted pixels must not
      * steal a real color. Workers read this immutable frame-owned view. */
