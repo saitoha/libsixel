@@ -1052,9 +1052,6 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
     SIXELSTATUS status;
     sixel_frame_pixels_view_t view;
     sixel_frame_transparency_t transparency;
-    int depth_result;
-    size_t depth;
-    size_t pixel_total;
     size_t pixel_bytes;
     size_t palette_bytes;
     size_t mask_bytes;
@@ -1063,9 +1060,6 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
     status = SIXEL_BAD_ARGUMENT;
     memset(&view, 0, sizeof(view));
     memset(&transparency, 0, sizeof(transparency));
-    depth_result = 0;
-    depth = 0u;
-    pixel_total = 0u;
     pixel_bytes = 0u;
     palette_bytes = 0u;
     mask_bytes = 0u;
@@ -1085,23 +1079,11 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
         return status;
     }
 
-    if (view.width <= 0 || view.height <= 0) {
-        return SIXEL_BAD_INPUT;
+    status = sixel_pixelformat_buffer_bytes(view.width, view.height,
+                                           view.pixelformat, &pixel_bytes);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
-    if ((size_t)view.width > SIZE_MAX / (size_t)view.height) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-
-    depth_result = sixel_helper_compute_depth(view.pixelformat);
-    if (depth_result <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-    depth = (size_t)depth_result;
-    pixel_total = (size_t)view.width * (size_t)view.height;
-    if (pixel_total > SIZE_MAX / depth) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    pixel_bytes = pixel_total * depth;
 
     if (view.palette != NULL && view.ncolors > 0) {
         if (view.ncolors > SIXEL_PALETTE_MAX ||
@@ -1156,9 +1138,6 @@ sixel_frame_clone(sixel_frame_t const *frame,
     unsigned char *pixels;
     unsigned char *palette;
     unsigned char *mask;
-    int depth_result;
-    size_t depth;
-    size_t pixel_total;
     size_t pixel_bytes;
     size_t palette_bytes;
     size_t mask_bytes;
@@ -1169,9 +1148,6 @@ sixel_frame_clone(sixel_frame_t const *frame,
     pixels = NULL;
     palette = NULL;
     mask = NULL;
-    depth_result = 0;
-    depth = 0u;
-    pixel_total = 0u;
     pixel_bytes = 0u;
     palette_bytes = 0u;
     mask_bytes = 0u;
@@ -1260,48 +1236,36 @@ sixel_frame_clone(sixel_frame_t const *frame,
     }
 
     if (view.width > 0 && view.height > 0) {
-        depth_result = sixel_helper_compute_depth(view.pixelformat);
-        if (depth_result <= 0) {
+        status = sixel_pixelformat_buffer_bytes(view.width, view.height,
+                                               view.pixelformat, &pixel_bytes);
+        if (SIXEL_FAILED(status)) {
             status = SIXEL_BAD_INPUT;
             goto error;
         }
-        depth = (size_t)depth_result;
-        pixel_total = (size_t)view.width * (size_t)view.height;
-        if (pixel_total / (size_t)view.width != (size_t)view.height) {
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat)) {
+            source_pixels =
+                (unsigned char const *)(void const *)view.pixels_float32;
+        } else {
+            source_pixels = view.pixels;
+        }
+        if (source_pixels == NULL) {
             status = SIXEL_BAD_INPUT;
             goto error;
         }
-        if (pixel_total > SIZE_MAX / depth) {
-            status = SIXEL_BAD_INPUT;
+        pixels = (unsigned char *)sixel_allocator_malloc(clone->allocator,
+                                                         pixel_bytes);
+        if (pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
             goto error;
         }
-        pixel_bytes = pixel_total * depth;
-        if (pixel_bytes > 0u) {
-            if (SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat)) {
-                source_pixels =
-                    (unsigned char const *)(void const *)view.pixels_float32;
-            } else {
-                source_pixels = view.pixels;
-            }
-            if (source_pixels == NULL) {
-                status = SIXEL_BAD_INPUT;
-                goto error;
-            }
-            pixels = (unsigned char *)sixel_allocator_malloc(clone->allocator,
-                                                             pixel_bytes);
-            if (pixels == NULL) {
-                status = SIXEL_BAD_ALLOCATION;
-                goto error;
-            }
-            memcpy(pixels, source_pixels, pixel_bytes);
-            if (SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat)) {
-                clone->pixels.f32ptr = (float *)(void *)pixels;
-            } else {
-                clone->pixels.u8ptr = pixels;
-            }
-            clone->owns_pixels = 1;
-            pixels = NULL;
+        memcpy(pixels, source_pixels, pixel_bytes);
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat)) {
+            clone->pixels.f32ptr = (float *)(void *)pixels;
+        } else {
+            clone->pixels.u8ptr = pixels;
         }
+        clone->owns_pixels = 1;
+        pixels = NULL;
     }
 
     if (transparency.transparent_mask != NULL &&
@@ -2955,6 +2919,37 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
         if (SIXEL_FAILED(status)) {
             goto failed;
         }
+    }
+    /* RGB triplets cannot distinguish duplicate palette colors. Merge the
+     * key into coverage while indices still exist, after color conversion
+     * succeeds so a failed promotion leaves the indexed frame intact. */
+    if (indices != NULL && frame->transparent >= 0) {
+        if ((frame->transparent_mask == NULL) !=
+                (frame->transparent_mask_size == 0u) ||
+                (frame->transparent_mask != NULL &&
+                 frame->transparent_mask_size < pixel_total)) {
+            status = SIXEL_BAD_INPUT;
+            goto failed;
+        }
+        if (frame->transparent < SIXEL_PALETTE_MAX &&
+            memchr(indices, frame->transparent, pixel_total) != NULL) {
+            if (frame->transparent_mask == NULL) {
+                frame->transparent_mask = sixel_allocator_calloc(
+                    frame->allocator, pixel_total, 1u);
+                if (frame->transparent_mask == NULL) {
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto failed;
+                }
+                frame->transparent_mask_size = pixel_total;
+            }
+            for (index = 0; index < pixel_total; ++index) {
+                if (indices[index] == frame->transparent) {
+                    frame->transparent_mask[index] = 1;
+                }
+            }
+            frame->alpha_zero_is_transparent = 1;
+        }
+        frame->transparent = -1;
     }
     sixel_allocator_free(frame->allocator, unpacked);
     if (frame->owns_pixels != 0) {

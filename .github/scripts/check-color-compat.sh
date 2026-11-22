@@ -93,6 +93,8 @@ set -- \
     frame/alpha/0005_frame_alpha_clone.t \
     frame/alpha/0012_frame_alpha_resolve_allocation_atomic.t \
     frame/alpha/0016_frame_float_clone_color.t \
+    frame/alpha/0017_pal8_float_paint.t \
+    frame/alpha/0018_pal8_float_mask_union.t \
     frame/crop/0010_frame_float_clip_right_atomic.t \
     frame/crop/0077_frame_float_clip_color.t \
     frame/resize/0151_frame_alpha_resize_reject.t \
@@ -119,6 +121,8 @@ set -- \
     frame/storage/0028_builtin_sixel_palette_storage.t \
     frame/storage/0029_d60_neutral_byte_tie.t \
     frame/storage/0030_profile_relative_lut_precedence.t \
+    frame/storage/0031_packed_row_storage.t \
+    frame/storage/0032_packed_row_clone.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \

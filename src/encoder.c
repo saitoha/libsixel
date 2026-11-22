@@ -2241,11 +2241,6 @@ static SIXELSTATUS sixel_encoder_output_with_macro(
     int loop_no,
     int delay,
     sixel_encoding_planner_t const *planner);
-static SIXELSTATUS sixel_encoder_compute_frame_buffer_bytes(
-    int width,
-    int height,
-    int pixelformat,
-    size_t *byte_count_out);
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -10831,79 +10826,6 @@ sixel_debug_print_palette(
     }
 }
 
-/*
- * Compute the byte count for a source frame payload.
- * Packed G1/G2/G4 and PAL1/PAL2/PAL4 formats use bit-packed rows while
- * all other formats are addressed as width*height*depth bytes.
- */
-static SIXELSTATUS
-sixel_encoder_compute_frame_buffer_bytes(
-    int width,
-    int height,
-    int pixelformat,
-    size_t *byte_count_out)
-{
-    size_t row_bits;
-    size_t row_bytes;
-    size_t pixel_total;
-    int depth;
-
-    row_bits = 0u;
-    row_bytes = 0u;
-    pixel_total = 0u;
-    depth = 0;
-
-    if (byte_count_out == NULL || width <= 0 || height <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-    *byte_count_out = 0u;
-
-    depth = sixel_helper_compute_depth(pixelformat);
-    if (depth <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_G1:
-    case SIXEL_PIXELFORMAT_PAL1:
-        row_bits = (size_t)width;
-        break;
-    case SIXEL_PIXELFORMAT_G2:
-    case SIXEL_PIXELFORMAT_PAL2:
-        if ((size_t)width > SIZE_MAX / 2u) {
-            return SIXEL_BAD_INPUT;
-        }
-        row_bits = (size_t)width * 2u;
-        break;
-    case SIXEL_PIXELFORMAT_G4:
-    case SIXEL_PIXELFORMAT_PAL4:
-        if ((size_t)width > SIZE_MAX / 4u) {
-            return SIXEL_BAD_INPUT;
-        }
-        row_bits = (size_t)width * 4u;
-        break;
-    default:
-        if ((size_t)width > SIZE_MAX / (size_t)height) {
-            return SIXEL_BAD_INPUT;
-        }
-        pixel_total = (size_t)width * (size_t)height;
-        if (pixel_total > SIZE_MAX / (size_t)depth) {
-            return SIXEL_BAD_INPUT;
-        }
-        *byte_count_out = pixel_total * (size_t)depth;
-        return SIXEL_OK;
-    }
-
-    row_bytes = (row_bits + 7u) / 8u;
-    if (row_bytes > SIZE_MAX / (size_t)height) {
-        return SIXEL_BAD_INPUT;
-    }
-    *byte_count_out = row_bytes * (size_t)height;
-
-    return SIXEL_OK;
-}
-
-
 static SIXELSTATUS
 sixel_encoder_output_without_macro(
     sixel_frame_t       /* in */ *frame,
@@ -10987,14 +10909,13 @@ sixel_encoder_output_without_macro(
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
     multiframe = sixel_frame_get_multiframe(frame);
-    status = sixel_encoder_compute_frame_buffer_bytes(width,
-                                                      height,
-                                                      pixelformat,
-                                                      &size);
+    status = sixel_pixelformat_buffer_bytes(width, height, pixelformat,
+                                           &size);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "sixel_encoder_output_without_macro: "
             "invalid source frame size.");
+        status = SIXEL_BAD_INPUT;
         goto end;
     }
 
@@ -11225,14 +11146,13 @@ sixel_encoder_output_with_macro(
     }
 
     frame_colorspace = sixel_frame_get_colorspace(frame);
-    status = sixel_encoder_compute_frame_buffer_bytes(width,
-                                                      height,
-                                                      pixelformat,
-                                                      &size);
+    status = sixel_pixelformat_buffer_bytes(width, height, pixelformat,
+                                           &size);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "sixel_encoder_output_with_macro: "
             "invalid source frame size.");
+        status = SIXEL_BAD_INPUT;
         goto end;
     }
     converted = (unsigned char *)sixel_allocator_malloc(
@@ -20029,10 +19949,8 @@ sixel_encoder_encode_bytes_owned(
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    status = sixel_encoder_compute_frame_buffer_bytes(width,
-                                                      height,
-                                                      pixelformat,
-                                                      &pixel_bytes);
+    status = sixel_pixelformat_buffer_bytes(width, height, pixelformat,
+                                           &pixel_bytes);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "sixel_encoder_encode_bytes: buffer size overflow.");

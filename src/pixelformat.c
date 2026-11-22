@@ -30,6 +30,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
+
 #if HAVE_MATH_H
 # include <math.h>
 #endif  /* HAVE_MATH_H */
@@ -45,6 +49,10 @@
 #include "options.h"
 #include "threading.h"
 #include "pixelformat.h"
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif
 
 #define SIXEL_OKLAB_AB_FLOAT_MIN (-0.5f)
 #define SIXEL_OKLAB_AB_FLOAT_MAX (0.5f)
@@ -817,6 +825,51 @@ sixel_helper_compute_depth(int pixelformat)
     }
 
     return depth;
+}
+
+
+/* Packed rows restart on a byte boundary. Round the width before scaling
+ * by height, even for borrowed frames with padding bits in every row. */
+SIXELSTATUS
+sixel_pixelformat_buffer_bytes(int width, int height, int pixelformat,
+                               size_t *bytes)
+{
+    size_t row;
+    int depth;
+
+    *bytes = 0;
+    if (width <= 0 || height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_G1:
+        row = 1u + (size_t)(width - 1) / 8u;
+        break;
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_G2:
+        row = 1u + (size_t)(width - 1) / 4u;
+        break;
+    case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_G4:
+        row = 1u + (size_t)(width - 1) / 2u;
+        break;
+    default:
+        depth = sixel_helper_compute_depth(pixelformat);
+        if (depth <= 0) {
+            return SIXEL_BAD_INPUT;
+        }
+        if ((size_t)width > SIZE_MAX / (size_t)depth) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        row = (size_t)width * (size_t)depth;
+        break;
+    }
+    if (row > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    *bytes = row * (size_t)height;
+    return SIXEL_OK;
 }
 
 
