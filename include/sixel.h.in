@@ -2669,6 +2669,8 @@ sixel_encoder_encode_bytes(
  * utilization, so other applications sharing the GPU never inflate them.
  * Sampling two snapshots gives a busy ratio:
  *   (b.busy_nanoseconds - a.busy_nanoseconds) / elapsed wall nanoseconds.
+ * The browser WebGPU backend counts submissions without requiring optional
+ * timestamp queries; its busy_nanoseconds stays zero.
  * available stays zero until a GPU stage has initialized a backend; querying
  * statistics never probes or initializes a device. Builds without a GPU
  * backend always report zeros.
@@ -2677,7 +2679,7 @@ sixel_encoder_encode_bytes(
 
 typedef struct sixel_gpu_statistics {
     int available;                        /* backend initialized */
-    char backend[16];                     /* "vulkan", "metal" or "" */
+    char backend[16];                     /* Backend name or empty. */
     char device[128];                     /* device name or "" */
     unsigned long long dispatches;        /* completed GPU submissions */
     unsigned long long busy_nanoseconds;  /* GPU execution time */

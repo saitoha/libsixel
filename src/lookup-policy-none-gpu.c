@@ -18,6 +18,12 @@ static char const * const none_vulkan_chunks[] = {
 };
 #endif
 
+#if defined(HAVE_WEBGPU)
+static char const *const none_webgpu_chunks[] = {
+#include <lookup-policy-none-wgsl.inc.h>
+};
+#endif
+
 /* The policy owns its representation, cache key and completion protocol.
  * No other lookup can borrow this cache or depend on its table layout. */
 typedef struct none_plan {
@@ -33,6 +39,7 @@ typedef struct none_plan {
     sixel_lookup_policy_configuration_t configuration;
     gpu_metal_lookup_program_t metal;
     int vulkan;
+    int webgpu;
     int busy;
     int valid;
 } none_plan_t;
@@ -100,6 +107,20 @@ none_describe(sixel_gpu_lookup_plan_interface_t const *self,
         view->palette_size = plan->count * 3U;
         view->ncolors = plan->count;
         view->workspace_size = 4;
+        return SIXEL_OK;
+    }
+#endif
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->logical_name = "none";
+        view->query_kind = plan->query_kind;
+        view->chunks = none_webgpu_chunks;
+        view->chunk_count = sizeof(none_webgpu_chunks) /
+            sizeof(none_webgpu_chunks[0]);
+        view->palette = plan->palette;
+        view->palette_size = plan->count * 3U;
+        view->ncolors = plan->count;
         return SIXEL_OK;
     }
 #endif
@@ -214,7 +235,7 @@ none_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    if (plan->workspace == NULL) {
+    if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             plan->vulkan ? 4 : 1, &plan->workspace);
     }
@@ -277,6 +298,7 @@ none_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_palette_entries_view_t entries;
     char const *format;
     int vulkan;
+    int webgpu;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -287,9 +309,15 @@ none_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
 #if !defined(HAVE_VULKAN)
     vulkan = 0;
 #endif
+    webgpu = 0;
+#if defined(HAVE_WEBGPU)
+    webgpu = strcmp(format, "webgpu.lookup-rgb8.v1") == 0 &&
+        request->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE;
+#endif
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (!vulkan && strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
+            (!vulkan && !webgpu &&
+             strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
@@ -336,6 +364,7 @@ none_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->count = request->ncolors;
         plan->query_kind = request->query_kind;
         plan->vulkan = vulkan;
+        plan->webgpu = webgpu;
         plan->metal.configuration = &plan->configuration;
         plan->metal.implementation = sixel_lookup_none_gpu_metal();
         plan->configuration.kind = SIXEL_LUT_POLICY_NONE;

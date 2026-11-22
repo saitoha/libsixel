@@ -1089,5 +1089,24 @@ endif
 
 include $(top_srcdir)/build-aux/dependency-bootstrap.am
 
+if HAVE_WEBGPU
+if !WANT_AMALGAMATED_LIB
+libsixel_la_SOURCES += $(srcdir)/gpu-palette-webgpu.c
+endif
+webgpu_headers = lookup-policy-none-wgsl.inc.h gpu-palette-wgsl.inc.h \
+    dither-policy-none-wgsl.inc.h dither-policy-a-dither-wgsl.inc.h \
+    dither-policy-x-dither-wgsl.inc.h
+BUILT_SOURCES += $(webgpu_headers)
+CLEANFILES += $(webgpu_headers)
+libsixel_la-lookup-policy-none-gpu.lo: lookup-policy-none-wgsl.inc.h
+libsixel_la-dither-policy-none-gpu.lo: dither-policy-none-wgsl.inc.h gpu-palette-wgsl.inc.h
+libsixel_la-dither-policy-a-dither-gpu.lo: dither-policy-a-dither-wgsl.inc.h gpu-palette-wgsl.inc.h
+libsixel_la-dither-policy-x-dither-gpu.lo: dither-policy-x-dither-wgsl.inc.h gpu-palette-wgsl.inc.h
+%-wgsl.inc.h: $(srcdir)/%.wgsl $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
+	$(AM_V_GEN)AWK="$(AWK)" $(SHELL) $(top_srcdir)/tools/embed-metal.sh "$<" "$@"
+endif
+
+EXTRA_DIST += lookup-policy-none.wgsl gpu-palette.wgsl dither-policy-none.wgsl \
+    dither-policy-a-dither.wgsl dither-policy-x-dither.wgsl
 EXTRA_DIST += lso2-gpu.key $(SIXEL_METAL_INPUTS) generated-metal/meson.build \
     $(SIXEL_VULKAN_INPUTS) generated-vulkan/meson.build

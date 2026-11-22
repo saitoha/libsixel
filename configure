@@ -920,6 +920,8 @@ WANT_AMALGAMATED_LIB_TRUE
 WITH_EMSCRIPTEN_SPLIT_MODE_FALSE
 WITH_EMSCRIPTEN_SPLIT_MODE_TRUE
 SIXEL_EMSCRIPTEN_STDIO
+HAVE_WEBGPU_FALSE
+HAVE_WEBGPU_TRUE
 HAVE_ABORT_TRACE_FALSE
 HAVE_ABORT_TRACE_TRUE
 WANT_SIXEL2PNG_FALSE
@@ -1123,6 +1125,7 @@ enable_emscripten_allow_memory_growth
 enable_emscripten_single_file
 enable_emscripten_wasm_bigint
 enable_emscripten_assertions
+enable_emscripten_webgpu
 enable_threads
 enable_amalgamated_lib
 enable_amalgamated_tools
@@ -1914,6 +1917,9 @@ Optional Features:
   --disable-emscripten-assertions
                           add -sASSERTIONS=0 on emscripten builds (default:
                           disabled)
+  --enable-emscripten-webgpu
+                          enable browser WebGPU palette application with
+                          Asyncify
   --disable-threads       disable internal threadpool support (default: auto)
   --enable-amalgamated-lib
                           build libsixel from the amalgamated source (default:
@@ -18144,7 +18150,39 @@ esac
 fi
 
 
+# Check whether --enable-emscripten-webgpu was given.
+if test ${enable_emscripten_webgpu+y}
+then :
+  enableval=$enable_emscripten_webgpu;
+else case e in #(
+  e) enable_emscripten_webgpu=no ;;
+esac
+fi
+
+ if test "x$enable_emscripten_webgpu" = xyes; then
+  HAVE_WEBGPU_TRUE=
+  HAVE_WEBGPU_FALSE='#'
+else
+  HAVE_WEBGPU_TRUE='#'
+  HAVE_WEBGPU_FALSE=
+fi
+
 EMSCRIPTEN_LDFLAGS=""
+if test "x$enable_emscripten_webgpu" = xyes
+then :
+
+    case $host_os in #(
+  emscripten*) :
+     ;; #(
+  *) :
+    as_fn_error $? "--enable-emscripten-webgpu requires Emscripten" "$LINENO" 5 ;;
+esac
+
+printf "%s\n" "#define HAVE_WEBGPU 1" >>confdefs.h
+
+    EMSCRIPTEN_LDFLAGS="-sASYNCIFY=1 -sASYNCIFY_STACK_SIZE=131072"
+
+fi
 SIXEL_EMSCRIPTEN_STDIO=""
 
 case $host_os in #(
@@ -23956,6 +23994,10 @@ have_neon=no
 
 REQUIRES_PRIVATE=""
 LIBS_PRIVATE="$LIBS"
+if test "x$enable_emscripten_webgpu" = xyes
+then :
+  LIBS_PRIVATE="$LIBS_PRIVATE -sASYNCIFY=1 -sASYNCIFY_STACK_SIZE=131072"
+fi
 
 if test "x$enable_abort_trace" != "xno"
 then :
@@ -24863,7 +24905,11 @@ have_vulkan=no
 have_shaderc=no
 have_vulkan_prebuilt_spirv=no
 if test x$with_vulkan != xno; then
-    if test x$have_metal = xyes; then
+    if test x$enable_emscripten_webgpu = xyes; then
+        if test x$with_vulkan = xyes; then
+            as_fn_error $? "The browser WebGPU backend cannot be combined with Vulkan" "$LINENO" 5
+        fi
+    elif test x$have_metal = xyes; then
         if test x$with_vulkan = xyes; then
             as_fn_error $? "Vulkan GPU palette apply cannot be combined with Metal" "$LINENO" 5
         fi
@@ -36243,6 +36289,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_ABORT_TRACE_TRUE}" && test -z "${HAVE_ABORT_TRACE_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_ABORT_TRACE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_WEBGPU_TRUE}" && test -z "${HAVE_WEBGPU_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WEBGPU\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WITH_EMSCRIPTEN_SPLIT_MODE_TRUE}" && test -z "${WITH_EMSCRIPTEN_SPLIT_MODE_FALSE}"; then

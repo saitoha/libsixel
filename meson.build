@@ -427,11 +427,20 @@ if fuzz_enabled
 endif
 
 emscripten_link_depends = []
+webgpu = get_option('emscripten_webgpu')
+if webgpu and host_system != 'emscripten'
+  error('emscripten_webgpu requires an Emscripten target')
+endif
 if host_system == 'emscripten'
   # Emscripten -s settings below are link-time settings.
   # Keep them in link arguments to avoid compile-time warnings.
   emscripten_ldflags = ['-Wno-pthreads-mem-growth']
 
+  if webgpu
+    conf.set('HAVE_WEBGPU', 1)
+    webgpu_link_args = ['-sASYNCIFY=1', '-sASYNCIFY_STACK_SIZE=131072']
+    emscripten_ldflags += webgpu_link_args
+  endif
   if get_option('emscripten_retain_compiler_settings')
     emscripten_ldflags += ['-sRETAIN_COMPILER_SETTINGS=1']
   endif
@@ -1892,7 +1901,11 @@ have_vulkan_prebuilt_spirv = false
 glslc = disabler()
 vulkan_opt = get_option('vulkan')
 if not vulkan_opt.disabled()
-  if have_metal
+  if webgpu
+    if vulkan_opt.enabled()
+      error('The browser WebGPU backend cannot be combined with Vulkan')
+    endif
+  elif have_metal
     if vulkan_opt.enabled()
       error('Vulkan GPU palette apply cannot be combined with Metal')
     endif
@@ -3192,7 +3205,7 @@ pc_conf.set('includedir', join_paths('${prefix}', get_option('includedir')))
 pc_conf.set('PACKAGE_DESCRIPTION', 'A lightweight, fast implementation of DEC SIXEL graphics codec')
 pc_conf.set('PACKAGE_VERSION', meson.project_version())
 pc_conf.set('REQUIRES_PRIVATE', ' '.join(req_names))
-pc_conf.set('LIBS_PRIVATE', '')  # TODO: how to get the correct linker flags for static linking in meson?
+pc_conf.set('LIBS_PRIVATE', webgpu ? ' '.join(webgpu_link_args) : '')  # TODO: how to get the correct linker flags for static linking in meson?
 
 configure_file(
   input: 'libsixel.pc.in',

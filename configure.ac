@@ -1971,7 +1971,18 @@ AC_ARG_ENABLE([emscripten-assertions],
               [],
               [enable_emscripten_assertions=yes])
 
+AC_ARG_ENABLE([emscripten-webgpu],
+    [AS_HELP_STRING([--enable-emscripten-webgpu],
+        [enable browser WebGPU palette application with Asyncify])],
+    [], [enable_emscripten_webgpu=no])
+AM_CONDITIONAL([HAVE_WEBGPU], [test "x$enable_emscripten_webgpu" = xyes])
 EMSCRIPTEN_LDFLAGS=""
+AS_IF([test "x$enable_emscripten_webgpu" = xyes], [
+    AS_CASE([$host_os], [emscripten*], [],
+        [AC_MSG_ERROR([--enable-emscripten-webgpu requires Emscripten])])
+    AC_DEFINE([HAVE_WEBGPU], [1], [Enable browser WebGPU palette application.])
+    EMSCRIPTEN_LDFLAGS="-sASYNCIFY=1 -sASYNCIFY_STACK_SIZE=131072"
+])
 SIXEL_EMSCRIPTEN_STDIO=""
 AC_SUBST(SIXEL_EMSCRIPTEN_STDIO)
 AS_CASE([$host_os],
@@ -3721,6 +3732,8 @@ have_neon=no
 
 REQUIRES_PRIVATE=""
 LIBS_PRIVATE="$LIBS"
+AS_IF([test "x$enable_emscripten_webgpu" = xyes],
+    [LIBS_PRIVATE="$LIBS_PRIVATE -sASYNCIFY=1 -sASYNCIFY_STACK_SIZE=131072"])
 
 AS_IF([test "x$enable_abort_trace" != "xno"], [
   AC_DEFINE([SIXEL_ENABLE_ABORT_TRACE],
@@ -4010,7 +4023,11 @@ have_vulkan=no
 have_shaderc=no
 have_vulkan_prebuilt_spirv=no
 if test x$with_vulkan != xno; then
-    if test x$have_metal = xyes; then
+    if test x$enable_emscripten_webgpu = xyes; then
+        if test x$with_vulkan = xyes; then
+            AC_MSG_ERROR([The browser WebGPU backend cannot be combined with Vulkan])
+        fi
+    elif test x$have_metal = xyes; then
         if test x$with_vulkan = xyes; then
             AC_MSG_ERROR([Vulkan GPU palette apply cannot be combined with Metal])
         fi

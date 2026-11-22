@@ -1365,6 +1365,12 @@ sixel_encoder_gpu_diffusion_lookup_available(sixel_encoder_t const *encoder,
     sixel_gpu_device_interface_t *device;
     int served;
 
+#if defined(HAVE_WEBGPU)
+    /* The browser backend currently supplies only byte queries. Preserve
+     * the CPU diffusion component without requesting an adapter for AUTO.
+     * FORCE still reports an unsupported fractional lookup to the caller. */
+    if (encoder->gpu_policy != SIXEL_GPU_POLICY_FORCE) return 0;
+#endif
     device = NULL;
     if (sixel_gpu_device_acquire(&device) != SIXEL_OK) {
         return 0;

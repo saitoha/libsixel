@@ -181,6 +181,12 @@ typedef struct sixel_gpu_palette_request {
     int bluenoise_gradient_height;
 } sixel_gpu_palette_request_t;
 
+#if defined(HAVE_WEBGPU)
+SIXEL_INTERNAL_API int sixel_webgpu_available(void);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_webgpu_apply(
+    sixel_gpu_palette_request_t const *request);
+#endif
+
 /* Internal geometry policy: avoid submission overhead on small rasters. */
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_rows_per_chunk(int width, int height);

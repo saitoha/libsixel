@@ -29,6 +29,12 @@ static char const *const d_none_prefix[] = {
 static char const *const d_none_suffix[] = {
 #include <generated-vulkan/dither-policy-none-gpu-shader.inc.h>
 };
+#elif defined(HAVE_WEBGPU)
+static char const *const d_none_prefix[] = { NULL };
+static char const *const d_none_suffix[] = {
+#include <dither-policy-none-wgsl.inc.h>
+#include <gpu-palette-wgsl.inc.h>
+};
 #else
 static char const *const d_none_prefix[] = { NULL };
 static char const *const d_none_suffix[] = { NULL };

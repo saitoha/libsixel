@@ -24,13 +24,14 @@
  * the composition root admits a backend only for those providers. */
 #define GPU_METAL 1
 #define GPU_VULKAN 2
+#define GPU_WEBGPU 4
 static struct {
     int kind;
     int formats;
     SIXELSTATUS (*create)(sixel_allocator_t *,
         sixel_gpu_lookup_preparer_interface_t **);
 } const gpu_lookup_registrations[] = {
-    { SIXEL_LUT_POLICY_NONE, GPU_METAL | GPU_VULKAN,
+    { SIXEL_LUT_POLICY_NONE, GPU_METAL | GPU_VULKAN | GPU_WEBGPU,
       sixel_gpu_lookup_none_create },
     { SIXEL_LUT_POLICY_DELAUNAY, GPU_METAL | GPU_VULKAN,
       sixel_gpu_lookup_delaunay_create },
@@ -94,6 +95,7 @@ sixel_gpu_lookup_has_program(int kind, char const *program_format)
     if (program_format == NULL) return 0;
     format = strcmp(program_format, "metal.lookup-rgb8.v1") == 0 ? GPU_METAL
         : strcmp(program_format, "vulkan.lookup-rgb8.v1") == 0 ? GPU_VULKAN
+        : strcmp(program_format, "webgpu.lookup-rgb8.v1") == 0 ? GPU_WEBGPU
         : 0;
     for (i = 0; i < sizeof(gpu_lookup_registrations) /
             sizeof(*gpu_lookup_registrations); ++i) {

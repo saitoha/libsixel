@@ -29,6 +29,12 @@ static char const *const d_x_dither_prefix[] = {
 static char const *const d_x_dither_suffix[] = {
 #include <generated-vulkan/dither-policy-x-dither-gpu-shader.inc.h>
 };
+#elif defined(HAVE_WEBGPU)
+static char const *const d_x_dither_prefix[] = { NULL };
+static char const *const d_x_dither_suffix[] = {
+#include <dither-policy-x-dither-wgsl.inc.h>
+#include <gpu-palette-wgsl.inc.h>
+};
 #else
 static char const *const d_x_dither_prefix[] = { NULL };
 static char const *const d_x_dither_suffix[] = { NULL };

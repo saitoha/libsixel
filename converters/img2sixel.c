@@ -4210,7 +4210,15 @@ end:
 int
 main(int argc, char *argv[])
 {
-    return img2sixel_main(argc, argv);
+    int code;
+
+    code = img2sixel_main(argc, argv);
+#if defined(HAVE_WEBGPU)
+    /* After Asyncify rewinds main, Emscripten's event loop can retain its
+     * initial success status. Explicitly propagate a resumed CLI failure. */
+    if (code != EXIT_SUCCESS) exit(code);
+#endif
+    return code;
 }
 #endif
 

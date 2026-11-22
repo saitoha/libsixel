@@ -27,10 +27,13 @@ mkdir -p "$(dirname "${output}")"
 
 # Standalone invocations also materialize shader fragments. Make and Meson
 # normally provide them first; do not rewrite an up-to-date build product.
-for metal in "${src_root}"/src/*.metal; do
+for metal in "${src_root}"/src/*.metal "${src_root}"/src/*.wgsl; do
     test -f "$metal" || continue
     metal_name=${metal##*/}
     metal_header=${build_root}/src/generated-metal/${metal_name%.metal}-shader.inc.h
+    case $metal_name in
+        *.wgsl) metal_header=${build_root}/src/${metal_name%.wgsl}-wgsl.inc.h ;;
+    esac
     if test ! -f "$metal_header" || test "$metal" -nt "$metal_header" ||
             test "${default_root}/tools/embed-metal.awk" -nt "$metal_header" ||
             test "${default_root}/tools/embed-metal.sh" -nt "$metal_header"; then
@@ -362,7 +365,7 @@ filter_local_includes() {
 # Generated fragments stay inside their owning array, including arrays
 # nested in legacy include fragments. Their bytes come from the build tree.
 function emit_metal_include(text,    name, path, value, result) {
-    if (text !~ /^[ \t]*#[ \t]*include[ \t]+["<]generated-metal\/[^"> ]+[">]/)
+    if (text !~ /^[ \t]*#[ \t]*include[ \t]+["<](generated-metal\/[^"> ]+|[^"> ]+-wgsl\.inc\.h)[">]/)
         return 0;
     if (keep_local_includes == "1") {
         print text;

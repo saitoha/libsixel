@@ -1,0 +1,68 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WebGPU palette byte equivalence</title>
+<pre id="tap">1..1
+</pre>
+<script src="img2sixel.js"></script>
+<script type="module">
+// SPDX-License-Identifier: MIT
+// Run beside the thread-disabled, modularized CLI described in build.md.
+// 17 x 13 exercises a partial input word and a partial output workgroup.
+const header = new TextEncoder().encode('P6\n17 13\n255\n');
+const image = new Uint8Array(header.length + 17 * 13 * 3);
+image.set(header);
+let seed = 31;
+for (let i = header.length; i < image.length; ++i) {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    image[i] = seed >>> 24;
+}
+
+function convert(policy, method) {
+    return new Promise((resolve, reject) => {
+        let fs;
+        createConverter({
+            arguments: ['--gpu-policy=' + policy, '--lookup-policy=none',
+                '--precision-policy=8bit', '-d' + method, '-bxterm256',
+                '-o', 'output.six', 'input.ppm'],
+            preRun: [module => {
+                fs = module.FS;
+                fs.writeFile('input.ppm', image);
+            }],
+            onAbort: reason => reject(Error(String(reason))),
+            onExit: status => {
+                if (status) reject(Error(method + ' exited with ' + status));
+                else resolve(fs.readFile('output.six'));
+            }
+        }).catch(reject);
+    });
+}
+
+async function verify() {
+    if (!await navigator.gpu?.requestAdapter())
+        return 'ok 1 # SKIP no WebGPU adapter';
+    const original = GPUQueue.prototype.submit;
+    let submissions = 0;
+    GPUQueue.prototype.submit = function (...args) {
+        ++submissions;
+        return original.apply(this, args);
+    };
+    try {
+        for (const method of ['none', 'a_dither', 'x_dither']) {
+            const before = submissions;
+            const cpu = await convert('off', method);
+            if (submissions !== before) throw Error('GPU used with policy off');
+            const gpu = await convert('force', method);
+            if (submissions === before || !cpu.length ||
+                cpu.length !== gpu.length || !cpu.every((v, i) => v === gpu[i]))
+                throw Error(method + ' submission or SIXEL bytes differ');
+        }
+        return 'ok 1 - WebGPU palette application preserves SIXEL bytes';
+    } finally {
+        GPUQueue.prototype.submit = original;
+    }
+}
+
+const tap = document.getElementById('tap');
+verify().then(result => tap.append(result + '\n'),
+              error => tap.append('not ok 1 - ' + error + '\n'));
+</script>

@@ -31,7 +31,7 @@ AMALGAMATION_PUBLIC_DEPS = $(wildcard $(top_srcdir)/include/*.h \
 AMALGAMATION_BUILD_DEPS = $(wildcard $(top_builddir)/config.h \
         $(top_builddir)/include/*.h \
         $(top_builddir)/converters/completion_embed.h)
-AMALGAMATION_METAL_DEPS = $(wildcard $(top_srcdir)/src/*.metal) \
+AMALGAMATION_METAL_DEPS = $(wildcard $(top_srcdir)/src/*.metal $(top_srcdir)/src/*.wgsl) \
         $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
 AMALGAMATION_DEPS = $(AMALGAMATION_GEN) $(AMALGAMATION_METAL_DEPS) $(AMALGAMATION_SRC_DEPS) \
         $(AMALGAMATION_CONVERTER_DEPS) $(AMALGAMATION_ASSESSMENT_DEPS) \

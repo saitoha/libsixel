@@ -42,7 +42,8 @@
 #define SIXEL_GPU_PALETTE_USE_VULKAN 1
 #endif
 
-#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN) || \
+    defined(HAVE_WEBGPU)
 SIXELSTATUS
 sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request);
 #endif
@@ -307,6 +308,8 @@ sixel_gpu_palette_has_engine(void)
     return sixel_gpu_palette_metal_is_available();
 #elif defined(SIXEL_GPU_PALETTE_USE_VULKAN)
     return sixel_gpu_palette_vulkan_is_available();
+#elif defined(HAVE_WEBGPU)
+    return sixel_webgpu_available();
 #else
     return 0;
 #endif
@@ -344,6 +347,14 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
     int effective_scan;
 
     effective_scan = SIXEL_SCAN_AUTO;
+#if defined(HAVE_WEBGPU)
+    if (!sixel_gpu_palette_policy_is_force(gpu_policy) &&
+            ((method_for_diffuse != SIXEL_DIFFUSE_NONE &&
+              method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
+              method_for_diffuse != SIXEL_DIFFUSE_X_DITHER) ||
+             (lut_policy != SIXEL_LUT_POLICY_AUTO &&
+              lut_policy != SIXEL_LUT_POLICY_NONE))) return 0;
+#endif
 #if defined(SIXEL_GPU_PALETTE_USE_VULKAN)
     /* Decide before probing the device: a lookup policy without its own
      * Vulkan program never runs there, so AUTO must not pay for instance
@@ -441,7 +452,8 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
         return SIXEL_FALSE;
     }
 
-#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN) || \
+    defined(HAVE_WEBGPU)
     status = sixel_gpu_lookup_compat_apply(&effective);
     if (status == SIXEL_OK) {
         return SIXEL_OK;
@@ -505,7 +517,8 @@ sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request)
     if (!sixel_gpu_palette_request_is_supported(request)) {
         return SIXEL_BAD_ARGUMENT;
     }
-#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN)
+#if defined(HAVE_METAL) || defined(SIXEL_GPU_PALETTE_USE_VULKAN) || \
+    defined(HAVE_WEBGPU)
     return sixel_gpu_lookup_compat_apply(request);
 #else
     return SIXEL_FEATURE_ERROR;
@@ -530,6 +543,7 @@ sixel_gpu_device_create_frame_buffer(sixel_gpu_device_interface_t *device,
     return SIXEL_FEATURE_ERROR;
 }
 
+#if !defined(HAVE_WEBGPU)
 SIXELSTATUS
 sixel_gpu_device_acquire(sixel_gpu_device_interface_t **device)
 {
@@ -556,6 +570,7 @@ sixel_gpu_program_destroy(sixel_gpu_program_t *program)
 {
     (void)program;
 }
+#endif
 #endif
 
 /* emacs Local Variables:      */

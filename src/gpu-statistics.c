@@ -88,10 +88,9 @@ sixel_gpu_headroom_step(
 }
 
 
-/* GPU backends exist only on pthread hosts (Metal on Apple, Vulkan on other
- * POSIX systems), so the static initializer needs no portable once-guard.
- * Builds without a backend keep a constant all-zero snapshot. */
-#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+/* Native GPU hosts and Emscripten provide the pthread mutex API, including
+ * the synchronous stubs in a thread-disabled Wasm build. */
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN) || defined(HAVE_WEBGPU)
 #include <pthread.h>
 
 static pthread_mutex_t g_sixel_gpu_statistics_lock =

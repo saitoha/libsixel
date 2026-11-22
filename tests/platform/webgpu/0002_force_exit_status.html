@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WebGPU forced lookup exit status</title>
+<pre id="tap">1..1
+</pre>
+<script src="img2sixel.js"></script>
+<script type="module">
+// SPDX-License-Identifier: MIT
+// A thread-disabled CLI must report errors that occur after the asynchronous
+// adapter request resumes main, including a lookup unsupported by WebGPU.
+const tap = document.getElementById('tap');
+if (!await navigator.gpu?.requestAdapter()) {
+    tap.append('ok 1 # SKIP no WebGPU adapter\n');
+} else {
+    createConverter({
+        arguments: ['--gpu-policy=force', '--lookup-policy=vptree',
+            '-dnone', '-bxterm256', '-o', 'output.six', 'input.ppm'],
+        preRun: [module => module.FS.writeFile('input.ppm',
+            'P6\n1 1\n255\nabc')],
+        onExit: status => tap.append(status === 1
+            ? 'ok 1 - force propagates the unsupported lookup exit status\n'
+            : 'not ok 1 - unexpected exit status ' + status + '\n'),
+        onAbort: reason => tap.append('not ok 1 - aborted: ' + reason + '\n')
+    }).catch(error => tap.append('not ok 1 - ' + error + '\n'));
+}
+</script>

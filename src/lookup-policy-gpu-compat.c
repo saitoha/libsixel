@@ -2,7 +2,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
-#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN) || defined(HAVE_WEBGPU)
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,6 +29,8 @@ static gpu_compat_provider_t *gpu_compat_providers;
 SIXELSTATUS sixel_gpu_palette_metal_apply(
     sixel_gpu_palette_request_t const *request);
 #define gpu_compat_run sixel_gpu_palette_metal_apply
+#elif defined(HAVE_WEBGPU)
+#define gpu_compat_run sixel_webgpu_apply
 #else
 #include "gpu-palette-vulkan.h"
 #define gpu_compat_run sixel_gpu_palette_vulkan_apply
