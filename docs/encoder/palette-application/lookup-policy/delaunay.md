@@ -51,7 +51,7 @@ A query evaluates the neighbor blocks inside its current distance bound and may 
 
 ## GPU byte path
 
-For byte RGB palettes of at most 256 entries, Metal and Vulkan build a conservative superset of closed Voronoi adjacency. Neither backend transfers the CPU graph or tetrahedralizes the palette. The existing byte palette-application admission rules select this path for `none`, `a_dither`, `x_dither` and `bluenoise` dithering; unsupported inputs retain CPU fallback under GPU `auto`. Native float lookup keeps its CPU implementation.
+For byte RGB palettes of at most 256 entries, Metal, Vulkan and WebGPU build a conservative superset of closed Voronoi adjacency. The GPU builders derive the graph directly from the palette. The existing byte palette-application admission rules select this path for `none`, `a_dither`, `x_dither` and `bluenoise` dithering; unsupported inputs retain CPU fallback under GPU `auto`. Native float lookup keeps its CPU implementation.
 
 | Stage | GPU operation | Exactness boundary |
 | --- | --- | --- |
@@ -74,7 +74,7 @@ For [GPU diffusion](../dithering/README.md), the policy builds the same conserva
 
 The common builder is [`lookup-delaunay-graph.c`](../../../../src/lookup-delaunay-graph.c). [`lookup-delaunay-8bit.c`](../../../../src/lookup-delaunay-8bit.c) and [`lookup-delaunay-float32.c`](../../../../src/lookup-delaunay-float32.c) own query arithmetic, SIMD and memoization. [`lookup-policy-delaunay.c`](../../../../src/lookup-policy-delaunay.c) owns preparation, representation conversion and reuse through `lookup/delaunay.8bit` and `lookup/delaunay.float32`.
 
-The Metal byte implementation and its cache live in [`lookup-policy-delaunay-gpu-metal.inc.h`](../../../../src/lookup-policy-delaunay-gpu-metal.inc.h). The Vulkan builders and both query entries belong to [`lookup-policy-delaunay-gpu.glsl`](../../../../src/lookup-policy-delaunay-gpu.glsl), with storage and completion owned by the policy plan; admission is shared through [`gpu-palette.c`](../../../../src/gpu-palette.c) and [`palette-apply.c`](../../../../src/palette-apply.c).
+The Metal byte implementation and its cache live in [`lookup-policy-delaunay-gpu-metal.inc.h`](../../../../src/lookup-policy-delaunay-gpu-metal.inc.h). The [Vulkan program](../../../../src/lookup-policy-delaunay-gpu.glsl) and [WebGPU program](../../../../src/lookup-policy-delaunay.wgsl) define the same table layout and provide their bounds, sort and seed builders together with both query entries. The policy plan owns storage and completion, and admission is shared through [`gpu-palette.c`](../../../../src/gpu-palette.c) and [`palette-apply.c`](../../../../src/palette-apply.c).
 
 ## Test coverage
 

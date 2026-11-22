@@ -94,8 +94,9 @@ async function paletteByteEquivalence(createConverter) {
                 '30a072695f3a62906cbe4052352a992cfb7fa108576e1a656918d318c25c2899',
             ],
         };
-        // Both exact byte lookups choose the same register on distance ties.
+        // These exact byte lookups choose the same register on distance ties.
         expected.ordered = expected.mahalanobis;
+        expected.delaunay = expected.ordered;
         for (const [lookup, digests] of Object.entries(expected)) {
             for (const [i, method] of settings.entries()) {
                 const before = submissions, priorPasses = multiGroupPasses.length;
@@ -112,12 +113,16 @@ async function paletteByteEquivalence(createConverter) {
             }
         }
         const short = await convert(createConverter, 'off', 'none', 'none', 'xterm16');
-        const before = multiGroupPasses.length;
-        const gpu = await convert(createConverter, 'force', 'none', 'ordered', 'xterm16');
-        // One workgroup per palette row, then 256 groups of 128 seed cells.
-        if (multiGroupPasses.slice(before).join(',') !== '16,256' ||
-                gpu.length !== short.length || !gpu.every((v, i) => v === short[i]))
-            throw Error('ordered short-palette builders or output differ');
+        // Bounds and rows use one workgroup per palette entry. The 32^3
+        // and 16^3 seed tables take 256 and 32 groups of 128 cells.
+        for (const [lookup, groups] of [['ordered', '16,256'],
+                                        ['delaunay', '16,16,32']]) {
+            const before = multiGroupPasses.length;
+            const gpu = await convert(createConverter, 'force', 'none', lookup, 'xterm16');
+            if (multiGroupPasses.slice(before).join(',') !== groups ||
+                    gpu.length !== short.length || !gpu.every((v, i) => v === short[i]))
+                throw Error(lookup + ' short-palette builders or output differ');
+        }
         return 'ok 1 - WebGPU palette application preserves SIXEL bytes';
     } finally {
         GPUComputePassEncoder.prototype.dispatchWorkgroups = dispatch;

@@ -22,10 +22,12 @@ static char const * const delaunay_vulkan_chunks[] = {
  * No other lookup can borrow this cache or depend on its table layout. */
 #if defined(HAVE_WEBGPU)
 static char const *const delaunay_webgpu_chunks[] = {
-#include <lookup-policy-table-wgsl.inc.h>
 #include <lookup-policy-delaunay-wgsl.inc.h>
 };
 #endif
+
+/* Key and packed RGB rows, degrees, 16^3 seeds, and padded cell bounds. */
+#define DELAUNAY_WORKSPACE_SIZE ((135424U + 2048U) * sizeof(uint32_t))
 
 typedef struct delaunay_plan {
     sixel_gpu_lookup_plan_interface_t iface;
@@ -41,7 +43,6 @@ typedef struct delaunay_plan {
     gpu_metal_lookup_program_t metal;
     int vulkan;
     int webgpu;
-    size_t webgpu_size;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[3];
@@ -108,9 +109,9 @@ delaunay_describe(sixel_gpu_lookup_plan_interface_t const *self,
         view->ncolors = plan->count;
         view->palette = plan->palette;
         view->palette_size = plan->count * 3U;
-        view->workspace_size = plan->webgpu_size;
+        view->workspace_size = DELAUNAY_WORKSPACE_SIZE;
         view->build_passes = plan->passes;
-        view->build_pass_count = 2;
+        view->build_pass_count = 3;
         return SIXEL_OK;
     }
 #endif
@@ -126,7 +127,7 @@ delaunay_describe(sixel_gpu_lookup_plan_interface_t const *self,
         view->palette = plan->palette;
         view->palette_size = plan->count * 3U;
         view->ncolors = plan->count;
-        view->workspace_size = (135424U + 2048U) * sizeof(uint32_t);
+        view->workspace_size = DELAUNAY_WORKSPACE_SIZE;
         view->build_passes = plan->passes;
         view->build_pass_count = 3;
         return SIXEL_OK;
@@ -153,7 +154,7 @@ delaunay_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->palette = plan->palette;
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
-    view->workspace_size = (135424U + 2048U) * sizeof(uint32_t);
+    view->workspace_size = DELAUNAY_WORKSPACE_SIZE;
     view->build_passes = plan->passes;
     view->build_pass_count = 3;
     return SIXEL_OK;
@@ -247,8 +248,7 @@ delaunay_begin(sixel_gpu_lookup_plan_interface_t *self,
     if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
             plan->query_kind == SIXEL_GPU_LOOKUP_QUERY_BYTE && !plan->vulkan
-                ? 1 :
-                (135424U + 2048U) * sizeof(uint32_t), &plan->workspace);
+                ? 1 : DELAUNAY_WORKSPACE_SIZE, &plan->workspace);
     }
     if (SIXEL_FAILED(status)) {
         sixel_mutex_unlock(&plan->gate);
@@ -388,7 +388,8 @@ delaunay_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->passes[0].threads[0] = 32;
         plan->passes[1].entry_point = "delaunay_sort";
         plan->passes[1].groups[0] = plan->count;
-        plan->passes[1].threads[0] = width;
+        /* WGSL declares a fixed workgroup covering the full palette range. */
+        plan->passes[1].threads[0] = webgpu ? 256 : width;
         plan->passes[2].entry_point = "delaunay_seeds";
         plan->passes[2].groups[0] = 32;
         plan->passes[2].threads[0] = 128;
@@ -396,20 +397,6 @@ delaunay_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             plan->passes[pass].groups[1] = plan->passes[pass].groups[2] = 1;
             plan->passes[pass].threads[1] = plan->passes[pass].threads[2] = 1;
         }
-#if defined(HAVE_WEBGPU)
-        /* Builders and table layout belong to this lookup component. */
-        if (webgpu) {
-            plan->webgpu_size = (14U * plan->count) * sizeof(uint32_t);
-            plan->passes[0] = (sixel_gpu_lookup_build_pass_t){
-                "delaunay_bounds", { (plan->count + 63U) / 64U, 1, 1 },
-                { 64, 1, 1 }
-            };
-            plan->passes[1] = (sixel_gpu_lookup_build_pass_t){
-                "delaunay_edges", { (plan->count + 63U) / 64U, 1, 1 },
-                { 64, 1, 1 }
-            };
-        }
-#endif
         if (preparer->cached != NULL) {
             delaunay_plan_unref(&preparer->cached->iface);
         }
