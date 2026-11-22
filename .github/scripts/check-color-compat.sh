@@ -101,6 +101,7 @@ set -- \
     frame/alpha/0019_pal8_rgb888_mask.t \
     frame/alpha/0020_rgba_float_mask.t \
     frame/alpha/0021_packed_rgb888_mask.t \
+    frame/alpha/0022_rgba_rgb888_mask.t \
     frame/crop/0010_frame_float_clip_right_atomic.t \
     frame/crop/0077_frame_float_clip_color.t \
     frame/resize/0151_frame_alpha_resize_reject.t \
@@ -133,6 +134,9 @@ set -- \
     frame/storage/0034_mask_crop_storage.t \
     frame/storage/0035_alpha_crop_storage.t \
     frame/storage/0036_implicit_pal1_clone.t \
+    frame/storage/0037_strip_alpha_crop_storage.t \
+    frame/storage/0038_profile_shared_primary_byte_tie.t \
+    frame/storage/0039_builtin_tga_compact_storage.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \

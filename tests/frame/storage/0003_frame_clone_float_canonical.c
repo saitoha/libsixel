@@ -716,6 +716,146 @@ end:
     return result;
 }
 
+/* With identical D65 and blue xy, changing only the blue excitation from
+ * a neutral cannot move red or green in sRGB. Blue clips at both ends.
+ * The final red-primary sample has no such invariant. */
+static int
+test_shared_primary(void)
+{
+    float samples[] = {
+        .5f, .5f, 1, .5f, .5f, 0,
+        0x1.fffffep-2f, 0x1.fffffep-2f, 1,
+        0x1.000002p-1f, 0x1.000002p-1f, 0,
+        1, .5f, .5f
+    };
+    unsigned char const expected[] = {
+        128, 128, 255, 128, 128, 0, 127, 127, 255, 128, 128, 0,
+        255, 118, 123
+    };
+    sixel_color_def_t *p3;
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    int result = EXIT_FAILURE;
+
+    p3 = sixel_cdef_name("display-p3");
+    if (p3 == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, samples, 5, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, p3)) &&
+        SIXEL_SUCCEEDED(iface->vtbl->set_pixelformat(iface,
+            SIXEL_PIXELFORMAT_RGB888)) &&
+        SIXEL_SUCCEEDED(iface->vtbl->get_pixels(iface, &view)) &&
+        view.pixels != NULL &&
+        memcmp(view.pixels, expected, sizeof(expected)) == 0) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    sixel_frame_unref(frame);
+    sixel_cdef_free(p3);
+    return result;
+}
+
+static SIXELSTATUS
+check_tga_storage(sixel_frame_t *frame, void *context)
+{
+    unsigned char const expected[] = {255, 0, 0, 0, 255, 0};
+    sixel_frame_interface_t *iface = sixel_frame_as_interface(frame);
+    sixel_frame_pixels_view_t view;
+    size_t bytes;
+
+    if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.width != 2 || view.height != 1 || view.pixels == NULL ||
+        view.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        memcmp(view.pixels, expected, sizeof(expected)) != 0 ||
+        SIXEL_FAILED(iface->vtbl->measure_storage(iface, &bytes)) ||
+        bytes != 8) {
+        return SIXEL_BAD_INPUT;
+    }
+    ++*(int *)context;
+    return SIXEL_OK;
+}
+
+static int
+test_tga_storage(void)
+{
+    /* Uncompressed 2-by-1 BGRA, eight alpha bits, opaque red and green.
+     * The loader compacts eight adopted bytes to six logical RGB bytes. */
+    unsigned char const wire[] = {
+        0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 32, 40,
+        0, 0, 255, 255, 0, 255, 0, 255
+    };
+    sixel_allocator_t *allocator = NULL;
+    sixel_loader_t *loader = NULL;
+    sixel_chunk_t *chunk = NULL;
+    int calls = 0;
+    int result = EXIT_FAILURE;
+
+    if (SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
+            NULL)) &&
+        SIXEL_SUCCEEDED(sixel_loader_new(&loader, allocator)) &&
+        SIXEL_SUCCEEDED(sixel_chunk_create_from_memory(&chunk, wire,
+            sizeof(wire), NULL, allocator)) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_LOADER_ORDER, "builtin!")) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_CONTEXT, &calls)) &&
+        SIXEL_SUCCEEDED(sixel_loader_load_chunk(loader, chunk,
+            check_tga_storage)) && calls == 1) {
+        result = EXIT_SUCCESS;
+    }
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    sixel_loader_unref(loader);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static int
+test_strip_storage(int format, unsigned char *background)
+{
+    unsigned char *pixels;
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface, *clone = NULL;
+    size_t bytes;
+    int result = EXIT_FAILURE;
+
+    pixels = calloc(16, 4);
+    if (pixels == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init(frame, pixels, 4, 4, format,
+                                      NULL, -1))) {
+        goto end;
+    }
+    pixels = NULL;
+    iface = sixel_frame_as_interface(frame);
+    /* The adopted 64-byte buffer survives compaction and crop. Only a new
+     * allocation for the clone or for conversion can discard that slack. */
+    if (SIXEL_SUCCEEDED(sixel_frame_strip_alpha(frame, background)) &&
+        SIXEL_SUCCEEDED(iface->vtbl->measure_storage(iface, &bytes)) &&
+        bytes == 64 && SIXEL_SUCCEEDED(iface->vtbl->clip(iface, 1, 1, 1, 1)) &&
+        SIXEL_SUCCEEDED(iface->vtbl->measure_storage(iface, &bytes)) &&
+        bytes == 64 && SIXEL_SUCCEEDED(iface->vtbl->clone(iface, NULL,
+            &clone)) &&
+        SIXEL_SUCCEEDED(clone->vtbl->measure_storage(clone, &bytes)) &&
+        bytes == 3 && SIXEL_SUCCEEDED(iface->vtbl->set_pixelformat(iface,
+            SIXEL_PIXELFORMAT_RGBFLOAT32)) &&
+        SIXEL_SUCCEEDED(iface->vtbl->measure_storage(iface, &bytes)) &&
+        bytes == 3 * sizeof(float)) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    if (clone != NULL) {
+        clone->vtbl->unref(clone);
+    }
+    sixel_frame_unref(frame);
+    free(pixels);
+    return result;
+}
+
 static int
 test_byte_tie(char const *name)
 {
@@ -903,8 +1043,24 @@ test_frame_0014_clone_float(int argc, char **argv)
     SIXELSTATUS status;
     size_t i;
     int c;
+    unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 2 && strcmp(argv[1], "shared-blue") == 0) {
+        return test_shared_primary();
+    }
+    if (argc == 2 && strcmp(argv[1], "tga-storage") == 0) {
+        return test_tga_storage();
+    }
+    if (argc == 2 && strcmp(argv[1], "strip-storage") == 0) {
+        for (i = 0; i < 4; ++i) {
+            if (test_strip_storage(formats[i], NULL) ||
+                test_strip_storage(formats[i], background)) {
+                return EXIT_FAILURE;
+            }
+        }
+        return EXIT_SUCCESS;
+    }
     if (argc == 2 && strcmp(argv[1], "indexed-paint") == 0) {
         return test_converted_paint(0, SIXEL_PIXELFORMAT_PAL8,
                                     SIXEL_PIXELFORMAT_RGBFLOAT32);
@@ -912,6 +1068,17 @@ test_frame_0014_clone_float(int argc, char **argv)
     if (argc == 2 && strcmp(argv[1], "indexed-byte-mask") == 0) {
         return test_converted_paint(1, SIXEL_PIXELFORMAT_PAL8,
                                     SIXEL_PIXELFORMAT_RGB888);
+    }
+    if (argc == 2 && strcmp(argv[1], "rgba-byte-mask") == 0) {
+        for (i = 0; i < sizeof(formats) / sizeof(formats[0]); ++i) {
+            if (test_converted_paint(0, formats[i],
+                    SIXEL_PIXELFORMAT_RGB888) != EXIT_SUCCESS ||
+                test_converted_paint(1, formats[i],
+                    SIXEL_PIXELFORMAT_RGB888) != EXIT_SUCCESS) {
+                return EXIT_FAILURE;
+            }
+        }
+        return EXIT_SUCCESS;
     }
     if (argc == 2 && strcmp(argv[1], "rgba-float-mask") == 0) {
         for (i = 0; i < sizeof(formats) / sizeof(formats[0]); ++i) {

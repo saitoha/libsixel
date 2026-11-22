@@ -1347,7 +1347,7 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
         frame->alpha_zero_is_transparent = 0;
     }
     frame->transparent = -1;
-    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
+    sixel_frame_finish_rgba_compaction(frame);
     status = SIXEL_OK;
 
     sixel_allocator_free(frame->allocator, transparent_mask);
