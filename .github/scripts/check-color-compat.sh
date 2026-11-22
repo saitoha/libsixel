@@ -79,6 +79,9 @@ set -- \
     encoder/pipeline/0125_encode_bytes_g2_levels.t \
     encoder/pipeline/0126_encode_bytes_g4_levels.t \
     encoder/pipeline/0127_encode_bytes_bgr888_pixels.t \
+    encoder/pipeline/0129_encode_frame_g1_levels.t \
+    encoder/pipeline/0130_encode_frame_g2_levels.t \
+    encoder/pipeline/0131_encode_frame_g4_levels.t \
     encoder/planning/0194_default_display_p3_pixels.t \
     encoder/planning/0195_gamma_display_p3_pixels.t \
     encoder/planning/0196_gamma_display_p3_preserve_resize.t \
@@ -95,6 +98,9 @@ set -- \
     frame/alpha/0016_frame_float_clone_color.t \
     frame/alpha/0017_pal8_float_paint.t \
     frame/alpha/0018_pal8_float_mask_union.t \
+    frame/alpha/0019_pal8_rgb888_mask.t \
+    frame/alpha/0020_rgba_float_mask.t \
+    frame/alpha/0021_packed_rgb888_mask.t \
     frame/crop/0010_frame_float_clip_right_atomic.t \
     frame/crop/0077_frame_float_clip_color.t \
     frame/resize/0151_frame_alpha_resize_reject.t \
@@ -126,6 +132,7 @@ set -- \
     frame/storage/0033_profile_crop_storage.t \
     frame/storage/0034_mask_crop_storage.t \
     frame/storage/0035_alpha_crop_storage.t \
+    frame/storage/0036_implicit_pal1_clone.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \
