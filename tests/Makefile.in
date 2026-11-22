@@ -768,6 +768,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	palette/sampling/0106_sample_vulkan_edge.c \
 	palette/sampling/0107_gpu_headroom.c \
 	palette/sampling/0108_gpu_headroom_pin.c \
+	encoder/pipeline/0128_count_table.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 	_support/processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -2136,6 +2137,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0106_sample_vulkan_edge.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0107_gpu_headroom.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0108_gpu_headroom_pin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0128_count_table.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0027_gpu_return.$(OBJEXT) \
@@ -5049,6 +5051,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Po \
 	encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Po \
 	encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0020_playback_direct_equivalence.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0021_playback_admission.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0022_playback_cancel_failure.Po \
@@ -9387,6 +9390,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0106_SAMPLE_VULKAN_EDGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_GPU_HEADROOM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0108_GPU_HEADROOM_PIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0128_COUNT_TABLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PERTURB_API \
@@ -12365,6 +12369,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0106_sample_vulkan_edge.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0107_gpu_headroom.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0108_gpu_headroom_pin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0128_count_table.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -22085,6 +22090,9 @@ palette/sampling/test_runner-0107_gpu_headroom.$(OBJEXT):  \
 palette/sampling/test_runner-0108_gpu_headroom_pin.$(OBJEXT):  \
 	palette/sampling/$(am__dirstamp) \
 	palette/sampling/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0128_count_table.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
 _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT):  \
 	_support/processing/filter/$(am__dirstamp) \
 	_support/processing/filter/$(DEPDIR)/$(am__dirstamp)
@@ -28196,6 +28204,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0020_playback_direct_equivalence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0021_playback_admission.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0022_playback_cancel_failure.Po@am__quote@ # am--include-marker
@@ -36646,6 +36655,20 @@ palette/sampling/test_runner-0108_gpu_headroom_pin.obj: palette/sampling/0108_gp
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0108_gpu_headroom_pin.c' object='palette/sampling/test_runner-0108_gpu_headroom_pin.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0108_gpu_headroom_pin.obj `if test -f 'palette/sampling/0108_gpu_headroom_pin.c'; then $(CYGPATH_W) 'palette/sampling/0108_gpu_headroom_pin.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0108_gpu_headroom_pin.c'; fi`
+
+encoder/pipeline/test_runner-0128_count_table.o: encoder/pipeline/0128_count_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0128_count_table.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Tpo -c -o encoder/pipeline/test_runner-0128_count_table.o `test -f 'encoder/pipeline/0128_count_table.c' || echo '$(srcdir)/'`encoder/pipeline/0128_count_table.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0128_count_table.c' object='encoder/pipeline/test_runner-0128_count_table.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0128_count_table.o `test -f 'encoder/pipeline/0128_count_table.c' || echo '$(srcdir)/'`encoder/pipeline/0128_count_table.c
+
+encoder/pipeline/test_runner-0128_count_table.obj: encoder/pipeline/0128_count_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0128_count_table.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Tpo -c -o encoder/pipeline/test_runner-0128_count_table.obj `if test -f 'encoder/pipeline/0128_count_table.c'; then $(CYGPATH_W) 'encoder/pipeline/0128_count_table.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0128_count_table.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0128_count_table.c' object='encoder/pipeline/test_runner-0128_count_table.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0128_count_table.obj `if test -f 'encoder/pipeline/0128_count_table.c'; then $(CYGPATH_W) 'encoder/pipeline/0128_count_table.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0128_count_table.c'; fi`
 
 _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o: _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o -MD -MP -MF _support/processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo -c -o _support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o `test -f '_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c' || echo '$(srcdir)/'`_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c
