@@ -1435,7 +1435,6 @@ sixel_filter_sample_copy_frame(
     int src_width;
     int src_height;
     int src_pixelformat;
-    int normalized_src_pixelformat;
     int width;
     int height;
     int depth;
@@ -1484,7 +1483,6 @@ sixel_filter_sample_copy_frame(
     src_width = 0;
     src_height = 0;
     src_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    normalized_src_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     width = 0;
     height = 0;
     depth = 0;
@@ -1585,20 +1583,10 @@ sixel_filter_sample_copy_frame(
         if (normalized_src_pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
         }
-        normalized_src_pixelformat = src_pixelformat;
-        status = sixel_helper_normalize_pixelformat(
-            normalized_src_pixels,
-            &normalized_src_pixelformat,
-            src_pixels,
-            src_pixelformat,
-            src_width,
-            src_height);
-        if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(allocator, normalized_src_pixels);
-            return status;
-        }
+        sixel_pixelformat_expand_gray8(normalized_src_pixels, src_pixels,
+                                      src_width, src_height, src_pixelformat);
         src_pixels = normalized_src_pixels;
-        src_pixelformat = normalized_src_pixelformat;
+        src_pixelformat = SIXEL_PIXELFORMAT_G8;
     }
 
     depth = sixel_helper_compute_depth(src_pixelformat);
