@@ -272,7 +272,8 @@ png_test_stream_fault(int faults)
     SIXELSTATUS expected;
     char const *diagnostic;
     char const *actual;
-    int named;
+    int use_stdout;
+    int borrowed;
     int open_failed;
     int icc_export_failed;
     int allocation_failed;
@@ -283,7 +284,8 @@ png_test_stream_fault(int faults)
     int expected_opens;
     int expected_backend_releases;
 
-    named = (faults & PNG_STREAM_STDOUT) == 0;
+    use_stdout = (faults & PNG_STREAM_STDOUT) != 0;
+    borrowed = (faults & PNG_STREAM_BORROWED) != 0;
     open_failed = (faults & PNG_STREAM_OPEN_FAILURE) != 0;
     icc_export_failed = (faults & PNG_STREAM_ICC_EXPORT_FAILURE) != 0;
     allocation_failed = (faults & PNG_STREAM_ALLOCATION_FAILURE) != 0;
@@ -299,15 +301,15 @@ png_test_stream_fault(int faults)
     }
     write_failed = png_stream_probe.chunk_to_fail != NULL ||
                    (faults & PNG_STREAM_SHORT_WRITE) != 0;
-    expected_opens = named && !icc_export_failed;
+    expected_opens = !use_stdout && !borrowed && !icc_export_failed;
     expected_backend_releases = !before_write;
 #if !PNG_STREAM_FAULT_LIBPNG
     /* The tagged direct path owns the ICC and image compression buffers. */
     expected_backend_releases += iccp_failed;
 #endif
-    /* A non-stdout FILE pointer identifies a writer-owned stream. The
-     * substitutes never perform I/O on either process stream. */
-    png_stream_probe.stream = named ? stderr : stdout;
+    /* Use stderr as the non-stdout stand-in. The substitutes never
+     * perform I/O on either process stream. */
+    png_stream_probe.stream = use_stdout ? stdout : stderr;
     status = sixel_allocator_new(&allocator, png_stream_fault_malloc, NULL,
                                   NULL, png_stream_fault_free);
     if (SIXEL_FAILED(status)) {
@@ -330,13 +332,19 @@ png_test_stream_fault(int faults)
             rgba, 1, 1, NULL, SIXEL_PIXELFORMAT_RGBA8888, "png-fault.png",
             NULL, SIXEL_FORMAT_PNG, &color, allocator);
         sixel_cdef_free(definition);
+    } else if (borrowed) {
+        /* The decoder passes its spool with no filename. ARGB also
+         * exercises release of the writer's normalized pixel buffer. */
+        status = png_fault_write_image_color(
+            rgba, 1, 1, NULL, SIXEL_PIXELFORMAT_ARGB8888, NULL,
+            png_stream_probe.stream, SIXEL_FORMAT_PNG, NULL, allocator);
     } else {
         /* The flush probe uses direct storage. Untagged write probes use
          * packed indices to cover the separate indexed backend buffers. */
         status = png_fault_write_image_file(
             flush_failed ? rgba : indexed, 1, 1, flush_failed ? NULL : palette,
             flush_failed ? SIXEL_PIXELFORMAT_ARGB8888 : SIXEL_PIXELFORMAT_PAL1,
-            named ? "png-fault.png" : "-", SIXEL_FORMAT_PNG, allocator);
+            use_stdout ? "-" : "png-fault.png", SIXEL_FORMAT_PNG, allocator);
     }
     sixel_allocator_unref(allocator);
     if (open_failed) {

@@ -2458,6 +2458,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0057_POST_OPEN_ALLOCATION_CLEANUP \
     -DBUILD_TEST_0058_ICCP_SHORT_WRITE_CLEANUP \
     -DBUILD_TEST_0059_ICC_EXPORT_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0060_BORROWED_STREAM_FLUSH_FAILURE \
     -DBUILD_TEST_0143_ADOBE_LIBPNG \
     -DBUILD_TEST_0144_DCI_LIBPNG \
     -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -6175,6 +6176,7 @@ test_runner_SOURCES = \
     writer/png/0057_post_open_allocation_cleanup.c \
     writer/png/0058_iccp_short_write_cleanup.c \
     writer/png/0059_icc_export_allocation_failure.c \
+    writer/png/0060_borrowed_stream_flush_failure.c \
     writer/png/color_test_common.h \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \
