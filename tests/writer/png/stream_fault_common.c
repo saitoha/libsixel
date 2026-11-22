@@ -156,10 +156,34 @@ png_stream_fault_free(void *ptr)
 }
 
 #if PNG_STREAM_FAULT_LIBPNG
+static png_structp
+png_stream_fault_create_write(png_const_charp version, png_voidp context,
+                              png_error_ptr error, png_error_ptr warning)
+{
+    if (png_stream_probe.faults & PNG_STREAM_LIBPNG_WRITE_STRUCT_FAILURE) {
+        return NULL;
+    }
+    return png_create_write_struct(version, context, error, warning);
+}
+
+static png_infop
+png_stream_fault_create_info(png_structp png)
+{
+    if (png_stream_probe.faults & PNG_STREAM_LIBPNG_INFO_STRUCT_FAILURE) {
+        return NULL;
+    }
+    return png_create_info_struct(png);
+}
+
 static void
 png_stream_fault_destroy(png_structpp png, png_infopp info)
 {
-    if (*png == NULL || *info == NULL) {
+    int info_failed;
+
+    info_failed =
+        (png_stream_probe.faults & PNG_STREAM_LIBPNG_INFO_STRUCT_FAILURE) != 0;
+    if (png == NULL || *png == NULL ||
+        (info == NULL || *info == NULL) != info_failed) {
         png_stream_probe.invalid = 1;
     }
     ++png_stream_probe.backend_releases;
@@ -221,12 +245,15 @@ png_stream_fault_free_backend(void *ptr)
 #define SIXEL_PNG_IO_FLUSH png_stream_fault_flush
 #define SIXEL_PNG_IO_CLOSE png_stream_fault_close
 #define SIXEL_PNG_IO_FREE png_stream_fault_free_backend
+#define SIXEL_PNG_IO_CREATE_WRITE png_stream_fault_create_write
+#define SIXEL_PNG_IO_CREATE_INFO png_stream_fault_create_info
 #define SIXEL_PNG_IO_DESTROY png_stream_fault_destroy
 #if !PNG_STREAM_FAULT_LIBPNG
 #define stbi_zlib_compress png_stream_fault_compress
 #define stbi_write_png_to_mem png_stream_fault_encode
 #define stbi_write_png_compression_level png_stream_fault_compression_level
 #endif
+#define sixel_writer_png_record_message png_fault_record_message
 #define sixel_writer_png_error_callback png_fault_error_callback
 #define sixel_writer_png_warning_callback png_fault_warning_callback
 #define sixel_writer_png_io_context png_fault_io_context
@@ -248,6 +275,7 @@ png_stream_fault_free_backend(void *ptr)
 #undef stbi_zlib_compress
 #undef stbi_write_png_to_mem
 #undef stbi_write_png_compression_level
+#undef sixel_writer_png_record_message
 #undef sixel_writer_png_error_callback
 #undef sixel_writer_png_warning_callback
 #undef sixel_writer_png_io_context
@@ -287,6 +315,7 @@ png_test_stream_fault(int faults)
     int iccp_allocation_failed;
     int icc_preparation_failed;
     int allocation_failed;
+    int libpng_setup_failed;
     int before_write;
     int write_failed;
     int iccp_failed;
@@ -301,15 +330,23 @@ png_test_stream_fault(int faults)
     icc_compression_failed = (faults & PNG_STREAM_ICC_COMPRESSION_FAILURE) != 0;
     iccp_allocation_failed =
         (faults & PNG_STREAM_ICCP_ALLOCATION_FAILURE) != 0;
+    libpng_setup_failed = (faults & (PNG_STREAM_LIBPNG_WRITE_STRUCT_FAILURE |
+                                    PNG_STREAM_LIBPNG_INFO_STRUCT_FAILURE))
+                          != 0;
 #if PNG_STREAM_FAULT_LIBPNG
     if (icc_compression_failed || iccp_allocation_failed) {
+        return 77;
+    }
+#else
+    if (libpng_setup_failed) {
         return 77;
     }
 #endif
     icc_preparation_failed = icc_export_failed || icc_compression_failed ||
                              iccp_allocation_failed;
     allocation_failed = (faults & PNG_STREAM_ALLOCATION_FAILURE) != 0;
-    before_write = open_failed || allocation_failed || icc_preparation_failed;
+    before_write = open_failed || allocation_failed ||
+                   icc_preparation_failed || libpng_setup_failed;
     iccp_failed = (faults & PNG_STREAM_ICCP_SHORT_WRITE) != 0;
     flush_failed = (faults & PNG_STREAM_FLUSH_FAILURE) != 0;
     memset(&png_stream_probe, 0, sizeof(png_stream_probe));
@@ -323,7 +360,10 @@ png_test_stream_fault(int faults)
                    (faults & PNG_STREAM_SHORT_WRITE) != 0;
     expected_opens = !use_stdout && !borrowed && !icc_preparation_failed;
     expected_backend_releases = !before_write;
-#if !PNG_STREAM_FAULT_LIBPNG
+#if PNG_STREAM_FAULT_LIBPNG
+    expected_backend_releases +=
+        (faults & PNG_STREAM_LIBPNG_INFO_STRUCT_FAILURE) != 0;
+#else
     /* A tagged direct write owns an extra compression buffer. A failed
      * chunk allocation leaves just the compressed profile to release. */
     expected_backend_releases += iccp_failed + iccp_allocation_failed;
@@ -336,6 +376,8 @@ png_test_stream_fault(int faults)
     if (SIXEL_FAILED(status)) {
         return EXIT_FAILURE;
     }
+    /* Every failure must supply its own diagnostic. */
+    sixel_helper_set_additional_message("earlier failure");
 
     if (iccp_failed || icc_preparation_failed) {
         definition = sixel_cdef_name("display-p3");
@@ -346,9 +388,8 @@ png_test_stream_fault(int faults)
         color.srgb = 0;
         color.definition = definition;
         /* The next caller allocation exports the profile before opening
-         * the destination. Seed the diagnostic to detect a stale message. */
+         * the destination. */
         png_stream_probe.fail_next_allocation = icc_export_failed;
-        sixel_helper_set_additional_message("earlier failure");
         status = png_fault_write_image_color(
             rgba, 1, 1, NULL, SIXEL_PIXELFORMAT_RGBA8888, "png-fault.png",
             NULL, SIXEL_FORMAT_PNG, &color, allocator);
@@ -383,6 +424,11 @@ png_test_stream_fault(int faults)
     } else if (allocation_failed) {
         expected = SIXEL_BAD_ALLOCATION;
         diagnostic = "write_png_to_file: sixel_allocator_malloc() failed";
+    } else if (libpng_setup_failed) {
+        expected = SIXEL_PNG_ERROR;
+        diagnostic = (faults & PNG_STREAM_LIBPNG_WRITE_STRUCT_FAILURE)
+            ? "png_create_write_struct() failed."
+            : "png_create_info_struct() failed.";
     } else if (write_failed) {
 #if PNG_STREAM_FAULT_LIBPNG
         expected = SIXEL_PNG_ERROR;

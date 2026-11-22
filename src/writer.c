@@ -58,7 +58,7 @@
 #include "timeline-logger.h"
 #include "writer.h"
 
-/* A private test copy can substitute failing stream operations without
+/* A private test copy can substitute failing writer operations without
  * adding runtime hooks to the normal writer. */
 #ifndef SIXEL_PNG_IO_OPEN
 # define SIXEL_PNG_IO_OPEN sixel_compat_fopen
@@ -66,6 +66,8 @@
 # define SIXEL_PNG_IO_FLUSH fflush
 # define SIXEL_PNG_IO_CLOSE fclose
 # define SIXEL_PNG_IO_FREE free
+# define SIXEL_PNG_IO_CREATE_WRITE png_create_write_struct
+# define SIXEL_PNG_IO_CREATE_INFO png_create_info_struct
 # define SIXEL_PNG_IO_DESTROY png_destroy_write_struct
 #endif
 
@@ -75,6 +77,23 @@
 
 
 #if SIXEL_WRITER_USE_LIBPNG
+/* Track whether the current libpng call supplied its own diagnostic. */
+static void
+sixel_writer_png_record_message(png_structp png_ptr,
+                                png_const_charp message)
+{
+    int *reported;
+
+    if (message != NULL) {
+        sixel_helper_set_additional_message(message);
+        reported = png_get_error_ptr(png_ptr);
+        if (reported != NULL) {
+            *reported = 1;
+        }
+    }
+}
+
+
 /*
  * Capture libpng write errors so callers receive the library detail string
  * instead of only the generic SIXEL_PNG_ERROR status.
@@ -83,9 +102,7 @@ static void
 sixel_writer_png_error_callback(png_structp png_ptr,
                                 png_const_charp error_message)
 {
-    if (error_message != NULL) {
-        sixel_helper_set_additional_message(error_message);
-    }
+    sixel_writer_png_record_message(png_ptr, error_message);
     longjmp(png_jmpbuf(png_ptr), 1);
 }
 
@@ -97,10 +114,7 @@ static void
 sixel_writer_png_warning_callback(png_structp png_ptr,
                                   png_const_charp warning_message)
 {
-    (void)png_ptr;
-    if (warning_message != NULL) {
-        sixel_helper_set_additional_message(warning_message);
-    }
+    sixel_writer_png_record_message(png_ptr, warning_message);
 }
 /*
  * Keep write callback state in a tiny context so timeline logs can identify
@@ -582,6 +596,7 @@ write_png_to_file(
     png_infop info_ptr = NULL;
     unsigned char **rows = NULL;
     png_color *png_palette = NULL;
+    int libpng_message_reported;
     sixel_writer_png_io_context_t png_io_ctx;
 #else
     unsigned char *filtered = NULL;
@@ -906,12 +921,17 @@ write_png_to_file(
                           "libpng_create_begin",
                           0);
     }
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
-                                      NULL,
-                                      &sixel_writer_png_error_callback,
-                                      &sixel_writer_png_warning_callback);
+    libpng_message_reported = 0;
+    png_ptr = SIXEL_PNG_IO_CREATE_WRITE(PNG_LIBPNG_VER_STRING,
+                                        &libpng_message_reported,
+                                        &sixel_writer_png_error_callback,
+                                        &sixel_writer_png_warning_callback);
     if (!png_ptr) {
         status = SIXEL_PNG_ERROR;
+        if (!libpng_message_reported) {
+            sixel_helper_set_additional_message(
+                "png_create_write_struct() failed.");
+        }
         if (logger_prepared) {
             sixel_timeline_logger_logf(logger,
                               "io",
@@ -930,9 +950,14 @@ write_png_to_file(
                           "libpng_create_done",
                           0);
     }
-    info_ptr = png_create_info_struct(png_ptr);
+    libpng_message_reported = 0;
+    info_ptr = SIXEL_PNG_IO_CREATE_INFO(png_ptr);
     if (!info_ptr) {
         status = SIXEL_PNG_ERROR;
+        if (!libpng_message_reported) {
+            sixel_helper_set_additional_message(
+                "png_create_info_struct() failed.");
+        }
         if (logger_prepared) {
             sixel_timeline_logger_logf(logger,
                               "io",
@@ -1165,6 +1190,8 @@ end:
 #undef SIXEL_PNG_IO_FLUSH
 #undef SIXEL_PNG_IO_CLOSE
 #undef SIXEL_PNG_IO_FREE
+#undef SIXEL_PNG_IO_CREATE_WRITE
+#undef SIXEL_PNG_IO_CREATE_INFO
 #undef SIXEL_PNG_IO_DESTROY
 
 
