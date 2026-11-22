@@ -532,7 +532,7 @@ heckbert_fractional_axis_check(void)
 int
 heckbert_score_avx2_check(int edge)
 {
-#if SIXEL_SIMD_AVX2
+#if SIXEL_SIMD_AVX2 && HAVE_DOUBLE_EVAL_NO_EXCESS
     policy_tupletable2 table;
     struct policy_tupleint *entries[65];
     double weights[4];

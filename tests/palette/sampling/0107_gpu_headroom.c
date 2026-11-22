@@ -79,7 +79,8 @@ test_gpu_headroom(int argc, char **argv)
     choice = sixel_gpu_headroom_step(&state, SIXEL_GPU_POLICY_OFF, 0, 0);
     if (choice != 0 || state.windows != 0 || state.last_wall_ns != 0)
         return 12;
-    /* Thresholds are strict, and each new window halves the prior load. */
+    /* Thresholds are strict, and each new window halves the prior load.
+     * Compare the stored load to values rounded to double precision. */
     state.last_wall_ns = 100;
     state.windows = 2;
     state.load = 0.5;
@@ -92,11 +93,11 @@ test_gpu_headroom(int argc, char **argv)
     state.frames = 7;
     sixel_gpu_headroom_step(&state, SIXEL_GPU_POLICY_AUTO,
         24000000, 40000100);
-    if (state.gpu != 1 || state.load != 0.7) return 14;
+    if (state.gpu != 1 || state.load != (double)0.7) return 14;
     state.frames = 7;
     sixel_gpu_headroom_step(&state, SIXEL_GPU_POLICY_AUTO,
         44000000, 60000100);
-    if (state.gpu != 0 || state.load != 0.85) return 15;
+    if (state.gpu != 0 || state.load != (double)0.85) return 15;
     /* Counter or clock rollback invalidates the observation window. */
     sixel_gpu_headroom_step(&state, SIXEL_GPU_POLICY_AUTO, 0, 60000101);
     if (state.windows != 0 || state.gpu != 0) return 16;

@@ -3134,7 +3134,9 @@ sixel_heckbert_box_sse_neon3(tupletable2 table, unsigned int start,
 }
 #endif
 
-#if SIXEL_SIMD_AVX2
+#if SIXEL_SIMD_AVX2 && HAVE_DOUBLE_EVAL_NO_EXCESS
+/* AVX2 rounds each operation to binary64. A scalar compiler that keeps
+ * intermediate results wider can choose a different cut. */
 /* Keep RGB accumulation serial within each lane. The fourth lane is zero,
  * and the final reduction follows scalar plane order (including +0). No
  * fused multiply-add is used: AVX2 does not imply FMA support.
@@ -3276,7 +3278,7 @@ sixel_heckbert_box_sse(tupletable2 table, unsigned int start,
     unsigned int i;
     unsigned int plane;
 
-#if SIXEL_SIMD_AVX2
+#if SIXEL_SIMD_AVX2 && HAVE_DOUBLE_EVAL_NO_EXCESS
     if (depth == 3U
             && sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_AVX2) {
         return sixel_heckbert_box_sse_avx2(table, start, size, weights,

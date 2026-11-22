@@ -215,6 +215,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define if scalar double expressions use binary64 */
+#undef HAVE_DOUBLE_EVAL_NO_EXCESS
+
 /* Define to 1 if you have the <emmintrin.h> header file. */
 #undef HAVE_EMMINTRIN_H
 

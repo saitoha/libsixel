@@ -2297,6 +2297,18 @@ elif cpu in ['x86', 'x86_64']
         }''', args: simd_args, name: 'SSE2 intrinsics for the x86 target')
       conf.set('HAVE_SSE2', 1)
       simd_message = 'sse2'
+      if conf.has('HAVE_AVX2_KERNELS') and cc.compiles('''
+#include <float.h>
+#if !defined(FLT_EVAL_METHOD) || (FLT_EVAL_METHOD != 0 && FLT_EVAL_METHOD != 1)
+#error Scalar expressions may use excess precision
+#endif
+#if FLT_RADIX != 2 || DBL_MANT_DIG != 53 || defined(__FAST_MATH__)
+#error Scalar expressions may not follow binary64 arithmetic
+#endif
+int main(void) { return 0; }
+''', args: simd_args, name: 'scalar double expressions use binary64')
+        conf.set('HAVE_DOUBLE_EVAL_NO_EXCESS', 1)
+      endif
       add_project_arguments(simd_args, language: 'c')
     else
       simd_message = 'no'

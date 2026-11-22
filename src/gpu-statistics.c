@@ -78,10 +78,11 @@ sixel_gpu_headroom_step(
     state->last_busy_ns = busy_ns;
     state->last_wall_ns = wall_ns;
     /* A GPU needs ample idle time before taking more work; once enabled,
-     * it stays there until device work consumes most of the frame window. */
+     * it stays there until device work consumes most of the frame window.
+     * Round the threshold to the same precision as the stored load. */
     if (state->windows >= 2 && state->load < 0.50)
         state->gpu = 1;
-    else if (state->load > 0.70)
+    else if (state->load > (double)0.70)
         state->gpu = 0;
     return state->gpu;
 }

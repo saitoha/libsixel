@@ -5774,6 +5774,31 @@ fi
 if test "x$have_sse2" = xyes; then
     AC_DEFINE([HAVE_SSE2], [1], [Define if SSE2 is available])
     message_simd=sse2
+    AS_IF([test "x$sixel_cv_avx2_kernels" = xattribute ||
+           test "x$sixel_cv_avx2_kernels" = xplain], [
+        # Match Automake's ordering for target and floating-point options.
+        sixel_saved_cflags="$CFLAGS"
+        sixel_saved_cppflags="$CPPFLAGS"
+        CFLAGS="$AM_CFLAGS $CPPFLAGS $CFLAGS"
+        CPPFLAGS=
+        AC_MSG_CHECKING([whether scalar double expressions use binary64])
+        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <float.h>
+#if !defined(FLT_EVAL_METHOD) || \
+    (FLT_EVAL_METHOD != 0 && FLT_EVAL_METHOD != 1) || \
+    FLT_RADIX != 2 || DBL_MANT_DIG != 53 || defined(__FAST_MATH__)
+#error Scalar expressions may not follow binary64 arithmetic
+#endif
+int main(void) { return 0; }
+]])], [sixel_double_eval_no_excess=yes], [sixel_double_eval_no_excess=no])
+        AC_MSG_RESULT([$sixel_double_eval_no_excess])
+        AS_IF([test "x$sixel_double_eval_no_excess" = xyes], [
+            AC_DEFINE([HAVE_DOUBLE_EVAL_NO_EXCESS], [1],
+                      [Define if scalar double expressions use binary64])
+        ])
+        CFLAGS="$sixel_saved_cflags"
+        CPPFLAGS="$sixel_saved_cppflags"
+    ])
 fi
 if test "x$have_neon" = xyes; then
     AC_DEFINE([HAVE_NEON], [1], [Define if NEON is available])

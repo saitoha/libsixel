@@ -30021,6 +30021,51 @@ if test "x$have_sse2" = xyes; then
 printf "%s\n" "#define HAVE_SSE2 1" >>confdefs.h
 
     message_simd=sse2
+    if test "x$sixel_cv_avx2_kernels" = xattribute ||
+           test "x$sixel_cv_avx2_kernels" = xplain
+then :
+
+        # Match Automake's ordering for target and floating-point options.
+        sixel_saved_cflags="$CFLAGS"
+        sixel_saved_cppflags="$CPPFLAGS"
+        CFLAGS="$AM_CFLAGS $CPPFLAGS $CFLAGS"
+        CPPFLAGS=
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether scalar double expressions use binary64" >&5
+printf %s "checking whether scalar double expressions use binary64... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <float.h>
+#if !defined(FLT_EVAL_METHOD) || \
+    (FLT_EVAL_METHOD != 0 && FLT_EVAL_METHOD != 1) || \
+    FLT_RADIX != 2 || DBL_MANT_DIG != 53 || defined(__FAST_MATH__)
+#error Scalar expressions may not follow binary64 arithmetic
+#endif
+int main(void) { return 0; }
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  sixel_double_eval_no_excess=yes
+else case e in #(
+  e) sixel_double_eval_no_excess=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_double_eval_no_excess" >&5
+printf "%s\n" "$sixel_double_eval_no_excess" >&6; }
+        if test "x$sixel_double_eval_no_excess" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_DOUBLE_EVAL_NO_EXCESS 1" >>confdefs.h
+
+
+fi
+        CFLAGS="$sixel_saved_cflags"
+        CPPFLAGS="$sixel_saved_cppflags"
+
+fi
 fi
 if test "x$have_neon" = xyes; then
 

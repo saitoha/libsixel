@@ -7,7 +7,7 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/heckbert/0151_score_avx2_edge" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP AVX2 is unavailable'
+    echo 'ok 1 # SKIP AVX2 scoring is unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
