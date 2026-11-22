@@ -5,6 +5,7 @@ on:
     branches-ignore:
       - 'ci/triage/**'
       - 'triage/**'
+      - 'experimental/**'
   pull_request:
     branches: ['**']
   schedule:
