@@ -1253,6 +1253,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-avx-vector-params',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-avx-vector-params.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-docs-dist-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-docs-dist-sync.sh',
       meson.project_source_root()],

@@ -7501,6 +7501,7 @@ staticcheck-loader-cms-boundary \
 	staticcheck-doc-types-inventory \
 	staticcheck-accel-ledger \
 	staticcheck-accel-ledger-controls \
+	staticcheck-avx-vector-params \
 	staticcheck-docs-dist-sync \
 	staticcheck-docs-length-limits \
 	staticcheck-doc-test-links \
@@ -7585,6 +7586,7 @@ staticcheck-docs-github-math \
 staticcheck-doc-types-inventory \
 staticcheck-accel-ledger \
 staticcheck-accel-ledger-controls \
+staticcheck-avx-vector-params \
 staticcheck-docs-dist-sync \
 staticcheck-docs-length-limits \
 staticcheck-doc-test-links \
@@ -8348,6 +8350,16 @@ staticcheck-accel-ledger-controls:
 		--trs-file staticcheck-accel-ledger-controls.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-accel-ledger-controls.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-avx-vector-params:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-avx-vector-params" \
+		--log-file staticcheck-avx-vector-params.log \
+		--trs-file staticcheck-avx-vector-params.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-avx-vector-params.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-docs-dist-sync:
@@ -9897,7 +9909,8 @@ EXTRA_DIST += _static/awk/accel-units.awk \
     _static/awk/accel-ledger.awk \
     _static/data/accel-untagged-legacy.tsv \
     _static/sh/staticcheck-accel-ledger.sh \
-    _static/sh/staticcheck-accel-ledger-controls.sh
+    _static/sh/staticcheck-accel-ledger-controls.sh \
+    _static/sh/staticcheck-avx-vector-params.sh
 
 EXTRA_DIST += data/color-numeric/output-bpc.icc \
     data/color-numeric/output-bpc-rgba16.png \

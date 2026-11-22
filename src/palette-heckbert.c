@@ -3137,10 +3137,14 @@ sixel_heckbert_box_sse_neon3(tupletable2 table, unsigned int start,
 #if SIXEL_SIMD_AVX2
 /* Keep RGB accumulation serial within each lane. The fourth lane is zero,
  * and the final reduction follows scalar plane order (including +0). No
- * fused multiply-add is used: AVX2 does not imply FMA support. */
+ * fused multiply-add is used: AVX2 does not imply FMA support.
+ * Vectors arrive by address: 32-bit x86 and Cygwin/MSYS x86-64 GCC pass a
+ * by-value __m256d through a stack slot without 32-byte alignment, then
+ * load it with an aligned move that faults. */
 /* Accel: HECKBERT-BOX-SCORE avx2 */
 static SIXEL_TARGET_AVX2 double
-sixel_heckbert_error_avx2(__m256d sums, __m256d squares, double population)
+sixel_heckbert_error_avx2(__m256d const *sums, __m256d const *squares,
+                          double population)
 {
     __m256d component;
     double values[4];
@@ -3149,8 +3153,8 @@ sixel_heckbert_error_avx2(__m256d sums, __m256d squares, double population)
     if (population <= 0.0) {
         return 0.0;
     }
-    component = _mm256_sub_pd(squares, _mm256_div_pd(
-        _mm256_mul_pd(sums, sums), _mm256_set1_pd(population)));
+    component = _mm256_sub_pd(*squares, _mm256_div_pd(
+        _mm256_mul_pd(*sums, *sums), _mm256_set1_pd(population)));
     component = _mm256_and_pd(component, _mm256_cmp_pd(component,
         _mm256_setzero_pd(), _CMP_GT_OQ));
     _mm256_storeu_pd(values, component);
@@ -3178,6 +3182,8 @@ sixel_heckbert_box_sse_avx2(tupletable2 table, unsigned int start,
     __m256d squares;
     __m256d left_sums;
     __m256d left_squares;
+    __m256d right_sums;
+    __m256d right_squares;
     __m256d value;
     __m256d product;
     double population;
@@ -3214,7 +3220,7 @@ sixel_heckbert_box_sse_avx2(tupletable2 table, unsigned int start,
         squares = _mm256_add_pd(squares, _mm256_mul_pd(product, value));
     }
     if (cut == NULL) {
-        return sixel_heckbert_error_avx2(sums, squares, population);
+        return sixel_heckbert_error_avx2(&sums, &squares, population);
     }
     *cut = 0U;
     *lower = 0U;
@@ -3231,11 +3237,11 @@ sixel_heckbert_box_sse_avx2(tupletable2 table, unsigned int start,
         left_sums = _mm256_add_pd(left_sums, product);
         left_squares = _mm256_add_pd(left_squares,
             _mm256_mul_pd(product, value));
-        errors[0] = sixel_heckbert_error_avx2(left_sums, left_squares,
+        right_sums = _mm256_sub_pd(sums, left_sums);
+        right_squares = _mm256_sub_pd(squares, left_squares);
+        errors[0] = sixel_heckbert_error_avx2(&left_sums, &left_squares,
             left_population);
-        errors[1] = sixel_heckbert_error_avx2(
-            _mm256_sub_pd(sums, left_sums),
-            _mm256_sub_pd(squares, left_squares),
+        errors[1] = sixel_heckbert_error_avx2(&right_sums, &right_squares,
             population - left_population);
         if (i == 0U || errors[0] + errors[1] < best) {
             best = errors[0] + errors[1];
@@ -3245,7 +3251,7 @@ sixel_heckbert_box_sse_avx2(tupletable2 table, unsigned int start,
             children[1] = errors[1];
         }
     }
-    return sixel_heckbert_error_avx2(sums, squares, population);
+    return sixel_heckbert_error_avx2(&sums, &squares, population);
 }
 #endif
 

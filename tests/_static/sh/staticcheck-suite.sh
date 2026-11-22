@@ -1035,6 +1035,10 @@ run_case_tap "staticcheck-accel-ledger-controls" \
     "$src_root/tests/_static/sh/staticcheck-accel-ledger-controls.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-avx-vector-params" \
+    "$src_root/tests/_static/sh/staticcheck-avx-vector-params.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-docs-dist-sync" \
     "$src_root/tests/_static/sh/staticcheck-docs-dist-sync.sh" \
     "$src_root" || fail_and_exit $?

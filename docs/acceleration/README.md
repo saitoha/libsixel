@@ -84,6 +84,7 @@ Code written before the ledger existed is listed in [`tests/_static/data/accel-u
 | --- | --- | --- |
 | AC-01 | Every SIMD and GPU unit under `src/` carries an `Accel:` tag, except the units frozen in the legacy list; the legacy list matches the untagged units exactly; every tag names a ledger row whose cell for that backend is `done`; and every `done` cell outside Scalar has a tag. | [tests/_static/sh/staticcheck-accel-ledger.sh](../../tests/_static/sh/staticcheck-accel-ledger.sh) |
 | AC-02 | The check rejects an untagged unit, a tag whose backend the unit does not use, a tag on a cell that is not `done`, an unknown ID or state, a malformed tag, a `done` cell without a tag, and a legacy row that no longer matches; it accepts AVX2 functions with 128-bit helpers, prose that names a vector type, and the vendored stb decoder. | [tests/_static/sh/staticcheck-accel-ledger-controls.sh](../../tests/_static/sh/staticcheck-accel-ledger-controls.sh) |
+| AC-03 | No function compiled with an AVX2 target attribute under `src/` takes a 256-bit or 512-bit vector parameter by value, since 32-bit x86 GCC and Cygwin/MSYS x86-64 GCC load such an argument from a stack slot without 32-byte alignment; the check rejects a by-value control and accepts the pointer form. | [tests/_static/sh/staticcheck-avx-vector-params.sh](../../tests/_static/sh/staticcheck-avx-vector-params.sh) |
 
 ### Coverage boundary
 
