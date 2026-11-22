@@ -90,16 +90,22 @@ c_link_args = ['-lsetjmp', '-lwasi-emulated-process-clocks', '-Wl,-z,stack-size=
     return cross_file
 
 
-def smoke_test(source, build, bindir, env, wasmer):
+def smoke_test(source, build, bindir, env, runtime, runner):
+    print(f"Testing installed WASI tools with {runtime}", flush=True)
     with tempfile.TemporaryDirectory(prefix="smoke-", dir=build) as tmp:
         working = Path(tmp)
         shutil.copyfile(source / "images/snake.png", working / "input.png")
 
         def command(tool, *args):
-            if wasmer:
-                return [wasmer, "run", str(bindir / f"{tool}.wasm"), "--disable-cache",
+            module = str(bindir / f"{tool}.wasm")
+            if runtime == "wasmer":
+                return [runner, "run", module, "--disable-cache",
                         "--volume", f"{working}:/data", "--env", "TMPDIR=/data",
                         "--", *args]
+            if runtime == "node":
+                return [runner, "--disable-warning=ExperimentalWarning",
+                        str(source / "build-aux/wasi-node-smoke.mjs"),
+                        module, *args]
             if os.name == "nt":
                 return ["cmd.exe", "/d", "/c", "call", f"{tool}.cmd", *args]
             return [str(bindir / tool), *args]
@@ -120,7 +126,7 @@ def smoke_test(source, build, bindir, env, wasmer):
                 if encoder.wait() != 0:
                     sys.exit("img2sixel failed")
 
-        guest_dir = "/data/" if wasmer else ""
+        guest_dir = "/data/" if runtime == "wasmer" else ""
         with (working / "example.png").open("rb") as target:
             subprocess.run(
                 command("lsqa", "-m", "ms-ssim", "-b",
@@ -157,25 +163,40 @@ def main():
                         help="test the installed Wasmtime launchers")
     parser.add_argument("--check-wasmer", action="store_true",
                         help="also test the Wasm modules directly with Wasmer")
+    parser.add_argument("--smoke", choices=("wasmer", "node"),
+                        help="test existing installed modules without rebuilding")
     args = parser.parse_args()
+    if args.smoke and (args.check or args.check_wasmer):
+        parser.error("--smoke cannot be combined with --check or --check-wasmer")
 
     source = Path(__file__).resolve().parents[1]
     build = Path(os.environ.get(
         "SIXEL_WASI_BUILD_DIR", str(source / "build-examples/build-wasi")
     )).resolve()
     stage = build / "install"
+    bindir = stage / "bin"
     env = os.environ.copy()
     env["PATH"] = os.pathsep.join((str(source / ".local/bin"), env["PATH"]))
+    runtimes = ["wasmtime"] if args.check or args.check_wasmer else []
+    if args.check_wasmer:
+        runtimes.append("wasmer")
+    if args.smoke:
+        runtimes.append(args.smoke)
+    runners = {}
+    for runtime in runtimes:
+        runner = shutil.which(runtime, path=env["PATH"])
+        if not runner:
+            sys.exit(f"{runtime} is required on PATH.")
+        runners[runtime] = runner
+    if args.smoke:
+        if not bindir.is_dir():
+            sys.exit(f"Build and install the WASI tools first: {bindir}")
+        smoke_test(source, build, bindir, env, args.smoke, runners[args.smoke])
+        return
+
     meson = shutil.which("meson", path=env["PATH"])
     if not meson:
         sys.exit("Install Meson and Ninja before running the WASI build.")
-    if (args.check or args.check_wasmer) and not shutil.which(
-            "wasmtime", path=env["PATH"]):
-        sys.exit("Wasmtime is required for --check.")
-    wasmer = shutil.which("wasmer", path=env["PATH"]) if args.check_wasmer else None
-    if args.check_wasmer and not wasmer:
-        sys.exit("Wasmer is required for --check-wasmer.")
-
     build.mkdir(parents=True, exist_ok=True)
     cross_file = make_cross_file(source, build, find_sdk(build, env))
     setup = [meson, "setup"]
@@ -193,12 +214,9 @@ def main():
     subprocess.run([meson, "install", "-C", str(build), "--no-rebuild",
                     "--destdir", str(stage)],
                    env=env, check=True)
-    bindir = stage / "bin"
-    if args.check or args.check_wasmer:
-        env["PATH"] = os.pathsep.join((str(bindir), env["PATH"]))
-        smoke_test(source, build, bindir, env, None)
-    if wasmer:
-        smoke_test(source, build, bindir, env, wasmer)
+    env["PATH"] = os.pathsep.join((str(bindir), env["PATH"]))
+    for runtime in runtimes:
+        smoke_test(source, build, bindir, env, runtime, runners[runtime])
     print(f"Installed WASI commands in {bindir}")
 
 

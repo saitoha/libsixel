@@ -49,7 +49,7 @@ jobs:
           call build-examples\example-build-emcc.cmd
 
   wasi:
-    name: WASI SDK on ${{ matrix.os }}
+    name: Meson-${{ matrix.platform }}-clang-wasi-static
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -57,15 +57,23 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
+            platform: linux-x86_64
             wasmtime: x86_64-linux
             extension: tar.xz
           - os: macos-15
+            platform: macos-arm64
             wasmtime: aarch64-macos
             extension: tar.xz
           - os: windows-2025
+            platform: windows-x86_64
             wasmtime: x86_64-windows
             extension: zip
     steps:
+      - name: Configure git EOL on Windows
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: git config --global core.autocrlf false
+
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
@@ -87,10 +95,26 @@ jobs:
           tar -xf "runtime.$env:WASMTIME_EXTENSION"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "SIXEL_WASI_BUILD_DIR=$(Join-Path $env:RUNNER_TEMP 'libsixel WASI')" >> $env:GITHUB_ENV
-          "$(Join-Path $env:RUNNER_TEMP $runtime)" >> $env:GITHUB_PATH
+          $runtimeDir = Join-Path $env:RUNNER_TEMP $runtime
+          "SIXEL_WASMTIME_DIR=$runtimeDir" >> $env:GITHUB_ENV
+          $runtimeDir >> $env:GITHUB_PATH
+
+      - name: Build and test the installed WASI tools with Wasmtime
+        id: wasmtime
+        if: runner.os != 'Windows'
+        shell: bash
+        run: build-examples/example-build-wasi.sh --check
+
+      - name: Build and test the installed WASI tools with Wasmtime on Windows
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          set "PATH=%pythonLocation%;%pythonLocation%\Scripts;%SIXEL_WASMTIME_DIR%;%SystemRoot%\System32;%SystemRoot%"
+          call build-examples\example-build-wasi.cmd --check
 
       - name: Install Wasmer on Linux
-        if: runner.os == 'Linux'
+        id: wasmer
+        if: runner.os == 'Linux' && steps.wasmtime.outcome == 'success'
         shell: bash
         run: |
           cd "$RUNNER_TEMP"
@@ -99,17 +123,19 @@ jobs:
           tar -xf wasmer.tar.gz -C wasmer bin/wasmer
           printf '%s\n' "$RUNNER_TEMP/wasmer/bin" >> "$GITHUB_PATH"
 
-      - name: Build and test the WASI tools with Wasmtime and Wasmer on Linux
-        if: runner.os == 'Linux'
+      - name: Smoke test the installed WASI modules with Wasmer
+        if: runner.os == 'Linux' && steps.wasmer.outcome == 'success'
         shell: bash
-        run: build-examples/example-build-wasi.sh --check-wasmer
+        run: build-examples/example-build-wasi.sh --smoke wasmer
 
-      - name: Build and test the installed WASI tools on macOS
-        if: runner.os == 'macOS'
+      - name: Install Node.js 24 on Linux
+        id: node
+        if: runner.os == 'Linux' && !cancelled() && steps.wasmtime.outcome == 'success'
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Smoke test the installed WASI modules with Node.js
+        if: runner.os == 'Linux' && !cancelled() && steps.node.outcome == 'success'
         shell: bash
-        run: build-examples/example-build-wasi.sh --check
-
-      - name: Build and test the installed WASI tools on Windows
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: call build-examples\example-build-wasi.cmd --check
+        run: build-examples/example-build-wasi.sh --smoke node

@@ -234,7 +234,7 @@ call build-examples\example-build-wasi.cmd
 
 The examples build static `wasm32-wasip1` modules with the built-in image codecs and install them in `build-examples/build-wasi/install/bin`. Set `SIXEL_WASI_BUILD_DIR` to select another build directory. Add the installed `bin` directory and Wasmtime to `PATH` to run `img2sixel`, `sixel2png`, and `lsqa` through their launchers. The launchers grant guest programs access to the working directory with `--dir .`. Set `TMPDIR` inside the guest to a writable, preopened directory if temporary files should be stored elsewhere.
 
-Pass `--check` to test a PNG → SIXEL → PNG pipe through the installed Wasmtime launchers. Pass `--check-wasmer` to run the same check with Wasmtime and Wasmer 7.5 or newer on `PATH`. On Windows, use binary-safe redirection such as `cmd.exe` when sending image bytes through a shell pipe.
+Pass `--check` to test a PNG → SIXEL → PNG pipe through the installed Wasmtime launchers. Pass `--check-wasmer` to run the same check with Wasmtime and Wasmer 7.5 or newer on `PATH`. To smoke-test the existing installation without rebuilding, pass `--smoke wasmer` or `--smoke node` and put the corresponding runtime on `PATH`. The Node smoke test uses Node.js 24 and its WASI Preview 1 API. On Windows, use binary-safe redirection such as `cmd.exe` when sending image bytes through a shell pipe.
 
 ### Emscripten (Autotools)
 
