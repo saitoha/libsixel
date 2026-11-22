@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* A byte derivative belongs to a clone, never to the canonical float frame. */
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
@@ -221,13 +222,17 @@ test_raw_storage(void)
 }
 
 static int
-test_profile_colorspace_lut(void)
+test_profile_colorspace_lut(int relative)
 {
     unsigned char bytes[sizeof(color_paired_lut)];
     float pixels[] = {.1f, .2f, .3f, .5f, .5f, .5f};
-    /* Every A2B0 CLUT vertex encodes D50 XYZ (.25, .5, .75).
-     * Multiply by the inverse D50-adapted sRGB primary matrix. */
-    double const expected[] = {-.3930784364, .7384529717, .9578093449};
+    /* All mft2 vertices are constant. Decode the PCS XYZ words / 32768
+     * and multiply by the inverse Bradford-adapted sRGB primary matrix.
+     * A2B0 words: (8192, 16384, 24576); A2B1: (13107, 26214, 39321).
+     * Negative and above-one linear coordinates must survive both paths. */
+    double const perceptual_rgb[] = {-.3930784364, .7384529717, .9578093449};
+    double const relative_rgb[] = {-.6289159017, 1.1815067261, 1.5324715678};
+    double const *expected = relative ? relative_rgb : perceptual_rgb;
     sixel_frame_t *frame = NULL;
     sixel_frame_interface_t *iface;
     sixel_frame_pixels_view_t view;
@@ -237,6 +242,14 @@ test_profile_colorspace_lut(void)
 
     memcpy(bytes, color_paired_lut, sizeof(bytes));
     memcpy(bytes + 12, "spac", 4);
+    if (relative) {
+        /* Reuse the second 3-in/3-out LUT as a relative forward table.
+         * The original A2B0 payload is identical in both test cases. */
+        if (memcmp(bytes + 144, "B2A0", 4) != 0) {
+            return EXIT_FAILURE;
+        }
+        memcpy(bytes + 144, "A2B1", 4);
+    }
     profile = sixel_cdef_icc(bytes, sizeof(bytes));
     if (profile == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
         SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
@@ -253,6 +266,8 @@ test_profile_colorspace_lut(void)
     }
     for (c = 0; c < 6; ++c) {
         if (!(fabs(view.pixels_float32[c] - expected[c % 3]) < 1e-6)) {
+            fprintf(stderr, "A2B%d component %d: got %.9g, expected %.9g\n",
+                    relative, c, view.pixels_float32[c], expected[c % 3]);
             goto end;
         }
     }
@@ -375,6 +390,8 @@ end:
 static int
 test_byte_tie(char const *name)
 {
+    double const d60_xy[] = {.32168, .33767, .64, .33, .30, .60, .15, .06};
+    double const gamma[] = {1, 1, 1};
     /* 0.5 * 255 is exactly 127.5. Its two adjacent binary32 values
      * straddle that same boundary without a tolerance. */
     float pixels[] = {
@@ -383,8 +400,12 @@ test_byte_tie(char const *name)
         0x1.fffffep-2f, 0x1.fffffep-2f, 0x1.fffffep-2f,
         0x1.000002p-1f, 0x1.000002p-1f, 0x1.000002p-1f
     };
+    int const d60 = strcmp(name, "d60") == 0;
+    /* For the unequal second triplet, D60-to-D65 Bradford adaptation
+     * gives green * 255 = 127.499999968, just below the rounding tie. */
     unsigned char const expected[] = {
-        128, 128, 128, 127, 128, 128, 127, 127, 127, 128, 128, 128
+        128, 128, 128, 127, d60 ? 127 : 128, 128,
+        127, 127, 127, 128, 128, 128
     };
     sixel_color_def_t *definition;
     sixel_frame_t *frame = NULL;
@@ -392,7 +413,11 @@ test_byte_tie(char const *name)
     sixel_frame_pixels_view_t view;
     int result = EXIT_FAILURE;
 
-    definition = sixel_cdef_name(name);
+    if (d60) {
+        definition = sixel_cdef_rgb(d60_xy, SIXEL_COLOR_TRC_SRGB, gamma);
+    } else {
+        definition = sixel_cdef_name(name);
+    }
     if (definition == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
         SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 4, 1,
             SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
@@ -557,6 +582,9 @@ test_frame_0014_clone_float(int argc, char **argv)
     if (argc == 2 && strcmp(argv[1], "p3-byte-tie") == 0) {
         return test_byte_tie("display-p3");
     }
+    if (argc == 2 && strcmp(argv[1], "d60-byte-tie") == 0) {
+        return test_byte_tie("d60");
+    }
     if (argc == 2 && strcmp(argv[1], "raw-storage") == 0) {
         return test_raw_storage();
     }
@@ -570,7 +598,10 @@ test_frame_0014_clone_float(int argc, char **argv)
         return test_raw_palette();
     }
     if (argc == 2 && strcmp(argv[1], "profile-lut") == 0) {
-        return test_profile_colorspace_lut();
+        return test_profile_colorspace_lut(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "relative-lut") == 0) {
+        return test_profile_colorspace_lut(1);
     }
     if (argc == 2 && strcmp(argv[1], "byte-resize-retry") == 0) {
         return test_profile_byte_resize_retry();
