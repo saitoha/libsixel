@@ -137,10 +137,9 @@ quicklook_finalize_frame_pixels(sixel_frame_t *frame,
         }
     }
 
-    frame->pixelformat = preserve_alpha
+    sixel_frame_assign_format(frame, preserve_alpha
         ? SIXEL_PIXELFORMAT_RGBA8888
-        : SIXEL_PIXELFORMAT_RGB888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        : SIXEL_PIXELFORMAT_RGB888);
     frame->transparent = -1;
     frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
 }
@@ -380,8 +379,7 @@ load_with_quicklook(
                         (CGFloat)CGImageGetHeight(image));
     frame->width = (int)bounds.size.width;
     frame->height = (int)bounds.size.height;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGBA8888);
     /*
      * QuickLook renders into a premultiplied RGBA buffer. Keep a four-byte
      * stride so the pixel format matches the bitmap context layout.
@@ -404,8 +402,8 @@ load_with_quicklook(
             NULL,
             frame->width,
             frame->height,
-            frame->pixelformat,
-            frame->colorspace,
+            sixel_frame_format(frame),
+            frame->format.coordinates,
             -1,
             SIXEL_FRAME_PIXELS_U8
         });

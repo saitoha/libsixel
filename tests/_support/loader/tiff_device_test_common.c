@@ -299,15 +299,15 @@ td_capture(sixel_frame_t *frame, void *context)
     mask = td_cases[td.fixture].alpha && td.fixture != 14;
     td.ok &= frame->width == (td_cases[td.fixture].orientation >= 5 ? 3 : 5)
         && frame->height == (td_cases[td.fixture].orientation >= 5 ? 5 : 3)
-        && frame->pixelformat == (bytes ? SIXEL_PIXELFORMAT_RGB888 :
+        && sixel_frame_format(frame) == (bytes ? SIXEL_PIXELFORMAT_RGB888 :
             linear && !td.target ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
             SIXEL_PIXELFORMAT_RGBFLOAT32)
-        && frame->colorspace == (linear && !td.target
+        && frame->format.coordinates == (linear && !td.target
             ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA)
         && frame->transparent_mask_size == (mask ? 15u : 0u);
     if (!td.ok) {
         fprintf(stderr, "TD|metadata|format=%x|space=%d|mask=%zu\n",
-            frame->pixelformat, frame->colorspace,
+            sixel_frame_format(frame), frame->format.coordinates,
             frame->transparent_mask_size);
         return SIXEL_BAD_INPUT;
     }

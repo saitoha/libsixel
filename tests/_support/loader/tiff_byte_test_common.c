@@ -57,7 +57,8 @@ tb_check(sixel_frame_t const *frame, tb_context_t const *ctx)
         space = ctx->target_space;
     }
     if (frame->width != width || frame->height != height ||
-        frame->pixelformat != format || frame->colorspace != space ||
+        sixel_frame_format(frame) != format ||
+        frame->format.coordinates != space ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL || frame->transparent_mask_size ||
         frame->alpha_zero_is_transparent) { return 0; }

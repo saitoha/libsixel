@@ -40,7 +40,8 @@ png_byte_capture(sixel_frame_t *frame, void *context)
     space = probe->stage == 1 ? SIXEL_COLORSPACE_LINEAR :
         SIXEL_COLORSPACE_GAMMA;
     if (frame->width != 1 || frame->height != 1 ||
-        frame->pixelformat != format || frame->colorspace != space ||
+        sixel_frame_format(frame) != format ||
+        frame->format.coordinates != space ||
         frame->transparent_mask_size != 0u ||
         frame->alpha_zero_is_transparent != 0) {
         fprintf(stderr, "PNG byte target stage %d frame contract\n",

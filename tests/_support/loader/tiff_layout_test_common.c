@@ -293,7 +293,8 @@ ti_capture(sixel_frame_t *frame, void *context)
     (void)context;
     ++ti.calls;
     ti.ok &= frame->width == ti.width && frame->height == ti.height &&
-        frame->pixelformat == ti.format && frame->colorspace == ti.space;
+        sixel_frame_format(frame) == ti.format &&
+        frame->format.coordinates == ti.space;
     mask = ti_cases[ti.fixture].alpha != 0;
     ti.ok &= frame->transparent_mask_size == (mask ? ti.count : 0u) &&
         frame->alpha_zero_is_transparent == mask;

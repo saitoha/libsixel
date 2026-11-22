@@ -1270,7 +1270,7 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
         frame->pixels.u8ptr == NULL ||
         frame->width <= 0 ||
         frame->height <= 0 ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
     }
     if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
@@ -1347,8 +1347,7 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
         frame->alpha_zero_is_transparent = 0;
     }
     frame->transparent = -1;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
     status = SIXEL_OK;
 
     sixel_allocator_free(frame->allocator, transparent_mask);
@@ -1364,7 +1363,7 @@ sixel_builtin_apply_bmp_alpha_policy(
 
     transparent_policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     if (frame == NULL ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -4503,7 +4502,7 @@ sixel_builtin_finalize_loaded_frame(
     }
 
     transparent_policy = loader_transparent_policy();
-    if (frame->pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
+    if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGBA8888) {
         status = sixel_builtin_normalize_rgba8888_alpha_policy(
             frame,
             request->bgcolor,
@@ -6135,7 +6134,7 @@ sixel_builtin_apply_pic_alpha_policy(
 
     transparent_policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     if (frame == NULL ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -6154,7 +6153,7 @@ sixel_builtin_apply_tga_truecolor_alpha_policy(
 
     transparent_policy = SIXEL_LOADER_ALPHA_POLICY_COMPOSITE;
     if (frame == NULL ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -6853,6 +6852,7 @@ static SIXELSTATUS
 sixel_builtin_load_with_builtin_impl(
     sixel_builtin_load_with_builtin_args_t const *args)
 {
+    int decoded_format;
     sixel_chunk_t const *pchunk;
     int fstatic;
     int fuse_palette;
@@ -7011,11 +7011,12 @@ sixel_builtin_load_with_builtin_impl(
                             fuse_palette ? &frame->palette: NULL,
                             &frame->ncolors,
                             reqcolors,
-                            &frame->pixelformat,
+                            &decoded_format,
                             allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        sixel_frame_assign_format(frame, decoded_format);
         status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
             sixel_frame_as_interface(frame),
             &(sixel_frame_pixels_request_t){
@@ -7023,10 +7024,10 @@ sixel_builtin_load_with_builtin_impl(
                 frame->palette,
                 frame->width,
                 frame->height,
-                frame->pixelformat,
+                sixel_frame_format(frame),
                 -1,
                 frame->ncolors,
-                SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+                (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
                 ? SIXEL_FRAME_PIXELS_FLOAT32
                 : SIXEL_FRAME_PIXELS_U8
             });
@@ -7034,6 +7035,11 @@ sixel_builtin_load_with_builtin_impl(
             sixel_allocator_free(frame->allocator, pixels);
             pixels = NULL;
             goto end;
+        }
+        /* Raw SIXEL can leave index 255 in unpainted pixels. Its decoder
+         * backs the entire byte index range even for a two-color image. */
+        if (decoded_format == SIXEL_PIXELFORMAT_PAL8) {
+            frame->palette_extent = SIXEL_PALETTE_MAX;
         }
         pixels = NULL;
         break;

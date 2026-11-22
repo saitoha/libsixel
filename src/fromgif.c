@@ -1258,10 +1258,10 @@ gif_export_nonpal_frame(
             pixels[dst_offset + 2u] = pg->out[src_offset + 2u];
             pixels[dst_offset + 3u] = pg->alpha_out[pixel_index];
         }
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGBA8888);
     } else {
         memcpy(pixels, pg->out, frame_size);
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
     }
 
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
@@ -1271,7 +1271,7 @@ gif_export_nonpal_frame(
             NULL,
             pg->w,
             pg->h,
-            frame->pixelformat,
+            sixel_frame_format(frame),
             SIXEL_COLORSPACE_GAMMA,
             -1,
             SIXEL_FRAME_PIXELS_U8

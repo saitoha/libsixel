@@ -49,9 +49,9 @@ cg_png_capture(sixel_frame_t *frame, void *context)
     preserve = probe->rgba && (!probe->background || probe->reference ||
         probe->policy != SIXEL_ALPHA_POLICY_COMPOSITE);
     if (frame->width != 4 || frame->height != 2 ||
-        frame->pixelformat != (byte_path ? SIXEL_PIXELFORMAT_RGB888 :
+        sixel_frame_format(frame) != (byte_path ? SIXEL_PIXELFORMAT_RGB888 :
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->colorspace != (byte_path ? SIXEL_COLORSPACE_GAMMA :
+        frame->format.coordinates != (byte_path ? SIXEL_COLORSPACE_GAMMA :
             SIXEL_COLORSPACE_LINEAR) || !frame->owns_pixels ||
         frame->transparent != -1 || frame->ncolors != -1 ||
         frame->alpha_zero_is_transparent != preserve ||

@@ -63,12 +63,12 @@ test_resize_changes_dimensions(void)
 
     sixel_filter_bind_input(filter,
                             &frame,
-                            frame->pixelformat,
-                            frame->colorspace);
+                            sixel_frame_format(frame),
+                            frame->format.coordinates);
     sixel_filter_bind_output(filter,
                              &frame,
-                             frame->pixelformat,
-                             frame->colorspace);
+                             sixel_frame_format(frame),
+                             frame->format.coordinates);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -139,12 +139,12 @@ test_resize_uses_float_for_float_input(void)
 
     sixel_filter_bind_input(filter,
                             &frame,
-                            frame->pixelformat,
-                            frame->colorspace);
+                            sixel_frame_format(frame),
+                            frame->format.coordinates);
     sixel_filter_bind_output(filter,
                              &frame,
-                             frame->pixelformat,
-                             frame->colorspace);
+                             sixel_frame_format(frame),
+                             frame->format.coordinates);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -152,7 +152,7 @@ test_resize_uses_float_for_float_input(void)
         goto cleanup;
     }
 
-    if (frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }

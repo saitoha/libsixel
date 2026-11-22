@@ -2330,6 +2330,12 @@ enum frame_pixels_kind {
     SIXEL_FRAME_PIXELS_FLOAT32 = 1
 };
 
+/* A view with an explicit RGB definition uses the profile's transfer and
+ * primaries. Legacy fixed-space converters must resolve the definition. */
+cpp_quote <<
+#define SIXEL_FRAME_COLORSPACE_PROFILE_RGB 0x100
+>>
+
 struct frame_pixels_request {
     void *pixels;
     unsigned char *palette;
@@ -2350,6 +2356,7 @@ struct frame_pixels_view {
     int pixelformat;
     int colorspace;
     int ncolors;
+    struct sixel_color_def const *rgb_definition; /* borrowed, optional */
 };
 
 struct frame_timeline {
@@ -2414,6 +2421,10 @@ interface frame {
     SIXELSTATUS get_alpha(out frame_alpha *alpha);
     [mutates]
     SIXELSTATUS set_alpha(in frame_alpha const *alpha);
+    /* Attach a copy of the definition of existing RGB float samples. */
+    [mutates, invalidates(pixels_view)]
+    SIXELSTATUS set_rgb_definition(
+        in struct sixel_color_def const *definition);
 };
 
 [classid("image/frame")]

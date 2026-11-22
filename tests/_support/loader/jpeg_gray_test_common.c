@@ -203,14 +203,14 @@ jg_capture(sixel_frame_t *frame, void *context)
         (p->builtin && p->mode != 0);
     managed = p->mode == 0;
     if (frame->width != width || frame->height != height ||
-        frame->pixelformat != (byte_frame ? SIXEL_PIXELFORMAT_RGB888 :
+        sixel_frame_format(frame) != (byte_frame ? SIXEL_PIXELFORMAT_RGB888 :
             gamma_frame ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                           SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->colorspace != (gamma_frame ? SIXEL_COLORSPACE_GAMMA :
+        frame->format.coordinates != (gamma_frame ? SIXEL_COLORSPACE_GAMMA :
                                            SIXEL_COLORSPACE_LINEAR) ||
         frame->palette != NULL || frame->transparent_mask != NULL) {
         fprintf(stderr, "JGRAY metadata format=%x space=%d\n",
-                frame->pixelformat, frame->colorspace);
+                sixel_frame_format(frame), frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }
     bytes = sixel_frame_get_pixels(frame);

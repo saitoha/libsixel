@@ -105,9 +105,9 @@ cge_capture(sixel_frame_t *frame, void *context)
     preserve = probe->alpha && (probe->reference || !probe->background ||
         probe->policy != SIXEL_ALPHA_POLICY_COMPOSITE);
     if (frame->width != 5 || frame->height != 3 ||
-        frame->pixelformat != (byte_path ? SIXEL_PIXELFORMAT_RGB888 :
+        sixel_frame_format(frame) != (byte_path ? SIXEL_PIXELFORMAT_RGB888 :
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->colorspace != (byte_path ? SIXEL_COLORSPACE_GAMMA :
+        frame->format.coordinates != (byte_path ? SIXEL_COLORSPACE_GAMMA :
             SIXEL_COLORSPACE_LINEAR) || !frame->owns_pixels ||
         frame->transparent != -1 || frame->ncolors != -1 ||
         frame->palette != NULL ||
@@ -115,7 +115,7 @@ cge_capture(sixel_frame_t *frame, void *context)
         frame->transparent_mask_size != (preserve ? CGE_COUNT : 0u) ||
         frame->alpha_zero_is_transparent != preserve) {
         fprintf(stderr, "CG expanded frame format=%x mask=%d flag=%d\n",
-                frame->pixelformat, frame->transparent_mask != NULL,
+                sixel_frame_format(frame), frame->transparent_mask != NULL,
                 frame->alpha_zero_is_transparent);
         return SIXEL_BAD_INPUT;
     }

@@ -313,8 +313,8 @@ SIXEL_INTERNAL_API void
 sixel_cms_delete_transform(sixel_cms_transform_t *transform);
 
 /*
- * Job-local color definitions are independent of a frame's working-space
- * tag. A transform owns clones of both definitions. No profile byte buffer
+ * Frames and transforms can own independent copies of a color definition.
+ * A transform owns clones of both definitions. No profile byte buffer
  * or definition supplied by its caller must outlive transform creation.
  *
  * This internal foundation currently uses the builtin ICC PCS evaluator.
@@ -356,6 +356,9 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_cdef_export_icc(sixel_color_def_t const *definition,
                       unsigned char **bytes, size_t *length,
                       sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API size_t
+sixel_cdef_storage(sixel_color_def_t const *definition);
 
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition);

@@ -271,11 +271,11 @@ bmpc_capture(sixel_frame_t *frame, void *context)
     format = p->byte_output ? SIXEL_PIXELFORMAT_RGB888 : p->gamma_output ?
         SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     if (frame->width != 2 || frame->height != 2 ||
-        frame->pixelformat != format ||
-        frame->colorspace != (p->byte_output || p->gamma_output ?
+        sixel_frame_format(frame) != format ||
+        frame->format.coordinates != (p->byte_output || p->gamma_output ?
             SIXEL_COLORSPACE_GAMMA : SIXEL_COLORSPACE_LINEAR)) {
         fprintf(stderr, "BMP precision format=%x expected=%x space=%d\n",
-                frame->pixelformat, format, frame->colorspace);
+                sixel_frame_format(frame), format, frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }
     bytes = sixel_frame_get_pixels(frame);

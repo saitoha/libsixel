@@ -49,16 +49,16 @@ byte_probe_capture(sixel_frame_t *frame, void *context)
     (void)context;
     ++byte_probe_calls;
     if (byte_probe_expect_float) {
-        return SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+        return SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_format(frame))
              ? SIXEL_OK : SIXEL_BAD_INPUT;
     }
-    if ((frame->pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
-         frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) ||
-        frame->colorspace != SIXEL_COLORSPACE_GAMMA ||
+    if ((sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGB888 &&
+         sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888) ||
+        frame->format.coordinates != SIXEL_COLORSPACE_GAMMA ||
         (size_t)frame->width * frame->height * 3u * sizeof(float) !=
             byte_probe_float_size) {
         fprintf(stderr, "byte frame contract: format=%d, size=%dx%d\n",
-            frame->pixelformat, frame->width, frame->height);
+            sixel_frame_format(frame), frame->width, frame->height);
         return SIXEL_BAD_INPUT;
     }
     return SIXEL_OK;

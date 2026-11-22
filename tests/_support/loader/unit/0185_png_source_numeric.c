@@ -78,9 +78,10 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
     if (frame->width != (probe->oriented ? 2 : 4) ||
         frame->height != (probe->oriented ? 4 : 2) ||
         (probe->managed &&
-         (format != expected_format || frame->colorspace != expected_space))) {
+         (format != expected_format ||
+         frame->format.coordinates != expected_space))) {
         fprintf(stderr, "PNG frame %dx%d format=%x coordinate=%d\n",
-            frame->width, frame->height, format, frame->colorspace);
+            frame->width, frame->height, format, frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }
     if (format != SIXEL_PIXELFORMAT_RGB888 &&
@@ -125,7 +126,7 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
                     color_png_wide_chrm_linear[probe->depth][source_pixel][c];
             } else if (probe->managed && !probe->default_srgb) {
                 expected = color_png_icc_linear[probe->depth][source_pixel][c];
-            } else if (frame->colorspace == SIXEL_COLORSPACE_LINEAR) {
+            } else if (frame->format.coordinates == SIXEL_COLORSPACE_LINEAR) {
                 expected = color_png_srgb_linear[probe->depth][source_pixel][c];
             } else {
                 expected =

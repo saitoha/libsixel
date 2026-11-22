@@ -37,7 +37,7 @@ colorsync_channel_frame_capture(sixel_frame_t *frame, void *context)
         /* The existing eight-bit fallback returns gamma RGB bytes. It is
          * not the linear-float path used by the sixteen-bit layer decoder. */
         if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 ||
-            frame->colorspace != SIXEL_COLORSPACE_GAMMA) {
+            frame->format.coordinates != SIXEL_COLORSPACE_GAMMA) {
             return SIXEL_BAD_INPUT;
         }
         bytes = sixel_frame_get_pixels(frame);
@@ -52,7 +52,7 @@ colorsync_channel_frame_capture(sixel_frame_t *frame, void *context)
     } else {
         if (sixel_frame_get_pixelformat(frame) !=
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-            frame->colorspace != SIXEL_COLORSPACE_LINEAR) {
+            frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
             return SIXEL_BAD_INPUT;
         }
         pixels = (float const *)sixel_frame_get_pixels(frame);

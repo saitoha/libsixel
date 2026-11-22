@@ -7135,6 +7135,19 @@ sixel_cdef_icc(void const *bytes, size_t length)
     return definition;
 }
 
+size_t
+sixel_cdef_storage(sixel_color_def_t const *definition)
+{
+    size_t base;
+
+    if (definition == NULL) {
+        return 0;
+    }
+    base = sizeof(*definition) + definition->icc.allocated_bytes;
+    return definition->length > SIZE_MAX - base
+        ? SIZE_MAX : base + definition->length;
+}
+
 sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition)
 {
