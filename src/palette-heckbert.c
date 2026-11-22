@@ -70,6 +70,7 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
+#include "palette-heckbert-gpu.h"
 #include "palette-bin-histogram.h"
 #include "palette-sample.h"
 #include "palette-private.h"
@@ -3784,7 +3785,7 @@ typedef struct sixel_palette_heckbert_colormap_request {
     int *merge_mode;
 } sixel_palette_heckbert_colormap_request_t;
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 /* Solve every split with the quant/heckbert.gpu component. On success the
  * table holds the boxes' entries in box order and bv the boxes in sumcompare
  * order, as the CPU loop leaves them. FEATURE_ERROR leaves both untouched so
@@ -3947,7 +3948,7 @@ mediancut(tupletable2 const colorfreqtable,
     struct sixel_pca_sort_entry *pca_workspace;
     unsigned int pca_workspace_capacity;
     unsigned char *axis_keys;
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     int gpu_policy;
 #endif
 
@@ -4014,10 +4015,9 @@ mediancut(tupletable2 const colorfreqtable,
     }
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
-    /* Only Metal implements the optional Heckbert solver. Other backends
-     * keep CPU median cut even when GPU palette application is required;
-     * an absent solver must not disable the rest of the GPU pipeline. */
-#if defined(HAVE_METAL)
+    /* An absent GPU solver leaves median cut on the CPU without disabling
+     * any of the later GPU palette stages. */
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     /* Policy tests drive mediancut without a palette object. */
     gpu_policy = request->palette != NULL
         ? SIXEL_PALETTE_CONTEXT(request->palette)->gpu_policy
@@ -4027,14 +4027,21 @@ mediancut(tupletable2 const colorfreqtable,
             !apply_merge && !use_reversible &&
             methodForLargest == SIXEL_LARGE_NORM &&
             options->cut_sse && options->order_sse &&
-            working_colors <= 256U) {
+            working_colors <= 256U
+#if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
+            && sixel_palette_heckbert_gpu_vulkan_choose(gpu_policy)
+#endif
+            ) {
         status = sixel_palette_heckbert_solve_gpu(colorfreqtable,
             working_colors, methodForLargest, pixelformat, options, bv,
             &boxes, allocator);
         if (SIXEL_SUCCEEDED(status)) {
             multicolorBoxesExist = 0;
-        } else if (status != SIXEL_FEATURE_ERROR ||
-                gpu_policy == SIXEL_GPU_POLICY_FORCE) {
+        } else if (status != SIXEL_FEATURE_ERROR
+#if defined(HAVE_METAL)
+                || gpu_policy == SIXEL_GPU_POLICY_FORCE
+#endif
+                ) {
             goto end;
         }
     }

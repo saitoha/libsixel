@@ -79,6 +79,7 @@ srcs = [
   'palette-kmeans-vulkan.c',
   'palette-kmeans-gpu.h',
   'palette-heckbert-gpu.c',
+  'palette-heckbert-gpu-vulkan.c',
   'palette-heckbert-gpu.h',
   'palette-bin-histogram.c',
   'palette-bin-histogram.h',

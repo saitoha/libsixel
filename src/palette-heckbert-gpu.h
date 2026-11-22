@@ -13,4 +13,9 @@ sixel_palette_heckbert_gpu_new(sixel_allocator_t *allocator, void **object);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_heckbert_gpu_metal_solve(
     sixel_heckbert_solve_request_t const *request);
+SIXEL_INTERNAL_API int
+sixel_palette_heckbert_gpu_vulkan_choose(int gpu_policy);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_heckbert_gpu_vulkan_solve(
+    sixel_heckbert_solve_request_t const *request);
 #endif

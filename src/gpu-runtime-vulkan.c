@@ -271,11 +271,17 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
 {
     VkApplicationInfo application;
     VkInstanceCreateInfo instance_info;
-    VkDeviceQueueCreateInfo queue_info;
+    VkDeviceQueueCreateInfo queue_info[2];
+    VkQueueFamilyProperties *families;
     VkPhysicalDeviceVulkan12Features features12;
     VkPhysicalDeviceFeatures2 features;
     VkDeviceCreateInfo device_info;
-    float priority;
+    float priority[2];
+    uint32_t family_count;
+    uint32_t family;
+    uint32_t compute_index;
+    uint32_t queue_info_count;
+    uint32_t bits;
     double started;
 
     memset(runtime, 0, sizeof(*runtime));
@@ -299,12 +305,52 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
         goto fail;
     }
 
-    priority = 1.0f;
+    family_count = 0u;
+    families = NULL;
+    vkGetPhysicalDeviceQueueFamilyProperties(runtime->physical,
+        &family_count, NULL);
+    if (family_count != 0u) {
+        families = calloc(family_count, sizeof(*families));
+        if (families != NULL)
+            vkGetPhysicalDeviceQueueFamilyProperties(runtime->physical,
+                &family_count, families);
+    }
+    runtime->compute_queue_family = runtime->queue_family;
+    compute_index = 0u;
+    if (families != NULL) {
+        for (family = 0u; family < family_count; ++family) {
+            if ((families[family].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0 &&
+                    (families[family].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0
+                    && families[family].queueCount != 0u) {
+                runtime->compute_queue_family = family;
+                break;
+            }
+        }
+        if (runtime->compute_queue_family == runtime->queue_family &&
+                families[runtime->queue_family].queueCount >= 2u)
+            compute_index = 1u;
+        bits = families[runtime->compute_queue_family].timestampValidBits;
+        runtime->compute_timestamps_supported = bits != 0u &&
+            runtime->properties.limits.timestampPeriod > 0.0f;
+        runtime->compute_timestamp_mask = bits >= 64u ? ~(uint64_t)0 :
+            bits == 0u ? 0u : (((uint64_t)1 << bits) - 1u);
+    }
+    priority[0] = 1.0f;
+    priority[1] = 1.0f;
     memset(&queue_info, 0, sizeof(queue_info));
-    queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queue_info.queueFamilyIndex = runtime->queue_family;
-    queue_info.queueCount = 1;
-    queue_info.pQueuePriorities = &priority;
+    queue_info[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queue_info[0].queueFamilyIndex = runtime->queue_family;
+    queue_info[0].queueCount = compute_index != 0u ? 2u : 1u;
+    queue_info[0].pQueuePriorities = priority;
+    queue_info_count = 1u;
+    if (runtime->compute_queue_family != runtime->queue_family) {
+        queue_info[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queue_info[1].queueFamilyIndex = runtime->compute_queue_family;
+        queue_info[1].queueCount = 1u;
+        queue_info[1].pQueuePriorities = priority;
+        queue_info_count = 2u;
+    }
+    free(families);
     memset(&features12, 0, sizeof(features12));
     features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
     features12.storageBuffer8BitAccess = VK_TRUE;
@@ -319,8 +365,8 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
     memset(&device_info, 0, sizeof(device_info));
     device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     device_info.pNext = &features;
-    device_info.queueCreateInfoCount = 1;
-    device_info.pQueueCreateInfos = &queue_info;
+    device_info.queueCreateInfoCount = queue_info_count;
+    device_info.pQueueCreateInfos = queue_info;
     if (vkCreateDevice(runtime->physical, &device_info, NULL,
             &runtime->device) != VK_SUCCESS) {
         runtime->device = VK_NULL_HANDLE;
@@ -328,6 +374,13 @@ sixel_vk_runtime_init(sixel_vk_runtime_t *runtime)
     }
     vkGetDeviceQueue(runtime->device, runtime->queue_family, 0,
         &runtime->queue);
+    vkGetDeviceQueue(runtime->device, runtime->compute_queue_family,
+        compute_index, &runtime->compute_queue);
+    if (runtime->debug) {
+        fprintf(stderr, "libsixel: vulkan compute queue family %u index %u"
+            " (main family %u)\n", runtime->compute_queue_family,
+            compute_index, runtime->queue_family);
+    }
 
     sixel_vk_timestamps_init(runtime);
     sixel_gpu_statistics_set_device("vulkan", runtime->properties.deviceName);

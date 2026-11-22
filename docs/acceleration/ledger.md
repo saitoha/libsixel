@@ -22,7 +22,7 @@ Rows are sorted by ID. The prefix names the stage: `DECODE` for the SIXEL decode
 | EMIT-PUT-NODE | Copy node cells and find long runs while emitting a node | done | done | done | rejected | planned | n/a | n/a | A 32-lane AVX2 scan measured slower than SSE2: nodes are short and most lanes stay idle. |
 | HECKBERT-BOX-BOUNDS | Box bounds and weight over RGB tuples | done | done | planned | done | planned | n/a | n/a | |
 | HECKBERT-BOX-SCORE | Squared-error score of a box over RGB tuples | done | done | planned | done | planned | n/a | n/a | |
-| HECKBERT-MEDIAN-CUT | Solve the median cut on the GPU | done | n/a | n/a | n/a | n/a | done | rejected | A single-workgroup FP32 Vulkan solve took 10.2 ms/frame versus 1.1 ms on the CPU (RTX 5070 Ti, 100 frames). |
+| HECKBERT-MEDIAN-CUT | Solve the median cut on the GPU | done | n/a | n/a | n/a | n/a | done | done | Vulkan uses a separate compute queue when available and the shared measured GPU headroom rule, with CPU median cut as the fallback. |
 | PUBLISH-INDEX-SCAN | Check published index rows for bytes that need correction | done | done | done | planned | planned | n/a | n/a | |
 | REFRESH-COARSE | Reduce the activity map to 4x4 tiles | done | planned | planned | done | planned | n/a | n/a | |
 | REFRESH-LUMA | Compute luma for spatial refresh | done | planned | planned | done | planned | n/a | n/a | |
