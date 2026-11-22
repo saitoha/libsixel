@@ -159,6 +159,10 @@ sixel_icc_apply_mpe_element(double *out, size_t output_channels,
                             double const *in, size_t input_channels,
                             sixel_icc_mpet_t const *mpet, size_t element);
 
+/* Signed double area of a triangle of chromaticity coordinates. */
+SIXEL_INTERNAL_API double
+sixel_icc_xy_area(double const a[2], double const b[2], double const p[2]);
+
 /* Bridge to physical PCS XYZ before applying an intent adjustment. */
 typedef enum {
     SIXEL_ICC_PATH_NONE,

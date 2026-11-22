@@ -544,6 +544,14 @@ sixel_dither_clear_transparent_bgcolor_hint(
     sixel_dither_t *dither);
 
 
+/* Terminal monochrome uses coverage and the terminal foreground register. */
+static inline int
+sixel_dither_is_terminal_mono(sixel_dither_t const *dither)
+{
+    return dither->ncolors == 2 && dither->keycolor >= 0 &&
+        !(dither->keycolor_reserved || dither->indexed_palette_colors);
+}
+
 /*
  * Number of palette entries the nearest-color lookup may choose from.  A
  * reserved transparency key sits at the end of the palette and is excluded:
