@@ -823,7 +823,7 @@ sixel_helper_format_error(
     static char buffer[1024];
     char const *error_string;
 
-    switch (status & 0x1000) {
+    switch (status & SIXEL_FALSE) {
     case SIXEL_OK:
         switch (status) {
         case SIXEL_INTERRUPTED:
@@ -835,7 +835,7 @@ sixel_helper_format_error(
             break;
         }
         break;
-    case SIXEL_FALSE:
+    default:
         switch (status & 0x1f00) {
         case SIXEL_RUNTIME_ERROR:
             switch (status) {
@@ -938,9 +938,6 @@ sixel_helper_format_error(
             error_string = SIXEL_MESSAGE_UNEXPECTED;
             break;
         }
-        break;
-    default:
-        error_string = SIXEL_MESSAGE_UNEXPECTED;
         break;
     }
     return error_string;

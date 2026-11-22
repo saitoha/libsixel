@@ -325,10 +325,9 @@ sixel_filter_gradient_build_sobel_map(
             gx = -tl - (2 * ml) - bl + tr + (2 * mr) + br;
             gy = tl + (2 * tc) + tr - bl - (2 * bc) - br;
             magnitude = sqrtf((float)(gx * gx + gy * gy));
+            /* Each component is bounded by 4 * 255. The divisor 1443
+             * exceeds the resulting L2 bound, sqrt(2) * 4 * 255. */
             scaled = magnitude * (255.0f / 1443.0f);
-            if (scaled > 255.0f) {
-                scaled = 255.0f;
-            }
 
             center = (size_t)y * (size_t)width + (size_t)x;
             gradient_map[center] = (unsigned char)(scaled + 0.5f);
