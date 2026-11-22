@@ -780,6 +780,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	palette/sampling/0107_gpu_headroom.c \
 	palette/sampling/0108_gpu_headroom_pin.c \
 	palette/sampling/0109_palette_colors_clone_allocation_failure.c \
+	palette/sampling/0110_sample_vulkan_separate_source.c \
 	encoder/pipeline/0128_count_table.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
@@ -2166,6 +2167,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0107_gpu_headroom.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0108_gpu_headroom_pin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0110_sample_vulkan_separate_source.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0128_count_table.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
@@ -5355,6 +5357,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Po \
 	palette/sampling/$(DEPDIR)/test_runner-0108_gpu_headroom_pin.Po \
 	palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Po \
+	palette/sampling/$(DEPDIR)/test_runner-0110_sample_vulkan_separate_source.Po \
 	palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po \
 	palette/snap-policy/$(DEPDIR)/test_runner-0001_snap_output_grid.Po \
 	palette/snap-policy/$(DEPDIR)/test_runner-0003_snap_partial_once.Po \
@@ -9459,6 +9462,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_GPU_HEADROOM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0108_GPU_HEADROOM_PIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0109_PALETTE_COLORS_CLONE_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0110_SAMPLE_VULKAN_SEPARATE_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0128_COUNT_TABLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
@@ -12453,6 +12457,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0107_gpu_headroom.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0108_gpu_headroom_pin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0109_palette_colors_clone_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0110_sample_vulkan_separate_source.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0128_count_table.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
@@ -22223,6 +22228,9 @@ palette/sampling/test_runner-0108_gpu_headroom_pin.$(OBJEXT):  \
 palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.$(OBJEXT):  \
 	palette/sampling/$(am__dirstamp) \
 	palette/sampling/$(DEPDIR)/$(am__dirstamp)
+palette/sampling/test_runner-0110_sample_vulkan_separate_source.$(OBJEXT):  \
+	palette/sampling/$(am__dirstamp) \
+	palette/sampling/$(DEPDIR)/$(am__dirstamp)
 encoder/pipeline/test_runner-0128_count_table.$(OBJEXT):  \
 	encoder/pipeline/$(am__dirstamp) \
 	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
@@ -28638,6 +28646,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0108_gpu_headroom_pin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0110_sample_vulkan_separate_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/snap-policy/$(DEPDIR)/test_runner-0001_snap_output_grid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/snap-policy/$(DEPDIR)/test_runner-0003_snap_partial_once.Po@am__quote@ # am--include-marker
@@ -37006,6 +37015,20 @@ palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.obj: p
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0109_palette_colors_clone_allocation_failure.c' object='palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.obj `if test -f 'palette/sampling/0109_palette_colors_clone_allocation_failure.c'; then $(CYGPATH_W) 'palette/sampling/0109_palette_colors_clone_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0109_palette_colors_clone_allocation_failure.c'; fi`
+
+palette/sampling/test_runner-0110_sample_vulkan_separate_source.o: palette/sampling/0110_sample_vulkan_separate_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0110_sample_vulkan_separate_source.o -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0110_sample_vulkan_separate_source.Tpo -c -o palette/sampling/test_runner-0110_sample_vulkan_separate_source.o `test -f 'palette/sampling/0110_sample_vulkan_separate_source.c' || echo '$(srcdir)/'`palette/sampling/0110_sample_vulkan_separate_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0110_sample_vulkan_separate_source.Tpo palette/sampling/$(DEPDIR)/test_runner-0110_sample_vulkan_separate_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0110_sample_vulkan_separate_source.c' object='palette/sampling/test_runner-0110_sample_vulkan_separate_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0110_sample_vulkan_separate_source.o `test -f 'palette/sampling/0110_sample_vulkan_separate_source.c' || echo '$(srcdir)/'`palette/sampling/0110_sample_vulkan_separate_source.c
+
+palette/sampling/test_runner-0110_sample_vulkan_separate_source.obj: palette/sampling/0110_sample_vulkan_separate_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0110_sample_vulkan_separate_source.obj -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0110_sample_vulkan_separate_source.Tpo -c -o palette/sampling/test_runner-0110_sample_vulkan_separate_source.obj `if test -f 'palette/sampling/0110_sample_vulkan_separate_source.c'; then $(CYGPATH_W) 'palette/sampling/0110_sample_vulkan_separate_source.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0110_sample_vulkan_separate_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0110_sample_vulkan_separate_source.Tpo palette/sampling/$(DEPDIR)/test_runner-0110_sample_vulkan_separate_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0110_sample_vulkan_separate_source.c' object='palette/sampling/test_runner-0110_sample_vulkan_separate_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0110_sample_vulkan_separate_source.obj `if test -f 'palette/sampling/0110_sample_vulkan_separate_source.c'; then $(CYGPATH_W) 'palette/sampling/0110_sample_vulkan_separate_source.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0110_sample_vulkan_separate_source.c'; fi`
 
 encoder/pipeline/test_runner-0128_count_table.o: encoder/pipeline/0128_count_table.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0128_count_table.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Tpo -c -o encoder/pipeline/test_runner-0128_count_table.o `test -f 'encoder/pipeline/0128_count_table.c' || echo '$(srcdir)/'`encoder/pipeline/0128_count_table.c

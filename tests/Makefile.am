@@ -3629,6 +3629,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0107_GPU_HEADROOM \
     -DBUILD_TEST_0108_GPU_HEADROOM_PIN \
     -DBUILD_TEST_0109_PALETTE_COLORS_CLONE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0110_SAMPLE_VULKAN_SEPARATE_SOURCE \
     -DBUILD_TEST_0128_COUNT_TABLE \
     -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
     -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
@@ -6595,6 +6596,7 @@ test_runner_SOURCES = \
     palette/sampling/0107_gpu_headroom.c \
     palette/sampling/0108_gpu_headroom_pin.c \
     palette/sampling/0109_palette_colors_clone_allocation_failure.c \
+    palette/sampling/0110_sample_vulkan_separate_source.c \
     encoder/pipeline/0128_count_table.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
