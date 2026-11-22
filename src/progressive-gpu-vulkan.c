@@ -19,6 +19,8 @@ static char const *const repair_lookup_source[] = {
 };
 static sixel_vk_compute_t repair_scan_stages[3];
 static sixel_vk_compute_t repair_lookup_stage;
+static sixel_vk_submission_t repair_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 enum sixel_repair_vulkan_buffer {
     REPAIR_GPU_SOURCE, REPAIR_GPU_HISTORY, REPAIR_GPU_DOMAIN,
     REPAIR_GPU_VALID, REPAIR_GPU_POSITIONS, REPAIR_GPU_ERRORS,
@@ -66,12 +68,14 @@ sixel_repair_gpu_vulkan_free(void *backend)
 
     cache = backend;
     if (cache == NULL) return;
+    sixel_vk_submission_enter(&repair_submission);
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     for (i = 0; i < REPAIR_GPU_BUFFERS; ++i)
         sixel_vk_buffer_release(runtime, &cache->buffers[i]);
     sixel_vk_buffer_release(runtime, &cache->params);
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&repair_submission);
     free(cache);
 }
 
@@ -116,6 +120,7 @@ sixel_repair_gpu_vulkan_scan(void **backend,
     int changed;
     SIXELSTATUS status;
 
+    sixel_vk_submission_enter(&repair_submission);
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     status = SIXEL_FEATURE_ERROR;
@@ -227,7 +232,8 @@ sixel_repair_gpu_vulkan_scan(void **backend,
             &repair_scan_stages[stage], bound);
         if (status != SIXEL_OK) goto end;
     }
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &repair_submission,
+        &command);
     if (status != SIXEL_OK) goto end;
     for (i = 0; i < REPAIR_GPU_SCAN_BUFFERS; ++i)
         sixel_vk_buffer_record_upload(command, &cache->buffers[i],
@@ -241,7 +247,8 @@ sixel_repair_gpu_vulkan_scan(void **backend,
     sixel_vk_compute_download_barrier(command);
     sixel_vk_buffer_record_download(command,
         &cache->buffers[REPAIR_GPU_SUMMARY], sizeof(result->summary));
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &repair_submission, command);
     if (status != SIXEL_OK) goto end;
     memcpy(&result->summary, cache->buffers[REPAIR_GPU_SUMMARY].mapped,
         sizeof(result->summary));
@@ -259,12 +266,14 @@ sixel_repair_gpu_vulkan_scan(void **backend,
      * Keep the owner's operation gate through both completed submissions. */
     if (bytes != 0 && cache->buffers[REPAIR_GPU_SAMPLES].staging !=
             VK_NULL_HANDLE) {
-        status = sixel_vk_command_begin(runtime, &command);
+        status = sixel_vk_submission_begin(runtime, &repair_submission,
+            &command);
         if (status != SIXEL_OK) goto end;
         sixel_vk_compute_download_barrier(command);
         sixel_vk_buffer_record_download(command,
             &cache->buffers[REPAIR_GPU_SAMPLES], bytes);
-        status = sixel_vk_submit_and_wait(runtime, command);
+        status = sixel_vk_submission_submit_and_wait(runtime,
+            &repair_submission, command);
         if (status != SIXEL_OK) goto end;
     }
     memcpy(result->samples, cache->buffers[REPAIR_GPU_SAMPLES].mapped, bytes);
@@ -274,6 +283,7 @@ sixel_repair_gpu_vulkan_scan(void **backend,
     status = SIXEL_OK;
 end:
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&repair_submission);
     return status;
 }
 
@@ -292,6 +302,7 @@ sixel_repair_gpu_vulkan_lookup(void **backend,
     size_t i;
     SIXELSTATUS status;
 
+    sixel_vk_submission_enter(&repair_submission);
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     status = SIXEL_FEATURE_ERROR;
@@ -334,7 +345,8 @@ sixel_repair_gpu_vulkan_lookup(void **backend,
     bound[3] = &cache->params;
     status = sixel_vk_compute_bind(runtime, &repair_lookup_stage, bound);
     if (status != SIXEL_OK) goto end;
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &repair_submission,
+        &command);
     if (status != SIXEL_OK) goto end;
     for (i = 0; i < 2; ++i)
         sixel_vk_buffer_record_upload(command, bound[i], sizes[i]);
@@ -344,7 +356,8 @@ sixel_repair_gpu_vulkan_lookup(void **backend,
         ((uint32_t)request->count + 255u) / 256u);
     sixel_vk_compute_download_barrier(command);
     sixel_vk_buffer_record_download(command, bound[2], sizes[2]);
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &repair_submission, command);
     if (status != SIXEL_OK) goto end;
     result = cache->buffers[REPAIR_GPU_MATCHES].mapped;
     for (i = 0; i < request->count; ++i) {
@@ -358,6 +371,7 @@ sixel_repair_gpu_vulkan_lookup(void **backend,
     memcpy(matches, result, sizes[2]);
 end:
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&repair_submission);
     return status;
 }
 #endif

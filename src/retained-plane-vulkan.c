@@ -14,6 +14,8 @@ static char const *const retained_source[] = {
 #include "generated-vulkan/retained-plane-gpu-shader.inc.h"
 };
 static sixel_vk_compute_t retained_stage;
+static sixel_vk_submission_t retained_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 typedef struct retained_vulkan_params {
     uint32_t width, height, x, y, stride, count, record_paint;
     unsigned char palette[768];
@@ -42,6 +44,7 @@ sixel_retained_gpu_free(sixel_retained_gpu_t *gpu)
     int i;
 
     if (gpu == NULL) return;
+    sixel_vk_submission_enter(&retained_submission);
     for (i = 0; i < 2; ++i) {
         if (gpu->rgb[i] != NULL) gpu->rgb[i]->vtbl->unref(gpu->rgb[i]);
         if (gpu->valid[i] != NULL) gpu->valid[i]->vtbl->unref(gpu->valid[i]);
@@ -51,6 +54,7 @@ sixel_retained_gpu_free(sixel_retained_gpu_t *gpu)
     for (i = 0; i < 5; ++i)
         sixel_vk_buffer_release(runtime, &gpu->scratch[i]);
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&retained_submission);
     gpu->device->vtbl->unref(gpu->device);
     free(gpu);
 }
@@ -158,6 +162,7 @@ sixel_retained_gpu_prepare(sixel_retained_gpu_t *gpu,
     sizes[2] = record_paint ? pixels : 4;
     sizes[3] = (size_t)gpu->groups * 8;
     sizes[4] = sizeof(gpu->params);
+    sixel_vk_submission_enter(&retained_submission);
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     status = SIXEL_OK;
@@ -168,6 +173,7 @@ sixel_retained_gpu_prepare(sixel_retained_gpu_t *gpu,
                 sizes[i])
             : sixel_vk_buffer_reserve(runtime, &gpu->scratch[i], sizes[i], 1);
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&retained_submission);
     return status;
 }
 
@@ -194,6 +200,7 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     SIXELSTATUS status;
 
     if (fault == 1) return SIXEL_RUNTIME_ERROR;
+    sixel_vk_submission_enter(&retained_submission);
     current = gpu->committed;
     pixels = gpu->params.count;
     bound[0] = sixel_gpu_vulkan_buffer(gpu->device, gpu->rgb[current]);
@@ -216,7 +223,8 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     runtime = sixel_vk_runtime_get_locked();
     status = sixel_vk_compute_bind(runtime, &retained_stage, bound);
     if (status != SIXEL_OK) goto end;
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &retained_submission,
+        &command);
     if (status != SIXEL_OK) goto end;
     covered = gpu->params.x <= gpu->dirty_x &&
         gpu->params.y <= gpu->dirty_y &&
@@ -272,7 +280,8 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     }
     gpu->dirty_width = right - gpu->dirty_x;
     gpu->dirty_height = bottom - gpu->dirty_y;
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &retained_submission, command);
     if (status == SIXEL_OK)
         status = sixel_vk_buffer_invalidate(runtime, &gpu->scratch[3],
             (size_t)gpu->groups * 8);
@@ -296,6 +305,7 @@ sixel_retained_gpu_stage(sixel_retained_gpu_t *gpu,
     if (paint != NULL) memcpy(paint, gpu->scratch[2].mapped, pixels);
 end:
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&retained_submission);
     return status;
 }
 SIXEL_INTERNAL_API void

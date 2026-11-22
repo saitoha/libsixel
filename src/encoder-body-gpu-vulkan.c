@@ -29,6 +29,8 @@ static sixel_vk_compute_t body_order_group_stage;
 static sixel_vk_compute_t body_bases_stage;
 static sixel_vk_compute_t body_write_stage;
 static sixel_vk_compute_t body_copy_stage;
+static sixel_vk_submission_t body_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 /* The runtime lock protects this stage history independently of sampling. */
 static sixel_gpu_headroom_t body_headroom;
 
@@ -179,11 +181,13 @@ sixel_body_gpu_destroy(sixel_body_gpu_t *context)
     int i;
 
     if (context == NULL) return;
+    sixel_vk_submission_enter(&body_submission);
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     for (i = 0; i < BODY_BINDINGS; ++i)
         sixel_vk_buffer_release(runtime, &context->buffers[i]);
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&body_submission);
     free(context->band_first);
     free(context);
 }
@@ -312,7 +316,8 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
     memcpy(buffers[BODY_PARAMS].mapped, params, sizeof(*params));
     status = sixel_body_gpu_bind(runtime, context);
     if (status != SIXEL_OK) return status;
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &body_submission,
+        &command);
     if (status != SIXEL_OK) return status;
     if (frame_indexes != NULL)
         sixel_vk_record_copy(command, frame_indexes, &buffers[BODY_INDEXES],
@@ -340,7 +345,8 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
         pairs * 4U);
     sixel_vk_buffer_record_download(command, &buffers[BODY_WIDTHS],
         pairs * 4U);
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &body_submission, command);
     if (status == SIXEL_OK)
         status = sixel_vk_buffer_invalidate(runtime, &buffers[BODY_COUNTS],
             pairs * 4U);
@@ -461,7 +467,8 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
     memcpy(buffers[BODY_PARAMS].mapped, params, sizeof(*params));
     status = sixel_body_gpu_bind(runtime, context);
     if (status != SIXEL_OK) return status;
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &body_submission,
+        &command);
     if (status != SIXEL_OK) return status;
     sixel_vk_buffer_record_upload(command, &buffers[BODY_NODE_FIRST],
         pairs * 4U);
@@ -526,7 +533,8 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
         sixel_vk_buffer_record_download(command, &buffers[BODY_FIRST_SEEN],
             pairs * 4U);
     }
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &body_submission, command);
     if (spell) {
         if (status == SIXEL_OK)
             status = sixel_vk_buffer_invalidate(runtime,
@@ -604,6 +612,7 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
             pairs * params.words > UINT32_MAX / 4U) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
+    sixel_vk_submission_enter(&body_submission);
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     if (runtime == NULL) {
@@ -619,6 +628,7 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
                 body_headroom.windows);
     }
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&body_submission);
     return status;
 }
 #endif

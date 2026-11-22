@@ -19,6 +19,7 @@
 #include <string.h>
 #include "dither-policy-atkinson-gpu.h"
 #include "gpu-palette-vulkan.h"
+#include "gpu-compute-vulkan.h"
 #include "gpu-runtime-vulkan.h"
 #include "encode-result.h"
 #include "palette.h"
@@ -153,6 +154,8 @@ typedef struct atkinson_gpu_vk_plan {
 } atkinson_gpu_vk_plan_t;
 
 static atkinson_gpu_vk_state_t atkinson_gpu_vk_state;
+static sixel_vk_submission_t atkinson_gpu_vk_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 static atkinson_gpu_vk_code_t *atkinson_gpu_vk_codes;
 static size_t atkinson_gpu_vk_code_count;
 static atkinson_gpu_vk_bundle_t atkinson_gpu_vk_idle[ATKINSON_GPU_VK_IDLE];
@@ -977,6 +980,7 @@ atkinson_gpu_vk_run_impl(atkinson_gpu_vk_plan_t *plan,
     }
 
     started = sixel_vk_now_ms();
+    sixel_vk_submission_enter(&atkinson_gpu_vk_submission);
     sixel_vk_lock();
     locked = 1;
     runtime = sixel_vk_runtime_get_locked();
@@ -1019,7 +1023,8 @@ atkinson_gpu_vk_run_impl(atkinson_gpu_vk_plan_t *plan,
         retained_valid);
 
     staged = sixel_vk_now_ms();
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &atkinson_gpu_vk_submission,
+        &command);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1110,7 +1115,8 @@ atkinson_gpu_vk_run_impl(atkinson_gpu_vk_plan_t *plan,
         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_PIPELINE_STAGE_HOST_BIT, VK_ACCESS_HOST_READ_BIT);
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &atkinson_gpu_vk_submission, command);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1154,11 +1160,9 @@ atkinson_gpu_vk_run_impl(atkinson_gpu_vk_plan_t *plan,
     status = SIXEL_OK;
 
 end:
-    if (command != VK_NULL_HANDLE) {
-        sixel_vk_command_free(runtime, command);
-    }
     if (locked) {
         sixel_vk_unlock();
+        sixel_vk_submission_leave(&atkinson_gpu_vk_submission);
     }
     /* Submitted work is always drained above before the lease ends; only a
      * completed build is published. */

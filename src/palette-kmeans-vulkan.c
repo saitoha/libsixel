@@ -16,6 +16,8 @@ static char const *const kmeans_source[] = {
 /* Pipelines are immutable after publication; attempt buffers never escape
  * the runtime lock or become visible before complete validation. */
 static sixel_vk_compute_t kmeans_stages[4];
+static sixel_vk_submission_t kmeans_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 static sixel_atomic_i32_t kmeans_initialized;
 
 enum {
@@ -116,6 +118,7 @@ sixel_kmeans_vulkan_refine(sixel_kmeans_gpu_request_t const *request,
     groups[1] = params.groups;
     groups[2] = (params.centers + 255u) / 256u;
     groups[3] = 1;
+    sixel_vk_submission_enter(&kmeans_submission);
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     status = SIXEL_FEATURE_ERROR;
@@ -154,7 +157,8 @@ sixel_kmeans_vulkan_refine(sixel_kmeans_gpu_request_t const *request,
         status = sixel_vk_compute_bind(runtime, &kmeans_stages[stage], bound);
         if (status != SIXEL_OK) goto cleanup;
     }
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &kmeans_submission,
+        &command);
     if (status != SIXEL_OK) goto cleanup;
     for (index = 0; index <= SIXEL_KM_BUFFERS; ++index) {
         if (index <= SIXEL_KM_CENTERS || index == SIXEL_KM_STATE ||
@@ -179,7 +183,8 @@ sixel_kmeans_vulkan_refine(sixel_kmeans_gpu_request_t const *request,
     if (request->membership != NULL)
         sixel_vk_buffer_record_download(command,
             &buffers[SIXEL_KM_MEMBERSHIP], lengths[SIXEL_KM_MEMBERSHIP]);
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &kmeans_submission, command);
     if (status != SIXEL_OK) goto cleanup;
     status = SIXEL_RUNTIME_ERROR;
     if (request->test_failure == 3 || state->failed ||
@@ -232,6 +237,7 @@ cleanup:
             sixel_vk_buffer_release(runtime, &buffers[index]);
     }
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&kmeans_submission);
     return status;
 }
 #else

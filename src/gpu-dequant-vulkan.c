@@ -12,6 +12,8 @@ static char const *const dequant_source[] = {
 #include "generated-vulkan/gpu-dequant-fast4-shader.inc.h"
 };
 static sixel_vk_compute_t dequant_stage;
+static sixel_vk_submission_t dequant_submission =
+    SIXEL_VK_SUBMISSION_INITIALIZER;
 
 int
 sixel_gpu_dequant_vulkan_is_available(void)
@@ -50,6 +52,7 @@ sixel_gpu_dequant_vulkan_fast4_rgba(
     params[3] = (uint32_t)request->ncolors;
     params[4] = request->similarity_bias < 1 ? 1u
         : (uint32_t)request->similarity_bias;
+    sixel_vk_submission_enter(&dequant_submission);
     sixel_vk_lock();
     runtime = sixel_vk_runtime_get_locked();
     status = SIXEL_FEATURE_ERROR;
@@ -69,7 +72,8 @@ sixel_gpu_dequant_vulkan_fast4_rgba(
     memcpy(buffers[3].mapped, params, sizes[3]);
     status = sixel_vk_compute_bind(runtime, &dequant_stage, bound);
     if (status != SIXEL_OK) goto end;
-    status = sixel_vk_command_begin(runtime, &command);
+    status = sixel_vk_submission_begin(runtime, &dequant_submission,
+        &command);
     if (status != SIXEL_OK) goto end;
     for (i = 1; i < 4; ++i)
         sixel_vk_buffer_record_upload(command, &buffers[i], sizes[i]);
@@ -78,7 +82,8 @@ sixel_gpu_dequant_vulkan_fast4_rgba(
         (params[0] + 255u) / 256u);
     sixel_vk_compute_download_barrier(command);
     sixel_vk_buffer_record_download(command, &buffers[0], sizes[0]);
-    status = sixel_vk_submit_and_wait(runtime, command);
+    status = sixel_vk_submission_submit_and_wait(runtime,
+        &dequant_submission, command);
     if (status == SIXEL_OK) memcpy(request->dest, buffers[0].mapped, sizes[0]);
 end:
     if (runtime != NULL) {
@@ -86,6 +91,7 @@ end:
             sixel_vk_buffer_release(runtime, &buffers[i]);
     }
     sixel_vk_unlock();
+    sixel_vk_submission_leave(&dequant_submission);
     return status;
 }
 #endif
