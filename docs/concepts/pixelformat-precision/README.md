@@ -318,6 +318,14 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-237 | A shared blue primary preserves red and green rounding ties. | [tests/frame/storage/0038_profile_shared_primary_byte_tie.t](../../../tests/frame/storage/0038_profile_shared_primary_byte_tie.t) |
 | FP-238 | RGB888 conversion preserves zero alpha in the decoded paint mask. | [tests/frame/alpha/0022_rgba_rgb888_mask.t](../../../tests/frame/alpha/0022_rgba_rgb888_mask.t) |
 | FP-239 | Builtin TGA frames retain the full allocation after RGBA compaction. | [tests/frame/storage/0039_builtin_tga_compact_storage.t](../../../tests/frame/storage/0039_builtin_tga_compact_storage.t) |
+| FP-240 | Linear packed gray expands to encoded sRGB bytes. | [tests/frame/storage/0040_linear_packed_gray_rgb888.t](../../../tests/frame/storage/0040_linear_packed_gray_rgb888.t) |
+| FP-241 | Libpng reports the allocated packed pixel and palette bytes. | [tests/loader-png/indexed-color/0014_packed_palette_storage.t](../../../tests/loader-png/indexed-color/0014_packed_palette_storage.t) |
+| FP-242 | Cropping packed alpha preserves zero coverage in the decoded image. | [tests/frame/alpha/0023_crop_packed_alpha_paint.t](../../../tests/frame/alpha/0023_crop_packed_alpha_paint.t) |
+| FP-243 | Libpng reflects packed palette indices in display order. | [tests/loader-png/indexed-color/0015_packed_palette_orientation.t](../../../tests/loader-png/indexed-color/0015_packed_palette_orientation.t) |
+| FP-244 | Indexed frame encoding preserves register colors at default capacity. | [tests/palette/sampling/0111_indexed_default_capacity.t](../../../tests/palette/sampling/0111_indexed_default_capacity.t) |
+| FP-245 | Packed alpha composition preserves channel order and both endpoints. | [tests/frame/alpha/0024_composite_packed_channels.t](../../../tests/frame/alpha/0024_composite_packed_channels.t) |
+| FP-246 | Two shared RGB primary axes preserve the remaining channel exactly. | [tests/frame/storage/0041_two_shared_primary_tie.t](../../../tests/frame/storage/0041_two_shared_primary_tie.t) |
+| FP-247 | Cropped indexed frames retain the original implicit palette capacity. | [tests/frame/storage/0042_implicit_palette_crop_storage.t](../../../tests/frame/storage/0042_implicit_palette_crop_storage.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

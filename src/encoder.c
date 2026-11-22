@@ -11877,7 +11877,7 @@ sixel_encoder_frame_job_prepare(
             && sixel_frame_get_palette(job->context.frame) != NULL
             && sixel_frame_get_ncolors(job->context.frame) > 0
             && sixel_frame_get_ncolors(job->context.frame)
-                <= encoder->reqcolors) {
+                <= sixel_encoder_palette_capacity(encoder)) {
         sampling_required = 0;
     }
     if (sampling_required != 0) {

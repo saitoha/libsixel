@@ -158,6 +158,8 @@ set -- \
     frame/alpha/0020_rgba_float_mask.t \
     frame/alpha/0021_packed_rgb888_mask.t \
     frame/alpha/0022_rgba_rgb888_mask.t \
+    frame/alpha/0023_crop_packed_alpha_paint.t \
+    frame/alpha/0024_composite_packed_channels.t \
     frame/crop/0010_frame_float_clip_right_atomic.t \
     frame/crop/0077_frame_float_clip_color.t \
     frame/resize/0151_frame_alpha_resize_reject.t \
@@ -193,8 +195,14 @@ set -- \
     frame/storage/0037_strip_alpha_crop_storage.t \
     frame/storage/0038_profile_shared_primary_byte_tie.t \
     frame/storage/0039_builtin_tga_compact_storage.t \
+    frame/storage/0040_linear_packed_gray_rgb888.t \
+    frame/storage/0041_two_shared_primary_tie.t \
+    frame/storage/0042_implicit_palette_crop_storage.t \
+    loader-png/indexed-color/0014_packed_palette_storage.t \
+    loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
+    palette/sampling/0111_indexed_default_capacity.t \
     palette/output-color/0103_profile_reuse.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \

@@ -22,6 +22,63 @@
 #include "src/filter.h"
 #include "tests/_support/processing/filter/filter_test_common.h"
 
+#include "tests/_support/planner/pipeline/playback_test_common.h"
+
+/* Check display colors independently of how the encoder orders registers. */
+static int
+test_indexed_capacity(char const *capacity, char const *sampling)
+{
+    static unsigned char const expected[8][3] = {
+        {0, 255, 0}, {0, 255, 0}, {255, 0, 0}, {255, 0, 0},
+        {255, 0, 0}, {255, 0, 0}, {0, 255, 0}, {0, 255, 0}
+    };
+    unsigned char source[] = {1, 1, 0, 0, 0, 0, 1, 1};
+    unsigned char palette[] = {255, 0, 0, 0, 255, 0};
+    unsigned char *indices = NULL, *decoded = NULL;
+    playback_test_buffer_t stream = {0};
+    sixel_frame_t *frame = NULL;
+    sixel_output_t *output = NULL;
+    sixel_encoder_t *encoder = NULL;
+    int i, width, height, ncolors;
+    int result = EXIT_FAILURE;
+
+    if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, source, 4, 2,
+            SIXEL_PIXELFORMAT_PAL8, palette, 2)) ||
+        SIXEL_FAILED(sixel_output_new(&output, playback_test_write,
+            &stream, NULL)) ||
+        SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
+        SIXEL_FAILED(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
+            "off")) ||
+        SIXEL_FAILED(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
+            "none")) ||
+        SIXEL_FAILED(sixel_encoder_setopt(encoder,
+            SIXEL_OPTFLAG_SAMPLING_POLICY, sampling)) ||
+        (capacity != NULL && SIXEL_FAILED(sixel_encoder_setopt(encoder,
+            SIXEL_OPTFLAG_COLORS, capacity))) ||
+        SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
+        SIXEL_FAILED(sixel_decode_raw(stream.bytes, (int)stream.size, &indices,
+            &width, &height, &decoded, &ncolors, NULL)) ||
+        width != 4 || height != 2 || indices == NULL || decoded == NULL) {
+        goto end;
+    }
+    for (i = 0; i < 8; ++i) {
+        if (indices[i] >= ncolors ||
+            memcmp(decoded + 3 * indices[i], expected[i], 3)) {
+            goto end;
+        }
+    }
+    result = EXIT_SUCCESS;
+end:
+    free(indices);
+    free(decoded);
+    free(stream.bytes);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    sixel_frame_unref(frame);
+    return result;
+}
+
 static SIXELSTATUS
 test_frame_get_pixels_view(sixel_frame_t const *frame,
                            sixel_frame_pixels_view_t *view)
@@ -444,8 +501,16 @@ test_filter_0002_filter_sample(int argc, char **argv)
 {
     int success;
 
+    if (argc == 2 && strcmp(argv[1], "indexed-capacity") == 0) {
+        return test_indexed_capacity(NULL, "adaptive-grid") ||
+               test_indexed_capacity("256", "adaptive-grid") ||
+               test_indexed_capacity(NULL, "full-frame");
+    }
     if (argc == 2 && strcmp(argv[1], "profiled-grid") == 0) {
         return test_profiled_grid();
+    }
+    if (argc != 1) {
+        return EXIT_FAILURE;
     }
 
     success = 1;
