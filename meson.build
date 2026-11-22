@@ -2282,28 +2282,19 @@ elif host_system == 'emscripten'
   else
     simd_message = 'no'
   endif
-elif cpu == 'x86_64'
+elif cpu in ['x86', 'x86_64']
   if cc.has_header('emmintrin.h')
     conf.set('HAVE_EMMINTRIN_H', 1)
-    conf.set('HAVE_SSE2', 1)
-    simd_message = 'sse2'
-  else
-    simd_message = 'no'
-  endif
-elif cpu == 'x86'
-  if cc.has_header('emmintrin.h')
-    conf.set('HAVE_EMMINTRIN_H', 1)
+    # A native Meson build can report x86_64 while CFLAGS=-m32 targets i686.
     simd_args = []
-    if cc.get_argument_syntax() == 'msvc'
-      simd_args = ['/arch:SSE2']
-    else
-      simd_args = ['-msse2']
+    if cc.sizeof('void *') == 4
+      simd_args = cc.get_argument_syntax() == 'msvc' ? ['/arch:SSE2'] : ['-msse2']
     endif
     if cc.has_multi_arguments(simd_args) and cc.compiles('''
         #include <emmintrin.h>
         int main(void){
           __m128i a = _mm_setzero_si128(); (void)a; return 0;
-        }''', args: simd_args)
+        }''', args: simd_args, name: 'SSE2 intrinsics for the x86 target')
       conf.set('HAVE_SSE2', 1)
       simd_message = 'sse2'
       add_project_arguments(simd_args, language: 'c')

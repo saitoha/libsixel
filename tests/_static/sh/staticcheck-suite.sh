@@ -1338,6 +1338,10 @@ run_case_tap "staticcheck-test-unity-feature-namespace" \
     sh "$src_root/tests/_static/sh/staticcheck-test-unity-feature-namespace.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-decoder-unity-shadow" \
+    sh "$src_root/tests/_static/sh/staticcheck-decoder-unity-shadow.sh" \
+    "$src_root" "$build_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-amalgamation-header-scope" \
     sh "$src_root/tests/_static/sh/staticcheck-amalgamation-header-scope.sh" \
     "$src_root" || fail_and_exit $?

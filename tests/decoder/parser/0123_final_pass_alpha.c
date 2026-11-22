@@ -102,7 +102,7 @@ build_tall(char *out, size_t capacity, int bands, int hole_band)
 int
 test_decoder_0110(int argc, char **argv)
 {
-    static char const *const bodies[] = {
+    static char const *const alpha_bodies[] = {
         /* Two full bands. */
         "\"1;1;8;12#1;2;100;0;0#1!8~-!8~",
         /* A hole in the second band. */
@@ -136,13 +136,13 @@ test_decoder_0110(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-    for (i = 0; i < sizeof(bodies) / sizeof(bodies[0]); ++i) {
-        len = strlen(bodies[i]);
+    for (i = 0; i < sizeof(alpha_bodies) / sizeof(alpha_bodies[0]); ++i) {
+        len = strlen(alpha_bodies[i]);
         if (len + 5u > sizeof(stream)) {
             return EXIT_FAILURE;
         }
         memcpy(stream, "\033Pq", 3u);
-        memcpy(stream + 3, bodies[i], len);
+        memcpy(stream + 3, alpha_bodies[i], len);
         memcpy(stream + 3 + len, "\033\\", 2u);
         for (trust = 0; trust < 2; ++trust) {
             options = trust ? SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE : 0u;
