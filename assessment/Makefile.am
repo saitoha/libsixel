@@ -5,6 +5,15 @@ BUILT_SOURCES =
 
 CLEANFILES =
 
+if WASI_BUILD
+nodist_bin_SCRIPTS = lsqa
+CLEANFILES += $(nodist_bin_SCRIPTS)
+
+$(nodist_bin_SCRIPTS): $(top_srcdir)/build-aux/wasi-launcher.sh.in
+	$(AM_V_GEN)$(SED) 's/@WASI_TOOL@/$@/g' "$<" > "$@"
+	$(AM_V_at)chmod +x "$@"
+endif
+
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 

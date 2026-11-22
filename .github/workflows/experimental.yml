@@ -49,7 +49,7 @@ jobs:
           call build-examples\example-build-emcc.cmd
 
   wasi:
-    name: Meson-${{ matrix.platform }}-clang-wasi-static
+    name: ${{ matrix.build_system }}-${{ matrix.platform }}-clang-wasi-static
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -57,14 +57,27 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
+            build_system: Autotools
+            platform: linux-x86_64
+            wasmtime: x86_64-linux
+            extension: tar.xz
+          - os: ubuntu-24.04
+            build_system: Meson
             platform: linux-x86_64
             wasmtime: x86_64-linux
             extension: tar.xz
           - os: macos-15
+            build_system: Autotools
+            platform: macos-arm64
+            wasmtime: aarch64-macos
+            extension: tar.xz
+          - os: macos-15
+            build_system: Meson
             platform: macos-arm64
             wasmtime: aarch64-macos
             extension: tar.xz
           - os: windows-2025
+            build_system: Meson
             platform: windows-x86_64
             wasmtime: x86_64-windows
             extension: zip
@@ -80,6 +93,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install Meson and Ninja
+        if: matrix.build_system == 'Meson'
         run: python -m pip install meson==1.11.1 ninja==1.13.2
 
       - name: Install Wasmtime
@@ -101,7 +115,7 @@ jobs:
 
       - name: Build and test the installed WASI tools with Wasmtime
         id: wasmtime
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows' && matrix.build_system == 'Meson'
         shell: bash
         run: build-examples/example-build-wasi.sh --check
 
@@ -111,6 +125,25 @@ jobs:
         run: |
           set "PATH=%pythonLocation%;%pythonLocation%\Scripts;%SIXEL_WASMTIME_DIR%;%SystemRoot%\System32;%SystemRoot%"
           call build-examples\example-build-wasi.cmd --check
+
+      - name: Build and test the Autotools WASI tools with Wasmtime
+        if: matrix.build_system == 'Autotools'
+        shell: bash
+        env:
+          MAKEFLAGS: -j2
+        run: |
+          export SIXEL_WASI_BUILD_DIR="$RUNNER_TEMP/libsixel-wasi-autotools"
+          build-examples/example-build-wasi.sh --build-system autotools --check
+
+      - name: Upload Autotools WASI failure logs
+        if: failure() && matrix.build_system == 'Autotools'
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasi-autotools-${{ matrix.platform }}-logs
+          path: |
+            ${{ runner.temp }}/libsixel-wasi-autotools/config.log
+            ${{ runner.temp }}/libsixel-wasi-autotools/tests/test-suite.log
+          if-no-files-found: ignore
 
       - name: Install Wasmer on Linux
         id: wasmer

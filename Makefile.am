@@ -84,6 +84,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
     build-aux/wasi-clang.py build-aux/wasi-launcher.sh.in \
     build-aux/wasi-launcher.cmd.in \
     build-aux/wasi-node-smoke.mjs \
+    build-aux/wasmtime-test-runner.sh \
     build-examples/example-build-emcc.sh \
     build-examples/example-build-emcc.cmd \
     build-examples/example-build-wasi.sh \

@@ -93,6 +93,7 @@ build-aux/lso-tap-driver.sh
 build-aux/resolve-test-tool-paths.sh
 build-examples/emsdk*
 /build-examples/build-wasi/
+/build-examples/build-wasi-autotools/
 ruby/lib/libsixel/version_runtime.rb
 tests/.perl-test-venv/
 tests/.php-test-venv/

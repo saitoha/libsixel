@@ -222,7 +222,7 @@ SCAN_BUILD="$(command -v scan-build || command -v scan-build-18 || command -v sc
 
 ### WASI SDK (Linux, macOS, and Windows)
 
-Install Python 3, Meson, Ninja, curl, and tar. On x86-64 and ARM64 the examples download [WASI SDK 34](https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-34) with curl and reuse the extracted SDK in the build directory. To use an existing WASI SDK 34 or newer, set `WASI_SDK_PATH` to its extracted directory.
+Install Python 3, curl, and tar. The default build also needs Meson and Ninja. On x86-64 and ARM64 the examples download [WASI SDK 34](https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-34) with curl and reuse the extracted SDK in the build directory. To use an existing WASI SDK 34 or newer, set `WASI_SDK_PATH` to its extracted directory.
 
 ```sh
 build-examples/example-build-wasi.sh
@@ -235,6 +235,8 @@ call build-examples\example-build-wasi.cmd
 The examples build static `wasm32-wasip1` modules with the built-in image codecs and install them in `build-examples/build-wasi/install/bin`. Set `SIXEL_WASI_BUILD_DIR` to select another build directory. Add the installed `bin` directory and Wasmtime to `PATH` to run `img2sixel`, `sixel2png`, and `lsqa` through their launchers. The launchers grant guest programs access to the working directory with `--dir .`. Set `TMPDIR` inside the guest to a writable, preopened directory if temporary files should be stored elsewhere.
 
 Pass `--check` to test a PNG → SIXEL → PNG pipe through the installed Wasmtime launchers. Pass `--check-wasmer` to run the same check with Wasmtime and Wasmer 7.5 or newer on `PATH`. To smoke-test the existing installation without rebuilding, pass `--smoke wasmer` or `--smoke node` and put the corresponding runtime on `PATH`. The Node smoke test uses Node.js 24 and its WASI Preview 1 API. On Windows, use binary-safe redirection such as `cmd.exe` when sending image bytes through a shell pipe.
+
+On Linux and macOS, run `build-examples/example-build-wasi.sh --build-system autotools --check` from an unconfigured source tree to build with the shipped `configure` script and GNU Make. This example defaults to `build-examples/build-wasi-autotools` and stages the same modules and launchers with `make install`. The check also runs the sixel2png CLI, lsqa video CLI, direct assessment, and spatial CIEDE2000 TAP suites through Wasmtime.
 
 ### Emscripten (Autotools)
 

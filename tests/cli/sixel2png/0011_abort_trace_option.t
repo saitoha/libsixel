@@ -16,7 +16,7 @@ trace_message=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env SIXEL_TRACE_TOPIC=suboption_contract,aborttrace_contract \
     --env SIXEL_ABORT_TRACE=1 -xhuman:A0 \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
-    -o /dev/null 2>&1) || {
+    -o - 2>&1 >/dev/null) || {
     echo "not ok" 1 - "sixel2png abort trace conversion failed"
     exit 0
 }

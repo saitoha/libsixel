@@ -157,10 +157,79 @@ def smoke_test(source, build, bindir, env, runtime, runner):
                 sys.exit(f"{tool} failed the diagnostic and exit-status check")
 
 
+def build_autotools(source, build, stage, env, check):
+    if (source / "config.status").exists():
+        sys.exit("Use an unconfigured source tree for the Autotools example.")
+    sdk = find_sdk(build, env)
+    build_env = env.copy()
+    build_env.update(
+        PATH=os.pathsep.join((str(sdk / "bin"), env["PATH"])),
+        CC="clang", AR="llvm-ar", NM="llvm-nm",
+        RANLIB="llvm-ranlib", STRIP="llvm-strip",
+        PKG_CONFIG_PATH="",
+        PKG_CONFIG_LIBDIR=str(sdk / "share/wasi-sysroot/lib/wasm32-wasip1/pkgconfig"),
+    )
+    build_env.setdefault("CFLAGS", "-O1 -g")
+    make = build_env.get("MAKE", "make")
+    subprocess.run(
+        [str(source / "configure"), "--host=wasm32-unknown-wasip1", "--prefix=/",
+         "--disable-shared", "--disable-threads", "--disable-dependency-tracking",
+         "--without-png", "--without-jpeg", "--without-tiff", "--without-webp",
+         "--without-lcms2", "--without-librsvg", "--without-libcurl",
+         "--without-libfetch", "--without-vulkan", "--without-shaderc",
+         "--enable-tests" if check else "--disable-tests"],
+        cwd=build, env=build_env, check=True,
+    )
+    subprocess.run([make, "all"], cwd=build, env=build_env, check=True)
+    subprocess.run([make, "install", f"DESTDIR={stage}"],
+                   cwd=build, env=build_env, check=True)
+    if check:
+        test_root = source / "tests"
+        # Run the existing portable CLI and assessment suites through TAP.
+        suites = ("cli/sixel2png", "cli/lsqa-video",
+                  "assessment/direct", "assessment/sciede2000")
+        tests = sorted(path.relative_to(test_root).as_posix()
+                       for suite in suites for path in (test_root / suite).glob("*.t"))
+        if not tests:
+            sys.exit("No WASI TAP tests were found in the source tree.")
+        build_env.update(
+            PATH=os.pathsep.join((str(source / "build-aux"), build_env["PATH"])),
+            SIXEL_RUNTIME="wasmtime-test-runner.sh",
+            TOP_SRCDIR=str(source), TOP_BUILDDIR=str(build),
+            TMPDIR=str(build),
+        )
+        subprocess.run([make, "check", "TESTS=" + " ".join(tests)],
+                       cwd=build, env=build_env, check=True)
+
+
+def build_meson(source, build, stage, env):
+    meson = shutil.which("meson", path=env["PATH"])
+    if not meson:
+        sys.exit("Install Meson and Ninja before running the WASI build.")
+    cross_file = make_cross_file(source, build, find_sdk(build, env))
+    setup = [meson, "setup"]
+    if (build / "meson-private/coredata.dat").is_file():
+        setup.append("--reconfigure")
+    subprocess.run(
+        setup + [str(build), str(source), "--cross-file", str(cross_file),
+                 "--prefix", "/", "--bindir", "bin", "--libdir", "lib",
+                 "--buildtype", "release", "--default-library", "static",
+                 "--auto-features", "disabled", "-Dthreads=disabled",
+                 "-Dtests=false", "-Db_vscrt=none"],
+        env=env, check=True,
+    )
+    subprocess.run([meson, "compile", "-C", str(build)], env=env, check=True)
+    subprocess.run([meson, "install", "-C", str(build), "--no-rebuild",
+                    "--destdir", str(stage)],
+                   env=env, check=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--build-system", choices=("meson", "autotools"),
+                        default="meson", help="build system (default: meson)")
     parser.add_argument("--check", action="store_true",
-                        help="test the installed Wasmtime launchers")
+                        help="run Wasmtime checks, including TAP with Autotools")
     parser.add_argument("--check-wasmer", action="store_true",
                         help="also test the Wasm modules directly with Wasmer")
     parser.add_argument("--smoke", choices=("wasmer", "node"),
@@ -168,10 +237,14 @@ def main():
     args = parser.parse_args()
     if args.smoke and (args.check or args.check_wasmer):
         parser.error("--smoke cannot be combined with --check or --check-wasmer")
+    if os.name == "nt" and args.build_system == "autotools":
+        parser.error("Select Meson when building from native Windows.")
 
     source = Path(__file__).resolve().parents[1]
+    autotools = args.build_system == "autotools"
+    default_build = "build-wasi-autotools" if autotools else "build-wasi"
     build = Path(os.environ.get(
-        "SIXEL_WASI_BUILD_DIR", str(source / "build-examples/build-wasi")
+        "SIXEL_WASI_BUILD_DIR", str(source / "build-examples" / default_build)
     )).resolve()
     stage = build / "install"
     bindir = stage / "bin"
@@ -194,26 +267,11 @@ def main():
         smoke_test(source, build, bindir, env, args.smoke, runners[args.smoke])
         return
 
-    meson = shutil.which("meson", path=env["PATH"])
-    if not meson:
-        sys.exit("Install Meson and Ninja before running the WASI build.")
     build.mkdir(parents=True, exist_ok=True)
-    cross_file = make_cross_file(source, build, find_sdk(build, env))
-    setup = [meson, "setup"]
-    if (build / "meson-private/coredata.dat").is_file():
-        setup.append("--reconfigure")
-    subprocess.run(
-        setup + [str(build), str(source), "--cross-file", str(cross_file),
-                 "--prefix", "/", "--bindir", "bin", "--libdir", "lib",
-                 "--buildtype", "release", "--default-library", "static",
-                 "--auto-features", "disabled", "-Dthreads=disabled",
-                 "-Dtests=false", "-Db_vscrt=none"],
-        env=env, check=True,
-    )
-    subprocess.run([meson, "compile", "-C", str(build)], env=env, check=True)
-    subprocess.run([meson, "install", "-C", str(build), "--no-rebuild",
-                    "--destdir", str(stage)],
-                   env=env, check=True)
+    if autotools:
+        build_autotools(source, build, stage, env, bool(runtimes))
+    else:
+        build_meson(source, build, stage, env)
     env["PATH"] = os.pathsep.join((str(bindir), env["PATH"]))
     for runtime in runtimes:
         smoke_test(source, build, bindir, env, runtime, runners[runtime])

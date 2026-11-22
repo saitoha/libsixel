@@ -32,6 +32,19 @@ pkglibexec_PROGRAMS =
 noinst_PROGRAMS =
 dist_man_MANS =
 
+if WASI_BUILD
+nodist_bin_SCRIPTS =
+if WANT_IMG2SIXEL
+nodist_bin_SCRIPTS += img2sixel
+endif
+if WANT_SIXEL2PNG
+nodist_bin_SCRIPTS += sixel2png
+endif
+$(nodist_bin_SCRIPTS): $(top_srcdir)/build-aux/wasi-launcher.sh.in
+	$(AM_V_GEN)$(SED) 's/@WASI_TOOL@/$@/g' "$<" > "$@"
+	$(AM_V_at)chmod +x "$@"
+endif
+
 bashcompletiondir = @bashcompletiondir@
 dist_bashcompletion_DATA =
 
@@ -87,7 +100,7 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
-CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h
+CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(nodist_bin_SCRIPTS)
 
 # +--------------------------------------------------------------+
 # | Embedded completion header generation pipeline (ASCII view). |

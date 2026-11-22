@@ -755,6 +755,15 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
   enable_dependency_tracking=no
 ])
 
+AS_CASE([$host_os], [wasi*], [
+  # The SDK accepts an explicit .wasm suffix, but the default output is a.out.
+  ac_cv_exeext=.wasm
+  # wasi-libc's allocator returns storage for these zero-size requests.
+  : "${ac_cv_func_malloc_0_nonnull=yes}"
+  : "${ac_cv_func_realloc_0_nonnull=yes}"
+])
+AM_CONDITIONAL([WASI_BUILD], [case "$host_os" in wasi*) true;; *) false;; esac])
+
 AC_PROG_CC
 
 AS_CASE([$host_os], [wasi*], [
@@ -2054,6 +2063,8 @@ AC_ARG_WITH([shebang-file],
 
 SIXEL_SHEBANG_FILE=""
 if test -n "$with_shebang_file"; then
+  AS_CASE([$host_os], [wasi*],
+    [AC_MSG_ERROR([WASI executables use separate launchers])])
   AS_IF([test -f "$with_shebang_file"],
         [:],
         [AC_MSG_ERROR([unable to read --with-shebang-file: $with_shebang_file])])

@@ -198,7 +198,8 @@ sixel_thread_pool_test_service_component(void)
     }
 #else
     status = service->vtbl->create_pool(service, &request, &pool1);
-    if (status != SIXEL_NOT_IMPLEMENTED || pool1 != NULL) {
+    if (status != SIXEL_NOT_IMPLEMENTED || pool1 != NULL
+            || g_sixel_thread_pool_cleanup_count != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }

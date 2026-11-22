@@ -988,6 +988,8 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+WASI_BUILD_FALSE
+WASI_BUILD_TRUE
 SIXEL_MSVC_CC
 SIXEL_EMSCRIPTEN_CC
 SIXEL_TEST_ADDITIONAL_PATH
@@ -4985,6 +4987,27 @@ then :
   enable_dependency_tracking=no
 
 fi
+
+case $host_os in #(
+  wasi*) :
+
+  # The SDK accepts an explicit .wasm suffix, but the default output is a.out.
+  ac_cv_exeext=.wasm
+  # wasi-libc's allocator returns storage for these zero-size requests.
+  : "${ac_cv_func_malloc_0_nonnull=yes}"
+  : "${ac_cv_func_realloc_0_nonnull=yes}"
+ ;; #(
+  *) :
+     ;;
+esac
+ if case "$host_os" in wasi*) true;; *) false;; esac; then
+  WASI_BUILD_TRUE=
+  WASI_BUILD_FALSE='#'
+else
+  WASI_BUILD_TRUE='#'
+  WASI_BUILD_FALSE=
+fi
+
 
 
 
@@ -18290,6 +18313,12 @@ fi
 
 SIXEL_SHEBANG_FILE=""
 if test -n "$with_shebang_file"; then
+  case $host_os in #(
+  wasi*) :
+    as_fn_error $? "WASI executables use separate launchers" "$LINENO" 5 ;; #(
+  *) :
+     ;;
+esac
   if test -f "$with_shebang_file"
 then :
   :
@@ -36129,6 +36158,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${OPENVMS_GNV_TRUE}" && test -z "${OPENVMS_GNV_FALSE}"; then
   as_fn_error $? "conditional \"OPENVMS_GNV\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WASI_BUILD_TRUE}" && test -z "${WASI_BUILD_FALSE}"; then
+  as_fn_error $? "conditional \"WASI_BUILD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${AMDEP_TRUE}" && test -z "${AMDEP_FALSE}"; then

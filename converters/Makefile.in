@@ -15,6 +15,7 @@
 @SET_MAKE@
 
 
+
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -94,24 +95,26 @@ host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 pkglibexec_PROGRAMS = $(am__EXEEXT_3) $(am__EXEEXT_4)
 noinst_PROGRAMS =
-@AMALGAMATION_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
-@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_3 = img2sixel
-@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_4 = img2sixel
-@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_5 = $(ABORTTRACE_LIBS)
-@WANT_IMG2SIXEL_TRUE@am__append_6 = $(srcdir)/img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_9 = sixel2png
-@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_10 = sixel2png
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(AMALGAMATION_TOOL_CPPFLAGS) \
+@WANT_IMG2SIXEL_TRUE@@WASI_BUILD_TRUE@am__append_2 = img2sixel
+@WANT_SIXEL2PNG_TRUE@@WASI_BUILD_TRUE@am__append_3 = sixel2png
+@AMALGAMATION_NEEDS_OBJC_TRUE@am__append_4 = -x objective-c
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_5 = img2sixel
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_6 = img2sixel
+@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_7 = $(ABORTTRACE_LIBS)
+@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_9 = $(srcdir)/shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_10 = $(srcdir)/shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_11 = sixel2png
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_12 = sixel2png
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_13 = $(AMALGAMATION_TOOL_CPPFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@        -DBUILD_SIXEL2PNG
 
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_12 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
-@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_13 = $(ABORTTRACE_LIBS)
-@WANT_SIXEL2PNG_TRUE@am__append_14 = $(srcdir)/sixel2png.1
-@WITH_SHEBANG_FILE_TRUE@am__append_15 = $(SIXEL_SHEBANG_STAMP)
-@WANT_IMG2SIXEL_TRUE@am__append_16 = $(img2sixel_OBJECTS)
-@WANT_SIXEL2PNG_TRUE@am__append_17 = $(sixel2png_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_14 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
+@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_15 = $(ABORTTRACE_LIBS)
+@WANT_SIXEL2PNG_TRUE@am__append_16 = $(srcdir)/sixel2png.1
+@WITH_SHEBANG_FILE_TRUE@am__append_17 = $(SIXEL_SHEBANG_STAMP)
+@WANT_IMG2SIXEL_TRUE@am__append_18 = $(img2sixel_OBJECTS)
+@WANT_SIXEL2PNG_TRUE@am__append_19 = $(sixel2png_OBJECTS)
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -136,7 +139,8 @@ CONFIG_CLEAN_VPATH_FILES =
 @WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__EXEEXT_1 = img2sixel$(EXEEXT)
 @WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__EXEEXT_2 = sixel2png$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkglibexecdir)" \
-	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" \
+	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
+	"$(DESTDIR)$(bashcompletiondir)" \
 	"$(DESTDIR)$(zshcompletiondir)"
 @WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__EXEEXT_3 = img2sixel$(EXEEXT)
 @WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__EXEEXT_4 = sixel2png$(EXEEXT)
@@ -224,6 +228,33 @@ sixel2png_OBJECTS = $(am_sixel2png_OBJECTS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_4)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES = $(am__DEPENDENCIES_3) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_4)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+  || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+       $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
+  }
+SCRIPTS = $(nodist_bin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -295,32 +326,6 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__uninstall_files_from_dir = { \
-  { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
-  || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
-       $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
-  }
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(dist_man_MANS)
@@ -660,9 +665,10 @@ EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
              $(srcdir)/img2sixel-node-launcher.in \
              $(srcdir)/sixel2png-node-launcher.in
 
-dist_man_MANS = $(am__append_6) $(am__append_14)
-dist_bashcompletion_DATA = $(am__append_7)
-dist_zshcompletion_DATA = $(am__append_8)
+dist_man_MANS = $(am__append_8) $(am__append_16)
+@WASI_BUILD_TRUE@nodist_bin_SCRIPTS = $(am__append_2) $(am__append_3)
+dist_bashcompletion_DATA = $(am__append_9)
+dist_zshcompletion_DATA = $(am__append_10)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/include/ \
@@ -672,7 +678,7 @@ AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/include/ \
 	$(LIBRSVG_CFLAGS) $(GDK_PIXBUF_CFLAGS) $(GD_CFLAGS) \
 	$(WIC_CFLAGS) $(COREGRAPHICS_CFLAGS) $(QUICKLOOK_CFLAGS) \
 	$(METAL_CFLAGS) $(CLIPBOARD_CFLAGS) @THREAD_CFLAGS@ \
-	$(am__append_2)
+	$(am__append_4)
 AMALGAMATION_TOOL_LIBS = -lm \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
@@ -691,7 +697,8 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
-CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
+CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h \
+	$(nodist_bin_SCRIPTS) $(am__append_17)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.h \
@@ -744,9 +751,9 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(QUICKLOOK_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(CLIPBOARD_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	@THREAD_CFLAGS@ \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__append_5)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__append_7)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(AMALGAMATION_TOOL_LIBS) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__append_5)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__append_7)
 @OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
@@ -757,7 +764,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 # default for the other branch.
 @OPENVMS_GNV_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = $(AM_CPPFLAGS) \
-@WANT_SIXEL2PNG_TRUE@	$(am__append_11) $(am__append_12)
+@WANT_SIXEL2PNG_TRUE@	$(am__append_13) $(am__append_14)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.h \
@@ -787,9 +794,9 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(QUICKLOOK_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(CLIPBOARD_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	@THREAD_CFLAGS@ \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_13)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_15)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_13)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_15)
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
@@ -802,7 +809,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 #
 # This target is consumed by the top-level parallel orchestration to overlap
 # compilation in converters/ with libsixel shared library creation.
-PRELINK_OBJECTS = $(am__append_16) $(am__append_17)
+PRELINK_OBJECTS = $(am__append_18) $(am__append_19)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -954,6 +961,41 @@ $(top_builddir)/amalgamation/sixel2png-sixel.$(OBJEXT):  \
 sixel2png$(EXEEXT): $(sixel2png_OBJECTS) $(sixel2png_DEPENDENCIES) $(EXTRA_sixel2png_DEPENDENCIES) 
 	@rm -f sixel2png$(EXEEXT)
 	$(AM_V_GEN)$(sixel2png_LINK) $(sixel2png_OBJECTS) $(sixel2png_LDADD) $(LIBS)
+install-nodist_binSCRIPTS: $(nodist_bin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(bindir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(bindir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  if test -f "$$d$$p"; then echo "$$d$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n' \
+	    -e 'h;s|.*|.|' \
+	    -e 'p;x;s,.*/,,;$(transform)' | sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1; } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) { files[d] = files[d] " " $$1; \
+	      if (++n[d] == $(am__install_max)) { \
+		print "f", d, files[d]; n[d] = 0; files[d] = "" } } \
+	    else { print "f", d "/" $$4, $$1 } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	     if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	     test -z "$$files" || { \
+	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(bindir)$$dir'"; \
+	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
+	     } \
+	; done
+
+uninstall-nodist_binSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_bin_SCRIPTS)'; test -n "$(bindir)" || exit 0; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	       sed -e 's,.*/,,;$(transform)'`; \
+	dir='$(DESTDIR)$(bindir)'; $(am__uninstall_files_from_dir)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1483,10 +1525,10 @@ check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 @WITH_SHEBANG_FILE_FALSE@all-local:
-all-am: Makefile $(PROGRAMS) $(MANS) $(DATA) all-local
+all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA) all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkglibexecdir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" "$(DESTDIR)$(zshcompletiondir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkglibexecdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" "$(DESTDIR)$(zshcompletiondir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1572,7 +1614,8 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS install-pkglibexecPROGRAMS
+install-exec-am: install-binPROGRAMS install-nodist_binSCRIPTS \
+	install-pkglibexecPROGRAMS
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 install-html: install-html-recursive
@@ -1630,7 +1673,7 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_bashcompletionDATA \
 	uninstall-dist_zshcompletionDATA uninstall-man \
-	uninstall-pkglibexecPROGRAMS
+	uninstall-nodist_binSCRIPTS uninstall-pkglibexecPROGRAMS
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 uninstall-man: uninstall-man1
@@ -1649,19 +1692,23 @@ uninstall-man: uninstall-man1
 	install-dist_zshcompletionDATA install-dvi install-dvi-am \
 	install-exec install-exec-am install-exec-hook install-html \
 	install-html-am install-info install-info-am install-man \
-	install-man1 install-pdf install-pdf-am \
-	install-pkglibexecPROGRAMS install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS \
+	install-man1 install-nodist_binSCRIPTS install-pdf \
+	install-pdf-am install-pkglibexecPROGRAMS install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-dist_bashcompletionDATA \
 	uninstall-dist_zshcompletionDATA uninstall-hook uninstall-man \
-	uninstall-man1 uninstall-pkglibexecPROGRAMS
+	uninstall-man1 uninstall-nodist_binSCRIPTS \
+	uninstall-pkglibexecPROGRAMS
 
 .PRECIOUS: Makefile
 
+@WASI_BUILD_TRUE@$(nodist_bin_SCRIPTS): $(top_srcdir)/build-aux/wasi-launcher.sh.in
+@WASI_BUILD_TRUE@	$(AM_V_GEN)$(SED) 's/@WASI_TOOL@/$@/g' "$<" > "$@"
+@WASI_BUILD_TRUE@	$(AM_V_at)chmod +x "$@"
 
 # +--------------------------------------------------------------+
 # | Embedded completion header generation pipeline (ASCII view). |
