@@ -31,6 +31,11 @@ typedef struct sixel_vk_runtime {
     VkDevice device;
     VkQueue queue;
     uint32_t queue_family;
+    /* Heckbert uses another compute queue when the device provides one. */
+    VkQueue compute_queue;
+    uint32_t compute_queue_family;
+    int compute_timestamps_supported;
+    uint64_t compute_timestamp_mask;
     VkPhysicalDeviceProperties properties;
     VkPhysicalDeviceMemoryProperties memory;
     /* Without timestamp support submit/wait wall time is recorded. */

@@ -108,6 +108,7 @@ host_triplet = @host@
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-compute-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-dequant-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-vulkan.c \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-heckbert-gpu-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/filter-sample-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/retained-plane-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/encoder-body-gpu-vulkan.c \
@@ -545,6 +546,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/gpu-runtime-vulkan.c $(srcdir)/gpu-compute-vulkan.c \
 	$(srcdir)/gpu-dequant-vulkan.c \
 	$(srcdir)/palette-kmeans-vulkan.c \
+	$(srcdir)/palette-heckbert-gpu-vulkan.c \
 	$(srcdir)/filter-sample-vulkan.c \
 	$(srcdir)/retained-plane-vulkan.c \
 	$(srcdir)/encoder-body-gpu-vulkan.c \
@@ -583,6 +585,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-compute-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-vulkan.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert-gpu-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-sample-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-body-gpu-vulkan.lo \
@@ -1071,6 +1074,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette-common-snap.Plo \
 	./$(DEPDIR)/libsixel_la-palette-cover-native.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo \
+	./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kcenter.Plo \
@@ -1565,6 +1569,7 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(src
 SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
     $(srcdir)/filter-sample-gpu.glsl \
     $(srcdir)/palette-kmeans-gpu.glsl \
+    $(srcdir)/palette-heckbert-gpu.glsl \
     $(srcdir)/retained-plane-gpu.glsl \
     $(srcdir)/encoder-body-gpu.glsl \
     $(srcdir)/encoder-body-emit-gpu.glsl \
@@ -1628,6 +1633,7 @@ SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
     libsixel_la-gpu-dequant-vulkan.lo \
     libsixel_la-palette-kmeans-vulkan.lo \
+    libsixel_la-palette-heckbert-gpu-vulkan.lo \
     libsixel_la-filter-sample-vulkan.lo \
     libsixel_la-retained-plane-vulkan.lo \
     libsixel_la-encoder-body-gpu-vulkan.lo \
@@ -2735,6 +2741,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-snap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-cover-native.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kcenter.Plo@am__quote@ # am--include-marker
@@ -4374,6 +4381,13 @@ libsixel_la-palette-kmeans-vulkan.lo: palette-kmeans-vulkan.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-vulkan.lo `test -f 'palette-kmeans-vulkan.c' || echo '$(srcdir)/'`palette-kmeans-vulkan.c
 
+libsixel_la-palette-heckbert-gpu-vulkan.lo: palette-heckbert-gpu-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-heckbert-gpu-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-heckbert-gpu-vulkan.Tpo -c -o libsixel_la-palette-heckbert-gpu-vulkan.lo `test -f 'palette-heckbert-gpu-vulkan.c' || echo '$(srcdir)/'`palette-heckbert-gpu-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-heckbert-gpu-vulkan.Tpo $(DEPDIR)/libsixel_la-palette-heckbert-gpu-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-heckbert-gpu-vulkan.c' object='libsixel_la-palette-heckbert-gpu-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-heckbert-gpu-vulkan.lo `test -f 'palette-heckbert-gpu-vulkan.c' || echo '$(srcdir)/'`palette-heckbert-gpu-vulkan.c
+
 libsixel_la-filter-sample-vulkan.lo: filter-sample-vulkan.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-sample-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-sample-vulkan.Tpo -c -o libsixel_la-filter-sample-vulkan.lo `test -f 'filter-sample-vulkan.c' || echo '$(srcdir)/'`filter-sample-vulkan.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-sample-vulkan.Tpo $(DEPDIR)/libsixel_la-filter-sample-vulkan.Plo
@@ -5050,6 +5064,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-cover-native.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kcenter.Plo
@@ -5354,6 +5369,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-cover-native.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert-gpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kcenter.Plo

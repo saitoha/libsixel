@@ -56,6 +56,8 @@ heckbert_gpu_solve(sixel_heckbert_solver_interface_t *self,
     }
 #if defined(HAVE_METAL)
     return sixel_palette_heckbert_gpu_metal_solve(request);
+#elif defined(HAVE_VULKAN)
+    return sixel_palette_heckbert_gpu_vulkan_solve(request);
 #else
     return SIXEL_FEATURE_ERROR;
 #endif
