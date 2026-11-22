@@ -92,6 +92,14 @@ if img2sixel_opt.enabled()
       install_dir: emscripten_tool_install_dir)
   endif
   img2sixel_deps = [img2sixel_exe]
+  if webgpu and not have_threads and get_option('tests')
+    webgpu_test_cli = executable('webgpu-test',
+      objects: img2sixel_exe.extract_all_objects(recursive: true),
+      dependencies: (amalgamated_tools_enabled ? deps : [libsixel_dep]) + aborttrace_deps_local,
+      link_depends: emscripten_link_depends,
+      link_args: webgpu_test_link_args,
+      build_by_default: false)
+  endif
 
   # The AFL persistent CLI harnesses rely on POSIX-only headers and temp-file
   # or stdio redirection APIs (`unistd.h`, `dup2`, `mkstemp`, `setenv`,

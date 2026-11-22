@@ -101,20 +101,21 @@ noinst_PROGRAMS =
 @WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_5 = img2sixel
 @WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_6 = img2sixel
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_7 = $(ABORTTRACE_LIBS)
-@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_9 = $(srcdir)/shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_10 = $(srcdir)/shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_11 = sixel2png
-@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_12 = sixel2png
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_13 = $(AMALGAMATION_TOOL_CPPFLAGS) \
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_8 = webgpu-test.js
+@WANT_IMG2SIXEL_TRUE@am__append_9 = $(srcdir)/img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_10 = $(srcdir)/shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_11 = $(srcdir)/shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_12 = sixel2png
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_13 = sixel2png
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_14 = $(AMALGAMATION_TOOL_CPPFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@        -DBUILD_SIXEL2PNG
 
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_14 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
-@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_15 = $(ABORTTRACE_LIBS)
-@WANT_SIXEL2PNG_TRUE@am__append_16 = $(srcdir)/sixel2png.1
-@WITH_SHEBANG_FILE_TRUE@am__append_17 = $(SIXEL_SHEBANG_STAMP)
-@WANT_IMG2SIXEL_TRUE@am__append_18 = $(img2sixel_OBJECTS)
-@WANT_SIXEL2PNG_TRUE@am__append_19 = $(sixel2png_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_15 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
+@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_16 = $(ABORTTRACE_LIBS)
+@WANT_SIXEL2PNG_TRUE@am__append_17 = $(srcdir)/sixel2png.1
+@WITH_SHEBANG_FILE_TRUE@am__append_18 = $(SIXEL_SHEBANG_STAMP)
+@WANT_IMG2SIXEL_TRUE@am__append_19 = $(img2sixel_OBJECTS)
+@WANT_SIXEL2PNG_TRUE@am__append_20 = $(sixel2png_OBJECTS)
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -665,10 +666,10 @@ EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
              $(srcdir)/img2sixel-node-launcher.in \
              $(srcdir)/sixel2png-node-launcher.in
 
-dist_man_MANS = $(am__append_8) $(am__append_16)
+dist_man_MANS = $(am__append_9) $(am__append_17)
 @WASI_BUILD_TRUE@nodist_bin_SCRIPTS = $(am__append_2) $(am__append_3)
-dist_bashcompletion_DATA = $(am__append_9)
-dist_zshcompletion_DATA = $(am__append_10)
+dist_bashcompletion_DATA = $(am__append_10)
+dist_zshcompletion_DATA = $(am__append_11)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/include/ \
@@ -698,7 +699,7 @@ AMALGAMATION_TOOL_LIBS = -lm \
         @THREAD_LIBS@
 
 CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h \
-	$(nodist_bin_SCRIPTS) $(am__append_17)
+	$(nodist_bin_SCRIPTS) $(am__append_8) $(am__append_18)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.h \
@@ -764,7 +765,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h \
 # default for the other branch.
 @OPENVMS_GNV_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = $(AM_CPPFLAGS) \
-@WANT_SIXEL2PNG_TRUE@	$(am__append_13) $(am__append_14)
+@WANT_SIXEL2PNG_TRUE@	$(am__append_14) $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.h \
@@ -794,9 +795,9 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(QUICKLOOK_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(CLIPBOARD_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	@THREAD_CFLAGS@ \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_15)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_16)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_15)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_16)
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
@@ -809,7 +810,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h \
 #
 # This target is consumed by the top-level parallel orchestration to overlap
 # compilation in converters/ with libsixel shared library creation.
-PRELINK_OBJECTS = $(am__append_18) $(am__append_19)
+PRELINK_OBJECTS = $(am__append_19) $(am__append_20)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1729,6 +1730,13 @@ completion_embed.h: \
 	mv "$$tmp" "$@" || { rm -f "$$tmp"; exit 1; }
 # Ensure completion_utils never compiles before the generated header exists.
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel-completion_utils.$(OBJEXT): completion_embed.h
+# Relink the actual CLI objects with a private in-memory filesystem for each
+# test invocation. One JS file can be served to browsers or loaded by Node.
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@webgpu-test.js: $(img2sixel_OBJECTS) $(img2sixel_DEPENDENCIES) $(EXTRA_img2sixel_DEPENDENCIES)
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(AM_V_CCLD)$(img2sixel_LINK) $(img2sixel_OBJECTS) $(img2sixel_LDADD) \
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@	    $(LIBS) -sMODULARIZE=1 -sEXPORT_NAME=createConverter \
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@	    -sEXPORTED_RUNTIME_METHODS=FS -sEXIT_RUNTIME=1 -sNODERAWFS=0 \
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@	    -sENVIRONMENT=web,node -sSINGLE_FILE=1
 
 @WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
 @WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \

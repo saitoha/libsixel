@@ -1751,6 +1751,12 @@ if host_system == 'emscripten' and have_threads
   program_link_args = ['-sPROXY_TO_PTHREAD=1', '-sEXIT_RUNTIME=1']
 endif
 
+# The WebGPU test module runs in a single JS realm with a private MEMFS.
+# Keep its browser/Node factory and embedded Wasm out of installed programs.
+webgpu_test_link_args = ['-sMODULARIZE=1', '-sEXPORT_NAME=createConverter',
+  '-sEXPORTED_RUNTIME_METHODS=FS', '-sEXIT_RUNTIME=1', '-sNODERAWFS=0',
+  '-sENVIRONMENT=web,node', '-sSINGLE_FILE=1']
+
 wiccodec_opt = get_option('wiccodec')
 wiccodec_message = 'no'
 have_wiccodec = false

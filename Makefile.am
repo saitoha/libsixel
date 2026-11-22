@@ -78,6 +78,8 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
     build-aux/test-runner-link.am \
     build-aux/msvc-lib-response.sh \
     build-aux/cosmoar-meson build-aux/cosmoar-response.awk \
+    tests/platform/webgpu/node-runner.mjs \
+    tests/platform/webgpu/webgpu-tests.mjs \
     tests/platform/webgpu/0001_palette_byte_equivalence.html \
     tests/platform/webgpu/0002_force_exit_status.html \
     tests/platform/webgpu/0003_diffusion_equivalence.html \

@@ -524,9 +524,14 @@ foreach t : tests
   else
     test_env.set('LSO_CHILD_TIME', child_time_fallback)
   endif
+  case_deps = test_deps
+  if t.startswith('platform/webgpu/') and is_variable('webgpu_test_cli')
+    case_deps = [webgpu_test_cli]
+    test_env.set('SIXEL_WEBGPU_TEST_CLI', webgpu_test_cli.full_path())
+  endif
   test(t, test_executable,
     args: test_args,
-    depends: test_deps,
+    depends: case_deps,
     protocol: test_protocol,
     env: test_env,
     should_fail: test_should_fail,

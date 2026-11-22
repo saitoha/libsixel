@@ -196,6 +196,18 @@ img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
 endif
+if HAVE_WEBGPU
+if !SIXEL_ENABLE_THREADS
+# Relink the actual CLI objects with a private in-memory filesystem for each
+# test invocation. One JS file can be served to browsers or loaded by Node.
+webgpu-test.js: $(img2sixel_OBJECTS) $(img2sixel_DEPENDENCIES) $(EXTRA_img2sixel_DEPENDENCIES)
+	$(AM_V_CCLD)$(img2sixel_LINK) $(img2sixel_OBJECTS) $(img2sixel_LDADD) \
+	    $(LIBS) -sMODULARIZE=1 -sEXPORT_NAME=createConverter \
+	    -sEXPORTED_RUNTIME_METHODS=FS -sEXIT_RUNTIME=1 -sNODERAWFS=0 \
+	    -sENVIRONMENT=web,node -sSINGLE_FILE=1
+CLEANFILES += webgpu-test.js
+endif
+endif
 dist_man_MANS += $(srcdir)/img2sixel.1
 dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/img2sixel
 dist_zshcompletion_DATA += $(srcdir)/shell-completion/zsh/_img2sixel

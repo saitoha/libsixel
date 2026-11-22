@@ -8690,6 +8690,20 @@ sixel-check-test-logs: $(TEST_LOGS)
 	@:
 endif
 
+if HAVE_WEBGPU
+if WANT_IMG2SIXEL
+if !SIXEL_ENABLE_THREADS
+SIXEL_WEBGPU_TEST_CLI ?= $(abs_top_builddir)/converters/webgpu-test.js
+export SIXEL_WEBGPU_TEST_CLI
+WEBGPU_CHECK_DEP = prepare-webgpu-test
+prepare-webgpu-test:
+	$(MAKE) $(AM_MAKEFLAGS) -C $(top_builddir)/converters webgpu-test.js
+endif
+endif
+endif
+
+.PHONY: prepare-webgpu-test
+
 # Installed extension observations need no converters, test runner or fixture
 # producer. Reuse the ordinary TAP driver and timing reader, but request only
 # these logs; do not call the build-oriented check-TESTS preparation target.
@@ -8782,7 +8796,7 @@ installcheck-local:
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
 # Finish relinking test tools before resolving their paths or running TAP.
-check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
+check-TESTS: $(WEBGPU_CHECK_DEP) $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-tools
 	@$(SHELL) "$(top_srcdir)/build-aux/clean-test-logs.sh" \
 	    "$(builddir)" "@build_os@"

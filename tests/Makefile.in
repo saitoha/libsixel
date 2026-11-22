@@ -13243,6 +13243,7 @@ AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
 # LOG_COMPILE; the drivers consume timeout hints themselves.
 AM_LOG_FLAGS = 
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@WEBGPU_CHECK_DEP = prepare-webgpu-test
 quicklook_installed_reportdir = $(top_builddir)/quicklook-extension/installcheck
 @OPENVMS_GNV_FALSE@sixel_clean_batch_size = $(if $(filter darwin% linux% freebsd% netbsd% openbsd% dragonfly% solaris% illumos% haiku% aix%,$(host_os)),128,16)
 
@@ -56886,6 +56887,13 @@ sixel-check-test-tools:
 @OPENVMS_GNV_FALSE@sixel-check-test-logs: $(TEST_LOGS)
 @OPENVMS_GNV_FALSE@	@:
 
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@SIXEL_WEBGPU_TEST_CLI ?= $(abs_top_builddir)/converters/webgpu-test.js
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@export SIXEL_WEBGPU_TEST_CLI
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@prepare-webgpu-test:
+@HAVE_WEBGPU_TRUE@@SIXEL_ENABLE_THREADS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(MAKE) $(AM_MAKEFLAGS) -C $(top_builddir)/converters webgpu-test.js
+
+.PHONY: prepare-webgpu-test
+
 # Installed extension observations need no converters, test runner or fixture
 # producer. Reuse the ordinary TAP driver and timing reader, but request only
 # these logs; do not call the build-oriented check-TESTS preparation target.
@@ -56977,7 +56985,7 @@ installcheck-local:
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
 # Finish relinking test tools before resolving their paths or running TAP.
-check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
+check-TESTS: $(WEBGPU_CHECK_DEP) $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-tools
 	@$(SHELL) "$(top_srcdir)/build-aux/clean-test-logs.sh" \
 	    "$(builddir)" "@build_os@"
