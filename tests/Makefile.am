@@ -2466,6 +2466,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0063_LIBPNG_WRITE_STRUCT_FAILURE \
     -DBUILD_TEST_0064_LIBPNG_INFO_STRUCT_FAILURE \
     -DBUILD_TEST_0066_INDEXED_COMPRESSION_FAILURE \
+    -DBUILD_TEST_0067_IEND_CRC_SHORT_WRITE_CLEANUP \
     -DBUILD_TEST_0143_ADOBE_LIBPNG \
     -DBUILD_TEST_0144_DCI_LIBPNG \
     -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -6189,6 +6190,7 @@ test_runner_SOURCES = \
     writer/png/0063_libpng_write_struct_failure.c \
     writer/png/0064_libpng_info_struct_failure.c \
     writer/png/0066_indexed_compression_failure.c \
+    writer/png/0067_iend_crc_short_write_cleanup.c \
     writer/png/color_test_common.h \
     $(top_srcdir)/assessment/assessment.c \
     $(top_srcdir)/assessment/color.c \

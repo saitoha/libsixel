@@ -383,6 +383,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	writer/png/0063_libpng_write_struct_failure.c \
 	writer/png/0064_libpng_info_struct_failure.c \
 	writer/png/0066_indexed_compression_failure.c \
+	writer/png/0067_iend_crc_short_write_cleanup.c \
 	writer/png/color_test_common.h \
 	$(top_srcdir)/assessment/assessment.c \
 	$(top_srcdir)/assessment/color.c \
@@ -1809,6 +1810,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0063_libpng_write_struct_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0064_libpng_info_struct_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0066_indexed_compression_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	writer/png/test_runner-0067_iend_crc_short_write_cleanup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-color.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/assessment/test_runner-scielab.$(OBJEXT) \
@@ -5370,6 +5372,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	writer/png/$(DEPDIR)/test_runner-0064_libpng_info_struct_failure.Po \
 	writer/png/$(DEPDIR)/test_runner-0065_direct_png_allocation_failure.Po \
 	writer/png/$(DEPDIR)/test_runner-0066_indexed_compression_failure.Po \
+	writer/png/$(DEPDIR)/test_runner-0067_iend_crc_short_write_cleanup.Po \
 	writer/png/$(DEPDIR)/test_runner-color_test_common.Po \
 	writer/png/$(DEPDIR)/test_runner-stream_fault_common.Po \
 	writer/snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po
@@ -8269,6 +8272,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_LIBPNG_WRITE_STRUCT_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_LIBPNG_INFO_STRUCT_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_INDEXED_COMPRESSION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_IEND_CRC_SHORT_WRITE_CLEANUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0143_ADOBE_LIBPNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0144_DCI_LIBPNG \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0145_ADOBE_LIBTIFF \
@@ -12020,6 +12024,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0063_libpng_write_struct_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0064_libpng_info_struct_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0066_indexed_compression_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/0067_iend_crc_short_write_cleanup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    writer/png/color_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/assessment/color.c \
@@ -20846,6 +20851,9 @@ writer/png/test_runner-0064_libpng_info_struct_failure.$(OBJEXT):  \
 writer/png/test_runner-0066_indexed_compression_failure.$(OBJEXT):  \
 	writer/png/$(am__dirstamp) \
 	writer/png/$(DEPDIR)/$(am__dirstamp)
+writer/png/test_runner-0067_iend_crc_short_write_cleanup.$(OBJEXT):  \
+	writer/png/$(am__dirstamp) \
+	writer/png/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/assessment/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/assessment
 	@: >>$(top_builddir)/assessment/$(am__dirstamp)
@@ -28578,6 +28586,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0064_libpng_info_struct_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0065_direct_png_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0066_indexed_compression_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0067_iend_crc_short_write_cleanup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-color_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-stream_fault_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/snapshot/$(DEPDIR)/test_runner-0009_transport_rejection.Po@am__quote@ # am--include-marker
@@ -32032,6 +32041,20 @@ writer/png/test_runner-0066_indexed_compression_failure.obj: writer/png/0066_ind
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0066_indexed_compression_failure.c' object='writer/png/test_runner-0066_indexed_compression_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0066_indexed_compression_failure.obj `if test -f 'writer/png/0066_indexed_compression_failure.c'; then $(CYGPATH_W) 'writer/png/0066_indexed_compression_failure.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0066_indexed_compression_failure.c'; fi`
+
+writer/png/test_runner-0067_iend_crc_short_write_cleanup.o: writer/png/0067_iend_crc_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0067_iend_crc_short_write_cleanup.o -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0067_iend_crc_short_write_cleanup.Tpo -c -o writer/png/test_runner-0067_iend_crc_short_write_cleanup.o `test -f 'writer/png/0067_iend_crc_short_write_cleanup.c' || echo '$(srcdir)/'`writer/png/0067_iend_crc_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0067_iend_crc_short_write_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0067_iend_crc_short_write_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0067_iend_crc_short_write_cleanup.c' object='writer/png/test_runner-0067_iend_crc_short_write_cleanup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0067_iend_crc_short_write_cleanup.o `test -f 'writer/png/0067_iend_crc_short_write_cleanup.c' || echo '$(srcdir)/'`writer/png/0067_iend_crc_short_write_cleanup.c
+
+writer/png/test_runner-0067_iend_crc_short_write_cleanup.obj: writer/png/0067_iend_crc_short_write_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT writer/png/test_runner-0067_iend_crc_short_write_cleanup.obj -MD -MP -MF writer/png/$(DEPDIR)/test_runner-0067_iend_crc_short_write_cleanup.Tpo -c -o writer/png/test_runner-0067_iend_crc_short_write_cleanup.obj `if test -f 'writer/png/0067_iend_crc_short_write_cleanup.c'; then $(CYGPATH_W) 'writer/png/0067_iend_crc_short_write_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0067_iend_crc_short_write_cleanup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) writer/png/$(DEPDIR)/test_runner-0067_iend_crc_short_write_cleanup.Tpo writer/png/$(DEPDIR)/test_runner-0067_iend_crc_short_write_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer/png/0067_iend_crc_short_write_cleanup.c' object='writer/png/test_runner-0067_iend_crc_short_write_cleanup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o writer/png/test_runner-0067_iend_crc_short_write_cleanup.obj `if test -f 'writer/png/0067_iend_crc_short_write_cleanup.c'; then $(CYGPATH_W) 'writer/png/0067_iend_crc_short_write_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/writer/png/0067_iend_crc_short_write_cleanup.c'; fi`
 
 $(top_builddir)/assessment/test_runner-assessment.o: $(top_builddir)/assessment/assessment.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/assessment/test_runner-assessment.o -MD -MP -MF $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Tpo -c -o $(top_builddir)/assessment/test_runner-assessment.o `test -f '$(top_builddir)/assessment/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/assessment/assessment.c

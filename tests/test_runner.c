@@ -388,6 +388,7 @@ int test_png_stream_0063(int argc, char **argv);
 int test_png_stream_0064(int argc, char **argv);
 int test_png_stream_0065(int argc, char **argv);
 int test_png_stream_0066(int argc, char **argv);
+int test_png_stream_0067(int argc, char **argv);
 int test_png_color_0026(int argc, char **argv);
 int test_png_color_0027(int argc, char **argv);
 int test_png_color_0028(int argc, char **argv);
@@ -10544,6 +10545,8 @@ static test_entry_t const test_entries[] = {
       test_png_stream_0065 },
     { "writer/png/0066_indexed_compression_failure",
       test_png_stream_0066 },
+    { "writer/png/0067_iend_crc_short_write_cleanup",
+      test_png_stream_0067 },
     { "writer/png/0026_adobe_rgb_indexed", test_png_color_0026 },
     { "writer/png/0027_dci_p3_indexed", test_png_color_0027 },
     { "writer/png/0028_adobe_rgb_direct", test_png_color_0028 },

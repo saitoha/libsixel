@@ -54,6 +54,8 @@ png_stream_fault_open(char const *path, char const *mode)
 static size_t
 png_stream_fault_write(void const *bytes, size_t size, size_t count, FILE *fp)
 {
+    static unsigned char const iend_crc[] = {0xae, 0x42, 0x60, 0x82};
+
     ++png_stream_probe.writes;
     /* The builtin IDAT probe denies allocations once writing starts. */
     if (!PNG_STREAM_FAULT_LIBPNG &&
@@ -67,12 +69,17 @@ png_stream_fault_write(void const *bytes, size_t size, size_t count, FILE *fp)
     if (count != 0u &&
         ((png_stream_probe.faults & PNG_STREAM_SHORT_WRITE) ||
          png_stream_probe.chunk_header_written)) {
+        /* An empty IEND has only its CRC after the header. */
+        if ((png_stream_probe.faults & PNG_STREAM_IEND_CRC_SHORT_WRITE) &&
+            (size != 1u || count != sizeof(iend_crc) ||
+             memcmp(bytes, iend_crc, sizeof(iend_crc)) != 0)) {
+            png_stream_probe.invalid = 1;
+        }
         ++png_stream_probe.short_writes;
         errno = ENOSPC;
         return count - 1u;
     }
-    /* The chunk type ends the header write in both backends. Let that
-     * complete, then fail the first data write after it. */
+    /* Let the chunk header complete, then fail the next transfer. */
     if (png_stream_probe.chunk_to_fail != NULL &&
         size == 1u && (count == 4u || count == 8u) &&
         memcmp((unsigned char const *)bytes + count - 4u,
@@ -377,6 +384,8 @@ png_test_stream_fault(int faults)
         png_stream_probe.chunk_to_fail = "iCCP";
     } else if (faults & PNG_STREAM_IDAT_SHORT_WRITE) {
         png_stream_probe.chunk_to_fail = "IDAT";
+    } else if (faults & PNG_STREAM_IEND_CRC_SHORT_WRITE) {
+        png_stream_probe.chunk_to_fail = "IEND";
     }
     write_failed = png_stream_probe.chunk_to_fail != NULL ||
                    (faults & PNG_STREAM_SHORT_WRITE) != 0;
