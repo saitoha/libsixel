@@ -116,7 +116,8 @@ at_capture(sixel_frame_t *frame, void *context)
         (!ctx->background || ctx->keep);
     ok = frame->width == (ctx->orientation ? 2 : (int)count) &&
         frame->height == (ctx->orientation ? 2 : 1) &&
-        frame->pixelformat == ctx->format && frame->colorspace == ctx->space &&
+        sixel_frame_format(frame) == ctx->format &&
+        frame->format.coordinates == ctx->space &&
         frame->ncolors == -1 && frame->transparent == -1 &&
         frame->transparent_mask_size == (masked ? count : 0u) &&
         (frame->transparent_mask != NULL) == masked &&

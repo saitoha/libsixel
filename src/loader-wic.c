@@ -591,8 +591,7 @@ load_with_wic(
 
             src = (IWICBitmapSource*)conv;
             comp = 4;
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGBA8888);
         }
 
         hr = src->lpVtbl->GetSize(
@@ -650,8 +649,8 @@ load_with_wic(
                 NULL,
                 frame->width,
                 frame->height,
-                frame->pixelformat,
-                frame->colorspace,
+                sixel_frame_format(frame),
+                frame->format.coordinates,
                 -1,
                 SIXEL_FRAME_PIXELS_U8
             });

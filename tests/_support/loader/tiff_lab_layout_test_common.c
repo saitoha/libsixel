@@ -254,7 +254,7 @@ lx_capture(sixel_frame_t *frame, void *context)
     ++lx.calls;
     if (lx.mode == 10 || lx.mode == 11) {
         lx.ok &= frame->width == 5 && frame->height == 3 &&
-            frame->pixelformat == (lx.mode == 10
+            sixel_frame_format(frame) == (lx.mode == 10
                 ? SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_RGB888);
         if (!lx.ok) { return SIXEL_BAD_INPUT; }
         for (i = 0u; i < 15u; ++i) {
@@ -281,9 +281,10 @@ lx_capture(sixel_frame_t *frame, void *context)
     linear = lx.mode >= 2 && lx.mode <= 4;
     linear |= tlx_cases[lx.index].photo != 8;
     lx.ok &= frame->width == 5 && frame->height == 3 &&
-        frame->pixelformat == (linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+        sixel_frame_format(frame) ==
+            (linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                                       : SIXEL_PIXELFORMAT_RGBFLOAT32) &&
-        frame->colorspace == (linear ? SIXEL_COLORSPACE_LINEAR
+        frame->format.coordinates == (linear ? SIXEL_COLORSPACE_LINEAR
                                      : SIXEL_COLORSPACE_GAMMA) &&
         frame->transparent_mask == NULL && frame->ncolors == -1;
     lx.ok &= lx_values((float const *)sixel_frame_get_pixels(frame),

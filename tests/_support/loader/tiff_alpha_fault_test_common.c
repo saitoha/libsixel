@@ -277,6 +277,7 @@ af_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define load_with_libtiff af_local_11
 #define loader_can_try_libtiff af_local_12
 #define sixel_cdef_clone af_local_13
+#define sixel_cdef_storage af_local_13_storage
 #define sixel_cdef_linearized af_local_linearized
 #define sixel_cdef_separable af_local_linearized_separable
 #define sixel_cdef_transfer af_local_transfer
@@ -577,6 +578,9 @@ sixel_cdef_icc(void const *bytes, size_t length);
 SIXEL_INTERNAL_API int
 sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
                   char const **icc_path, int *intent);
+SIXEL_INTERNAL_API size_t
+sixel_cdef_storage(sixel_color_def_t const *definition);
+
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition);
 SIXEL_INTERNAL_API sixel_color_def_t *
@@ -714,6 +718,7 @@ af_linear(unsigned char *pixels, int width, int height, int format,
 #undef load_tiff
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
+#undef sixel_cdef_storage
 #undef sixel_cdef_clone
 #undef sixel_cdef_separable
 #undef sixel_cdef_linearized
@@ -915,10 +920,10 @@ af_capture(sixel_frame_t *frame, void *context)
          (ta_cases[af_fixture].associated || af_background));
     masked = !af_background && !ta_cases[af_fixture].opaque;
     af_frame_ok = frame->width * frame->height == 4 &&
-        frame->pixelformat == (fallback ? (floating
+        sixel_frame_format(frame) == (fallback ? (floating
             ? SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_RGB888)
             : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) &&
-        frame->colorspace == (fallback ? SIXEL_COLORSPACE_GAMMA
+        frame->format.coordinates == (fallback ? SIXEL_COLORSPACE_GAMMA
                                       : SIXEL_COLORSPACE_LINEAR) &&
         (frame->transparent_mask_size == (masked ? 4u : 0u)) &&
         frame->alpha_zero_is_transparent == masked;

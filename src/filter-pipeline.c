@@ -171,7 +171,8 @@ sixel_filter_pipeline_run(sixel_filter_t *first, sixel_filter_t *second,
     object = (sixel_frame_interface_t *)frame;
     if (SIXEL_FAILED(object->vtbl->get_pixels(object, &view)) ||
             SIXEL_FAILED(object->vtbl->get_alpha(object, &alpha)) ||
-            alpha.values != NULL || view.width <= 0 || view.height <= 0 ||
+            view.rgb_definition != NULL || alpha.values != NULL ||
+            view.width <= 0 || view.height <= 0 ||
             (size_t)view.width > SIZE_MAX / (size_t)view.height) {
         return SIXEL_FALSE;
     }

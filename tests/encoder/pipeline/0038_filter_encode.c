@@ -332,8 +332,8 @@ test_encode_writes_stream_and_progress(void)
 
     sixel_filter_bind_input(filter,
                             &frame,
-                            frame->pixelformat,
-                            frame->colorspace);
+                            sixel_frame_format(frame),
+                            frame->format.coordinates);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -341,7 +341,7 @@ test_encode_writes_stream_and_progress(void)
         goto cleanup;
     }
 
-    if (dither->pixelformat != frame->pixelformat) {
+    if (dither->pixelformat != sixel_frame_format(frame)) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }

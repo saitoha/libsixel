@@ -71,7 +71,7 @@ tiff_icc_capture_lab(sixel_frame_t *frame, void *context)
     if (frame->width != 16 || frame->height != 16 ||
         sixel_frame_get_pixelformat(frame) !=
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->colorspace != SIXEL_COLORSPACE_LINEAR ||
+        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR ||
         frame->transparent_mask != NULL) {
         return SIXEL_BAD_INPUT;
     }

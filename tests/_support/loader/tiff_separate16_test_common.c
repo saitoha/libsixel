@@ -370,6 +370,7 @@ ts_tiled(TIFF *tif)
 #define load_with_libtiff ts_local_11
 #define loader_can_try_libtiff ts_local_12
 #define sixel_cdef_clone ts_local_13
+#define sixel_cdef_storage ts_local_13_storage
 #define sixel_cdef_linearized ts_local_linearized
 #define sixel_cdef_separable ts_local_linearized_separable
 #define sixel_cdef_transfer ts_local_transfer
@@ -670,6 +671,9 @@ sixel_cdef_icc(void const *bytes, size_t length);
 SIXEL_INTERNAL_API int
 sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
                   char const **icc_path, int *intent);
+SIXEL_INTERNAL_API size_t
+sixel_cdef_storage(sixel_color_def_t const *definition);
+
 SIXEL_INTERNAL_API sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition);
 SIXEL_INTERNAL_API sixel_color_def_t *
@@ -803,6 +807,7 @@ ts_linear(unsigned char *pixels, int width, int height, int format,
 #undef load_tiff
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
+#undef sixel_cdef_storage
 #undef sixel_cdef_clone
 #undef sixel_cdef_separable
 #undef sixel_cdef_linearized
@@ -992,9 +997,9 @@ ts_capture(sixel_frame_t *frame, void *context)
     ts.ok &= frame->width == 3 && frame->height == 2 &&
         frame->transparent_mask_size == 0u &&
         frame->alpha_zero_is_transparent == 0 &&
-        frame->pixelformat == (ts.fallback ? SIXEL_PIXELFORMAT_RGBFLOAT32
+        sixel_frame_format(frame) == (ts.fallback ? SIXEL_PIXELFORMAT_RGBFLOAT32
                             : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) &&
-        frame->colorspace == (ts.fallback ? SIXEL_COLORSPACE_GAMMA
+        frame->format.coordinates == (ts.fallback ? SIXEL_COLORSPACE_GAMMA
                                          : SIXEL_COLORSPACE_LINEAR);
     if (!ts.ok) { return SIXEL_BAD_INPUT; }
     if (reference) {
@@ -1215,14 +1220,14 @@ ts_legacy_capture(sixel_frame_t *frame, void *context)
     (void)context;
     ++ts.calls;
     bytes = (size_t)frame->width * (size_t)frame->height *
-        (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat) ?
+        (SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_format(frame)) ?
          3u * sizeof(float) :
-         (size_t)sixel_helper_compute_depth(frame->pixelformat));
+         (size_t)sixel_helper_compute_depth(sixel_frame_format(frame)));
     if (ts.baseline) {
         ts_legacy.width = frame->width;
         ts_legacy.height = frame->height;
-        ts_legacy.format = frame->pixelformat;
-        ts_legacy.colorspace = frame->colorspace;
+        ts_legacy.format = sixel_frame_format(frame);
+        ts_legacy.colorspace = frame->format.coordinates;
         ts_legacy.alpha = frame->alpha_zero_is_transparent;
         ts_legacy.bytes = bytes;
         ts_legacy.mask_size = frame->transparent_mask_size;
@@ -1240,8 +1245,8 @@ ts_legacy_capture(sixel_frame_t *frame, void *context)
     } else {
         ts.ok &= ts_legacy.width == frame->width &&
             ts_legacy.height == frame->height &&
-            ts_legacy.format == frame->pixelformat &&
-            ts_legacy.colorspace == frame->colorspace &&
+            ts_legacy.format == sixel_frame_format(frame) &&
+            ts_legacy.colorspace == frame->format.coordinates &&
             ts_legacy.alpha == frame->alpha_zero_is_transparent &&
             ts_legacy.bytes == bytes &&
             ts_legacy.mask_size == frame->transparent_mask_size;

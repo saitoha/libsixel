@@ -266,7 +266,8 @@ yc_capture(sixel_frame_t *frame, void *context)
         ? SIXEL_COLORSPACE_GAMMA : yc.target == 3
         ? SIXEL_COLORSPACE_OKLAB : SIXEL_COLORSPACE_LINEAR;
     yc.ok &= frame->width == 3 && frame->height == 2 &&
-        frame->pixelformat == format && frame->colorspace == space &&
+        sixel_frame_format(frame) == format &&
+        frame->format.coordinates == space &&
         frame->transparent_mask_size == 0u &&
         frame->alpha_zero_is_transparent == 0;
     if (!yc.ok) { return SIXEL_BAD_INPUT; }

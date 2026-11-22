@@ -89,6 +89,11 @@ set -- \
     frame/storage/0003_frame_clone_float_canonical.t \
     frame/storage/0011_bgr888_owned.t \
     frame/storage/0012_bgr888_borrowed.t \
+    frame/storage/0013_profile_srgb.t \
+    frame/storage/0014_profile_p3.t \
+    frame/storage/0015_profile_retry.t \
+    frame/storage/0016_packed_float_retry.t \
+    frame/storage/0017_profile_icc.t \
     palette/output-color/0103_profile_reuse.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \

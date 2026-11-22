@@ -1286,8 +1286,7 @@ load_with_gd(
             frame->palette = palette;
             palette = NULL;
             frame->ncolors = ncolors;
-            frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_PAL8);
             frame->transparent = has_keycolor_alpha != 0 ? key_index : -1;
             frame->alpha_zero_is_transparent = 0;
             goto emit_frame;
@@ -1400,8 +1399,8 @@ load_with_gd(
 
             frame->pixels.f32ptr = pixels_f32;
             pixels_f32 = NULL;
-            frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-            frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+            sixel_frame_assign_format(frame,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
             if (mask != NULL) {
                 frame->transparent_mask = mask;
                 frame->transparent_mask_size = pixel_count;
@@ -1493,8 +1492,7 @@ load_with_gd(
 
         frame->pixels.u8ptr = pixels_u8;
         pixels_u8 = NULL;
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
         if (mask != NULL) {
             frame->transparent_mask = mask;
             frame->transparent_mask_size = pixel_count;
@@ -1617,8 +1615,7 @@ load_with_gd(
 
         frame->pixels.f32ptr = pixels_f32;
         pixels_f32 = NULL;
-        frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-        frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+        sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
         if (mask != NULL) {
             frame->transparent_mask = mask;
             frame->transparent_mask_size = pixel_count;
@@ -1697,8 +1694,7 @@ load_with_gd(
 
         frame->pixels.u8ptr = pixels_u8;
         pixels_u8 = NULL;
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
         frame->transparent_mask = mask;
         frame->transparent_mask_size = pixel_count;
         frame->alpha_zero_is_transparent = 1;
@@ -1737,8 +1733,7 @@ load_with_gd(
 
     frame->pixels.u8ptr = pixels_u8;
     pixels_u8 = NULL;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
 
 emit_frame:
     status = SIXEL_OK;

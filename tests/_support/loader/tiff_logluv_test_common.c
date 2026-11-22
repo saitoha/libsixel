@@ -60,12 +60,12 @@ tlog_capture(sixel_frame_t *frame, void *context)
         frame->transparent != -1 || frame->transparent_mask != NULL ||
         frame->transparent_mask_size != 0u ||
         frame->alpha_zero_is_transparent != 0 ||
-        frame->pixelformat != (byte_view ? SIXEL_PIXELFORMAT_RGB888
+        sixel_frame_format(frame) != (byte_view ? SIXEL_PIXELFORMAT_RGB888
                                          : formats[target]) ||
-        frame->colorspace != (byte_view ? SIXEL_COLORSPACE_GAMMA
+        frame->format.coordinates != (byte_view ? SIXEL_COLORSPACE_GAMMA
                                         : spaces[target])) {
         fprintf(stderr, "TLOGLUV|metadata=0|format=%x|space=%d\n",
-                frame->pixelformat, frame->colorspace);
+                sixel_frame_format(frame), frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }
     pixels = (float const *)sixel_frame_get_pixels(frame);

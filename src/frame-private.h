@@ -29,6 +29,16 @@
 #include "frame.h"
 #include "sixel_atomic.h"
 
+/* Byte layouts use their legacy packing codes. All float triplets share
+ * RGBFLOAT32 storage; coordinates alone distinguish RGB, Lab and opponents.
+ * An explicit RGB definition is owned by the frame and takes precedence
+ * over the default RGB primaries and transfer. */
+struct sixel_frame_pixel_format {
+    int layout;
+    int coordinates;
+    struct sixel_color_def *rgb;
+};
+
 /* Private frame object storage. Keep src/frame.h storage-opaque. */
 struct sixel_frame {
     sixel_frame_interface_t frame_interface; /* IFrame dispatch header */
@@ -42,9 +52,9 @@ struct sixel_frame {
     int owns_palette;               /* frame releases palette storage */
     int width;                      /* frame width */
     int height;                     /* frame height */
+    int palette_extent;             /* extra addressable raw SIXEL slots */
     int ncolors;                    /* palette colors */
-    int pixelformat;                /* one of enum pixelFormat */
-    int colorspace;                 /* one of SIXEL_COLORSPACE_* */
+    struct sixel_frame_pixel_format format;
     /*
      * Timeline metadata can be updated by the loader while worker threads
      * sample or quantize shared frames. Keep these fields atomic so that
@@ -67,6 +77,13 @@ struct sixel_frame {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Project the storage and coordinates to a historical API format. */
+SIXEL_INTERNAL_API int
+sixel_frame_format(sixel_frame_t const *frame);
+
+SIXEL_INTERNAL_API void
+sixel_frame_assign_format(sixel_frame_t *frame, int pixelformat);
 
 /* Resolve straight linear RGB plus continuous alpha at a delivery boundary.
  * A NULL background retains RGB and only marks exact alpha-zero samples.

@@ -39,7 +39,7 @@ png_chrm_capture(sixel_frame_t *frame, void *context)
     format = probe->format;
     mask = source->alpha && format != SIXEL_PIXELFORMAT_RGBA8888;
     if (frame->width != 8 || frame->height != 1 ||
-        frame->pixelformat != format || frame->colorspace !=
+        sixel_frame_format(frame) != format || frame->format.coordinates !=
             (format == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                 ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA) ||
         frame->ncolors != -1 || frame->transparent != -1 ||
@@ -48,7 +48,7 @@ png_chrm_capture(sixel_frame_t *frame, void *context)
         (frame->transparent_mask != NULL) != mask) {
         fprintf(stderr, "PNG cHRM representation: format=%x/%x "
             "space=%d alpha=%d/%d mask=%lu/%lu\n",
-            frame->pixelformat, format, frame->colorspace,
+            sixel_frame_format(frame), format, frame->format.coordinates,
             frame->alpha_zero_is_transparent, source->alpha,
             (unsigned long)frame->transparent_mask_size,
             (unsigned long)(mask ? 8u : 0u));

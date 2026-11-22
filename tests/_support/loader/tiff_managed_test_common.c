@@ -29,9 +29,9 @@ tiff_managed_check(sixel_frame_t const *frame, int fixture, int engine,
     n = (size_t)tm_cases[fixture].width * tm_cases[fixture].height;
     if (frame->width != tm_cases[fixture].width ||
         frame->height != tm_cases[fixture].height ||
-        frame->pixelformat != (raw ? SIXEL_PIXELFORMAT_RGBFLOAT32
+        sixel_frame_format(frame) != (raw ? SIXEL_PIXELFORMAT_RGBFLOAT32
                                   : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->colorspace != (raw ? SIXEL_COLORSPACE_GAMMA
+        frame->format.coordinates != (raw ? SIXEL_COLORSPACE_GAMMA
                                  : SIXEL_COLORSPACE_LINEAR) ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL || frame->transparent_mask_size ||
@@ -93,10 +93,11 @@ tm_capture(sixel_frame_t *frame, void *context)
         /* The native comparison only replaces values, never metadata. */
         reference = *frame;
         reference.pixels.u8ptr = (unsigned char *)tm_cases[ctx->fixture].source;
-        reference.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-        reference.colorspace = SIXEL_COLORSPACE_GAMMA;
-        ok = frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-             frame->colorspace == SIXEL_COLORSPACE_LINEAR &&
+        reference.format.layout = SIXEL_PIXELFORMAT_RGBFLOAT32;
+        reference.format.coordinates = SIXEL_COLORSPACE_GAMMA;
+        reference.format.rgb = NULL;
+        ok = sixel_frame_format(frame) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+             frame->format.coordinates == SIXEL_COLORSPACE_LINEAR &&
              tiff_managed_check(&reference, ctx->fixture, ctx->engine, 1);
         bytes = (size_t)frame->width * frame->height * 3u * sizeof(float);
         if (ctx->native == 1) {

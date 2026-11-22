@@ -173,8 +173,8 @@ tlf_target(sixel_frame_t *frame, int format)
 {
     ++tlf_targets;
     tlf_target_matches = frame->width == 4 && frame->height == 2 &&
-        frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-        frame->colorspace == SIXEL_COLORSPACE_LINEAR &&
+        sixel_frame_format(frame) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+        frame->format.coordinates == SIXEL_COLORSPACE_LINEAR &&
         memcmp(sixel_frame_get_pixels(frame), tlf_normal,
                sizeof(tlf_normal)) == 0;
     if (tlf_mode == 9 && tlf_target_matches) {
@@ -316,8 +316,8 @@ tlf_capture(sixel_frame_t *frame, void *context)
     state = context;
     ++state->calls;
     if (frame->width != 4 || frame->height != 2 ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->colorspace != SIXEL_COLORSPACE_LINEAR ||
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL || frame->transparent_mask_size ||
         frame->alpha_zero_is_transparent) {
