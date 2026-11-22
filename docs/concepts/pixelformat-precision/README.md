@@ -300,6 +300,10 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-219 | Builtin SIXEL frame storage includes its retained byte palette. | [tests/frame/storage/0028_builtin_sixel_palette_storage.t](../../../tests/frame/storage/0028_builtin_sixel_palette_storage.t) |
 | FP-220 | D60 analytic RGB neutrals round at the exact RGB888 boundary. | [tests/frame/storage/0029_d60_neutral_byte_tie.t](../../../tests/frame/storage/0029_d60_neutral_byte_tie.t) |
 | FP-221 | A profiled frame selects A2B1 when both forward tables are present. | [tests/frame/storage/0030_profile_relative_lut_precedence.t](../../../tests/frame/storage/0030_profile_relative_lut_precedence.t) |
+| FP-222 | PAL8 promotion preserves keyed coverage in the decoded paint mask. | [tests/frame/alpha/0017_pal8_float_paint.t](../../../tests/frame/alpha/0017_pal8_float_paint.t) |
+| FP-223 | PAL8 promotion combines keyed and explicit coverage. | [tests/frame/alpha/0018_pal8_float_mask_union.t](../../../tests/frame/alpha/0018_pal8_float_mask_union.t) |
+| FP-224 | Packed frame storage counts each padded row and palette. | [tests/frame/storage/0031_packed_row_storage.t](../../../tests/frame/storage/0031_packed_row_storage.t) |
+| FP-225 | Packed frame clones copy exactly the padded rows. | [tests/frame/storage/0032_packed_row_clone.t](../../../tests/frame/storage/0032_packed_row_clone.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

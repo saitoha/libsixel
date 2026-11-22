@@ -8,6 +8,8 @@
 #include <6cells.h>
 #include "src/chunk-factory.h"
 #include "src/cms.h"
+#include "src/sixel_decode_pixels.h"
+#include "tests/_support/planner/pipeline/playback_test_common.h"
 #include "src/loader.h"
 #include "src/loader-common.h"
 #include "tests/_support/diagnostics/icc_numeric_common.h"
@@ -15,6 +17,169 @@
 #include "tests/data/color-numeric/paired-lut.h"
 #include "tests/data/color-numeric/opponents.h"
 #include "tests/data/color-numeric/vectors.h"
+
+/* Each palette entry is red. Only the original index distinguishes coverage,
+ * so matching decoded paint cannot be achieved by comparing RGB triplets. */
+static int
+test_indexed_paint(int with_mask)
+{
+    unsigned char indices[] = {1, 0, 0, 1};
+    unsigned char palette[] = {255, 0, 0, 255, 0, 0};
+    unsigned char expected[] = {0, 255, 255, 0};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_transparency_t coverage = {0};
+    sixel_encoder_t *encoder = NULL;
+    sixel_output_t *output = NULL;
+    playback_test_buffer_t stream = {0};
+    unsigned char *pixels = NULL, *paint = NULL, *colors = NULL;
+    int width, height, ncolors;
+    unsigned int flags;
+    int result = EXIT_FAILURE;
+
+    if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, indices, 4, 1,
+            SIXEL_PIXELFORMAT_PAL8, palette, 2))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    coverage.transparent = 1;
+    if (with_mask) {
+        coverage.transparent_mask = calloc(4, 1);
+        if (coverage.transparent_mask == NULL) {
+            goto end;
+        }
+        coverage.transparent_mask_size = 4;
+        coverage.transparent_mask[2] = 1;
+        expected[2] = 0;
+    }
+    if (SIXEL_FAILED(iface->vtbl->set_transparency(iface, &coverage))) {
+        free(coverage.transparent_mask);
+        goto end;
+    }
+    if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
+            SIXEL_PIXELFORMAT_RGBFLOAT32)) ||
+        SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
+        SIXEL_FAILED(sixel_output_new(&output, playback_test_write,
+            &stream, NULL)) ||
+        SIXEL_FAILED(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
+            "off")) ||
+        SIXEL_FAILED(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
+            "none")) ||
+        SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
+        SIXEL_FAILED(sixel_decode_raw_with_options_mask(stream.bytes,
+            (int)stream.size, 0, &pixels, &paint, &width, &height, &colors,
+            &ncolors, &flags, NULL)) ||
+        width != 4 || height != 1 || paint == NULL ||
+        memcmp(paint, expected, sizeof(expected)) != 0) {
+        goto end;
+    }
+    result = EXIT_SUCCESS;
+end:
+    free(colors);
+    free(paint);
+    free(pixels);
+    free(stream.bytes);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    sixel_frame_unref(frame);
+    return result;
+}
+
+/* Record the requested payload size and leave readable guard space. The
+ * source also backs a full 18 bytes so an old unpacked copy is observable. */
+static size_t packed_expected_size;
+static unsigned char *packed_allocation;
+
+static void *
+packed_clone_malloc(size_t size)
+{
+    unsigned char *ptr;
+
+    if (size != packed_expected_size) {
+        return malloc(size);
+    }
+    ptr = malloc(size + 18u);
+    if (ptr != NULL) {
+        memset(ptr, 0xee, size + 18u);
+    }
+    packed_allocation = ptr;
+    return ptr;
+}
+
+static int
+test_packed_rows(int clone_pixels)
+{
+    static const struct {
+        int format;
+        size_t aligned, padded;
+        int ncolors;
+    } cases[] = {
+        {SIXEL_PIXELFORMAT_PAL1, 2, 4, 2},
+        {SIXEL_PIXELFORMAT_PAL2, 4, 6, 2},
+        {SIXEL_PIXELFORMAT_PAL4, 8, 10, 2},
+        {SIXEL_PIXELFORMAT_G1, 2, 4, 0},
+        {SIXEL_PIXELFORMAT_G2, 4, 6, 0},
+        {SIXEL_PIXELFORMAT_G4, 8, 10, 0}
+    };
+    unsigned char source[18], palette[6] = {0};
+    sixel_frame_t *frame = NULL;
+    sixel_allocator_t *allocator = NULL;
+    sixel_frame_interface_t *iface, *clone = NULL;
+    sixel_frame_pixels_view_t view;
+    size_t i, measured, bytes;
+    int width;
+    int result = EXIT_FAILURE;
+
+    for (i = 0; i < sizeof(source); ++i) {
+        source[i] = (unsigned char)(0xa0u + i);
+    }
+    if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_allocator_new(&allocator, packed_clone_malloc,
+            calloc, realloc, free))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        for (width = 8; width <= 9; ++width) {
+            bytes = width == 8 ? cases[i].aligned : cases[i].padded;
+            if (SIXEL_FAILED(sixel_frame_init_borrowed(frame, source, width,
+                    2, cases[i].format, cases[i].ncolors ? palette : NULL,
+                    cases[i].ncolors))) {
+                goto end;
+            }
+            if (!clone_pixels) {
+                if (SIXEL_FAILED(iface->vtbl->measure_storage(iface,
+                        &measured)) ||
+                    measured != bytes + (size_t)cases[i].ncolors * 3u) {
+                    goto end;
+                }
+                continue;
+            }
+            packed_expected_size = bytes;
+            packed_allocation = NULL;
+            if (SIXEL_FAILED(iface->vtbl->clone(iface, allocator, &clone)) ||
+                SIXEL_FAILED(clone->vtbl->get_pixels(clone, &view)) ||
+                view.pixels == NULL || view.pixels != packed_allocation ||
+                memcmp(view.pixels, source, bytes) != 0 ||
+                view.pixels[bytes] != 0xee) {
+                goto end;
+            }
+            clone->vtbl->unref(clone);
+            clone = NULL;
+        }
+    }
+    result = EXIT_SUCCESS;
+end:
+    if (clone != NULL) {
+        clone->vtbl->unref(clone);
+    }
+    packed_expected_size = 0;
+    packed_allocation = NULL;
+    sixel_allocator_unref(allocator);
+    sixel_frame_unref(frame);
+    return result;
+}
 
 /* Promotion allocates float triplets before unpacking the two PAL1 rows.
  * Reject only the unpack allocation so the first allocation must unwind. */
@@ -571,6 +736,18 @@ test_frame_0014_clone_float(int argc, char **argv)
     int c;
     int result;
 
+    if (argc == 2 && strcmp(argv[1], "indexed-paint") == 0) {
+        return test_indexed_paint(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "indexed-mask") == 0) {
+        return test_indexed_paint(1);
+    }
+    if (argc == 2 && strcmp(argv[1], "packed-storage") == 0) {
+        return test_packed_rows(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "packed-clone") == 0) {
+        return test_packed_rows(1);
+    }
     if (argc == 3) {
         return test_smptec_to_srgb(strcmp(argv[1], "smptec-byte") == 0,
             strcmp(argv[2], "rgb888") == 0 ? SIXEL_PIXELFORMAT_RGB888 :
