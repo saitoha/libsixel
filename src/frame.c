@@ -27,6 +27,7 @@
 #endif
 
 /* STDC_HEADERS */
+#include <float.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -42,6 +43,7 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include "frame-private.h"
+#include "cms.h"
 #include "frame-normalize.h"
 #include "pixelformat.h"
 #include "colorspace.h"
@@ -53,9 +55,7 @@
 static SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame);
 static SIXELSTATUS
-sixel_frame_promote_to_float32(sixel_frame_t *frame);
-static void
-sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat);
+sixel_frame_promote_to_float32(sixel_frame_t *frame, int target);
 static void *
 sixel_frame_pixel_storage(sixel_frame_t const *frame);
 static void
@@ -113,6 +113,9 @@ static sixel_frame_t *
 sixel_frame_from_interface(sixel_frame_interface_t *frame);
 static sixel_frame_t const *
 sixel_frame_from_interface_const(sixel_frame_interface_t const *frame);
+static SIXELSTATUS
+sixel_frame_get_pixels_view(sixel_frame_t const *frame,
+                            sixel_frame_pixels_view_t *view);
 static SIXELSTATUS
 sixel_frame_measure_storage(sixel_frame_t const *frame,
                             size_t *storage_bytes);
@@ -179,6 +182,10 @@ static SIXELSTATUS
 sixel_frame_vtbl_set_alpha(sixel_frame_interface_t *frame,
                            sixel_frame_alpha_t const *alpha);
 
+static SIXELSTATUS
+sixel_frame_vtbl_set_rgb_definition(sixel_frame_interface_t *iface,
+                                    sixel_color_def_t const *definition);
+
 static sixel_frame_vtbl_t const g_sixel_frame_vtbl = {
     sixel_frame_vtbl_ref,
     sixel_frame_vtbl_unref,
@@ -195,7 +202,8 @@ static sixel_frame_vtbl_t const g_sixel_frame_vtbl = {
     sixel_frame_vtbl_measure_storage,
     sixel_frame_vtbl_clone,
     sixel_frame_vtbl_get_alpha,
-    sixel_frame_vtbl_set_alpha
+    sixel_frame_vtbl_set_alpha,
+    sixel_frame_vtbl_set_rgb_definition
 };
 
 
@@ -295,7 +303,7 @@ sixel_frame_pixel_storage(sixel_frame_t const *frame)
     if (frame == NULL) {
         return NULL;
     }
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+    if (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         return (void *)frame->pixels.f32ptr;
     }
 
@@ -386,6 +394,7 @@ sixel_frame_release_replaced_palette(sixel_frame_t *frame,
             sixel_allocator_free(frame->allocator, frame->palette);
         }
         frame->palette = NULL;
+        frame->palette_extent = 0;
         frame->owns_palette = 1;
     }
 }
@@ -416,7 +425,8 @@ sixel_frame_vtbl_init_pixels(
     SIXELSTATUS status;
     sixel_frame_t *storage;
 
-    if (frame == NULL || request == NULL) {
+    if (frame == NULL || request == NULL ||
+        request->colorspace == SIXEL_FRAME_COLORSPACE_PROFILE_RGB) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -433,7 +443,7 @@ sixel_frame_vtbl_init_pixels(
                                      1,
                                      1);
     if (SIXEL_SUCCEEDED(status) && request->colorspace >= 0) {
-        storage->colorspace = request->colorspace;
+        storage->format.coordinates = request->colorspace;
     }
 
     return status;
@@ -450,21 +460,7 @@ sixel_frame_vtbl_get_pixels(sixel_frame_interface_t *frame,
     }
 
     storage = sixel_frame_from_interface_const(frame);
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(storage->pixelformat)) {
-        view->pixels = NULL;
-        view->pixels_float32 = storage->pixels.f32ptr;
-    } else {
-        view->pixels = storage->pixels.u8ptr;
-        view->pixels_float32 = NULL;
-    }
-    view->palette = storage->palette;
-    view->width = storage->width;
-    view->height = storage->height;
-    view->pixelformat = storage->pixelformat;
-    view->colorspace = storage->colorspace;
-    view->ncolors = storage->ncolors;
-
-    return SIXEL_OK;
+    return sixel_frame_get_pixels_view(storage, view);
 }
 
 static SIXELSTATUS
@@ -608,8 +604,9 @@ sixel_frame_vtbl_set_alpha(sixel_frame_interface_t *frame,
     } else {
         if (storage->width <= 0 || storage->height <= 0 ||
             (size_t)storage->width > SIZE_MAX / (size_t)storage->height ||
-            (storage->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-             storage->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
+            (sixel_frame_format(storage) != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+             sixel_frame_format(storage) !=
+                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
             storage->transparent_mask != NULL || storage->transparent >= 0) {
             return SIXEL_BAD_ARGUMENT;
         }
@@ -654,8 +651,8 @@ sixel_frame_resolve_alpha(sixel_frame_t *frame,
     if (frame->alpha == NULL) {
         return SIXEL_OK;
     }
-    if (frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->colorspace != SIXEL_COLORSPACE_LINEAR) {
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
         return SIXEL_BAD_ARGUMENT;
     }
     count = frame->alpha_count;
@@ -744,16 +741,16 @@ sixel_frame_unpack_alpha(sixel_frame_t *frame,
     double value;
 
     if (frame == NULL || frame->pixels.u8ptr == NULL ||
-            frame->colorspace != SIXEL_COLORSPACE_GAMMA ||
+            frame->format.coordinates != SIXEL_COLORSPACE_GAMMA ||
             frame->alpha != NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    depth = sixel_helper_compute_depth(frame->pixelformat);
+    depth = sixel_helper_compute_depth(sixel_frame_format(frame));
     offsets[0] = 0;
     offsets[1] = 1;
     offsets[2] = 2;
     alpha_offset = 3;
-    switch (frame->pixelformat) {
+    switch (sixel_frame_format(frame)) {
     case SIXEL_PIXELFORMAT_RGBA8888:
         break;
     case SIXEL_PIXELFORMAT_ARGB8888:
@@ -857,7 +854,7 @@ sixel_frame_unpack_alpha(sixel_frame_t *frame,
     sixel_allocator_free(frame->allocator, frame->transparent_mask);
     frame->transparent_mask = mask;
     frame->transparent_mask_size = mask != NULL ? count : 0u;
-    sixel_frame_apply_pixelformat(frame, require_float
+    sixel_frame_assign_format(frame, require_float
         ? SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_RGB888);
     return SIXEL_OK;
 }
@@ -965,7 +962,7 @@ sixel_frame_get_pixels_view(sixel_frame_t const *frame,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+    if (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         view->pixels = NULL;
         view->pixels_float32 = frame->pixels.f32ptr;
     } else {
@@ -975,9 +972,10 @@ sixel_frame_get_pixels_view(sixel_frame_t const *frame,
     view->palette = frame->palette;
     view->width = frame->width;
     view->height = frame->height;
-    view->pixelformat = frame->pixelformat;
-    view->colorspace = frame->colorspace;
+    view->pixelformat = sixel_frame_format(frame);
+    view->colorspace = frame->format.coordinates;
     view->ncolors = frame->ncolors;
+    view->rgb_definition = frame->format.rgb;
 
     return SIXEL_OK;
 }
@@ -1015,6 +1013,15 @@ sixel_frame_get_transparency(
     transparency->transparent_mask_size = frame->transparent_mask_size;
 
     return SIXEL_OK;
+}
+
+/* The SIXEL loader preserves the declared color count in the public view.
+ * Cloning and expanding the storage also need its reserved unpainted slot. */
+static int
+sixel_frame_palette_entries(sixel_frame_t const *frame)
+{
+    return frame->palette_extent > frame->ncolors
+        ? frame->palette_extent : frame->ncolors;
 }
 
 /*
@@ -1084,14 +1091,18 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
             (size_t)view.ncolors > SIZE_MAX / 3u) {
             return SIXEL_BAD_INPUT;
         }
-        palette_bytes = (size_t)view.ncolors * 3u;
+        palette_bytes = (size_t)sixel_frame_palette_entries(frame) * 3u;
     }
     if (transparency.transparent_mask != NULL &&
         transparency.transparent_mask_size > 0u) {
         mask_bytes = transparency.transparent_mask_size;
     }
 
-    total = pixel_bytes;
+    total = sixel_cdef_storage(view.rgb_definition);
+    if (pixel_bytes > SIZE_MAX - total) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    total += pixel_bytes;
     if (total > SIZE_MAX - palette_bytes) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
@@ -1186,9 +1197,16 @@ sixel_frame_clone(sixel_frame_t const *frame,
 
     clone->width = view.width;
     clone->height = view.height;
-    clone->pixelformat = view.pixelformat;
-    clone->colorspace = view.colorspace;
+    clone->format = frame->format;
+    if (frame->format.rgb != NULL) {
+        clone->format.rgb = sixel_cdef_clone(frame->format.rgb);
+        if (clone->format.rgb == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+    }
     clone->ncolors = view.ncolors;
+    clone->palette_extent = frame->palette_extent;
     clone->transparent = transparency.transparent;
     clone->alpha_zero_is_transparent =
         transparency.alpha_zero_is_transparent;
@@ -1206,7 +1224,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
             status = SIXEL_BAD_INPUT;
             goto error;
         }
-        palette_bytes = (size_t)view.ncolors * 3u;
+        palette_bytes = (size_t)sixel_frame_palette_entries(frame) * 3u;
         palette = (unsigned char *)sixel_allocator_malloc(clone->allocator,
                                                           palette_bytes);
         if (palette == NULL) {
@@ -1356,13 +1374,9 @@ sixel_frame_new(
     (*ppframe)->width = 0;
     (*ppframe)->height = 0;
     (*ppframe)->ncolors = (-1);
-    (*ppframe)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    /*
-     * Initialize colorspace metadata to match the default pixelformat so
-     * getters do not read uninitialized memory before initialization.
-     */
-    (*ppframe)->colorspace =
-        sixel_pixelformat_get_colorspace((*ppframe)->pixelformat);
+    (*ppframe)->palette_extent = 0;
+    (*ppframe)->format.rgb = NULL;
+    sixel_frame_assign_format(*ppframe, SIXEL_PIXELFORMAT_RGB888);
     (*ppframe)->delay = 0;
     (*ppframe)->frame_no = 0;
     (*ppframe)->loop_count = 0;
@@ -1441,6 +1455,7 @@ sixel_frame_destroy(sixel_frame_t /* in */ *frame)
         sixel_frame_release_owned_palette(frame);
         sixel_allocator_free(allocator, frame->transparent_mask);
         sixel_allocator_free(allocator, frame->alpha);
+        sixel_cdef_free(frame->format.rgb);
         sixel_allocator_free(allocator, frame);
         sixel_allocator_unref(allocator);
     }
@@ -1571,7 +1586,7 @@ sixel_frame_init_common(
     frame->owns_pixels = owns_pixels != 0 ? 1 : 0;
     frame->width = width;
     frame->height = height;
-    sixel_frame_apply_pixelformat(frame, pixelformat);
+    sixel_frame_assign_format(frame, pixelformat);
     sixel_frame_release_replaced_palette(frame, palette, old_palette_owned);
     frame->palette = palette;
     frame->owns_palette = owns_palette != 0 ? 1 : 0;
@@ -1662,6 +1677,9 @@ sixel_frame_set_palette(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *palette)
 {
+    if (frame->palette != palette) {
+        frame->palette_extent = 0;
+    }
     frame->palette = palette;
 }
 
@@ -1720,7 +1738,7 @@ sixel_frame_set_ncolors(
 SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
 {
-    return frame->pixelformat;
+    return sixel_frame_format(frame);
 }
 
 
@@ -1765,14 +1783,15 @@ sixel_frame_quantize_float_rgb(sixel_frame_t *frame)
         for (c = 0; c < 3; ++c) {
             input[c] = frame->pixels.f32ptr[i * 3u + c];
         }
-        if (frame->colorspace == SIXEL_COLORSPACE_GAMMA) {
+        if (frame->format.coordinates == SIXEL_COLORSPACE_GAMMA) {
             /* Gamma storage already has the requested coordinates. Keep
              * exact rounding ties and avoid a redundant transfer roundtrip. */
             memcpy(output, input, sizeof(output));
             converted = isfinite(input[0]) && isfinite(input[1]) &&
                         isfinite(input[2]);
         } else {
-            converted = sixel_color_convert(output, input, frame->colorspace,
+            converted = sixel_color_convert(output, input,
+                frame->format.coordinates,
                                             SIXEL_COLORSPACE_GAMMA);
         }
         if (!converted) {
@@ -1792,8 +1811,103 @@ sixel_frame_quantize_float_rgb(sixel_frame_t *frame)
     sixel_frame_release_owned_pixels(frame);
     frame->pixels.u8ptr = pixels;
     frame->owns_pixels = 1;
-    sixel_frame_apply_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
     return SIXEL_OK;
+}
+
+
+/* Convert an explicitly profiled RGB frame into a legacy working space.
+ * Publish pixels and their description together. Mid-image numeric failures
+ * must leave both borrowed and owned inputs available for a retry. */
+static SIXELSTATUS
+sixel_frame_convert_profiled(sixel_frame_t *frame, int target)
+{
+    sixel_color_def_t *srgb;
+    SIXELSTATUS status;
+    unsigned char *pixels;
+    float *floats;
+    size_t count;
+    size_t bytes;
+    size_t i;
+    int c;
+    int space;
+    double input[3];
+    double xyz[3];
+    double rgb[3];
+    double output[3];
+    double v;
+
+    if (target != SIXEL_PIXELFORMAT_RGB888 &&
+        !SIXEL_PIXELFORMAT_IS_FLOAT32(target)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (frame->width <= 0 || frame->height <= 0 ||
+        (size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return SIXEL_BAD_INPUT;
+    }
+    status = sixel_frame_validate_size("profiled frame", frame->width,
+        frame->height, target, &count, &bytes, NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    srgb = sixel_cdef_name("srgb");
+    if (srgb == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    pixels = sixel_allocator_malloc(frame->allocator, bytes);
+    if (pixels == NULL) {
+        sixel_cdef_free(srgb);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    floats = (float *)(void *)pixels;
+    space = sixel_pixelformat_get_colorspace(target);
+    for (i = 0; i < count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            input[c] = frame->pixels.f32ptr[3 * i + c];
+        }
+        if (!sixel_cdef_to_xyz(frame->format.rgb, input, xyz,
+                               SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) ||
+            !sixel_cdef_from_xyz(srgb, xyz, rgb,
+                                 SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
+            goto invalid;
+        }
+        if (space == SIXEL_COLORSPACE_GAMMA) {
+            memcpy(output, rgb, sizeof(output));
+        } else if (!sixel_color_convert(output, rgb, SIXEL_COLORSPACE_GAMMA,
+                                        space)) {
+            goto invalid;
+        }
+        for (c = 0; c < 3; ++c) {
+            v = output[c];
+            if (!isfinite(v)) {
+                goto invalid;
+            }
+            if (target == SIXEL_PIXELFORMAT_RGB888) {
+                v = v < 0.0 ? 0.0 : v > 1.0 ? 1.0 : v;
+                pixels[3 * i + c] = (unsigned char)(255.0 * v + 0.5);
+            } else {
+                if (fabs(v) > FLT_MAX) {
+                    goto invalid;
+                }
+                floats[3 * i + c] = (float)v;
+            }
+        }
+    }
+    sixel_frame_release_owned_pixels(frame);
+    if (target == SIXEL_PIXELFORMAT_RGB888) {
+        frame->pixels.u8ptr = pixels;
+    } else {
+        frame->pixels.f32ptr = floats;
+    }
+    frame->owns_pixels = 1;
+    sixel_frame_assign_format(frame, target);
+    sixel_cdef_free(srgb);
+    return SIXEL_OK;
+
+invalid:
+    sixel_allocator_free(frame->allocator, pixels);
+    sixel_cdef_free(srgb);
+    return SIXEL_BAD_INPUT;
 }
 
 
@@ -1823,47 +1937,29 @@ sixel_frame_set_pixelformat(
         pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (pixelformat == frame->pixelformat) {
+    if (frame->format.rgb != NULL && frame->pixels.f32ptr != NULL) {
+        return sixel_frame_convert_profiled(frame, pixelformat);
+    }
+    if (pixelformat == sixel_frame_format(frame)) {
         return SIXEL_OK;
     }
     if (frame->pixels.u8ptr == NULL) {
-        sixel_frame_apply_pixelformat(frame, pixelformat);
+        sixel_frame_assign_format(frame, pixelformat);
         return SIXEL_OK;
     }
     if (pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-        SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+        frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         return sixel_frame_quantize_float_rgb(frame);
     }
 
     status = SIXEL_OK;
-    working_pixelformat = frame->pixelformat;
-    source_colorspace = frame->colorspace;
-    /*
-     * Palette and byte-form buffers need to be normalized before any
-     * colorspace adjustments so that channel ordering matches the
-     * converter's expectations.
-     */
-    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
-        if (working_pixelformat & SIXEL_FORMATTYPE_PALETTE) {
-            status = sixel_frame_convert_to_rgb888(frame);
-        }
-        if (SIXEL_SUCCEEDED(status)
-                && !SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
-            /*
-             * A setter must either install the requested representation or
-             * report why it cannot.  Silently retaining RGB888 made callers
-             * publish float32 colorspace metadata for byte RGB storage.
-             * The allocator still enforces SIXEL_ALLOCATE_BYTES_MAX, while
-             * the encoder planner owns any deliberate pre-resize fallback.
-             */
-            status = sixel_frame_promote_to_float32(frame);
-        }
-    } else if (pixelformat == SIXEL_PIXELFORMAT_RGB888
-            && working_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+    working_pixelformat = sixel_frame_format(frame);
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) &&
+        frame->format.layout != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        return sixel_frame_promote_to_float32(frame, pixelformat);
+    }
+    if (pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+        working_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         status = sixel_frame_convert_to_rgb888(frame);
     } else if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
             && !SIXEL_PIXELFORMAT_IS_FLOAT32(working_pixelformat)
@@ -1875,8 +1971,8 @@ sixel_frame_set_pixelformat(
         return status;
     }
 
-    working_pixelformat = frame->pixelformat;
-    source_colorspace = frame->colorspace;
+    working_pixelformat = sixel_frame_format(frame);
+    source_colorspace = frame->format.coordinates;
     target_colorspace = sixel_pixelformat_get_colorspace(pixelformat);
 
     if (target_colorspace != source_colorspace) {
@@ -1934,7 +2030,7 @@ sixel_frame_set_pixelformat(
         }
     }
 
-    sixel_frame_apply_pixelformat(frame, pixelformat);
+    sixel_frame_assign_format(frame, pixelformat);
     return SIXEL_OK;
 }
 
@@ -1942,7 +2038,7 @@ sixel_frame_set_pixelformat(
 SIXELAPI int
 sixel_frame_get_colorspace(sixel_frame_t /* in */ *frame)  /* frame object */
 {
-    return frame->colorspace;
+    return frame->format.coordinates;
 }
 
 
@@ -1952,7 +2048,12 @@ sixel_frame_set_colorspace(
     sixel_frame_t  /* in */ *frame,
     int            /* in */ colorspace)
 {
-    frame->colorspace = colorspace;
+    if (frame->format.coordinates != colorspace &&
+        colorspace != SIXEL_FRAME_COLORSPACE_PROFILE_RGB) {
+        sixel_cdef_free(frame->format.rgb);
+        frame->format.rgb = NULL;
+        frame->format.coordinates = colorspace;
+    }
 }
 
 
@@ -2088,7 +2189,7 @@ sixel_frame_strip_alpha(
     src = dst = frame->pixels.u8ptr;
 
     if (bgcolor) {
-        switch (frame->pixelformat) {
+        switch (sixel_frame_format(frame)) {
         case SIXEL_PIXELFORMAT_ARGB8888:
             for (i = 0; i < frame->height * frame->width; i++) {
                 alpha = src[0];
@@ -2097,7 +2198,7 @@ sixel_frame_strip_alpha(
                 *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
                 src++;
             }
-            sixel_frame_apply_pixelformat(
+            sixel_frame_assign_format(
                 frame,
                 SIXEL_PIXELFORMAT_RGB888);
             break;
@@ -2109,7 +2210,7 @@ sixel_frame_strip_alpha(
                 *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
                 src++;
             }
-            sixel_frame_apply_pixelformat(
+            sixel_frame_assign_format(
                 frame,
                 SIXEL_PIXELFORMAT_RGB888);
             break;
@@ -2121,7 +2222,7 @@ sixel_frame_strip_alpha(
                 *dst++ = (src[1] * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
                 src += 4;
             }
-            sixel_frame_apply_pixelformat(
+            sixel_frame_assign_format(
                 frame,
                 SIXEL_PIXELFORMAT_RGB888);
             break;
@@ -2133,7 +2234,7 @@ sixel_frame_strip_alpha(
                 *dst++ = (src[0] * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
                 src += 4;
             }
-            sixel_frame_apply_pixelformat(
+            sixel_frame_assign_format(
                 frame,
                 SIXEL_PIXELFORMAT_RGB888);
             break;
@@ -2141,7 +2242,7 @@ sixel_frame_strip_alpha(
             break;
         }
     } else {
-        switch (frame->pixelformat) {
+        switch (sixel_frame_format(frame)) {
         case SIXEL_PIXELFORMAT_ARGB8888:
             for (i = 0; i < frame->height * frame->width; i++) {
                 src++;            /* A */
@@ -2149,7 +2250,7 @@ sixel_frame_strip_alpha(
                 *dst++ = *src++;  /* G */
                 *dst++ = *src++;  /* B */
             }
-            sixel_frame_apply_pixelformat(
+            sixel_frame_assign_format(
                 frame,
                 SIXEL_PIXELFORMAT_RGB888);
             break;
@@ -2160,7 +2261,7 @@ sixel_frame_strip_alpha(
                 *dst++ = *src++;  /* B */
                 src++;            /* A */
             }
-            sixel_frame_apply_pixelformat(
+            sixel_frame_assign_format(
                 frame,
                 SIXEL_PIXELFORMAT_RGB888);
             break;
@@ -2171,7 +2272,7 @@ sixel_frame_strip_alpha(
                 *dst++ = src[1];  /* B */
                 src += 4;
             }
-            sixel_frame_apply_pixelformat(
+            sixel_frame_assign_format(
                 frame,
                 SIXEL_PIXELFORMAT_RGB888);
             break;
@@ -2182,7 +2283,7 @@ sixel_frame_strip_alpha(
                 *dst++ = src[0];  /* B */
                 src += 4;
             }
-            sixel_frame_apply_pixelformat(
+            sixel_frame_assign_format(
                 frame,
                 SIXEL_PIXELFORMAT_RGB888);
             break;
@@ -2214,6 +2315,10 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     unsigned char const *source_pixels;
     float *float_pixels;
 
+    if (frame->format.rgb != NULL) {
+        return sixel_frame_convert_profiled(frame, SIXEL_PIXELFORMAT_RGB888);
+    }
+
     sixel_frame_ref(frame);
 
     raw_pixels = frame->pixels.u8ptr;
@@ -2221,7 +2326,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     source_pixels = raw_pixels;
     pixel_count = (size_t)frame->width * (size_t)frame->height;
 
-    switch (frame->pixelformat) {
+    switch (sixel_frame_format(frame)) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
@@ -2238,9 +2343,9 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         src = normalized_pixels + pixel_count * 3u;
         dst = normalized_pixels;
         status = sixel_helper_normalize_pixelformat(src,
-                                                    &frame->pixelformat,
+                                                    &frame->format.layout,
                                                     source_pixels,
-                                                    frame->pixelformat,
+                                                    sixel_frame_format(frame),
                                                     frame->width,
                                                     frame->height);
         if (SIXEL_FAILED(status)) {
@@ -2257,7 +2362,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         }
         frame->pixels.u8ptr = normalized_pixels;
         frame->owns_pixels = 1;
-        sixel_frame_apply_pixelformat(
+        sixel_frame_assign_format(
             frame,
             SIXEL_PIXELFORMAT_RGB888);
         break;
@@ -2284,7 +2389,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         }
         frame->pixels.u8ptr = normalized_pixels;
         frame->owns_pixels = 1;
-        sixel_frame_apply_pixelformat(
+        sixel_frame_assign_format(
             frame,
             SIXEL_PIXELFORMAT_RGB888);
         break;
@@ -2299,7 +2404,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
                 p[0] = p[2];
                 p[2] = blue;
             }
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            frame->format.layout = SIXEL_PIXELFORMAT_RGB888;
             break;
         }
         /* Borrowed storage uses the out-of-place normalizer below. */
@@ -2329,13 +2434,13 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+        if (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32) {
             source_pixels = (unsigned char const *)float_pixels;
         }
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                    &frame->pixelformat,
+                                                    &frame->format.layout,
                                                     source_pixels,
-                                                    frame->pixelformat,
+                                                    sixel_frame_format(frame),
                                                     frame->width,
                                                     frame->height);
         if (SIXEL_FAILED(status)) {
@@ -2361,11 +2466,14 @@ end:
     return status;
 }
 
-static void
-sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat)
+SIXEL_INTERNAL_API void
+sixel_frame_assign_format(sixel_frame_t *frame, int pixelformat)
 {
-    frame->pixelformat = pixelformat;
-    frame->colorspace = sixel_pixelformat_get_colorspace(pixelformat);
+    sixel_cdef_free(frame->format.rgb);
+    frame->format.rgb = NULL;
+    frame->format.layout = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+        ? SIXEL_PIXELFORMAT_RGBFLOAT32 : pixelformat;
+    frame->format.coordinates = sixel_pixelformat_get_colorspace(pixelformat);
 }
 
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
@@ -2395,6 +2503,39 @@ sixel_frame_float_pixelformat_for_colorspace(int colorspace)
     default:
         return SIXEL_PIXELFORMAT_RGBFLOAT32;
     }
+}
+
+SIXEL_INTERNAL_API int
+sixel_frame_format(sixel_frame_t const *frame)
+{
+    return frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32
+        ? sixel_frame_float_pixelformat_for_colorspace(
+            frame->format.coordinates) : frame->format.layout;
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_set_rgb_definition(sixel_frame_interface_t *iface,
+                                    sixel_color_def_t const *definition)
+{
+    sixel_color_def_t *copy;
+    sixel_frame_t *frame;
+
+    frame = sixel_frame_from_interface(iface);
+    if (frame == NULL || definition == NULL ||
+        frame->format.layout != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+        (frame->format.coordinates != SIXEL_COLORSPACE_GAMMA &&
+         frame->format.coordinates != SIXEL_COLORSPACE_LINEAR &&
+         frame->format.coordinates != SIXEL_FRAME_COLORSPACE_PROFILE_RGB)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    copy = sixel_cdef_clone(definition);
+    if (copy == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    sixel_cdef_free(frame->format.rgb);
+    frame->format.coordinates = SIXEL_FRAME_COLORSPACE_PROFILE_RGB;
+    frame->format.rgb = copy;
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -2562,7 +2703,7 @@ end:
 }
 
 static SIXELSTATUS
-sixel_frame_promote_to_float32(sixel_frame_t *frame)
+sixel_frame_promote_to_float32(sixel_frame_t *frame, int target)
 {
     float *float_pixels;
     unsigned char *byte_pixels;
@@ -2576,6 +2717,14 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
     int index_r;
     int index_g;
     int index_b;
+    SIXELSTATUS status;
+    int index_format;
+    int palette_entries;
+    unsigned char *unpacked;
+    unsigned char const *indices;
+    unsigned char r8;
+    unsigned char g8;
+    unsigned char b8;
 
     step = 0;
     index_r = 0;
@@ -2588,7 +2737,17 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
      * the order dictated by pixelformat, so preserving that layout avoids the
      * blue casts reported when we reinterpreted them as gamma RGB.
      */
-    switch (frame->pixelformat) {
+    switch (sixel_frame_format(frame)) {
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL8:
+        if (frame->palette == NULL) {
+            return SIXEL_BAD_INPUT;
+        }
+        index_g = 1;
+        index_b = 2;
+        break;
     case SIXEL_PIXELFORMAT_RGB888:
         step = 3;
         index_r = 0;
@@ -2649,7 +2808,8 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
         return SIXEL_BAD_INPUT;
     }
 
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+    if (frame->width <= 0 || frame->height <= 0 ||
+        (size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
         sixel_helper_set_additional_message(
             "sixel_frame_promote_to_float32: overflow.");
         return SIXEL_BAD_INPUT;
@@ -2672,14 +2832,40 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
 
     byte_pixels = frame->pixels.u8ptr;
     float_pixelformat =
-        sixel_frame_float_pixelformat_for_colorspace(frame->colorspace);
+        sixel_frame_float_pixelformat_for_colorspace(frame->format.coordinates);
+
+    /* Unpack indexed rows into scratch. Neither this step nor a later
+     * coordinate conversion may publish a partial change to the frame. */
+    unpacked = NULL;
+    indices = NULL;
+    palette_entries = sixel_frame_palette_entries(frame);
+    if (step == 0) {
+        indices = byte_pixels;
+        float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+        if (frame->format.layout != SIXEL_PIXELFORMAT_PAL8) {
+            unpacked = sixel_allocator_malloc(frame->allocator, pixel_total);
+            if (unpacked == NULL) {
+                sixel_allocator_free(frame->allocator, float_pixels);
+                return SIXEL_BAD_ALLOCATION;
+            }
+            status = sixel_helper_normalize_pixelformat(unpacked,
+                &index_format, byte_pixels, frame->format.layout,
+                frame->width, frame->height);
+            if (SIXEL_FAILED(status)) {
+                goto failed;
+            }
+            indices = unpacked;
+        }
+    }
 
     for (index = 0U; index < pixel_total; ++index) {
-        unsigned char r8;
-        unsigned char g8;
-        unsigned char b8;
-
-        pixel = byte_pixels + index * (size_t)step;
+        if (indices != NULL && palette_entries > 0 &&
+            indices[index] >= palette_entries) {
+            status = SIXEL_BAD_INPUT;
+            goto failed;
+        }
+        pixel = indices == NULL ? byte_pixels + index * (size_t)step
+                                : frame->palette + 3u * indices[index];
         r8 = *(pixel + (size_t)index_r);
         g8 = *(pixel + (size_t)index_g);
         b8 = *(pixel + (size_t)index_b);
@@ -2693,13 +2879,27 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
             sixel_pixelformat_byte_to_float(float_pixelformat, 2, b8);
     }
 
+    if (float_pixelformat != target) {
+        status = sixel_color_convert_frame_rgbf32(float_pixels, pixel_total,
+            sixel_pixelformat_get_colorspace(float_pixelformat),
+            sixel_pixelformat_get_colorspace(target));
+        if (SIXEL_FAILED(status)) {
+            goto failed;
+        }
+    }
+    sixel_allocator_free(frame->allocator, unpacked);
     if (frame->owns_pixels != 0) {
         sixel_allocator_free(frame->allocator, byte_pixels);
     }
     frame->pixels.f32ptr = float_pixels;
     frame->owns_pixels = 1;
-    sixel_frame_apply_pixelformat(frame, float_pixelformat);
+    sixel_frame_assign_format(frame, target);
     return SIXEL_OK;
+
+failed:
+    sixel_allocator_free(frame->allocator, unpacked);
+    sixel_allocator_free(frame->allocator, float_pixels);
+    return status;
 }
 
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
@@ -2900,7 +3100,7 @@ sixel_frame_resize_float32(
     size = 0u;
     depth = 0;
     depth_bytes = 0;
-    target_pixelformat = frame->pixelformat;
+    target_pixelformat = sixel_frame_format(frame);
     resized_mask_size = 0u;
     has_transparent = 0;
     old_pixels_owned = 0;
@@ -2959,7 +3159,7 @@ sixel_frame_resize_float32(
     status = sixel_frame_validate_size("sixel_frame_resize_float32",
                                        width,
                                        height,
-                                       frame->pixelformat,
+                                       sixel_frame_format(frame),
                                        &pixel_total,
                                        &size,
                                        &depth_bytes);
@@ -3003,7 +3203,7 @@ sixel_frame_resize_float32(
         frame->pixels.f32ptr,
         frame->width,
         frame->height,
-        frame->pixelformat,
+        sixel_frame_format(frame),
         width,
         height,
         method_for_resampling,
@@ -3231,7 +3431,7 @@ sixel_frame_clip(
      * direct frame callers must supply a rectangle inside the source.
      * Subtraction after checking the origin avoids signed addition overflow.
      */
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+    if ((frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
             && (x < 0 || y < 0 || x >= src_width || y >= src_height
                 || width > src_width - x || height > src_height - y)) {
         sixel_helper_set_additional_message(
@@ -3266,7 +3466,7 @@ sixel_frame_clip(
         goto end;
     }
 
-    switch (frame->pixelformat) {
+    switch (sixel_frame_format(frame)) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
@@ -3277,9 +3477,9 @@ sixel_frame_clip(
             sixel_allocator_malloc(frame->allocator,
                                    (size_t)(frame->width * frame->height));
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                    &frame->pixelformat,
+                                                    &frame->format.layout,
                                                     raw_pixels,
-                                                    frame->pixelformat,
+                                                    sixel_frame_format(frame),
                                                     frame->width,
                                                     frame->height);
         if (SIXEL_FAILED(status)) {
@@ -3300,7 +3500,7 @@ sixel_frame_clip(
     status = clip(raw_pixels,
                   frame->width,
                   frame->height,
-                  frame->pixelformat,
+                  sixel_frame_format(frame),
                   x,
                   y,
                   width,

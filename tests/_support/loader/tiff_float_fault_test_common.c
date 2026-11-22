@@ -229,8 +229,8 @@ uf_capture(sixel_frame_t *frame, void *context)
     state->count = frame->width * frame->height * 3;
     if (frame->width != uf_width || frame->height != uf_height ||
         state->count > 72 ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-        frame->colorspace != SIXEL_COLORSPACE_GAMMA ||
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+        frame->format.coordinates != SIXEL_COLORSPACE_GAMMA ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL || frame->transparent_mask_size ||
         frame->alpha_zero_is_transparent) {

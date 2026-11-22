@@ -324,7 +324,7 @@ png_arith_capture(sixel_frame_t *frame, void *context)
     probe = (png_arith_capture_t *)context;
     ++probe->calls;
     if (frame->width != 8 || frame->height != 1 ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         return SIXEL_BAD_INPUT;
     }
     memcpy(actual, sixel_frame_get_pixels(frame), sizeof(actual));

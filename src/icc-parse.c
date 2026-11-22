@@ -3132,6 +3132,7 @@ accepted:
     if (out_issue != NULL) {
         *out_issue = local_issue;
     }
+    parsed.allocated_bytes = SIXEL_ICC_MAX_PARSE_BYTES - budget.remaining;
     *out_profile = parsed;
     return 1;
 

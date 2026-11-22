@@ -1075,7 +1075,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     if (bgcolor == NULL) {
         return SIXEL_OK;
     }
-    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_OK;
     }
     if (frame->width <= 0 || frame->height <= 0) {
@@ -2330,7 +2330,7 @@ loader_try_promote_pal8(
     if (frame == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGB888) {
         return SIXEL_OK;
     }
     if (frame->width <= 0 || frame->height <= 0) {
@@ -2512,7 +2512,7 @@ webp_frame_has_non_opaque_alpha(sixel_frame_t const *frame)
     if (frame == NULL) {
         return 0;
     }
-    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888) {
         return 0;
     }
     if (frame->pixels.u8ptr == NULL || frame->width <= 0 || frame->height <= 0) {
@@ -2637,7 +2637,7 @@ webp_finalize_frame_output(sixel_frame_t *frame,
         "finalize frame_no=%d pixelformat=%d preserve_alpha_keycolor=%d "
         "has_bgcolor=%d allow_palette_promotion=%d",
         frame->frame_no,
-        frame->pixelformat,
+        sixel_frame_format(frame),
         preserve_alpha_keycolor,
         bgcolor != NULL ? 1 : 0,
         allow_palette_promotion != 0 ? 1 : 0);
@@ -2677,9 +2677,9 @@ webp_finalize_frame_output(sixel_frame_t *frame,
     /* A byte decode without an applied profile is already final. Float
      * working precision is requested upstream or promoted by the planner. */
     if (apply_cms_target &&
-        (frame->pixelformat == SIXEL_PIXELFORMAT_RGB888 ||
-         frame->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-         frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) {
+        (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGB888 ||
+         sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+         sixel_frame_format(frame) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) {
         status = sixel_frame_set_pixelformat(frame, target_pixelformat);
         if (SIXEL_FAILED(status)) {
             return status;
@@ -2744,8 +2744,7 @@ webp_assign_rgba_canvas_frame(sixel_frame_t *frame,
 
     frame->width = width;
     frame->height = height;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGBA8888);
     frame->multiframe = multiframe;
     frame->loop_count = loop_count;
     frame->frame_no = frame_no;
@@ -2876,14 +2875,14 @@ webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
             frame->palette,
             frame->width,
             frame->height,
-            frame->pixelformat,
+            sixel_frame_format(frame),
             /* YUVA with a background already contains linear samples.
              * The fresh frame's default gamma tag would decode them twice
              * when finalization requests the CMS target representation. */
-            frame->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+            sixel_frame_format(frame) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
             ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
             frame->ncolors,
-            SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+            (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
             ? SIXEL_FRAME_PIXELS_FLOAT32
             : SIXEL_FRAME_PIXELS_U8
         });
@@ -3019,6 +3018,7 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
                                          WebPBitstreamFeatures const *known_features,
                                          unsigned char *bgcolor)
 {
+    int decoded_format;
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_frame_t *frame;
@@ -3047,7 +3047,7 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
                        source_size,
                        &frame->width,
                        &frame->height,
-                       &frame->pixelformat,
+                       &decoded_format,
                        decode->enable_cms,
                        decode->icc_profile,
                        decode->icc_profile_length,
@@ -3059,6 +3059,7 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    sixel_frame_assign_format(frame, decoded_format);
 
     status = webp_assign_loaded_frame_pixels(frame, pixels);
     if (SIXEL_FAILED(status)) {

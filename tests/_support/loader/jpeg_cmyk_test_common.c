@@ -47,15 +47,15 @@ jc_capture(sixel_frame_t *frame, void *context)
     dimension = ctx->extended ? 64 : 32;
     count = (size_t)dimension * dimension;
     if (frame->width != dimension || frame->height != dimension ||
-        frame->pixelformat != (disabled ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
+        sixel_frame_format(frame) != (disabled ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                               SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->colorspace != (disabled ? SIXEL_COLORSPACE_GAMMA :
+        frame->format.coordinates != (disabled ? SIXEL_COLORSPACE_GAMMA :
                              SIXEL_COLORSPACE_LINEAR) ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL ||
         frame->transparent_mask_size != 0u) {
         fprintf(stderr, "JCMYK|metadata=0|format=%x|space=%d\n",
-                frame->pixelformat, frame->colorspace);
+                sixel_frame_format(frame), frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }
     pixels = (float const *)sixel_frame_get_pixels(frame);

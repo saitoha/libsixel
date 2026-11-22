@@ -1777,9 +1777,9 @@ iccn_capture(sixel_frame_t *frame, void *context)
 
     calls = (int *)context;
     ++*calls;
-    if (frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
         frame->width != 1 || frame->height != 1 ||
-        frame->colorspace != SIXEL_COLORSPACE_LINEAR) {
+        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
         return SIXEL_BAD_INPUT;
     }
     rgb = (float const *)sixel_frame_get_pixels(frame);
@@ -2405,9 +2405,9 @@ iccn_capture_mpet_bmp(sixel_frame_t *frame, void *context)
 
     expected = context;
     ++expected->calls;
-    if (frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
         frame->width != 1 || frame->height != 1 ||
-        frame->colorspace != SIXEL_COLORSPACE_LINEAR) {
+        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
         return SIXEL_BAD_INPUT;
     }
     rgb = (float const *)sixel_frame_get_pixels(frame);
@@ -4288,7 +4288,7 @@ iccn_capture_mpet_png(sixel_frame_t *frame, void *context)
     capture = context;
     ++capture->calls;
     if (capture->unprofiled && frame->width == 3 && frame->height == 1 &&
-        frame->pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGB888) {
         pixels = sixel_frame_get_pixels(frame);
         for (i = 0u; i < 9u; ++i) {
             value = pixels[i] / 255.0;
@@ -4298,11 +4298,11 @@ iccn_capture_mpet_png(sixel_frame_t *frame, void *context)
         return SIXEL_OK;
     }
     if (frame->width != 3 || frame->height != 1 ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->colorspace != SIXEL_COLORSPACE_LINEAR) {
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
         fprintf(stderr, "PNG frame %dx%d format=%x space=%d\n",
-            frame->width, frame->height, frame->pixelformat,
-            frame->colorspace);
+            frame->width, frame->height, sixel_frame_format(frame),
+            frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }
     memcpy(capture->values, sixel_frame_get_pixels(frame),

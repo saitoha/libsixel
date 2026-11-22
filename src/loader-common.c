@@ -1500,12 +1500,12 @@ loader_frame_apply_orientation(sixel_frame_t *frame,
     }
     dst_pixel_count = (size_t)dst_width * (size_t)dst_height;
     allocator = frame->allocator;
-    depth = sixel_helper_compute_depth(frame->pixelformat);
+    depth = sixel_helper_compute_depth(frame->format.layout);
     if (depth <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+    if (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         if (depth <= 0 || depth % (int)sizeof(float) != 0) {
             return SIXEL_BAD_ARGUMENT;
         }
@@ -1551,12 +1551,12 @@ loader_frame_apply_orientation(sixel_frame_t *frame,
         frame->pixels.f32ptr = dst_floats;
         sixel_allocator_free(allocator, src_floats);
     } else {
-        if (frame->pixelformat == SIXEL_PIXELFORMAT_PAL1 ||
-            frame->pixelformat == SIXEL_PIXELFORMAT_PAL2 ||
-            frame->pixelformat == SIXEL_PIXELFORMAT_PAL4 ||
-            frame->pixelformat == SIXEL_PIXELFORMAT_G1 ||
-            frame->pixelformat == SIXEL_PIXELFORMAT_G2 ||
-            frame->pixelformat == SIXEL_PIXELFORMAT_G4) {
+        if (frame->format.layout == SIXEL_PIXELFORMAT_PAL1 ||
+            frame->format.layout == SIXEL_PIXELFORMAT_PAL2 ||
+            frame->format.layout == SIXEL_PIXELFORMAT_PAL4 ||
+            frame->format.layout == SIXEL_PIXELFORMAT_G1 ||
+            frame->format.layout == SIXEL_PIXELFORMAT_G2 ||
+            frame->format.layout == SIXEL_PIXELFORMAT_G4) {
             return SIXEL_BAD_ARGUMENT;
         }
         if (depth <= 0) {

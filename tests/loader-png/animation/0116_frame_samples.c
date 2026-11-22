@@ -22,8 +22,8 @@ png_key_frame(sixel_frame_t *frame, void *context)
     calls = context;
     ++*calls;
     if (frame->width != 32 || frame->height != 32 ||
-        frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->colorspace != SIXEL_COLORSPACE_LINEAR ||
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR ||
         frame->transparent_mask_size != 1024 || !frame->transparent_mask) {
         return SIXEL_BAD_INPUT;
     }

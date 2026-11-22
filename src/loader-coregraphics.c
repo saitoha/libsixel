@@ -1357,8 +1357,7 @@ coregraphics_expand_palette(sixel_frame_t *frame,
     frame->pixels.f32ptr = pixels;
     pixels = NULL;
     frame->owns_pixels = 1;
-    frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
     frame->transparent = -1;
     frame->ncolors = -1;
     frame->transparent_mask = mask;
@@ -1561,8 +1560,7 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
         frame->palette = palette;
         palette = NULL;
         frame->ncolors = ncolors;
-        frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_PAL8);
         frame->transparent = has_keycolor_alpha ? key_index : -1;
         frame->alpha_zero_is_transparent = 0;
         *handled = 1;
@@ -1630,8 +1628,7 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
 
     frame->pixels.u8ptr = rgb_pixels;
     rgb_pixels = NULL;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
     frame->transparent = -1;
     frame->ncolors = -1;
     frame->alpha_zero_is_transparent = 0;
@@ -1843,8 +1840,7 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
         }
         frame->pixels.u8ptr = pixels;
         pixels = NULL;
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
         frame->transparent = -1;
         frame->ncolors = -1;
         frame->alpha_zero_is_transparent = 0;
@@ -1916,8 +1912,7 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
 
     frame->pixels.u8ptr = pixels;
     pixels = NULL;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
     frame->transparent = -1;
     frame->ncolors = -1;
     frame->alpha_zero_is_transparent = 0;
@@ -2102,8 +2097,7 @@ coregraphics_decode_float32_frame(sixel_frame_t *frame,
 
     frame->pixels.f32ptr = pixels;
     pixels = NULL;
-    frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
     frame->transparent = -1;
     frame->ncolors = -1;
     frame->alpha_zero_is_transparent = 0;
@@ -2459,10 +2453,8 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
         pixels = NULL;
     }
     frame->owns_pixels = 1;
-    frame->pixelformat = byte_path ? SIXEL_PIXELFORMAT_RGB888 :
-        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    frame->colorspace = byte_path ? SIXEL_COLORSPACE_GAMMA :
-        SIXEL_COLORSPACE_LINEAR;
+    sixel_frame_assign_format(frame, byte_path ? SIXEL_PIXELFORMAT_RGB888 :
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
     frame->transparent_mask = mask;
     frame->transparent_mask_size = mask == NULL ? 0u : count;
     frame->alpha_zero_is_transparent = mask != NULL && has_zero;

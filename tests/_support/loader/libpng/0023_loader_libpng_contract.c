@@ -244,30 +244,32 @@ lp_capture(sixel_frame_t *frame, void *data)
     probe->frame_no[n] = sixel_frame_get_frame_no(frame);
     probe->loop_no[n] = sixel_frame_get_loop_no(frame);
     probe->delay[n] = sixel_frame_get_delay(frame);
-    probe->format[n] = frame->pixelformat;
+    probe->format[n] = sixel_frame_format(frame);
     bytes = view.pixels;
     floats = view.pixels_float32;
     for (x = 0; x < 2; ++x) {
         probe->hidden[n][x] = tr.transparent_mask != NULL
             && tr.transparent_mask_size > (size_t)x
             && tr.transparent_mask[x] != 0;
-        if (frame->pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
+        if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGBA8888) {
             probe->hidden[n][x] |= tr.alpha_zero_is_transparent
                 && bytes[x * 4 + 3] == 0;
         }
         for (c = 0; c < 3; ++c) {
-            if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+            if (SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_format(frame))) {
                 value = floats[x * 3 + c];
-                if (frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+                if (sixel_frame_format(frame) !=
+                    SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
                     value = lp_linear(value);
                 }
-            } else if (frame->pixelformat == SIXEL_PIXELFORMAT_PAL8) {
+            } else if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL8) {
                 index = bytes[x];
                 value = lp_linear(frame->palette[index * 3 + c] / 255.0);
                 probe->hidden[n][x] |= index == tr.transparent;
-            } else if (frame->pixelformat == SIXEL_PIXELFORMAT_RGB888 ||
-                       frame->pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
-                index = x * (frame->pixelformat ==
+            } else if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGB888 ||
+                       sixel_frame_format(frame) ==
+                           SIXEL_PIXELFORMAT_RGBA8888) {
+                index = x * (sixel_frame_format(frame) ==
                              SIXEL_PIXELFORMAT_RGBA8888 ? 4 : 3) + c;
                 value = lp_linear(bytes[index] / 255.0);
             } else {

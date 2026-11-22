@@ -37,7 +37,8 @@ lab16_capture(sixel_frame_t *frame, void *context)
     colorspace = state->mode == 0 || state->mode == 4 ? SIXEL_COLORSPACE_GAMMA
                                  : SIXEL_COLORSPACE_LINEAR;
     if (frame->width != (int)count || frame->height != 1 ||
-        frame->pixelformat != format || frame->colorspace != colorspace ||
+        sixel_frame_format(frame) != format ||
+        frame->format.coordinates != colorspace ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL ||
         frame->transparent_mask_size != 0u ||

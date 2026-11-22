@@ -3528,6 +3528,10 @@ typedef enum sixel_frame_pixels_kind {
     SIXEL_FRAME_PIXELS_FLOAT32 = 1
 } sixel_frame_pixels_kind_t;
 
+/* A view with an explicit RGB definition uses the profile's transfer and
+ * primaries. Legacy fixed-space converters must resolve the definition. */
+#define SIXEL_FRAME_COLORSPACE_PROFILE_RGB 0x100
+
 typedef struct sixel_frame_pixels_request {
     void *pixels;
     unsigned char *palette;
@@ -3548,6 +3552,7 @@ typedef struct sixel_frame_pixels_view {
     int pixelformat;
     int colorspace;
     int ncolors;
+    struct sixel_color_def const *rgb_definition; /* borrowed, optional */
 } sixel_frame_pixels_view_t;
 
 typedef struct sixel_frame_timeline {
@@ -3573,6 +3578,7 @@ typedef struct sixel_frame_alpha {
     size_t count;
 } sixel_frame_alpha_t;
 
+    /* Attach a copy of the definition of existing RGB float samples. */
 /*
  * IDL responsibility:
  * - own pixel storage and per-frame metadata
@@ -3626,6 +3632,9 @@ typedef struct sixel_frame_alpha {
  *     SIXELSTATUS get_alpha(out frame_alpha *alpha);
  *     [mutates]
  *     SIXELSTATUS set_alpha(in frame_alpha const *alpha);
+ *     [mutates, invalidates(pixels_view)]
+ *     SIXELSTATUS set_rgb_definition(
+ *         in struct sixel_color_def const *definition);
  * };
  */
 
@@ -3682,6 +3691,9 @@ typedef struct sixel_frame_vtbl {
     SIXELSTATUS (*set_alpha)(
         sixel_frame_interface_t *self,
         sixel_frame_alpha_t const *alpha);
+    SIXELSTATUS (*set_rgb_definition)(
+        sixel_frame_interface_t *self,
+        struct sixel_color_def const *definition);
 } sixel_frame_vtbl_t;
 
 struct sixel_frame_interface {

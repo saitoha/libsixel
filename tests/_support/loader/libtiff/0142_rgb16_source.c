@@ -54,10 +54,10 @@ tiff_numeric_capture(sixel_frame_t *frame, void *context)
     if (frame->width != color_tiff_cases[fixture].width ||
         frame->height != color_tiff_cases[fixture].height ||
         sixel_frame_get_pixelformat(frame) != format ||
-        frame->colorspace != space || frame->transparent_mask != NULL) {
+        frame->format.coordinates != space || frame->transparent_mask != NULL) {
         fprintf(stderr, "TIFF frame %dx%d format=%x space=%d\n",
             frame->width, frame->height, sixel_frame_get_pixelformat(frame),
-            frame->colorspace);
+            frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }
     pixels = (float const *)sixel_frame_get_pixels(frame);

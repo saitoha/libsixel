@@ -3368,6 +3368,7 @@ load_with_libpng(
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
+    int decoded_format;
     SIXELSTATUS status;
     sixel_frame_t *frame;
     unsigned char *pixels;
@@ -3443,7 +3444,7 @@ load_with_libpng(
                       &frame->palette,
                       &frame->ncolors,
                       fuse_palette ? reqcolors : 0,
-                      &frame->pixelformat,
+                      &decoded_format,
                       bgcolor,
                       &frame->transparent,
                       &alpha_zero_is_transparent,
@@ -3456,6 +3457,7 @@ load_with_libpng(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    sixel_frame_assign_format(frame, decoded_format);
 
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
@@ -3464,10 +3466,10 @@ load_with_libpng(
             frame->palette,
             frame->width,
             frame->height,
-            frame->pixelformat,
-            png_colorspace_from_pixelformat(frame->pixelformat),
+            sixel_frame_format(frame),
+            png_colorspace_from_pixelformat(sixel_frame_format(frame)),
             frame->ncolors,
-            SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+            (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
             ? SIXEL_FRAME_PIXELS_FLOAT32
             : SIXEL_FRAME_PIXELS_U8
         });
@@ -3506,7 +3508,7 @@ load_with_libpng(
         }
     }
     if (cms_applied
-            && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)) {
+            && ((sixel_frame_format(frame) & SIXEL_FORMATTYPE_PALETTE) == 0)) {
         /* Working coordinates and an explicit byte request apply only after
          * source interpretation and linear-light alpha composition. */
         cms_target_pixelformat = loader_cms_output_black() != NULL
@@ -3521,16 +3523,16 @@ load_with_libpng(
     }
 
     if (enable_orientation && exif_orientation >= 2 && exif_orientation <= 8) {
-        if (frame->pixelformat == SIXEL_PIXELFORMAT_PAL1 ||
-            frame->pixelformat == SIXEL_PIXELFORMAT_PAL2 ||
-            frame->pixelformat == SIXEL_PIXELFORMAT_PAL4) {
+        if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL1 ||
+            sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL2 ||
+            sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL4) {
             status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_PAL8);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-        } else if (frame->pixelformat == SIXEL_PIXELFORMAT_G1 ||
-                   frame->pixelformat == SIXEL_PIXELFORMAT_G2 ||
-                   frame->pixelformat == SIXEL_PIXELFORMAT_G4) {
+        } else if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_G1 ||
+                   sixel_frame_format(frame) == SIXEL_PIXELFORMAT_G2 ||
+                   sixel_frame_format(frame) == SIXEL_PIXELFORMAT_G4) {
             status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_G8);
             if (SIXEL_FAILED(status)) {
                 goto end;
