@@ -96,6 +96,9 @@ int test_filter_0001_filter_clip(int argc, char **argv);
 int test_color_0001_din99d_forward(int argc, char **argv);
 int test_color_0002_din99d_inverse(int argc, char **argv);
 int test_color_0003_din99d_byte(int argc, char **argv);
+int test_color_0052_abgr_oklab_alpha(int argc, char **argv);
+int test_color_0053_bgr_smptec_to_srgb(int argc, char **argv);
+int test_palette_colors_clone_allocation_failure(int argc, char **argv);
 int test_color_0004(int argc, char **argv);
 int test_color_0005(int argc, char **argv);
 int test_color_0006(int argc, char **argv);
@@ -9370,6 +9373,9 @@ static test_entry_t const test_entries[] = {
     { "colorspace/0001_din99d_forward", test_color_0001_din99d_forward },
     { "colorspace/0002_din99d_inverse", test_color_0002_din99d_inverse },
     { "colorspace/0003_din99d_byte", test_color_0003_din99d_byte },
+    { "colorspace/0052_abgr_oklab_alpha", test_color_0052_abgr_oklab_alpha },
+    { "colorspace/0053_bgr_smptec_to_srgb",
+      test_color_0053_bgr_smptec_to_srgb },
     { "decoder/0053_percentage_rgb8", test_pmap_0053 },
     { "decoder/0054_multi_pass_raw_overlay",
       test_sequence_0054 },
@@ -12874,6 +12880,8 @@ static test_entry_t const test_entries[] = {
       test_gpu_headroom },
     { "palette/sampling/0108_gpu_headroom_pin",
       test_gpu_headroom_pin },
+    { "palette/sampling/0109_palette_colors_clone_allocation_failure",
+      test_palette_colors_clone_allocation_failure },
     { "palette/heckbert/0151_score_avx2_edge", test_score_avx2_edge },
     { "palette/heckbert/0152_bounds_avx2_random", test_bounds_avx2_random },
     { "palette/heckbert/0153_bounds_avx2_edge", test_bounds_avx2_edge },

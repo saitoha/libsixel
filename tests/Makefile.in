@@ -705,6 +705,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	color/space/0001_din99d_forward.c \
 	color/space/0002_din99d_inverse.c \
 	color/space/0003_din99d_byte.c \
+	color/space/0052_abgr_oklab_alpha.c \
+	color/space/0053_bgr_smptec_to_srgb.c \
 	cli/signals/0001_img2sixel_aborttrace.c \
 	_support/cli/0029_cli_token_is_known_option.c \
 	_support/cli/0030_cli_option_requires_argument.c \
@@ -777,6 +779,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	palette/sampling/0106_sample_vulkan_edge.c \
 	palette/sampling/0107_gpu_headroom.c \
 	palette/sampling/0108_gpu_headroom_pin.c \
+	palette/sampling/0109_palette_colors_clone_allocation_failure.c \
 	encoder/pipeline/0128_count_table.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
@@ -2087,6 +2090,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0001_din99d_forward.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0002_din99d_inverse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0003_din99d_byte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0052_abgr_oklab_alpha.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	color/space/test_runner-0053_bgr_smptec_to_srgb.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/signals/test_runner-0001_img2sixel_aborttrace.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/cli/test_runner-0029_cli_token_is_known_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/cli/test_runner-0030_cli_option_requires_argument.$(OBJEXT) \
@@ -2155,6 +2160,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0106_sample_vulkan_edge.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0107_gpu_headroom.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0108_gpu_headroom_pin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0128_count_table.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
@@ -4638,6 +4644,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	color/space/$(DEPDIR)/test_runner-0048_reclaim_bits.Po \
 	color/space/$(DEPDIR)/test_runner-0049_reclaim_atomic.Po \
 	color/space/$(DEPDIR)/test_runner-0050_worker_memo_exact.Po \
+	color/space/$(DEPDIR)/test_runner-0052_abgr_oklab_alpha.Po \
+	color/space/$(DEPDIR)/test_runner-0053_bgr_smptec_to_srgb.Po \
 	decoder/aspect/$(DEPDIR)/test_runner-0007_successive_head_aspect.Po \
 	decoder/aspect/$(DEPDIR)/test_runner-0008_first_late_aspect.Po \
 	decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Po \
@@ -5331,6 +5339,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Po \
 	palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Po \
 	palette/sampling/$(DEPDIR)/test_runner-0108_gpu_headroom_pin.Po \
+	palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Po \
 	palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po \
 	palette/snap-policy/$(DEPDIR)/test_runner-0001_snap_output_grid.Po \
 	palette/snap-policy/$(DEPDIR)/test_runner-0003_snap_partial_once.Po \
@@ -8454,6 +8463,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_SNAP_PARTIAL_ONCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_DIN99D_INVERSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_DIN99D_BYTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_ABGR_OKLAB_ALPHA \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_BGR_SMPTEC_TO_SRGB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ORMODE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_MAP_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_DEFAULT_PALETTE_DIRECT \
@@ -9430,6 +9441,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0106_SAMPLE_VULKAN_EDGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_GPU_HEADROOM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0108_GPU_HEADROOM_PIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0109_PALETTE_COLORS_CLONE_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0128_COUNT_TABLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
@@ -12346,6 +12358,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0001_din99d_forward.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0002_din99d_inverse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0003_din99d_byte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0052_abgr_oklab_alpha.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    color/space/0053_bgr_smptec_to_srgb.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/signals/0001_img2sixel_aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/cli/0029_cli_token_is_known_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/cli/0030_cli_option_requires_argument.c \
@@ -12418,6 +12432,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0106_sample_vulkan_edge.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0107_gpu_headroom.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0108_gpu_headroom_pin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0109_palette_colors_clone_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0128_count_table.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
@@ -21868,6 +21883,12 @@ color/space/test_runner-0002_din99d_inverse.$(OBJEXT):  \
 color/space/test_runner-0003_din99d_byte.$(OBJEXT):  \
 	color/space/$(am__dirstamp) \
 	color/space/$(DEPDIR)/$(am__dirstamp)
+color/space/test_runner-0052_abgr_oklab_alpha.$(OBJEXT):  \
+	color/space/$(am__dirstamp) \
+	color/space/$(DEPDIR)/$(am__dirstamp)
+color/space/test_runner-0053_bgr_smptec_to_srgb.$(OBJEXT):  \
+	color/space/$(am__dirstamp) \
+	color/space/$(DEPDIR)/$(am__dirstamp)
 cli/signals/$(am__dirstamp):
 	@$(MKDIR_P) cli/signals
 	@: >>cli/signals/$(am__dirstamp)
@@ -22166,6 +22187,9 @@ palette/sampling/test_runner-0107_gpu_headroom.$(OBJEXT):  \
 	palette/sampling/$(am__dirstamp) \
 	palette/sampling/$(DEPDIR)/$(am__dirstamp)
 palette/sampling/test_runner-0108_gpu_headroom_pin.$(OBJEXT):  \
+	palette/sampling/$(am__dirstamp) \
+	palette/sampling/$(DEPDIR)/$(am__dirstamp)
+palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.$(OBJEXT):  \
 	palette/sampling/$(am__dirstamp) \
 	palette/sampling/$(DEPDIR)/$(am__dirstamp)
 encoder/pipeline/test_runner-0128_count_table.$(OBJEXT):  \
@@ -27853,6 +27877,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@color/space/$(DEPDIR)/test_runner-0048_reclaim_bits.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/space/$(DEPDIR)/test_runner-0049_reclaim_atomic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@color/space/$(DEPDIR)/test_runner-0050_worker_memo_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/space/$(DEPDIR)/test_runner-0052_abgr_oklab_alpha.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@color/space/$(DEPDIR)/test_runner-0053_bgr_smptec_to_srgb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0007_successive_head_aspect.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0008_first_late_aspect.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@decoder/aspect/$(DEPDIR)/test_runner-0012_trusted_clipping.Po@am__quote@ # am--include-marker
@@ -28546,6 +28572,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0106_sample_vulkan_edge.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0107_gpu_headroom.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0108_gpu_headroom_pin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/sampling/$(DEPDIR)/test_runner-sample_vulkan_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/snap-policy/$(DEPDIR)/test_runner-0001_snap_output_grid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/snap-policy/$(DEPDIR)/test_runner-0003_snap_partial_once.Po@am__quote@ # am--include-marker
@@ -35921,6 +35948,34 @@ color/space/test_runner-0003_din99d_byte.obj: color/space/0003_din99d_byte.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/space/test_runner-0003_din99d_byte.obj `if test -f 'color/space/0003_din99d_byte.c'; then $(CYGPATH_W) 'color/space/0003_din99d_byte.c'; else $(CYGPATH_W) '$(srcdir)/color/space/0003_din99d_byte.c'; fi`
 
+color/space/test_runner-0052_abgr_oklab_alpha.o: color/space/0052_abgr_oklab_alpha.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/space/test_runner-0052_abgr_oklab_alpha.o -MD -MP -MF color/space/$(DEPDIR)/test_runner-0052_abgr_oklab_alpha.Tpo -c -o color/space/test_runner-0052_abgr_oklab_alpha.o `test -f 'color/space/0052_abgr_oklab_alpha.c' || echo '$(srcdir)/'`color/space/0052_abgr_oklab_alpha.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/space/$(DEPDIR)/test_runner-0052_abgr_oklab_alpha.Tpo color/space/$(DEPDIR)/test_runner-0052_abgr_oklab_alpha.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/space/0052_abgr_oklab_alpha.c' object='color/space/test_runner-0052_abgr_oklab_alpha.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/space/test_runner-0052_abgr_oklab_alpha.o `test -f 'color/space/0052_abgr_oklab_alpha.c' || echo '$(srcdir)/'`color/space/0052_abgr_oklab_alpha.c
+
+color/space/test_runner-0052_abgr_oklab_alpha.obj: color/space/0052_abgr_oklab_alpha.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/space/test_runner-0052_abgr_oklab_alpha.obj -MD -MP -MF color/space/$(DEPDIR)/test_runner-0052_abgr_oklab_alpha.Tpo -c -o color/space/test_runner-0052_abgr_oklab_alpha.obj `if test -f 'color/space/0052_abgr_oklab_alpha.c'; then $(CYGPATH_W) 'color/space/0052_abgr_oklab_alpha.c'; else $(CYGPATH_W) '$(srcdir)/color/space/0052_abgr_oklab_alpha.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/space/$(DEPDIR)/test_runner-0052_abgr_oklab_alpha.Tpo color/space/$(DEPDIR)/test_runner-0052_abgr_oklab_alpha.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/space/0052_abgr_oklab_alpha.c' object='color/space/test_runner-0052_abgr_oklab_alpha.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/space/test_runner-0052_abgr_oklab_alpha.obj `if test -f 'color/space/0052_abgr_oklab_alpha.c'; then $(CYGPATH_W) 'color/space/0052_abgr_oklab_alpha.c'; else $(CYGPATH_W) '$(srcdir)/color/space/0052_abgr_oklab_alpha.c'; fi`
+
+color/space/test_runner-0053_bgr_smptec_to_srgb.o: color/space/0053_bgr_smptec_to_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/space/test_runner-0053_bgr_smptec_to_srgb.o -MD -MP -MF color/space/$(DEPDIR)/test_runner-0053_bgr_smptec_to_srgb.Tpo -c -o color/space/test_runner-0053_bgr_smptec_to_srgb.o `test -f 'color/space/0053_bgr_smptec_to_srgb.c' || echo '$(srcdir)/'`color/space/0053_bgr_smptec_to_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/space/$(DEPDIR)/test_runner-0053_bgr_smptec_to_srgb.Tpo color/space/$(DEPDIR)/test_runner-0053_bgr_smptec_to_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/space/0053_bgr_smptec_to_srgb.c' object='color/space/test_runner-0053_bgr_smptec_to_srgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/space/test_runner-0053_bgr_smptec_to_srgb.o `test -f 'color/space/0053_bgr_smptec_to_srgb.c' || echo '$(srcdir)/'`color/space/0053_bgr_smptec_to_srgb.c
+
+color/space/test_runner-0053_bgr_smptec_to_srgb.obj: color/space/0053_bgr_smptec_to_srgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/space/test_runner-0053_bgr_smptec_to_srgb.obj -MD -MP -MF color/space/$(DEPDIR)/test_runner-0053_bgr_smptec_to_srgb.Tpo -c -o color/space/test_runner-0053_bgr_smptec_to_srgb.obj `if test -f 'color/space/0053_bgr_smptec_to_srgb.c'; then $(CYGPATH_W) 'color/space/0053_bgr_smptec_to_srgb.c'; else $(CYGPATH_W) '$(srcdir)/color/space/0053_bgr_smptec_to_srgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/space/$(DEPDIR)/test_runner-0053_bgr_smptec_to_srgb.Tpo color/space/$(DEPDIR)/test_runner-0053_bgr_smptec_to_srgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='color/space/0053_bgr_smptec_to_srgb.c' object='color/space/test_runner-0053_bgr_smptec_to_srgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o color/space/test_runner-0053_bgr_smptec_to_srgb.obj `if test -f 'color/space/0053_bgr_smptec_to_srgb.c'; then $(CYGPATH_W) 'color/space/0053_bgr_smptec_to_srgb.c'; else $(CYGPATH_W) '$(srcdir)/color/space/0053_bgr_smptec_to_srgb.c'; fi`
+
 cli/signals/test_runner-0001_img2sixel_aborttrace.o: cli/signals/0001_img2sixel_aborttrace.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/signals/test_runner-0001_img2sixel_aborttrace.o -MD -MP -MF cli/signals/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Tpo -c -o cli/signals/test_runner-0001_img2sixel_aborttrace.o `test -f 'cli/signals/0001_img2sixel_aborttrace.c' || echo '$(srcdir)/'`cli/signals/0001_img2sixel_aborttrace.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/signals/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Tpo cli/signals/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
@@ -36872,6 +36927,20 @@ palette/sampling/test_runner-0108_gpu_headroom_pin.obj: palette/sampling/0108_gp
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0108_gpu_headroom_pin.c' object='palette/sampling/test_runner-0108_gpu_headroom_pin.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0108_gpu_headroom_pin.obj `if test -f 'palette/sampling/0108_gpu_headroom_pin.c'; then $(CYGPATH_W) 'palette/sampling/0108_gpu_headroom_pin.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0108_gpu_headroom_pin.c'; fi`
+
+palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.o: palette/sampling/0109_palette_colors_clone_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.o -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Tpo -c -o palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.o `test -f 'palette/sampling/0109_palette_colors_clone_allocation_failure.c' || echo '$(srcdir)/'`palette/sampling/0109_palette_colors_clone_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Tpo palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0109_palette_colors_clone_allocation_failure.c' object='palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.o `test -f 'palette/sampling/0109_palette_colors_clone_allocation_failure.c' || echo '$(srcdir)/'`palette/sampling/0109_palette_colors_clone_allocation_failure.c
+
+palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.obj: palette/sampling/0109_palette_colors_clone_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.obj -MD -MP -MF palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Tpo -c -o palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.obj `if test -f 'palette/sampling/0109_palette_colors_clone_allocation_failure.c'; then $(CYGPATH_W) 'palette/sampling/0109_palette_colors_clone_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0109_palette_colors_clone_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Tpo palette/sampling/$(DEPDIR)/test_runner-0109_palette_colors_clone_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0109_palette_colors_clone_allocation_failure.c' object='palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.obj `if test -f 'palette/sampling/0109_palette_colors_clone_allocation_failure.c'; then $(CYGPATH_W) 'palette/sampling/0109_palette_colors_clone_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0109_palette_colors_clone_allocation_failure.c'; fi`
 
 encoder/pipeline/test_runner-0128_count_table.o: encoder/pipeline/0128_count_table.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0128_count_table.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Tpo -c -o encoder/pipeline/test_runner-0128_count_table.o `test -f 'encoder/pipeline/0128_count_table.c' || echo '$(srcdir)/'`encoder/pipeline/0128_count_table.c

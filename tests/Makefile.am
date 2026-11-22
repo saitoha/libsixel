@@ -2648,6 +2648,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0003_SNAP_PARTIAL_ONCE \
     -DBUILD_TEST_0002_DIN99D_INVERSE \
     -DBUILD_TEST_0003_DIN99D_BYTE \
+    -DBUILD_TEST_0052_ABGR_OKLAB_ALPHA \
+    -DBUILD_TEST_0053_BGR_SMPTEC_TO_SRGB \
     -DBUILD_ORMODE_TEST_COMMON \
     -DBUILD_PALETTE_MAP_TEST_COMMON \
     -DBUILD_TEST_0044_DEFAULT_PALETTE_DIRECT \
@@ -3624,6 +3626,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0106_SAMPLE_VULKAN_EDGE \
     -DBUILD_TEST_0107_GPU_HEADROOM \
     -DBUILD_TEST_0108_GPU_HEADROOM_PIN \
+    -DBUILD_TEST_0109_PALETTE_COLORS_CLONE_ALLOCATION_FAILURE \
     -DBUILD_TEST_0128_COUNT_TABLE \
     -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
     -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
@@ -6512,6 +6515,8 @@ test_runner_SOURCES = \
     color/space/0001_din99d_forward.c \
     color/space/0002_din99d_inverse.c \
     color/space/0003_din99d_byte.c \
+    color/space/0052_abgr_oklab_alpha.c \
+    color/space/0053_bgr_smptec_to_srgb.c \
     cli/signals/0001_img2sixel_aborttrace.c \
     _support/cli/0029_cli_token_is_known_option.c \
     _support/cli/0030_cli_option_requires_argument.c \
@@ -6584,6 +6589,7 @@ test_runner_SOURCES = \
     palette/sampling/0106_sample_vulkan_edge.c \
     palette/sampling/0107_gpu_headroom.c \
     palette/sampling/0108_gpu_headroom_pin.c \
+    palette/sampling/0109_palette_colors_clone_allocation_failure.c \
     encoder/pipeline/0128_count_table.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
