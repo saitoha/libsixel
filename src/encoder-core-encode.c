@@ -3256,8 +3256,7 @@ sixel_encode_delta_is_legacy(sixel_dither_t const *dither,
 {
     return !dither->use_rgb101_palette && !output->ormode &&
         !dither->bodyonly && output->colorspace == SIXEL_COLORSPACE_GAMMA &&
-        !(dither->ncolors == 2 && dither->keycolor >= 0 &&
-          !(dither->keycolor_reserved || dither->indexed_palette_colors));
+        !sixel_dither_is_terminal_mono(dither);
 }
 
 static double

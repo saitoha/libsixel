@@ -340,6 +340,12 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-259 | Packed RGB matches RGB888 in float working spaces. | [tests/frame/storage/0049_packed_rgb_float_encoder.t](../../../tests/frame/storage/0049_packed_rgb_float_encoder.t) |
 | FP-260 | Permuted RGB primaries preserve exact channel independence. | [tests/frame/storage/0050_permuted_primaries.t](../../../tests/frame/storage/0050_permuted_primaries.t) |
 | FP-261 | Reducing the declared palette size preserves retained storage. | [tests/frame/storage/0051_declared_palette_storage.t](../../../tests/frame/storage/0051_declared_palette_storage.t) |
+| FP-262 | Profiled frames retry A2B1 at the float storage boundary. | [tests/frame/storage/0052_profiled_destination_range.t](../../../tests/frame/storage/0052_profiled_destination_range.t) |
+| FP-263 | RGB and indexed colors expand into BGR byte order. | [tests/frame/storage/0053_bytes_to_bgr888.t](../../../tests/frame/storage/0053_bytes_to_bgr888.t) |
+| FP-264 | Padded RGB frames match the RGB888 reference in each working mode. | [tests/frame/storage/0054_padded_rgb_encoder.t](../../../tests/frame/storage/0054_padded_rgb_encoder.t) |
+| FP-265 | Automatic GPU selection preserves terminal monochrome coverage. | [tests/palette/fixed/0103_monochrome_auto_gpu.t](../../../tests/palette/fixed/0103_monochrome_auto_gpu.t) |
+| FP-266 | A primary on the red-green edge contributes exactly zero blue. | [tests/frame/storage/0055_collinear_primary.t](../../../tests/frame/storage/0055_collinear_primary.t) |
+| FP-267 | A count declared before the palette retains its allocation size. | [tests/frame/storage/0056_palette_count_before_pointer.t](../../../tests/frame/storage/0056_palette_count_before_pointer.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

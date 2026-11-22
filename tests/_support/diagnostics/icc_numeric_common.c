@@ -3467,6 +3467,54 @@ icc_numeric_owned_mpet_matrix_fallback_test(int reverse)
 }
 
 int
+icc_numeric_frame_storage_fallback_test(void)
+{
+    static double const expected[] = {-0.13704083, 0.98498936, 1.27495119};
+    static unsigned char const clipped[] = {255, 0, 255};
+    float input[] = {64 / 255.f, 96 / 255.f, 128 / 255.f};
+    unsigned char bytes[516];
+    unsigned char *matrix;
+    sixel_frame_t *frame = NULL;
+    sixel_color_def_t *def;
+    sixel_frame_interface_t *iface;
+    size_t length;
+    int ok;
+
+    /* D2B1 returns finite PCS (FLT_MAX,0,0). Only A2B1 produces storable
+     * linear sRGB. The reference is the inverse adapted sRGB matrix times
+     * the identity A2B1 XYZ encoding, input * (65535/32768). */
+    length = iccn_mpet_transform_profile(bytes, 0, '1', 0, 65536u, 1);
+    matrix = bytes + 168u + 24u;
+    memset(matrix + 12u, 0, 48u);
+    iccn_mpe_write_float(matrix + 48u, FLT_MAX);
+    def = sixel_cdef_icc(bytes, length);
+    ok = def != NULL && SIXEL_SUCCEEDED(sixel_frame_new(&frame, NULL)) &&
+        SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 1, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1));
+    if (ok) {
+        iface = sixel_frame_as_interface(frame);
+        ok = SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, def)) &&
+            SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) &&
+            iccn_float_result((float *)(void *)sixel_frame_get_pixels(frame),
+                              expected, 3u);
+    }
+    /* The same finite PCS is valid for clipped RGB888. Its magenta
+     * result distinguishes D2B1 from the green/cyan legacy alternative. */
+    if (ok) {
+        ok = SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 1, 1,
+                SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1)) &&
+            SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, def)) &&
+            SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+                SIXEL_PIXELFORMAT_RGB888)) &&
+            memcmp(sixel_frame_get_pixels(frame), clipped, 3u) == 0;
+    }
+    sixel_cdef_free(def);
+    sixel_frame_unref(frame);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 icc_numeric_mpet_float_storage_fallback_test(void)
 {
     static float const input[] = {0.25f, 0.375f, 0.5f};

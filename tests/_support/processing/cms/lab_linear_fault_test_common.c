@@ -229,6 +229,7 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cdef_pcs_scale clf_local_22
 #define sixel_cdef_rgb clf_local_23
 #define sixel_cdef_to_xyz clf_local_24
+#define sixel_cdef_frame_sample clf_local_24_frame
 #define sixel_cms_allocate_profile clf_local_25
 #define sixel_cms_apply_backend clf_local_26
 #define sixel_cms_apply_matrix3 clf_local_27
@@ -534,6 +535,11 @@ sixel_cdef_transfer(sixel_color_def_t const *definition,
                      double const input[3], double output[3], int encode);
 SIXEL_INTERNAL_API void
 sixel_cdef_free(sixel_color_def_t *definition);
+SIXEL_INTERNAL_API int
+sixel_cdef_frame_sample(sixel_color_def_t const *source,
+                        sixel_color_def_t const *srgb, double const rgb[3],
+                        int space, int store_float, double output[3]);
+
 SIXEL_INTERNAL_API int
 sixel_cdef_to_xyz(sixel_color_def_t const *definition,
                    double const rgb[3], double xyz[3], int intent);
@@ -889,6 +895,7 @@ cms_gray_legacy_allocation_test(void)
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale
 #undef sixel_cdef_rgb
+#undef sixel_cdef_frame_sample
 #undef sixel_cdef_to_xyz
 #undef sixel_cms_allocate_profile
 #undef sixel_cms_apply_backend

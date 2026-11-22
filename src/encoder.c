@@ -6042,6 +6042,8 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
     /* AUTO has now resolved against the selected palette. Decide the
      * backend from the effective method without changing the request. */
     context->dither->diffuse_on_gpu =
+        (context->encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE ||
+         !sixel_dither_is_terminal_mono(context->dither)) &&
         context->dither->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
         context->current_colorspace == SIXEL_COLORSPACE_GAMMA &&
         sixel_encoder_gpu_diffusion_eligible(context->encoder,
