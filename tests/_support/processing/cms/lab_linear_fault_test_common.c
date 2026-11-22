@@ -205,6 +205,7 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define loader_can_try_libtiff clf_local_12
 #define sixel_cdef_clone clf_local_13
 #define sixel_cdef_same_rgb clf_local_13_same_rgb
+#define sixel_cdef_same_srgb_neutrals clf_local_13_same_srgb_neutrals
 #define sixel_cdef_storage clf_local_13_storage
 #define sixel_cdef_linearized clf_local_linearized
 #define sixel_cdef_separable clf_local_linearized_separable
@@ -515,6 +516,10 @@ sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
                   char const **icc_path, int *intent);
 SIXEL_INTERNAL_API int
 sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);
+
+SIXEL_INTERNAL_API int
+sixel_cdef_same_srgb_neutrals(sixel_color_def_t const *a,
+                             sixel_color_def_t const *b);
 
 SIXEL_INTERNAL_API size_t
 sixel_cdef_storage(sixel_color_def_t const *definition);
@@ -860,6 +865,7 @@ cms_gray_legacy_allocation_test(void)
 #undef load_with_libtiff
 #undef loader_can_try_libtiff
 #undef sixel_cdef_same_rgb
+#undef sixel_cdef_same_srgb_neutrals
 #undef sixel_cdef_storage
 #undef sixel_cdef_clone
 #undef sixel_cdef_separable

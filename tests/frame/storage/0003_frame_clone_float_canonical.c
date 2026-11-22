@@ -5,7 +5,9 @@
 #include <string.h>
 #include <sixel.h>
 #include <6cells.h>
+#include "src/chunk-factory.h"
 #include "src/cms.h"
+#include "src/loader.h"
 #include "src/loader-common.h"
 #include "tests/_support/diagnostics/icc_numeric_common.h"
 #include "tests/data/color-numeric/icc.h"
@@ -136,11 +138,93 @@ end:
     return result;
 }
 
+/* Identify the retained palette by both allocation size and address. The
+ * decoder also allocates scratch space which must not count as frame data. */
+static void *byte_palette;
+
+static void *
+record_byte_palette(size_t size)
+{
+    void *p = malloc(size);
+
+    if (size == 256u * 3u) {
+        byte_palette = p;
+    }
+    return p;
+}
+
+static SIXELSTATUS
+check_raw_storage(sixel_frame_t *frame, void *context)
+{
+    unsigned char const expected[] = {255, 0, 0, 253, 253, 253};
+    sixel_frame_interface_t *iface = sixel_frame_as_interface(frame);
+    sixel_frame_interface_t *clone = NULL;
+    sixel_frame_pixels_view_t view;
+    size_t bytes;
+    SIXELSTATUS status = SIXEL_BAD_INPUT;
+
+    if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.pixelformat != SIXEL_PIXELFORMAT_PAL8 || view.ncolors != 2 ||
+        view.width != 2 || view.height != 1 || view.pixels == NULL ||
+        view.pixels[0] != 0 || view.pixels[1] != 255 ||
+        view.palette == NULL || view.palette != byte_palette ||
+        SIXEL_FAILED(iface->vtbl->measure_storage(iface, &bytes)) ||
+        bytes != 2u + 256u * 3u ||
+        SIXEL_FAILED(iface->vtbl->clone(iface, NULL, &clone))) {
+        return status;
+    }
+    if (SIXEL_SUCCEEDED(clone->vtbl->set_pixelformat(clone,
+            SIXEL_PIXELFORMAT_RGB888)) &&
+        SIXEL_SUCCEEDED(clone->vtbl->get_pixels(clone, &view)) &&
+        view.pixels != NULL && memcmp(view.pixels, expected, 6) == 0) {
+        ++*(int *)context;
+        status = SIXEL_OK;
+    }
+    clone->vtbl->unref(clone);
+    return status;
+}
+
+static int
+test_raw_storage(void)
+{
+    unsigned char const wire[] = "\033Pq\"1;1;2;1#0;2;100;0;0@?\033\\";
+    sixel_allocator_t *allocator = NULL;
+    sixel_loader_t *loader = NULL;
+    sixel_chunk_t *chunk = NULL;
+    int calls = 0;
+    int use_palette = 1;
+    int result = EXIT_FAILURE;
+
+    byte_palette = NULL;
+    if (SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, record_byte_palette,
+            calloc, realloc, free)) &&
+        SIXEL_SUCCEEDED(sixel_loader_new(&loader, allocator)) &&
+        SIXEL_SUCCEEDED(sixel_chunk_create_from_memory(&chunk, wire,
+            sizeof(wire) - 1, NULL, allocator)) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_LOADER_ORDER, "builtin!")) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_USE_PALETTE, &use_palette)) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_CONTEXT, &calls)) &&
+        SIXEL_SUCCEEDED(sixel_loader_load_chunk(loader, chunk,
+            check_raw_storage)) && calls == 1) {
+        result = EXIT_SUCCESS;
+    }
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    sixel_loader_unref(loader);
+    sixel_allocator_unref(allocator);
+    byte_palette = NULL;
+    return result;
+}
+
 static int
 test_profile_colorspace_lut(void)
 {
     unsigned char bytes[sizeof(color_paired_lut)];
-    float pixel[3] = {.1f, .2f, .3f};
+    float pixels[] = {.1f, .2f, .3f, .5f, .5f, .5f};
     /* Every A2B0 CLUT vertex encodes D50 XYZ (.25, .5, .75).
      * Multiply by the inverse D50-adapted sRGB primary matrix. */
     double const expected[] = {-.3930784364, .7384529717, .9578093449};
@@ -155,7 +239,7 @@ test_profile_colorspace_lut(void)
     memcpy(bytes + 12, "spac", 4);
     profile = sixel_cdef_icc(bytes, sizeof(bytes));
     if (profile == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixel, 1, 1,
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
             SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
         goto end;
     }
@@ -167,8 +251,8 @@ test_profile_colorspace_lut(void)
         view.pixels_float32 == NULL) {
         goto end;
     }
-    for (c = 0; c < 3; ++c) {
-        if (!(fabs(view.pixels_float32[c] - expected[c]) < 1e-6)) {
+    for (c = 0; c < 6; ++c) {
+        if (!(fabs(view.pixels_float32[c] - expected[c % 3]) < 1e-6)) {
             goto end;
         }
     }
@@ -289,26 +373,33 @@ end:
 }
 
 static int
-test_srgb_byte_tie(void)
+test_byte_tie(char const *name)
 {
     /* 0.5 * 255 is exactly 127.5. Its two adjacent binary32 values
      * straddle that same boundary without a tolerance. */
-    float pixels[] = {0.5f, 0.5f, 0.5f, 0x1.fffffep-2f, 0.5f, 0x1.000002p-1f};
-    unsigned char const expected[] = {128, 128, 128, 127, 128, 128};
-    sixel_color_def_t *srgb;
+    float pixels[] = {
+        .5f, .5f, .5f,
+        0x1.fffffep-2f, .5f, 0x1.000002p-1f,
+        0x1.fffffep-2f, 0x1.fffffep-2f, 0x1.fffffep-2f,
+        0x1.000002p-1f, 0x1.000002p-1f, 0x1.000002p-1f
+    };
+    unsigned char const expected[] = {
+        128, 128, 128, 127, 128, 128, 127, 127, 127, 128, 128, 128
+    };
+    sixel_color_def_t *definition;
     sixel_frame_t *frame = NULL;
     sixel_frame_interface_t *iface;
     sixel_frame_pixels_view_t view;
     int result = EXIT_FAILURE;
 
-    srgb = sixel_cdef_name("srgb");
-    if (srgb == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
+    definition = sixel_cdef_name(name);
+    if (definition == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 4, 1,
             SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
         goto end;
     }
     iface = sixel_frame_as_interface(frame);
-    if (SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, srgb)) &&
+    if (SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, definition)) &&
         SIXEL_SUCCEEDED(iface->vtbl->set_pixelformat(iface,
             SIXEL_PIXELFORMAT_RGB888)) &&
         SIXEL_SUCCEEDED(iface->vtbl->get_pixels(iface, &view)) &&
@@ -318,7 +409,7 @@ test_srgb_byte_tie(void)
     }
 end:
     sixel_frame_unref(frame);
-    sixel_cdef_free(srgb);
+    sixel_cdef_free(definition);
     return result;
 }
 
@@ -461,7 +552,13 @@ test_frame_0014_clone_float(int argc, char **argv)
                                              SIXEL_PIXELFORMAT_RGBFLOAT32);
     }
     if (argc == 2 && strcmp(argv[1], "srgb-byte-tie") == 0) {
-        return test_srgb_byte_tie();
+        return test_byte_tie("srgb");
+    }
+    if (argc == 2 && strcmp(argv[1], "p3-byte-tie") == 0) {
+        return test_byte_tie("display-p3");
+    }
+    if (argc == 2 && strcmp(argv[1], "raw-storage") == 0) {
+        return test_raw_storage();
     }
     if (argc == 2 && strcmp(argv[1], "segmented-storage") == 0) {
         return icc_segmented_frame_storage_test();
