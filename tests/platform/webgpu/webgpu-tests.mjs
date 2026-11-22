@@ -9,12 +9,13 @@ for (let i = header.length; i < image.length; ++i) {
     image[i] = seed >>> 24;
 }
 
-function convert(createConverter, policy, method, lookup = 'none') {
+function convert(createConverter, policy, method, lookup = 'none',
+                 palette = 'xterm256') {
     return new Promise((resolve, reject) => {
         let fs;
         createConverter({
             arguments: ['--gpu-policy=' + policy, '--lookup-policy=' + lookup,
-                '--precision-policy=8bit', '-d' + method, '-bxterm256',
+                '--precision-policy=8bit', '-d' + method, '-b' + palette,
                 '-o', 'output.six', 'input.ppm'],
             preRun: [module => {
                 fs = module.FS;
@@ -37,9 +38,10 @@ async function sha256(bytes) {
 async function paletteByteEquivalence(createConverter) {
     const original = GPUQueue.prototype.submit;
     const dispatch = GPUComputePassEncoder.prototype.dispatchWorkgroups;
-    let submissions = 0, multiGroupPasses = 0;
+    let submissions = 0;
+    const multiGroupPasses = [];
     GPUComputePassEncoder.prototype.dispatchWorkgroups = function (...groups) {
-        if (groups.some(n => n > 1)) ++multiGroupPasses;
+        if (groups.some(n => n > 1)) multiGroupPasses.push(groups[0]);
         return dispatch.apply(this, groups);
     };
     GPUQueue.prototype.submit = function (...args) {
@@ -96,19 +98,26 @@ async function paletteByteEquivalence(createConverter) {
         expected.ordered = expected.mahalanobis;
         for (const [lookup, digests] of Object.entries(expected)) {
             for (const [i, method] of settings.entries()) {
-                const before = submissions, priorPasses = multiGroupPasses;
+                const before = submissions, priorPasses = multiGroupPasses.length;
                 const policy = i === 0 ? 'auto:palette_threshold=0' : 'force';
                 const bytes = await convert(createConverter, policy, method, lookup);
                 const hex = await sha256(bytes);
                 // The 221-pixel point apply takes one workgroup. Only the
                 // table builder spans multiple groups, once per fresh module.
                 if ((lookup === '5bit' || lookup === '6bit') &&
-                        multiGroupPasses - priorPasses !== 1)
+                        multiGroupPasses.length - priorPasses !== 1)
                     throw Error(lookup + ' did not build its cell table exactly once');
                 if (before === submissions || hex !== digests[i])
                     throw Error(lookup + '/' + method + ' differs from Vulkan');
             }
         }
+        const short = await convert(createConverter, 'off', 'none', 'none', 'xterm16');
+        const before = multiGroupPasses.length;
+        const gpu = await convert(createConverter, 'force', 'none', 'ordered', 'xterm16');
+        // One workgroup per palette row, then 256 groups of 128 seed cells.
+        if (multiGroupPasses.slice(before).join(',') !== '16,256' ||
+                gpu.length !== short.length || !gpu.every((v, i) => v === short[i]))
+            throw Error('ordered short-palette builders or output differ');
         return 'ok 1 - WebGPU palette application preserves SIXEL bytes';
     } finally {
         GPUComputePassEncoder.prototype.dispatchWorkgroups = dispatch;

@@ -1,52 +1,145 @@
 // SPDX-License-Identifier: MIT
-@group(0) @binding(1) var<storage, read> palette: array<u32>;
-@group(0) @binding(7) var<storage, read> ordered: array<u32>;
-
-fn score(q: vec3i, i: u32) -> u32 {
-    let p = palette[i];
-    let d = q - vec3i(i32(p & 255u), i32((p >> 8u) & 255u), i32(p >> 16u));
-    return (u32(dot(d, d)) << 8u) | i;
+// Same 640 KiB layout as Metal/Vulkan: distance rows, packed RGB rows,
+// then the nearest register to each of 32^3 RGB cell centers.
+struct OrderedTable {
+    keys: array<array<u32, 256>, 256>,
+    candidates: array<array<vec4u, 64>, 256>,
+    seeds: array<u32, 32768>,
 }
 
-// A candidate closer to the query than the seed cannot lie farther than
-// twice the query-to-seed distance from that seed. Include the boundary
-// so equal-distance colors keep the smallest original palette index.
+@group(0) @binding(1) var<storage, read> palette: array<u32>;
+@group(0) @binding(8) var<storage, read_write> ordered: OrderedTable;
+
+var<workgroup> ordered_keys: array<u32, 256>;
+var<workgroup> ordered_own_at: u32;
+
+fn ordered_rgb(word: u32) -> vec3i {
+    return vec3i(i32(word & 255u), i32((word >> 8u) & 255u),
+                 i32((word >> 16u) & 255u));
+}
+
+fn ordered_distance(q: vec3i, i: u32) -> u32 {
+    let gap = q - ordered_rgb(palette[i]);
+    return u32(dot(gap, gap));
+}
+
+fn ordered_row_at(lane: u32, count: u32) -> u32 {
+    // Omit the seed itself. Repeat the final candidate in short tails
+    // so a four-color load always stays inside the selected row.
+    let at = min(lane, max(count, 2u) - 2u);
+    return at + u32(count > 1u && at >= ordered_own_at);
+}
+
+fn ordered_pack(key: u32) -> u32 {
+    let index = key & 255u;
+    return (palette[index] & 0xffffffu) | (index << 24u);
+}
+
+@compute @workgroup_size(256)
+fn ordered_build_rows(@builtin(workgroup_id) group: vec3u,
+                      @builtin(local_invocation_index) lane: u32) {
+    let row = group.x;
+    let count = arrayLength(&palette);
+    let center = ordered_rgb(palette[row]);
+    var key = 0xffffffffu;
+    if (lane < count) {
+        key = (ordered_distance(center, lane) << 8u) | lane;
+    }
+    ordered_keys[lane] = key;
+    workgroupBarrier();
+    // Sort distance/index keys together so duplicate colors remain distinct.
+    for (var width = 2u; width <= 256u; width <<= 1u) {
+        for (var step = width >> 1u; step > 0u; step >>= 1u) {
+            let other = lane ^ step;
+            if (other > lane) {
+                let a = ordered_keys[lane];
+                let b = ordered_keys[other];
+                let ascending = (lane & width) == 0u;
+                ordered_keys[lane] = select(max(a, b), min(a, b), ascending);
+                ordered_keys[other] = select(min(a, b), max(a, b), ascending);
+            }
+            workgroupBarrier();
+        }
+    }
+    if ((ordered_keys[lane] & 255u) == row) {
+        ordered_own_at = lane;
+    }
+    workgroupBarrier();
+    key = ordered_keys[ordered_row_at(lane, count)];
+    ordered.keys[row][lane] = key;
+    // A single lane writes each vector. Component stores by multiple lanes
+    // could otherwise race on the same storage location.
+    if (lane % 4u == 0u) {
+        ordered.candidates[row][lane / 4u] = vec4u(
+            ordered_pack(key),
+            ordered_pack(ordered_keys[ordered_row_at(lane + 1u, count)]),
+            ordered_pack(ordered_keys[ordered_row_at(lane + 2u, count)]),
+            ordered_pack(ordered_keys[ordered_row_at(lane + 3u, count)]));
+    }
+}
+
+@compute @workgroup_size(128)
+fn ordered_build_seeds(@builtin(global_invocation_id) id: vec3u) {
+    let cell = id.x;
+    let bucket = vec3u(cell >> 10u, (cell >> 5u) & 31u, cell & 31u);
+    // Scale the rational cell centers by 64 to compare exact integers.
+    let q = vec3i(2u * bucket + 1u) * 255;
+    var best = 0u;
+    var minimum = 0xffffffffu;
+    for (var i = 0u; i < arrayLength(&palette); i++) {
+        let gap = q - 64 * ordered_rgb(palette[i]);
+        let distance = u32(dot(gap, gap));
+        if (distance < minimum) {
+            minimum = distance;
+            best = i;
+        }
+    }
+    ordered.seeds[cell] = best;
+}
+
+fn ordered_seed(q: vec3u) -> u32 {
+    let bucket = q >> vec3u(3u);
+    let cell = (bucket.x << 10u) | (bucket.y << 5u) | bucket.z;
+    return ordered.seeds[cell];
+}
+
+// Every competitor at least as good as the seed lies within twice the
+// query-to-seed distance. Include the boundary for lowest-index ties.
 fn lookup(query: vec3i) -> u32 {
-    let bucket = vec3u(query) >> vec3u(5);
-    let cell = (bucket.x << 6u) | (bucket.y << 3u) | bucket.z;
-    let seed = (ordered[cell / 4u] >> (8u * (cell % 4u))) & 255u;
-    let n = arrayLength(&palette);
-    let row = 128u + seed * n;
-    var best = score(query, seed);
+    let seed = ordered_seed(vec3u(query));
+    var best = (ordered_distance(query, seed) << 8u) | seed;
     let limit = 4u * (best >> 8u);
-    for (var j = 0u; j < n; j++) {
-        let key = ordered[row + j];
-        if ((key >> 8u) > limit) { break; }
-        best = min(best, score(query, key & 255u));
+    for (var at = 0u; at + 1u < arrayLength(&palette); at += 4u) {
+        if ((ordered.keys[seed][at] >> 8u) > limit) { break; }
+        let packed = ordered.candidates[seed][at / 4u];
+        let mask = vec4u(255u);
+        let dr = vec4i(packed & mask) - query.x;
+        let dg = vec4i((packed >> vec4u(8u)) & mask) - query.y;
+        let db = vec4i((packed >> vec4u(16u)) & mask) - query.z;
+        let scores = (vec4u(dr * dr + dg * dg + db * db) << vec4u(8u)) |
+                     (packed >> vec4u(24u));
+        best = min(best, min(min(scores.x, scores.y), min(scores.z, scores.w)));
     }
     return best & 255u;
 }
 
-fn fractional_score(q: vec3f, i: u32) -> f32 {
-    let p = palette[i];
-    let gap = q - vec3f(f32(p & 255u), f32((p >> 8u) & 255u), f32(p >> 16u));
-    return dot(gap, gap);
-}
-
 fn lookup_fractional(q: vec3f) -> u32 {
-    let bucket = vec3u(clamp(q, vec3f(0), vec3f(255))) >> vec3u(5);
-    let cell = (bucket.x << 6u) | (bucket.y << 3u) | bucket.z;
-    var best = (ordered[cell / 4u] >> (8u * (cell % 4u))) & 255u;
-    let n = arrayLength(&palette);
-    let row = 128u + best * n;
-    var minimum = fractional_score(q, best);
+    let seed = ordered_seed(vec3u(clamp(q, vec3f(0), vec3f(255))));
+    var best = seed;
+    let first = q - vec3f(ordered_rgb(palette[seed]));
+    var minimum = dot(first, first);
+    // Keep the native fractional path's rounding slack and tie order.
     let limit = 4.0 * minimum + 1.0;
-    for (var j = 0u; j < n; j++) {
-        let key = ordered[row + j];
-        if (f32(key >> 8u) > limit) { break; }
-        let i = key & 255u;
-        let d = fractional_score(q, i);
-        if (d < minimum || (d == minimum && i < best)) { best = i; minimum = d; }
+    for (var at = 0u; at + 1u < arrayLength(&palette); at++) {
+        if (f32(ordered.keys[seed][at] >> 8u) > limit) { break; }
+        let packed = ordered.candidates[seed][at / 4u][at % 4u];
+        let i = packed >> 24u;
+        let gap = q - vec3f(ordered_rgb(packed));
+        let d = dot(gap, gap);
+        if (d < minimum || (d == minimum && i < best)) {
+            best = i;
+            minimum = d;
+        }
     }
     return best;
 }

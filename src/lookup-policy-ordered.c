@@ -199,8 +199,7 @@ sixel_lookup_policy_ordered_sort(uint32_t *keys, int count)
     }
 }
 
-/* Both the CPU and browser byte consumers freeze the same ordering.
- * Each owns the layout and lifetime of its prepared palette representation. */
+/* Construct a distance-sorted row for the CPU byte lookup. */
 void
 sixel_lookup_ordered_row(unsigned char const *palette, int ncolors,
     int row, uint32_t *keys)

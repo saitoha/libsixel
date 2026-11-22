@@ -18,7 +18,6 @@ static char const * const ordered_vulkan_chunks[] = {
 #endif
 
 #if defined(HAVE_WEBGPU)
-#include "lookup-policy-ordered.h"
 static char const *const ordered_webgpu_chunks[] = {
 #include <lookup-policy-ordered-wgsl.inc.h>
 };
@@ -41,10 +40,6 @@ typedef struct ordered_plan {
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
-#if defined(HAVE_WEBGPU)
-    /* 512 seed bytes, then one sorted row of count keys per register. */
-    uint32_t table[];
-#endif
 } ordered_plan_t;
 
 typedef struct ordered_binding {
@@ -120,10 +115,6 @@ ordered_describe(sixel_gpu_lookup_plan_interface_t const *self,
         view->chunks = ordered_webgpu_chunks;
         view->chunk_count = sizeof(ordered_webgpu_chunks) /
             sizeof(ordered_webgpu_chunks[0]);
-        view->constants = plan->table;
-        view->constants_size = 512U + sizeof(uint32_t) *
-            plan->count * plan->count;
-        return SIXEL_OK;
     }
 #endif
     view->workspace_size = 163840U * sizeof(uint32_t);
@@ -282,10 +273,6 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     char const *format;
     int vulkan;
     int webgpu;
-    size_t plan_size;
-#if defined(HAVE_WEBGPU)
-    unsigned int row;
-#endif
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -328,10 +315,7 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             plan->count != request->ncolors ||
             plan->query_kind != request->query_kind ||
             memcmp(plan->palette, entries.entries, request->ncolors * 3U)) {
-        plan_size = sizeof(*plan);
-        if (webgpu) plan_size += 512U + sizeof(uint32_t) *
-            request->ncolors * request->ncolors;
-        plan = sixel_allocator_calloc(preparer->allocator, 1, plan_size);
+        plan = sixel_allocator_calloc(preparer->allocator, 1, sizeof(*plan));
         if (plan == NULL) {
             sixel_mutex_unlock(&preparer->gate);
             return SIXEL_BAD_ALLOCATION;
@@ -355,17 +339,9 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->vulkan = vulkan;
         plan->webgpu = webgpu;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
-#if defined(HAVE_WEBGPU)
-        if (webgpu) {
-            sixel_lookup_ordered_seeds(plan->palette, (int)plan->count,
-                (unsigned char *)plan->table);
-            for (row = 0; row < plan->count; ++row) {
-                sixel_lookup_ordered_row(plan->palette, (int)plan->count,
-                    (int)row, plan->table + 128U + row * plan->count);
-            }
-        }
-#endif
-        width = 32;
+        /* WGSL declares a fixed workgroup size; native builders can use
+         * a smaller group when the palette has fewer than 256 entries. */
+        width = webgpu ? 256 : 32;
         while (width < plan->count) width *= 2;
         plan->passes[0].entry_point = "ordered_build_rows";
         plan->passes[0].groups[0] = plan->count;

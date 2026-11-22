@@ -26,19 +26,19 @@ The byte instance owns its palette and tables. Re-preparation reuses them only w
 
 The GPU provider also admits fractional code-value queries in `[0,255]^3` for GPU diffusion. It reuses the same complete sorted rows and seed hints, compares float distances with lowest-index ties, and conservatively widens the radius bound by one squared-distance unit to cover rounding. Query kind is part of cache identity. This capability does not accept float32 image storage and does not round a query to a byte. The [GPU LSO2 arithmetic tests](../dithering/lso2-gpu.md#test-coverage) exercise this consumer; they are not an exhaustive continuous-color proof.
 
-## CPU and Metal construction
+## CPU and GPU construction
 
 | Path | Preparation | Query data |
 | --- | --- | --- |
 | CPU byte | Stable radix sorting of exact integer distances; 8x8x8 seed grid | Packed distance and RGB rows; four-color NEON comparisons on AArch64, portable scalar comparisons elsewhere |
-| Metal byte | Parallel bitonic row sorting directly emits packed rows; 32x32x32 seed grid | Four-color integer comparisons without palette-indirection loads |
+| Metal, Vulkan and WebGPU byte | Parallel bitonic row sorting directly emits packed rows; 32x32x32 seed grid | Four-color integer comparisons without palette-indirection loads |
 | CPU float32 | Own distance-sorted palette rows | Native float coordinates, normalized double distances and conservative triangle bounds; a valid hint or index zero selects the seed |
 
-Seed centers are exact rational coordinates: scale them and palette bytes by sixteen on CPU or sixty-four on Metal before comparison. All squared distances fit in signed 32-bit arithmetic; packed query keys fit in 26 bits. The differing seed resolutions affect work, not the chosen index.
+Seed centers are exact rational coordinates: scale them and palette bytes by sixteen on CPU or sixty-four on GPU before comparison. All squared distances fit in signed 32-bit arithmetic; packed query keys fit in 26 bits. The differing seed resolutions affect work, not the chosen index.
 
 Metal constructors and palette application run in separate compute encoders within one command buffer. Tracked buffers establish visibility without an intermediate CPU wait. The ordered provider owns its cache and pins workspace through an exclusive execution binding. Palette identity includes bytes, order, count and selected device, and becomes reusable only after successful execution. Failed construction invalidates that identity. A preparer reuses its last unchanged palette; different live plans retain separate storage. The [injected lookup contract and lifetime tests](../../execution-map/README.md#injected-lookup-ownership-tests) describe ownership and completion.
 
-[`lookup-policy-ordered-gpu.c`](../../../../src/lookup-policy-ordered-gpu.c) and its [private Metal source](../../../../src/lookup-policy-ordered-gpu.metal) own their builder, table and query; on Vulkan, [`lookup-policy-ordered-gpu.glsl`](../../../../src/lookup-policy-ordered-gpu.glsl) owns the same table with both byte and fractional queries. They have no implementation dependency on VP-tree, and no common distance/candidate/search service. The fused consumer receives a program through the lookup contract without an ordered-specific branch.
+[`lookup-policy-ordered-gpu.c`](../../../../src/lookup-policy-ordered-gpu.c) and its [private Metal source](../../../../src/lookup-policy-ordered-gpu.metal) own their builder, table and query; on Vulkan, [`lookup-policy-ordered-gpu.glsl`](../../../../src/lookup-policy-ordered-gpu.glsl) owns the same table with both byte and fractional queries. WebGPU shares that table layout and query strategy in the [WGSL program](../../../../src/lookup-policy-ordered.wgsl). They have no implementation dependency on VP-tree, and no common distance/candidate/search service. The fused consumer receives a program through the lookup contract without an ordered-specific branch.
 
 Lookup follows the existing transparency, positional or blue-noise dither, and delta-keep decisions. A kept pixel performs no lookup. The retained-plane result update stays shared with other GPU policies. GPU admission otherwise follows the byte RGB palette-application rules, including CPU fallback for unsupported shapes under GPU `auto`. `SIXEL_TRACE_TOPIC=gpu_contract` reports `kernel=ordered` and `lookup=ordered|table=rebuild` or `lookup=ordered|table=reuse`.
 
@@ -50,9 +50,9 @@ This does not promise identical complete encodes to `none`: its [Heckbert histog
 
 ## Cost
 
-For `K` colors and `G` seeds, CPU construction costs `Theta(K^2 + G K)` with fixed-width radix passes. Metal bitonic sorting performs `O(K^2 log^2 K)` work plus `Theta(G K)` seed work, in parallel. Comparing an unchanged palette costs `Theta(K)`. Each query scans `V` radius-eligible candidates, with worst-case `Theta(K)` work. A coarse seed or a query far from the palette can admit most colors.
+For `K` colors and `G` seeds, CPU construction costs `Theta(K^2 + G K)` with fixed-width radix passes. GPU bitonic sorting performs `O(K^2 log^2 K)` work plus `Theta(G K)` seed work, in parallel. Comparing an unchanged palette costs `Theta(K)`. Each query scans `V` radius-eligible candidates, with worst-case `Theta(K)` work. A coarse seed or a query far from the palette can admit most colors.
 
-Both byte paths reserve two 256x256 arrays of 32-bit values. CPU adds 512 byte seeds and its owned palette; Metal adds 32768 32-bit seeds, for a 640 KiB table. The fixed row stride simplifies short rows and vector tails. The float component owns 256x256 double radii and byte indexes, plus its palette and weights. Stable insertion sorting costs up to `O(K^3)` preparation, and each query visits at most `K` candidates; it needs no per-frame scratch.
+Both CPU and GPU byte paths reserve two 256x256 arrays of 32-bit values. CPU adds 512 byte seeds and its owned palette; GPU adds 32768 32-bit seeds, for a 640 KiB table. The fixed row stride simplifies short rows and vector tails. The float component owns 256x256 double radii and byte indexes, plus its palette and weights. Stable insertion sorting costs up to `O(K^3)` preparation, and each query visits at most `K` candidates; it needs no per-frame scratch.
 
 Table construction is paid on a palette change even when delta keeps most pixels. Dense seed grids are more expensive on CPU, and lookup-stage improvements alone do not establish a full-frame speedup. Report changed-palette construction separately from reuse, and include copying and synchronization in application timings.
 
