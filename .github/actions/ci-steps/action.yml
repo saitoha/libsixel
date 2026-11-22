@@ -1581,16 +1581,18 @@ runs:
       if: >-
         ${{ always()
             && (contains(fromJSON(inputs.matrix_json).setup_options, '--enable-gcov')
-                || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage')
+                || contains(fromJSON(inputs.matrix_json).setup_options, '--enable-coverage')
+                || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage=true')
                 || contains(fromJSON(inputs.matrix_json).label, 'emscripten-coverage'))
             && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
       shell: bash
+      env:
+        COVERAGE_SETUP_PREFIX: ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }}
       run: |
         if test -f coverage.info; then
           echo "coverage.info already exists; skipping capture"
           exit 0
         fi
-        coverage_captured=0
         GCOV_TOOL=""
         if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
           # Use the SDK reader for its gcov counters. The separate source-
@@ -1629,49 +1631,33 @@ runs:
             --gcov-ignore-errors=no_working_dir_found
           test -s coverage.info
           grep -q '^SF:' coverage.info
-          coverage_captured=1
-        fi
-        if [ "$coverage_captured" -ne 1 ] && command -v gcovr >/dev/null 2>&1; then
-          # Generated headers map lines to *.gperf via #line directives.
-          # In some out-of-tree builds the virtual builddir path does not
-          # exist, so exclude those sources to prevent gcovr report failures.
-          GCOVR_GPERF_EXCLUDE='.*\.gperf$'
-          # Prefer llvm-cov for clang coverage so gcovr can read
-          # llvm-generated profiling data correctly.
-          if [ -n "$GCOV_TOOL" ]; then
-            :
-          elif command -v llvm-cov >/dev/null 2>&1; then
-            GCOV_TOOL="llvm-cov gcov"
-          elif command -v gcov-14 >/dev/null 2>&1; then
-            # Keep gcc-14 compatibility where gcov-14 is available.
-            GCOV_TOOL="gcov-14"
-          fi
-
-          if [ -n "$GCOV_TOOL" ]; then
-            # gcovr may fail to resolve working dirs for a subset of *.gcda.
-            # Ignore those errors and fall back to auto gcov selection.
-            if ! gcovr -r . --lcov -o coverage.info \
-              --exclude "$GCOVR_GPERF_EXCLUDE" \
-              --gcov-executable "$GCOV_TOOL" \
-              --gcov-ignore-errors=no_working_dir_found; then
-              echo "gcovr with explicit gcov tool failed; retrying with auto gcov selection"
-              gcovr -r . --lcov -o coverage.info \
-                --exclude "$GCOVR_GPERF_EXCLUDE" \
-                --gcov-ignore-errors=no_working_dir_found || true
-            fi
-          else
-            gcovr -r . --lcov -o coverage.info \
-              --exclude "$GCOVR_GPERF_EXCLUDE" \
-              --gcov-ignore-errors=no_working_dir_found || true
-          fi
-        elif [ "$coverage_captured" -ne 1 ] && command -v lcov >/dev/null 2>&1; then
-          # Keep src for static builds; avoid duplicate gcda from src/.libs.
-          lcov -c \
-            -d "$PWD" \
-            --rc branch_coverage=1 \
-            -o coverage.info || true
-        elif [ "$coverage_captured" -ne 1 ]; then
-          echo "No gcovr, lcov, or llvm-cov found; skipping coverage capture"
+        else
+          # Match the reader to the compiler selected by the native matrix.
+          # GNU gcov can leave an empty report for Clang's counters.
+          compiler_assignment="${COVERAGE_SETUP_PREFIX%% *}"
+          gcovr_options=()
+          case "$compiler_assignment" in
+            CC=clang)
+              clang_version="$(clang -dumpversion)"
+              llvm_cov="llvm-cov-${clang_version%%.*}"
+              if ! command -v "$llvm_cov" >/dev/null; then
+                echo "::error::$llvm_cov is required to read Clang $clang_version coverage"
+                exit 1
+              fi
+              GCOV_TOOL="$llvm_cov gcov"
+              # Registry scans can accumulate more than 2^32 hits in a suite.
+              gcovr_options+=(--gcov-suspicious-hits-threshold=0)
+              ;;
+            CC=gcc-*) GCOV_TOOL="gcov-${compiler_assignment#CC=gcc-}" ;;
+            *) GCOV_TOOL="gcov" ;;
+          esac
+          echo "Reading coverage with $GCOV_TOOL"
+          # Generated headers map to .gperf sources outside some build trees.
+          gcovr -r . --lcov -o coverage.info \
+            --exclude '.*\.gperf$' \
+            --gcov-executable "$GCOV_TOOL" \
+            "${gcovr_options[@]}" \
+            --gcov-ignore-errors=no_working_dir_found
         fi
         # Normalize absolute paths so Coveralls can map files to the repo tree.
         # Meson may emit builddir paths, so strip builddir before the repo root.
@@ -1686,7 +1672,8 @@ runs:
       if: >-
         ${{ always()
             && (contains(fromJSON(inputs.matrix_json).setup_options, '--enable-gcov')
-                || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage'))
+                || contains(fromJSON(inputs.matrix_json).setup_options, '--enable-coverage')
+                || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage=true'))
             && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}
       shell: msys2 {0}
       run: |
@@ -1724,7 +1711,8 @@ runs:
       if: >-
         ${{ always()
             && (contains(fromJSON(inputs.matrix_json).setup_options, '--enable-gcov')
-                || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage')
+                || contains(fromJSON(inputs.matrix_json).setup_options, '--enable-coverage')
+                || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage=true')
                 || contains(fromJSON(inputs.matrix_json).label, '-coverage'))
             && fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
       shell: C:\cygwin\bin\bash.exe -o igncr {0}
@@ -2009,23 +1997,28 @@ runs:
 
     - name: Validate coverage.info
       id: coverage_info_check
-      if: ${{ hashFiles('coverage.info') != '' }}
+      env:
+        COVERAGE_REQUIRED: >-
+          ${{ contains(fromJSON(inputs.matrix_json).setup_options, '--enable-gcov')
+              || contains(fromJSON(inputs.matrix_json).setup_options, '--enable-coverage')
+              || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage=true')
+              || contains(fromJSON(inputs.matrix_json).label, 'emscripten-coverage') }}
       shell: bash
       run: |
         set -o igncr 2>/dev/null || true
-        if ! test -s coverage.info; then
-          echo "coverage.info is empty; skip Coveralls upload"
-          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+        # Validate after normalization, which can remove every source record.
+        if test -s coverage.info &&
+            grep -Eq '^SF:.+' coverage.info &&
+            grep -Eq '^DA:[0-9]+,[0-9]+' coverage.info; then
+          echo "upload_ready=true" >> "$GITHUB_OUTPUT"
           exit 0
         fi
 
-        if ! grep -q '^SF:' coverage.info; then
-          echo "coverage.info does not contain SF records; skip Coveralls upload"
-          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
-          exit 0
+        echo "upload_ready=false" >> "$GITHUB_OUTPUT"
+        if test "$COVERAGE_REQUIRED" = true; then
+          echo "::error::coverage.info is missing or contains no source line coverage"
+          exit 1
         fi
-
-        echo "upload_ready=true" >> "$GITHUB_OUTPUT"
 
     - name: Validate coverage.cobertura.xml
       id: cobertura_coverage_check

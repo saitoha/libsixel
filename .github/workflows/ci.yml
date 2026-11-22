@@ -1755,9 +1755,10 @@ jobs:
             extra_packages: >-
               meson
               clang
+              llvm
               liblcms2-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-clang-png-jpeg-tiff-webp-svg-coverage
@@ -1776,13 +1777,14 @@ jobs:
             extra_packages: >-
               meson
               clang
+              llvm
               libpng-dev
               libjpeg-dev
               libtiff-dev
               libwebp-dev
               librsvg2-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-clang-png-jpeg-tiff-webp-svg-lcms2-coverage
@@ -1801,6 +1803,7 @@ jobs:
             extra_packages: >-
               meson
               clang
+              llvm
               libpng-dev
               libjpeg-dev
               libtiff-dev
@@ -1808,7 +1811,7 @@ jobs:
               librsvg2-dev
               liblcms2-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-gdk-pixbuf2-coverage
@@ -1824,9 +1827,10 @@ jobs:
               --with-gdk-pixbuf2
             extra_packages: >-
               clang
+              llvm
               libgdk-pixbuf-2.0-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-GD-no-aborttrace-coverage
@@ -1843,9 +1847,10 @@ jobs:
               --disable-abort-trace
             extra_packages: >-
               clang
+              llvm
               libgd-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Autotools-macos-x86_64-coverage-1-of-21
@@ -3475,9 +3480,10 @@ jobs:
             extra_packages: >-
               meson
               clang
+              llvm
               liblcms2-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-clang-png-jpeg-tiff-webp-svg-coverage
@@ -3496,13 +3502,14 @@ jobs:
             extra_packages: >-
               meson
               clang
+              llvm
               libpng-dev
               libjpeg-dev
               libtiff-dev
               libwebp-dev
               librsvg2-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-clang-png-jpeg-tiff-webp-svg-lcms2-coverage
@@ -3521,6 +3528,7 @@ jobs:
             extra_packages: >-
               meson
               clang
+              llvm
               libpng-dev
               libjpeg-dev
               libtiff-dev
@@ -3528,7 +3536,7 @@ jobs:
               librsvg2-dev
               liblcms2-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-gdk-pixbuf2-coverage
@@ -3545,9 +3553,10 @@ jobs:
             extra_packages: >-
               meson
               clang
+              llvm
               libgdk-pixbuf-2.0-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-GD-no-aborttrace-coverage
@@ -3565,9 +3574,10 @@ jobs:
             extra_packages: >-
               meson
               clang
+              llvm
               libgd-dev
             pip_packages: >-
-              gcovr
+              gcovr==8.8
             exec_type: bash
 
           - label: Meson-macos-x86_64-unity-coverage-1-of-3
