@@ -95,6 +95,10 @@ set -- \
     frame/storage/0015_profile_retry.t \
     frame/storage/0016_packed_float_retry.t \
     frame/storage/0017_profile_icc.t \
+    frame/storage/0018_raw_pal8_unpainted.t \
+    frame/storage/0019_profile_colorspace_lut.t \
+    frame/resize/0177_profile_byte_resize_retry.t \
+    palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \
