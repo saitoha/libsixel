@@ -16,7 +16,8 @@ typedef struct sixel_vk_submission {
     VkQueryPool timestamps;
     double last_busy_ms;
 } sixel_vk_submission_t;
-#define SIXEL_VK_SUBMISSION_INITIALIZER { PTHREAD_MUTEX_INITIALIZER }
+/* Vulkan handles and timing fields start at zero until first use. */
+#define SIXEL_VK_SUBMISSION_INITIALIZER { .gate = PTHREAD_MUTEX_INITIALIZER }
 
 SIXEL_INTERNAL_API int sixel_vk_submission_init(
     sixel_vk_submission_t *stage);
@@ -44,7 +45,8 @@ typedef struct sixel_vk_ring_submission {
     VkFence fences[SIXEL_VK_RING];
     double submitted_ms[SIXEL_VK_RING];
 } sixel_vk_ring_submission_t;
-#define SIXEL_VK_RING_SUBMISSION_INITIALIZER { PTHREAD_MUTEX_INITIALIZER }
+#define SIXEL_VK_RING_SUBMISSION_INITIALIZER \
+    { .gate = PTHREAD_MUTEX_INITIALIZER }
 SIXEL_INTERNAL_API void sixel_vk_ring_submission_enter(
     sixel_vk_ring_submission_t *stage);
 SIXEL_INTERNAL_API void sixel_vk_ring_submission_leave(
