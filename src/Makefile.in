@@ -153,7 +153,6 @@ host_triplet = @host@
 @HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@    $(srcdir)/gpu-palette-webgpu.c
 
 @HAVE_WEBGPU_TRUE@am__append_13 = $(webgpu_headers)
-@HAVE_WEBGPU_TRUE@am__append_14 = $(webgpu_headers)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -1717,7 +1716,7 @@ SIXEL_METAL_CONSUMERS = \
 @USING_CL_TRUE@MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
 CLEANFILES = $(SIXEL_METAL_FRAGMENTS) $(SIXEL_VULKAN_FRAGMENTS) *.gcno \
 	*.gcda *.gcov *.log test-output.* $(am__append_11) \
-	$(am__append_14)
+	$(webgpu_headers)
 DISTCLEANFILES = \
                 $(DEPDIR)/libsixel_la-gpu-palette.Plo \
                 $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
@@ -2407,7 +2406,9 @@ webgpu_shaders = \
     lookup-policy-table.wgsl \
     lookup-policy-vptree.wgsl
 
-@HAVE_WEBGPU_TRUE@webgpu_headers = $(webgpu_shaders:.wgsl=-wgsl.inc.h)
+
+# The amalgamation generator emits WGSL headers even without WebGPU support.
+webgpu_headers = $(webgpu_shaders:.wgsl=-wgsl.inc.h)
 # Depend on generated headers without overriding Automake's compile recipes
 # for individual objects. This also supports direct parallel library builds.
 @HAVE_WEBGPU_TRUE@webgpu_consumers = \

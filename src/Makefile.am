@@ -1128,14 +1128,16 @@ webgpu_shaders = \
     lookup-policy-table.wgsl \
     lookup-policy-vptree.wgsl
 
+# The amalgamation generator emits WGSL headers even without WebGPU support.
+webgpu_headers = $(webgpu_shaders:.wgsl=-wgsl.inc.h)
+CLEANFILES += $(webgpu_headers)
+
 if HAVE_WEBGPU
 if !WANT_AMALGAMATED_LIB
 libsixel_la_SOURCES += $(srcdir)/dither-diffusion-webgpu.c \
     $(srcdir)/gpu-palette-webgpu.c
 endif
-webgpu_headers = $(webgpu_shaders:.wgsl=-wgsl.inc.h)
 BUILT_SOURCES += $(webgpu_headers)
-CLEANFILES += $(webgpu_headers)
 # Depend on generated headers without overriding Automake's compile recipes
 # for individual objects. This also supports direct parallel library builds.
 webgpu_consumers = \
