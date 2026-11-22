@@ -1183,7 +1183,7 @@ clean-noinstPROGRAMS:
 	$(am__rm_f) $(noinst_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
 
-fuzz-cms-builtin-libfuzzer$(EXEEXT): $(fuzz_cms_builtin_libfuzzer_OBJECTS) $(fuzz_cms_builtin_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_cms_builtin_libfuzzer_DEPENDENCIES)
+fuzz-cms-builtin-libfuzzer$(EXEEXT): $(fuzz_cms_builtin_libfuzzer_OBJECTS) $(fuzz_cms_builtin_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_cms_builtin_libfuzzer_DEPENDENCIES) 
 	@rm -f fuzz-cms-builtin-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_cms_builtin_libfuzzer_LINK) $(fuzz_cms_builtin_libfuzzer_OBJECTS) $(fuzz_cms_builtin_libfuzzer_LDADD) $(LIBS)
 

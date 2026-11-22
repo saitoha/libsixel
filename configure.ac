@@ -5644,7 +5644,27 @@ else
         fi
         ;;
     *)
+    # The triplet names the build machine when CFLAGS select another ABI,
+    # such as -m32 on an x86-64 host. Probe the compiler's real target so
+    # a 32-bit x86 build receives the SSE2 flag its intrinsics require.
+    sixel_simd_cpu=${host_cpu}
     case "${host_cpu}" in
+    x86_64|amd64)
+        AC_MSG_CHECKING([whether the compiler targets x86-64])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if !defined(__x86_64__) && !defined(_M_X64)
+# error the compiler targets 32-bit x86
+#endif
+                          ]], [[]])],
+                          [sixel_x86_64_target=yes],
+                          [sixel_x86_64_target=no])
+        AC_MSG_RESULT([$sixel_x86_64_target])
+        if test "x$sixel_x86_64_target" != xyes; then
+            sixel_simd_cpu=i686
+        fi
+        ;;
+    esac
+    case "${sixel_simd_cpu}" in
     x86_64|amd64)
         have_sse2=yes
         ;;
