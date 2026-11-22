@@ -628,12 +628,16 @@ write_png_to_file(
             (int)icc_length, &icc_compressed_length, 8);
         if (icc_compressed == NULL) {
             status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "PNG ICC profile compression failed.");
             goto end;
         }
         icc_chunk_length = (size_t)icc_compressed_length + 5u;
         icc_chunk = sixel_allocator_malloc(allocator, icc_chunk_length);
         if (icc_chunk == NULL) {
             status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "PNG iCCP chunk allocation failed.");
             goto end;
         }
         memcpy(icc_chunk, "RGB\0\0", 5u);

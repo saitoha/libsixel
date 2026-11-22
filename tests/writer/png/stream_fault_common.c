@@ -178,6 +178,13 @@ png_stream_fault_compress(unsigned char *pixels, int size, int *length,
     (void)pixels;
     (void)size;
     (void)quality;
+    if (png_stream_probe.faults & PNG_STREAM_ICC_COMPRESSION_FAILURE) {
+        return NULL;
+    }
+    /* The allocation just after ICC compression constructs the iCCP chunk. */
+    if (png_stream_probe.faults & PNG_STREAM_ICCP_ALLOCATION_FAILURE) {
+        png_stream_probe.fail_next_allocation = 1;
+    }
     *length = 8;
     return calloc(8u, 1u);
 }
@@ -276,6 +283,9 @@ png_test_stream_fault(int faults)
     int borrowed;
     int open_failed;
     int icc_export_failed;
+    int icc_compression_failed;
+    int iccp_allocation_failed;
+    int icc_preparation_failed;
     int allocation_failed;
     int before_write;
     int write_failed;
@@ -288,8 +298,18 @@ png_test_stream_fault(int faults)
     borrowed = (faults & PNG_STREAM_BORROWED) != 0;
     open_failed = (faults & PNG_STREAM_OPEN_FAILURE) != 0;
     icc_export_failed = (faults & PNG_STREAM_ICC_EXPORT_FAILURE) != 0;
+    icc_compression_failed = (faults & PNG_STREAM_ICC_COMPRESSION_FAILURE) != 0;
+    iccp_allocation_failed =
+        (faults & PNG_STREAM_ICCP_ALLOCATION_FAILURE) != 0;
+#if PNG_STREAM_FAULT_LIBPNG
+    if (icc_compression_failed || iccp_allocation_failed) {
+        return 77;
+    }
+#endif
+    icc_preparation_failed = icc_export_failed || icc_compression_failed ||
+                             iccp_allocation_failed;
     allocation_failed = (faults & PNG_STREAM_ALLOCATION_FAILURE) != 0;
-    before_write = open_failed || allocation_failed || icc_export_failed;
+    before_write = open_failed || allocation_failed || icc_preparation_failed;
     iccp_failed = (faults & PNG_STREAM_ICCP_SHORT_WRITE) != 0;
     flush_failed = (faults & PNG_STREAM_FLUSH_FAILURE) != 0;
     memset(&png_stream_probe, 0, sizeof(png_stream_probe));
@@ -301,11 +321,12 @@ png_test_stream_fault(int faults)
     }
     write_failed = png_stream_probe.chunk_to_fail != NULL ||
                    (faults & PNG_STREAM_SHORT_WRITE) != 0;
-    expected_opens = !use_stdout && !borrowed && !icc_export_failed;
+    expected_opens = !use_stdout && !borrowed && !icc_preparation_failed;
     expected_backend_releases = !before_write;
 #if !PNG_STREAM_FAULT_LIBPNG
-    /* The tagged direct path owns the ICC and image compression buffers. */
-    expected_backend_releases += iccp_failed;
+    /* A tagged direct write owns an extra compression buffer. A failed
+     * chunk allocation leaves just the compressed profile to release. */
+    expected_backend_releases += iccp_failed + iccp_allocation_failed;
 #endif
     /* Use stderr as the non-stdout stand-in. The substitutes never
      * perform I/O on either process stream. */
@@ -316,7 +337,7 @@ png_test_stream_fault(int faults)
         return EXIT_FAILURE;
     }
 
-    if (iccp_failed || icc_export_failed) {
+    if (iccp_failed || icc_preparation_failed) {
         definition = sixel_cdef_name("display-p3");
         if (definition == NULL) {
             sixel_allocator_unref(allocator);
@@ -351,9 +372,14 @@ png_test_stream_fault(int faults)
         expected = SIXEL_LIBC_ERROR | (EACCES & 0xff);
         /* Keep the diagnostic distinct from a call in the lexical lint. */
         diagnostic = "fopen" "() failed.";
-    } else if (icc_export_failed) {
+    } else if (icc_preparation_failed) {
         expected = SIXEL_BAD_ALLOCATION;
         diagnostic = "PNG ICC profile allocation failed.";
+        if (icc_compression_failed) {
+            diagnostic = "PNG ICC profile compression failed.";
+        } else if (iccp_allocation_failed) {
+            diagnostic = "PNG iCCP chunk allocation failed.";
+        }
     } else if (allocation_failed) {
         expected = SIXEL_BAD_ALLOCATION;
         diagnostic = "write_png_to_file: sixel_allocator_malloc() failed";
@@ -380,7 +406,8 @@ png_test_stream_fault(int faults)
         png_stream_probe.opened != expected_opens ||
         png_stream_probe.closed != (expected_opens && !open_failed) ||
         png_stream_probe.failed_allocations !=
-            (allocation_failed || icc_export_failed) ||
+            (allocation_failed || icc_export_failed ||
+             iccp_allocation_failed) ||
         (png_stream_probe.writes == 0) != before_write ||
         png_stream_probe.chunk_header_written !=
             (png_stream_probe.chunk_to_fail != NULL) ||
