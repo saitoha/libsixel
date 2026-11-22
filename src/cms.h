@@ -361,9 +361,12 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 SIXEL_INTERNAL_API int
 sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);
 
-SIXEL_INTERNAL_API int
-sixel_cdef_same_srgb_neutrals(sixel_color_def_t const *a,
-                             sixel_color_def_t const *b);
+/* Bits 0..2 identify shared adapted primary axes in RGB order. */
+#define SIXEL_CDEF_SRGB_AXES 7u
+#define SIXEL_CDEF_SRGB_NEUTRAL 8u
+
+SIXEL_INTERNAL_API unsigned int
+sixel_cdef_srgb_invariants(sixel_color_def_t const *definition);
 
 SIXEL_INTERNAL_API size_t
 sixel_cdef_storage(sixel_color_def_t const *definition);

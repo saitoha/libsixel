@@ -133,7 +133,7 @@ cmf_apply(ColorSyncTransformRef tr, size_t w, size_t h,
 #define g_sixel_cms_engine_once cmf_local_8
 #define sixel_cdef_clone cmf_local_13
 #define sixel_cdef_same_rgb cmf_local_13_same_rgb
-#define sixel_cdef_same_srgb_neutrals cmf_local_13_same_srgb_neutrals
+#define sixel_cdef_srgb_invariants cmf_local_13_srgb_invariants
 #define sixel_cdef_storage cmf_local_13_storage
 #define sixel_cdef_linearized cmf_local_linearized
 #define sixel_cdef_separable cmf_local_linearized_separable
@@ -417,9 +417,8 @@ sixel_cdef_parse(char const *text, sixel_color_def_t **definition,
 SIXEL_INTERNAL_API int
 sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);
 
-SIXEL_INTERNAL_API int
-sixel_cdef_same_srgb_neutrals(sixel_color_def_t const *a,
-                             sixel_color_def_t const *b);
+SIXEL_INTERNAL_API unsigned int
+sixel_cdef_srgb_invariants(sixel_color_def_t const *definition);
 
 SIXEL_INTERNAL_API size_t
 sixel_cdef_storage(sixel_color_def_t const *definition);
@@ -534,7 +533,7 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef g_sixel_cms_engine_mutex_ready
 #undef g_sixel_cms_engine_once
 #undef sixel_cdef_same_rgb
-#undef sixel_cdef_same_srgb_neutrals
+#undef sixel_cdef_srgb_invariants
 #undef sixel_cdef_storage
 #undef sixel_cdef_clone
 #undef sixel_cdef_separable
