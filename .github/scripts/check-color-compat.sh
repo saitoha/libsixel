@@ -97,6 +97,9 @@ set -- \
     frame/storage/0017_profile_icc.t \
     frame/storage/0018_raw_pal8_unpainted.t \
     frame/storage/0019_profile_colorspace_lut.t \
+    frame/storage/0020_profile_srgb_byte_tie.t \
+    frame/storage/0021_profile_retained_storage.t \
+    frame/storage/0022_segmented_curve_retained_storage.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0110_profiled_grid.t \
     palette/output-color/0103_profile_reuse.t \

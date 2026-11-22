@@ -174,7 +174,7 @@ typedef enum sixel_icc_profile_kind {
 } sixel_icc_profile_kind_t;
 
 typedef struct sixel_icc_profile {
-    size_t allocated_bytes; /* charged curve and lookup table storage */
+    size_t allocated_bytes; /* heap payload retained by this profile */
     sixel_icc_profile_kind_t kind;
     sixel_icc_profile_pcs_t pcs;
     /* Require an explicit PCS path for every evaluated intent. */

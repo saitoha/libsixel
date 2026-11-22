@@ -7,6 +7,7 @@
 #include <6cells.h>
 #include "src/cms.h"
 #include "src/loader-common.h"
+#include "tests/_support/diagnostics/icc_numeric_common.h"
 #include "tests/data/color-numeric/icc.h"
 #include "tests/data/color-numeric/paired-lut.h"
 #include "tests/data/color-numeric/opponents.h"
@@ -233,6 +234,40 @@ end:
 }
 
 static int
+test_srgb_byte_tie(void)
+{
+    /* 0.5 * 255 is exactly 127.5. Its two adjacent binary32 values
+     * straddle that same boundary without a tolerance. */
+    float pixels[] = {0.5f, 0.5f, 0.5f, 0x1.fffffep-2f, 0.5f, 0x1.000002p-1f};
+    unsigned char const expected[] = {128, 128, 128, 127, 128, 128};
+    sixel_color_def_t *srgb;
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    int result = EXIT_FAILURE;
+
+    srgb = sixel_cdef_name("srgb");
+    if (srgb == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, srgb)) &&
+        SIXEL_SUCCEEDED(iface->vtbl->set_pixelformat(iface,
+            SIXEL_PIXELFORMAT_RGB888)) &&
+        SIXEL_SUCCEEDED(iface->vtbl->get_pixels(iface, &view)) &&
+        view.pixelformat == SIXEL_PIXELFORMAT_RGB888 && view.pixels != NULL &&
+        memcmp(view.pixels, expected, sizeof(expected)) == 0) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    sixel_frame_unref(frame);
+    sixel_cdef_free(srgb);
+    return result;
+}
+
+static int
 test_profile_frame(char const *mode)
 {
     static double const srgb_red[] = {0.43604, 0.22249, 0.01392};
@@ -365,6 +400,15 @@ test_frame_0014_clone_float(int argc, char **argv)
     int c;
     int result;
 
+    if (argc == 2 && strcmp(argv[1], "srgb-byte-tie") == 0) {
+        return test_srgb_byte_tie();
+    }
+    if (argc == 2 && strcmp(argv[1], "segmented-storage") == 0) {
+        return icc_segmented_frame_storage_test();
+    }
+    if (argc == 2 && strcmp(argv[1], "profile-storage") == 0) {
+        return icc_mpet_frame_storage_test();
+    }
     if (argc == 2 && strcmp(argv[1], "raw-palette") == 0) {
         return test_raw_palette();
     }

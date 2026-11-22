@@ -24,6 +24,8 @@ int icc_numeric_mpet_no_path_test(void);
 int icc_numeric_mpet_count_test(int over_limit);
 int icc_numeric_mpet_kinds_test(void);
 int icc_mpet_curve_formulas_test(void);
+int icc_mpet_frame_storage_test(void);
+int icc_segmented_frame_storage_test(void);
 int icc_mpet_curve_samples_test(void);
 int icc_mpet_curve_structure_test(void);
 int icc_mpet_curve_unsupported_test(void);
