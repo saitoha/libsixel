@@ -2551,6 +2551,7 @@ int test_ordered_lookup_0033(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
 int test_status_0001_status_timeout(int argc, char **argv);
+int test_status_0002_status_queue_full(int argc, char **argv);
 int test_icc_0001_icc_builtin_rgb_gray_v4_paths(int argc, char **argv);
 int test_icc_0002_icc_builtin_mab_mba_a2b0_paths(int argc, char **argv);
 int test_icc_0003_icc_builtin_a2b_intent_paths(int argc, char **argv);
@@ -5631,6 +5632,7 @@ int test_dither_bluenoise_0059(int, char **);
 int test_dither_bluenoise_0060(int, char **);
 int test_dither_bluenoise_0061(int, char **);
 int test_dither_bluenoise_0062(int, char **);
+int test_dither_bluenoise_0064(int, char **);
 int test_dither_burkes_gpu_0001(int, char **);
 int test_dither_burkes_gpu_0002(int, char **);
 int test_dither_burkes_gpu_0003(int, char **);
@@ -6273,6 +6275,8 @@ static test_entry_t const test_entries[] = {
       test_dither_bluenoise_0061 },
     { "dither/bluenoise/0062_auto_strength_p256_after_p1",
       test_dither_bluenoise_0062 },
+    { "dither/bluenoise/0064_gradient_indexed_palette",
+      test_dither_bluenoise_0064 },
     { "dither/burkes-gpu/0001_accept_raster_soft",
       test_dither_burkes_gpu_0001 },
     { "dither/burkes-gpu/0002_accept_serpentine_hard",
@@ -11121,6 +11125,8 @@ static test_entry_t const test_entries[] = {
       test_ordered_lookup_0033 },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "status/0001_status_timeout", test_status_0001_status_timeout },
+    { "diagnostics/status/0002_status_queue_full",
+      test_status_0002_status_queue_full },
     { "icc/0001_icc_builtin_rgb_gray_v4_paths",
       test_icc_0001_icc_builtin_rgb_gray_v4_paths },
     { "icc/0002_icc_builtin_mab_mba_a2b0_paths",

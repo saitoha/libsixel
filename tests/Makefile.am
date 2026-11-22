@@ -595,6 +595,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0063_EXACT_BLUENOISE_P129_KEEP1 \
     -DBUILD_TEST_0063_SIERRA2_HISTORY_DEFERRED \
     -DBUILD_TEST_0064_EXACT_BLUENOISE_P200_KEEP0 \
+    -DBUILD_TEST_0064_GRADIENT_INDEXED_PALETTE \
     -DBUILD_TEST_0064_SIERRA3_DEADZONE_RASTER \
     -DBUILD_TEST_0065_EXACT_BLUENOISE_P200_KEEP1 \
     -DBUILD_TEST_0065_SIERRA3_DEADZONE_SERPENTINE \
@@ -3067,6 +3068,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0039_PALETTE_FALLBACK_OUTPUT \
     -DBUILD_TEST_0138_PROBE_PARSE \
     -DBUILD_TEST_0001_STATUS_TIMEOUT \
+    -DBUILD_TEST_0002_STATUS_QUEUE_FULL \
     -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
     -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
     -DBUILD_TEST_0003_ICC_BUILTIN_A2B_INTENT_PATHS \
@@ -6603,6 +6605,7 @@ test_runner_SOURCES = \
     _support/processing/delta-residual/residual_test_common.c \
     lookup/dispatch/0002_gpu_palette_threshold_strtoul.c \
     dither/bluenoise/0049_fade_history.c \
+    dither/bluenoise/0064_gradient_indexed_palette.c \
     _support/processing/gpu-palette/arithmetic_test_common.c \
     _support/processing/gpu-palette/wire_common.c \
     _support/processing/gpu-palette/direct_parity_common.c \
@@ -7363,6 +7366,7 @@ test_runner_SOURCES = \
     _support/quant/palette/srgb_contract_common.h \
     cli/terminal-color/0138_probe_parse.c \
     _support/diagnostics/status/0001_status_timeout.c \
+    diagnostics/status/0002_status_queue_full.c \
     color/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
     color/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
     color/icc/0003_icc_builtin_a2b_intent_paths.c \

@@ -793,6 +793,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/processing/delta-residual/residual_test_common.c \
 	lookup/dispatch/0002_gpu_palette_threshold_strtoul.c \
 	dither/bluenoise/0049_fade_history.c \
+	dither/bluenoise/0064_gradient_indexed_palette.c \
 	_support/processing/gpu-palette/arithmetic_test_common.c \
 	_support/processing/gpu-palette/wire_common.c \
 	_support/processing/gpu-palette/direct_parity_common.c \
@@ -1549,6 +1550,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	_support/quant/palette/srgb_contract_common.h \
 	cli/terminal-color/0138_probe_parse.c \
 	_support/diagnostics/status/0001_status_timeout.c \
+	diagnostics/status/0002_status_queue_full.c \
 	color/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
 	color/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
 	color/icc/0003_icc_builtin_a2b_intent_paths.c \
@@ -2172,6 +2174,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-residual/test_runner-residual_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/dispatch/test_runner-0002_gpu_palette_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	dither/bluenoise/test_runner-0049_fade_history.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	dither/bluenoise/test_runner-0064_gradient_indexed_palette.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-arithmetic_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-wire_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-direct_parity_common.$(OBJEXT) \
@@ -2873,6 +2876,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/heckbert/test_runner-0032_heckbert_subbyte_diffusion.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/terminal-color/test_runner-0138_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/status/test_runner-0002_status_queue_full.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	color/icc/test_runner-0003_icc_builtin_a2b_intent_paths.$(OBJEXT) \
@@ -4827,6 +4831,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	delta/palette/$(DEPDIR)/test_runner-0120_delta_delta_then_or.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po \
+	diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Po \
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po \
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po \
 	dither/atkinson-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po \
@@ -4838,6 +4843,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	dither/bluenoise/$(DEPDIR)/test_runner-0008_positional_8bit_bluenoise_gpu_force_keep_offset.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0048_blue_strength_override.Po \
 	dither/bluenoise/$(DEPDIR)/test_runner-0049_fade_history.Po \
+	dither/bluenoise/$(DEPDIR)/test_runner-0064_gradient_indexed_palette.Po \
 	dither/burkes-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po \
 	dither/burkes-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po \
 	dither/burkes-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po \
@@ -6410,6 +6416,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_EXACT_BLUENOISE_P129_KEEP1 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_SIERRA2_HISTORY_DEFERRED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_EXACT_BLUENOISE_P200_KEEP0 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_GRADIENT_INDEXED_PALETTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_SIERRA3_DEADZONE_RASTER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_EXACT_BLUENOISE_P200_KEEP1 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_SIERRA3_DEADZONE_SERPENTINE \
@@ -8882,6 +8889,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_PALETTE_FALLBACK_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0138_PROBE_PARSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_STATUS_TIMEOUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_STATUS_QUEUE_FULL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ICC_BUILTIN_A2B_INTENT_PATHS \
@@ -12446,6 +12454,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-residual/residual_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/dispatch/0002_gpu_palette_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    dither/bluenoise/0049_fade_history.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    dither/bluenoise/0064_gradient_indexed_palette.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/arithmetic_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/wire_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/direct_parity_common.c \
@@ -13206,6 +13215,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/quant/palette/srgb_contract_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/terminal-color/0138_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/diagnostics/status/0001_status_timeout.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/status/0002_status_queue_full.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    color/icc/0003_icc_builtin_a2b_intent_paths.c \
@@ -22231,6 +22241,9 @@ lookup/dispatch/test_runner-0002_gpu_palette_threshold_strtoul.$(OBJEXT):  \
 dither/bluenoise/test_runner-0049_fade_history.$(OBJEXT):  \
 	dither/bluenoise/$(am__dirstamp) \
 	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
+dither/bluenoise/test_runner-0064_gradient_indexed_palette.$(OBJEXT):  \
+	dither/bluenoise/$(am__dirstamp) \
+	dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
 _support/processing/gpu-palette/test_runner-arithmetic_test_common.$(OBJEXT):  \
 	_support/processing/gpu-palette/$(am__dirstamp) \
 	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
@@ -24819,6 +24832,15 @@ _support/diagnostics/status/$(DEPDIR)/$(am__dirstamp):
 _support/diagnostics/status/test_runner-0001_status_timeout.$(OBJEXT):  \
 	_support/diagnostics/status/$(am__dirstamp) \
 	_support/diagnostics/status/$(DEPDIR)/$(am__dirstamp)
+diagnostics/status/$(am__dirstamp):
+	@$(MKDIR_P) diagnostics/status
+	@: >>diagnostics/status/$(am__dirstamp)
+diagnostics/status/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) diagnostics/status/$(DEPDIR)
+	@: >>diagnostics/status/$(DEPDIR)/$(am__dirstamp)
+diagnostics/status/test_runner-0002_status_queue_full.$(OBJEXT):  \
+	diagnostics/status/$(am__dirstamp) \
+	diagnostics/status/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT):  \
 	color/icc/$(am__dirstamp) color/icc/$(DEPDIR)/$(am__dirstamp)
 color/icc/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.$(OBJEXT):  \
@@ -26653,6 +26675,7 @@ mostlyclean-compile:
 	-rm -f delta/output-representation/*.$(OBJEXT)
 	-rm -f delta/palette/*.$(OBJEXT)
 	-rm -f delta/refresh/*.$(OBJEXT)
+	-rm -f diagnostics/status/*.$(OBJEXT)
 	-rm -f dither/atkinson-gpu/*.$(OBJEXT)
 	-rm -f dither/bluenoise/*.$(OBJEXT)
 	-rm -f dither/burkes-gpu/*.$(OBJEXT)
@@ -28060,6 +28083,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/palette/$(DEPDIR)/test_runner-0120_delta_delta_then_or.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0027_gpu_return.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0100_custom_band_periods.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/atkinson-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po@am__quote@ # am--include-marker
@@ -28071,6 +28095,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0008_positional_8bit_bluenoise_gpu_force_keep_offset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0048_blue_strength_override.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0049_fade_history.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@dither/bluenoise/$(DEPDIR)/test_runner-0064_gradient_indexed_palette.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0001_accept_raster_soft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0002_accept_serpentine_hard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@dither/burkes-gpu/$(DEPDIR)/test_runner-0003_reject_other_method.Po@am__quote@ # am--include-marker
@@ -37095,6 +37120,20 @@ dither/bluenoise/test_runner-0049_fade_history.obj: dither/bluenoise/0049_fade_h
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0049_fade_history.c' object='dither/bluenoise/test_runner-0049_fade_history.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0049_fade_history.obj `if test -f 'dither/bluenoise/0049_fade_history.c'; then $(CYGPATH_W) 'dither/bluenoise/0049_fade_history.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0049_fade_history.c'; fi`
+
+dither/bluenoise/test_runner-0064_gradient_indexed_palette.o: dither/bluenoise/0064_gradient_indexed_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0064_gradient_indexed_palette.o -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0064_gradient_indexed_palette.Tpo -c -o dither/bluenoise/test_runner-0064_gradient_indexed_palette.o `test -f 'dither/bluenoise/0064_gradient_indexed_palette.c' || echo '$(srcdir)/'`dither/bluenoise/0064_gradient_indexed_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0064_gradient_indexed_palette.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0064_gradient_indexed_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0064_gradient_indexed_palette.c' object='dither/bluenoise/test_runner-0064_gradient_indexed_palette.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0064_gradient_indexed_palette.o `test -f 'dither/bluenoise/0064_gradient_indexed_palette.c' || echo '$(srcdir)/'`dither/bluenoise/0064_gradient_indexed_palette.c
+
+dither/bluenoise/test_runner-0064_gradient_indexed_palette.obj: dither/bluenoise/0064_gradient_indexed_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT dither/bluenoise/test_runner-0064_gradient_indexed_palette.obj -MD -MP -MF dither/bluenoise/$(DEPDIR)/test_runner-0064_gradient_indexed_palette.Tpo -c -o dither/bluenoise/test_runner-0064_gradient_indexed_palette.obj `if test -f 'dither/bluenoise/0064_gradient_indexed_palette.c'; then $(CYGPATH_W) 'dither/bluenoise/0064_gradient_indexed_palette.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0064_gradient_indexed_palette.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) dither/bluenoise/$(DEPDIR)/test_runner-0064_gradient_indexed_palette.Tpo dither/bluenoise/$(DEPDIR)/test_runner-0064_gradient_indexed_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither/bluenoise/0064_gradient_indexed_palette.c' object='dither/bluenoise/test_runner-0064_gradient_indexed_palette.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o dither/bluenoise/test_runner-0064_gradient_indexed_palette.obj `if test -f 'dither/bluenoise/0064_gradient_indexed_palette.c'; then $(CYGPATH_W) 'dither/bluenoise/0064_gradient_indexed_palette.c'; else $(CYGPATH_W) '$(srcdir)/dither/bluenoise/0064_gradient_indexed_palette.c'; fi`
 
 _support/processing/gpu-palette/test_runner-arithmetic_test_common.o: _support/processing/gpu-palette/arithmetic_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-arithmetic_test_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Tpo -c -o _support/processing/gpu-palette/test_runner-arithmetic_test_common.o `test -f '_support/processing/gpu-palette/arithmetic_test_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/arithmetic_test_common.c
@@ -46910,6 +46949,20 @@ _support/diagnostics/status/test_runner-0001_status_timeout.obj: _support/diagno
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/diagnostics/status/test_runner-0001_status_timeout.obj `if test -f '_support/diagnostics/status/0001_status_timeout.c'; then $(CYGPATH_W) '_support/diagnostics/status/0001_status_timeout.c'; else $(CYGPATH_W) '$(srcdir)/_support/diagnostics/status/0001_status_timeout.c'; fi`
 
+diagnostics/status/test_runner-0002_status_queue_full.o: diagnostics/status/0002_status_queue_full.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/status/test_runner-0002_status_queue_full.o -MD -MP -MF diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Tpo -c -o diagnostics/status/test_runner-0002_status_queue_full.o `test -f 'diagnostics/status/0002_status_queue_full.c' || echo '$(srcdir)/'`diagnostics/status/0002_status_queue_full.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Tpo diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/status/0002_status_queue_full.c' object='diagnostics/status/test_runner-0002_status_queue_full.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/status/test_runner-0002_status_queue_full.o `test -f 'diagnostics/status/0002_status_queue_full.c' || echo '$(srcdir)/'`diagnostics/status/0002_status_queue_full.c
+
+diagnostics/status/test_runner-0002_status_queue_full.obj: diagnostics/status/0002_status_queue_full.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/status/test_runner-0002_status_queue_full.obj -MD -MP -MF diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Tpo -c -o diagnostics/status/test_runner-0002_status_queue_full.obj `if test -f 'diagnostics/status/0002_status_queue_full.c'; then $(CYGPATH_W) 'diagnostics/status/0002_status_queue_full.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/status/0002_status_queue_full.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Tpo diagnostics/status/$(DEPDIR)/test_runner-0002_status_queue_full.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/status/0002_status_queue_full.c' object='diagnostics/status/test_runner-0002_status_queue_full.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/status/test_runner-0002_status_queue_full.obj `if test -f 'diagnostics/status/0002_status_queue_full.c'; then $(CYGPATH_W) 'diagnostics/status/0002_status_queue_full.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/status/0002_status_queue_full.c'; fi`
+
 color/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.o: color/icc/0001_icc_builtin_rgb_gray_v4_paths.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT color/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.o -MD -MP -MF color/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Tpo -c -o color/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.o `test -f 'color/icc/0001_icc_builtin_rgb_gray_v4_paths.c' || echo '$(srcdir)/'`color/icc/0001_icc_builtin_rgb_gray_v4_paths.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) color/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Tpo color/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
@@ -55398,6 +55451,8 @@ distclean-generic:
 	-$(am__rm_f) delta/palette/$(am__dirstamp)
 	-$(am__rm_f) delta/refresh/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) delta/refresh/$(am__dirstamp)
+	-$(am__rm_f) diagnostics/status/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) diagnostics/status/$(am__dirstamp)
 	-$(am__rm_f) dither/atkinson-gpu/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) dither/atkinson-gpu/$(am__dirstamp)
 	-$(am__rm_f) dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
