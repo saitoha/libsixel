@@ -241,6 +241,8 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-20 | Raster Floyd–Steinberg feedback in gamma coordinates changes the second pixel's selected fixed-palette color. | [tests/palette/working-space/0150_cli_work_gamma_fs.t](../../../../tests/palette/working-space/0150_cli_work_gamma_fs.t) |
 | WC-21 | Raster Floyd–Steinberg feedback in linear coordinates changes the second pixel's selected fixed-palette color. | [tests/palette/working-space/0151_cli_work_linear_fs.t](../../../../tests/palette/working-space/0151_cli_work_linear_fs.t) |
 | WC-22 | With both working-space options omitted, encoding a Display P3 float32 frame reproduces the expected sRGB colors at every decoded pixel. | [tests/encoder/planning/0194_default_display_p3_pixels.t](../../../../tests/encoder/planning/0194_default_display_p3_pixels.t) |
+| WC-23 | Gamma working space keeps both Display P3 colors distinct after decoding. | [tests/encoder/planning/0195_gamma_display_p3_pixels.t](../../../../tests/encoder/planning/0195_gamma_display_p3_pixels.t) |
+| WC-24 | A preserve resize resolves Display P3 coordinates before gamma palette lookup. | [tests/encoder/planning/0196_gamma_display_p3_preserve_resize.t](../../../../tests/encoder/planning/0196_gamma_display_p3_preserve_resize.t) |
 
 ### Coverage boundary
 

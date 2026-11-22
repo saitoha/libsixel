@@ -80,6 +80,8 @@ set -- \
     encoder/pipeline/0126_encode_bytes_g4_levels.t \
     encoder/pipeline/0127_encode_bytes_bgr888_pixels.t \
     encoder/planning/0194_default_display_p3_pixels.t \
+    encoder/planning/0195_gamma_display_p3_pixels.t \
+    encoder/planning/0196_gamma_display_p3_preserve_resize.t \
     encoder/playback-palette/0025_palette_source_different_primaries.t \
     encoder/playback-palette/0026_palette_source_explicit_srgb.t \
     encoder/playback-palette/0027_palette_source_implicit_srgb.t \
@@ -87,6 +89,7 @@ set -- \
     encoder/playback-palette/0029_palette_source_different_transfer.t \
     encoder/playback-palette/0030_palette_source_same_icc.t \
     encoder/playback-palette/0031_palette_source_different_icc.t \
+    encoder/playback-palette/0032_gamma_display_p3_palette_pixels.t \
     frame/alpha/0005_frame_alpha_clone.t \
     frame/alpha/0012_frame_alpha_resolve_allocation_atomic.t \
     frame/alpha/0016_frame_float_clone_color.t \
