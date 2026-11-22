@@ -326,6 +326,14 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-245 | Packed alpha composition preserves channel order and both endpoints. | [tests/frame/alpha/0024_composite_packed_channels.t](../../../tests/frame/alpha/0024_composite_packed_channels.t) |
 | FP-246 | Two shared RGB primary axes preserve the remaining channel exactly. | [tests/frame/storage/0041_two_shared_primary_tie.t](../../../tests/frame/storage/0041_two_shared_primary_tie.t) |
 | FP-247 | Cropped indexed frames retain the original implicit palette capacity. | [tests/frame/storage/0042_implicit_palette_crop_storage.t](../../../tests/frame/storage/0042_implicit_palette_crop_storage.t) |
+| FP-248 | Direct indexed output preserves a separate mask and its palette key. | [tests/frame/alpha/0025_indexed_direct_mask.t](../../../tests/frame/alpha/0025_indexed_direct_mask.t) |
+| FP-249 | Byte resize quantizes linear shadows after applying the sRGB transfer. | [tests/frame/resize/0178_linear_dark_byte_resize.t](../../../tests/frame/resize/0178_linear_dark_byte_resize.t) |
+| FP-250 | Failed byte resize preserves linear float samples for a retry. | [tests/frame/resize/0179_linear_byte_resize_retry.t](../../../tests/frame/resize/0179_linear_byte_resize_retry.t) |
+| FP-251 | A linear sRGB definition keeps independent tiny channels exact. | [tests/frame/storage/0043_analytic_linear_identity.t](../../../tests/frame/storage/0043_analytic_linear_identity.t) |
+| FP-252 | Extended Display P3 blue cannot change encoded red or green. | [tests/frame/storage/0044_p3_shared_blue_independence.t](../../../tests/frame/storage/0044_p3_shared_blue_independence.t) |
+| FP-253 | Linear palette entries expand to sRGB bytes and visible SIXEL colors. | [tests/frame/storage/0045_linear_palette_rgb888.t](../../../tests/frame/storage/0045_linear_palette_rgb888.t) |
+| FP-254 | Linear palette entries expand to sRGB floats and visible SIXEL colors. | [tests/frame/storage/0046_linear_palette_rgbfloat32.t](../../../tests/frame/storage/0046_linear_palette_rgbfloat32.t) |
+| FP-255 | Stripping opaque alpha preserves linear coordinates until byte conversion. | [tests/frame/alpha/0026_strip_linear_coordinates.t](../../../tests/frame/alpha/0026_strip_linear_coordinates.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

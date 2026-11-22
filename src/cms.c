@@ -6872,14 +6872,14 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
     definition->trc = trc;
     if (trc == SIXEL_COLOR_TRC_SRGB) {
         definition->srgb_invariants = SIXEL_CDEF_SRGB_NEUTRAL;
-        /* Relative Bradford adaptation preserves neutrals for every white.
-         * A shared primary also stays on its axis when the whites match. */
-        if (xy[0] == srgb[0] && xy[1] == srgb[1]) {
-            for (i = 0; i < 3; ++i) {
-                if (xy[2 + i * 2] == srgb[2 + i * 2] &&
-                    xy[3 + i * 2] == srgb[3 + i * 2]) {
-                    definition->srgb_invariants |= 1u << i;
-                }
+    }
+    /* Shared axes depend on chromaticities and adaptation, independently
+     * of the curves that decode the source samples. */
+    if (xy[0] == srgb[0] && xy[1] == srgb[1]) {
+        for (i = 0; i < 3; ++i) {
+            if (xy[2 + i * 2] == srgb[2 + i * 2] &&
+                xy[3 + i * 2] == srgb[3 + i * 2]) {
+                definition->srgb_invariants |= 1u << i;
             }
         }
     }
@@ -7160,8 +7160,8 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
         return 1;
     }
     if (a == NULL || b == NULL) {
-        return ((a == NULL ? b : a)->srgb_invariants &
-                SIXEL_CDEF_SRGB_AXES) == SIXEL_CDEF_SRGB_AXES;
+        return (a == NULL ? b : a)->srgb_invariants ==
+            (SIXEL_CDEF_SRGB_AXES | SIXEL_CDEF_SRGB_NEUTRAL);
     }
     if (a->bytes != NULL || b->bytes != NULL) {
         return a->bytes != NULL && b->bytes != NULL &&
@@ -7174,12 +7174,31 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
          memcmp(a->gamma, b->gamma, sizeof(a->gamma)) == 0);
 }
 
-/* ICC LUTs can map a neutral or primary to arbitrary coordinates. Only
- * analytic RGB definitions advertise exact encoded sRGB invariants. */
+/* Compose the relative transform once per frame. A shared source primary
+ * lies on its destination axis. Its off-axis coefficients are exactly zero,
+ * including for a very bright source beside an arbitrarily faint one. */
 unsigned int
-sixel_cdef_srgb_invariants(sixel_color_def_t const *definition)
+sixel_cdef_srgb_matrix(sixel_color_def_t const *source,
+                       sixel_color_def_t const *srgb, double m[9])
 {
-    return definition != NULL ? definition->srgb_invariants : 0u;
+    int row, col, k;
+
+    if (srgb == NULL || !(source->srgb_invariants & SIXEL_CDEF_SRGB_AXES)) {
+        return source->srgb_invariants;
+    }
+    for (row = 0; row < 3; ++row) {
+        for (col = 0; col < 3; ++col) {
+            m[row * 3 + col] = 0.0;
+            if (row != col && (source->srgb_invariants & (1u << col))) {
+                continue;
+            }
+            for (k = 0; k < 3; ++k) {
+                m[row * 3 + col] += srgb->from_xyz[row * 3 + k] *
+                    source->to_xyz[k * 3 + col];
+            }
+        }
+    }
+    return source->srgb_invariants;
 }
 
 size_t
@@ -7281,6 +7300,8 @@ sixel_cdef_linearized(sixel_color_def_t const *definition)
         memcpy(linear->to_xyz, definition->to_xyz, sizeof(linear->to_xyz));
         memcpy(linear->from_xyz, definition->from_xyz,
             sizeof(linear->from_xyz));
+        linear->srgb_invariants = definition->srgb_invariants &
+            SIXEL_CDEF_SRGB_AXES;
         linear->matrix_valid = 1;
         linear->trc = SIXEL_COLOR_TRC_POWER;
         linear->gamma[0] = linear->gamma[1] = linear->gamma[2] = 1.0;
