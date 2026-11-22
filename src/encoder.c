@@ -3451,6 +3451,9 @@ sixel_encoder_bind_transparent_mask(
      */
     if (frame == NULL || (dither->keycolor < 0 &&
             encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR &&
+            !(!encoder->ormode &&
+              (dither->pixelformat & SIXEL_FORMATTYPE_PALETTE) &&
+              sixel_encoder_frame_has_transparent_mask(frame)) &&
             !(dither->use_rgb101_palette &&
               (encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE ||
                encoder->color_option == SIXEL_COLOR_OPTION_BUILTIN))) ||

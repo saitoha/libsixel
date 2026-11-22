@@ -5165,7 +5165,11 @@ sixel_encode_dither(
         goto end;
     }
     pixel_count = (size_t)width * (size_t)height;
-    if (dither->keycolor < 0 && dither->pipeline_transparent_mask != NULL) {
+    /* Direct indexed input skips PaletteApply, so the band writer must
+     * observe the spatial mask even when a palette key is also present. */
+    if (dither->pipeline_transparent_mask != NULL &&
+        (dither->keycolor < 0 || (!output->ormode &&
+         (dither->pixelformat & SIXEL_FORMATTYPE_PALETTE)))) {
         if (output->ormode ||
                 dither->pipeline_transparent_mask_size < pixel_count) {
             sixel_helper_set_additional_message(

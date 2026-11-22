@@ -100,7 +100,8 @@ sixel_frame_finish_rgba_compaction(sixel_frame_t *frame)
     if (frame->pixel_extent < bytes) {
         frame->pixel_extent = bytes;
     }
-    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
+    /* Removing alpha changes the stride, not the RGB coordinates. */
+    frame->format.layout = SIXEL_PIXELFORMAT_RGB888;
 }
 
 /* Resolve straight linear RGB plus continuous alpha at a delivery boundary.
