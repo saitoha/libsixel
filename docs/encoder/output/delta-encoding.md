@@ -93,6 +93,8 @@ The encoder tries to acquire the publication lock once per frame and consumes an
 
 For reproducibility tests, `_SIXEL_TEST_REFRESH_SPATIAL_DETERMINISTIC=1` makes each frame after a submitted map wait for that map before applying the spatial schedule. It is read when the producer is created and has no effect with G0. Unset, `0`, and any other value retain the asynchronous default. This internal switch can add frame latency and is not a throughput setting.
 
+For profiling tests, `_SIXEL_TEST_GPU_HEADROOM=gpu` or `cpu` pins the shared GPU headroom choice for automatic GPU policy, including sampling and body spelling. An explicit GPU-off policy still selects CPU. Unset and other values use measured headroom. Pin this to the choice observed during an ordinary run on the same device when using an instrumented run, because instrumentation can change the wall-time decision. This internal switch is not a throughput setting; its choice and explicit-off priority are covered by the [headroom pin test](../../../tests/palette/sampling/0108_gpu_headroom_pin.t).
+
 The frame count and mask are committed only after successful encoding; output failure invalidates them with history. CPU, Metal, and Vulkan consume the same mask. `SIXEL_TRACE_TOPIC=delta_refresh` reports the frame count since the restart, the period, the selected area and the frame area. This selected area measures re-evaluation work, not painted pixels or output bytes.
 
 ## What is retained

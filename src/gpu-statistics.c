@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "gpu-statistics.h"
+#include "options.h"
 
 int
 sixel_gpu_headroom_step(
@@ -37,11 +38,25 @@ sixel_gpu_headroom_step(
     unsigned long long elapsed;
     unsigned long long busy;
     double load;
+    char const *pin;
 
     if (state == NULL) return 0;
     if (gpu_policy == SIXEL_GPU_POLICY_OFF) {
         memset(state, 0, sizeof(*state));
         return 0;
+    }
+    /* Profiling can distort wall-time headroom. Pin only auto decisions;
+     * an explicit CPU policy must continue to disable the GPU. */
+    pin = sixel_test_environment_gpu_headroom();
+    if (pin != NULL) {
+        if (strcmp(pin, "gpu") == 0) {
+            state->gpu = 1;
+            return 1;
+        }
+        if (strcmp(pin, "cpu") == 0) {
+            state->gpu = 0;
+            return 0;
+        }
     }
     if (state->last_wall_ns == 0 || wall_ns <= state->last_wall_ns ||
             busy_ns < state->last_busy_ns) {
