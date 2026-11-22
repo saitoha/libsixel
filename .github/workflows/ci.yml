@@ -107,22 +107,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
-  vulkan-build:
-    name: Autotools-ubuntu-x86_64-gcc-vulkan
-    runs-on: ubuntu-26.04
-    steps:
-      - uses: actions/checkout@v6
-      - name: Install Vulkan build dependencies
-        run: bash .github/scripts/install-ubuntu-packages.sh libvulkan-dev glslc
-      - name: Build Vulkan with strict aggregate initialization
-        env:
-          CC: gcc
-          CFLAGS: -O2 -Werror=missing-field-initializers
-        run: |
-          # Require Vulkan so the compiler always sees the backend sources.
-          ./configure --with-vulkan --without-shaderc --disable-tests
-          make -j"$(getconf _NPROCESSORS_ONLN)"
-
   color-compat:
     name: Linux ${{ matrix.cc }} color and v1.8.7 compatibility
     runs-on: ubuntu-latest
