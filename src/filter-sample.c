@@ -1447,6 +1447,7 @@ sixel_filter_sample_copy_frame(
     sixel_frame_interface_t *sample_if;
     sixel_frame_vtbl_t const *sample_vtbl;
     sixel_frame_pixels_request_t pixels_request;
+    sixel_frame_pixels_view_t source_view;
     sixel_frame_timeline_t timeline;
     sixel_frame_transparency_t src_transparency;
     sixel_frame_transparency_t dst_transparency;
@@ -1574,9 +1575,14 @@ sixel_filter_sample_copy_frame(
         return status;
     }
 
-    src_pixels = sixel_frame_get_pixels(frame);
-    src_width = sixel_frame_get_width(frame);
-    src_height = sixel_frame_get_height(frame);
+    status = frame_if->vtbl->get_pixels(frame_if, &source_view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    src_pixels = source_view.pixels_float32 != NULL
+        ? (unsigned char *)source_view.pixels_float32 : source_view.pixels;
+    src_width = source_view.width;
+    src_height = source_view.height;
     status = frame_if->vtbl->get_transparency(frame_if, &src_transparency);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1760,10 +1766,15 @@ sixel_filter_sample_copy_frame(
     }
     sample_vtbl = sample_if->vtbl;
     if (sample_vtbl->init_pixels == NULL ||
+        (source_view.rgb_definition != NULL &&
+         sample_vtbl->set_rgb_definition == NULL) ||
         sample_vtbl->set_timeline == NULL ||
         sample_vtbl->set_transparency == NULL ||
         sample_vtbl->unref == NULL) {
         sixel_allocator_free(allocator, normalized_src_pixels);
+        if (sample_vtbl->unref != NULL) {
+            sample_vtbl->unref(sample_if);
+        }
         return SIXEL_BAD_ARGUMENT;
     }
     sample = (sixel_frame_t *)sample_if;
@@ -1780,9 +1791,13 @@ sixel_filter_sample_copy_frame(
     pixels_request.width = sample_width;
     pixels_request.height = sample_height;
     pixels_request.pixelformat = src_pixelformat;
-    pixels_request.colorspace = sixel_frame_get_colorspace(frame);
+    /* The sampled triplets retain their original encoding. A profile
+     * belongs to the new frame and must outlive the sampled source. */
+    pixels_request.colorspace = source_view.rgb_definition != NULL
+        ? -1 : source_view.colorspace;
     pixels_request.ncolors = (-1);
-    pixels_request.kind = SIXEL_FRAME_PIXELS_U8;
+    pixels_request.kind = SIXEL_PIXELFORMAT_IS_FLOAT32(src_pixelformat)
+        ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
 
     status = sample_vtbl->init_pixels(sample_if, &pixels_request);
     if (SIXEL_FAILED(status)) {
@@ -1790,6 +1805,16 @@ sixel_filter_sample_copy_frame(
         sample_vtbl->unref(sample_if);
         sixel_allocator_free(allocator, normalized_src_pixels);
         return status;
+    }
+
+    if (source_view.rgb_definition != NULL) {
+        status = sample_vtbl->set_rgb_definition(sample_if,
+                                                 source_view.rgb_definition);
+        if (SIXEL_FAILED(status)) {
+            sample_vtbl->unref(sample_if);
+            sixel_allocator_free(allocator, normalized_src_pixels);
+            return status;
+        }
     }
 
     /* Preserve frame context in logs emitted by sampled palette jobs. */
