@@ -21,10 +21,12 @@ static char const * const vptree_vulkan_chunks[] = {
  * No other lookup can borrow this cache or depend on its table layout. */
 #if defined(HAVE_WEBGPU)
 static char const *const vptree_webgpu_chunks[] = {
-#include <lookup-policy-table-wgsl.inc.h>
 #include <lookup-policy-vptree-wgsl.inc.h>
 };
 #endif
+
+/* Distance rows, packed RGB rows, and the 32^3 seed grid. */
+#define VPTREE_WORKSPACE_SIZE (163840U * sizeof(uint32_t))
 
 typedef struct vptree_plan {
     sixel_gpu_lookup_plan_interface_t iface;
@@ -38,7 +40,6 @@ typedef struct vptree_plan {
     sixel_gpu_lookup_query_kind_t query_kind;
     int vulkan;
     int webgpu;
-    size_t webgpu_size;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
@@ -94,27 +95,18 @@ vptree_describe(sixel_gpu_lookup_plan_interface_t const *self,
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
     plan = (vptree_plan_t const *)self;
     memset(view, 0, sizeof(*view));
-#if defined(HAVE_WEBGPU)
-    if (plan->webgpu) {
-        view->program_format = "webgpu.lookup-rgb8.v1";
-        view->logical_name = "vptree";
-        view->query_kind = plan->query_kind;
-        view->chunks = vptree_webgpu_chunks;
-        view->chunk_count = sizeof(vptree_webgpu_chunks) /
-            sizeof(vptree_webgpu_chunks[0]);
-        view->ncolors = plan->count;
-        view->palette = plan->palette;
-        view->palette_size = plan->count * 3U;
-        view->workspace_size = plan->webgpu_size;
-        view->build_passes = plan->passes;
-        view->build_pass_count = 2;
-        return SIXEL_OK;
-    }
-#endif
     view->program_format = "metal.lookup-rgb8.v1";
     view->logical_name = "vptree";
     view->chunks = vptree_chunks;
     view->chunk_count = sizeof(vptree_chunks) / sizeof(vptree_chunks[0]);
+#if defined(HAVE_WEBGPU)
+    if (plan->webgpu) {
+        view->program_format = "webgpu.lookup-rgb8.v1";
+        view->chunks = vptree_webgpu_chunks;
+        view->chunk_count = sizeof(vptree_webgpu_chunks) /
+            sizeof(vptree_webgpu_chunks[0]);
+    }
+#endif
 #if defined(HAVE_VULKAN)
     /* The Vulkan program keeps the same table, passes and workspace. */
     if (plan->vulkan) {
@@ -128,7 +120,7 @@ vptree_describe(sixel_gpu_lookup_plan_interface_t const *self,
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
     view->query_kind = plan->query_kind;
-    view->workspace_size = 163840U * sizeof(uint32_t);
+    view->workspace_size = VPTREE_WORKSPACE_SIZE;
     view->build_passes = plan->passes;
     view->build_pass_count = 2;
     return SIXEL_OK;
@@ -220,7 +212,7 @@ vptree_begin(sixel_gpu_lookup_plan_interface_t *self,
     status = SIXEL_OK;
     if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,
-            163840U * sizeof(uint32_t), &plan->workspace);
+            VPTREE_WORKSPACE_SIZE, &plan->workspace);
     }
     if (SIXEL_FAILED(status)) {
         sixel_mutex_unlock(&plan->gate);
@@ -353,7 +345,8 @@ vptree_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         while (width < plan->count) width *= 2;
         plan->passes[0].entry_point = "vptree_build_rows";
         plan->passes[0].groups[0] = plan->count;
-        plan->passes[0].threads[0] = width;
+        /* The WGSL entry declares a fixed workgroup size of 256. */
+        plan->passes[0].threads[0] = webgpu ? 256 : width;
         plan->passes[1].entry_point = "vptree_build_seeds";
         plan->passes[1].groups[0] = 256;
         plan->passes[1].threads[0] = 128;
@@ -361,19 +354,6 @@ vptree_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->passes[0].threads[1] = plan->passes[0].threads[2] = 1;
         plan->passes[1].groups[1] = plan->passes[1].groups[2] = 1;
         plan->passes[1].threads[1] = plan->passes[1].threads[2] = 1;
-#if defined(HAVE_WEBGPU)
-        /* Builders and table layout belong to this lookup component. */
-        if (webgpu) {
-            plan->webgpu_size = (256U * plan->count + 32768U) *
-                sizeof(uint32_t);
-            plan->passes[0] = (sixel_gpu_lookup_build_pass_t){
-                "vptree_rows", { plan->count, 1, 1 }, { 256, 1, 1 }
-            };
-            plan->passes[1] = (sixel_gpu_lookup_build_pass_t){
-                "vptree_seeds", { 512, 1, 1 }, { 64, 1, 1 }
-            };
-        }
-#endif
         if (preparer->cached != NULL) {
             vptree_plan_unref(&preparer->cached->iface);
         }
