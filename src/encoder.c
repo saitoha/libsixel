@@ -8941,6 +8941,7 @@ sixel_encoder_copy_fixed_palette(sixel_encoder_t *encoder,
     copy->bodyonly = source->bodyonly;
     copy->keycolor = source->keycolor;
     copy->keycolor_reserved = source->keycolor_reserved;
+    copy->indexed_palette_colors = source->indexed_palette_colors;
     copy->use_rgb101_palette = native;
     if (floats.entries != NULL) {
         memset(&request, 0, sizeof(request));
@@ -10514,6 +10515,7 @@ sixel_encoder_prepare_palette(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        (*dither)->indexed_palette_colors = 1;
         sixel_dither_set_palette(*dither, sixel_frame_get_palette(frame));
         sixel_dither_set_pixelformat(*dither,
             sixel_frame_get_pixelformat(frame));
@@ -11020,6 +11022,7 @@ sixel_palette_snapshot_clone(sixel_palette_snapshot_t const *snapshot,
     copy->force_palette = source->force_palette;
     copy->keycolor = source->keycolor;
     copy->keycolor_reserved = source->keycolor_reserved;
+    copy->indexed_palette_colors = source->indexed_palette_colors;
     copy->lut_policy = source->lut_policy;
     copy->lut_policy_fhedt_first_touch = source->lut_policy_fhedt_first_touch;
     copy->lut_policy_fhedt_first_touch_override =

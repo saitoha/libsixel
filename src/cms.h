@@ -361,9 +361,10 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 SIXEL_INTERNAL_API int
 sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);
 
-/* Bits 0..2 identify shared adapted primary axes in RGB order. */
-#define SIXEL_CDEF_SRGB_AXES 7u
-#define SIXEL_CDEF_SRGB_NEUTRAL 8u
+/* Bit (3 * source + destination) denotes matching RGB chromaticities. */
+#define SIXEL_CDEF_SRGB_AXES 0x1ffu
+#define SIXEL_CDEF_SRGB_IDENTITY 0x111u
+#define SIXEL_CDEF_SRGB_NEUTRAL 0x200u
 
 /* Compose an analytic RGB matrix when the returned axes are shared. */
 SIXEL_INTERNAL_API unsigned int

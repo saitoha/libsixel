@@ -6877,9 +6877,11 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
      * of the curves that decode the source samples. */
     if (xy[0] == srgb[0] && xy[1] == srgb[1]) {
         for (i = 0; i < 3; ++i) {
-            if (xy[2 + i * 2] == srgb[2 + i * 2] &&
-                xy[3 + i * 2] == srgb[3 + i * 2]) {
-                definition->srgb_invariants |= 1u << i;
+            for (j = 0; j < 3; ++j) {
+                if (xy[2 + i * 2] == srgb[2 + j * 2] &&
+                    xy[3 + i * 2] == srgb[3 + j * 2]) {
+                    definition->srgb_invariants |= 1u << (3 * i + j);
+                }
             }
         }
     }
@@ -7161,7 +7163,7 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
     }
     if (a == NULL || b == NULL) {
         return (a == NULL ? b : a)->srgb_invariants ==
-            (SIXEL_CDEF_SRGB_AXES | SIXEL_CDEF_SRGB_NEUTRAL);
+            (SIXEL_CDEF_SRGB_IDENTITY | SIXEL_CDEF_SRGB_NEUTRAL);
     }
     if (a->bytes != NULL || b->bytes != NULL) {
         return a->bytes != NULL && b->bytes != NULL &&
@@ -7182,6 +7184,7 @@ sixel_cdef_srgb_matrix(sixel_color_def_t const *source,
                        sixel_color_def_t const *srgb, double m[9])
 {
     int row, col, k;
+    unsigned int axes;
 
     if (srgb == NULL || !(source->srgb_invariants & SIXEL_CDEF_SRGB_AXES)) {
         return source->srgb_invariants;
@@ -7189,7 +7192,8 @@ sixel_cdef_srgb_matrix(sixel_color_def_t const *source,
     for (row = 0; row < 3; ++row) {
         for (col = 0; col < 3; ++col) {
             m[row * 3 + col] = 0.0;
-            if (row != col && (source->srgb_invariants & (1u << col))) {
+            axes = (source->srgb_invariants >> (3 * col)) & 7u;
+            if (axes != 0u && !(axes & (1u << row))) {
                 continue;
             }
             for (k = 0; k < 3; ++k) {

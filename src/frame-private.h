@@ -57,7 +57,7 @@ struct sixel_frame {
     int owns_palette;               /* frame releases palette storage */
     int width;                      /* frame width */
     int height;                     /* frame height */
-    int palette_extent;             /* extra addressable raw SIXEL slots */
+    int palette_extent;             /* known entries retained by palette */
     int ncolors;                    /* palette colors */
     struct sixel_frame_pixel_format format;
     /*

@@ -170,6 +170,7 @@ struct sixel_dither {
      * whatever it happened to be showing there.
      */
     int keycolor_reserved;
+    int indexed_palette_colors;     /* preserve frame register definitions */
     unsigned char transparent_bgcolor[3]; /* keycolor compositing backdrop */
     int transparent_bgcolor_valid;  /* non-zero when backdrop is configured */
     int pixelformat;                /* pixelformat for internal processing */

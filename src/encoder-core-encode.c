@@ -765,7 +765,7 @@ sixel_parallel_worker_bind(sixel_parallel_worker_state_t *state,
         ctx->output->penetrate_multiplexer;
     state->output->encode_policy = ctx->output->encode_policy;
     state->output->ormode = ctx->output->ormode;
-    state->output->keycolor_reserved = ctx->output->keycolor_reserved;
+    state->output->emit_keyed_palette = ctx->output->emit_keyed_palette;
     state->output->transparent_mask = ctx->output->transparent_mask;
     state->output->wire_colors = ctx->output->wire_colors;
 
@@ -2908,7 +2908,7 @@ sixel_put_node(
             sizeof(int) * CHAR_BIT + 2 <=
             (size_t)(SIXEL_OUTPUT_PACKET_SIZE - output->pos)) {
         p = output->buffer + output->pos;
-        if (ncolors != 2 || keycolor == -1 || output->keycolor_reserved) {
+        if (ncolors != 2 || keycolor == -1 || output->emit_keyed_palette) {
             if (output->active_palette != np->pal) {
                 p = sixel_put_selector_reserved(p,
                     output->wire_colors != NULL
@@ -3060,7 +3060,7 @@ sixel_put_node(
      * band entry. No deferred repeat can cross this node's color selector.
      * The leading gap is empty; composition (including size underpaint)
      * starts the node on a nonempty column, so these runs cannot merge. */
-    if (ncolors != 2 || keycolor == (-1) || output->keycolor_reserved) {
+    if (ncolors != 2 || keycolor == (-1) || output->emit_keyed_palette) {
         /* Designate the palette index, preserving the monochrome rule. */
         if (output->active_palette != np->pal) {
             sixel_putc(output->buffer + output->pos, '#');
@@ -3223,7 +3223,7 @@ sixel_encode_delta_is_legacy(sixel_dither_t const *dither,
     return !dither->use_rgb101_palette && !output->ormode &&
         !dither->bodyonly && output->colorspace == SIXEL_COLORSPACE_GAMMA &&
         !(dither->ncolors == 2 && dither->keycolor >= 0 &&
-          !dither->keycolor_reserved);
+          !(dither->keycolor_reserved || dither->indexed_palette_colors));
 }
 
 static double
@@ -3781,15 +3781,12 @@ sixel_encode_emit_palette(int bodyonly,
     int n;
 
     /*
-     * Two colors with a key is the caller's mono convention (-e): the visible
-     * color is whatever the terminal has selected, so emitting a definition
-     * would override it.  A key the encoder reserved carries no such promise --
-     * skipping the palette there paints the frame in the register the previous
-     * frame happened to leave behind.
+     * A foreground mask (-e) paints in the terminal's selected color.
+     * Keyed image palettes and reserved delta keys still need definitions.
      */
     if (bodyonly
             || (ncolors == 2 && keycolor != (-1)
-                && !output->keycolor_reserved)) {
+                && !output->emit_keyed_palette)) {
         return SIXEL_OK;
     }
 
@@ -5577,12 +5574,10 @@ sixel_encode_dither(
         }
     }
 
-    /*
-     * A key the encoder reserved for itself (6delta appends one to every
-     * frame) must not trigger the legacy two-color mono shortcut below.  Refresh
-     * it per encode so a recycled output object cannot carry a stale value.
-     */
-    output->keycolor_reserved = dither->keycolor_reserved != 0 ? 1 : 0;
+    /* Both a reserved key and a keyed image palette have actual colors.
+     * Refresh per frame: a reused output can also carry a foreground mask. */
+    output->emit_keyed_palette =
+        dither->keycolor_reserved || dither->indexed_palette_colors;
 
     status = sixel_encode_header(encoded_width,
                                  encoded_height,
