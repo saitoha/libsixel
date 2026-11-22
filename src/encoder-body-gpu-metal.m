@@ -20,7 +20,7 @@ typedef struct sixel_body_gpu_params {
     uint32_t width, height, encoded_width, encoded_height;
     uint32_t offset_left, offset_top, ncolors;
     int32_t keycolor;
-    uint32_t words, bands, has_mask, pad;
+    uint32_t words, bands, has_mask, nodes;
 } sixel_body_gpu_params_t;
 
 typedef struct sixel_body_gpu_emit_params {
@@ -37,16 +37,16 @@ enum {
     BODY_NODE_FIRST, BODY_MAP_FIRST, BODY_NODES, BODY_MAP, BODY_FIRST_SEEN,
     BODY_BAND_FIRST, BODY_LENGTHS, BODY_REGISTERS, BODY_COLUMNS, BODY_BITS,
     BODY_SORTED, BODY_ENTRIES, BODY_BAND_SIZE, BODY_BAND_BYTES, BODY_BYTES,
-    BODY_KEYS, BODY_KEY_SLOTS, BODY_SLOTS
+    BODY_KEYS, BODY_KEY_SLOTS, BODY_NODE_BAND, BODY_SLOTS
 };
 
 enum {
-    BODY_CLASSIFY, BODY_SPANS, BODY_LENGTH, BODY_ORDER, BODY_ORDER_GROUP,
-    BODY_BASES, BODY_WRITE, BODY_PIPELINES
+    BODY_CLASSIFY, BODY_SPANS, BODY_MAP_BUILD, BODY_LENGTH, BODY_ORDER,
+    BODY_ORDER_GROUP, BODY_BASES, BODY_WRITE, BODY_PIPELINES
 };
 
 static char const *const sixel_body_gpu_kernels[BODY_PIPELINES] = {
-    "body_classify", "body_spans", "body_lengths", "body_order",
+    "body_classify", "body_spans", "body_map", "body_lengths", "body_order",
     "body_order_group", "body_bases", "body_write"
 };
 
@@ -207,10 +207,45 @@ sixel_body_gpu_encode_spans(id<MTLComputeCommandEncoder> encoder,
     [encoder setBytes:&write_pass length:sizeof(write_pass) atIndex:10];
     [encoder setBuffer:(__bridge id<MTLBuffer>)
         context->buffers[BODY_FIRST_SEEN] offset:0 atIndex:11];
+    [encoder setBuffer:(__bridge id<MTLBuffer>)
+        context->buffers[BODY_NODE_BAND] offset:0 atIndex:12];
     threads = (NSUInteger)params->bands * params->ncolors;
     group = [pipeline maxTotalThreadsPerThreadgroup];
     if (group > 256) group = 256;
     [encoder dispatchThreads:MTLSizeMake(threads, 1, 1)
+       threadsPerThreadgroup:MTLSizeMake(group, 1, 1)];
+}
+
+/* One lane per span writes its column map and reduces its first pixel. */
+static void
+sixel_body_gpu_encode_map(id<MTLComputeCommandEncoder> encoder,
+                          sixel_body_gpu_t *context,
+                          sixel_body_gpu_params_t const *params,
+                          id<MTLBuffer> indexes, id<MTLBuffer> mask)
+{
+    static int const slots[] = {
+        BODY_NODES, BODY_NODE_BAND, BODY_MAP
+    };
+    id<MTLComputePipelineState> pipeline;
+    NSUInteger i;
+    NSUInteger group;
+
+    pipeline = (__bridge id<MTLComputePipelineState>)
+        context->pipelines[BODY_MAP_BUILD];
+    [encoder setComputePipelineState:pipeline];
+    for (i = 0; i < sizeof(slots) / sizeof(slots[0]); ++i) {
+        [encoder setBuffer:(__bridge id<MTLBuffer>)context->buffers[slots[i]]
+                    offset:0 atIndex:i];
+    }
+    [encoder setBuffer:indexes offset:0 atIndex:3];
+    [encoder setBuffer:mask offset:0 atIndex:4];
+    [encoder setBuffer:(__bridge id<MTLBuffer>)
+        context->buffers[BODY_FIRST_SEEN] offset:0 atIndex:5];
+    [encoder setBytes:params length:sizeof(*params) atIndex:6];
+    group = [pipeline maxTotalThreadsPerThreadgroup];
+    if (group > 256) group = 256;
+    [encoder dispatchThreads:MTLSizeMake(params->nodes > 0 ?
+            params->nodes : 1, 1, 1)
        threadsPerThreadgroup:MTLSizeMake(group, 1, 1)];
 }
 
@@ -461,9 +496,12 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
             }
         }
         context->band_first[params.bands] = (uint32_t)nodes_total;
+        params.nodes = (uint32_t)nodes_total;
         if (sixel_body_gpu_buffer(context, BODY_NODES,
                     (size_t)nodes_total * sizeof(sixel_body_gpu_node_t))
                     == nil ||
+                sixel_body_gpu_buffer(context, BODY_NODE_BAND,
+                    (size_t)nodes_total * sizeof(uint32_t)) == nil ||
                 sixel_body_gpu_buffer(context, BODY_MAP,
                     (size_t)map_total + SIXEL_BODY_MAP_TAIL) == nil) {
             return SIXEL_BAD_ALLOCATION;
@@ -534,6 +572,7 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         encoder = [command computeCommandEncoder];
         sixel_body_gpu_encode_spans(encoder, context, &params, 1U,
             indexes, mask);
+        sixel_body_gpu_encode_map(encoder, context, &params, indexes, mask);
         if (spell) {
             sixel_body_gpu_encode_emit(encoder, context, &emit);
         }
