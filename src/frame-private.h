@@ -90,6 +90,19 @@ sixel_frame_format(sixel_frame_t const *frame);
 SIXEL_INTERNAL_API void
 sixel_frame_assign_format(sixel_frame_t *frame, int pixelformat);
 
+/* In-place RGBA compaction shortens each pixel but retains the same
+ * allocation. A previous crop may already have retained more bytes. */
+static inline void
+sixel_frame_finish_rgba_compaction(sixel_frame_t *frame)
+{
+    size_t bytes = (size_t)frame->width * (size_t)frame->height * 4u;
+
+    if (frame->pixel_extent < bytes) {
+        frame->pixel_extent = bytes;
+    }
+    sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
+}
+
 /* Resolve straight linear RGB plus continuous alpha at a delivery boundary.
  * A NULL background retains RGB and only marks exact alpha-zero samples.
  * Failure leaves all frame storage and metadata unchanged. */

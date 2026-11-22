@@ -314,6 +314,10 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-233 | Frame encoding preserves every G2 gray level. | [tests/encoder/pipeline/0130_encode_frame_g2_levels.t](../../../tests/encoder/pipeline/0130_encode_frame_g2_levels.t) |
 | FP-234 | Frame encoding preserves every G4 gray level. | [tests/encoder/pipeline/0131_encode_frame_g4_levels.t](../../../tests/encoder/pipeline/0131_encode_frame_g4_levels.t) |
 | FP-235 | Packed palette expansion preserves keyed and masked pixels. | [tests/frame/alpha/0021_packed_rgb888_mask.t](../../../tests/frame/alpha/0021_packed_rgb888_mask.t) |
+| FP-236 | Stripping alpha in place retains the original pixel allocation. | [tests/frame/storage/0037_strip_alpha_crop_storage.t](../../../tests/frame/storage/0037_strip_alpha_crop_storage.t) |
+| FP-237 | A shared blue primary preserves red and green rounding ties. | [tests/frame/storage/0038_profile_shared_primary_byte_tie.t](../../../tests/frame/storage/0038_profile_shared_primary_byte_tie.t) |
+| FP-238 | RGB888 conversion preserves zero alpha in the decoded paint mask. | [tests/frame/alpha/0022_rgba_rgb888_mask.t](../../../tests/frame/alpha/0022_rgba_rgb888_mask.t) |
+| FP-239 | Builtin TGA frames retain the full allocation after RGBA compaction. | [tests/frame/storage/0039_builtin_tga_compact_storage.t](../../../tests/frame/storage/0039_builtin_tga_compact_storage.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

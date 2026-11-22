@@ -6760,7 +6760,7 @@ struct sixel_color_def {
     size_t length;
     sixel_icc_profile_t icc;
     int matrix_valid;
-    int is_srgb;
+    unsigned int srgb_invariants;
 };
 
 struct sixel_color_xform {
@@ -6810,6 +6810,7 @@ sixel_color_def_t *
 sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
                 double const gamma[3])
 {
+    double const *srgb = sixel_named_colors[SIXEL_NAMED_COLOR_SRGB].xy;
     static double const bradford[9] = {
         0.8951, 0.2664, -0.1614,
         -0.7502, 1.7135, 0.0367,
@@ -6869,9 +6870,19 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
         }
     }
     definition->trc = trc;
-    definition->is_srgb = trc == SIXEL_COLOR_TRC_SRGB &&
-        memcmp(xy, sixel_named_colors[SIXEL_NAMED_COLOR_SRGB].xy,
-               sizeof(sixel_named_colors[SIXEL_NAMED_COLOR_SRGB].xy)) == 0;
+    if (trc == SIXEL_COLOR_TRC_SRGB) {
+        definition->srgb_invariants = SIXEL_CDEF_SRGB_NEUTRAL;
+        /* Relative Bradford adaptation preserves neutrals for every white.
+         * A shared primary also stays on its axis when the whites match. */
+        if (xy[0] == srgb[0] && xy[1] == srgb[1]) {
+            for (i = 0; i < 3; ++i) {
+                if (xy[2 + i * 2] == srgb[2 + i * 2] &&
+                    xy[3 + i * 2] == srgb[3 + i * 2]) {
+                    definition->srgb_invariants |= 1u << i;
+                }
+            }
+        }
+    }
     memcpy(definition->gamma, gamma, sizeof(definition->gamma));
     /* Adapt the native white and every primary exactly once to the PCS. */
     for (i = 0; i < 3; ++i) {
@@ -7149,7 +7160,8 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
         return 1;
     }
     if (a == NULL || b == NULL) {
-        return a == NULL ? b->is_srgb : a->is_srgb;
+        return ((a == NULL ? b : a)->srgb_invariants &
+                SIXEL_CDEF_SRGB_AXES) == SIXEL_CDEF_SRGB_AXES;
     }
     if (a->bytes != NULL || b->bytes != NULL) {
         return a->bytes != NULL && b->bytes != NULL &&
@@ -7162,16 +7174,12 @@ sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b)
          memcmp(a->gamma, b->gamma, sizeof(a->gamma)) == 0);
 }
 
-/* In a relative transform, each analytic RGB matrix maps equal linear
- * channels to a multiple of the same D50 PCS white, regardless of its
- * native white. With matching sRGB curves the encoded neutral is exact.
- * An ICC LUT can map equal channels to an arbitrary color. */
-int
-sixel_cdef_same_srgb_neutrals(sixel_color_def_t const *a,
-                             sixel_color_def_t const *b)
+/* ICC LUTs can map a neutral or primary to arbitrary coordinates. Only
+ * analytic RGB definitions advertise exact encoded sRGB invariants. */
+unsigned int
+sixel_cdef_srgb_invariants(sixel_color_def_t const *definition)
 {
-    return a != NULL && b != NULL && a->bytes == NULL && b->bytes == NULL &&
-        a->trc == SIXEL_COLOR_TRC_SRGB && b->trc == SIXEL_COLOR_TRC_SRGB;
+    return definition != NULL ? definition->srgb_invariants : 0u;
 }
 
 size_t
