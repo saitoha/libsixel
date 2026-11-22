@@ -905,6 +905,7 @@ load_png(unsigned char      /* out */ **result,
     float *volatile cms_pixels;
     /* Not read after a libpng longjmp. */
     sixel_png_transfer_memo_t memo;
+    unsigned char *packed_pixels;
     png_color *png_palette;
     png_uint_32 width;
     png_uint_32 height;
@@ -1207,12 +1208,16 @@ load_png(unsigned char      /* out */ **result,
             }
             png_read_image(png_ptr, rows);
             png_read_end(png_ptr, info_ptr);
+            /* libpng cannot longjmp past this point. A plain pointer keeps
+             * the in-place RGBA-to-RGB packing free of two volatile reads
+             * of the same object in one expression. */
+            packed_pixels = raw16_pixels;
             for (pixel_index = 0u; pixel_index < pixel_count; ++pixel_index) {
                 alpha_state->mask[pixel_index] =
-                    raw16_pixels[pixel_index * 4u + 3u] == 0u;
+                    packed_pixels[pixel_index * 4u + 3u] == 0u;
                 for (channel = 0; channel < 3; ++channel) {
-                    raw16_pixels[pixel_index * 3u + (size_t)channel] =
-                        raw16_pixels[pixel_index * 4u + (size_t)channel];
+                    packed_pixels[pixel_index * 3u + (size_t)channel] =
+                        packed_pixels[pixel_index * 4u + (size_t)channel];
                 }
             }
             *result = raw16_pixels;
