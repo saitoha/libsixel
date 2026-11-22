@@ -176,7 +176,6 @@ amalgamation_units = files(
   '../src/lookup-policy-6bit.wgsl',
   '../src/lookup-policy-blockcull.wgsl',
   '../src/lookup-policy-cell.wgsl',
-  '../src/lookup-policy-cell-candidates.wgsl',
   '../src/lookup-policy-certlut.wgsl',
   '../src/lookup-policy-delaunay.wgsl',
   '../src/lookup-policy-eytzinger.wgsl',

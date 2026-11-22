@@ -545,7 +545,6 @@ if webgpu
     'lookup-policy-6bit',
     'lookup-policy-blockcull',
     'lookup-policy-cell',
-    'lookup-policy-cell-candidates',
     'lookup-policy-certlut',
     'lookup-policy-delaunay',
     'lookup-policy-eytzinger',

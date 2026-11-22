@@ -22,9 +22,7 @@ static char const * const gridlut_vulkan_chunks[] = {
  * No other lookup can borrow this cache or depend on its table layout. */
 #if defined(HAVE_WEBGPU)
 static char const *const gridlut_webgpu_chunks[] = {
-#include <lookup-policy-table-wgsl.inc.h>
 #include <lookup-policy-gridlut-wgsl.inc.h>
-#include <lookup-policy-cell-candidates-wgsl.inc.h>
 };
 #endif
 
@@ -44,7 +42,6 @@ typedef struct gridlut_plan {
     sixel_gpu_lookup_build_pass_t pass;
     int vulkan;
     int webgpu;
-    size_t webgpu_size;
     int busy;
     int valid;
 } gridlut_plan_t;
@@ -110,7 +107,8 @@ gridlut_describe(sixel_gpu_lookup_plan_interface_t const *self,
         view->ncolors = plan->count;
         view->palette = plan->palette;
         view->palette_size = plan->count * 3U;
-        view->workspace_size = plan->webgpu_size;
+        /* One count word and 16 words of packed byte indexes per cell. */
+        view->workspace_size = 4096U * 17U * sizeof(uint32_t);
         view->build_passes = &plan->pass;
         view->build_pass_count = 1;
         return SIXEL_OK;
@@ -388,20 +386,13 @@ gridlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->configuration.kind = SIXEL_LUT_POLICY_GRIDLUT;
         plan->configuration.pixelformat = SIXEL_PIXELFORMAT_RGB888;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
-        plan->pass.entry_point = "gridlut_build";
+        /* Select the WGSL cell domain without a query-time binding. */
+        plan->pass.entry_point = webgpu && plan->fractional
+            ? "gridlut_build_fractional" : "gridlut_build";
         plan->pass.groups[0] = 128;
         plan->pass.threads[0] = 32;
         plan->pass.groups[1] = plan->pass.groups[2] = 1;
         plan->pass.threads[1] = plan->pass.threads[2] = 1;
-#if defined(HAVE_WEBGPU)
-        /* Builders and table layout belong to this lookup component. */
-        if (webgpu) {
-            plan->webgpu_size = (4096U * 8U) * sizeof(uint32_t);
-            plan->pass = (sixel_gpu_lookup_build_pass_t){
-                "gridlut_build", { 64, 1, 1 }, { 64, 1, 1 }
-            };
-        }
-#endif
         if (preparer->cached != NULL) {
             gridlut_plan_unref(&preparer->cached->iface);
         }

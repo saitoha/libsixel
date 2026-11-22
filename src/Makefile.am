@@ -1115,7 +1115,6 @@ webgpu_shaders = \
     lookup-policy-6bit.wgsl \
     lookup-policy-blockcull.wgsl \
     lookup-policy-cell.wgsl \
-    lookup-policy-cell-candidates.wgsl \
     lookup-policy-certlut.wgsl \
     lookup-policy-delaunay.wgsl \
     lookup-policy-eytzinger.wgsl \
