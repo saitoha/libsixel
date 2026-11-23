@@ -219,6 +219,7 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cdef_from_xyz clf_local_16
 #define sixel_cdef_icc clf_local_17
 #define sixel_cdef_matrix clf_local_18
+#define sixel_cdef_matrix_xyz clf_local_matrix_xyz
 #define sixel_cdef_name clf_local_19
 #define sixel_cdef_named_name clf_local_19_identity
 #define sixel_named_colors clf_local_19_registry
@@ -230,6 +231,7 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cdef_rgb clf_local_23
 #define sixel_cdef_to_xyz clf_local_24
 #define sixel_cdef_frame_sample clf_local_24_frame
+#define sixel_cdef_frame_result clf_local_frame_result
 #define sixel_cms_allocate_profile clf_local_25
 #define sixel_cms_apply_backend clf_local_26
 #define sixel_cms_apply_matrix3 clf_local_27
@@ -885,6 +887,7 @@ cms_gray_legacy_allocation_test(void)
 #undef sixel_cdef_free
 #undef sixel_cdef_from_xyz
 #undef sixel_cdef_icc
+#undef sixel_cdef_matrix_xyz
 #undef sixel_cdef_matrix
 #undef sixel_cdef_name
 #undef sixel_cdef_named_name
@@ -895,6 +898,7 @@ cms_gray_legacy_allocation_test(void)
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale
 #undef sixel_cdef_rgb
+#undef sixel_cdef_frame_result
 #undef sixel_cdef_frame_sample
 #undef sixel_cdef_to_xyz
 #undef sixel_cms_allocate_profile
