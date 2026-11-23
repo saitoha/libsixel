@@ -303,6 +303,147 @@ end:
     return ok;
 }
 
+static int
+icco_feedback_pixels(int hls, int first, int second)
+{
+    /* Independently round the device RGB tuple or its DEC HLS fields.
+     * HLS (136,30,90)/(136,33,90) decode to RGB101 (57,17,3)/(63,19,3).
+     * RGB device codes are (58,17,3)/(64,19,3). Convert at 255/100. */
+    static unsigned char const expected[2][2][4] = {
+        {{148, 43, 8, 255}, {163, 48, 8, 255}},
+        {{145, 43, 8, 255}, {161, 48, 8, 255}},
+    };
+    unsigned char *decoded;
+    int width;
+    int height;
+    int ok;
+
+    decoded = NULL;
+    ok = SIXEL_SUCCEEDED(sixel_decode_direct(icco_bytes, (int)icco_size,
+             &decoded, &width, &height, NULL)) && width == 2 && height == 1;
+    if (ok) {
+        ok = memcmp(decoded, expected[hls][first], 4U) == 0 &&
+            memcmp(decoded + 4, expected[hls][second], 4U) == 0;
+        if (!ok) {
+            fprintf(stderr, "feedback: got (%u,%u,%u), (%u,%u,%u); "
+                    "expected palette entries %d,%d (HLS=%d)\n",
+                    decoded[0], decoded[1], decoded[2],
+                    decoded[4], decoded[5], decoded[6], first, second, hls);
+        }
+    }
+    free(decoded);
+    return ok;
+}
+
+static int
+icco_register_feedback(char const *data, int mode)
+{
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    sixel_playback_t *playback;
+    sixel_dither_t *cache;
+    SIXELSTATUS status;
+    float samples[6];
+    char argument[4096];
+    int pass;
+    int hls;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    playback = NULL;
+    cache = NULL;
+    hls = mode == 2;
+    ok = 0;
+    if (strlen(data) > sizeof(argument) - 64 ||
+            SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
+            SIXEL_FAILED(sixel_output_new(&output, icco_write, NULL, NULL)) ||
+            SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "oklab")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "linear")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '0', "none")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'F', "none")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 't',
+                                              hls ? "hls" : "rgb")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd',
+                       mode == 0 ? "none" : "fs:scan=raster"))) {
+        goto end;
+    }
+    snprintf(argument, sizeof(argument),
+             "icc:path=%s/register-feedback-lut.icc:bpc=0", data);
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', argument))) {
+        goto end;
+    }
+    snprintf(argument, sizeof(argument), "gpl:%s/icc-register-fixed.gpl", data);
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'm', argument)) ||
+            (mode == 3 && SIXEL_FAILED(sixel_playback_new(
+                &playback, encoder, output, NULL, NULL)))) {
+        goto end;
+    }
+    /* B2A maps each nominal linear gray y to (y,0.30*y,0.05*y).
+     * A2B maps the output red code R back to gray (1+R/100)/2.
+     * RGB: midpoint .805, second sample .803 -> .807375 with FS.
+     * HLS: midpoint .800, second sample .797 -> .801375 with FS
+     * using HLS-derived RGB. Using the RGB codes gives .7991875
+     * against .805 and paints the wrong second color. */
+    samples[0] = samples[1] = samples[2] = hls ? 0.795f : 0.800f;
+    samples[3] = samples[4] = samples[5] = hls ? 0.797f : 0.803f;
+    if (SIXEL_FAILED(sixel_frame_init_borrowed(frame, samples, 2, 1,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1))) {
+        goto end;
+    }
+    /* The fixed-palette application cache lives within one animation.
+     * Playback submissions marked as stills each start a new image. */
+    sixel_frame_set_multiframe(frame, playback != NULL);
+    for (pass = 0; pass < (mode == 3 ? 2 : 1); ++pass) {
+        icco_size = 0;
+        if (playback == NULL) {
+            status = sixel_encoder_encode_frame(encoder, frame, output);
+        } else {
+            sixel_frame_set_frame_no(frame, pass);
+            status = sixel_playback_submit(playback, frame,
+                                           SIXEL_PLAYBACK_WAIT, -1, NULL);
+            if (SIXEL_SUCCEEDED(status)) {
+                status = sixel_playback_drain(playback, -1);
+            }
+        }
+        if (SIXEL_FAILED(status) ||
+                !icco_feedback_pixels(hls, pass, mode != 0 && pass == 0)) {
+            goto end;
+        }
+        if (playback != NULL && pass == 0) {
+            cache = encoder->dither_cache;
+            if (cache == NULL) {
+                fprintf(stderr, "feedback: fixed palette was not cached\n");
+                goto end;
+            }
+            sixel_dither_ref(cache);
+            /* First pixel is now high. Its negative residual shifts .806
+             * to .8029375, below the RGB midpoint on the reused palette. */
+            samples[0] = samples[1] = samples[2] = 0.813f;
+            samples[3] = samples[4] = samples[5] = 0.806f;
+        }
+    }
+    if (playback != NULL && encoder->dither_cache != cache) {
+        fprintf(stderr, "feedback: fixed working palette was not reused\n");
+        goto end;
+    }
+    ok = 1;
+end:
+    if (!ok) {
+        fprintf(stderr, "register feedback mode %d: %s\n", mode,
+                sixel_helper_get_additional_message());
+    }
+    sixel_playback_unref(playback);
+    sixel_dither_unref(cache);
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok;
+}
+
 int
 test_icc_output(int argc, char **argv)
 {
@@ -312,6 +453,9 @@ test_icc_output(int argc, char **argv)
         return 1;
     }
     mode = atoi(argv[2]);
+    if (strcmp(argv[1], "register-feedback") == 0) {
+        return !icco_register_feedback(argv[3], mode);
+    }
     if (strcmp(argv[1], "encode") == 0) {
         return !icco_encode(argv[3], mode);
     }

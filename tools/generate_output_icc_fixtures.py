@@ -12,6 +12,25 @@ for n in range(struct.unpack_from('>I', profile, 128)[0]):
         profile[offset+3] = ord('1')
 (root / 'tests/data/color-numeric/relative-paired-lut.icc').write_bytes(profile)
 
+# Non-inverse relative LUTs for fixed-palette feedback. Forward PCS is
+# D50 times (0.5 + R/2), while reverse device RGB depends only on PCS Y.
+def register_lut(grid, points):
+    header = b'mft2' + bytes(4) + bytes([3, 3, grid, 0])
+    header += b''.join(source.fixed(source.D(i == j))
+                       for i in range(3) for j in range(3))
+    ramps = struct.pack('>HH6H', 2, 2, 0, 65535, 0, 65535, 0, 65535)
+    return header + ramps + b''.join(struct.pack('>3H', *p) for p in points) + ramps[4:]
+
+
+forward = [tuple(round(v * (1 + r) * 16384) for v in source.D50)
+           for r in range(2) for _ in range(4)]
+reverse = [tuple(round(min(y, 1) * v * 65535)
+                 for v in (source.D(1), source.D('.30'), source.D('.05')))
+           for _ in range(3) for y in range(3) for _ in range(3)]
+profile = source.pack_profile([(b'A2B1', register_lut(2, forward)),
+                               (b'B2A1', register_lut(3, reverse))])
+(root / 'tests/data/color-numeric/register-feedback-lut.icc').write_bytes(profile)
+
 # A nonzero black table exposes triple-counting of the table baseline.
 original = source.icc_profile()
 tags = []

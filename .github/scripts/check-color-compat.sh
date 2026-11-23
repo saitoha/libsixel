@@ -36,8 +36,10 @@ check_release()
 mkdir -p "$build/current"
 cd "$build/current"
 "$current/configure" --enable-shared --without-lcms2 --without-coregraphics \
-    --with-png
+    --with-png --with-tiff --with-webp
 grep -qx '#define HAVE_LIBPNG 1' config.h
+grep -qx '#define HAVE_LIBTIFF 1' config.h
+grep -qx '#define HAVE_WEBP 1' config.h
 if grep -Eq '^#define HAVE_(LCMS2|COREGRAPHICS) 1$' config.h; then
     echo 'The builtin CMS compatibility job requires external CMS backends to be disabled.' >&2
     exit 1
@@ -74,6 +76,8 @@ set -- \
     color/bpc/0037_output_bpc_libpng_on_indices.t \
     color/bpc/0038_output_bpc_builtin_off_float.t \
     color/bpc/0039_output_bpc_libpng_off_float.t \
+    color/bpc/0040_output_bpc_builtin_geometry.t \
+    color/bpc/0041_output_bpc_libpng_geometry.t \
     color/icc/0005_icc_builtin_device_to_device_intent_paths.t \
     color/icc/0048_absolute_equal_white.t \
     color/icc/0049_absolute_after_missing_relative.t \
@@ -130,6 +134,8 @@ set -- \
     color/icc/0132_mpet_simplex_weight_residual.t \
     color/icc/0133_mpet_nonrelative_snap.t \
     color/icc/0134_mpet_nonrelative_gamut.t \
+    color/icc/0135_builtin_png_extended_trc.t \
+    color/icc/0136_libpng_png_extended_trc.t \
     decoder/parser/0106_normal_columns_wide_fallback.t \
     encoder/pipeline/0124_encode_bytes_g1_levels.t \
     encoder/pipeline/0125_encode_bytes_g2_levels.t \
@@ -208,6 +214,7 @@ set -- \
     frame/alpha/0026_strip_linear_coordinates.t \
     palette/fixed/0100_monochrome_sixel_mode_no_palette_slots.t \
     frame/alpha/0027_keyed_palette_registers.t \
+    frame/alpha/0028_frame_replacement_cms_history.t \
     frame/storage/0047_linear_index_unpack.t \
     frame/storage/0048_float_to_bgr888.t \
     frame/storage/0049_packed_rgb_float_encoder.t \
@@ -243,17 +250,32 @@ set -- \
     frame/storage/0072_implicit_palette_storage.t \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
+    loader-tiff/color-transform/0023_logluv_stonits_scale.t \
+    loader/webp/0175_lossless_alpha_linear_output.t \
     frame/resize/0177_profile_byte_resize_retry.t \
     palette/sampling/0111_profiled_grid.t \
     palette/sampling/0112_indexed_default_capacity.t \
     palette/output-color/0103_profile_reuse.t \
+    palette/output-color/0192_icc_register_nearest_bpc0.t \
+    palette/output-color/0193_icc_register_nearest_bpc1.t \
+    palette/output-color/0194_icc_register_fs_bpc0.t \
+    palette/output-color/0195_icc_register_fs_bpc1.t \
+    palette/output-color/0196_icc_register_centroid_linear.t \
+    palette/output-color/0197_icc_register_centroid_oklab.t \
+    palette/output-color/0198_icc_register_export_original.t \
+    palette/output-color/0199_icc_lut_register_nearest.t \
+    palette/output-diffusion/0123_icc_lut_register_fs.t \
+    palette/output-diffusion/0124_icc_hls_register_fs.t \
+    palette/output-diffusion/0125_icc_fixed_playback_register_fs.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \
     palette/working-space/0147_cli_cluster_linear_centroid.t \
     palette/working-space/0148_cli_work_gamma_lookup.t \
     palette/working-space/0149_cli_work_linear_lookup.t \
     palette/working-space/0150_cli_work_gamma_fs.t \
-    palette/working-space/0151_cli_work_linear_fs.t
+    palette/working-space/0151_cli_work_linear_fs.t \
+    palette/working-space/0152_oklab_cluster_linear_fs_rgb.t \
+    palette/working-space/0153_oklab_cluster_linear_fs_xyz.t
 make -j"$jobs" -C tests check TESTS="$*"
 for test_name do
     awk '
