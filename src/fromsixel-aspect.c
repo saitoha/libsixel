@@ -134,9 +134,7 @@ sixel_aspect_paint_body(image_buffer_t *image, parser_context_t *context,
             return status;
         }
     }
-    if (image->depth != 4 && context->color_index > image->ncolors) {
-        image->ncolors = context->color_index;
-    }
+    image_buffer_note_index(image, context->color_index);
     color = image->palette[context->color_index];
     rgba[0] = (unsigned char)(color >> 16);
     rgba[1] = (unsigned char)(color >> 8);

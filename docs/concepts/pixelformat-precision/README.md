@@ -346,6 +346,10 @@ The coordinate tests use independent Decimal-derived reference values and a `1e-
 | FP-265 | Automatic GPU selection preserves terminal monochrome coverage. | [tests/palette/fixed/0103_monochrome_auto_gpu.t](../../../tests/palette/fixed/0103_monochrome_auto_gpu.t) |
 | FP-266 | A primary on the red-green edge contributes exactly zero blue. | [tests/frame/storage/0055_collinear_primary.t](../../../tests/frame/storage/0055_collinear_primary.t) |
 | FP-267 | A count declared before the palette retains its allocation size. | [tests/frame/storage/0056_palette_count_before_pointer.t](../../../tests/frame/storage/0056_palette_count_before_pointer.t) |
+| FP-268 | The default foreground survives raw PAL8 to RGB888 conversion. | [tests/frame/storage/0057_default_foreground_pixel.t](../../../tests/frame/storage/0057_default_foreground_pixel.t) |
+| FP-269 | A full band includes the default foreground in the palette count. | [tests/frame/storage/0058_default_foreground_band.t](../../../tests/frame/storage/0058_default_foreground_band.t) |
+| FP-270 | Aspect changes preserve the default foreground palette entry. | [tests/frame/storage/0059_default_foreground_aspect.t](../../../tests/frame/storage/0059_default_foreground_aspect.t) |
+| FP-271 | Parallel indexed decoding reports its painted foreground register. | [tests/frame/storage/0060_default_foreground_workers.t](../../../tests/frame/storage/0060_default_foreground_workers.t) |
 | FP-10 | A nonfinite final pixel rejects conversion without changing the valid prefix or tags. | [tests/frame/storage/0004_frame_float_nonfinite_atomic.t](../../../tests/frame/storage/0004_frame_float_nonfinite_atomic.t) |
 | FP-11 | A final pixel outside the DIN99d logarithm domain leaves all pixels and tags unchanged. | [tests/frame/storage/0005_frame_float_domain_atomic.t](../../../tests/frame/storage/0005_frame_float_domain_atomic.t) |
 | FP-12 | A result beyond finite float32 storage rejects conversion without changing any pixels or tags. | [tests/frame/storage/0006_frame_float_overflow_atomic.t](../../../tests/frame/storage/0006_frame_float_overflow_atomic.t) |

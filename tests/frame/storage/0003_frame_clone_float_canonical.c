@@ -764,6 +764,43 @@ end:
     return result;
 }
 
+/* Decode using the reported palette count, as an application would.
+ * Register 15 is the initial foreground even without a color command. */
+static int
+test_raw_default(char const *wire, int width, int height)
+{
+    unsigned char *pixels = NULL, *palette = NULL;
+    unsigned char const *rgb;
+    unsigned char const foreground[] = {204, 204, 204};
+    sixel_frame_t *frame = NULL;
+    int w, h, colors, i;
+    int result = EXIT_FAILURE;
+
+    if (SIXEL_FAILED(sixel_decode_raw((unsigned char *)wire, (int)strlen(wire),
+            &pixels, &w, &h, &palette, &colors, NULL)) ||
+        w != width || h != height || colors != 16 || pixels[0] != 15 ||
+        memcmp(palette + 3 * 15, foreground, 3) != 0 ||
+        SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, w, h,
+            SIXEL_PIXELFORMAT_PAL8, palette, colors)) ||
+        SIXEL_FAILED(sixel_frame_set_pixelformat(frame,
+            SIXEL_PIXELFORMAT_RGB888))) {
+        goto end;
+    }
+    rgb = sixel_frame_get_pixels(frame);
+    for (i = 0; i < w * h; ++i) {
+        if (pixels[i] != 15 || memcmp(rgb + 3 * i, foreground, 3) != 0) {
+            goto end;
+        }
+    }
+    result = EXIT_SUCCESS;
+end:
+    sixel_frame_unref(frame);
+    free(pixels);
+    free(palette);
+    return result;
+}
+
 /* Only the first pixel is painted. decode_raw reports two defined colors
  * and uses index 255 in the second pixel. A clone copies the declared
  * palette, so both paths must resolve the same unpainted default. */
@@ -1862,6 +1899,18 @@ test_frame_0014_clone_float(int argc, char **argv)
     }
     if (argc == 2 && strcmp(argv[1], "collinear") == 0) {
         return test_collinear_primary(0) || test_collinear_primary(1);
+    }
+    if (argc == 2 && strcmp(argv[1], "default-pixel") == 0) {
+        return test_raw_default("\033P0;1q\"1;1;1;1@\033\\", 1, 1);
+    }
+    if (argc == 2 && strcmp(argv[1], "default-band") == 0) {
+        return test_raw_default("\033P0;1q\"1;1;1;6~\033\\", 1, 6);
+    }
+    if (argc == 2 && strcmp(argv[1], "default-aspect") == 0) {
+        return test_raw_default("\033P0;1q$\"2;1;1;2@\033\\", 1, 2);
+    }
+    if (argc == 2 && strcmp(argv[1], "default-workers") == 0) {
+        return test_raw_default("\033P0;1q\"1;1;32;12!32~-!32~\033\\", 32, 12);
     }
     if (argc == 2 && strcmp(argv[1], "count-first") == 0) {
         return test_palette_recount(1);
