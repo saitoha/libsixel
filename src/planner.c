@@ -97,27 +97,6 @@ sixel_encoding_planner_set_loader_metadata(sixel_encoding_planner_t *planner,
                                            int multiframe_known,
                                            int multiframe);
 
-static int
-sixel_planner_pixelformat_for_colorspace(int colorspace,
-                                          int prefer_float32)
-{
-    switch (colorspace) {
-    case SIXEL_COLORSPACE_LINEAR:
-        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    case SIXEL_COLORSPACE_OKLAB:
-        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
-    case SIXEL_COLORSPACE_CIELAB:
-        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
-    case SIXEL_COLORSPACE_DIN99D:
-        return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
-    default:
-        if (prefer_float32) {
-            return SIXEL_PIXELFORMAT_RGBFLOAT32;
-        }
-        return SIXEL_PIXELFORMAT_RGB888;
-    }
-}
-
 static float
 sixel_encoding_planner_resolve_bluenoise_gradient_factor(
     sixel_encoder_t const *encoder)
@@ -752,7 +731,7 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
         prefer_float32_effective = 1;
     }
 
-    target_pixelformat = sixel_planner_pixelformat_for_colorspace(
+    target_pixelformat = sixel_pixelformat_for_colorspace(
         working_colorspace_effective,
         prefer_float32_effective);
 

@@ -217,7 +217,8 @@ test_cli_0036_color_wire(int argc, char **argv)
             return cli_wire_error("unknown loader or wire fixture");
         }
         specimen = (int)pnm_case;
-        loader = "builtin";
+        loader = strcmp(argv[1], "mixed-spaces-xyz") == 0
+            ? "libtiff" : "builtin";
     }
     trace = argv[2];
     if (specimen == 7 && (cli_wire_count(trace, "LSXDTH1|") != 1 ||

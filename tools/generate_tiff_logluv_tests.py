@@ -114,12 +114,14 @@ def words_and_centers(samples, bits):
 
 
 def tiff(words, bits, rows=1, orientation=1, tile=False, icc=b'',
-         white=False, stonits=False):
+         white=False, stonits=False, width=4, height=2):
     """Serialize prescribed packed words; the only RLE packets are literals."""
-    width, height = (16, 16) if tile else (4, 2)
     raster = ([words[0:4] + [words[0]] * 12,
                words[4:8] + [words[0]] * 12] + [[words[0]] * 16] * 14
-              if tile else [words[0:4], words[4:8]])
+              if tile else [words[i:i + width]
+                            for i in range(0, width * height, width)])
+    if tile:
+        width, height = 16, 16
     encoded = []
     for row in raster:
         encoded.append(b''.join(w.to_bytes(3, 'big') for w in row) if bits == 24
@@ -128,7 +130,8 @@ def tiff(words, bits, rows=1, orientation=1, tile=False, icc=b'',
     chunks = ([b''.join(encoded)] if tile else
               [b''.join(encoded[i:i+rows]) for i in range(0, height, rows)])
     offset_tag, count_tag = (324, 325) if tile else (273, 279)
-    tags = {256: (4, [4]), 257: (4, [2]), 258: (3, [16]*3),
+    tags = {256: (4, [4 if tile else width]), 257: (4, [2 if tile else height]),
+            258: (3, [16]*3),
             259: (3, [34677 if bits == 24 else 34676]), 262: (3, [32845]),
             274: (3, [orientation]), 277: (3, [3]), 284: (3, [1]),
             339: (3, [2]*3), offset_tag: (4, [0]*len(chunks)),

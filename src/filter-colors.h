@@ -30,12 +30,8 @@
 #include "filter.h"
 
 typedef struct sixel_filter_colors_config {
-    /*
-     * Pixelformat after conversion. The colorspace is derived from this
-     * value so callers do not need to duplicate the working colorspace
-     * separately.
-     */
-    int target_pixelformat;
+    int target_layout;
+    int target_colorspace;
 } sixel_filter_colors_config_t;
 
 SIXELSTATUS sixel_filter_colors_convert(

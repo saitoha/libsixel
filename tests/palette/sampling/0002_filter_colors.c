@@ -50,7 +50,8 @@ test_colors_promotes_to_linear_float(void)
         goto cleanup;
     }
 
-    config.target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    config.target_layout = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    config.target_colorspace = SIXEL_COLORSPACE_LINEAR;
 
     status = sixel_filter_factory_create_by_name("colorspace",
                                                  &config,
@@ -127,7 +128,8 @@ test_colors_noop_keeps_frame_bound(void)
         goto cleanup;
     }
 
-    config.target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    config.target_layout = SIXEL_PIXELFORMAT_RGB888;
+    config.target_colorspace = SIXEL_COLORSPACE_GAMMA;
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_COLORS,
                                                  &config,

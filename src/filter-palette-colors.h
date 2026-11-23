@@ -30,7 +30,7 @@
 typedef struct sixel_filter_palette_colors_config {
     /* Zero performs an identity transform. The planner owns this decision. */
     int convert;
-    int target_pixelformat;
+    int target_layout;
     int target_colorspace;
     int collect_statistics;
     /* Only raw double point input needs this storage-domain annotation. */

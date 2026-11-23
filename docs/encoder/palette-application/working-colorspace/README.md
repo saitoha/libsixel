@@ -42,6 +42,8 @@ Fixed palettes bypass `-X`, but they do not bypass `-W`: the supplied palette an
 
 `-Wauto` follows the input frame coordinates: gamma RGB stays gamma, while linear RGB, Oklab, CIELAB and DIN99d keep their typed float32 coordinates. SMPTE-C input and float32 RGB frames with an explicit color definition use linear sRGB. The encoder converts profiled samples using the frame’s definition before clustering and palette lookup. An explicit `--precision-policy=8bit` makes auto select gamma, the only supported byte-application space. Forced GPU palette application also selects gamma RGB888 when the working space and precision can be resolved to bytes. Explicit non-gamma `-W` retains its conflict with byte application, and explicit float requests retain their precision. `-Xauto`, including omission, follows the resolved working space. Thus `-Woklab` uses Oklab for both construction and application unless `-X` selects another space.
 
+The encoder carries the resolved coordinates separately from pixel storage at the conversion boundaries. Gamma and linear RGB use the sRGB primaries and D65 white. Palette construction converts its samples to the resolved clustering coordinates and converts the resulting entries to the working coordinates for lookup and diffusion. Float32 storage can represent each of these coordinate systems.
+
 An explicit non-auto `-X` is authoritative regardless of option order. Repeating either option with `auto` restores its automatic policy. AUTO resolves independently for each input frame; it does not keep the previous frame's space. A workspace change invalidates palette application state while preserving a fixed source palette that may have come from a non-rewindable stream. These commands therefore have the same split geometry:
 
 ```sh
@@ -243,6 +245,7 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-22 | With both working-space options omitted, encoding a Display P3 float32 frame reproduces the expected sRGB colors at every decoded pixel. | [tests/encoder/planning/0194_default_display_p3_pixels.t](../../../../tests/encoder/planning/0194_default_display_p3_pixels.t) |
 | WC-23 | Gamma working space keeps both Display P3 colors distinct after decoding. | [tests/encoder/planning/0195_gamma_display_p3_pixels.t](../../../../tests/encoder/planning/0195_gamma_display_p3_pixels.t) |
 | WC-24 | A preserve resize resolves Display P3 coordinates before gamma palette lookup. | [tests/encoder/planning/0196_gamma_display_p3_preserve_resize.t](../../../../tests/encoder/planning/0196_gamma_display_p3_preserve_resize.t) |
+| WC-25 | With `-X oklab -W linear`, the generated palette follows Oklab centroids and raster Floyd–Steinberg uses linear RGB. Equivalent RGB and LogLuv XYZ inputs yield the same independently predicted paint colors. | [tests/palette/working-space/0152_oklab_cluster_linear_fs_rgb.t](../../../../tests/palette/working-space/0152_oklab_cluster_linear_fs_rgb.t), [tests/palette/working-space/0153_oklab_cluster_linear_fs_xyz.t](../../../../tests/palette/working-space/0153_oklab_cluster_linear_fs_xyz.t) |
 
 ### Coverage boundary
 

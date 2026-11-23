@@ -65,7 +65,7 @@ palette_colors_test(int scenario)
             SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID,
             SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME);
         config.convert = 1;
-        config.target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        config.target_layout = SIXEL_PIXELFORMAT_RGBFLOAT32;
         config.target_colorspace = SIXEL_COLORSPACE_LINEAR;
     } else if (scenario == 52 || scenario == 53) {
         floats[9] = NAN;
@@ -96,7 +96,7 @@ palette_colors_test(int scenario)
     }
     sixel_filter_bind_sample_input(filter, &input);
     sixel_filter_bind_sample_output(filter, &output,
-        config.convert ? config.target_pixelformat : input.pixelformat,
+        config.convert ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 : input.pixelformat,
         config.convert ? config.target_colorspace : input.colorspace);
     status = sixel_filter_run(filter, allocator, NULL);
     if (scenario == 53) {
