@@ -1345,8 +1345,8 @@ test_packed_rgb_swap(int bits)
     int result = EXIT_FAILURE;
 
     if (bits == 555) {
-        input[0] = 0x7e;
-        swapped[0] = 0x0e;
+        input[0] = 0xfe;
+        swapped[0] = 0x8e;
         swapped[2] = 0x7c;
     }
     memcpy(original, input, sizeof(input));
@@ -1465,6 +1465,64 @@ test_reshape_storage(void)
         bytes == 18u && sixel_frame_get_width(frame) == 3 &&
         sixel_frame_get_height(frame) == 2 &&
         sixel_frame_get_pixels(frame) == pixels;
+    sixel_frame_unref(frame);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+test_borrowed_adoption_storage(void)
+{
+    unsigned char *pixels = calloc(12u, 1u);
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    size_t bytes;
+    int ok;
+
+    if (pixels == NULL || sixel_frame_new(&frame, NULL) != SIXEL_OK ||
+        sixel_frame_init_borrowed(frame, pixels, 2, 1,
+            SIXEL_PIXELFORMAT_RGB888, NULL, -1) != SIXEL_OK) {
+        free(pixels);
+        sixel_frame_unref(frame);
+        return EXIT_FAILURE;
+    }
+    iface = sixel_frame_as_interface(frame);
+    ok = iface->vtbl->measure_storage(iface, &bytes) == SIXEL_OK &&
+        bytes == 6u;
+    if (sixel_frame_init(frame, pixels, 4, 1, SIXEL_PIXELFORMAT_RGB888,
+                         NULL, -1) == SIXEL_OK) {
+        ok = ok && iface->vtbl->measure_storage(iface, &bytes) == SIXEL_OK &&
+            bytes == 12u && sixel_frame_get_pixels(frame) == pixels;
+    } else {
+        free(pixels);
+        ok = 0;
+    }
+    sixel_frame_unref(frame);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+test_implicit_palette_storage(void)
+{
+    unsigned char indices[] = {0, 1, 3, 2};
+    unsigned char palette[12] = {0};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    size_t bytes;
+    int ok;
+
+    if (sixel_frame_new(&frame, NULL) != SIXEL_OK ||
+        sixel_frame_init_borrowed(frame, indices, 4, 1,
+            SIXEL_PIXELFORMAT_PAL8, palette, -1) != SIXEL_OK) {
+        sixel_frame_unref(frame);
+        return EXIT_FAILURE;
+    }
+    iface = sixel_frame_as_interface(frame);
+    ok = iface->vtbl->measure_storage(iface, &bytes) == SIXEL_OK &&
+        bytes == 16u;
+    sixel_frame_set_width(frame, 2);
+    ok = ok && iface->vtbl->measure_storage(iface, &bytes) == SIXEL_OK &&
+        bytes == 16u && sixel_frame_get_palette(frame) == palette &&
+        sixel_frame_get_ncolors(frame) == -1;
     sixel_frame_unref(frame);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -2143,7 +2201,16 @@ test_frame_0014_clone_float(int argc, char **argv)
         return test_reshape_storage();
     }
     if (argc == 2 && strcmp(argv[1], "gray-saturation-matrix") == 0) {
-        return icc_numeric_gray_saturation_trc_test();
+        return icc_numeric_gray_intent_trc_test(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "gray-perceptual-matrix") == 0) {
+        return icc_numeric_gray_intent_trc_test(1);
+    }
+    if (argc == 2 && strcmp(argv[1], "borrowed-adoption-storage") == 0) {
+        return test_borrowed_adoption_storage();
+    }
+    if (argc == 2 && strcmp(argv[1], "implicit-palette-storage") == 0) {
+        return test_implicit_palette_storage();
     }
     if (argc == 2 && strcmp(argv[1], "saturation-matrix") == 0) {
         return icc_numeric_frame_saturation_matrix_test();
