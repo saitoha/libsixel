@@ -789,9 +789,7 @@ parser_context_store_normal_run(parser_context_t *context,
     x = context->pos_x;
     last = -1;
     rows = 0;
-    if (image->depth != 4 && context->color_index > image->ncolors) {
-        image->ncolors = context->color_index;
-    }
+    image_buffer_note_index(image, context->color_index);
     count = context->repeat_count;
     context->repeat_count = 1;
     for (;;) {
@@ -2402,10 +2400,7 @@ sixel_decode_raw_body(
                         }
                     }
 
-                    if (image->depth != 4U &&
-                            context->color_index > image->ncolors) {
-                        image->ncolors = context->color_index;
-                    }
+                    image_buffer_note_index(image, context->color_index);
 
                     if (context->ormode || image->normal_columns != NULL) {
                         store_bits = bits;

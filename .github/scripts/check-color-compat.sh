@@ -219,6 +219,10 @@ set -- \
     palette/fixed/0103_monochrome_auto_gpu.t \
     frame/storage/0055_collinear_primary.t \
     frame/storage/0056_palette_count_before_pointer.t \
+    frame/storage/0057_default_foreground_pixel.t \
+    frame/storage/0058_default_foreground_band.t \
+    frame/storage/0059_default_foreground_aspect.t \
+    frame/storage/0060_default_foreground_workers.t \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \

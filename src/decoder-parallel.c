@@ -3098,6 +3098,11 @@ sixel_decoder_parallel_request_start(int direct_mode,
     }
 
 cleanup:
+    /* Workers already record their highest painted index. Publish it once,
+     * after a successful join, without rescanning the destination pixels. */
+    if (status == SIXEL_OK && max_color_index >= 0) {
+        image_buffer_note_index(image, max_color_index);
+    }
     if (sync_ready) {
         sixel_mutex_destroy(&chain.mutex);
         sixel_cond_destroy(&chain.cond);

@@ -74,6 +74,16 @@ typedef struct image_buffer {
     int band_kept;
 } image_buffer_t;
 
+/* The palette count includes the highest painted register, even when the
+ * stream paints with the initial foreground before any color command. */
+static inline void
+image_buffer_note_index(image_buffer_t *image, int index)
+{
+    if (image->depth != 4 && index >= image->ncolors) {
+        image->ncolors = index + 1;
+    }
+}
+
 /*
  * Decoder request tests initialize a private image buffer through test_runner.
  * Export this constructor so Windows shared-library builds can link it.
