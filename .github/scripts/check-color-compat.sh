@@ -226,6 +226,12 @@ set -- \
     frame/storage/0058_default_foreground_band.t \
     frame/storage/0059_default_foreground_aspect.t \
     frame/storage/0060_default_foreground_workers.t \
+    frame/storage/0061_icc_saturation_matrix.t \
+    frame/storage/0062_rgb565_channel_swap.t \
+    frame/storage/0063_rgb555_channel_swap.t \
+    frame/storage/0064_libpng_compacted_storage.t \
+    frame/storage/0065_set_width_storage.t \
+    frame/storage/0066_set_height_storage.t \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \

@@ -3467,11 +3467,64 @@ icc_numeric_owned_mpet_matrix_fallback_test(int reverse)
 }
 
 int
+icc_numeric_frame_saturation_matrix_test(void)
+{
+    /* Display P3 matrix/TRC to linear sRGB via D50. The added LUT is the
+     * identity in encoded XYZ and yields a different result if selected. */
+    static double const expected[] = {0.03648986, 0.11974113, 0.22687401};
+    static unsigned int const white[] = {63190u, 65536u, 54061u};
+    float input[] = {64 / 255.f, 96 / 255.f, 128 / 255.f};
+    unsigned char bytes[sizeof(color_icc) + 12u + 124u];
+    unsigned char lut_profile[312];
+    unsigned char *tag;
+    double rgb[3], xyz[3];
+    size_t i;
+    sixel_frame_t *frame = NULL;
+    sixel_color_def_t *definition;
+    sixel_frame_interface_t *iface;
+    int ok;
+
+    tag = iccn_expand_tag_directory(bytes, color_icc, sizeof(color_icc), 1u);
+    iccn_be32(bytes, sizeof(bytes));
+    memcpy(tag, "A2B2", 4u);
+    iccn_be32(tag + 4u, sizeof(color_icc) + 12u);
+    iccn_be32(tag + 8u, 124u);
+    iccn_absolute_lut_profile(lut_profile, white, '2');
+    memcpy(bytes + sizeof(color_icc) + 12u, lut_profile + 168u, 124u);
+    definition = sixel_cdef_icc(bytes, sizeof(bytes));
+    ok = definition != NULL && SIXEL_SUCCEEDED(sixel_frame_new(&frame, NULL))
+        && SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 1, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1));
+    if (ok) {
+        iface = sixel_frame_as_interface(frame);
+        ok = SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface,
+            definition)) &&
+            SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) &&
+            iccn_float_result((float *)(void *)sixel_frame_get_pixels(frame),
+                              expected, 3u);
+    }
+    for (i = 0; i < 3u; ++i) {
+        rgb[i] = input[i];
+    }
+    ok = ok && sixel_cdef_to_xyz(definition, rgb, xyz,
+                                SIXEL_CMS_INTENT_SATURATION);
+    for (i = 0; ok && i < 3u; ++i) {
+        ok = fabs(xyz[i] - rgb[i] * (65535.0 / 32768.0)) < 1e-6;
+    }
+    sixel_cdef_free(definition);
+    sixel_frame_unref(frame);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 icc_numeric_frame_storage_fallback_test(void)
 {
-    static double const expected[] = {-0.13704083, 0.98498936, 1.27495119};
+    static double const expected[] = {
+        0, 0, 0, 5.21434165, -0.98270027, 0.73229661, 0, 0, 0
+    };
     static unsigned char const clipped[] = {255, 0, 255};
-    float input[] = {64 / 255.f, 96 / 255.f, 128 / 255.f};
+    float input[] = {0, .25f, .25f, 1, .25f, .25f, 0, .25f, .25f};
     unsigned char bytes[516];
     unsigned char *matrix;
     sixel_frame_t *frame = NULL;
@@ -3480,16 +3533,18 @@ icc_numeric_frame_storage_fallback_test(void)
     size_t length;
     int ok;
 
-    /* D2B1 returns finite PCS (FLT_MAX,0,0). Only A2B1 produces storable
-     * linear sRGB. The reference is the inverse adapted sRGB matrix times
-     * the identity A2B1 XYZ encoding, input * (65535/32768). */
+    /* D2B1 maps red to X=R*FLT_MAX. Only the middle pixel needs A2B1
+     * to obtain storable linear sRGB. The first and last remain black
+     * through D2B1 even with nonzero green and blue input. For the middle
+     * pixel the oracle is the inverse Bradford-adapted sRGB matrix times
+     * (1, .25, .25) * (65535/32768), the identity mft2 XYZ encoding. */
     length = iccn_mpet_transform_profile(bytes, 0, '1', 0, 65536u, 1);
     matrix = bytes + 168u + 24u;
     memset(matrix + 12u, 0, 48u);
-    iccn_mpe_write_float(matrix + 48u, FLT_MAX);
+    iccn_mpe_write_float(matrix + 12u, FLT_MAX);
     def = sixel_cdef_icc(bytes, length);
     ok = def != NULL && SIXEL_SUCCEEDED(sixel_frame_new(&frame, NULL)) &&
-        SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 1, 1,
+        SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 3, 1,
             SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1));
     if (ok) {
         iface = sixel_frame_as_interface(frame);
@@ -3497,12 +3552,12 @@ icc_numeric_frame_storage_fallback_test(void)
             SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) &&
             iccn_float_result((float *)(void *)sixel_frame_get_pixels(frame),
-                              expected, 3u);
+                              expected, 9u);
     }
     /* The same finite PCS is valid for clipped RGB888. Its magenta
      * result distinguishes D2B1 from the green/cyan legacy alternative. */
     if (ok) {
-        ok = SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 1, 1,
+        ok = SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input + 3, 1, 1,
                 SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1)) &&
             SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, def)) &&
             SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,

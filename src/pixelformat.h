@@ -84,6 +84,11 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_pixelformat_buffer_bytes(int width, int height, int pixelformat,
                                size_t *bytes);
 
+/* Swap the five-bit red and blue fields in packed 555 or 565 pixels. */
+void
+sixel_pixelformat_swap_packed_rb(unsigned char *dst, unsigned char const *src,
+                                size_t bytes, int shift);
+
 /* Expand packed 1-, 2-, or 4-bit gray rows to full-range G8 samples.
  * The public normalization helper preserves the unpacked code values.
  */
