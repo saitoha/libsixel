@@ -127,8 +127,8 @@ jobs:
         with:
           ref: 24c34a23461a7d5034a43a365723ceda04eecdf5 # v1.8.7
           path: original
-      - name: Install PNG and ELF build dependencies
-        run: bash current/.github/scripts/install-ubuntu-packages.sh libpng-dev binutils
+      - name: Install PNG, TIFF, WebP and ELF build dependencies
+        run: bash current/.github/scripts/install-ubuntu-packages.sh libpng-dev libtiff-dev libwebp-dev binutils
       - name: Check release client and builtin CMS output
         working-directory: current
         env:
