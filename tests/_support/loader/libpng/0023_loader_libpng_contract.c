@@ -92,6 +92,7 @@ typedef struct lp_probe {
     int loop_no[8];
     int delay[8];
     int format[8];
+    int colorspace[8];
     int hidden[8][2];
     double linear[8][6];
 } lp_probe_t;
@@ -245,6 +246,7 @@ lp_capture(sixel_frame_t *frame, void *data)
     probe->loop_no[n] = sixel_frame_get_loop_no(frame);
     probe->delay[n] = sixel_frame_get_delay(frame);
     probe->format[n] = sixel_frame_format(frame);
+    probe->colorspace[n] = view.colorspace;
     bytes = view.pixels;
     floats = view.pixels_float32;
     for (x = 0; x < 2; ++x) {
@@ -998,14 +1000,17 @@ test_loader_libpng_contract(int argc, char **argv)
     } else if (strcmp(argv[1], "lowbits") == 0 ||
                strcmp(argv[1], "apng_lowbits") == 0) {
         result = status != SIXEL_OK || probe.count != 1 ||
-            !SIXEL_PIXELFORMAT_IS_FLOAT32(probe.format[0]) ||
+            probe.format[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+            probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
             fabs(probe.linear[0][0] - lp_linear(32769.0 / 65535.0)) > 1e-7 ||
             fabs(probe.linear[0][3] - lp_linear(32770.0 / 65535.0)) > 1e-7;
     } else if (strcmp(argv[1], "apng_gamma") == 0) {
         result = status != SIXEL_OK || probe.count != 1 ||
+            probe.format[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+            probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
             fabs(probe.linear[0][0] - 128.0 / 255.0) > 0.0001;
         /* A misplaced gAMA after default IDAT must not become shared color
-         * metadata when a later rectangle is reconstructed as a PNG. */
+         * metadata. The untagged opaque 8-bit canvas keeps byte RGB. */
         lp_header(&reference, 8, 2);
         lp_actl(&reference, 1, 1);
         lp_data(&reference, -1, opaque, sizeof(opaque));
@@ -1015,6 +1020,8 @@ test_loader_libpng_contract(int argc, char **argv)
         lp_chunk(&reference, "IEND", NULL, 0u);
         status = lp_load(&reference, &probe, cms, colors, NULL, loops, 0);
         result |= status != SIXEL_OK || probe.count != 1 ||
+            probe.format[0] != SIXEL_PIXELFORMAT_RGB888 ||
+            probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
             fabs(probe.linear[0][0] - lp_linear(128.0 / 255.0)) > 1e-6;
     } else if (strcmp(argv[1], "over") == 0) {
         result = status != SIXEL_OK || probe.count != 2 ||
