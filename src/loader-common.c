@@ -1597,7 +1597,7 @@ loader_frame_apply_orientation(sixel_frame_t *frame,
         sixel_allocator_free(allocator, src_bytes);
     }
 
-    frame->pixel_extent = 0;
+    frame->pixel_extent = dst_pixel_count * pixel_stride;
     src_mask = frame->transparent_mask;
     dst_mask = NULL;
     if (src_mask != NULL) {

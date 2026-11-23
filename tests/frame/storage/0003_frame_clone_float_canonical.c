@@ -1370,6 +1370,105 @@ test_packed_rgb_swap(int bits)
     return result;
 }
 
+/* Distinct red, green and blue test channel order and the green field
+ * width. The second pixel checks the exact full-green endpoint. */
+static int
+test_packed_rgb_matrix(void)
+{
+    static int const formats[] = {
+        SIXEL_PIXELFORMAT_RGB888, SIXEL_PIXELFORMAT_BGR888,
+        SIXEL_PIXELFORMAT_RGB555, SIXEL_PIXELFORMAT_BGR555,
+        SIXEL_PIXELFORMAT_RGB565, SIXEL_PIXELFORMAT_BGR565
+    };
+    unsigned char input[][6] = {
+        {251, 173, 19, 0, 255, 0}, {19, 173, 251, 0, 255, 0},
+        {0x7e, 0xa2, 0x03, 0xe0}, {0x0a, 0xbf, 0x03, 0xe0},
+        {0xfd, 0x62, 0x07, 0xe0}, {0x15, 0x7f, 0x07, 0xe0}
+    };
+    static unsigned char const unpacked[][6] = {
+        {248, 168, 16, 0, 248, 0}, {16, 168, 248, 0, 248, 0},
+        {248, 172, 16, 0, 252, 0}, {16, 172, 248, 0, 252, 0}
+    };
+    unsigned char const *expected;
+    sixel_frame_t *frame = NULL;
+    int source, target, width, ok = 0;
+
+    if (sixel_frame_new(&frame, NULL) != SIXEL_OK) {
+        return EXIT_FAILURE;
+    }
+    for (source = 0; source < 6; ++source) {
+        for (target = source < 2 ? 2 : 0; target < 6; ++target) {
+            width = target < 2 ? 6 : 4;
+            expected = target < 2
+                ? unpacked[source < 4 ? target : target + 2]
+                : input[target];
+            if (sixel_frame_init_borrowed(frame, input[source], 2, 1,
+                    formats[source], NULL, -1) != SIXEL_OK ||
+                sixel_frame_set_pixelformat(frame, formats[target])
+                    != SIXEL_OK ||
+                sixel_frame_get_pixelformat(frame) != formats[target] ||
+                memcmp(sixel_frame_get_pixels(frame), expected,
+                       (size_t)width) != 0) {
+                fprintf(stderr, "packed RGB layouts %d to %d\n",
+                        formats[source], formats[target]);
+                goto done;
+            }
+        }
+    }
+    ok = 1;
+done:
+    sixel_frame_unref(frame);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+test_packed_rgb_reject(void)
+{
+    unsigned char gray[] = {128, 128};
+    sixel_frame_t *frame = NULL;
+    int ok;
+
+    ok = sixel_frame_new(&frame, NULL) == SIXEL_OK &&
+        sixel_frame_init_borrowed(frame, gray, 2, 1,
+            SIXEL_PIXELFORMAT_G8, NULL, -1) == SIXEL_OK &&
+        SIXEL_FAILED(sixel_frame_set_pixelformat(frame,
+            SIXEL_PIXELFORMAT_BGR565)) &&
+        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_G8 &&
+        sixel_frame_get_pixels(frame) == gray &&
+        gray[0] == 128 && gray[1] == 128;
+    sixel_frame_unref(frame);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+test_reshape_storage(void)
+{
+    unsigned char *pixels = calloc(18u, 1u);
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    size_t bytes;
+    int ok;
+
+    if (pixels == NULL || sixel_frame_new(&frame, NULL) != SIXEL_OK ||
+        sixel_frame_init(frame, pixels, 2, 3, SIXEL_PIXELFORMAT_RGB888,
+                         NULL, -1) != SIXEL_OK) {
+        free(pixels);
+        sixel_frame_unref(frame);
+        return EXIT_FAILURE;
+    }
+    iface = sixel_frame_as_interface(frame);
+    sixel_frame_set_width(frame, 3);
+    ok = iface->vtbl->measure_storage(iface, &bytes) == SIXEL_OK &&
+        bytes == 18u;
+    sixel_frame_set_height(frame, 2);
+    ok = ok && iface->vtbl->measure_storage(iface, &bytes) == SIXEL_OK &&
+        bytes == 18u && sixel_frame_get_width(frame) == 3 &&
+        sixel_frame_get_height(frame) == 2 &&
+        sixel_frame_get_pixels(frame) == pixels;
+    sixel_frame_unref(frame);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 static int
 test_strip_storage(int format, unsigned char *background)
 {
@@ -2033,6 +2132,18 @@ test_frame_0014_clone_float(int argc, char **argv)
     }
     if (argc == 2 && strcmp(argv[1], "palette-recount") == 0) {
         return test_palette_recount(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "packed-rgb-matrix") == 0) {
+        return test_packed_rgb_matrix();
+    }
+    if (argc == 2 && strcmp(argv[1], "packed-rgb-reject") == 0) {
+        return test_packed_rgb_reject();
+    }
+    if (argc == 2 && strcmp(argv[1], "reshape-storage") == 0) {
+        return test_reshape_storage();
+    }
+    if (argc == 2 && strcmp(argv[1], "gray-saturation-matrix") == 0) {
+        return icc_numeric_gray_saturation_trc_test();
     }
     if (argc == 2 && strcmp(argv[1], "saturation-matrix") == 0) {
         return icc_numeric_frame_saturation_matrix_test();

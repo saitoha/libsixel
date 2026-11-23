@@ -965,6 +965,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
         }
 
         frame->pixels.f32ptr = pixels_f32;
+        frame->pixel_extent = pixel_total * 3u * sizeof(float);
         pixels_f32 = NULL;
         sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
         frame->transparent = -1;
@@ -1032,6 +1033,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
         }
 
         frame->pixels.u8ptr = pixels_u8;
+        frame->pixel_extent = pixel_total * 3u;
         pixels_u8 = NULL;
         sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
         frame->transparent = -1;
@@ -1071,6 +1073,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
     }
 
     frame->pixels.u8ptr = pixels_u8;
+    frame->pixel_extent = pixel_total * 3u;
     pixels_u8 = NULL;
     sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
     frame->transparent = -1;

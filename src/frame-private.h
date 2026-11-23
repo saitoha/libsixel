@@ -50,7 +50,7 @@ struct sixel_frame {
     /* In-place crops keep backing storage beyond the logical rectangle.
      * Zero means the current layout describes the entire plane. Coverage
      * is either a binary mask or a straight alpha plane. */
-    size_t pixel_extent;            /* retained pixel bytes */
+    size_t pixel_extent;            /* pixel bytes at acquisition */
     size_t coverage_extent;         /* retained coverage bytes */
     unsigned char *palette;         /* loaded palette data */
     int owns_pixels;                /* frame releases pixel storage */
@@ -90,16 +90,10 @@ sixel_frame_format(sixel_frame_t const *frame);
 SIXEL_INTERNAL_API void
 sixel_frame_assign_format(sixel_frame_t *frame, int pixelformat);
 
-/* In-place RGBA compaction shortens each pixel but retains the same
- * allocation. A previous crop may already have retained more bytes. */
+/* Compaction preserves the extent recorded for the RGBA allocation. */
 static inline void
 sixel_frame_finish_rgba_compaction(sixel_frame_t *frame)
 {
-    size_t bytes = (size_t)frame->width * (size_t)frame->height * 4u;
-
-    if (frame->pixel_extent < bytes) {
-        frame->pixel_extent = bytes;
-    }
     /* Removing alpha changes the stride, not the RGB coordinates. */
     frame->format.layout = SIXEL_PIXELFORMAT_RGB888;
 }

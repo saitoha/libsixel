@@ -83,6 +83,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
     tests/platform/webgpu/0001_palette_byte_equivalence.html \
     tests/platform/webgpu/0002_force_exit_status.html \
     tests/platform/webgpu/0003_diffusion_equivalence.html \
+    tests/platform/webgpu/0004_auto_output_fallback.html \
     build-aux/node-blocking-stdio.js \
     tools/embed-shader.py tools/gen_6cells_h.py \
     build-aux/meson-cross/emscripten-windows \

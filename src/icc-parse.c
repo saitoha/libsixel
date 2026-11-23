@@ -2991,7 +2991,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                          3u,
                                          1,
                                          &parsed, &budget, issue)) {
-                has_forward_slot = 1;
+                has_forward_slot |= 1u << slot;
             }
             if (sixel_icc_parse_d2b_slot(profile_data,
                                          profile_size,
@@ -2999,7 +2999,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                          1u,
                                          3u,
                                          &parsed, &budget, issue)) {
-                has_forward_slot = 1;
+                has_forward_slot |= 1u << slot;
             }
         }
         for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT &&
@@ -3024,7 +3024,8 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
             goto fail;
         }
 
-        if (!has_forward_slot && !parsed.lut_only) {
+        /* A saturation-only LUT leaves relative gray on kTRC. */
+        if ((has_forward_slot & 3u) == 0u && !parsed.lut_only) {
             has_matrix_tags = has_white_tag
                 && sixel_icc_find_tag(profile_data,
                                       profile_size,
@@ -3032,7 +3033,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                       &ktrc_offset,
                                       &ktrc_length, issue);
             if (!has_matrix_tags || parsed.pcs != SIXEL_ICC_PROFILE_PCS_XYZ) {
-                if (has_forward_mpet || has_reverse_mpet) {
+                if (has_forward_slot || has_forward_mpet || has_reverse_mpet) {
                     goto accepted;
                 }
                 goto fail;
@@ -3045,7 +3046,8 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                            ktrc_length,
                                            &parsed.curves[0], &budget, issue)) {
                 if (budget.limit == NULL &&
-                    (has_forward_mpet || has_reverse_mpet)) {
+                    (has_forward_slot || has_forward_mpet ||
+                     has_reverse_mpet)) {
                     sixel_icc_curve_destroy(&parsed.curves[0]);
                     budget.retained = retained_before_curves;
                     goto accepted;

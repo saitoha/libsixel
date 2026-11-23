@@ -201,29 +201,88 @@ end:
 }
 #endif
 
+static SIXELSTATUS
+encode_masked_playback(sixel_encoder_t *encoder, sixel_output_t *output,
+                       sixel_frame_t *frame)
+{
+    sixel_playback_t *playback = NULL;
+    sixel_playback_config_t config;
+    SIXELSTATUS status;
+
+    status = sixel_playback_config_init(&config, sizeof(config));
+    if (status == SIXEL_OK) {
+        config.capacity = 4;
+        status = sixel_playback_new(&playback, encoder, output, &config, NULL);
+    }
+    if (status == SIXEL_OK) {
+        status = sixel_playback_submit(playback, frame, SIXEL_PLAYBACK_WAIT,
+                                       -1, NULL);
+    }
+    if (status == SIXEL_OK) {
+        status = sixel_playback_drain(playback, -1);
+    }
+    sixel_playback_unref(playback);
+    return status;
+}
+
 /* Four registers force diffusion on this 32-color input. Compare painted
  * colors so a valid change of register assignment still passes. */
 static int
 test_output_fallback(char const *mode)
 {
     unsigned char source[32 * 3], reference[sizeof(source)];
-    unsigned char *pixels = NULL, *palette = NULL;
+    unsigned char *pixels = NULL, *palette = NULL, *paint = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_transparency_t coverage = {0};
     sixel_encoder_t *encoder = NULL;
     sixel_frame_t *frame = NULL;
     sixel_output_t *output = NULL;
     playback_test_buffer_t buffer = {0};
-    int i, pass, w, h, colors, ok = 0;
+    int i, pass, w, h, colors, masked, queued, ok = 0;
+    unsigned int flags;
+
+    masked = strncmp(mode, "mask-", 5) == 0;
+    queued = strcmp(mode, "mask-playback") == 0;
 
     for (i = 0; i < (int)sizeof(source); ++i) {
-        source[i] = (unsigned char)(i * 37);
+        /* The three separated ramps keep the generated palette stable
+         * across CPU and GPU-assisted construction for the masked case. */
+        source[i] = masked
+            ? (unsigned char)((i / 3 % 3) * 80 + 24 + i % 3 * 5 +
+                              (i / 9 % 4) * 4)
+            : (unsigned char)(i * 37);
     }
     AHEAD_CHECK(sixel_frame_new(&frame, NULL) == SIXEL_OK);
     AHEAD_CHECK(sixel_frame_init_borrowed(frame, source, 32, 1,
         SIXEL_PIXELFORMAT_RGB888, NULL, -1) == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_new(&encoder, NULL) == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_setopt(encoder, 'p', "4") == SIXEL_OK);
-    AHEAD_CHECK(sixel_encoder_setopt(encoder,
-        strcmp(mode, "or") == 0 ? 'O' : 'U', mode) == SIXEL_OK);
+    if (masked) {
+        coverage.transparent = -1;
+        coverage.alpha_zero_is_transparent = 1;
+        coverage.transparent_mask = calloc(32u, 1u);
+        AHEAD_CHECK(coverage.transparent_mask != NULL);
+        coverage.transparent_mask_size = 32u;
+        coverage.transparent_mask[0] = 1;
+        iface = sixel_frame_as_interface(frame);
+        AHEAD_CHECK(iface->vtbl->set_transparency(iface, &coverage)
+            == SIXEL_OK);
+        coverage.transparent_mask = NULL;
+        if (queued || strcmp(mode, "mask-clear") == 0) {
+            AHEAD_CHECK(sixel_encoder_setopt(encoder, 'A', "clear")
+                == SIXEL_OK);
+        }
+    } else {
+        AHEAD_CHECK(sixel_encoder_setopt(encoder,
+            strcmp(mode, "or") == 0 ? 'O' : 'U', mode) == SIXEL_OK);
+    }
+    if (queued) {
+        AHEAD_CHECK(sixel_encoder_setopt(encoder,
+            SIXEL_OPTFLAG_THREADING_POLICY,
+            "greedy:B2:prepare=ahead:prepare_workers=1") == SIXEL_OK);
+        AHEAD_CHECK(sixel_encoder_setopt(encoder, 'd', "atkinson")
+            == SIXEL_OK);
+    }
     AHEAD_CHECK(sixel_output_new(&output, playback_test_write, &buffer, NULL)
         == SIXEL_OK);
 
@@ -231,12 +290,24 @@ test_output_fallback(char const *mode)
         buffer.size = 0;
         AHEAD_CHECK(sixel_encoder_setopt(encoder, 'G', pass ? "auto" : "off")
             == SIXEL_OK);
-        AHEAD_CHECK(sixel_encoder_encode_frame(encoder, frame, output)
-            == SIXEL_OK);
-        AHEAD_CHECK(sixel_decode_raw(buffer.bytes, (int)buffer.size, &pixels,
-            &w, &h, &palette, &colors, NULL) == SIXEL_OK);
+        AHEAD_CHECK((queued ? encode_masked_playback(encoder, output, frame)
+            : sixel_encoder_encode_frame(encoder, frame, output))
+                == SIXEL_OK);
+        if (masked) {
+            AHEAD_CHECK(buffer.size >= 6u &&
+                memcmp(buffer.bytes, "\033P0;0q", 6u) == 0);
+        }
+        AHEAD_CHECK(sixel_decode_raw_with_options_mask(buffer.bytes,
+            (int)buffer.size, 0, &pixels, &paint, &w, &h, &palette, &colors,
+            &flags, NULL) == SIXEL_OK);
         AHEAD_CHECK(w == 32 && h == 1);
         for (i = 0; i < w; ++i) {
+            AHEAD_CHECK(paint != NULL &&
+                (paint[i] != 0) == !(masked && i == 0));
+            if (!paint[i]) {
+                memset(reference + 3 * i, 0, 3);
+                continue;
+            }
             AHEAD_CHECK(pixels[i] < colors);
             if (pass == 0) {
                 memcpy(reference + 3 * i, palette + 3 * pixels[i], 3);
@@ -248,6 +319,8 @@ test_output_fallback(char const *mode)
         /* A solid reference could hide a failure to paint this gradient. */
         AHEAD_CHECK(memcmp(reference, reference + 3,
             sizeof(reference) - 3) != 0);
+        free(paint);
+        paint = NULL;
         free(pixels);
         pixels = NULL;
         free(palette);
@@ -255,6 +328,8 @@ test_output_fallback(char const *mode)
     }
     ok = 1;
 end:
+    free(coverage.transparent_mask);
+    free(paint);
     free(pixels);
     free(palette);
     free(buffer.bytes);
@@ -335,7 +410,8 @@ end:
     free(buffer.bytes);
     return !ok;
 #else
-    if (argc == 2) return test_output_fallback(argv[1]);
+    if (argc == 2 && strcmp(argv[1], "mask-playback") != 0)
+        return test_output_fallback(argv[1]);
     return 77;
 #endif
 }

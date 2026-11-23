@@ -1136,6 +1136,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
 
     sixel_allocator_free(allocator, frame->pixels.u8ptr);
     frame->pixels.u8ptr = NULL;
+    frame->pixel_extent = 0u;
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
@@ -2474,6 +2475,7 @@ loader_try_promote_pal8(
 
     sixel_allocator_free(allocator, frame->pixels.u8ptr);
     frame->pixels.u8ptr = NULL;
+    frame->pixel_extent = 0u;
 
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),

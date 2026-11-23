@@ -3477,7 +3477,9 @@ load_with_libpng(
     }
     frame->alpha_zero_is_transparent = alpha_zero_is_transparent != 0 ? 1 : 0;
     pixels = NULL;
-    frame->pixel_extent = alpha_state.pixel_extent;
+    if (alpha_state.pixel_extent != 0u) {
+        frame->pixel_extent = alpha_state.pixel_extent;
+    }
     if (alpha_state.mask != NULL) {
         pixel_count = (size_t)frame->width * (size_t)frame->height;
         frame->transparent_mask = alpha_state.mask;

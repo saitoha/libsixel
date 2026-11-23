@@ -3467,6 +3467,66 @@ icc_numeric_owned_mpet_matrix_fallback_test(int reverse)
 }
 
 int
+icc_numeric_gray_saturation_trc_test(void)
+{
+    /* Linear kTRC, D50 white, and an independent saturation A2B2.
+     * The LUT maps every component to zero; relative must use kTRC. */
+    static double const relative[] = {0.5, 0.5, 0.5};
+    static double const black[] = {0, 0, 0};
+    unsigned char bytes[280] = {0};
+    unsigned char *lut;
+    sixel_cms_profile_t *source, *target;
+    sixel_cms_engine_t previous;
+    float input = 0.5f, output[3];
+    int ok;
+
+    iccn_be32(bytes, sizeof(bytes));
+    bytes[8] = 4;
+    memcpy(bytes + 12u, "mntrGRAYXYZ ", 12u);
+    memcpy(bytes + 36u, "acsp", 4u);
+    iccn_be32(bytes + 68u, 63190u);
+    iccn_be32(bytes + 72u, 65536u);
+    iccn_be32(bytes + 76u, 54061u);
+    iccn_be32(bytes + 128u, 3u);
+    memcpy(bytes + 132u, "wtpt", 4u);
+    iccn_be32(bytes + 136u, 168u);
+    iccn_be32(bytes + 140u, 20u);
+    memcpy(bytes + 144u, "kTRC", 4u);
+    iccn_be32(bytes + 148u, 188u);
+    iccn_be32(bytes + 152u, 12u);
+    memcpy(bytes + 156u, "A2B2", 4u);
+    iccn_be32(bytes + 160u, 200u);
+    iccn_be32(bytes + 164u, 80u);
+    memcpy(bytes + 168u, "XYZ ", 4u);
+    memcpy(bytes + 176u, bytes + 68u, 12u);
+    memcpy(bytes + 188u, "curv", 4u);
+    lut = bytes + 200u;
+    memcpy(lut, "mft2", 4u);
+    lut[8] = 1u;
+    lut[9] = 3u;
+    lut[10] = lut[49] = lut[51] = 2u;
+    iccn_be32(lut + 12u, 65536u);
+    iccn_be32(lut + 28u, 65536u);
+    iccn_be32(lut + 44u, 65536u);
+    lut[54] = lut[55] = 255u;
+    lut[70] = lut[71] = lut[74] = lut[75] = lut[78] = lut[79] = 255u;
+    previous = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+    source = sixel_cms_open_profile_from_mem(bytes, sizeof(bytes));
+    target = sixel_cms_create_linear_srgb_profile();
+    ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_GRAY_F32,
+            target, SIXEL_CMS_PIXELFORMAT_RGB_F32, "relative!",
+            &input, output, 1u) && iccn_float_result(output, relative, 3u) &&
+        iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_GRAY_F32,
+            target, SIXEL_CMS_PIXELFORMAT_RGB_F32, "saturation!",
+            &input, output, 1u) && iccn_float_result(output, black, 3u);
+    sixel_cms_close_profile(target);
+    sixel_cms_close_profile(source);
+    sixel_cms_set_engine(previous);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
 icc_numeric_frame_saturation_matrix_test(void)
 {
     /* Display P3 matrix/TRC to linear sRGB via D50. The added LUT is the

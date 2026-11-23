@@ -1357,6 +1357,7 @@ coregraphics_expand_palette(sixel_frame_t *frame,
     }
     /* Failure never publishes partial pixels, a palette or a coverage mask. */
     frame->pixels.f32ptr = pixels;
+    frame->pixel_extent = count * 3u * sizeof(float);
     pixels = NULL;
     frame->owns_pixels = 1;
     sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
@@ -1558,6 +1559,7 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
             }
         }
         frame->pixels.u8ptr = indexed_pixels;
+        frame->pixel_extent = pixel_count;
         indexed_pixels = NULL;
         frame->palette = palette;
         palette = NULL;
@@ -1629,6 +1631,7 @@ coregraphics_try_handle_indexed_frame(sixel_chunk_t const *chunk,
     }
 
     frame->pixels.u8ptr = rgb_pixels;
+    frame->pixel_extent = pixel_count * 3u;
     rgb_pixels = NULL;
     sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
     frame->transparent = -1;
@@ -1841,6 +1844,7 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
             pixels[index * 3u + 2u] = pixels[index * 4u + 2u];
         }
         frame->pixels.u8ptr = pixels;
+        frame->pixel_extent = (size_t)frame->height * stride;
         pixels = NULL;
         sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
         frame->transparent = -1;
@@ -1913,6 +1917,7 @@ coregraphics_decode_rgba8_frame(sixel_frame_t *frame,
     }
 
     frame->pixels.u8ptr = pixels;
+    frame->pixel_extent = (size_t)frame->height * stride;
     pixels = NULL;
     sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
     frame->transparent = -1;
@@ -2098,6 +2103,7 @@ coregraphics_decode_float32_frame(sixel_frame_t *frame,
     }
 
     frame->pixels.f32ptr = pixels;
+    frame->pixel_extent = (size_t)frame->height * stride;
     pixels = NULL;
     sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
     frame->transparent = -1;
@@ -2449,9 +2455,11 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
      * application, coverage allocation and composition have succeeded. */
     if (byte_path) {
         frame->pixels.u8ptr = byte_pixels;
+        frame->pixel_extent = count * 3u;
         byte_pixels = NULL;
     } else {
         frame->pixels.f32ptr = pixels;
+        frame->pixel_extent = count * 3u * sizeof(float);
         pixels = NULL;
     }
     frame->owns_pixels = 1;
