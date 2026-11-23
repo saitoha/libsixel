@@ -30,6 +30,7 @@ EM_JS(void, sixel_webgpu_body_install,
         ['write_spans', [0,2,3,4,11]],
         ['span_lengths', [0,4,5,7,11]],
         ['span_order', [0,4,6,7,8,9,10,11,14]],
+        ['span_order_group', [0,4,6,7,9,10,11,14]],
         ['byte_offsets', [0,4,10,11,12,14]],
         ['span_write', [0,4,5,10,11,12,14]]
     ];
@@ -120,7 +121,7 @@ EM_ASYNC_JS(unsigned char *, sixel_webgpu_body_dispatch,
             4, bound];
         const wg = n => Math.ceil(n / 256);
         const counts = [wg(pixels),wg(pairs),bands,1,wg(pairs),
-                        wg(nodes),bands,1,wg(nodes)];
+                        wg(nodes),bands,bands,1,wg(nodes)];
         const limit = device.limits.maxComputeWorkgroupsPerDimension;
         if (counts.some(n => n > limit))
             return 0;

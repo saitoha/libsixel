@@ -171,11 +171,28 @@ fn next_start(base: u32, start: u32) -> u32 {
     return min(w * 32u + firstTrailingBit(bits), p.width);
 }
 
+fn span_wire_length(node: vec4u, index: u32, cursor: u32, flags: u32) -> u32 {
+    let selector = select(0u, 1u + digits(registers[node.x]),
+        (flags & 2u) != 0u);
+    let gap = select(0u, run_length(node.y - cursor), cursor < node.y);
+    return (flags & 1u) + selector + gap + lengths[index];
+}
+
+const BODY_GROUP_COLUMNS = 2048u;
+const BODY_GROUP_NODES = 2048u;
+const BODY_GROUP_THREADS = 128u;
+
+fn group_order_supported(count: u32) -> bool {
+    return p.width <= BODY_GROUP_COLUMNS && count >= 64u &&
+        count <= BODY_GROUP_NODES;
+}
+
 @compute @workgroup_size(1)
 fn span_order(@builtin(global_invocation_id) id: vec3u) {
     let band = id.x;
     let first = bands[band].x;
     let end = bands[band + 1u].x;
+    if (group_order_supported(end - first)) { return; }
     let base = band * (2u * p.width + 1u + p.words);
     let stop = base + p.width + 1u;
     let bitmap = stop + p.width;
@@ -218,12 +235,10 @@ fn span_order(@builtin(global_invocation_id) id: vec3u) {
             let index = sorted[first + bins[base + sx]];
             let node = nodes[index];
             let selector = u32(p.selectors != 0u && current != node.x);
-            entries[entry] = vec4u(index, pos, x,
-                dollar | (selector << 1u) | (band << 2u));
+            let flags = dollar | (selector << 1u) | (band << 2u);
+            entries[entry] = vec4u(index, pos, x, flags);
             entry++;
-            pos += dollar +
-                select(0u, 1u + digits(registers[node.x]), selector != 0u)
-                + select(0u, run_length(sx - x), x < sx) + lengths[index];
+            pos += span_wire_length(node, index, x, flags);
             current = node.x;
             dollar = 0u;
             x = node.z;
@@ -238,6 +253,180 @@ fn span_order(@builtin(global_invocation_id) id: vec3u) {
     }
     bands[band].y = pos;
     bands[band].z = current;
+}
+
+// Like the Vulkan grouped order, bucket by start column, sort each bucket,
+// sweep once in lane zero and prefix the final wire lengths in parallel.
+// Packed 16-bit column prefixes and reused scratch keep this under 16 KiB.
+var<workgroup> group_head: array<atomic<u32>, BODY_GROUP_COLUMNS / 2u>;
+var<workgroup> group_work: array<atomic<u32>, BODY_GROUP_NODES>;
+var<workgroup> group_consumed: array<u32, BODY_GROUP_NODES / 32u>;
+var<workgroup> group_partial: array<u32, BODY_GROUP_THREADS>;
+var<workgroup> group_count: u32;
+
+fn group_column(column: u32) -> u32 {
+    return (atomicLoad(&group_head[column / 2u]) >>
+        (16u * (column % 2u))) & 0xffffu;
+}
+
+// Each span occupies at least one painted position in its start column,
+// so a six-row band can put at most six spans into one bucket.
+fn group_sort_column(first: u32, begin: u32, end: u32, ranks: u32) {
+    for (var i = begin + 1u; i < end; i++) {
+        let slot = sorted[first + i];
+        let node = nodes[first + slot];
+        let rank = atomicLoad(&seen[ranks + node.x]);
+        var j = i;
+        while (j > begin) {
+            let previous = sorted[first + j - 1u];
+            let prior = nodes[first + previous];
+            let prior_rank = atomicLoad(&seen[ranks + prior.x]);
+            let precedes = prior_rank < rank ||
+                (prior_rank == rank && previous > slot);
+            if (prior.z > node.z || (prior.z == node.z && precedes)) {
+                break;
+            }
+            sorted[first + j] = previous;
+            j--;
+        }
+        sorted[first + j] = slot;
+    }
+    for (var i = begin; i < end; i++) {
+        let slot = sorted[first + i];
+        let node = nodes[first + slot];
+        // 11 bits of slot, 12 of end column, 8 of palette index.
+        atomicStore(&group_work[i], slot | (node.z << 11u) | (node.x << 23u));
+    }
+}
+
+fn group_next(count: u32, start: u32) -> u32 {
+    if (start >= count) { return count; }
+    var word = start / 32u;
+    var available = ~group_consumed[word] & (0xffffffffu << (start % 32u));
+    while (available == 0u) {
+        word++;
+        if (word * 32u >= count) { return count; }
+        available = ~group_consumed[word];
+    }
+    return min(word * 32u + firstTrailingBit(available), count);
+}
+
+fn group_sweep(band: u32, first: u32, count: u32) {
+    var cursor = 0u;
+    var entry = first;
+    var current = 0xffffffffu;
+    var low = group_next(count, 0u);
+    while (low < count) {
+        var at = low;
+        var dollar = 0u;
+        let first_slot = atomicLoad(&group_work[at]) & 2047u;
+        if (cursor > nodes[first + first_slot].y) {
+            dollar = 1u;
+            cursor = 0u;
+        }
+        while (at < count) {
+            let item = atomicLoad(&group_work[at]);
+            let color = item >> 23u;
+            let selector = u32(p.selectors != 0u && current != color);
+            entries[entry] = vec4u(first + (item & 2047u), 0u, cursor,
+                dollar | (selector << 1u) | (band << 2u));
+            entry++;
+            current = color;
+            group_consumed[at / 32u] |= 1u << (at % 32u);
+            dollar = 0u;
+            cursor = (item >> 11u) & 4095u;
+            if (cursor >= p.width) { break; }
+            at = group_next(count, group_column(cursor));
+        }
+        low = group_next(count, low);
+    }
+    bands[band].z = current;
+}
+
+fn group_prefix(lane: u32, sum: u32, base: u32) -> u32 {
+    group_partial[lane] = sum;
+    workgroupBarrier();
+    if (lane == 0u) {
+        var offset = base;
+        for (var i = 0u; i < BODY_GROUP_THREADS; i++) {
+            let total = group_partial[i];
+            group_partial[i] = offset;
+            offset += total;
+        }
+    }
+    workgroupBarrier();
+    return group_partial[lane];
+}
+
+@compute @workgroup_size(BODY_GROUP_THREADS)
+fn span_order_group(@builtin(workgroup_id) id: vec3u,
+                    @builtin(local_invocation_index) lane: u32) {
+    let band = id.x;
+    let first = bands[band].x;
+    if (lane == 0u) { group_count = bands[band + 1u].x - first; }
+    let count = workgroupUniformLoad(&group_count);
+    if (!group_order_supported(count)) { return; }
+
+    // Each lane owns eight consecutive words covering sixteen columns.
+    let start = lane * (BODY_GROUP_COLUMNS / (2u * BODY_GROUP_THREADS));
+    let limit = min(start + BODY_GROUP_COLUMNS / (2u * BODY_GROUP_THREADS),
+        (p.width + 1u) / 2u);
+    // WGSL starts workgroup storage at zero. No lane has used these counters.
+    for (var i = lane; i < count; i += BODY_GROUP_THREADS) {
+        let x = nodes[first + i].y;
+        atomicAdd(&group_head[x / 2u], 1u << (16u * (x % 2u)));
+    }
+    workgroupBarrier();
+    var sum = 0u;
+    for (var w = start; w < limit; w++) {
+        let packed = atomicLoad(&group_head[w]);
+        let next = sum + (packed & 0xffffu);
+        atomicStore(&group_head[w], sum | (next << 16u));
+        sum = next + (packed >> 16u);
+    }
+    let column_offset = group_prefix(lane, sum, 0u);
+    for (var w = start; w < limit; w++) {
+        atomicAdd(&group_head[w], column_offset * 0x10001u);
+    }
+    workgroupBarrier();
+    for (var i = lane; i < count; i += BODY_GROUP_THREADS) {
+        let x = nodes[first + i].y;
+        let slot = group_column(x) + atomicAdd(&group_work[x], 1u);
+        sorted[first + slot] = i;
+    }
+    // All slot cursors are now dead. Reuse them for the ordered spans.
+    storageBarrier();
+    workgroupBarrier();
+    for (var x = lane; x < p.width; x += BODY_GROUP_THREADS) {
+        var end = count;
+        if (x + 1u < p.width) { end = group_column(x + 1u); }
+        group_sort_column(first, group_column(x), end, band * p.colors);
+    }
+    workgroupBarrier();
+    if (lane == 0u) { group_sweep(band, first, count); }
+    storageBarrier();
+    workgroupBarrier();
+
+    let per_lane = (count + BODY_GROUP_THREADS - 1u) / BODY_GROUP_THREADS;
+    let lo = lane * per_lane;
+    let hi = min(count, lo + per_lane);
+    sum = 0u;
+    for (var i = lo; i < hi; i++) {
+        let entry = entries[first + i];
+        let length =
+            span_wire_length(nodes[entry.x], entry.x, entry.z, entry.w);
+        atomicStore(&group_work[i], length);
+        sum += length;
+    }
+    // Noninitial bands start with a single '-' before their first span.
+    var pos = group_prefix(lane, sum, select(0u, 1u, band != 0u));
+    if (lane == BODY_GROUP_THREADS - 1u) {
+        bands[band].y = pos + sum;
+    }
+    for (var i = lo; i < hi; i++) {
+        entries[first + i].y = pos;
+        pos += atomicLoad(&group_work[i]);
+    }
 }
 
 fn put_byte(pos: u32, value: u32) {
