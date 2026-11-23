@@ -1723,6 +1723,7 @@ enum loopControl {
 /* handle type of frame object */
 struct sixel_frame;
 typedef struct sixel_frame sixel_frame_t;
+typedef struct sixel_color_def sixel_color_def_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -1777,6 +1778,29 @@ sixel_frame_init_borrowed(
     unsigned char   /* in */ *palette,      /* borrowed palette or NULL */
     int             /* in */ ncolors        /* palette color count or (-1) */
 );
+
+/* Immutable RGB sample definitions. Constructors return NULL on failure.
+ * Named definitions accept srgb, linear-srgb, display-p3, adobe-rgb and
+ * dci-p3. The ICC constructor copies the supplied RGB profile bytes.
+ * Release the returned definition with sixel_color_def_free(). */
+SIXELAPI sixel_color_def_t *
+sixel_color_def_new_named(char const *name);
+
+SIXELAPI sixel_color_def_t *
+sixel_color_def_new_icc(void const *bytes, size_t length);
+
+SIXELAPI void
+sixel_color_def_free(sixel_color_def_t *definition);
+
+/* Borrow mutable, tightly packed RGB float triplets in the supplied
+ * definition. The frame copies the definition and does not convert the
+ * samples. Follow sixel_frame_init_borrowed() for the pixel lifetime.
+ * A failed initialization leaves the existing frame unchanged. */
+#define SIXEL_HAVE_FRAME_INIT_RGBF32_BORROWED 1
+SIXELAPI SIXELSTATUS
+sixel_frame_init_rgbf32_borrowed(sixel_frame_t *frame, float *pixels,
+                               int width, int height,
+                               sixel_color_def_t const *definition);
 
 /* get pixels */
 SIXELAPI unsigned char *
