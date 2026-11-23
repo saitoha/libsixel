@@ -1282,6 +1282,7 @@ load_with_gd(
             }
 
             frame->pixels.u8ptr = pixels_u8;
+            frame->pixel_extent = pixel_count;
             pixels_u8 = NULL;
             frame->palette = palette;
             palette = NULL;
@@ -1398,6 +1399,7 @@ load_with_gd(
             }
 
             frame->pixels.f32ptr = pixels_f32;
+            frame->pixel_extent = pixel_count * 3u * sizeof(float);
             pixels_f32 = NULL;
             sixel_frame_assign_format(frame,
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
@@ -1491,6 +1493,7 @@ load_with_gd(
         }
 
         frame->pixels.u8ptr = pixels_u8;
+        frame->pixel_extent = pixel_count * 3u;
         pixels_u8 = NULL;
         sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
         if (mask != NULL) {
@@ -1614,6 +1617,7 @@ load_with_gd(
         }
 
         frame->pixels.f32ptr = pixels_f32;
+        frame->pixel_extent = pixel_count * 3u * sizeof(float);
         pixels_f32 = NULL;
         sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32);
         if (mask != NULL) {
@@ -1693,6 +1697,7 @@ load_with_gd(
         }
 
         frame->pixels.u8ptr = pixels_u8;
+        frame->pixel_extent = pixel_count * 3u;
         pixels_u8 = NULL;
         sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
         frame->transparent_mask = mask;
@@ -1732,6 +1737,7 @@ load_with_gd(
     }
 
     frame->pixels.u8ptr = pixels_u8;
+    frame->pixel_extent = pixel_count * 3u;
     pixels_u8 = NULL;
     sixel_frame_assign_format(frame, SIXEL_PIXELFORMAT_RGB888);
 
