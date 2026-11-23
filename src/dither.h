@@ -94,7 +94,7 @@ sixel_dither_get_lookup_configuration(sixel_dither_t const *dither,
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
-    int parallel, int prepare_lookup);
+    int parallel, int prepare_lookup, int include_mask);
 
 /* Discard a construction-time float palette once the requested application
  * precision is byte-only, so every application route observes one palette.

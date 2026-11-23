@@ -4212,7 +4212,7 @@ sixel_dither_freeze_application_precision(sixel_dither_t *dither)
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
-    int parallel, int prepare_lookup)
+    int parallel, int prepare_lookup, int include_mask)
 {
     sixel_palette_entries_view_t bytes;
     sixel_palette_float32_entries_view_t floats;
@@ -4223,7 +4223,7 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
 
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             dither->prefer_float32 || dither->use_rgb101_palette ||
-            dither->pipeline_transparent_mask != NULL ||
+            (!include_mask && dither->pipeline_transparent_mask != NULL) ||
             dither->gpu_test_hooks != NULL) {
         return SIXEL_FALSE;
     }

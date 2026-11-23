@@ -460,11 +460,11 @@ positional_gpu_reconfigure_check(int method)
     dither->gpu_policy = SIXEL_GPU_POLICY_FORCE;
     dither->diffuse_on_gpu = 1;
     sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_FS);
-    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0)
+    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0, 0)
         == SIXEL_OK);
     dither->diffuse_on_gpu = 0;
     sixel_dither_set_diffusion_type(dither, method);
-    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0)
+    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0, 0)
         == SIXEL_OK);
     LSO2_GPU_CHECK(dither->gpu_dither != NULL);
     LSO2_GPU_CHECK(dither->gpu_dither->vtbl->get_configuration(
@@ -472,7 +472,7 @@ positional_gpu_reconfigure_check(int method)
     LSO2_GPU_CHECK(configuration.options.method_for_diffuse == method);
     dither->diffuse_on_gpu = 1;
     sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_FS);
-    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0)
+    LSO2_GPU_CHECK(sixel_dither_prepare_indexed_components(dither, 0, 0, 0)
         == SIXEL_OK);
     LSO2_GPU_CHECK(dither->gpu_dither->vtbl->get_configuration(
         dither->gpu_dither, &configuration) == SIXEL_OK);

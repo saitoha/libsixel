@@ -81,9 +81,14 @@ sixel_playback_prepare_application(sixel_playback_producer_t *producer,
             encoder->ormode || encoder->fuse_macro ||
             encoder->macro_number >= 0 || encoder->output_is_png)
         return SIXEL_FEATURE_ERROR;
+    /* The deferred providers use a palette key for omitted samples. Leave
+     * coverage with no key to ordinary application. */
+    if (context->dither->keycolor < 0 &&
+            sixel_encoder_frame_has_transparent_mask(context->frame))
+        return SIXEL_FEATURE_ERROR;
     /* Absence of a GPU dither is a capability decision, not a method-name
      * switch. Legacy byte lookup/dither providers keep synchronous apply. */
-    status = sixel_dither_prepare_indexed_components(context->dither, 0, 0);
+    status = sixel_dither_prepare_indexed_components(context->dither, 0, 0, 0);
     if (status != SIXEL_OK) return status;
     if (context->dither->gpu_dither == NULL) return SIXEL_FEATURE_ERROR;
     status = sixel_encoder_core_create_output_from_factory(&output,
@@ -123,7 +128,8 @@ sixel_playback_prepare_application(sixel_playback_producer_t *producer,
                 geometry.origin_y <= geometry.plane_height - request.height)
             sixel_output_bind_session(output, &geometry);
     }
-    status = sixel_output_prepare_deferred(&request, &context->deferred);
+    status = sixel_output_prepare_deferred(&request, context->frame,
+                                          &context->deferred);
 end:
     sixel_output_bind_session(output, NULL);
     sixel_output_unref(output);

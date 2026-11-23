@@ -88,7 +88,7 @@ sixel_output_encode_resolved(sixel_output_t *output,
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_prepare_deferred(sixel_legacy_encode_request_t const *request,
-    sixel_output_deferred_t *prepared);
+    sixel_frame_t *frame, sixel_output_deferred_t *prepared);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_solve_deferred(sixel_output_deferred_t *prepared,
     sixel_timeline_logger_t *logger, sixel_cancel_function cancel,

@@ -152,11 +152,45 @@ sixel_indexed_commit_filter(sixel_filter_t *filter,
     return status;
 }
 
-/* Freeze palette, geometry, source wrapper and application capability
+/* The indexed CPU provider reads coverage from its source frame. Keep
+ * the mask alive with that frame, independently of the dither's hints. */
+static SIXELSTATUS
+sixel_indexed_copy_source_mask(sixel_frame_t *source,
+                               sixel_dither_t const *dither, size_t pixels)
+{
+    sixel_frame_interface_t *iface;
+    sixel_frame_transparency_t coverage;
+    SIXELSTATUS status;
+
+    if (dither->pipeline_transparent_mask == NULL) {
+        return SIXEL_OK;
+    }
+    if (dither->pipeline_transparent_mask_size < pixels) {
+        return SIXEL_BAD_INPUT;
+    }
+    memset(&coverage, 0, sizeof(coverage));
+    coverage.transparent = -1;
+    coverage.transparent_mask_size = pixels;
+    coverage.transparent_mask = sixel_allocator_malloc(dither->allocator,
+                                                        pixels);
+    if (coverage.transparent_mask == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(coverage.transparent_mask, dither->pipeline_transparent_mask,
+           pixels);
+    iface = sixel_frame_as_interface(source);
+    status = iface->vtbl->set_transparency(iface, &coverage);
+    if (status != SIXEL_OK) {
+        sixel_allocator_free(dither->allocator, coverage.transparent_mask);
+    }
+    return status;
+}
+
+/* Freeze palette, geometry, source frame and application capability
  * before acquiring retained state. This helper also serves direct encoding. */
 static SIXELSTATUS
 sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
-    sixel_output_deferred_t *prepared)
+    sixel_frame_t *frame, sixel_output_deferred_t *prepared, int include_mask)
 {
     sixel_dither_t *dither;
     sixel_output_t *output;
@@ -188,7 +222,8 @@ prepare:
     wire = NULL;
     apply = NULL;
     memset(&prepare, 0, sizeof(prepare));
-    status = sixel_dither_prepare_indexed_components(dither, threads > 1, 0);
+    status = sixel_dither_prepare_indexed_components(dither, threads > 1, 0,
+                                                     include_mask);
     if (status != SIXEL_OK) goto end;
     pixels = (size_t)request->width * (size_t)request->height;
     memset(&wire_request, 0, sizeof(wire_request));
@@ -246,11 +281,23 @@ prepare:
     description.transparent_background = dither->keycolor >= 0 ||
         output->require_keep_header ||
         sixel_output_has_transparent_offset(output);
-    status = sixel_frame_new(&source, dither->allocator);
-    if (SIXEL_FAILED(status)) goto end;
-    status = sixel_frame_init_borrowed(source, request->pixels,
-        request->width, request->height, SIXEL_PIXELFORMAT_RGB888, NULL, -1);
-    if (SIXEL_FAILED(status)) goto end;
+    if (frame != NULL) {
+        /* Playback owns the preprocessed frame and its coverage. GPU solve
+         * needs the mask before it distributes error to visible neighbors. */
+        source = frame;
+        sixel_frame_ref(source);
+    } else {
+        status = sixel_frame_new(&source, dither->allocator);
+        if (SIXEL_FAILED(status)) goto end;
+        status = sixel_frame_init_borrowed(source, request->pixels,
+            request->width, request->height, SIXEL_PIXELFORMAT_RGB888,
+            NULL, -1);
+        if (SIXEL_FAILED(status)) goto end;
+        if (include_mask) {
+            status = sixel_indexed_copy_source_mask(source, dither, pixels);
+            if (status != SIXEL_OK) goto end;
+        }
+    }
     status = dither->gpu_dither != NULL
         ? dither->gpu_dither->vtbl->get_configuration(dither->gpu_dither,
             &configuration)
@@ -336,13 +383,26 @@ sixel_output_dispose_deferred(sixel_output_deferred_t *prepared)
     memset(prepared, 0, sizeof(*prepared));
 }
 
+static int
+sixel_indexed_accepts_transparency(sixel_dither_t const *dither,
+                                  sixel_output_t const *output)
+{
+    return dither->keycolor < 0 ||
+        output->transparent_policy == SIXEL_ALPHA_POLICY_KEEP ||
+        output->transparent_policy == SIXEL_ALPHA_POLICY_COMPOSITE;
+}
+
 SIXELSTATUS
 sixel_output_prepare_deferred(sixel_legacy_encode_request_t const *request,
-    sixel_output_deferred_t *prepared)
+    sixel_frame_t *frame, sixel_output_deferred_t *prepared)
 {
     SIXELSTATUS status;
 
-    status = sixel_indexed_prepare(request, prepared);
+    if (!sixel_indexed_accepts_transparency(request->dither,
+                                            request->output)) {
+        return SIXEL_FEATURE_ERROR;
+    }
+    status = sixel_indexed_prepare(request, frame, prepared, 0);
     if (status == SIXEL_OK)
         status = prepared->apply->vtbl->get_deferred(prepared->apply,
             &prepared->capability);
@@ -465,7 +525,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     sixel_dither_encode_allocation_t allocation;
     sixel_indexed_subgraph_t graph;
     size_t pixels;
-    int threads;
+    int threads, include_mask;
     sixel_output_deferred_t local, *prepared;
     sixel_palette_apply_resolve_request_t resolve;
     double resolve_started, emit_started, history_started;
@@ -479,9 +539,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     if (output->indexed_disabled ||
             !sixel_encode_delta_is_legacy(dither, output) ||
             output->source_colorspace != SIXEL_COLORSPACE_GAMMA ||
-            (dither->keycolor >= 0 &&
-             output->transparent_policy != SIXEL_ALPHA_POLICY_KEEP &&
-             output->transparent_policy != SIXEL_ALPHA_POLICY_COMPOSITE) ||
+            !sixel_indexed_accepts_transparency(dither, output) ||
             ((dither->pipeline_accumulation_result_enabled ||
               dither->pipeline_6delta_enabled) && session == NULL)) {
         return SIXEL_FALSE;
@@ -506,7 +564,12 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     memset(&local, 0, sizeof(local));
     prepared = output->deferred;
     if (prepared == NULL || prepared->solution == NULL) {
-        status = sixel_indexed_prepare(request, &local);
+        /* With no deferred GPU solution, the packet writer still needs a
+         * complete indexed image. Give ordinary apply the bound coverage. */
+        include_mask = sixel_output_is_resolve_only(output) &&
+            dither->keycolor >= 0 &&
+            dither->pipeline_transparent_mask != NULL;
+        status = sixel_indexed_prepare(request, NULL, &local, include_mask);
         if (status != SIXEL_OK) goto end;
         if (prepared != NULL) local.capture = prepared->capture;
         prepared = &local;

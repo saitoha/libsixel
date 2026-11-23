@@ -130,7 +130,7 @@ freeze_palette_case(void)
     /* An automatic or float request keeps the constructed coordinates. */
     if (SIXEL_FAILED(sixel_dither_freeze_application_precision(dither)) ||
             freeze_has_float(dither) != 1 ||
-            sixel_dither_prepare_indexed_components(dither, 0, 0) !=
+            sixel_dither_prepare_indexed_components(dither, 0, 0, 0) !=
                 SIXEL_FALSE) {
         goto end;
     }
@@ -162,7 +162,7 @@ freeze_palette_case(void)
         }
     }
     /* The byte component route now accepts the frozen palette. */
-    if (sixel_dither_prepare_indexed_components(dither, 0, 0) != SIXEL_OK) {
+    if (sixel_dither_prepare_indexed_components(dither, 0, 0, 0) != SIXEL_OK) {
         goto end;
     }
     ok = 1;
