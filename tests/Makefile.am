@@ -9573,6 +9573,7 @@ endif
 
 EXTRA_DIST += data/color-numeric/destination-snap.h \
     data/color-numeric/mpet-storage-png.h \
+    data/color-numeric/png-extended-trc.h \
     data/color-numeric/named-output.h \
     data/color-numeric/generate-named-output.py
 

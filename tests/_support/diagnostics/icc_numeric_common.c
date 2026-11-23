@@ -8,6 +8,7 @@
 #include "tests/_support/diagnostics/icc_numeric_common.h"
 #include "tests/data/color-numeric/icc.h"
 #include "tests/data/color-numeric/mpet-storage-png.h"
+#include "tests/data/color-numeric/png-extended-trc.h"
 #include "src/icc-parse.h"
 #include "src/icc-apply.h"
 #include "src/cms.h"
@@ -4679,5 +4680,83 @@ icc_numeric_mpet_png_storage_fallback_test(void)
     }
     sixel_allocator_unref(allocator);
     (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static SIXELSTATUS
+iccn_check_png_extended_trc(sixel_frame_t *frame, void *context)
+{
+    size_t const count = sizeof(color_png_extended_expected) / sizeof(double);
+    unsigned int *calls;
+    float const *actual;
+    double expected;
+    size_t i;
+
+    calls = context;
+    ++*calls;
+    if (frame->width != 3 || frame->height != 1 ||
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR ||
+        frame->cms_history != SIXEL_FRAME_CMS_EMBEDDED_ICC) {
+        fprintf(stderr, "Expected one linear float32 PNG with embedded ICC\n");
+        return SIXEL_BAD_INPUT;
+    }
+    actual = (float const *)(void const *)sixel_frame_get_pixels(frame);
+    /* The three red codes exercise gamut excursions, one application of
+     * the square TRC, and positive results below any 16-bit RGB step.
+     * Relative tolerance keeps zero outside the smallest error bound. */
+    for (i = 0u; i < count; ++i) {
+        expected = color_png_extended_expected[i];
+        if (!(fabs(actual[i] - expected) <= fabs(expected) * 0.001)) {
+            fprintf(stderr, "PNG component %zu: %.9g vs %.9g\n",
+                    i, actual[i], expected);
+            return SIXEL_BAD_INPUT;
+        }
+    }
+    return SIXEL_OK;
+}
+
+int
+test_icc_png_extended_trc(int argc, char **argv)
+{
+    sixel_allocator_t *allocator = NULL;
+    sixel_loader_component_t *loader = NULL;
+    sixel_chunk_t *chunk = NULL;
+    unsigned int calls = 0u;
+    loader_probe_callback_state_t callback = {
+        NULL, iccn_check_png_extended_trc, &calls
+    };
+    int engine = SIXEL_CMS_ENGINE_BUILTIN;
+    int one = 1;
+    int ok;
+
+    if (argc != 2) {
+        return EXIT_FAILURE;
+    }
+    ok = SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
+                                               NULL)) &&
+        SIXEL_SUCCEEDED(create_loader_component_by_name(argv[1], allocator,
+                                                         (void **)&loader)) &&
+        SIXEL_SUCCEEDED(sixel_loader_component_setopt(loader,
+            SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE, &engine)) &&
+        SIXEL_SUCCEEDED(sixel_loader_component_setopt(loader,
+            SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32, &one)) &&
+        SIXEL_SUCCEEDED(sixel_chunk_create_from_memory(&chunk,
+            color_png_extended_trc, sizeof(color_png_extended_trc),
+            NULL, allocator)) &&
+        SIXEL_SUCCEEDED(sixel_loader_component_load(loader, chunk,
+            capture_frame_trampoline, &callback)) &&
+        calls == 1u;
+    if (!ok) {
+        fprintf(stderr, "%s: %s\n", argv[1],
+                sixel_helper_get_additional_message());
+    }
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    if (loader != NULL) {
+        sixel_loader_component_unref(loader);
+    }
+    sixel_allocator_unref(allocator);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
