@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sixel.h>
 #include <6cells.h>
 #include "src/chunk-factory.h"
@@ -1527,6 +1528,136 @@ test_implicit_palette_storage(void)
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+/* Use a distinct exit status so a generic runner failure stays red. */
+enum { PALETTE_EXPECTED_FAILURE = 23 };
+static int
+test_mutable_palette_storage(void)
+{
+    unsigned char indices[] = {0, 1};
+    unsigned char palette[12] = {0};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface, *copy = NULL;
+    size_t before, after, cloned;
+    int result = 2;
+
+    if (sixel_frame_new(&frame, NULL) != SIXEL_OK ||
+        sixel_frame_init_borrowed(frame, indices, 2, 1,
+            SIXEL_PIXELFORMAT_PAL8, palette, -1) != SIXEL_OK) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    if (iface->vtbl->measure_storage(iface, &before) != SIXEL_OK ||
+            before != 8u) {
+        goto end;
+    }
+    indices[1] = 3;
+    if (iface->vtbl->measure_storage(iface, &after) != SIXEL_OK ||
+        iface->vtbl->clone(iface, NULL, &copy) != SIXEL_OK ||
+        copy->vtbl->measure_storage(copy, &cloned) != SIXEL_OK ||
+        cloned != 14u) {
+        goto end;
+    }
+    if (after == 14u) {
+        result = 0;
+    } else if (after == before) {
+        result = PALETTE_EXPECTED_FAILURE;
+    }
+end:
+    if (copy != NULL) {
+        copy->vtbl->unref(copy);
+    }
+    sixel_frame_unref(frame);
+    return result;
+}
+
+static int
+test_attached_palette_storage(void)
+{
+    unsigned char indices[] = {0, 1, 3, 2};
+    unsigned char palette[12] = {0};
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    size_t before, after;
+    int result = 2;
+
+    if (sixel_frame_new(&frame, NULL) != SIXEL_OK ||
+        sixel_frame_init_borrowed(frame, indices, 4, 1,
+            SIXEL_PIXELFORMAT_PAL8, NULL, -1) != SIXEL_OK) {
+        goto end;
+    }
+    sixel_frame_set_palette(frame, palette);
+    iface = sixel_frame_as_interface(frame);
+    if (iface->vtbl->measure_storage(iface, &before) != SIXEL_OK ||
+            before != 16u) {
+        goto end;
+    }
+    sixel_frame_set_width(frame, 2);
+    if (iface->vtbl->measure_storage(iface, &after) != SIXEL_OK ||
+        sixel_frame_get_palette(frame) != palette ||
+        sixel_frame_get_ncolors(frame) != -1) {
+        goto end;
+    }
+    if (after == before) {
+        result = 0;
+    } else if (after == 10u) {
+        result = PALETTE_EXPECTED_FAILURE;
+    }
+end:
+    sixel_frame_unref(frame);
+    return result;
+}
+
+static int
+test_repeated_implicit_palette_init(void)
+{
+    enum { WIDTH = 1024, HEIGHT = 1024, REPETITIONS = 24 };
+    int const counts[] = {16, -1};
+    unsigned char palette[16 * 3] = {0};
+    unsigned char *indices = calloc(WIDTH * HEIGHT, 1u);
+    sixel_frame_t *frame = NULL;
+    clock_t start, finish;
+    double elapsed[2];
+    int mode, i;
+    int result = 2;
+
+    if (indices == NULL || sixel_frame_new(&frame, NULL) != SIXEL_OK) {
+        goto end;
+    }
+    /* Keep the highest used entry below 255 so a full scan cannot exit
+     * early. Warm each mode before timing repeated same-pointer calls. */
+    indices[WIDTH * HEIGHT - 1] = 15;
+    for (mode = 0; mode < 2; ++mode) {
+        if (sixel_frame_init_borrowed(frame, indices, WIDTH, HEIGHT,
+                SIXEL_PIXELFORMAT_PAL8, palette, counts[mode]) != SIXEL_OK) {
+            goto end;
+        }
+        start = clock();
+        for (i = 0; i < REPETITIONS; ++i) {
+            if (sixel_frame_init_borrowed(frame, indices, WIDTH, HEIGHT,
+                    SIXEL_PIXELFORMAT_PAL8, palette, counts[mode])
+                        != SIXEL_OK) {
+                goto end;
+            }
+        }
+        finish = clock();
+        if (start == (clock_t)-1 || finish == (clock_t)-1 || finish < start) {
+            result = 77;
+            goto end;
+        }
+        elapsed[mode] = (double)(finish - start) / CLOCKS_PER_SEC;
+    }
+    /* Compare CPU time to the same input with an explicit count. Leave
+     * enough margin for timer granularity and fast constant-time paths. */
+    fprintf(stderr, "PAL8 reinit CPU seconds: declared=%.6f implicit=%.6f\n",
+            elapsed[0], elapsed[1]);
+    result = elapsed[1] > 8.0 * elapsed[0] + 0.002
+        ? PALETTE_EXPECTED_FAILURE : 0;
+end:
+    sixel_frame_unref(frame);
+    free(indices);
+    return result;
+}
+
 static int
 test_strip_storage(int format, unsigned char *background)
 {
@@ -2211,6 +2342,15 @@ test_frame_0014_clone_float(int argc, char **argv)
     }
     if (argc == 2 && strcmp(argv[1], "implicit-palette-storage") == 0) {
         return test_implicit_palette_storage();
+    }
+    if (argc == 2 && strcmp(argv[1], "mutable-palette-storage") == 0) {
+        return test_mutable_palette_storage();
+    }
+    if (argc == 2 && strcmp(argv[1], "attached-palette-storage") == 0) {
+        return test_attached_palette_storage();
+    }
+    if (argc == 2 && strcmp(argv[1], "repeated-implicit-palette-init") == 0) {
+        return test_repeated_implicit_palette_init();
     }
     if (argc == 2 && strcmp(argv[1], "saturation-matrix") == 0) {
         return icc_numeric_frame_saturation_matrix_test();
