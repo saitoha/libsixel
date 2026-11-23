@@ -1664,13 +1664,8 @@ sixel_builtin_load_bmp_native(sixel_chunk_t const *chunk,
             }
         }
     }
-    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-        sixel_frame_as_interface(frame),
-        &(sixel_frame_pixels_request_t){
-            (unsigned char *)rgb, NULL, samples.width, samples.height,
-            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_COLORSPACE_LINEAR,
-            -1, SIXEL_FRAME_PIXELS_FLOAT32
-        });
+    status = sixel_frame_init_rgb_float(frame, rgb, samples.width,
+        samples.height, SIXEL_COLORSPACE_LINEAR, -1);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -5612,19 +5607,9 @@ sixel_builtin_load_jpeg_frame(
         sixel_cms_close_profile(src_profile);
     }
     stbi_image_free(cmyk_pixels);
-    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-        sixel_frame_as_interface(frame),
-        &(sixel_frame_pixels_request_t){
-            float_pixels,
-            NULL,
-            frame->width,
-            frame->height,
-            linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-                   : SIXEL_PIXELFORMAT_RGBFLOAT32,
-            linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
-            -1,
-            SIXEL_FRAME_PIXELS_FLOAT32
-        });
+    status = sixel_frame_init_rgb_float(frame, (float *)(void *)float_pixels,
+        frame->width, frame->height,
+        linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA, -1);
     if (SIXEL_FAILED(status)) {
         stbi_image_free(float_pixels);
         return status;
