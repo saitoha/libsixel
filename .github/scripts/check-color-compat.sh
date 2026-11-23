@@ -219,6 +219,9 @@ set -- \
     palette/fixed/0103_monochrome_auto_gpu.t \
     frame/storage/0055_collinear_primary.t \
     frame/storage/0056_palette_count_before_pointer.t \
+    dither/fs-gpu/0019_auto_or_output.t \
+    dither/fs-gpu/0020_auto_linear_output.t \
+    dither/fs-gpu/0021_auto_smptec_output.t \
     frame/storage/0057_default_foreground_pixel.t \
     frame/storage/0058_default_foreground_band.t \
     frame/storage/0059_default_foreground_aspect.t \

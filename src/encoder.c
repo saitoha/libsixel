@@ -1351,7 +1351,12 @@ sixel_encoder_gpu_diffusion_eligible(sixel_encoder_t const *encoder,
     default:
         return 0;
     }
+    /* The indexed GPU path emits normal gamma output. Keep the CPU dither
+     * available for other writers under AUTO. FORCE reports their refusal. */
     return encoder->gpu_policy != SIXEL_GPU_POLICY_OFF &&
+        (encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE ||
+         (!encoder->ormode &&
+          encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA)) &&
         encoder->precision_requested != SIXEL_OPTION_PRECISION_FLOAT32 &&
         !encoder->prefer_float32 &&
         encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
