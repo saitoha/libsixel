@@ -67,6 +67,8 @@ test_frame_0239_alpha(int argc, char **argv)
     };
     static float const coverage[4] = {0.5f, 0.0f, 1.0f, 0.25f};
     static float const bg[3] = {0.25f, 0.5f, 0.75f};
+    static unsigned int const cms_history = SIXEL_FRAME_CMS_EMBEDDED_ICC |
+                                           SIXEL_FRAME_CMS_OUTPUT_BPC;
     sixel_allocator_t *allocator;
     sixel_frame_t *frame;
     sixel_frame_interface_t *iface;
@@ -76,6 +78,7 @@ test_frame_0239_alpha(int argc, char **argv)
     sixel_frame_alpha_t alpha;
     SIXELSTATUS status;
     float storage[12];
+    unsigned char replacement[3] = {17, 129, 233};
     float *plane;
     float *adopted;
     size_t bytes;
@@ -185,10 +188,15 @@ test_frame_0239_alpha(int argc, char **argv)
         } else if (mode == 13) {
             storage[11] = NAN;
         }
+        frame->cms_history = cms_history;
         status = sixel_frame_resolve_alpha(frame, mode == 9 ? NULL : bg,
                                            mode != 11);
         fa_fail = 0;
         iface->vtbl->get_pixels(iface, &pixels);
+        if (pixels.colorspace != SIXEL_COLORSPACE_LINEAR ||
+            frame->cms_history != cms_history) {
+            goto end;
+        }
         if (mode >= 12) {
             if (status != (mode == 12 ? SIXEL_BAD_ALLOCATION : SIXEL_BAD_INPUT)
                 || pixels.pixels_float32 != storage ||
@@ -246,6 +254,31 @@ test_frame_0239_alpha(int argc, char **argv)
         iface->vtbl->get_alpha(iface, &alpha);
         result = SIXEL_SUCCEEDED(status) && alpha.values == NULL
             && alpha.count == 0u ? EXIT_SUCCESS : EXIT_FAILURE;
+        goto end;
+    } else if (mode == 17) {
+        /* A rejected replacement keeps the current frame. A successful
+         * one starts with fresh color and coverage state. */
+        frame->cms_history = cms_history;
+        status = sixel_frame_init_borrowed(frame, replacement, 0, 1,
+            SIXEL_PIXELFORMAT_RGB888, NULL, -1);
+        if (SIXEL_SUCCEEDED(status) || frame->cms_history != cms_history ||
+            SIXEL_FAILED(iface->vtbl->get_pixels(iface, &pixels)) ||
+            pixels.pixels_float32 != storage ||
+            pixels.colorspace != SIXEL_COLORSPACE_LINEAR ||
+            SIXEL_FAILED(iface->vtbl->get_alpha(iface, &alpha)) ||
+            alpha.values != adopted || alpha.count != 4u) {
+            goto end;
+        }
+        status = sixel_frame_init_borrowed(frame, replacement, 1, 1,
+            SIXEL_PIXELFORMAT_RGB888, NULL, -1);
+        result = SIXEL_SUCCEEDED(status) && frame->cms_history == 0u &&
+            SIXEL_SUCCEEDED(iface->vtbl->get_alpha(iface, &alpha)) &&
+            alpha.values == NULL && alpha.count == 0u &&
+            SIXEL_SUCCEEDED(iface->vtbl->get_pixels(iface, &pixels)) &&
+            pixels.pixels == replacement && pixels.width == 1 &&
+            pixels.height == 1 && pixels.pixelformat == SIXEL_PIXELFORMAT_RGB888
+            && pixels.colorspace == SIXEL_COLORSPACE_GAMMA
+            ? EXIT_SUCCESS : EXIT_FAILURE;
         goto end;
     }
     iface->vtbl->get_alpha(iface, &alpha);

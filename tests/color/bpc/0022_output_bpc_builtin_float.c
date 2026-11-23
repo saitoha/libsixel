@@ -14,28 +14,58 @@ typedef struct output_bpc_context {
 
 static int
 output_bpc_check_geometry(sixel_frame_t *frame, unsigned int history,
-                          double expected)
+                          double const *expected)
 {
     sixel_frame_interface_t *iface;
     sixel_frame_interface_t *copy = NULL;
     sixel_frame_pixels_view_t view = {0};
+    float const *source;
+    double midpoint;
     size_t i;
     int ok;
 
-    /* Crop a half-covered pixel, then enlarge its constant color plane.
-     * The loaded value already includes the file background and BPC. */
     iface = sixel_frame_as_interface(frame);
+    source = (float const *)sixel_frame_get_pixels(frame);
     ok = SIXEL_SUCCEEDED(iface->vtbl->clone(iface, NULL, &copy)) &&
-        SIXEL_SUCCEEDED(copy->vtbl->clip(copy, 3, 0, 1, 1)) &&
-        SIXEL_SUCCEEDED(copy->vtbl->resize_float32(copy, 2, 2,
-                                                   SIXEL_RES_NEAREST)) &&
         SIXEL_SUCCEEDED(copy->vtbl->get_pixels(copy, &view)) &&
         view.colorspace == SIXEL_COLORSPACE_LINEAR &&
-        view.width == 2 && view.height == 2 &&
+        view.width == 6 && view.height == 1 &&
+        view.pixels_float32 != source &&
+        memcmp(view.pixels_float32, source, 18u * sizeof(float)) == 0 &&
         ((sixel_frame_t *)copy)->cms_history == history;
-    for (i = 0u; ok && i < 12u; ++i) {
-        ok = fabs(view.pixels_float32[i] - expected) < 3.0e-5;
+    if (!ok) {
+        fprintf(stderr, "Clone changed decoded samples or their metadata\n");
+        goto end;
     }
+    ok = SIXEL_SUCCEEDED(copy->vtbl->clip(copy, 3, 0, 2, 1)) &&
+        SIXEL_SUCCEEDED(copy->vtbl->get_pixels(copy, &view)) &&
+        view.colorspace == SIXEL_COLORSPACE_LINEAR &&
+        view.width == 2 && view.height == 1 &&
+        memcmp(view.pixels_float32, source + 9, 6u * sizeof(float)) == 0 &&
+        ((sixel_frame_t *)copy)->cms_history == history;
+    if (!ok) {
+        fprintf(stderr, "Clip changed retained samples or their metadata\n");
+        goto end;
+    }
+
+    /* The center of a two-pixel row has equal weights. Both inputs have
+     * already been composited over the file background in linear light. */
+    midpoint = (expected[3] + expected[4]) * 0.5;
+    ok = SIXEL_SUCCEEDED(copy->vtbl->resize_float32(copy, 1, 1,
+                                                   SIXEL_RES_BILINEAR)) &&
+        SIXEL_SUCCEEDED(copy->vtbl->get_pixels(copy, &view)) &&
+        view.colorspace == SIXEL_COLORSPACE_LINEAR &&
+        view.width == 1 && view.height == 1 &&
+        ((sixel_frame_t *)copy)->cms_history == history;
+    for (i = 0u; ok && i < 3u; ++i) {
+        ok = fabs(view.pixels_float32[i] - midpoint) < 3.0e-5;
+    }
+    if (!ok) {
+        fprintf(stderr, "Resize did not yield the linear midpoint %.9g\n",
+                midpoint);
+    }
+
+end:
     if (copy != NULL) {
         copy->vtbl->unref(copy);
     }
@@ -50,7 +80,7 @@ output_bpc_check_float(sixel_frame_t *frame, void *context)
     output_bpc_context_t *test;
     unsigned int history;
     float const *rgb;
-    double expected;
+    double expected[6];
     double value;
     double alpha;
     int pixel;
@@ -75,19 +105,21 @@ output_bpc_check_float(sixel_frame_t *frame, void *context)
          * gives (1+x)/2, including the file's bKGD word 4096. The
          * declared fixed-point D50 chromaticity allows a small RGB error. */
         value = (alpha * gray[pixel] + (1.0 - alpha) * 4096.0) / 65535.0;
-        expected = test->enabled ? (1.0 + value) / 2.0
-                                 : (1.0 + 3.0 * value) / 4.0;
-        if (test->geometry && pixel == 3) {
-            return output_bpc_check_geometry(frame, history, expected)
-                ? SIXEL_OK : SIXEL_BAD_INPUT;
-        }
+        expected[pixel] = test->enabled ? (1.0 + value) / 2.0
+                                        : (1.0 + 3.0 * value) / 4.0;
         for (channel = 0; channel < 3; ++channel) {
-            if (!(fabs(rgb[pixel * 3 + channel] - expected) < 3.0e-5)) {
+            if (!(fabs(rgb[pixel * 3 + channel] - expected[pixel])
+                  < 3.0e-5)) {
                 fprintf(stderr, "pixel %d channel %d: %.9g vs %.9g\n",
-                        pixel, channel, rgb[pixel * 3 + channel], expected);
+                        pixel, channel, rgb[pixel * 3 + channel],
+                        expected[pixel]);
                 return SIXEL_BAD_INPUT;
             }
         }
+    }
+    if (test->geometry &&
+        !output_bpc_check_geometry(frame, history, expected)) {
+        return SIXEL_BAD_INPUT;
     }
     return SIXEL_OK;
 }
