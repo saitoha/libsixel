@@ -459,23 +459,6 @@ png_resolve_background_unit(png_structp png_ptr,
                                          bitdepth, &bg_unit[2]);
 }
 
-static int
-png_colorspace_from_pixelformat(int pixelformat)
-{
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        return SIXEL_COLORSPACE_OKLAB;
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        return SIXEL_COLORSPACE_DIN99D;
-    default:
-        return SIXEL_COLORSPACE_GAMMA;
-    }
-}
-
 /* libpng error handler */
 static void
 png_error_callback(png_structp png_ptr, png_const_charp error_message)
@@ -573,7 +556,8 @@ static int
 png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
                       float *pixels, int width, int height, int enable_cms,
                       unsigned int color_chunks, int arithmetic,
-                      char const *role, char const *cicp_name)
+                      char const *role, char const *cicp_name,
+                      unsigned int *cms_history)
 {
     png_charp name;
     png_bytep profile;
@@ -618,6 +602,10 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
         converted = sixel_cms_rgb_output_bpc(pixels, width, height,
                                               input_profile, *output_black);
         sixel_cms_close_profile(input_profile);
+        if (converted && cms_history != NULL) {
+            *cms_history = SIXEL_FRAME_CMS_EMBEDDED_ICC |
+                           SIXEL_FRAME_CMS_OUTPUT_BPC;
+        }
         return converted ? 1 : -SIXEL_RUNTIME_ERROR;
     }
     if (enable_cms && cicp_name != NULL) {
@@ -657,6 +645,9 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
             (unsigned char *)pixels, width, height,
             SIXEL_PIXELFORMAT_RGBFLOAT32, profile, profile_size);
         if (converted) {
+            if (cms_history != NULL) {
+                *cms_history = SIXEL_FRAME_CMS_EMBEDDED_ICC;
+            }
             loader_trace_message("PNGCHRM1|role=%s|requested=%s|"
                 "actual=not-applicable|reason=icc-selected", role,
                 png_arithmetic_name(arithmetic));
@@ -877,6 +868,12 @@ typedef struct sixel_png_color_options {
     int chrm_arithmetic;
 } sixel_png_color_options_t;
 
+typedef struct sixel_png_color_result {
+    int coordinates;
+    int cms_applied;
+    unsigned int cms_history;
+} sixel_png_color_result_t;
+
 static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
          unsigned char const /* in */ *buffer,
@@ -890,7 +887,7 @@ load_png(unsigned char      /* out */ **result,
          unsigned char      /* out */ *bgcolor,
          int                /* out */ *transparent,
          int                /* out */ *alpha_zero_is_transparent,
-         int                /* out */ *cms_applied,
+         sixel_png_color_result_t    *color_result,
          sixel_png_color_options_t const *color_options,
          sixel_png_alpha_t          *alpha_state,
          sixel_allocator_t  /* in */  *allocator)
@@ -963,7 +960,7 @@ load_png(unsigned char      /* out */ **result,
     *result = NULL;
     *transparent = -1;
     *alpha_zero_is_transparent = 0;
-    *cms_applied = 0;
+    *color_result = (sixel_png_color_result_t){SIXEL_COLORSPACE_GAMMA, 0, 0u};
     png_ptr = NULL;
     info_ptr = NULL;
     rows = NULL;
@@ -1264,7 +1261,8 @@ load_png(unsigned char      /* out */ **result,
         cms_converted = png_source_to_linear(png_ptr, info_ptr, float_pixels,
                                              *psx, *psy, enable_cms,
                                              color_chunks, chrm_arithmetic,
-                                             "image", cicp_name);
+                                             "image", cicp_name,
+                                             &color_result->cms_history);
         if (cms_converted < 0) {
             status = (SIXELSTATUS)-cms_converted;
             goto cleanup;
@@ -1275,7 +1273,7 @@ load_png(unsigned char      /* out */ **result,
         if (background_from_file) {
             background_converted = png_source_to_linear(png_ptr, info_ptr,
                 bg_pixel, 1, 1, enable_cms, color_chunks, chrm_arithmetic,
-                "background", cicp_name);
+                "background", cicp_name, NULL);
             if (background_converted < 0) {
                 status = (SIXELSTATUS)-background_converted;
                 goto cleanup;
@@ -1309,8 +1307,9 @@ load_png(unsigned char      /* out */ **result,
             status = SIXEL_RUNTIME_ERROR;
             goto cleanup;
         }
-        *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-        *cms_applied = cms_converted;
+        *pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+        color_result->coordinates = SIXEL_COLORSPACE_LINEAR;
+        color_result->cms_applied = cms_converted;
         status = SIXEL_OK;
         goto cleanup;
     }
@@ -1638,7 +1637,8 @@ load_png(unsigned char      /* out */ **result,
         }
         cms_converted = png_source_to_linear(png_ptr, info_ptr, cms_pixels,
             palette_colors ? *pncolors : *psx, palette_colors ? 1 : *psy, 1,
-            color_chunks, chrm_arithmetic, "image", cicp_name);
+            color_chunks, chrm_arithmetic, "image", cicp_name,
+            &color_result->cms_history);
         if (cms_converted < 0) {
             status = (SIXELSTATUS)-cms_converted;
             goto cleanup;
@@ -1653,14 +1653,14 @@ load_png(unsigned char      /* out */ **result,
             sixel_allocator_free(allocator, *ppalette);
             *ppalette = NULL;
             *pncolors = 0;
-            *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+            *pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
         } else if (cms_converted) {
             /* Retain CMS output as the canonical frame. Re-encoding it into
              * the original RGB8/16 buffer loses gamut before promotion. */
             sixel_allocator_free(allocator, *result);
             *result = (unsigned char *)cms_pixels;
             cms_pixels = NULL;
-            *pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+            *pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
         } else if (!palette_colors) {
             /* Unapplied metadata keeps the original palette bytes exactly.
              * Other unconverted sources retain their existing storage. */
@@ -1676,7 +1676,10 @@ load_png(unsigned char      /* out */ **result,
                 }
             }
         }
-        *cms_applied = cms_converted;
+        color_result->cms_applied = cms_converted;
+        if (cms_converted) {
+            color_result->coordinates = SIXEL_COLORSPACE_LINEAR;
+        }
     } else {
         loader_trace_message("PNGCHRM1|role=image|requested=%s|"
             "actual=not-applicable|reason=%s",
@@ -2131,7 +2134,7 @@ decode_png_rgba(unsigned char **result, int *width, int *height,
                 unsigned char *buffer, size_t size, unsigned char *bgcolor,
                 int enable_cms, int chrm_arithmetic,
                 sixel_png_alpha_t *alpha_state,
-                int *cms_applied,
+                sixel_png_color_result_t *color_result,
                 sixel_allocator_t *allocator)
 {
     int format;
@@ -2141,10 +2144,9 @@ decode_png_rgba(unsigned char **result, int *width, int *height,
 
     format = 0;
     ncolors = 0;
-    *cms_applied = 0;
     alpha_state->defer_composition = 1;
     return load_png(result, buffer, size, width, height, NULL, &ncolors, 0,
-                    &format, bgcolor, &transparent, &alpha_zero, cms_applied,
+                    &format, bgcolor, &transparent, &alpha_zero, color_result,
                     &(sixel_png_color_options_t){enable_cms, chrm_arithmetic},
                     alpha_state, allocator);
 }
@@ -2356,7 +2358,7 @@ emit_apng_frame(
     int channel;
     int hidden;
     int has_hidden;
-    int cms_applied;
+    sixel_png_color_result_t color_result;
     unsigned int color_chunks;
     char const *cicp_name;
     double alpha;
@@ -2376,7 +2378,6 @@ emit_apng_frame(
     emitted_bytes = NULL;
     mask = NULL;
     memset(&alpha_state, 0, sizeof(alpha_state));
-    cms_applied = 0;
     color_chunks = 0u;
     cicp_name = NULL;
     canvas_bytes = 0u;
@@ -2435,7 +2436,7 @@ emit_apng_frame(
                              enable_cms,
                              chrm_arithmetic,
                              &alpha_state,
-                             &cms_applied,
+                             &color_result,
                              allocator);
 
     if (SIXEL_FAILED(status)) {
@@ -2456,7 +2457,7 @@ emit_apng_frame(
         color_chunks = 0u;
         cicp_name = NULL;
     }
-    if (cms_applied || color_chunks != 0u || cicp_name != NULL ||
+    if (color_result.cms_applied || color_chunks != 0u || cicp_name != NULL ||
             state->ihdr[8] > 8) {
         canvas->byte_exact = 0;
     }
@@ -2562,18 +2563,8 @@ emit_apng_frame(
         }
         emitted_bytes = NULL;
     } else {
-        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-            sixel_frame_as_interface(frame),
-            &(sixel_frame_pixels_request_t){
-                (unsigned char *)emitted,
-                NULL,
-                canvas->width,
-                canvas->height,
-                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                SIXEL_COLORSPACE_LINEAR,
-                0,
-                SIXEL_FRAME_PIXELS_FLOAT32
-            });
+        status = sixel_frame_init_rgb_float(frame, emitted,
+            canvas->width, canvas->height, SIXEL_COLORSPACE_LINEAR, 0);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -3371,9 +3362,8 @@ load_with_libpng(
     sixel_frame_t *frame;
     unsigned char *pixels;
     int enable_cms;
-    int cms_applied;
+    sixel_png_color_result_t color_result;
     int alpha_zero_is_transparent;
-    int cms_target_pixelformat;
     int enable_orientation;
     int exif_orientation;
     int animated;
@@ -3386,9 +3376,7 @@ load_with_libpng(
     pixels = NULL;
     memset(&alpha_state, 0, sizeof(alpha_state));
     enable_cms = enable_cms_override != 0 ? 1 : 0;
-    cms_applied = 0;
     alpha_zero_is_transparent = 0;
-    cms_target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     enable_orientation = enable_orientation_override != 0 ? 1 : 0;
     exif_orientation = 1;
 
@@ -3446,7 +3434,7 @@ load_with_libpng(
                       bgcolor,
                       &frame->transparent,
                       &alpha_zero_is_transparent,
-                      &cms_applied,
+                      &color_result,
                       &(sixel_png_color_options_t){
                           enable_cms, chrm_arithmetic
                       },
@@ -3455,26 +3443,24 @@ load_with_libpng(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    sixel_frame_assign_format(frame, decoded_format);
-
-    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-        sixel_frame_as_interface(frame),
-        &(sixel_frame_pixels_request_t){
-            pixels,
-            frame->palette,
-            frame->width,
-            frame->height,
-            sixel_frame_format(frame),
-            png_colorspace_from_pixelformat(sixel_frame_format(frame)),
-            frame->ncolors,
-            (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
-            ? SIXEL_FRAME_PIXELS_FLOAT32
-            : SIXEL_FRAME_PIXELS_U8
-        });
+    if (decoded_format == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        status = sixel_frame_init_rgb_float(frame, (float *)(void *)pixels,
+            frame->width, frame->height, color_result.coordinates,
+            frame->ncolors);
+    } else {
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels, frame->palette, frame->width, frame->height,
+                decoded_format, color_result.coordinates, frame->ncolors,
+                SIXEL_FRAME_PIXELS_U8
+            });
+    }
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, pixels);
         goto end;
     }
+    frame->cms_history = color_result.cms_history;
     frame->alpha_zero_is_transparent = alpha_zero_is_transparent != 0 ? 1 : 0;
     pixels = NULL;
     if (alpha_state.pixel_extent != 0u) {
@@ -3508,16 +3494,15 @@ load_with_libpng(
                 frame->transparent_mask[pixel_index];
         }
     }
-    if (cms_applied
-            && ((sixel_frame_format(frame) & SIXEL_FORMATTYPE_PALETTE) == 0)) {
+    if (color_result.cms_applied &&
+        (frame->cms_history & SIXEL_FRAME_CMS_OUTPUT_BPC) == 0u &&
+        (decoded_format & SIXEL_FORMATTYPE_PALETTE) == 0) {
         /* Working coordinates and an explicit byte request apply only after
          * source interpretation and linear-light alpha composition. */
-        cms_target_pixelformat = loader_cms_output_black() != NULL
-            ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-            : loader_cms_target_pixelformat();
         /* The setter keeps gamma in double until the final byte rounding.
          * An intermediate gamma float store could cross a half-byte tie. */
-        status = sixel_frame_set_pixelformat(frame, cms_target_pixelformat);
+        status = sixel_frame_set_pixelformat(frame,
+                                             loader_cms_target_pixelformat());
         if (SIXEL_FAILED(status)) {
             goto end;
         }

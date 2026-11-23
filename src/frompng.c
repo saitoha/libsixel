@@ -1514,7 +1514,6 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
     int converted;
     int background_converted;
     int linear;
-    int format;
     int target;
     unsigned char background8[3];
     uint16_t background16[3];
@@ -1522,7 +1521,6 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
     uint16_t *samples16;
     unsigned char *samples8;
     unsigned char *mask;
-    unsigned char *output;
     float *pixels;
     float *alpha_values;
     size_t count;
@@ -1750,23 +1748,26 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
                 }
             }
         }
-        output = samples8;
-        format = SIXEL_PIXELFORMAT_RGB888;
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                samples8, NULL, frame->width, frame->height,
+                SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_GAMMA, -1,
+                SIXEL_FRAME_PIXELS_U8
+            });
     } else {
-        output = (unsigned char *)pixels;
-        format = linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-                        : SIXEL_PIXELFORMAT_RGBFLOAT32;
+        status = sixel_frame_init_rgb_float(frame, pixels,
+            frame->width, frame->height,
+            linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA, -1);
     }
-    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-        sixel_frame_as_interface(frame),
-        &(sixel_frame_pixels_request_t){
-            output, NULL, frame->width, frame->height, format,
-            linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
-            -1, pixels != NULL ? SIXEL_FRAME_PIXELS_FLOAT32
-                               : SIXEL_FRAME_PIXELS_U8
-        });
     if (SIXEL_FAILED(status)) {
         goto cleanup;
+    }
+    if (converted && source.embedded_icc) {
+        frame->cms_history = SIXEL_FRAME_CMS_EMBEDDED_ICC;
+        if (output_black != NULL) {
+            frame->cms_history |= SIXEL_FRAME_CMS_OUTPUT_BPC;
+        }
     }
     if (pixels != NULL) {
         pixels = NULL;
@@ -1790,7 +1791,8 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
         }
         alpha_values = NULL;
     }
-    if (composition == NULL && output_black == NULL &&
+    if (composition == NULL &&
+        (frame->cms_history & SIXEL_FRAME_CMS_OUTPUT_BPC) == 0u &&
         (converted || source.transfer_mode == SIXEL_FROMPNG_TRANSFER_GAMA)) {
         target = loader_cms_target_pixelformat();
         /* The setter keeps gamma in double until the final byte rounding.

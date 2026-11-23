@@ -657,7 +657,7 @@ sixel_frame_resolve_alpha(sixel_frame_t *frame,
     if (frame->alpha == NULL) {
         return SIXEL_OK;
     }
-    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+    if (frame->format.layout != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
         frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1230,6 +1230,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
     clone->width = view.width;
     clone->height = view.height;
     clone->format = frame->format;
+    clone->cms_history = frame->cms_history;
     if (frame->format.rgb != NULL) {
         clone->format.rgb = sixel_cdef_clone(frame->format.rgb);
         if (clone->format.rgb == NULL) {
@@ -1397,6 +1398,7 @@ sixel_frame_new(
     (*ppframe)->height = 0;
     (*ppframe)->ncolors = (-1);
     (*ppframe)->palette_extent = 0;
+    (*ppframe)->cms_history = 0u;
     (*ppframe)->format.rgb = NULL;
     sixel_frame_assign_format(*ppframe, SIXEL_PIXELFORMAT_RGB888);
     (*ppframe)->delay = 0;
@@ -1620,6 +1622,7 @@ sixel_frame_init_common(
     frame->width = width;
     frame->height = height;
     sixel_frame_assign_format(frame, pixelformat);
+    frame->cms_history = 0u;
     sixel_frame_release_replaced_palette(frame, palette, old_palette_owned);
     frame->palette = palette;
     frame->owns_palette = owns_palette != 0 ? 1 : 0;
@@ -3491,8 +3494,10 @@ sixel_frame_resize_float32(
         goto end;
     }
 
-    if (target_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32
-        && target_pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+    if (frame->format.layout != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+        frame->format.coordinates == SIXEL_COLORSPACE_CIELAB ||
+        frame->format.coordinates == SIXEL_COLORSPACE_OKLAB ||
+        frame->format.coordinates == SIXEL_COLORSPACE_DIN99D) {
         sixel_helper_set_additional_message(
             "sixel_frame_resize_float32: "
             "resize expects RGB float32 input.");
@@ -3507,7 +3512,7 @@ sixel_frame_resize_float32(
     status = sixel_frame_validate_size("sixel_frame_resize_float32",
                                        width,
                                        height,
-                                       sixel_frame_format(frame),
+                                       frame->format.layout,
                                        &pixel_total,
                                        &size,
                                        &depth_bytes);
@@ -3551,7 +3556,7 @@ sixel_frame_resize_float32(
         frame->pixels.f32ptr,
         frame->width,
         frame->height,
-        sixel_frame_format(frame),
+        target_pixelformat,
         width,
         height,
         method_for_resampling,

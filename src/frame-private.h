@@ -39,6 +39,12 @@ struct sixel_frame_pixel_format {
     struct sixel_color_def *rgb;
 };
 
+/* Record source processing independently of the delivered coordinates. */
+enum {
+    SIXEL_FRAME_CMS_EMBEDDED_ICC = 1u,
+    SIXEL_FRAME_CMS_OUTPUT_BPC = 2u
+};
+
 /* Private frame object storage. Keep src/frame.h storage-opaque. */
 struct sixel_frame {
     sixel_frame_interface_t frame_interface; /* IFrame dispatch header */
@@ -60,6 +66,7 @@ struct sixel_frame {
     int palette_extent;             /* known entries retained by palette */
     int ncolors;                    /* palette colors */
     struct sixel_frame_pixel_format format;
+    unsigned int cms_history;
     /*
      * Timeline metadata can be updated by the loader while worker threads
      * sample or quantize shared frames. Keep these fields atomic so that
@@ -89,6 +96,21 @@ sixel_frame_format(sixel_frame_t const *frame);
 
 SIXEL_INTERNAL_API void
 sixel_frame_assign_format(sixel_frame_t *frame, int pixelformat);
+
+/* Adopt RGB float storage in the given standard sRGB coordinates. */
+static inline SIXELSTATUS
+sixel_frame_init_rgb_float(sixel_frame_t *frame, float *pixels,
+                            int width, int height, int coordinates,
+                            int ncolors)
+{
+    sixel_frame_interface_t *iface;
+
+    iface = sixel_frame_as_interface(frame);
+    return iface->vtbl->init_pixels(iface, &(sixel_frame_pixels_request_t){
+        pixels, NULL, width, height, SIXEL_PIXELFORMAT_RGBFLOAT32,
+        coordinates, ncolors, SIXEL_FRAME_PIXELS_FLOAT32
+    });
+}
 
 /* Compaction preserves the extent recorded for the RGBA allocation. */
 static inline void

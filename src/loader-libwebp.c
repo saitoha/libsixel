@@ -1137,18 +1137,8 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     sixel_allocator_free(allocator, frame->pixels.u8ptr);
     frame->pixels.u8ptr = NULL;
     frame->pixel_extent = 0u;
-    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-        sixel_frame_as_interface(frame),
-        &(sixel_frame_pixels_request_t){
-            dst,
-            NULL,
-            frame->width,
-            frame->height,
-            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-            SIXEL_COLORSPACE_LINEAR,
-            -1,
-            SIXEL_FRAME_PIXELS_FLOAT32
-        });
+    status = sixel_frame_init_rgb_float(frame, (float *)(void *)dst,
+        frame->width, frame->height, SIXEL_COLORSPACE_LINEAR, -1);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, dst);
     }
