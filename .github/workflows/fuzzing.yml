@@ -472,7 +472,9 @@ jobs:
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader-autodetect
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader-autodetect/${{ matrix.buildtool }}
-      FUZZ_BUILTIN_ARGS_BASE: ${{ format('-fork={0} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader-autodetect/{2}/', github.event_name == 'push' && '10' || '2', github.workspace, matrix.buildtool) }}
+      # Match the hosted Ubuntu CPU budget used by the per-format loader jobs
+      # to limit contention during libFuzzer's per-input wall-clock timeout.
+      FUZZ_BUILTIN_ARGS_BASE: ${{ format('-fork={0} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader-autodetect/{2}/', github.event_name == 'push' && '4' || '2', github.workspace, matrix.buildtool) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
