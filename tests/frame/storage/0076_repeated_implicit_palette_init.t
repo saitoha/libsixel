@@ -7,7 +7,7 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     frame/0014_clone_float_canonical repeated-implicit-palette-init || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP CPU timer unavailable'
+    echo 'ok 1 # SKIP CPU timer unavailable or too coarse'
     exit 0
 }
 test "$status" -ne 23 || {
