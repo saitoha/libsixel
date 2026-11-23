@@ -136,6 +136,21 @@ sixel_palette_prepare_output_definition(sixel_palette_t *palette,
     int source_colorspace, int output_definition, int output_colorspace,
     struct sixel_color_def const *definition);
 
+/* Publish the colors represented by a prepared ICC wire cache for lookup.
+ * Score RGB register candidates only in the generated entry range. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
+    int clustering, int palette_type, unsigned int first, unsigned int end);
+
+/* Copy preserved codes without forwarding already evaluated working colors. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_copy_output_cache(sixel_palette_t *destination,
+                                sixel_palette_t const *source);
+
+SIXEL_INTERNAL_API int
+sixel_palette_get_icc_source(sixel_palette_t const *palette,
+    unsigned char const **bytes, float const **floats);
+
 /* Borrow immutable wire codes until the next palette initialization. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_get_rgb101(sixel_palette_t const *palette,

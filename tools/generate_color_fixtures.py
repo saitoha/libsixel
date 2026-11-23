@@ -190,6 +190,19 @@ def pack_profile(tags, profile_class=b'mntr', space=b'RGB ',
     return bytes(header) + struct.pack('>I', len(tags)) + table + payload
 
 
+def affine_profile(black):
+    tags = []
+    for i, tag in enumerate((b'rXYZ', b'gXYZ', b'bXYZ')):
+        column = [v if i == row else D(0)
+                  for row, v in enumerate(D50)]
+        tags.append((tag, b'XYZ ' + bytes(4)
+                     + b''.join(map(fixed, column))))
+    curve = b'para' + bytes(4) + struct.pack('>HH7i',
+        4, 0, 65536, 65536 - black, black, 0, 0, 0, 0)
+    tags.extend((tag, curve) for tag in (b'rTRC', b'gTRC', b'bTRC'))
+    return pack_profile(tags, name='Affine relative black fixture')
+
+
 def gray_sample_oracles():
     """A D50-referred gray input profile with the exact kTRC y = x**2."""
     curve = b'para' + bytes(4) + struct.pack('>HH', 0, 0) + fixed(D(2))

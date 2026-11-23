@@ -351,6 +351,14 @@ test_cli_0036_color_wire(int argc, char **argv)
         }
         return cli_wire_bpc_indices(bpc, painted, indices);
     }
+    if ((strcmp(argv[1], "icc-register-nearest") == 0 &&
+            (!painted[0] || !painted[1] || indices[0] != 0 ||
+             indices[1] != 0)) ||
+        (strcmp(argv[1], "icc-register-fs") == 0 &&
+            (!painted[0] || !painted[1] || indices[0] != 0 ||
+             indices[1] != 1))) {
+        return cli_wire_error("ICC working palette paint-time indices");
+    }
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
             source = (y / color_cli_wire[specimen].scale) *
