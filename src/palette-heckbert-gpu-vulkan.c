@@ -425,4 +425,7 @@ end:
     (void)pthread_mutex_unlock(&heckbert_mutex);
     return status;
 }
+#else
+/* Meson also compiles this file when the Vulkan solver is disabled. */
+typedef int palette_heckbert_gpu_vulkan_disabled;
 #endif

@@ -6552,7 +6552,8 @@ SIXEL_OPENVMS_SRC_OBJECTS
 # invokes the nested "make test_runner".  Re-state the object list on one
 # physical line and add prerequisites after that value is visible, otherwise
 # the native linker sees only libsixel.la and reports NOMODS.
-test_runner_OBJECTS = $(am_test_runner_OBJECTS) $(nodist_test_runner_OBJECTS)
+# Keep all three Automake inventories, including separate distributed tests.
+test_runner_OBJECTS = $(am_test_runner_OBJECTS) $(dist_test_runner_OBJECTS) $(nodist_test_runner_OBJECTS)
 
 test_runner$(EXEEXT): $(test_runner_OBJECTS) \
         $(test_runner_DEPENDENCIES) \

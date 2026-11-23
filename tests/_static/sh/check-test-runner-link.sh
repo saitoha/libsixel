@@ -87,11 +87,17 @@ done
         END { if (!found) exit 1 }' "$src_root/tests/Makefile.am"
     cat <<'MAKE'
 am_test_runner_OBJECTS = runner.o
+dist_test_runner_OBJECTS = standalone.o
+nodist_test_runner_OBJECTS = generated.o
 libfloatlookuptests_la_OBJECTS = first-lookup.lo second-lookup.lo
 test_runner_DEPENDENCIES =
 test_runner:
 	@test "$(FAIL_LINK)" != yes
+	@test "$(test_runner_OBJECTS)" = "runner.o standalone.o generated.o"
+	@test -f standalone.o
 	@for object in $(libfloatlookuptests_la_OBJECTS); do test -f $$object || exit 1; done
+	@touch $@
+standalone.o generated.o:
 	@touch $@
 $(libfloatlookuptests_la_OBJECTS):
 	@test "$(FAIL_PREREQUISITE)" != yes
