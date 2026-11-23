@@ -229,7 +229,8 @@ double
 sixel_icc_xy_area(double const a[2], double const b[2], double const p[2])
 {
     double const *v[3] = {a, b, p};
-    double terms[12], expansion[12];
+    double terms[12];
+    double expansion[12] = {0.0};
     double carry, term, rounded, residual;
     int i, j, n, used;
 
@@ -237,7 +238,7 @@ sixel_icc_xy_area(double const a[2], double const b[2], double const p[2])
         j = i / 2;
         terms[2 * i] = terms[2 * i + 1] = 0.0;
         sixel_icc_add_product(&terms[2 * i], &terms[2 * i + 1],
-            i % 2 ? -v[j][1] : v[j][0], v[(j + 1) % 3][1 - i % 2]);
+            (i % 2) ? -v[j][1] : v[j][0], v[(j + 1) % 3][1 - i % 2]);
     }
     used = 0;
     for (i = 0; i < 12; ++i) {

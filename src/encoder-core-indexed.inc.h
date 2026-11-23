@@ -385,7 +385,7 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
     request.keycolor = desc->keycolor;
     request.registers = core->gpu_registers;
     request.selectors = ncolors != 2 || desc->keycolor == -1 ||
-        body->keycolor_reserved;
+        body->emit_keyed_palette;
     request.limited = body->has_gri_arg_limit;
     data = sixel_body_webgpu_spell(&request, &length, &gpu_ms);
     if (data == NULL) {

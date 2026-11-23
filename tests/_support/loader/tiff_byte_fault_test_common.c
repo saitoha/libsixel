@@ -261,6 +261,7 @@ bf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define sixel_cdef_from_xyz bf_local_16
 #define sixel_cdef_icc bf_local_17
 #define sixel_cdef_matrix bf_local_18
+#define sixel_cdef_matrix_xyz bf_local_matrix_xyz
 #define sixel_cdef_name bf_local_19
 #define sixel_cdef_named_name bf_local_19_identity
 #define sixel_named_colors bf_local_19_registry
@@ -272,6 +273,7 @@ bf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define sixel_cdef_rgb bf_local_23
 #define sixel_cdef_to_xyz bf_local_24
 #define sixel_cdef_frame_sample bf_local_24_frame
+#define sixel_cdef_frame_result bf_local_frame_result
 #define sixel_cms_allocate_profile bf_local_25
 #define sixel_cms_apply_backend bf_local_26
 #define sixel_cms_apply_matrix3 bf_local_27
@@ -698,6 +700,7 @@ bf_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cdef_free
 #undef sixel_cdef_from_xyz
 #undef sixel_cdef_icc
+#undef sixel_cdef_matrix_xyz
 #undef sixel_cdef_matrix
 #undef sixel_cdef_name
 #undef sixel_cdef_named_name
@@ -708,6 +711,7 @@ bf_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cdef_parse
 #undef sixel_cdef_pcs_scale
 #undef sixel_cdef_rgb
+#undef sixel_cdef_frame_result
 #undef sixel_cdef_frame_sample
 #undef sixel_cdef_to_xyz
 #undef sixel_cms_allocate_profile
