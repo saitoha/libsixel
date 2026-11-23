@@ -812,6 +812,7 @@ png_convert_rgb16_rows_to_rgbfloat32(unsigned char      /* out */ **result,
 typedef struct sixel_png_alpha {
     float *values;
     unsigned char *mask;
+    size_t pixel_extent;
     double background[3];
     int has_background;
     int defer_composition;
@@ -1221,6 +1222,8 @@ load_png(unsigned char      /* out */ **result,
                         packed_pixels[pixel_index * 4u + (size_t)channel];
                 }
             }
+            /* The frame adopts the original RGBA allocation. */
+            alpha_state->pixel_extent = (size_t)rowbytes * height;
             *result = raw16_pixels;
             raw16_pixels = NULL;
             *pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -3474,6 +3477,7 @@ load_with_libpng(
     }
     frame->alpha_zero_is_transparent = alpha_zero_is_transparent != 0 ? 1 : 0;
     pixels = NULL;
+    frame->pixel_extent = alpha_state.pixel_extent;
     if (alpha_state.mask != NULL) {
         pixel_count = (size_t)frame->width * (size_t)frame->height;
         frame->transparent_mask = alpha_state.mask;

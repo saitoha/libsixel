@@ -408,6 +408,30 @@ sixel_rgb_read16(unsigned char const *data)
 }
 
 
+void
+sixel_pixelformat_swap_packed_rb(unsigned char *dst, unsigned char const *src,
+                                size_t bytes, int shift)
+{
+    unsigned int word, exchanged;
+    size_t i;
+
+    for (i = 0; i < bytes; i += 2u) {
+        word = sixel_rgb_read16(src + i);
+        /* XOR only the two five-bit fields. Preserve green and the unused
+         * bit in 555, including when source and destination alias. */
+        exchanged = ((word >> shift) ^ word) & 0x1fu;
+        word ^= exchanged | (exchanged << shift);
+#if SWAP_BYTES
+        dst[i] = (unsigned char)word;
+        dst[i + 1u] = (unsigned char)(word >> 8);
+#else
+        dst[i] = (unsigned char)(word >> 8);
+        dst[i + 1u] = (unsigned char)word;
+#endif
+    }
+}
+
+
 static void
 sixel_rgb_from_rgb555(unsigned char const *data,
                       unsigned char *r,

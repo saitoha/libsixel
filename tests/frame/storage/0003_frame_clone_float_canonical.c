@@ -1221,6 +1221,155 @@ test_tga_storage(void)
     return result;
 }
 
+/* The second pixel is transparent. libpng compacts an eight-byte RGBA
+ * allocation to six RGB bytes and retains a separate two-byte mask. */
+static SIXELSTATUS
+check_png_storage(sixel_frame_t *frame, void *context)
+{
+    unsigned char const expected[] = {255, 0, 0, 0, 255, 0};
+    sixel_frame_interface_t *iface = sixel_frame_as_interface(frame);
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t coverage;
+    size_t bytes;
+
+    if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.width != 2 || view.height != 1 || view.pixels == NULL ||
+        view.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        memcmp(view.pixels, expected, sizeof(expected)) != 0 ||
+        SIXEL_FAILED(iface->vtbl->get_transparency(iface, &coverage)) ||
+        coverage.transparent_mask_size != 2u ||
+        coverage.transparent_mask == NULL ||
+        coverage.transparent_mask[0] != 0u ||
+        coverage.transparent_mask[1] != 1u ||
+        SIXEL_FAILED(iface->vtbl->measure_storage(iface, &bytes)) ||
+        bytes != 10u) {
+        return SIXEL_BAD_INPUT;
+    }
+    ++*(int *)context;
+    return SIXEL_OK;
+}
+
+static int
+test_png_storage(void)
+{
+    static unsigned char const wire[] = {
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00,
+        0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x02,
+        0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0xf4,
+        0x22, 0x7f, 0x8a, 0x00, 0x00, 0x00, 0x0f, 0x49, 0x44, 0x41,
+        0x54, 0x78, 0x9c, 0x63, 0xf8, 0xcf, 0xc0, 0xf0, 0x1f, 0x08,
+        0x19, 0x00, 0x0f, 0xf9, 0x02, 0xfe, 0x2d, 0x47, 0x81, 0xf4,
+        0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42,
+        0x60, 0x82,
+    };
+    sixel_allocator_t *allocator = NULL;
+    sixel_loader_t *loader = NULL;
+    sixel_chunk_t *chunk = NULL;
+    int calls = 0;
+    int result = EXIT_FAILURE;
+
+    if (SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
+            NULL)) &&
+        SIXEL_SUCCEEDED(sixel_loader_new(&loader, allocator)) &&
+        SIXEL_SUCCEEDED(sixel_chunk_create_from_memory(&chunk, wire,
+            sizeof(wire), NULL, allocator)) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_LOADER_ORDER, "libpng!")) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_CONTEXT, &calls)) &&
+        SIXEL_SUCCEEDED(sixel_loader_load_chunk(loader, chunk,
+            check_png_storage)) && calls == 1) {
+        result = EXIT_SUCCESS;
+    }
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    sixel_loader_unref(loader);
+    sixel_allocator_unref(allocator);
+    return result;
+}
+
+static int
+test_set_dimension_storage(int height)
+{
+    unsigned char *pixels = calloc(6u, 1u);
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface, *clone = NULL;
+    size_t bytes;
+    int result = EXIT_FAILURE;
+
+    if (pixels == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init(frame, pixels, height ? 1 : 2,
+            height ? 2 : 1, SIXEL_PIXELFORMAT_RGB888, NULL, -1))) {
+        goto end;
+    }
+    pixels = NULL;
+    iface = sixel_frame_as_interface(frame);
+    if (height) {
+        sixel_frame_set_height(frame, 1);
+    } else {
+        sixel_frame_set_width(frame, 1);
+    }
+    if (sixel_frame_get_width(frame) == 1 &&
+        sixel_frame_get_height(frame) == 1 &&
+        SIXEL_SUCCEEDED(iface->vtbl->measure_storage(iface, &bytes)) &&
+        bytes == 6u && SIXEL_SUCCEEDED(iface->vtbl->clone(iface, NULL,
+            &clone)) &&
+        SIXEL_SUCCEEDED(clone->vtbl->measure_storage(clone, &bytes)) &&
+        bytes == 3u) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    if (clone != NULL) {
+        clone->vtbl->unref(clone);
+    }
+    sixel_frame_unref(frame);
+    free(pixels);
+    return result;
+}
+
+static int
+test_packed_rgb_swap(int bits)
+{
+    /* Red (31), green (21), blue (3), followed by full blue. */
+    unsigned char input[] = {0xfa, 0xa3, 0, 0x1f};
+    unsigned char swapped[] = {0x1a, 0xbf, 0xf8, 0};
+    unsigned char const rgb[] = {248, bits == 565 ? 84 : 168, 24,
+                                 0, 0, 248};
+    int source = bits == 565 ? SIXEL_PIXELFORMAT_RGB565
+                             : SIXEL_PIXELFORMAT_RGB555;
+    int target = bits == 565 ? SIXEL_PIXELFORMAT_BGR565
+                             : SIXEL_PIXELFORMAT_BGR555;
+    sixel_frame_t *frame = NULL;
+    unsigned char original[sizeof(input)];
+    int result = EXIT_FAILURE;
+
+    if (bits == 555) {
+        input[0] = 0x7e;
+        swapped[0] = 0x0e;
+        swapped[2] = 0x7c;
+    }
+    memcpy(original, input, sizeof(input));
+    if (SIXEL_SUCCEEDED(sixel_frame_new(&frame, NULL)) &&
+        SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 2, 1,
+            source, NULL, -1)) &&
+        SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame, target)) &&
+        sixel_frame_get_pixelformat(frame) == target &&
+        memcmp(input, original, sizeof(input)) == 0 &&
+        memcmp(sixel_frame_get_pixels(frame), swapped, sizeof(swapped)) == 0 &&
+        SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame, source)) &&
+        memcmp(sixel_frame_get_pixels(frame), original, sizeof(original))
+            == 0 &&
+        SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame, target)) &&
+        SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+            SIXEL_PIXELFORMAT_RGB888)) &&
+        memcmp(sixel_frame_get_pixels(frame), rgb, sizeof(rgb)) == 0) {
+        result = EXIT_SUCCESS;
+    }
+    sixel_frame_unref(frame);
+    return result;
+}
+
 static int
 test_strip_storage(int format, unsigned char *background)
 {
@@ -1884,6 +2033,24 @@ test_frame_0014_clone_float(int argc, char **argv)
     }
     if (argc == 2 && strcmp(argv[1], "palette-recount") == 0) {
         return test_palette_recount(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "saturation-matrix") == 0) {
+        return icc_numeric_frame_saturation_matrix_test();
+    }
+    if (argc == 2 && strcmp(argv[1], "rgb565-swap") == 0) {
+        return test_packed_rgb_swap(565);
+    }
+    if (argc == 2 && strcmp(argv[1], "rgb555-swap") == 0) {
+        return test_packed_rgb_swap(555);
+    }
+    if (argc == 2 && strcmp(argv[1], "png-storage") == 0) {
+        return test_png_storage();
+    }
+    if (argc == 2 && strcmp(argv[1], "width-storage") == 0) {
+        return test_set_dimension_storage(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "height-storage") == 0) {
+        return test_set_dimension_storage(1);
     }
     if (argc == 2 && strcmp(argv[1], "profiled-range") == 0) {
         return icc_numeric_frame_storage_fallback_test();
