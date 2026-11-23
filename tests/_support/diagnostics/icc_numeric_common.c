@@ -3467,18 +3467,20 @@ icc_numeric_owned_mpet_matrix_fallback_test(int reverse)
 }
 
 int
-icc_numeric_gray_saturation_trc_test(void)
+icc_numeric_gray_intent_trc_test(int perceptual)
 {
-    /* Linear kTRC, D50 white, and an independent saturation A2B2.
+    /* Linear kTRC, D50 white, and an independent forward LUT.
      * The LUT maps every component to zero; relative must use kTRC. */
     static double const relative[] = {0.5, 0.5, 0.5};
     static double const black[] = {0, 0, 0};
     unsigned char bytes[280] = {0};
     unsigned char *lut;
     sixel_cms_profile_t *source, *target;
+    sixel_cms_transform_t *transform;
+    sixel_cms_status_t status;
     sixel_cms_engine_t previous;
     float input = 0.5f, output[3];
-    int ok;
+    int result;
 
     iccn_be32(bytes, sizeof(bytes));
     bytes[8] = 4;
@@ -3494,7 +3496,7 @@ icc_numeric_gray_saturation_trc_test(void)
     memcpy(bytes + 144u, "kTRC", 4u);
     iccn_be32(bytes + 148u, 188u);
     iccn_be32(bytes + 152u, 12u);
-    memcpy(bytes + 156u, "A2B2", 4u);
+    memcpy(bytes + 156u, perceptual ? "A2B0" : "A2B2", 4u);
     iccn_be32(bytes + 160u, 200u);
     iccn_be32(bytes + 164u, 80u);
     memcpy(bytes + 168u, "XYZ ", 4u);
@@ -3514,16 +3516,33 @@ icc_numeric_gray_saturation_trc_test(void)
     sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
     source = sixel_cms_open_profile_from_mem(bytes, sizeof(bytes));
     target = sixel_cms_create_linear_srgb_profile();
-    ok = iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_GRAY_F32,
-            target, SIXEL_CMS_PIXELFORMAT_RGB_F32, "relative!",
-            &input, output, 1u) && iccn_float_result(output, relative, 3u) &&
-        iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_GRAY_F32,
-            target, SIXEL_CMS_PIXELFORMAT_RGB_F32, "saturation!",
-            &input, output, 1u) && iccn_float_result(output, black, 3u);
+    /* Confirm the LUT works in its own intent before classifying a failure
+     * of the independent relative path. */
+    result = 2;
+    if (iccn_transform_pixels(source, SIXEL_CMS_PIXELFORMAT_GRAY_F32,
+            target, SIXEL_CMS_PIXELFORMAT_RGB_F32,
+            perceptual ? "perceptual!" : "saturation!",
+            &input, output, 1u) && iccn_float_result(output, black, 3u) &&
+            sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT",
+                                "relative!") == 0) {
+        transform = sixel_cms_create_transform(source,
+            SIXEL_CMS_PIXELFORMAT_GRAY_F32, target,
+            SIXEL_CMS_PIXELFORMAT_RGB_F32, SIXEL_CMS_TRANSFORM_DEFAULT);
+        if (transform != NULL) {
+            if (sixel_cms_do_transform_ex(transform, &input, output, 1u,
+                                         &status)) {
+                result = iccn_float_result(output, relative, 3u) ? 0 : 2;
+            } else if (status == SIXEL_CMS_STATUS_EVALUATION_FAILED) {
+                result = 1;
+            }
+            sixel_cms_delete_transform(transform);
+        }
+        (void)sixel_compat_setenv("SIXEL_LOADER_CMS_RENDERING_INTENT", "");
+    }
     sixel_cms_close_profile(target);
     sixel_cms_close_profile(source);
     sixel_cms_set_engine(previous);
-    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+    return result;
 }
 
 int

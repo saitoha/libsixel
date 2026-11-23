@@ -1119,7 +1119,8 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
     }
 
     pixel_bytes = frame->pixel_extent;
-    entries = sixel_frame_palette_entries(frame);
+    entries = view.ncolors == -1 && frame->palette_extent > 0
+        ? frame->palette_extent : sixel_frame_palette_entries(frame);
     if (view.palette != NULL && entries > 0) {
         if (entries > SIXEL_PALETTE_MAX) {
             return SIXEL_BAD_INPUT;
@@ -1607,11 +1608,12 @@ sixel_frame_init_common(
         sixel_frame_release_replaced_pixels(frame, pixels, old_pixels_owned);
         frame->pixels.u8ptr = (unsigned char *)pixels;
     }
-    /* An owned buffer keeps its recorded size on same-pointer adoption.
-     * A new borrow declares its readable extent on every initialization. */
+    /* Retain an already owned allocation on same-pointer initialization.
+     * A borrow declares a view; adoption records the transferred extent. */
     if (pixels == NULL) {
         frame->pixel_extent = 0u;
-    } else if (!owns_pixels || frame->pixel_extent == 0u) {
+    } else if (!owns_pixels || !old_pixels_owned ||
+               frame->pixel_extent == 0u) {
         frame->pixel_extent = pixel_bytes;
     }
     frame->owns_pixels = owns_pixels != 0 ? 1 : 0;
@@ -1622,6 +1624,11 @@ sixel_frame_init_common(
     frame->palette = palette;
     frame->owns_palette = owns_palette != 0 ? 1 : 0;
     sixel_frame_set_ncolors(frame, ncolors);
+    if (ncolors == -1 && palette != NULL) {
+        /* The initial indices bound the implicit palette. Later logical
+         * dimensions can hide entries without releasing their storage. */
+        frame->palette_extent = sixel_frame_palette_entries(frame);
+    }
     frame->alpha_zero_is_transparent = 0;
     if (frame->transparent_mask != NULL) {
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
@@ -2081,8 +2088,14 @@ sixel_frame_pack_rgb(sixel_frame_t *frame, int target, int dst_shift)
             return SIXEL_BAD_ALLOCATION;
         }
     }
-    sixel_pixelformat_pack_rgb(pixels, frame->pixels.u8ptr, bytes / 2u,
-                               source, target, src_shift, dst_shift);
+    /* Keep the contiguous exchange loop for the same-width fast path. */
+    if (src_shift == dst_shift) {
+        sixel_pixelformat_swap_packed_rb(pixels, frame->pixels.u8ptr,
+                                        bytes, dst_shift);
+    } else {
+        sixel_pixelformat_pack_rgb(pixels, frame->pixels.u8ptr, bytes / 2u,
+                                   source, target, src_shift, dst_shift);
+    }
     if (!frame->owns_pixels) {
         sixel_frame_release_owned_pixels(frame);
         frame->pixels.u8ptr = pixels;

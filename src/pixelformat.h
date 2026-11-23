@@ -88,7 +88,12 @@ sixel_pixelformat_buffer_bytes(int width, int height, int pixelformat,
 int
 sixel_pixelformat_packed_rgb_shift(int format);
 
-/* Pack RGB888/BGR888 or packed RGB. Input and output may alias. */
+/* Swap the five-bit red and blue fields in packed 555 or 565 pixels. */
+void
+sixel_pixelformat_swap_packed_rb(unsigned char *dst, unsigned char const *src,
+                                size_t bytes, int shift);
+
+/* Pack RGB888/BGR888 or change the packed field widths. Buffers may alias. */
 void
 sixel_pixelformat_pack_rgb(unsigned char *dst, unsigned char const *src,
                           size_t count, int source, int target,

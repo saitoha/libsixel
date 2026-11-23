@@ -239,6 +239,8 @@ set -- \
     frame/storage/0068_packed_rgb_reject.t \
     frame/storage/0069_reshape_storage.t \
     frame/storage/0070_icc_gray_saturation_trc.t \
+    frame/storage/0071_borrowed_adoption_storage.t \
+    frame/storage/0072_implicit_palette_storage.t \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \
