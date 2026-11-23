@@ -13,6 +13,7 @@ set -v
 
 status=0
 SIXEL_PALETTE_TARGET=output SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
+    SIXEL_TRACE_TOPIC=dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/icc_output/0001_icc_output output-target fs \
     "${TOP_SRCDIR}/tests/data/color-numeric" || status=$?

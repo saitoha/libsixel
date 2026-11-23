@@ -15,7 +15,7 @@ test "$status" -ne 77 || {
     exit 0
 }
 test "$status" -ne 42 || {
-    echo 'not ok 1 - builtin drops ICC history from both APNG frames # TODO known result'
+    echo 'not ok 1 - builtin drops ICC history across two APNG plays # TODO known result'
     exit 0
 }
 test "$status" -ne 0 || {
