@@ -170,11 +170,8 @@ check_clip(sixel_frame_t *frame, pixel_fixture_t const *fixture,
             sixel_frame_get_ncolors(frame) != palette_size(fixture)) {
         return 1;
     }
-    /* In both releases a packed gray crop exposes unscaled codes tagged
-     * as G8. Also allow a consistent full-range G8 representation so that a
-     * brightness correction will not have to preserve the legacy defect. */
-    if (!historical && packed && format == SIXEL_PIXELFORMAT_G8 &&
-            pixels[0] != fixture->normalized[1][0]) {
+    /* Released libraries returned raw packed codes tagged G8. */
+    if (!historical && packed && format == SIXEL_PIXELFORMAT_G8) {
         gray_scale = 255 / ((1 << fixture->bits_per_pixel) - 1);
     }
     for (y = 0; y < 3; ++y) {
@@ -193,6 +190,48 @@ check_clip(sixel_frame_t *frame, pixel_fixture_t const *fixture,
         }
     }
     return 0;
+}
+
+
+/* A row starts with one excluded sample and continues through every gray
+ * level. Cropping the second row also checks the packed source stride. */
+static int
+check_gray_ramp(pixel_fixture_t const *fixture, int historical)
+{
+    sixel_frame_t *frame = NULL;
+    unsigned char *pixels;
+    unsigned char const *actual;
+    int bits = fixture->bits_per_pixel;
+    int levels = 1 << bits;
+    int width = levels + 1;
+    int stride = (width * bits + 7) / 8;
+    int x;
+    int failed = 1;
+
+    if (sixel_frame_new(&frame, NULL) != SIXEL_OK) {
+        return 1;
+    }
+    pixels = calloc(2, (size_t)stride);
+    if (pixels != NULL) {
+        for (x = 1; x < width; ++x) {
+            pixels[stride + x * bits / 8] |=
+                (unsigned char)((x - 1) << (8 - bits - x * bits % 8));
+        }
+        if (sixel_frame_init(frame, pixels, width, 2, fixture->format,
+                             NULL, -1) == SIXEL_OK &&
+                sixel_frame_clip(frame, 1, 1, levels, 1) == SIXEL_OK &&
+                sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_G8 &&
+                sixel_frame_get_width(frame) == levels &&
+                sixel_frame_get_height(frame) == 1) {
+            actual = sixel_frame_get_pixels(frame);
+            failed = actual == NULL;
+            for (x = 0; !failed && x < levels; ++x) {
+                failed = actual[x] != (historical ? x : x * 255 / (levels - 1));
+            }
+        }
+    }
+    sixel_frame_unref(frame);
+    return failed;
 }
 
 
@@ -539,6 +578,10 @@ check_fixtures(char const *case_name, char const *path, int historical)
             observation = check_dither(fixture);
         } else {
             observation = check_encode_bytes(fixture, path, historical);
+        }
+        if (observation == probe_pass && strcmp(case_name, "clip") == 0 &&
+                fixture->bits_per_pixel < 8 && palette_size(fixture) < 0) {
+            observation = check_gray_ramp(fixture, historical);
         }
         if (observation != probe_pass) {
             fprintf(stderr, "FAIL %s %s\n", case_name, fixture->name);

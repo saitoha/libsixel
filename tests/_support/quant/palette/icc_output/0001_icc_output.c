@@ -444,13 +444,161 @@ end:
     return ok;
 }
 
+/* Distinguish the exact legacy result (42) from a fixed target (0).
+ * A decoder error or any third result is a real failure. */
+static int
+icco_output_target(int cluster, char const *data)
+{
+    static unsigned char const old_cluster[] = {0, 161, 161};
+    static unsigned char const new_cluster[] = {64, 64, 204};
+    static unsigned char const low[] = {148, 43, 8, 255};
+    static unsigned char const high[] = {163, 48, 8, 255};
+    float samples[9];
+    sixel_encoder_t *encoder = NULL;
+    sixel_output_t *output = NULL;
+    sixel_frame_t *frame = NULL;
+    unsigned char *decoded = NULL;
+    char arg[4096];
+    int width, height, c, i;
+    int known, desired;
+    int result = 1;
+
+    icco_size = 0;
+    if (strlen(data) > sizeof(arg) - 64 ||
+            SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
+            SIXEL_FAILED(sixel_output_new(&output, icco_write, NULL, NULL)) ||
+            SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+            sixel_encoder_setopt(encoder, 'X', "linear") ||
+            sixel_encoder_setopt(encoder, 'W', "linear") ||
+            sixel_encoder_setopt(encoder, 'F', "none") ||
+            sixel_encoder_setopt(encoder, '_', "none") ||
+            sixel_encoder_setopt(encoder, '0', "none") ||
+            sixel_encoder_setopt(encoder, 't', "rgb") ||
+            sixel_encoder_setopt(encoder, 'd',
+                                 cluster ? "none" : "fs:scan=raster")) {
+        goto end;
+    }
+    if (cluster) {
+        /* In linear -X, (-.8, .1, .6) clusters into (-.8, .35).
+         * Clipping to the sRGB gamut first yields (.05, .6).
+         * Apply the sRGB transfer and round to whole device percentages. */
+        if (sixel_encoder_setopt(encoder, 'a', "off") ||
+                sixel_encoder_setopt(encoder, '4', "full-frame") ||
+                sixel_encoder_setopt(encoder, '5', "none") ||
+                sixel_encoder_setopt(encoder, 'U', "gamma") ||
+                sixel_encoder_setopt(encoder, 'Q', "kmeans:seed=1") ||
+                sixel_encoder_setopt(encoder, 'p', "2")) {
+            goto end;
+        }
+        for (c = 0; c < 3; ++c) {
+            samples[c] = -0.8f;
+            samples[3 + c] = 0.1f;
+            samples[6 + c] = 0.6f;
+        }
+    } else {
+        /* B2A red = y; A2B gray = (1 + red)/2. Targets .800 and
+         * .802 bracket the .805 decision after .010 * 7/16 carry.
+         * Rounding .604 to .60 before A2B would miss the boundary. */
+        snprintf(arg, sizeof(arg), "icc:P%s/register-feedback-lut.icc", data);
+        if (sixel_encoder_setopt(encoder, 'U', arg)) {
+            goto end;
+        }
+        snprintf(arg, sizeof(arg), "gpl:%s/icc-register-fixed.gpl", data);
+        if (sixel_encoder_setopt(encoder, 'm', arg)) {
+            goto end;
+        }
+        for (c = 0; c < 3; ++c) {
+            samples[c] = 0.600f;
+            samples[3 + c] = 0.604f;
+        }
+    }
+    if (sixel_frame_init_borrowed(frame, samples, cluster ? 3 : 2, 1,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1) ||
+            sixel_encoder_encode_frame(encoder, frame, output) ||
+            sixel_decode_direct(icco_bytes, (int)icco_size, &decoded,
+                &width, &height, NULL) || width != (cluster ? 3 : 2) ||
+            height != 1) {
+        goto end;
+    }
+    if (cluster) {
+        known = desired = 1;
+        for (i = 0; i < width; ++i) {
+            for (c = 0; c < 3; ++c) {
+                known &= decoded[i * 4 + c] == old_cluster[i];
+                desired &= decoded[i * 4 + c] == new_cluster[i];
+            }
+            known &= decoded[i * 4 + 3] == 255;
+            desired &= decoded[i * 4 + 3] == 255;
+        }
+    } else {
+        known = !memcmp(decoded, low, 4) && !memcmp(decoded + 4, low, 4);
+        desired = !memcmp(decoded, low, 4) && !memcmp(decoded + 4, high, 4);
+    }
+    result = desired ? 0 : known ? 42 : 1;
+    if (result == 1) {
+        fprintf(stderr, "Unexpected target pixels:");
+        for (i = 0; i < width * 4; ++i) {
+            fprintf(stderr, " %u", decoded[i]);
+        }
+        fprintf(stderr, "\n");
+    }
+end:
+    if (result == 1) {
+        fprintf(stderr, "target fixture: %s\n",
+                sixel_helper_get_additional_message());
+    }
+    free(decoded);
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return result;
+}
+
+/* Observe explicit FS on a generated two-color palette. A writer may omit
+ * an unused register when both target pixels resolve to the same color. */
+static int
+icco_exact_target(char *trace)
+{
+    static unsigned char const low[] = {128, 128, 128, 255};
+    static unsigned char const high[] = {130, 130, 130, 255};
+    unsigned char *pixels = NULL;
+    char *dcs;
+    char *end;
+    int width, height;
+    int result = 1;
+
+    dcs = strstr(trace, "\033P");
+    end = dcs == NULL ? NULL : strstr(dcs, "\033\\");
+    if (end != NULL && strstr(dcs, ";2;50;50;50") != NULL &&
+            !sixel_decode_direct((unsigned char *)dcs, (int)(end - dcs + 2),
+                &pixels, &width, &height, NULL) && width == 2 && height == 1 &&
+            memcmp(pixels, low, 4) == 0) {
+        if (strstr(trace, "LSXDTH1|rc=0|diffuse=fs|") != NULL &&
+                memcmp(pixels + 4, low, 4) == 0) {
+            result = 0;
+        } else if (strstr(trace, "LSXDTH1|rc=0|diffuse=none|") != NULL &&
+                strstr(dcs, ";2;51;51;51") != NULL &&
+                memcmp(pixels + 4, high, 4) == 0) {
+            result = 42;
+        }
+    }
+    free(pixels);
+    return result;
+}
+
 int
 test_icc_output(int argc, char **argv)
 {
     int mode;
 
+    if (argc == 3 && strcmp(argv[1], "exact-target") == 0) {
+        return icco_exact_target(argv[2]);
+    }
     if (argc != 4) {
         return 1;
+    }
+    if (strcmp(argv[1], "output-target") == 0) {
+        return icco_output_target(strcmp(argv[2], "cluster") == 0, argv[3]);
     }
     mode = atoi(argv[2]);
     if (strcmp(argv[1], "register-feedback") == 0) {

@@ -522,6 +522,8 @@ int test_icc_0124(int argc, char **argv);
 int test_icc_0125(int argc, char **argv);
 int test_icc_0126(int argc, char **argv);
 int test_icc_0127(int argc, char **argv);
+int test_latest_icc_feedback(int argc, char **argv);
+int test_icc_red_alpha(int argc, char **argv);
 int test_icc_png_extended_trc(int argc, char **argv);
 int test_icc_0128(int argc, char **argv);
 int test_icc_0129(int argc, char **argv);
@@ -10705,6 +10707,8 @@ static test_entry_t const test_entries[] = {
     { "icc/0132_mpet_simplex_weight_residual", test_icc_0132 },
     { "icc/0133_mpet_nonrelative_snap", test_icc_0133 },
     { "icc/0134_mpet_nonrelative_gamut", test_icc_0134 },
+    { "icc/latest_feedback", test_latest_icc_feedback },
+    { "icc/red_alpha", test_icc_red_alpha },
     { "icc/png_extended_trc", test_icc_png_extended_trc },
     { "colorspace/0004_extended_srgb_decode", test_color_0004 },
     { "colorspace/0005_extended_srgb_encode", test_color_0005 },

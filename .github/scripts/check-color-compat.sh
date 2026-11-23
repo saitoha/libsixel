@@ -50,6 +50,24 @@ if test -n "$original"; then
     check_release "$original" "$build/original" 1.8.7
 fi
 
+check_results()
+{
+    expected=$1
+    # The second argument contains only the repository paths listed here.
+    for test_name in $2; do
+        awk -v expected="$expected" '
+            $1 == ":test-result:" { observations++; if ($2 != expected) bad = 1 }
+            $1 == ":global-test-result:" { summaries++; if ($2 != expected) bad = 1 }
+            END {
+                if (observations == 0 || summaries != 1 || bad) {
+                    print "Required " expected " result missing: " FILENAME
+                    exit 1
+                }
+            }
+        ' "tests/${test_name%.t}.trs"
+    done
+}
+
 # Name each mandatory observation so deleting or skipping one fails this job.
 set -- \
     dither/fs-gpu/0016_auto_keep_playback.t \
@@ -267,6 +285,7 @@ set -- \
     palette/output-diffusion/0123_icc_lut_register_fs.t \
     palette/output-diffusion/0124_icc_hls_register_fs.t \
     palette/output-diffusion/0125_icc_fixed_playback_register_fs.t \
+    palette/output-diffusion/0126_latest_generated_icc_feedback.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \
     palette/working-space/0147_cli_cluster_linear_centroid.t \
@@ -275,17 +294,21 @@ set -- \
     palette/working-space/0150_cli_work_gamma_fs.t \
     palette/working-space/0151_cli_work_linear_fs.t \
     palette/working-space/0152_oklab_cluster_linear_fs_rgb.t \
-    palette/working-space/0153_oklab_cluster_linear_fs_xyz.t
-make -j"$jobs" -C tests check TESTS="$*"
-for test_name do
-    awk '
-        $1 == ":test-result:" { observations++; if ($2 != "PASS") bad = 1 }
-        $1 == ":global-test-result:" { summaries++; if ($2 != "PASS") bad = 1 }
-        END {
-            if (observations == 0 || summaries != 1 || bad) {
-                print "Required test did not pass: " FILENAME
-                exit 1
-            }
-        }
-    ' "tests/${test_name%.t}.trs"
-done
+    palette/working-space/0153_oklab_cluster_linear_fs_xyz.t \
+    palette/working-space/0154_worker_oklab_linear_fs_rgb.t \
+    palette/working-space/0155_worker_oklab_linear_fs_xyz.t
+
+# Only the precise observed legacy behavior is an expected failure. Promote
+# each witness to the PASS group when its corresponding work is complete.
+required_pass="$*"
+set -- \
+    color/icc/0137_builtin_apng_frame_history.t \
+    color/icc/0138_libpng_apng_frame_history.t \
+    loader/webp/0176_lossless_icc_alpha_extended.t \
+    palette/output-color/0200_continuous_output_target_cluster.t \
+    palette/output-diffusion/0127_continuous_output_target_fs.t \
+    palette/output-diffusion/0128_generated_output_target_skip.t
+# A single invocation keeps every .trs and the combined suite report.
+make -j"$jobs" -C tests check TESTS="$required_pass $*"
+check_results PASS "$required_pass"
+check_results XFAIL "$*"
