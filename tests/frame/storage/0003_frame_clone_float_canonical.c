@@ -1611,7 +1611,9 @@ static int
 test_repeated_implicit_palette_init(void)
 {
     enum { WIDTH = 1024, HEIGHT = 1024, REPETITIONS = 24 };
+    enum { TIMER_PROBES = 16384 };
     int const counts[] = {16, -1};
+    double const timing_margin = 0.002;
     unsigned char palette[16 * 3] = {0};
     unsigned char *indices = calloc(WIDTH * HEIGHT, 1u);
     sixel_frame_t *frame = NULL;
@@ -1621,6 +1623,19 @@ test_repeated_implicit_palette_init(void)
     int result = 2;
 
     if (indices == NULL || sixel_frame_new(&frame, NULL) != SIXEL_OK) {
+        goto end;
+    }
+    /* CLOCKS_PER_SEC gives the units, which may be finer than the clock's
+     * effective resolution. Require an observed step within half the
+     * timing margin before interpreting short samples, including zeros. */
+    start = clock();
+    finish = start;
+    for (i = 0; i < TIMER_PROBES && finish == start; ++i) {
+        finish = clock();
+    }
+    if (start == (clock_t)-1 || finish == (clock_t)-1 || finish <= start ||
+        (double)(finish - start) / CLOCKS_PER_SEC > timing_margin / 2.0) {
+        result = 77;
         goto end;
     }
     /* Keep the highest used entry below 255 so a full scan cannot exit
@@ -1650,7 +1665,7 @@ test_repeated_implicit_palette_init(void)
      * enough margin for timer granularity and fast constant-time paths. */
     fprintf(stderr, "PAL8 reinit CPU seconds: declared=%.6f implicit=%.6f\n",
             elapsed[0], elapsed[1]);
-    result = elapsed[1] > 8.0 * elapsed[0] + 0.002
+    result = elapsed[1] > 8.0 * elapsed[0] + timing_margin
         ? PALETTE_EXPECTED_FAILURE : 0;
 end:
     sixel_frame_unref(frame);
