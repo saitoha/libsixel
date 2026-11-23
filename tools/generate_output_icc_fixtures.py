@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Generate a relative-intent constant RGB ICC, independent of libsixel."""
+"""Generate output ICC and loader regression fixtures independently."""
 from pathlib import Path
 import struct
+from zlib import compress
 import generate_color_fixtures as source
 
 root = Path(__file__).resolve().parents[1]
@@ -30,6 +31,43 @@ reverse = [tuple(round(min(y, 1) * v * 65535)
 profile = source.pack_profile([(b'A2B1', register_lut(2, forward)),
                                (b'B2A1', register_lut(3, reverse))])
 (root / 'tests/data/color-numeric/register-feedback-lut.icc').write_bytes(profile)
+
+
+def matrix_mpe(matrix, bias):
+    element = b'matf' + bytes(4) + struct.pack('>HH12f', 3, 3, *matrix, *bias)
+    return (b'mpet' + bytes(4)
+            + struct.pack('>HHIII', 3, 3, 1, 24, len(element)) + element)
+
+
+# Same neutral-axis oracle as the mft2 pair, with physical floating PCS.
+half_white = [v / 2 for v in source.D50]
+forward = matrix_mpe([value for v in half_white for value in (v, 0, 0)],
+                     half_white)
+reverse = matrix_mpe([0, 1, 0, 0, .30, 0, 0, .05, 0], [0, 0, 0])
+profile = source.pack_profile([(b'D2B1', forward), (b'B2D1', reverse)],
+                              name='Relative MPE wire feedback')
+(root / 'tests/data/color-numeric/register-feedback-mpet.icc').write_bytes(profile)
+
+
+def alpha_replay_apng(icc):
+    def frame_control(sequence):
+        return struct.pack('>IIIIIHHBB', sequence, 1, 1, 0, 0, 1, 100, 0, 0)
+
+    chunks = [
+        (b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 6, 0, 0, 0)),
+        (b'acTL', struct.pack('>II', 2, 2)),
+        (b'iCCP', b'icc\0\0' + compress(icc)),
+        (b'fcTL', frame_control(0)),
+        (b'IDAT', compress(bytes([0, 255, 0, 0, 128]))),
+        (b'fcTL', frame_control(1)),
+        (b'fdAT', struct.pack('>I', 2) + compress(bytes([0, 255, 0, 0, 64]))),
+        (b'IEND', b''),
+    ]
+    return b'\x89PNG\r\n\x1a\n' + b''.join(source.chunk(*c) for c in chunks)
+
+
+(root / 'tests/data/color-numeric/red-alpha-p3.apng').write_bytes(
+    alpha_replay_apng(source.icc_profile()))
 
 # A nonzero black table exposes triple-counting of the table baseline.
 original = source.icc_profile()
@@ -63,7 +101,6 @@ lines += ['};', '']
 # curve. Thus the reference PNG can keep the *same* original RGB/alpha words
 # and differ only in its embedded ICC, even when composed against bKGD.
 def output_bpc_png(icc):
-    from zlib import compress
     chunks = [
         (b'IHDR', struct.pack('>IIBBBBB', 6, 1, 16, 6, 0, 0, 0)),
         (b'iCCP', b'affine\0\0' + compress(icc)),

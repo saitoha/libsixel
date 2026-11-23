@@ -4761,8 +4761,8 @@ test_icc_png_extended_trc(int argc, char **argv)
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-/* Both lossless fixtures contain Display P3 red at alpha 128 on black.
- * The APNG repeats the sample using SOURCE for both full-canvas frames. */
+/* Both lossless fixtures contain Display P3 red on black. The APNG alternates
+ * alpha 128 and 64 using SOURCE, and requests two complete plays. */
 typedef struct {
     int webp;
     int calls;
@@ -4777,6 +4777,7 @@ iccn_red_alpha_frame(sixel_frame_t *frame, void *context)
     static double const red[3] = {0.614872, -0.021106, -0.009860};
     iccn_red_alpha_t *probe;
     float const *pixel;
+    double scale;
     int extended;
     int i;
 
@@ -4787,10 +4788,19 @@ iccn_red_alpha_frame(sixel_frame_t *frame, void *context)
             frame->format.rgb != NULL) {
         return SIXEL_BAD_INPUT;
     }
+    scale = 1.0;
+    if (!probe->webp) {
+        if (probe->calls >= 4 ||
+                sixel_frame_get_frame_no(frame) != probe->calls % 2 ||
+                sixel_frame_get_loop_no(frame) != probe->calls / 2) {
+            return SIXEL_BAD_INPUT;
+        }
+        scale = probe->calls % 2 == 0 ? 1.0 : 0.5;
+    }
     ++probe->calls;
     extended = 1;
     for (i = 0; i < 3; ++i) {
-        extended &= fabs(pixel[i] - red[i]) < 3e-6;
+        extended &= fabs(pixel[i] - scale * red[i]) < 3e-6;
     }
     if (probe->webp) {
         /* Only the documented RGB888 intermediate is an expected failure.
@@ -4818,7 +4828,7 @@ test_icc_red_alpha(int argc, char **argv)
     iccn_red_alpha_t probe = {0, 0, 0};
     sixel_loader_t *loader = NULL;
     int no = 0;
-    int loops = SIXEL_LOOP_DISABLE;
+    int loops;
     int count;
     int ok;
 
@@ -4836,7 +4846,8 @@ test_icc_red_alpha(int argc, char **argv)
         return 77;
     }
 #endif
-    count = probe.webp ? 1 : 2;
+    loops = probe.webp ? SIXEL_LOOP_DISABLE : SIXEL_LOOP_AUTO;
+    count = probe.webp ? 1 : 4;
     ok = SIXEL_SUCCEEDED(sixel_loader_new(&loader, NULL)) &&
         SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
             SIXEL_LOADER_OPTION_LOADER_ORDER, argv[1])) &&

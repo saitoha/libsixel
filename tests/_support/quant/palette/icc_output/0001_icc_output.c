@@ -457,6 +457,7 @@ icco_output_target(int cluster, char const *data)
     sixel_encoder_t *encoder = NULL;
     sixel_output_t *output = NULL;
     sixel_frame_t *frame = NULL;
+    sixel_dither_t const *applied;
     unsigned char *decoded = NULL;
     char arg[4096];
     int width, height, c, i;
@@ -531,6 +532,15 @@ icco_output_target(int cluster, char const *data)
             desired &= decoded[i * 4 + 3] == 255;
         }
     } else {
+        /* Read the retained dither for the emitting frame. Requested
+         * options alone would also pass if FS silently fell back to none. */
+        applied = encoder->diagnostic_dither;
+        if (applied == NULL || applied->method_for_diffuse != SIXEL_DIFFUSE_FS
+                || applied->method_for_scan != SIXEL_SCAN_RASTER ||
+                applied->apply_success_count == 0) {
+            fprintf(stderr, "Raster FS was not applied\n");
+            goto end;
+        }
         known = !memcmp(decoded, low, 4) && !memcmp(decoded + 4, low, 4);
         desired = !memcmp(decoded, low, 4) && !memcmp(decoded + 4, high, 4);
     }
