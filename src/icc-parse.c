@@ -2687,7 +2687,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
     double rxyz[3];
     double gxyz[3];
     double bxyz[3];
-    int has_forward_slot;
+    unsigned int has_forward_slot;
     int has_reverse_slot;
     int has_matrix_tags;
     int has_white_tag;
@@ -2842,7 +2842,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                          3u,
                                          1,
                                          &parsed, &budget, issue)) {
-                has_forward_slot = 1;
+                has_forward_slot |= 1u << slot;
             }
             if (sixel_icc_parse_d2b_slot(profile_data,
                                          profile_size,
@@ -2850,7 +2850,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                          3u,
                                          3u,
                                          &parsed, &budget, issue)) {
-                has_forward_slot = 1;
+                has_forward_slot |= 1u << slot;
             }
         }
         for (slot = 0u; slot < SIXEL_ICC_B2A_SLOT_COUNT &&
@@ -2875,7 +2875,9 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
             goto fail;
         }
 
-        if (!has_forward_slot && !parsed.lut_only) {
+        /* A saturation-only LUT does not provide a relative or perceptual
+         * transform. Retain matrix/TRC for those intents when available. */
+        if ((has_forward_slot & 3u) == 0u && !parsed.lut_only) {
             has_matrix_tags = sixel_icc_find_tag(profile_data,
                                                  profile_size,
                                                  "rXYZ",
@@ -2907,7 +2909,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                       &btrc_offset,
                                       &btrc_length, issue);
             if (!has_matrix_tags || parsed.pcs != SIXEL_ICC_PROFILE_PCS_XYZ) {
-                if (has_forward_mpet || has_reverse_mpet) {
+                if (has_forward_slot || has_forward_mpet || has_reverse_mpet) {
                     goto accepted;
                 }
                 goto fail;
@@ -2929,7 +2931,7 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                          bxyz_length,
                                          bxyz)) {
                 sixel_icc_record_issue(issue, SIXEL_ICC_ISSUE_MALFORMED);
-                if (has_forward_mpet || has_reverse_mpet) {
+                if (has_forward_slot || has_forward_mpet || has_reverse_mpet) {
                     goto accepted;
                 }
                 goto fail;
@@ -2952,7 +2954,8 @@ sixel_icc_parse_profile_ex(void const *data, size_t length,
                                            btrc_length,
                                            &parsed.curves[2], &budget, issue)) {
                 if (budget.limit == NULL &&
-                    (has_forward_mpet || has_reverse_mpet)) {
+                    (has_forward_slot || has_forward_mpet ||
+                     has_reverse_mpet)) {
                     for (i = 0u; i < 3u; ++i) {
                         sixel_icc_curve_destroy(&parsed.curves[i]);
                     }
