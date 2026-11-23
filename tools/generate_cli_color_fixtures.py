@@ -141,6 +141,82 @@ def cli_space_cases():
                    wire=[srgb_wire[first], srgb_wire[corrected]])
 
 
+def mixed_spaces_cases():
+    from generate_color_fixtures import apply, encode, matrix, opponents
+    from generate_tiff_logluv_tests import tiff, words_and_centers
+
+    def decimal(fraction):
+        return D(fraction.numerator) / D(fraction.denominator)
+
+    def decode(value, maximum):
+        return ((D(value) / maximum + D('.055')) / D('1.055')) ** D('2.4')
+
+    def centroid(points):
+        return [sum(channel) / len(channel) for channel in zip(*points)]
+
+    def distance(a, b):
+        return sum((x-y)**2 for x, y in zip(a, b))
+
+    def diffuse(points, palette, bounded=False):
+        error = [D(0)] * 3
+        owners = []
+        for row in points:
+            query = [x + e * D(7) / 16 for x, e in zip(row, error)]
+            if bounded:
+                assert all(0 < x < 1 for x in query)
+            a, b = (distance(query, color) for color in palette)
+            assert abs(a - b) > D('.01')
+            owner = int(a > b)
+            owners.append(owner)
+            error = [x - y for x, y in zip(query, palette[owner])]
+        return owners
+
+    native = [[decimal(x) for x in row] for row in reference.native]
+    inverse = [[decimal(x) for x in row]
+               for row in reference.inv(reference.native)]
+    levels = [decode(code, 255) for code in (34, 120, 105, 146, 183)]
+    words, xyz = words_and_centers([apply(native, [y]*3) for y in levels], 32)
+    xyz_as_rgb = [apply(inverse, row) for row in xyz]
+    rgb = [[int(D(65535) * D(str(encode(x))) + D('.5')) for x in row]
+           for row in xyz_as_rgb]
+    fixtures = {
+        'mixed-spaces-xyz.tif': tiff(words, 32, width=5, height=1),
+        'mixed-spaces-rgb.ppm': b'P6\n5 1\n65535\n' +
+            b''.join(struct.pack('>3H', *row) for row in rgb),
+    }
+    lms_root = matrix([['1', '.3963377774', '.2158037573'],
+                       ['1', '-.1055613458', '-.0638541728'],
+                       ['1', '-.0894841775', '-1.2914855480']])
+    lms_to_rgb = matrix([['4.0767416621', '-3.3077115913', '.2309699292'],
+                         ['-1.2684380046', '2.6097574011', '-.3413193965'],
+                         ['-.0041960863', '-.7034186147', '1.7076147010']])
+    cases = []
+    for source, linear in (
+        ('mixed-spaces-rgb.ppm', [[decode(v, 65535) for v in row] for row in rgb]),
+        ('mixed-spaces-xyz.tif', xyz_as_rgb),
+    ):
+        lab = [[D(str(x)) for x in opponents(row)[0]] for row in linear]
+        centers = [lab[0], centroid(lab[1:])]
+        # Seed 4 reaches this stable split. Certify its membership without
+        # depending on the order in which the solver emits the two entries.
+        assert [int(distance(p, centers[0]) > distance(p, centers[1]))
+                for p in lab] == [0, 1, 1, 1, 1]
+        palette = [apply(lms_to_rgb, [x**3 for x in apply(lms_root, center)])
+                   for center in centers]
+        owners = diffuse(linear, palette, bounded=True)
+        assert owners == [0, 1, 0, 1, 1]
+        assert owners != diffuse(lab, centers)
+        assert owners != [int(distance(p, palette[0]) >
+                              distance(p, palette[1])) for p in linear]
+        assert wire_color(palette[1]) != wire_color(centroid(linear[1:]))
+        cases.append(dict(name=source.rsplit('.', 1)[0], source=source,
+                          width=5, height=1, source_width=5, scale=1,
+                          hidden=[0]*5, p2=0, owners=owners,
+                          wire=[wire_color(palette[i]) for i in owners]))
+    assert cases[0]['wire'] == cases[1]['wire']
+    return cases, fixtures
+
+
 def build(inputs):
     png = json.loads(inputs['png-samples.json'])
     png_source = next(x for x in png['pngs']
@@ -288,6 +364,8 @@ def build(inputs):
                           wire=[wire_color(rgb) for rgb in source['linear']]))
         cli_space_first = len(cases)
         cases.extend(cli_space_cases())
+        mixed_cases, mixed_fixtures = mixed_spaces_cases()
+        cases.extend(mixed_cases)
 
     header = ('/* Generated independently; do not copy encoder output here. */\n'
               f'#define CLI_WIRE_PNM_FIRST {cli_space_first}\n'
@@ -335,7 +413,7 @@ def build(inputs):
         palette_header += '};\n'
     return {'cli-color-wire.h': header.encode(),
             'cli-color-wire.json': (json.dumps(record, indent=2) + '\n').encode(),
-            'p3-palette.h': palette_header.encode()}
+            'p3-palette.h': palette_header.encode(), **mixed_fixtures}
 
 
 def main():

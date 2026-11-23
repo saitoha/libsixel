@@ -82,7 +82,7 @@ test_palette_colors_clone_allocation_failure(int argc, char **argv)
         goto end;
     }
     config.copy_payload = 1;
-    config.target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    config.target_layout = SIXEL_PIXELFORMAT_RGB888;
     config.target_colorspace = SIXEL_COLORSPACE_GAMMA;
     status = sixel_filter_factory_create_palette_colors(&config, &filter);
     if (SIXEL_FAILED(status)) {

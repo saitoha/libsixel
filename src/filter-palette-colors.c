@@ -31,87 +31,9 @@
 #include <string.h>
 
 #include "filter-palette-colors.h"
+#include "frame-normalize.h"
 #include "sample-statistics.h"
 #include "loader-common.h"
-
-static SIXELSTATUS
-sixel_filter_palette_colors_convert(sixel_frame_t *frame,
-                                        int target_colorspace)
-{
-    SIXELSTATUS status;
-    int source_colorspace;
-    int pixelformat;
-    int depth;
-    int width;
-    int height;
-    size_t pixel_total;
-    size_t pixel_bytes;
-    unsigned char *pixels;
-    sixel_frame_pixels_view_t view;
-    sixel_frame_interface_t *frame_if;
-
-    status = SIXEL_BAD_ARGUMENT;
-    source_colorspace = SIXEL_COLORSPACE_GAMMA;
-    pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    depth = 0;
-    width = 0;
-    height = 0;
-    pixel_total = 0U;
-    pixel_bytes = 0U;
-    pixels = NULL;
-    memset(&view, 0, sizeof(view));
-
-    if (frame == NULL) {
-        return status;
-    }
-
-    source_colorspace = sixel_frame_get_colorspace(frame);
-    if (source_colorspace == target_colorspace) {
-        return SIXEL_OK;
-    }
-
-    width = sixel_frame_get_width(frame);
-    height = sixel_frame_get_height(frame);
-    if (width <= 0 || height <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    pixelformat = sixel_frame_get_pixelformat(frame);
-    depth = sixel_helper_compute_depth(pixelformat);
-    if (depth <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    pixel_total = (size_t)width * (size_t)height;
-    if (pixel_total / (size_t)width != (size_t)height) {
-        return SIXEL_BAD_INPUT;
-    }
-    if (pixel_total > SIZE_MAX / (size_t)depth) {
-        return SIXEL_BAD_INPUT;
-    }
-    pixel_bytes = pixel_total * (size_t)depth;
-
-    frame_if = sixel_frame_as_interface(frame);
-    status = frame_if->vtbl->get_pixels(frame_if, &view);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    pixels = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
-        ? (unsigned char *)view.pixels_float32
-        : view.pixels;
-
-    /* Both precisions use the buffer driver. Float arithmetic preserves
-     * extended coordinates, with the common parallel threshold and budget;
-     * byte storage retains its separate LUT/SIMD implementation. */
-    status = sixel_helper_convert_colorspace(pixels, pixel_bytes,
-        pixelformat, source_colorspace, target_colorspace);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    sixel_frame_set_colorspace(frame, target_colorspace);
-    return SIXEL_OK;
-}
 
 /* The output owns converted storage. Identity output borrows the input
  * payload, but owns its statistics reference independently of filter life. */
@@ -196,7 +118,7 @@ sixel_filter_palette_colors_apply(sixel_filter_t *filter,
                     input->width, input->height,
                     "src=format%d colorspace%d dst=format%d colorspace%d",
                     input->pixelformat, input->colorspace,
-                    config->target_pixelformat, config->target_colorspace);
+                    filter->output.pixelformat, config->target_colorspace);
             }
             frame_if = sixel_frame_as_interface(input->frame);
             status = frame_if->vtbl->clone(frame_if, allocator, &clone_if);
@@ -208,12 +130,8 @@ sixel_filter_palette_colors_apply(sixel_filter_t *filter,
             }
             clone = (sixel_frame_t *)clone_if;
             if (config->convert) {
-                status = sixel_frame_set_pixelformat(clone,
-                    config->target_pixelformat);
-                if (SIXEL_SUCCEEDED(status)) {
-                    status = sixel_filter_palette_colors_convert(clone,
-                        config->target_colorspace);
-                }
+                status = sixel_frame_convert_pixels(clone,
+                    config->target_layout, config->target_colorspace);
                 if (SIXEL_FAILED(status)) {
                     sixel_frame_unref(clone);
                     return status;

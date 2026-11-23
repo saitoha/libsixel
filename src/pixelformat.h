@@ -77,6 +77,25 @@ sixel_pixelformat_rgb_reader(int pixelformat);
 SIXEL_INTERNAL_API int
 sixel_pixelformat_get_colorspace(int pixelformat);
 
+/* Encode resolved coordinates for a legacy palette, lookup or dither API. */
+static inline int
+sixel_pixelformat_for_colorspace(int colorspace, int prefer_float32)
+{
+    switch (colorspace) {
+    case SIXEL_COLORSPACE_LINEAR:
+        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    case SIXEL_COLORSPACE_OKLAB:
+        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
+    case SIXEL_COLORSPACE_CIELAB:
+        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
+    case SIXEL_COLORSPACE_DIN99D:
+        return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
+    default:
+        return prefer_float32 ? SIXEL_PIXELFORMAT_RGBFLOAT32
+                              : SIXEL_PIXELFORMAT_RGB888;
+    }
+}
+
 int
 sixel_helper_compute_depth(int pixelformat);
 

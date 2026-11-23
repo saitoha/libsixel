@@ -843,7 +843,6 @@ typedef struct sixel_palette_async_job {
     sixel_dither_t *dither;
     SIXELSTATUS status;
     sixel_status_message_t message;
-    int target_pixelformat;
     int threads;
     int frame_no;
     int loop_no;
@@ -2158,7 +2157,6 @@ static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
 static SIXELSTATUS sixel_encoder_palette_job_launch(
     sixel_palette_async_job_t *job,
     sixel_frame_t *frame,
-    int target_pixelformat,
     sixel_encoder_t *encoder,
     sixel_palette_frame_state_t *palette_state,
     sixel_palette_sampling_policy_t policy,
@@ -2497,27 +2495,6 @@ static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
     { "din99d", SIXEL_COLORSPACE_DIN99D }
 };
 
-
-static int
-sixel_encoder_pixelformat_for_colorspace(int colorspace,
-                                         int prefer_float32)
-{
-    switch (colorspace) {
-    case SIXEL_COLORSPACE_LINEAR:
-        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    case SIXEL_COLORSPACE_OKLAB:
-        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
-    case SIXEL_COLORSPACE_CIELAB:
-        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
-    case SIXEL_COLORSPACE_DIN99D:
-        return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
-    default:
-        if (prefer_float32) {
-            return SIXEL_PIXELFORMAT_RGBFLOAT32;
-        }
-        return SIXEL_PIXELFORMAT_RGB888;
-    }
-}
 
 static char *
 arg_strdup(
@@ -4064,7 +4041,7 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
         }
 
         float_pixelformat =
-            sixel_encoder_pixelformat_for_colorspace(target_colorspace, 1);
+            sixel_pixelformat_for_colorspace(target_colorspace, 1);
         for (index = 0U; index < palette_channels; ++index) {
             channel = (int)(index % 3U);
             entries_view.entries[index] =
@@ -4688,7 +4665,7 @@ sixel_encoder_capture_palette(
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        source_format = sixel_encoder_pixelformat_for_colorspace(
+        source_format = sixel_pixelformat_for_colorspace(
             source_colorspace, 1);
         use_float = float_view.entries != NULL
             && float_view.entry_count == palette_count
@@ -5099,7 +5076,7 @@ load_image_callback_for_palette(
 
     status = sixel_frame_set_pixelformat(
         frame,
-        sixel_encoder_pixelformat_for_colorspace(
+        sixel_pixelformat_for_colorspace(
             callback_context->working_colorspace,
             callback_context->prefer_float32));
     if (SIXEL_FAILED(status)) {
@@ -5237,7 +5214,6 @@ typedef struct sixel_encode_dag_context {
     sixel_write_function scroll_callback;
     void *write_priv;
     void *scroll_priv;
-    int target_pixelformat;
     sixel_palette_async_job_t palette_job;
     sixel_dither_t *async_dither;
     int palette_job_started;
@@ -5429,7 +5405,6 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
     SIXELSTATUS sampling_status;
-    int clustering_pixelformat;
     sixel_palette_sampling_policy_t sampling_policy;
     sixel_palette_sampling_source_t sampling_source;
 
@@ -5489,17 +5464,8 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
             context->independent;
         context->palette_job.threads = context->planner != NULL
             ? context->planner->palette_threads : 1;
-        /* Match the synchronous builder: a base auto/byte preference
-         * must not discard precision already retained by the source. */
-        clustering_pixelformat =
-            sixel_encoder_pixelformat_for_colorspace(
-                context->encoder->clustering_colorspace,
-                context->encoder->prefer_float32 ||
-                SIXEL_PIXELFORMAT_IS_FLOAT32(
-                    sixel_frame_get_pixelformat(context->frame)));
         status = sixel_encoder_palette_job_launch(&context->palette_job,
                                                   context->frame,
-                                                  clustering_pixelformat,
                                                   context->encoder,
                                                   &context->palette,
                                                   sampling_policy,
@@ -5573,8 +5539,6 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
     context->resize_config.method_for_resampling =
         context->encoder->method_for_resampling;
 
-    context->colors_config.target_pixelformat = context->target_pixelformat;
-
     height = sixel_frame_get_height(context->frame);
     if (height < 0) {
         height = 0;
@@ -5604,8 +5568,14 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
                 }
                 break;
             case SIXEL_PLANNER_NODE_COLORSPACE_PRE:
-                context->colors_config.target_pixelformat =
-                    context->planner->scale_input_pixelformat;
+                context->colors_config.target_layout =
+                    SIXEL_PIXELFORMAT_IS_FLOAT32(
+                        context->planner->scale_input_pixelformat)
+                    ? SIXEL_PIXELFORMAT_RGBFLOAT32
+                    : context->planner->scale_input_pixelformat;
+                context->colors_config.target_colorspace =
+                    sixel_pixelformat_get_colorspace(
+                        context->planner->scale_input_pixelformat);
                 status = sixel_encoder_filter_plan_append(
                     &context->pre_plan,
                     SIXEL_FILTER_KIND_COLORS,
@@ -5671,8 +5641,13 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
                      */
                     break;
                 }
-                context->colors_config.target_pixelformat =
-                    context->planner->working_pixelformat;
+                context->colors_config.target_layout =
+                    SIXEL_PIXELFORMAT_IS_FLOAT32(
+                        context->planner->working_pixelformat)
+                    ? SIXEL_PIXELFORMAT_RGBFLOAT32
+                    : context->planner->working_pixelformat;
+                context->colors_config.target_colorspace =
+                    context->planner->working_colorspace_effective;
                 status = sixel_encoder_filter_plan_append(
                     &context->pre_plan,
                     SIXEL_FILTER_KIND_COLORS,
@@ -5973,6 +5948,7 @@ static SIXELSTATUS
 sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
+    int consumer_pixelformat;
     int histogram_colors;
     int method_for_diffuse;
     int skip_palette_diffusion;
@@ -5982,11 +5958,14 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
      * promotes the working frame. Lookup consumes that final frame, not
      * the sample storage used to construct the palette. FHEDT was already
      * prepared for the planned consumer format by the palette filter. */
-    sixel_dither_set_pixelformat(context->dither,
-        sixel_frame_get_pixelformat(context->frame));
+    consumer_pixelformat =
+        SIXEL_PIXELFORMAT_IS_FLOAT32(context->current_pixelformat)
+        ? sixel_pixelformat_for_colorspace(context->current_colorspace, 1)
+        : context->current_pixelformat;
+    sixel_dither_set_pixelformat(context->dither, consumer_pixelformat);
     if (context->dither->lut_policy != SIXEL_LUT_POLICY_FHEDT) {
         status = sixel_encoder_apply_lut_filter(context->dither,
-            context->dither->pixelformat, context->encoder->logger,
+            consumer_pixelformat, context->encoder->logger,
             context->dither->lookup_policy);
         if (SIXEL_FAILED(status)) {
             return status;
@@ -6688,6 +6667,7 @@ sixel_encoder_palette_job_build_impl(sixel_palette_async_job_t *job,
     SIXELSTATUS status;
     sixel_dither_t *local;
     int preserve_alpha_key;
+    int clustering_pixelformat;
     sixel_filter_palette_colors_config_t colors;
     sixel_sample_stream_t converted;
     sixel_filter_t *colors_filter;
@@ -6730,19 +6710,24 @@ sixel_encoder_palette_job_build_impl(sixel_palette_async_job_t *job,
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
         return SIXEL_RUNTIME_ERROR;
     }
+    clustering_pixelformat = sixel_pixelformat_for_colorspace(
+        job->request->clustering_colorspace, job->request->prefer_float32 ||
+        SIXEL_PIXELFORMAT_IS_FLOAT32(job->samples.pixelformat));
     if (!preserve_alpha_key &&
-            job->samples.pixelformat != job->target_pixelformat) {
+        (job->samples.pixelformat != clustering_pixelformat ||
+         job->samples.colorspace != job->request->clustering_colorspace)) {
         memset(&colors, 0, sizeof(colors));
         colors.convert = 1;
-        colors.target_pixelformat = job->target_pixelformat;
-        colors.target_colorspace =
-            sixel_pixelformat_get_colorspace(job->target_pixelformat);
+        colors.target_layout =
+            SIXEL_PIXELFORMAT_IS_FLOAT32(clustering_pixelformat)
+            ? SIXEL_PIXELFORMAT_RGBFLOAT32 : clustering_pixelformat;
+        colors.target_colorspace = job->request->clustering_colorspace;
         status = sixel_filter_factory_create_palette_colors(&colors,
             &colors_filter);
         if (SIXEL_SUCCEEDED(status)) {
             sixel_filter_bind_sample_input(colors_filter, &job->samples);
             sixel_filter_bind_sample_output(colors_filter, &converted,
-                colors.target_pixelformat, colors.target_colorspace);
+                clustering_pixelformat, colors.target_colorspace);
             status = sixel_filter_run(colors_filter, job->allocator,
                 job->logger);
         }
@@ -6837,7 +6822,6 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
     job->allocator = allocator;
     job->dither = NULL;
     job->status = SIXEL_OK;
-    job->target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     job->threads = 1;
     job->frame_no = 0;
     job->loop_no = 0;
@@ -6885,7 +6869,6 @@ sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job)
 static SIXELSTATUS
 sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
                                  sixel_frame_t *frame,
-    int target_pixelformat,
     sixel_encoder_t *encoder,
     sixel_palette_frame_state_t *palette_state,
     sixel_palette_sampling_policy_t policy,
@@ -6902,7 +6885,6 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
 
     job->test_hooks = encoder->palette_test_hooks;
     job->logger = encoder->logger;
-    job->target_pixelformat = target_pixelformat;
     job->frame_no = sixel_frame_get_frame_no(frame);
     job->loop_no = sixel_frame_get_loop_no(frame);
     job->multiframe = sixel_frame_get_multiframe(frame);
@@ -6927,7 +6909,7 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
      * The worker has no encoder pointer and cannot mutate shared caches. */
     status = sixel_palette_build_request_new(&job->request, encoder,
         job->samples.frame, palette_state, 0,
-        sixel_encoder_pixelformat_for_colorspace(
+        sixel_pixelformat_for_colorspace(
             encoder->planner.working_colorspace_effective,
             SIXEL_PIXELFORMAT_IS_FLOAT32(
                 encoder->planner.working_pixelformat)));
@@ -9063,7 +9045,7 @@ sixel_encoder_attach_reserved_palette(
         memcpy(native + count * 3U, floats.entries,
             (size_t)dither->ncolors * 3U * sizeof(float));
     }
-    format = sixel_encoder_pixelformat_for_colorspace(
+    format = sixel_pixelformat_for_colorspace(
         request->working_colorspace, 1);
     for (i = 0U; i < count; ++i) {
         for (c = 0U; c < 3U; ++c) {
@@ -9325,11 +9307,13 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         palette_target_pixelformat = sixel_frame_get_pixelformat(frame);
     } else {
         palette_target_pixelformat =
-            sixel_encoder_pixelformat_for_colorspace(clustering_colorspace,
+            sixel_pixelformat_for_colorspace(clustering_colorspace,
                                                      prefer_float32);
     }
 
-    colors_config.target_pixelformat = palette_target_pixelformat;
+    colors_config.target_layout =
+        SIXEL_PIXELFORMAT_IS_FLOAT32(palette_target_pixelformat)
+        ? SIXEL_PIXELFORMAT_RGBFLOAT32 : palette_target_pixelformat;
     colors_config.target_colorspace = clustering_colorspace;
     colors_config.convert =
         sixel_frame_get_pixelformat(frame) != palette_target_pixelformat ||
@@ -9879,7 +9863,7 @@ end:
         (*dither)->use_rgb101_palette = 1;
         status = sixel_palette_map_gamut((*dither)->palette,
             request->gamut_mapper, request->working_colorspace,
-            sixel_encoder_pixelformat_for_colorspace(
+            sixel_pixelformat_for_colorspace(
                 request->working_colorspace, 1));
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_palette_prepare_output_definition(
@@ -10144,7 +10128,7 @@ sixel_encoder_prepare_palette(
 
     status = sixel_palette_build_request_new(&request, encoder, frame,
         palette_state, from_map_image,
-        sixel_encoder_pixelformat_for_colorspace(
+        sixel_pixelformat_for_colorspace(
             encoder->planner.working_colorspace_effective,
             SIXEL_PIXELFORMAT_IS_FLOAT32(
                 encoder->planner.working_pixelformat)));
@@ -10174,7 +10158,7 @@ end:
         (*dither)->use_rgb101_palette = 1;
         status = sixel_palette_map_gamut((*dither)->palette,
             encoder->gamut_mapper, encoder->working_colorspace,
-            sixel_encoder_pixelformat_for_colorspace(
+            sixel_pixelformat_for_colorspace(
                 encoder->working_colorspace, 1));
         if (SIXEL_SUCCEEDED(status) && encoder->palette_output != NULL) {
             status = sixel_encoder_capture_palette(encoder,
@@ -10310,7 +10294,7 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
             *failure_stage = SIXEL_PALETTE_JOB_FAILURE_LOOKUP;
         }
         status = sixel_encoder_apply_lut_filter(*dither_out,
-            sixel_encoder_pixelformat_for_colorspace(
+            sixel_pixelformat_for_colorspace(
                 encoder->planner.working_colorspace_effective,
                 SIXEL_PIXELFORMAT_IS_FLOAT32(
                     encoder->planner.working_pixelformat)),
@@ -10443,13 +10427,10 @@ sixel_encoder_apply_lut_filter(sixel_dither_t *dither,
     lookup_config.fhedt_first_touch = dither->lut_policy_fhedt_first_touch;
     lookup_config.fhedt_first_touch_override =
         dither->lut_policy_fhedt_first_touch_override;
-    lookup_config.pixelformat = dither->pixelformat;
-    if (policy == SIXEL_LUT_POLICY_FHEDT) {
-        /* Samples can retain their source representation after the palette
-         * has moved to -W. Use the already planned consumer format, without
-         * waiting for or inspecting the concurrently converted frame. */
-        lookup_config.pixelformat = consumer_pixelformat;
-    }
+    /* Coordinate-specific lookup kernels use the consumer's legacy format
+     * code. During early preparation the builder may still carry samples
+     * from a different storage or coordinate system. */
+    lookup_config.pixelformat = consumer_pixelformat;
     lookup_config.reuse_policy = reuse;
 
     if (policy == SIXEL_LUT_POLICY_FHEDT) {
@@ -11228,7 +11209,6 @@ sixel_encoder_frame_job_prepare(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_encoding_planner_t *planner;
-    int target_pixelformat;
     int palette_ready;
     int sampling_required;
     int clip_active;
@@ -11441,7 +11421,7 @@ sixel_encoder_frame_job_prepare(
 
     if (encoder->gamut_mapper != NULL) {
         status = sixel_frame_set_pixelformat(job->context.frame,
-            sixel_encoder_pixelformat_for_colorspace(
+            sixel_pixelformat_for_colorspace(
                 sixel_frame_get_colorspace(job->context.frame), 1));
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -11455,11 +11435,6 @@ sixel_encoder_frame_job_prepare(
      */
     if (planner != NULL) {
         sixel_encoding_planner_analyze(planner, encoder, job->context.frame);
-        target_pixelformat = planner->working_pixelformat;
-    } else {
-        target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
-            encoder->working_colorspace,
-            encoder->prefer_float32);
     }
 
     current_pixelformat = sixel_frame_get_pixelformat(job->context.frame);
@@ -11583,7 +11558,6 @@ sixel_encoder_frame_job_prepare(
         job->context.planner = planner;
     }
 
-    job->context.target_pixelformat = target_pixelformat;
     job->context.palette_ready = palette_ready;
     job->context.clip_active = clip_active;
     job->context.current_pixelformat = current_pixelformat;
@@ -12268,7 +12242,6 @@ sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
     }
     sixel_encoding_planner_analyze(&planner, encoder, context.frame);
     sixel_encoding_planner_replan(&planner, encoder, context.frame, 0);
-    context.target_pixelformat = planner.working_pixelformat;
     context.current_pixelformat = sixel_frame_get_pixelformat(context.frame);
     context.current_colorspace = sixel_frame_get_colorspace(context.frame);
     context.clip_active = planner.clip_active;
@@ -12305,8 +12278,8 @@ sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
                  transparency.transparent >= 0 &&
                  view.pixels[i] == transparency.transparent));
     }
-    colors.target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
-        encoder->working_colorspace, 1);
+    colors.target_layout = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    colors.target_colorspace = encoder->working_colorspace;
     status = sixel_filter_colors_convert(&colors, context.frame, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;

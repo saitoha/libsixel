@@ -32,24 +32,8 @@
 
 #include "filter-colors.h"
 #include "filter.h"
-#include "frame.h"
-
-static int
-sixel_filter_colors_target_colorspace(int pixelformat)
-{
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        return SIXEL_COLORSPACE_OKLAB;
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        return SIXEL_COLORSPACE_DIN99D;
-    default:
-        return SIXEL_COLORSPACE_GAMMA;
-    }
-}
+#include "frame-normalize.h"
+#include "pixelformat.h"
 
 /*
  * Snapshot of the conversion target. Stored separately so filters created via
@@ -89,23 +73,19 @@ sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
     int source_colorspace;
     int target_colorspace;
 
-    status = SIXEL_FALSE;
-    target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    source_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    source_colorspace = SIXEL_COLORSPACE_GAMMA;
-    target_colorspace = SIXEL_COLORSPACE_GAMMA;
-
     if (config == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    target_pixelformat = config->target_pixelformat;
-    source_pixelformat = sixel_frame_get_pixelformat(frame);
-    source_colorspace = sixel_frame_get_colorspace(frame);
-    target_colorspace = sixel_filter_colors_target_colorspace(
-        target_pixelformat);
+    target_colorspace = config->target_colorspace;
 
     if (logger != NULL) {
+        source_pixelformat = sixel_frame_get_pixelformat(frame);
+        source_colorspace = sixel_frame_get_colorspace(frame);
+        target_pixelformat =
+            config->target_layout == SIXEL_PIXELFORMAT_RGBFLOAT32
+            ? sixel_pixelformat_for_colorspace(target_colorspace, 1)
+            : config->target_layout;
         sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
@@ -123,7 +103,8 @@ sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
                           target_colorspace);
     }
 
-    status = sixel_frame_set_pixelformat(frame, target_pixelformat);
+    status = sixel_frame_convert_pixels(frame, config->target_layout,
+                                        target_colorspace);
     if (SIXEL_SUCCEEDED(status) && logger != NULL) {
         sixel_timeline_logger_logf(logger,
                           "filter",

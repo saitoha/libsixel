@@ -33,6 +33,7 @@
 #include "filter-dither.h"
 #include "filter.h"
 #include "dither.h"
+#include "pixelformat.h"
 #include "status.h"
 
 /*
@@ -70,6 +71,7 @@ sixel_filter_dither_apply(sixel_filter_t *filter,
     sixel_filter_dither_state_t *state;
     sixel_frame_t *frame;
     int height;
+    int pixelformat;
 
     status = SIXEL_FALSE;
     state = NULL;
@@ -92,8 +94,14 @@ sixel_filter_dither_apply(sixel_filter_t *filter,
     }
 
     frame = filter->input.slot[0];
-    sixel_dither_set_pixelformat(state->config.dither,
-                                 sixel_frame_get_pixelformat(frame));
+    /* The prepared edge carries the application coordinates and precision.
+     * Combine them only when binding the legacy dither kernel. */
+    pixelformat = filter->input.pixelformat;
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        pixelformat = sixel_pixelformat_for_colorspace(
+            filter->input.colorspace, 1);
+    }
+    sixel_dither_set_pixelformat(state->config.dither, pixelformat);
 
     height = sixel_frame_get_height(frame);
     if (height < 0) {
@@ -112,7 +120,7 @@ sixel_filter_dither_apply(sixel_filter_t *filter,
                           sixel_frame_get_width(frame),
                           sixel_frame_get_height(frame),
                           "pixelformat=%08x",
-                          sixel_frame_get_pixelformat(frame));
+                          pixelformat);
     }
 
     filter->progress.total_units = height;

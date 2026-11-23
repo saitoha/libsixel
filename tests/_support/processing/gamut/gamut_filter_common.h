@@ -43,7 +43,9 @@ gamut_filter_init(gamut_filter_fixture_t *f, float *pixels, size_t count,
     sixel_filter_gamut_config_t gamut;
     int space;
 
-    color.target_pixelformat = target;
+    color.target_layout = SIXEL_PIXELFORMAT_IS_FLOAT32(target)
+        ? SIXEL_PIXELFORMAT_RGBFLOAT32 : target;
+    color.target_colorspace = sixel_pixelformat_get_colorspace(target);
     if (SIXEL_FAILED(sixel_allocator_new(&f->allocator,
             NULL, NULL, NULL, NULL)) ||
             SIXEL_FAILED(sixel_frame_new(&f->frame, f->allocator)) ||

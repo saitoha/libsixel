@@ -32,6 +32,11 @@ extern "C" {
 #endif
 
 /* Private encoder normalization, with no concrete frame storage exposed. */
+/* Float triplets use RGBFLOAT32 layout for all supported coordinates. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_convert_pixels(sixel_frame_t *frame, int layout,
+                           int target_colorspace);
+
 /* Normalize packed gamma RGB/gray alpha for the native float encoder.
  * Metadata still decides whether alpha is interpreted. Fractional blending
  * retains the legacy gamma-domain/background-gray convention, without byte
