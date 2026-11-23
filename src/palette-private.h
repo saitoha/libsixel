@@ -47,6 +47,11 @@ typedef struct sixel_palette_build_context {
     sixel_palette_build_attempt_t *attempt;
 } sixel_palette_build_context_t;
 
+typedef struct sixel_palette_icc_source {
+    unsigned char bytes[SIXEL_PALETTE_MAX * 3];
+    float floats[SIXEL_PALETTE_MAX * 3];
+} sixel_palette_icc_source_t;
+
 typedef struct sixel_palette_storage {
     sixel_palette_t palette_interface;
     sixel_atomic_u32_t ref;
@@ -72,6 +77,8 @@ typedef struct sixel_palette_storage {
     /* Derived only for native HLS delta, before workers borrow the palette. */
     unsigned char output_hls_rgb101[SIXEL_PALETTE_MAX * 3];
     int output_hls_ready;
+    /* The interchange export still uses the palette before wire rounding. */
+    sixel_palette_icc_source_t *output_icc_source;
     /* Immutable definitions owned with the output cache, shared read-only
      * by palette-application workers. No per-pixel transform allocation. */
     struct sixel_color_def *output_srgb;

@@ -5514,11 +5514,10 @@ sixel_encode_dither(
                 goto end;
             }
         }
-        /* Lookup used the unrounded working palette. RGB serialization uses
-         * cached percentages; HLS uses destination RGB before rounding to
-         * avoid a second quantization. The byte copy models painted RGB;
-         * HLS delta uses its decoded percentage approximation. Neither copy
-         * feeds back into ordinary lookup or enables palette snapping. */
+        /* RGB serialization uses cached percentages. HLS uses destination
+         * RGB before rounding its own fields. The byte copy models painted
+         * RGB, including the decoded percentage approximation for HLS delta.
+         * Explicit ICC evaluated the matching fields before lookup. */
         for (palette_index = 0U; palette_index < palette_count * 3U;
                 ++palette_index) {
             palette_entries_float32[palette_index] =

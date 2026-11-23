@@ -539,6 +539,7 @@ struct sixel_encoder {
     int fixed_palette_working;
     int fixed_palette_output;
     int fixed_palette_definition;
+    int fixed_palette_hls;
     void *diagnostic_dither;
     unsigned short drcs_charset_no;
     int drcs_mmv;

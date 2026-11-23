@@ -217,6 +217,90 @@ def mixed_spaces_cases():
     return cases, fixtures
 
 
+def icc_register_cases():
+    from generate_color_fixtures import D50, SRGB, adapt, apply, chunk, fixed
+    from generate_color_fixtures import affine_profile, inverse, opponents
+
+    input_profile = affine_profile(16384)
+
+    def linear(code, maximum):
+        return ((D(code) / maximum + D('.055')) / D('1.055')) ** D('2.4')
+
+    def case(name, source, wire, **observations):
+        return dict(name=name, source=source, width=len(wire), height=1,
+                    source_width=len(wire), scale=1, hidden=[0]*len(wire),
+                    p2=0, wire=wire, **observations)
+
+    # The input ICC gives Y=(1+3x)/4. BPC maps that to (1+x)/2.
+    # The destination ICC interprets code k as Y=1/2+k/200.
+    nominal = [linear(v, 255) for v in (200, 209)]
+    codes = [int((value - D('.5')) * 200 + D('.5')) for value in nominal]
+    emitted = [D('.5') + D(code)/200 for code in codes]
+    midpoint = sum(emitted)/2
+    nominal_midpoint = sum(nominal)/2
+    cases = []
+    fixtures = {'icc-register-fixed.gpl':
+                b'GIMP Palette\nName: ICC test\n200 200 200\n209 209 209\n'}
+    for bpc, words in enumerate(((31352, 30583), (14260, 13107))):
+        name = f'icc-register-bpc{bpc}.png'
+        scanline = bytes(1) + b''.join(struct.pack('>3H', w, w, w) for w in words)
+        fixtures[name] = b'\x89PNG\r\n\x1a\n' + b''.join((
+            chunk(b'IHDR', struct.pack('>IIBBBBB', 2, 1, 16, 2, 0, 0, 0)),
+            chunk(b'iCCP', b'Affine input\0\0' + zlib.compress(input_profile)),
+            chunk(b'IDAT', zlib.compress(scanline)), chunk(b'IEND', b''),
+        ))
+        first, second = [(1 + D(w)/65535)/2 if bpc
+                         else (1 + 3*D(w)/65535)/4 for w in words]
+        corrected = second + (first - emitted[0])*D(7)/16
+        old_corrected = second + (first - nominal[1])*D(7)/16
+        assert first - nominal_midpoint > D('.001')
+        assert midpoint - first > D('.001') and second < nominal_midpoint
+        assert corrected - midpoint > D('.002')
+        assert old_corrected < nominal_midpoint
+    cases.append(case('icc-register-nearest', 'icc-register-bpc{0,1}.png',
+                      [[codes[0]]*3, [codes[0]]*3], indices=[0, 0]))
+    cases.append(case('icc-register-fs', 'icc-register-bpc{0,1}.png',
+                      [[codes[0]]*3, [codes[1]]*3], indices=[0, 1]))
+
+    # The affine profile has a diagonal D50 matrix. Evaluate its independently
+    # rounded code and all six axial neighbors in the selected coordinates.
+    rgb_to_pcs = list(map(list, zip(*(adapt(col) for col in zip(*SRGB)))))
+    pcs_to_rgb = inverse(rgb_to_pcs)
+    white = [D(struct.unpack('>i', fixed(v))[0])/65536 for v in D50]
+    samples = [(51992, 61688, 54940), (54000, 54000, 54000)]
+    name = 'icc-register-centroid.ppm'
+    fixtures[name] = b'P6\n2 1\n65535\n' + b''.join(
+        struct.pack('>3H', *row) for row in samples)
+    for space in ('linear', 'oklab'):
+        def coordinates(rgb):
+            return [D(str(v)) for v in opponents(rgb)[0]] if space == 'oklab' else rgb
+        wire = []
+        for row in samples:
+            rgb = [linear(v, 65535) for v in row]
+            target = coordinates(rgb)
+            base = [int((x/w - D('.5'))*200 + D('.5'))
+                    for x, w in zip(apply(rgb_to_pcs, rgb), white)]
+            candidates = [base]
+            for c in range(3):
+                for delta in (-1, 1):
+                    next_code = base.copy()
+                    next_code[c] += delta
+                    assert 0 <= next_code[c] <= 100
+                    candidates.append(next_code)
+            scores = []
+            for code in candidates:
+                pcs = [w*(D('.5') + D(k)/200) for w, k in zip(white, code)]
+                observed = coordinates(apply(pcs_to_rgb, pcs))
+                scores.append((sum((a-b)**2 for a, b in zip(target, observed)), code))
+            scores.sort()
+            assert scores[1][0] - scores[0][0] > D('1e-7')
+            wire.append(scores[0][1])
+        cases.append(case('icc-register-centroid-' + space, name, wire,
+                          source_words=samples))
+    assert cases[-1]['wire'][0] != cases[-2]['wire'][0]
+    return cases, fixtures
+
+
 def build(inputs):
     png = json.loads(inputs['png-samples.json'])
     png_source = next(x for x in png['pngs']
@@ -366,6 +450,8 @@ def build(inputs):
         cases.extend(cli_space_cases())
         mixed_cases, mixed_fixtures = mixed_spaces_cases()
         cases.extend(mixed_cases)
+        icc_cases, icc_fixtures = icc_register_cases()
+        cases.extend(icc_cases)
 
     header = ('/* Generated independently; do not copy encoder output here. */\n'
               f'#define CLI_WIRE_PNM_FIRST {cli_space_first}\n'
@@ -413,7 +499,8 @@ def build(inputs):
         palette_header += '};\n'
     return {'cli-color-wire.h': header.encode(),
             'cli-color-wire.json': (json.dumps(record, indent=2) + '\n').encode(),
-            'p3-palette.h': palette_header.encode(), **mixed_fixtures}
+            'p3-palette.h': palette_header.encode(), **mixed_fixtures,
+            **icc_fixtures}
 
 
 def main():

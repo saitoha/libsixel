@@ -634,6 +634,7 @@ struct sixel_palette_build_request {
     int native_candidate;
     int from_map_image;
     int consumer_pixelformat;
+    int output_palette_type;
     int source_alpha_key;
     uint64_t configuration_revision;
     sixel_palette_frame_state_t initial_state;
@@ -4595,6 +4596,8 @@ sixel_encoder_capture_palette(
     int channel;
     int source_format;
     int use_float;
+    unsigned char const *export_bytes;
+    float const *export_floats;
     float triplet[3];
 
     status = SIXEL_OK;
@@ -4651,12 +4654,15 @@ sixel_encoder_capture_palette(
         encoder->capture_palette = new_palette;
         encoder->capture_palette_size = palette_bytes;
     }
-    memcpy(encoder->capture_palette, palette_view.entries, palette_bytes);
+    export_bytes = palette_view.entries;
+    export_floats = NULL;
+    (void)sixel_palette_get_icc_source(palette_obj, &export_bytes,
+                                      &export_floats);
+    memcpy(encoder->capture_palette, export_bytes, palette_bytes);
     /*
      * Legacy palette formats have no color metadata: their bytes are sRGB.
      * Export is independent of the wire output space and of its final snap.
-     * The RGB101 path calls this before projecting the palette onto the
-     * destination grid; other paths retain their unconverted working copy.
+     * Explicit ICC keeps an original working view beside its wire colors.
      */
     if (source_colorspace != SIXEL_COLORSPACE_GAMMA) {
         memset(&float_view, 0, sizeof(float_view));
@@ -4670,19 +4676,22 @@ sixel_encoder_capture_palette(
         use_float = float_view.entries != NULL
             && float_view.entry_count == palette_count
             && float_view.depth == (int)(3U * sizeof(float));
+        if (export_floats == NULL) {
+            export_floats = float_view.entries;
+        }
         /* Match the wire path: a changed byte palette invalidates its view. */
         for (index = 0U; use_float && index < palette_bytes; ++index) {
             channel = (int)(index % 3U);
-            if (palette_view.entries[index]
+            if (export_bytes[index]
                     != sixel_pixelformat_float_channel_to_byte(
-                        source_format, channel, float_view.entries[index])) {
+                        source_format, channel, export_floats[index])) {
                 use_float = 0;
             }
         }
         if (use_float) {
             /* Keep extended coordinates until the sRGB8 file boundary. */
             for (index = 0U; index < palette_count; ++index) {
-                memcpy(triplet, float_view.entries + index * 3U,
+                memcpy(triplet, export_floats + index * 3U,
                        sizeof(triplet));
                 status = sixel_color_convert_rgbf32(triplet, 1U,
                     source_colorspace, SIXEL_COLORSPACE_GAMMA);
@@ -8723,6 +8732,7 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     request->method_for_largest_override = encoder->method_for_largest_override;
     request->method_for_rep = encoder->method_for_rep;
     request->output_color_definition = encoder->output_color_definition;
+    request->output_palette_type = encoder->palette_type;
     request->output_colorspace = encoder->output_colorspace;
     request->precision_requested = encoder->precision_requested;
     request->prefer_float32 = encoder->prefer_float32;
@@ -9119,6 +9129,7 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     int effective_lut_policy_override;
     int palette_width;
     int palette_height;
+    unsigned int icc_score_end;
     size_t source_point_count;
     sixel_filter_t *merge_filter;
     sixel_palette_cover_options_t cover_options;
@@ -9871,6 +9882,19 @@ end:
                 request->output_color_definition, request->output_colorspace,
                 request->output_icc);
         }
+        if (SIXEL_SUCCEEDED(status) && request->output_icc != NULL) {
+            /* An active snap policy already selected its destination
+             * candidate in the construction space. Preserve that choice. */
+            icc_score_end = request->snap_policy !=
+                SIXEL_PALETTE_SNAP_POLICY_NONE &&
+                request->snap_policy_approach_rate > 0.0
+                ? request->reserved_palette_count
+                : (unsigned int)sixel_dither_lookup_ncolors(*dither);
+            status = sixel_palette_apply_icc_registers((*dither)->palette,
+                request->working_colorspace, clustering_colorspace,
+                request->output_palette_type, request->reserved_palette_count,
+                icc_score_end);
+        }
         sixel_dither_set_optimize_palette(*dither, 0);
     }
     if (SIXEL_FAILED(status)) {
@@ -10013,7 +10037,10 @@ sixel_encoder_prepare_palette(
                     encoder->fixed_palette_output ==
                         encoder->output_colorspace &&
                     encoder->fixed_palette_definition ==
-                        encoder->output_color_definition) {
+                        encoder->output_color_definition &&
+                    (encoder->output_icc == NULL ||
+                     encoder->fixed_palette_hls ==
+                        (encoder->palette_type == SIXEL_PALETTETYPE_HLS))) {
                 *dither = encoder->dither_cache;
                 sixel_dither_ref(*dither);
                 dither_cache_hit = 1;
@@ -10149,12 +10176,18 @@ sixel_encoder_prepare_palette(
 
 end:
     sixel_dither_unref(fixed_source);
+    if (SIXEL_SUCCEEDED(status) && dither_cache_hit &&
+            encoder->output_icc != NULL && encoder->palette_output != NULL) {
+        status = sixel_encoder_capture_palette(encoder, *dither,
+                                                encoder->working_colorspace);
+    }
     if (SIXEL_SUCCEEDED(status) && *dither != NULL && !from_map_image &&
+            (!dither_cache_hit || encoder->output_icc == NULL) &&
             ((*dither)->use_rgb101_palette ||
              sixel_encoder_rgb101_frame(encoder, frame))) {
-        /* Generated and fixed palettes share the same finalization. Keep
-         * order, duplicates and unused slots: the independent wire cache
-         * and unrounded working palette must use identical indices. */
+        /* Preserve fixed entry order, duplicates and unused slots.
+         * ICC treats each entry as a supplied candidate without scoring
+         * alternative codes in the clustering coordinates. */
         (*dither)->use_rgb101_palette = 1;
         status = sixel_palette_map_gamut((*dither)->palette,
             encoder->gamut_mapper, encoder->working_colorspace,
@@ -10169,6 +10202,11 @@ end:
                 (*dither)->palette, encoder->working_colorspace,
                 encoder->output_color_definition, encoder->output_colorspace,
                 encoder->output_icc);
+        }
+        if (SIXEL_SUCCEEDED(status) && encoder->output_icc != NULL) {
+            status = sixel_palette_apply_icc_registers((*dither)->palette,
+                encoder->working_colorspace, encoder->working_colorspace,
+                encoder->palette_type, 0U, 0U);
         }
         sixel_dither_set_optimize_palette(*dither, 0);
     }
@@ -10202,6 +10240,8 @@ end:
             encoder->fixed_palette_output = encoder->output_colorspace;
             encoder->fixed_palette_definition =
                 encoder->output_color_definition;
+            encoder->fixed_palette_hls =
+                encoder->palette_type == SIXEL_PALETTETYPE_HLS;
             sixel_dither_ref(*dither);
         }
     }
@@ -10646,13 +10686,18 @@ sixel_palette_snapshot_clone(sixel_palette_snapshot_t const *snapshot,
     copy->transparent_bgcolor_valid = source->transparent_bgcolor_valid;
     copy->use_rgb101_palette = source->use_rgb101_palette;
     copy->pixelformat = snapshot->profile.consumer_pixelformat;
-    /* Regenerate small output views privately. Lazy HLS caches, mutable
-     * byte views and application results never belong to the snapshot. */
+    /* Preserve evaluated ICC codes across a clone. Other output views can
+     * be rebuilt from their unrounded working entries. */
     if (SIXEL_SUCCEEDED(status) && copy->use_rgb101_palette) {
-        status = sixel_palette_prepare_output_definition(copy->palette,
-            snapshot->profile.working_colorspace,
-            snapshot->profile.output_color_definition,
-            snapshot->profile.output_colorspace, snapshot->output_icc);
+        if (snapshot->output_icc != NULL) {
+            status = sixel_palette_copy_output_cache(copy->palette,
+                                                     source->palette);
+        } else {
+            status = sixel_palette_prepare_output_definition(copy->palette,
+                snapshot->profile.working_colorspace,
+                snapshot->profile.output_color_definition,
+                snapshot->profile.output_colorspace, NULL);
+        }
     }
     if (SIXEL_SUCCEEDED(status) &&
             copy->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
@@ -12734,6 +12779,7 @@ sixel_encoder_new(
     (*ppencoder)->fixed_palette_working = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->fixed_palette_output = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->fixed_palette_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
+    (*ppencoder)->fixed_palette_hls = 0;
     (*ppencoder)->diagnostic_dither     = NULL;
     (*ppencoder)->drcs_charset_no       = 1u;
     (*ppencoder)->drcs_mmv              = 2;
@@ -15707,6 +15753,13 @@ sixel_encoder_setopt_owned(
             &match_value);
         if (SIXEL_FAILED(status)) {
             goto end;
+        }
+        if (encoder->output_icc != NULL &&
+            (encoder->palette_type == SIXEL_PALETTETYPE_HLS) !=
+            (match_value == SIXEL_PALETTETYPE_HLS)) {
+            encoder->option_invalidate_history = 1;
+            memset(&encoder->residual_state, 0,
+                   sizeof(encoder->residual_state));
         }
         encoder->palette_type = match_value;
         break;

@@ -691,6 +691,10 @@ sixel_palette_resize_entries_float32(sixel_palette_t *palette,
 static void
 sixel_palette_clear_output(sixel_palette_storage_t *storage)
 {
+    if (storage->output_icc_source != NULL) {
+        sixel_allocator_free(storage->allocator, storage->output_icc_source);
+        storage->output_icc_source = NULL;
+    }
     sixel_cdef_free(storage->output_srgb);
     sixel_cdef_free(storage->output_device);
     storage->output_srgb = NULL;
@@ -892,6 +896,7 @@ sixel_palette_factory_new(sixel_allocator_t *allocator, void **object)
     storage->output_colorspace = SIXEL_COLORSPACE_GAMMA;
     storage->output_rgb101_count = 0U;
     storage->output_hls_ready = 0;
+    storage->output_icc_source = NULL;
     sixel_allocator_ref(allocator);
 
     *object = &storage->palette_interface;
@@ -1961,6 +1966,222 @@ end:
     sixel_cdef_free(srgb);
     sixel_cdef_free(destination);
     return status;
+}
+
+/* Score a register using device-to-PCS evaluation of the actual wire code.
+ * A profile can have independent forward and reverse LUTs. */
+static int
+sixel_palette_icc_code_color(sixel_palette_t const *palette,
+    unsigned char const code[3], int space, double rgb[3])
+{
+    double device[3];
+
+    device[0] = code[0] / 100.0;
+    device[1] = code[1] / 100.0;
+    device[2] = code[2] / 100.0;
+    return sixel_palette_from_output(palette, rgb, device, space);
+}
+
+static double
+sixel_palette_icc_distance(double const a[3], double const b[3])
+{
+    double x;
+    double y;
+    double z;
+
+    x = a[0] - b[0];
+    y = a[1] - b[1];
+    z = a[2] - b[2];
+    return x * x + y * y + z * z;
+}
+
+/* Test the independently rounded tuple and its immediate axial neighbors.
+ * Keep the initial tuple on ties, particularly with a many-to-one LUT. */
+static int
+sixel_palette_select_icc_code(sixel_palette_t const *palette,
+    unsigned char code[3], double const target[3], int space)
+{
+    unsigned char candidate[3];
+    unsigned char selected[3];
+    double actual[3];
+    double best;
+    double distance;
+    int channel;
+    int direction;
+    int component;
+
+    if (!sixel_palette_icc_code_color(palette, code, space, actual)) {
+        return 0;
+    }
+    best = sixel_palette_icc_distance(target, actual);
+    memcpy(selected, code, sizeof(selected));
+    for (channel = 0; channel < 3; ++channel) {
+        memcpy(candidate, code, sizeof(candidate));
+        for (direction = -1; direction <= 1; direction += 2) {
+            component = code[channel] + direction;
+            if (component < 0 || component > 100) {
+                continue;
+            }
+            candidate[channel] = (unsigned char)component;
+            if (sixel_palette_icc_code_color(palette, candidate, space,
+                                             actual)) {
+                distance = sixel_palette_icc_distance(target, actual);
+                /* Interpolating equal LUT entries can leave a few ulps. */
+                if (distance < best - 64 * DBL_EPSILON * fmax(1.0, best)) {
+                    best = distance;
+                    memcpy(selected, candidate, sizeof(selected));
+                }
+            }
+        }
+    }
+    memcpy(code, selected, sizeof(selected));
+    return 1;
+}
+
+SIXELSTATUS
+sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
+    int clustering, int palette_type, unsigned int first, unsigned int end)
+{
+    sixel_palette_storage_t *storage;
+    sixel_palette_icc_source_t *original;
+    unsigned char codes[SIXEL_PALETTE_MAX * 3];
+    float values[SIXEL_PALETTE_MAX * 3];
+    unsigned char const *wire;
+    double source[3];
+    double target[3];
+    double working[3];
+    SIXELSTATUS status;
+    size_t offset;
+    size_t count;
+    int channel;
+    int format;
+
+    if (palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    count = storage->output_rgb101_count * 3U;
+    if (storage->output_device == NULL || storage->output_icc_source != NULL ||
+            count == 0U ||
+            storage->output_rgb101_count != storage->entry_count ||
+            first > end || end > storage->entry_count) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memcpy(codes, storage->output_rgb101, count);
+    if (palette_type == SIXEL_PALETTETYPE_HLS) {
+        status = sixel_palette_prepare_hls(palette);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        wire = storage->output_hls_rgb101;
+    } else {
+        wire = codes;
+    }
+    format = sixel_pixelformat_for_colorspace(workspace, 1);
+    for (offset = 0U; offset < count; offset += 3U) {
+        if (wire == codes && offset / 3U >= first && offset / 3U < end) {
+            for (channel = 0; channel < 3; ++channel) {
+                source[channel] = storage->entries_float32[offset + channel];
+            }
+            if (!sixel_color_convert(target, source, workspace, clustering) ||
+                    !sixel_palette_select_icc_code(palette, codes + offset,
+                                                   target, clustering)) {
+                return SIXEL_BAD_INPUT;
+            }
+        }
+        if (!sixel_palette_icc_code_color(palette, wire + offset, workspace,
+                                           working)) {
+            return SIXEL_BAD_INPUT;
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            if (!isfinite(working[channel]) ||
+                    fabs(working[channel]) > FLT_MAX) {
+                return SIXEL_BAD_INPUT;
+            }
+            values[offset + channel] = (float)working[channel];
+        }
+    }
+    original = sixel_allocator_malloc(storage->allocator, sizeof(*original));
+    if (original == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(original->bytes, storage->entries, count);
+    memcpy(original->floats, storage->entries_float32, count * sizeof(float));
+    storage->output_icc_source = original;
+
+    /* Keep indices, the HLS source and the chosen RGB codes intact. Updating
+     * through the generic entries setter would discard the wire cache. */
+    memcpy(storage->output_rgb101, codes, count);
+    memcpy(storage->entries_float32, values, count * sizeof(float));
+    for (offset = 0U; offset < count; ++offset) {
+        storage->entries[offset] = sixel_pixelformat_float_channel_to_byte(
+            format, (int)(offset % 3U), values[offset]);
+    }
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_palette_copy_output_cache(sixel_palette_t *destination,
+                                sixel_palette_t const *source)
+{
+    sixel_palette_storage_t *dst;
+    sixel_palette_storage_t const *src;
+    sixel_color_def_t *srgb;
+    sixel_color_def_t *device;
+    sixel_palette_icc_source_t *original;
+    size_t count;
+
+    if (destination == NULL || source == NULL || destination == source) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    dst = SIXEL_PALETTE_STORAGE(destination);
+    src = SIXEL_PALETTE_STORAGE_CONST(source);
+    if (src->output_device == NULL || src->output_icc_source == NULL ||
+            src->output_rgb101_count == 0U ||
+            src->output_rgb101_count != dst->entry_count) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    srgb = sixel_cdef_clone(src->output_srgb);
+    device = sixel_cdef_clone(src->output_device);
+    original = sixel_allocator_malloc(dst->allocator, sizeof(*original));
+    if (srgb == NULL || device == NULL || original == NULL) {
+        sixel_cdef_free(srgb);
+        sixel_cdef_free(device);
+        sixel_allocator_free(dst->allocator, original);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    sixel_palette_clear_output(dst);
+    count = src->output_rgb101_count * 3U;
+    memcpy(original->bytes, src->output_icc_source->bytes, count);
+    memcpy(original->floats, src->output_icc_source->floats,
+           count * sizeof(float));
+    dst->output_icc_source = original;
+    memcpy(dst->output_rgb101, src->output_rgb101, count);
+    memcpy(dst->output_rgb_float, src->output_rgb_float, count * sizeof(float));
+    if (src->output_hls_ready) {
+        memcpy(dst->output_hls_rgb101, src->output_hls_rgb101, count);
+    }
+    dst->output_hls_ready = src->output_hls_ready;
+    dst->output_rgb101_count = src->output_rgb101_count;
+    dst->output_colorspace = src->output_colorspace;
+    dst->output_srgb = srgb;
+    dst->output_device = device;
+    return SIXEL_OK;
+}
+
+int
+sixel_palette_get_icc_source(sixel_palette_t const *palette,
+    unsigned char const **bytes, float const **floats)
+{
+    sixel_palette_icc_source_t const *source;
+
+    source = SIXEL_PALETTE_STORAGE_CONST(palette)->output_icc_source;
+    if (source == NULL) {
+        return 0;
+    }
+    *bytes = source->bytes;
+    *floats = source->floats;
+    return 1;
 }
 
 SIXELSTATUS

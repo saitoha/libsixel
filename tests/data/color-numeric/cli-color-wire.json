@@ -1304,6 +1304,138 @@
           54
         ]
       ]
+    },
+    {
+      "name": "icc-register-nearest",
+      "source": "icc-register-bpc{0,1}.png",
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "wire": [
+        [
+          16,
+          16,
+          16
+        ],
+        [
+          16,
+          16,
+          16
+        ]
+      ],
+      "indices": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "icc-register-fs",
+      "source": "icc-register-bpc{0,1}.png",
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "wire": [
+        [
+          16,
+          16,
+          16
+        ],
+        [
+          28,
+          28,
+          28
+        ]
+      ],
+      "indices": [
+        0,
+        1
+      ]
+    },
+    {
+      "name": "icc-register-centroid-linear",
+      "source": "icc-register-centroid.ppm",
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "wire": [
+        [
+          43,
+          59,
+          39
+        ],
+        [
+          29,
+          29,
+          29
+        ]
+      ],
+      "source_words": [
+        [
+          51992,
+          61688,
+          54940
+        ],
+        [
+          54000,
+          54000,
+          54000
+        ]
+      ]
+    },
+    {
+      "name": "icc-register-centroid-oklab",
+      "source": "icc-register-centroid.ppm",
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "wire": [
+        [
+          43,
+          59,
+          38
+        ],
+        [
+          29,
+          29,
+          29
+        ]
+      ],
+      "source_words": [
+        [
+          51992,
+          61688,
+          54940
+        ],
+        [
+          54000,
+          54000,
+          54000
+        ]
+      ]
     }
   ]
 }
