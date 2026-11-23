@@ -242,8 +242,8 @@ set -- \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \
-    palette/sampling/0110_profiled_grid.t \
-    palette/sampling/0111_indexed_default_capacity.t \
+    palette/sampling/0111_profiled_grid.t \
+    palette/sampling/0112_indexed_default_capacity.t \
     palette/output-color/0103_profile_reuse.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \
