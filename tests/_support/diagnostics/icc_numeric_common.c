@@ -4760,3 +4760,99 @@ test_icc_png_extended_trc(int argc, char **argv)
     sixel_allocator_unref(allocator);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+/* Both lossless fixtures contain Display P3 red at alpha 128 on black.
+ * The APNG repeats the sample using SOURCE for both full-canvas frames. */
+typedef struct {
+    int webp;
+    int calls;
+    int known;
+} iccn_red_alpha_t;
+
+static SIXELSTATUS
+iccn_red_alpha_frame(sixel_frame_t *frame, void *context)
+{
+    /* First column of the fixture's linear P3-to-sRGB transform, scaled
+     * by the source alpha (128/255) for composition over black. */
+    static double const red[3] = {0.614872, -0.021106, -0.009860};
+    iccn_red_alpha_t *probe;
+    float const *pixel;
+    int extended;
+    int i;
+
+    probe = context;
+    pixel = frame->pixels.f32ptr;
+    if (frame->width != 1 || frame->height != 1 || pixel == NULL ||
+            sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+            frame->format.rgb != NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+    ++probe->calls;
+    extended = 1;
+    for (i = 0; i < 3; ++i) {
+        extended &= fabs(pixel[i] - red[i]) < 3e-6;
+    }
+    if (probe->webp) {
+        /* Only the documented RGB888 intermediate is an expected failure.
+         * A new wrong color, format or callback count must fail normally. */
+        if (!extended && fabs(pixel[0] - 128.0 / 255.0) < 2e-7 &&
+                pixel[1] == 0.0f && pixel[2] == 0.0f) {
+            ++probe->known;
+        } else if (!extended) {
+            return SIXEL_BAD_INPUT;
+        }
+    } else if (!extended) {
+        return SIXEL_BAD_INPUT;
+    } else if (frame->cms_history == 0u) {
+        ++probe->known;
+    } else if (frame->cms_history != SIXEL_FRAME_CMS_EMBEDDED_ICC) {
+        return SIXEL_BAD_INPUT;
+    }
+    return SIXEL_OK;
+}
+
+int
+test_icc_red_alpha(int argc, char **argv)
+{
+    unsigned char black[3] = {0, 0, 0};
+    iccn_red_alpha_t probe = {0, 0, 0};
+    sixel_loader_t *loader = NULL;
+    int no = 0;
+    int loops = SIXEL_LOOP_DISABLE;
+    int count;
+    int ok;
+
+    if (argc != 3) {
+        return 1;
+    }
+    probe.webp = strcmp(argv[1], "libwebp:Ebuiltin!") == 0;
+#if !HAVE_WEBP
+    if (probe.webp) {
+        return 77;
+    }
+#endif
+#if !HAVE_LIBPNG
+    if (strcmp(argv[1], "libpng:Ebuiltin!") == 0) {
+        return 77;
+    }
+#endif
+    count = probe.webp ? 1 : 2;
+    ok = SIXEL_SUCCEEDED(sixel_loader_new(&loader, NULL)) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_LOADER_ORDER, argv[1])) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_LOOP_CONTROL, &loops)) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_USE_PALETTE, &no)) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_CONTEXT, &probe)) &&
+        SIXEL_SUCCEEDED(sixel_loader_setopt(loader,
+            SIXEL_LOADER_OPTION_BGCOLOR, black)) &&
+        SIXEL_SUCCEEDED(sixel_loader_load_file(loader, argv[2],
+            iccn_red_alpha_frame)) && probe.calls == count;
+    sixel_loader_unref(loader);
+    if (ok && probe.known == count) {
+        return 42;
+    }
+    return ok && probe.known == 0 ? 0 : 1;
+}

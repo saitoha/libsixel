@@ -6185,6 +6185,9 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->palette_job_started = 0;
         if (SIXEL_SUCCEEDED(status) && context->async_dither != NULL) {
             context->dither = context->async_dither;
+            /* Readiness alone also covers synchronous thread fallback. */
+            sixel_trace_topic_message("palette_contract",
+                                      "LSXPJOB1|result=worker-palette");
         } else {
             context->async_dither = NULL;
             /* Cleanup also joins jobs after a pre-plan failure. Restore only

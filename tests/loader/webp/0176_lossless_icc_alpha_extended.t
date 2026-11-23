@@ -1,0 +1,25 @@
+#!/bin/sh
+# TODO: Convert ICC RGB directly to extended float before linear compositing.
+set -eux
+echo '1..1'
+set -v
+
+status=0
+SIXEL_LOADER_PREFER_8BIT=0 SIXEL_LOADER_CMS_BPC=0 \
+SIXEL_LOADER_CMS_RENDERING_INTENT=relative! \
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" icc/red_alpha libwebp:Ebuiltin! \
+    "${TOP_SRCDIR}/tests/data/color-numeric/red-alpha-p3.webp" || status=$?
+test "$status" -ne 77 || {
+    echo 'ok 1 # SKIP required backend unavailable'
+    exit 0
+}
+test "$status" -ne 42 || {
+    echo 'not ok 1 - WebP clips Display P3 red before alpha composition # TODO known result'
+    exit 0
+}
+test "$status" -ne 0 || {
+    echo 'not ok 1 - expected behavior now works; promote this test'
+    exit 0
+}
+echo 'not ok 1 - unexpected fixture, execution or pixel result'
+exit 0

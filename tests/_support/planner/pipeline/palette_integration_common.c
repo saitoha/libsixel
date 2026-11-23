@@ -12,6 +12,8 @@
 #include "playback_test_common.h"
 #include "palette_integration_common.h"
 
+enum { INTEGRATION_ICC_FEEDBACK = -1 };
+
 #if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
 typedef struct integration_state integration_state_t;
 typedef struct integration_gate {
@@ -269,12 +271,45 @@ integration_done(sixel_playback_result_t const *result, void *context)
 }
 
 static sixel_frame_t *
+integration_icc_frame(int sequence)
+{
+    /* Three distinct grays for two clusters keep raster FS active.
+     * Frame 1 centers are .58 and .64. Frame 2 must reuse them. */
+    static float const levels[2][3] = {
+        {0.57f, 0.59f, 0.64f}, {0.798f, 0.797f, 0.813f}
+    };
+    sixel_frame_t *frame;
+    float *samples;
+    int i;
+
+    frame = NULL;
+    samples = malloc(9 * sizeof(*samples));
+    if (samples == NULL || sixel_frame_new(&frame, NULL) != SIXEL_OK) {
+        free(samples);
+        return NULL;
+    }
+    for (i = 0; i < 9; ++i) {
+        samples[i] = levels[sequence - 1][i / 3];
+    }
+    if (sixel_frame_init(frame, (unsigned char *)(void *)samples, 3, 1,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1) != SIXEL_OK) {
+        free(samples);
+        sixel_frame_unref(frame);
+        return NULL;
+    }
+    return frame;
+}
+
+static sixel_frame_t *
 integration_frame(int sequence, int scenario)
 {
     sixel_frame_t *frame;
     unsigned char *pixels;
     unsigned char *palette;
 
+    if (scenario == INTEGRATION_ICC_FEEDBACK) {
+        return integration_icc_frame(sequence);
+    }
     if (scenario != 3 || sequence != 3) {
         return playback_test_frame(sequence - 1);
     }
@@ -300,7 +335,7 @@ integration_frame(int sequence, int scenario)
 #endif
 
 static int
-palette_integration_test_impl(int scenario, int gpu)
+palette_integration_test_impl(int scenario, int gpu, char const *profile)
 {
 #if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
     integration_state_t state;
@@ -318,6 +353,14 @@ palette_integration_test_impl(int scenario, int gpu)
     int count;
     int failed;
     int pass;
+    unsigned char *decoded = NULL;
+    int width, height;
+    /* Axial search selects RGB101 (57,17,3) and (63,19,3). In -W
+     * these decode to .785 and .815. First gray .798 selects low;
+     * the positive residual moves .797 above the midpoint .800. */
+    static unsigned char const expected_pixels[] = {
+        145, 43, 8, 255, 161, 48, 8, 255, 161, 48, 8, 255
+    };
 
     memset(&state, 0, sizeof(state));
     memset(&hooks, 0, sizeof(hooks));
@@ -355,6 +398,21 @@ palette_integration_test_impl(int scenario, int gpu)
             sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_LUT_POLICY, "none") ||
             sixel_output_new(&output, playback_test_write, &state.buffer,
                 NULL) != SIXEL_OK) {
+        goto end;
+    }
+    if (profile != NULL && (sixel_encoder_setopt(encoder, 'U', profile) ||
+            sixel_encoder_setopt(encoder, 'X', "linear") ||
+            sixel_encoder_setopt(encoder, 'W', "linear") ||
+            sixel_encoder_setopt(encoder, 'Q', "kmeans:seed=1") ||
+            sixel_encoder_setopt(encoder, 'p', "2") ||
+            sixel_encoder_setopt(encoder, '5', "none") ||
+            sixel_encoder_setopt(encoder, '_', "none") ||
+            sixel_encoder_setopt(encoder, 'F', "none") ||
+            sixel_encoder_setopt(encoder, '0', "none") ||
+            sixel_encoder_setopt(encoder, 'd', "fs:scan=raster") ||
+            sixel_encoder_setopt(encoder, 't', "rgb") ||
+            sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
+                "greedy:B3:palette=latest:prepare_workers=1"))) {
         goto end;
     }
     if (gpu && (sixel_encoder_setopt(encoder, 'G', "force") ||
@@ -452,6 +510,17 @@ palette_integration_test_impl(int scenario, int gpu)
                 goto end;
             }
         }
+        if (profile != NULL) {
+            if (sixel_decode_direct(state.buffer.bytes + state.offsets[1],
+                    (int)(state.offsets[2] - state.offsets[1]), &decoded,
+                    &width, &height, NULL) || width != 3 || height != 1 ||
+                    memcmp(decoded, expected_pixels, sizeof(expected_pixels))) {
+                fprintf(stderr, "ICC latest palette wire or FS mismatch\n");
+                goto end;
+            }
+            free(decoded);
+            decoded = NULL;
+        }
         if (scenario == 0 &&
                 (state.offsets[2] - state.offsets[1] != state.reference.size ||
                  memcmp(state.buffer.bytes + state.offsets[1],
@@ -483,12 +552,14 @@ end:
     sixel_encoder_unref(encoder);
     sixel_cond_destroy(&state.cond);
     sixel_mutex_destroy(&state.mutex);
+    free(decoded);
     free(state.buffer.bytes);
     free(state.reference.bytes);
     return failed;
 #else
     (void)scenario;
     (void)gpu;
+    (void)profile;
     return 77;
 #endif
 }
@@ -496,11 +567,20 @@ end:
 int
 palette_integration_test(int scenario)
 {
-    return palette_integration_test_impl(scenario, 0);
+    return palette_integration_test_impl(scenario, 0, NULL);
 }
 
 int
 palette_integration_gpu_test(int scenario)
 {
-    return palette_integration_test_impl(scenario, 1);
+    return palette_integration_test_impl(scenario, 1, NULL);
+}
+
+int
+test_latest_icc_feedback(int argc, char **argv)
+{
+    if (argc != 2) {
+        return 1;
+    }
+    return palette_integration_test_impl(INTEGRATION_ICC_FEEDBACK, 0, argv[1]);
 }
