@@ -32,6 +32,8 @@ tlog_capture(sixel_frame_t *frame, void *context)
         SIXEL_COLORSPACE_DIN99D
     };
     tlog_context_t *ctx;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
     float const *pixels;
     unsigned char const *bytes;
     double value;
@@ -56,20 +58,23 @@ tlog_capture(sixel_frame_t *frame, void *context)
              ctx->variant >= 12 && ctx->variant <= 14
              ? ctx->variant - 10 : 0;
     byte_view = ctx->variant == 11 || ctx->variant == 15;
-    if (frame->width != 4 || frame->height != 2 || frame->ncolors != -1 ||
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.width != 4 || view.height != 2 || view.ncolors != -1 ||
+        view.rgb_definition != NULL ||
         frame->transparent != -1 || frame->transparent_mask != NULL ||
         frame->transparent_mask_size != 0u ||
         frame->alpha_zero_is_transparent != 0 ||
-        sixel_frame_format(frame) != (byte_view ? SIXEL_PIXELFORMAT_RGB888
-                                         : formats[target]) ||
-        frame->format.coordinates != (byte_view ? SIXEL_COLORSPACE_GAMMA
-                                        : spaces[target])) {
+        view.pixelformat != (byte_view ? SIXEL_PIXELFORMAT_RGB888
+                                      : formats[target]) ||
+        view.colorspace != (byte_view ? SIXEL_COLORSPACE_GAMMA
+                                      : spaces[target])) {
         fprintf(stderr, "TLOGLUV|metadata=0|format=%x|space=%d\n",
                 sixel_frame_format(frame), frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }
-    pixels = (float const *)sixel_frame_get_pixels(frame);
-    bytes = sixel_frame_get_pixels(frame);
+    pixels = view.pixels_float32;
+    bytes = view.pixels;
     ok = 1;
     negative = 0;
     above = 0;

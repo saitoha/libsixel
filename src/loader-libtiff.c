@@ -2634,20 +2634,21 @@ load_with_libtiff(
         goto end;
     }
 
-    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-        sixel_frame_as_interface(frame),
-        &(sixel_frame_pixels_request_t){
-            pixels,
-            NULL,
-            frame->width,
-            frame->height,
-            pixelformat,
-            -1,
-            -1,
-            SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
-            ? SIXEL_FRAME_PIXELS_FLOAT32
-            : SIXEL_FRAME_PIXELS_U8
-        });
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        /* The decoder has already expressed native XYZ and managed input
+         * in the linear sRGB basis. Unmanaged RGB retains gamma coordinates. */
+        status = sixel_frame_init_rgb_float(frame, (float *)(void *)pixels,
+            frame->width, frame->height,
+            pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+                ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA, -1);
+    } else {
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels, NULL, frame->width, frame->height, pixelformat,
+                -1, -1, SIXEL_FRAME_PIXELS_U8
+            });
+    }
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, pixels);
         goto end;

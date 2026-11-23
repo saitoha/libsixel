@@ -3,10 +3,103 @@
  * palette promotion is requested for indexed sources.
  */
 
+#include <math.h>
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/loader-common.h"
 
 #if HAVE_WEBP
+static double
+webp_test_srgb(unsigned char sample)
+{
+    double value;
+
+    value = sample / 255.0;
+    return value <= 0.04045 ? value / 12.92
+                           : pow((value + 0.055) / 1.055, 2.4);
+}
+
+static SIXELSTATUS
+webp_test_capture_linear_alpha(sixel_frame_t *frame, void *context)
+{
+    static unsigned char const rgb[] = {128, 64, 192, 32, 200, 96};
+    static unsigned char const bg[] = {32, 96, 160};
+    sixel_frame_pixels_view_t view;
+    unsigned int *calls;
+    double expected;
+    double alpha;
+    size_t i;
+
+    calls = context;
+    ++*calls;
+    if (SIXEL_FAILED(loader_test_frame_get_pixels_view(frame, &view)) ||
+        view.width != 2 || view.height != 1 ||
+        view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+        view.colorspace != SIXEL_COLORSPACE_LINEAR ||
+        view.rgb_definition != NULL || view.pixels_float32 == NULL) {
+        fprintf(stderr, "WebP alpha output must be linear sRGB float32\n");
+        return SIXEL_BAD_INPUT;
+    }
+    for (i = 0u; i < sizeof(rgb); ++i) {
+        alpha = i < 3u ? 128.0 / 255.0 : 1.0;
+        expected = alpha * webp_test_srgb(rgb[i]) +
+                   (1.0 - alpha) * webp_test_srgb(bg[i % 3u]);
+        if (!(fabs(view.pixels_float32[i] - expected) < 2e-7)) {
+            fprintf(stderr, "WebP sample %zu: %.9g vs %.9g\n",
+                    i, view.pixels_float32[i], expected);
+            return SIXEL_BAD_INPUT;
+        }
+    }
+    return SIXEL_OK;
+}
+
+static int
+webp_test_linear_alpha(void)
+{
+    /* Lossless input encoded with cwebp -lossless -exact -z 9 from
+     * RGBA pixels (128,64,192,128) and (32,200,96,255). */
+    static unsigned char const webp[] = {
+        0x52, 0x49, 0x46, 0x46, 0x1e, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+        0x56, 0x50, 0x38, 0x4c, 0x11, 0x00, 0x00, 0x00, 0x2f, 0x01, 0x00, 0x00,
+        0x10, 0x38, 0x10, 0xf2, 0x41, 0x00, 0x0f, 0x06, 0x7c, 0xc0, 0xff, 0xb0,
+        0x04, 0x00
+    };
+    unsigned char bg[] = {32, 96, 160};
+    sixel_allocator_t *allocator = NULL;
+    sixel_loader_component_t *component = NULL;
+    sixel_chunk_t *chunk = NULL;
+    unsigned int calls = 0u;
+    loader_probe_callback_state_t callback = {
+        NULL, webp_test_capture_linear_alpha, &calls
+    };
+    int no = 0;
+    int ok;
+
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
+    ok = SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
+                                               NULL)) &&
+        SIXEL_SUCCEEDED(create_loader_component_by_name(
+            "libwebp", allocator, (void **)&component)) &&
+        SIXEL_SUCCEEDED(sixel_loader_component_setopt(component,
+            SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS, &no)) &&
+        SIXEL_SUCCEEDED(sixel_loader_component_setopt(component,
+            SIXEL_LOADER_OPTION_USE_PALETTE, &no)) &&
+        SIXEL_SUCCEEDED(sixel_loader_component_setopt(component,
+            SIXEL_LOADER_OPTION_BGCOLOR, bg)) &&
+        SIXEL_SUCCEEDED(sixel_chunk_create_from_memory(&chunk, webp,
+            sizeof(webp), NULL, allocator)) &&
+        SIXEL_SUCCEEDED(sixel_loader_component_load(component, chunk,
+            capture_frame_trampoline, &callback)) && calls == 1u;
+    if (!ok) {
+        fprintf(stderr, "%s\n", sixel_helper_get_additional_message());
+    }
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    sixel_loader_component_unref(component);
+    sixel_allocator_unref(allocator);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 static int
 run_libwebp_loader_case_with_options(char const *label,
                                      char const *path,
@@ -227,6 +320,9 @@ test_loader_0017_loader_libwebp_pixelformat(int argc, char **argv)
     (void) argv;
 
 #if HAVE_WEBP
+    if (argc == 2 && strcmp(argv[1], "linear-alpha") == 0) {
+        return webp_test_linear_alpha();
+    }
     return run_libwebp_loader_test();
 #else
     fprintf(stderr, "libwebp loader unavailable\n");

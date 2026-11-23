@@ -1134,10 +1134,9 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
             + bg_linear[2] * (1.0f - alpha);
     }
 
-    sixel_allocator_free(allocator, frame->pixels.u8ptr);
-    frame->pixels.u8ptr = NULL;
-    frame->pixel_extent = 0u;
-    status = sixel_frame_init_rgb_float(frame, (float *)(void *)dst,
+    /* Publish the composited samples and release the old RGBA allocation
+     * together, after the frame initializer has validated the replacement. */
+    status = sixel_frame_init_rgb_float(frame, dst,
         frame->width, frame->height, SIXEL_COLORSPACE_LINEAR, -1);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, dst);
