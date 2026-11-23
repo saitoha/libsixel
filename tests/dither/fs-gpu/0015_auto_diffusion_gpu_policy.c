@@ -201,6 +201,69 @@ end:
 }
 #endif
 
+/* Four registers force diffusion on this 32-color input. Compare painted
+ * colors so a valid change of register assignment still passes. */
+static int
+test_output_fallback(char const *mode)
+{
+    unsigned char source[32 * 3], reference[sizeof(source)];
+    unsigned char *pixels = NULL, *palette = NULL;
+    sixel_encoder_t *encoder = NULL;
+    sixel_frame_t *frame = NULL;
+    sixel_output_t *output = NULL;
+    playback_test_buffer_t buffer = {0};
+    int i, pass, w, h, colors, ok = 0;
+
+    for (i = 0; i < (int)sizeof(source); ++i) {
+        source[i] = (unsigned char)(i * 37);
+    }
+    AHEAD_CHECK(sixel_frame_new(&frame, NULL) == SIXEL_OK);
+    AHEAD_CHECK(sixel_frame_init_borrowed(frame, source, 32, 1,
+        SIXEL_PIXELFORMAT_RGB888, NULL, -1) == SIXEL_OK);
+    AHEAD_CHECK(sixel_encoder_new(&encoder, NULL) == SIXEL_OK);
+    AHEAD_CHECK(sixel_encoder_setopt(encoder, 'p', "4") == SIXEL_OK);
+    AHEAD_CHECK(sixel_encoder_setopt(encoder,
+        strcmp(mode, "or") == 0 ? 'O' : 'U', mode) == SIXEL_OK);
+    AHEAD_CHECK(sixel_output_new(&output, playback_test_write, &buffer, NULL)
+        == SIXEL_OK);
+
+    for (pass = 0; pass < 2; ++pass) {
+        buffer.size = 0;
+        AHEAD_CHECK(sixel_encoder_setopt(encoder, 'G', pass ? "auto" : "off")
+            == SIXEL_OK);
+        AHEAD_CHECK(sixel_encoder_encode_frame(encoder, frame, output)
+            == SIXEL_OK);
+        AHEAD_CHECK(sixel_decode_raw(buffer.bytes, (int)buffer.size, &pixels,
+            &w, &h, &palette, &colors, NULL) == SIXEL_OK);
+        AHEAD_CHECK(w == 32 && h == 1);
+        for (i = 0; i < w; ++i) {
+            AHEAD_CHECK(pixels[i] < colors);
+            if (pass == 0) {
+                memcpy(reference + 3 * i, palette + 3 * pixels[i], 3);
+            } else {
+                AHEAD_CHECK(memcmp(reference + 3 * i,
+                    palette + 3 * pixels[i], 3) == 0);
+            }
+        }
+        /* A solid reference could hide a failure to paint this gradient. */
+        AHEAD_CHECK(memcmp(reference, reference + 3,
+            sizeof(reference) - 3) != 0);
+        free(pixels);
+        pixels = NULL;
+        free(palette);
+        palette = NULL;
+    }
+    ok = 1;
+end:
+    free(pixels);
+    free(palette);
+    free(buffer.bytes);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    sixel_frame_unref(frame);
+    return !ok;
+}
+
 int
 test_dither_fs_gpu_0015(int argc, char **argv)
 {
@@ -220,6 +283,7 @@ test_dither_fs_gpu_0015(int argc, char **argv)
     if (argc == 3) {
         return test_keep_playback(argv[1], strcmp(argv[2], "delta") == 0);
     }
+    if (argc == 2) return test_output_fallback(argv[1]);
     device = lso2_gpu_rendezvous_device();
     if (device != 0) return device;
     encoder = NULL;
@@ -271,8 +335,7 @@ end:
     free(buffer.bytes);
     return !ok;
 #else
-    (void)argc;
-    (void)argv;
+    if (argc == 2) return test_output_fallback(argv[1]);
     return 77;
 #endif
 }
