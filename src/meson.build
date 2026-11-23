@@ -518,7 +518,11 @@ else
 endif
 if webgpu
   if not amalgamated_lib_enabled
-    libsixel_sources += files('dither-diffusion-webgpu.c', 'gpu-palette-webgpu.c')
+    libsixel_sources += files(
+      'dither-diffusion-webgpu.c',
+      'encoder-body-gpu-webgpu.c',
+      'gpu-palette-webgpu.c',
+    )
   endif
   foreach name : [
     'dither-diffusion',
@@ -539,6 +543,7 @@ if webgpu
     'dither-policy-sierra3',
     'dither-policy-stucki',
     'dither-policy-x-dither',
+    'encoder-body-webgpu',
     'gpu-palette',
     'gpu-palette-batch',
     'gpu-palette-point',

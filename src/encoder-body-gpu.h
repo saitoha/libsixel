@@ -75,6 +75,13 @@ typedef struct sixel_body_gpu_result {
 
 typedef struct sixel_body_gpu sixel_body_gpu_t;
 
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+/* The serial WebGPU consumer owns the returned, fully spelled body. */
+SIXEL_INTERNAL_API unsigned char *
+sixel_body_webgpu_spell(sixel_body_gpu_request_t const *request,
+                       uint32_t *length, double *elapsed);
+#endif
+
 #if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 /* SIXEL_FEATURE_ERROR when no device is present. */
 SIXEL_INTERNAL_API SIXELSTATUS

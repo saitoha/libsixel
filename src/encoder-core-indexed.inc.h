@@ -25,6 +25,12 @@ typedef struct sixel_indexed_core {
     sixel_body_gpu_t *gpu;
     sixel_body_gpu_result_t gpu_result;
     uint32_t gpu_registers[SIXEL_PALETTE_MAX];
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+    int webgpu_width, webgpu_height, webgpu_colors;
+    int webgpu_body_frames;
+    int webgpu_body_warm;
+    double webgpu_body_cpu_seconds;
+#endif
 #if SIXEL_ENABLE_THREADS
     sixel_parallel_context_t parallel;
     int parallel_active;
@@ -322,6 +328,96 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
 }
 #endif
 
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+static int
+sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
+    sixel_indexed_frame_description_t const *desc, int ncolors,
+    double *cpu_start)
+{
+    sixel_body_gpu_request_t request;
+    sixel_output_t const *body;
+    unsigned char *data;
+    uint32_t length, offset;
+    double gpu_ms;
+    int i;
+
+    /* Only consider a complete, full-origin raster. Size mode's first
+     * sweep can underpaint, so it must retain its own emission path. */
+    if (!core->gpu_body || core->options.ormode ||
+            core->options.encode_policy == SIXEL_ENCODEPOLICY_SIZE ||
+            desc->encoded_x != 0 || desc->encoded_y != 0 ||
+            desc->encoded_width != desc->width ||
+            desc->encoded_height != desc->height ||
+            desc->width > 2048 || desc->height > 2160 ||
+            (size_t)desc->width * desc->height < 1024U * 1024U ||
+            ncolors < 1 || ncolors > 256) {
+        return 0;
+    }
+    if (core->webgpu_width != desc->width ||
+            core->webgpu_height != desc->height ||
+            core->webgpu_colors != ncolors) {
+        core->webgpu_width = desc->width;
+        core->webgpu_height = desc->height;
+        core->webgpu_colors = ncolors;
+        core->webgpu_body_frames = 0;
+        core->webgpu_body_warm = 0;
+    }
+    /* Recheck the CPU cost every sixteen frames. High resolution alone
+     * cannot pay for two GPU readbacks on a low-complexity scene. */
+    if (core->webgpu_body_frames == 0) {
+        *cpu_start = sixel_timer_monotonic();
+        return 0;
+    }
+    if (core->webgpu_body_frames < 0) {
+        ++core->webgpu_body_frames;
+        return 0;
+    }
+    --core->webgpu_body_frames;
+    memset(&request, 0, sizeof(request));
+    body = core->body;
+    for (i = 0; i < ncolors; ++i)
+        core->gpu_registers[i] = body->wire_colors[i].definition.register_index;
+    request.indexes = core->image->indexes;
+    request.mask = core->image->skip;
+    request.width = desc->width;
+    request.height = desc->height;
+    request.ncolors = ncolors;
+    request.keycolor = desc->keycolor;
+    request.registers = core->gpu_registers;
+    request.selectors = ncolors != 2 || desc->keycolor == -1 ||
+        body->keycolor_reserved;
+    request.limited = body->has_gri_arg_limit;
+    data = sixel_body_webgpu_spell(&request, &length, &gpu_ms);
+    if (data == NULL) {
+        core->webgpu_body_frames = -15;
+        return 0;
+    }
+    /* Let a new working set finish first-use allocation and compilation
+     * before applying the steady-state comparison. */
+    if (core->webgpu_body_warm < 2) {
+        ++core->webgpu_body_warm;
+    } else if (gpu_ms * 0.001 >= core->webgpu_body_cpu_seconds) {
+        core->webgpu_body_frames = -15;
+    }
+
+    /* Keep the serial writer's packet sizes. Finish owns the short tail
+     * after retained staging, just as it does for CPU-emitted bands. */
+    for (offset = 0; length - offset >= SIXEL_OUTPUT_PACKET_SIZE;
+            offset += SIXEL_OUTPUT_PACKET_SIZE) {
+        core->status = sixel_output_write_bytes(core->body,
+            (char const *)data + offset, SIXEL_OUTPUT_PACKET_SIZE);
+        if (SIXEL_FAILED(core->status)) break;
+    }
+    if (SIXEL_SUCCEEDED(core->status)) {
+        core->body->pos = (int)(length - offset);
+        memcpy(core->body->buffer, data + offset, length - offset);
+        core->band = sixel_count_sixel_bands(desc->encoded_height);
+    }
+    free(data);
+    return 1;
+}
+#endif
+
 static SIXELSTATUS
 sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
 {
@@ -336,6 +432,9 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
     int span;
 #if SIXEL_ENABLE_THREADS
     int ready_bands;
+#endif
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+    double cpu_start;
 #endif
     SIXELSTATUS status;
 
@@ -363,6 +462,14 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
         core->status = status;
         return status;
     }
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+    cpu_start = 0.0;
+    if (published_rows == desc->height && core->band == 0 &&
+            sixel_indexed_core_webgpu_body(
+                core, desc, (int)palette.count, &cpu_start)) {
+        return core->status;
+    }
+#endif
     ready = published_rows == desc->height ? desc->encoded_height :
         desc->encoded_y + published_rows;
     while (core->band < sixel_count_sixel_bands(desc->encoded_height)) {
@@ -429,6 +536,13 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
         }
         core->band += span;
     }
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+    if (cpu_start > 0.0 && SIXEL_SUCCEEDED(status)) {
+        core->webgpu_body_cpu_seconds = sixel_timer_monotonic() - cpu_start;
+        core->webgpu_body_frames = core->webgpu_body_cpu_seconds >= 0.0025
+            ? 15 : -15;
+    }
+#endif
     /* The parallel writer owns body_status until finish joins it. Submission
      * observes its failure through the queue lock, never through the sink's
      * unsynchronized status field. Serial emission owns that field here. */
