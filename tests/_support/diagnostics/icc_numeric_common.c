@@ -3625,14 +3625,15 @@ icc_numeric_frame_storage_fallback_test(void)
     ok = def != NULL && SIXEL_SUCCEEDED(sixel_frame_new(&frame, NULL)) &&
         SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 3, 1,
             SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1));
-    if (ok) {
-        iface = sixel_frame_as_interface(frame);
-        ok = SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, def)) &&
-            SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
-                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) &&
-            iccn_float_result((float *)(void *)sixel_frame_get_pixels(frame),
-                              expected, 9u);
+    if (!ok) {
+        goto end;
     }
+    iface = sixel_frame_as_interface(frame);
+    ok = SIXEL_SUCCEEDED(iface->vtbl->set_rgb_definition(iface, def)) &&
+        SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) &&
+        iccn_float_result((float *)(void *)sixel_frame_get_pixels(frame),
+                          expected, 9u);
     /* The same finite PCS is valid for clipped RGB888. Its magenta
      * result distinguishes D2B1 from the green/cyan legacy alternative. */
     if (ok) {
@@ -3643,6 +3644,7 @@ icc_numeric_frame_storage_fallback_test(void)
                 SIXEL_PIXELFORMAT_RGB888)) &&
             memcmp(sixel_frame_get_pixels(frame), clipped, 3u) == 0;
     }
+end:
     sixel_cdef_free(def);
     sixel_frame_unref(frame);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
