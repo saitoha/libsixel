@@ -549,6 +549,42 @@ def fmt(values):
     return ', '.join(format(float(v), '.17g') for v in values)
 
 
+def png_extended_trc_oracle(profile):
+    """Display P3 colorants with an exact square TRC and 16-bit red samples."""
+    tags = []
+    red_xyz = None
+    for n in range(struct.unpack_from('>I', profile, 128)[0]):
+        tag, start, size = struct.unpack_from('>4sII', profile, 132 + 12 * n)
+        data = profile[start:start + size]
+        if tag in (b'rTRC', b'gTRC', b'bTRC'):
+            data = b'para' + bytes(4) + struct.pack('>HHi', 0, 0, 2 * 65536)
+        if tag == b'rXYZ':
+            red_xyz = [D(v) / 65536 for v in struct.unpack_from('>3i', data, 8)]
+        if tag != b'desc':
+            tags.append((tag, data))
+    icc = pack_profile(tags, name='Display P3 colorants with square TRC')
+    codes = (65535, 32768, 1)
+    png = b'\x89PNG\r\n\x1a\n' + b''.join((
+        chunk(b'IHDR', struct.pack('>IIBBBBB', len(codes), 1, 16, 2, 0, 0, 0)),
+        chunk(b'iCCP', b'Square TRC\0\0' + zlib.compress(icc, 9)),
+        chunk(b'IDAT', zlib.compress(bytes(1) + b''.join(
+            struct.pack('>3H', code, 0, 0) for code in codes), 9)),
+        chunk(b'IEND', b''),
+    ))
+    srgb_d50 = list(map(list, zip(*(adapt(col) for col in zip(*SRGB)))))
+    red = apply(inverse(srgb_d50), red_xyz)
+    lines = ['/* Generated independently from the stored D50 colorant. */',
+             'static unsigned char const color_png_extended_trc[] = {']
+    for offset in range(0, len(png), 12):
+        lines.append('    ' + ', '.join(
+            f'0x{v:02x}' for v in png[offset:offset + 12]) + ',')
+    lines.extend(['};', 'static double const color_png_extended_expected[] = {'])
+    for code in codes:
+        lines.append('    ' + fmt([v * (D(code) / 65535) ** 2 for v in red]) + ',')
+    lines.extend(['};', ''])
+    return {'png-extended-trc.h': '\n'.join(lines).encode()}
+
+
 def png_sample_oracles(profile):
     """Keep source integers, analytic colors and quantized ICC colors apart."""
     outputs = {}
@@ -1832,6 +1868,7 @@ def main():
                'display-p3.icc': profile, 'display-p3.png': png}
     outputs.update(lut_outputs)
     outputs.update(png_sample_oracles(profile))
+    outputs.update(png_extended_trc_oracle(profile))
     outputs.update(legacy_png_icc_oracle())
     outputs.update(frame_byte_oracles())
     outputs.update(png_byte_target_oracles())

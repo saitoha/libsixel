@@ -13614,6 +13614,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	batch,$(runner_batches),$(call runner_batch_members,$(batch))) \
 	data/color-numeric/destination-snap.h \
 	data/color-numeric/mpet-storage-png.h \
+	data/color-numeric/png-extended-trc.h \
 	data/color-numeric/named-output.h \
 	data/color-numeric/generate-named-output.py \
 	data/color-numeric/named-output-p3.png \
