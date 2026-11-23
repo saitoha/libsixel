@@ -1791,22 +1791,19 @@ test_profile_frame(char const *mode)
     result = EXIT_FAILURE;
     frame = NULL;
     clone = NULL;
-    definition = icc ? sixel_cdef_icc(color_icc, sizeof(color_icc)) :
-        sixel_cdef_name(srgb ? "srgb" : "display-p3");
+    definition = icc ? sixel_color_def_new_icc(color_icc, sizeof(color_icc)) :
+        sixel_color_def_new_named(srgb ? "srgb" : "display-p3");
     if (definition == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
-            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
+        SIXEL_FAILED(sixel_frame_init_rgbf32_borrowed(
+            frame, pixels, 2, 1, definition))) {
         goto end;
     }
     iface = sixel_frame_as_interface(frame);
-    if (SIXEL_FAILED(iface->vtbl->set_rgb_definition(iface, definition))) {
-        goto end;
-    }
     if (icc && (SIXEL_FAILED(iface->vtbl->measure_storage(iface,
             &footprint)) || footprint < sizeof(color_icc) + sizeof(pixels))) {
         goto end;
     }
-    sixel_cdef_free(definition);
+    sixel_color_def_free(definition);
     definition = NULL;
     if (retry) {
         /* The first green pixel converts before the invalid red sample. */
@@ -1876,11 +1873,68 @@ test_profile_frame(char const *mode)
     }
     result = EXIT_SUCCESS;
 end:
-    sixel_cdef_free(definition);
+    sixel_color_def_free(definition);
     sixel_frame_unref(frame);
     if (clone != NULL) {
         clone->vtbl->unref(clone);
     }
+    return result;
+}
+
+static int
+test_rgbf32_public_retry(void)
+{
+    static double const expected[] = {0.4821, 0.5, 0.41245};
+    float gray[3] = {0.5f, 0.5f, 0.5f};
+    float replacement[3] = {1.0f, 0.0f, 0.0f};
+    double sample[3] = {0.5, 0.5, 0.5};
+    double xyz[3];
+    sixel_frame_t *frame = NULL;
+    sixel_color_def_t *linear;
+    sixel_color_def_t *gamma;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    int channel;
+    int result = EXIT_FAILURE;
+
+    linear = sixel_color_def_new_named("linear-srgb");
+    gamma = sixel_color_def_new_named("srgb");
+    if (linear == NULL || gamma == NULL ||
+            SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+            SIXEL_FAILED(sixel_frame_init_rgbf32_borrowed(
+                frame, gray, 1, 1, linear))) {
+        goto end;
+    }
+    sixel_color_def_free(linear);
+    linear = NULL;
+    /* A failed replacement must retain both the borrow and its definition. */
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_SUCCEEDED(sixel_frame_init_rgbf32_borrowed(
+                frame, replacement, 0, 1, gamma)) ||
+            SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+            view.width != 1 || view.height != 1 ||
+            view.pixels_float32 != gray || view.rgb_definition == NULL ||
+            !sixel_cdef_to_xyz(view.rgb_definition, sample, xyz,
+                               SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
+        goto end;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        if (!(fabs(xyz[channel] - expected[channel]) < 1e-5)) {
+            goto end;
+        }
+    }
+    if (SIXEL_FAILED(sixel_frame_init_rgbf32_borrowed(
+                frame, replacement, 1, 1, gamma)) ||
+            SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+            view.pixels_float32 != replacement ||
+            !sixel_cdef_same_rgb(view.rgb_definition, gamma)) {
+        goto end;
+    }
+    result = EXIT_SUCCESS;
+end:
+    sixel_color_def_free(gamma);
+    sixel_color_def_free(linear);
+    sixel_frame_unref(frame);
     return result;
 }
 
@@ -2591,6 +2645,9 @@ test_frame_0014_clone_float(int argc, char **argv)
     }
     if (argc == 2 && strcmp(argv[1], "byte-resize-retry") == 0) {
         return test_profile_byte_resize_retry();
+    }
+    if (argc == 2 && strcmp(argv[1], "public-rgbf32-retry") == 0) {
+        return test_rgbf32_public_retry();
     }
     if (argc == 2 && strcmp(argv[1], "packed-retry") == 0) {
         return test_packed_retry();

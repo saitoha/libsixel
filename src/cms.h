@@ -320,7 +320,6 @@ sixel_cms_delete_transform(sixel_cms_transform_t *transform);
  * This internal foundation currently uses the builtin ICC PCS evaluator.
  * It does not change loader defaults or select a terminal color policy.
  */
-typedef struct sixel_color_def sixel_color_def_t;
 typedef struct sixel_color_xform sixel_color_xform_t;
 
 typedef enum sixel_color_trc {

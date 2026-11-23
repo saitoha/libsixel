@@ -1699,6 +1699,64 @@ sixel_frame_init_borrowed(
         0);
 }
 
+SIXELAPI sixel_color_def_t *
+sixel_color_def_new_named(char const *name)
+{
+    sixel_color_def_t *srgb;
+    sixel_color_def_t *linear;
+
+    if (name == NULL || strcmp(name, "linear-srgb") != 0) {
+        return sixel_cdef_name(name);
+    }
+    srgb = sixel_cdef_name("srgb");
+    linear = srgb != NULL ? sixel_cdef_linearized(srgb) : NULL;
+    sixel_cdef_free(srgb);
+    return linear;
+}
+
+SIXELAPI sixel_color_def_t *
+sixel_color_def_new_icc(void const *bytes, size_t length)
+{
+    return sixel_cdef_icc(bytes, length);
+}
+
+SIXELAPI void
+sixel_color_def_free(sixel_color_def_t *definition)
+{
+    sixel_cdef_free(definition);
+}
+
+SIXELAPI SIXELSTATUS
+sixel_frame_init_rgbf32_borrowed(sixel_frame_t *frame, float *pixels,
+                               int width, int height,
+                               sixel_color_def_t const *definition)
+{
+    sixel_color_def_t *copy;
+    SIXELSTATUS status;
+
+    if (frame == NULL || pixels == NULL || definition == NULL ||
+        (frame->owns_pixels && (void *)pixels == frame->pixels.u8ptr)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /* Prepare the color definition before replacing live frame storage. */
+    copy = sixel_cdef_clone(definition);
+    if (copy == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    status = sixel_frame_init_common(frame, pixels, width, height,
+                                     SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1,
+                                     1, 0, 0);
+    if (SIXEL_FAILED(status)) {
+        sixel_cdef_free(copy);
+        return status;
+    }
+    frame->format.coordinates = SIXEL_FRAME_COLORSPACE_PROFILE_RGB;
+    frame->format.rgb = copy;
+    frame->transparent = -1;
+    return SIXEL_OK;
+}
+
 /* get pixels */
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame)  /* frame object */

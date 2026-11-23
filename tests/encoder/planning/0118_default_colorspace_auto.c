@@ -2,7 +2,6 @@
 #include "../../_support/processing/planner/colorspace_auto_common.h"
 
 #include <6cells.h>
-#include "src/cms.h"
 #include "tests/_support/planner/pipeline/playback_test_common.h"
 #include "tests/data/color-numeric/icc.h"
 
@@ -14,17 +13,12 @@ static SIXELSTATUS
 init_p3(sixel_frame_t **frame, float *pixels, int height,
         sixel_color_def_t const *p3)
 {
-    sixel_frame_interface_t *iface;
     SIXELSTATUS status;
 
     status = sixel_frame_new(frame, NULL);
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_frame_init_borrowed(*frame, pixels, 2, height,
-            SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1);
-    }
-    if (SIXEL_SUCCEEDED(status)) {
-        iface = sixel_frame_as_interface(*frame);
-        status = iface->vtbl->set_rgb_definition(iface, p3);
+        status = sixel_frame_init_rgbf32_borrowed(*frame, pixels, 2, height,
+                                                p3);
     }
     return status;
 }
@@ -85,7 +79,7 @@ check_p3_pixels(enum p3_case mode)
     expected = mode == P3_AUTO ? auto_expected : gamma_expected;
     expected_size = mode == P3_AUTO ? sizeof(auto_expected) :
                                       sizeof(gamma_expected);
-    p3 = sixel_cdef_icc(color_icc, sizeof(color_icc));
+    p3 = sixel_color_def_new_icc(color_icc, sizeof(color_icc));
     if (p3 == NULL || SIXEL_FAILED(init_p3(&frame, pixels, input_height, p3)) ||
         SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
         SIXEL_FAILED(sixel_output_new(&output, playback_test_write, &stream,
@@ -161,7 +155,7 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     sixel_frame_unref(frame);
-    sixel_cdef_free(p3);
+    sixel_color_def_free(p3);
     return result;
 }
 

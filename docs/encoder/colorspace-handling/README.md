@@ -25,6 +25,8 @@ This figure shows the generated-palette route; fixed-palette shortcuts can bypas
 
 The implementation may reuse storage, clone only the palette-building view, or skip a conversion when source and destination already match. Those optimizations do not change the conceptual contracts. The frame carries its effective pixel format and color space so later stages can choose the correct conversion instead of inferring it from whether resize or another option was requested.
 
+C callers can initialize tightly packed RGB float samples with `sixel_frame_init_rgbf32_borrowed()` and an explicit definition from `sixel_color_def_new_named()` or `sixel_color_def_new_icc()`. Initialization borrows mutable pixel storage and copies the definition, so the caller may free the definition immediately while retaining the pixels until the frame is reset or released. The definition describes the supplied samples, and the encoder converts them when a subsequent stage requires different coordinates.
+
 ## Lazy conversion at operation boundaries
 
 Float-buffer conversion may reuse exact promoted-byte sRGB transfer values and previously converted triplets within each worker chunk. These are exact arithmetic caches: they do not snap coordinates, approximate cube roots, or change failure publication. The [float conversion arithmetic contract](../../concepts/pixelformat-precision/README.md#float-conversion-arithmetic) defines their scope and equivalence coverage.
