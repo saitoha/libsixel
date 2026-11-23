@@ -222,6 +222,9 @@ set -- \
     dither/fs-gpu/0019_auto_or_output.t \
     dither/fs-gpu/0020_auto_linear_output.t \
     dither/fs-gpu/0021_auto_smptec_output.t \
+    dither/fs-gpu/0022_auto_mask_default.t \
+    dither/fs-gpu/0023_auto_mask_clear.t \
+    dither/fs-gpu/0024_auto_mask_playback.t \
     frame/storage/0057_default_foreground_pixel.t \
     frame/storage/0058_default_foreground_band.t \
     frame/storage/0059_default_foreground_aspect.t \
@@ -232,6 +235,10 @@ set -- \
     frame/storage/0064_libpng_compacted_storage.t \
     frame/storage/0065_set_width_storage.t \
     frame/storage/0066_set_height_storage.t \
+    frame/storage/0067_packed_rgb_layout_matrix.t \
+    frame/storage/0068_packed_rgb_reject.t \
+    frame/storage/0069_reshape_storage.t \
+    frame/storage/0070_icc_gray_saturation_trc.t \
     loader-png/indexed-color/0014_packed_palette_storage.t \
     loader-png/indexed-color/0015_packed_palette_orientation.t \
     frame/resize/0177_profile_byte_resize_retry.t \

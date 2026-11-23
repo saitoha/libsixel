@@ -5726,6 +5726,7 @@ sixel_encoder_core_encode_dispatch(
     sixel_legacy_encode_request_t const *request)
 {
     SIXELSTATUS status;
+    int cpu_mask_fallback;
 
     if (request == NULL || request->pixels == NULL ||
         request->dither == NULL || request->output == NULL) {
@@ -5761,6 +5762,16 @@ sixel_encoder_core_encode_dispatch(
                 "which declined this dither configuration");
             return SIXEL_FEATURE_ERROR;
         }
+        /* The CPU writer implements clear with a reserved key. Disable
+         * GPU palette application for this path before writing anything. */
+        cpu_mask_fallback = request->dither->diffuse_on_gpu &&
+            request->dither->gpu_policy == SIXEL_GPU_POLICY_AUTO &&
+            !sixel_indexed_accepts_transparency(request->dither,
+                                                request->output);
+        if (cpu_mask_fallback) {
+            request->dither->diffuse_on_gpu = 0;
+            request->dither->gpu_policy = SIXEL_GPU_POLICY_OFF;
+        }
         if (request->dither->diffuse_on_gpu) {
             sixel_helper_set_additional_message(
                 "GPU diffusion requires the RGB8 GPU component path");
@@ -5771,6 +5782,9 @@ sixel_encoder_core_encode_dispatch(
                                      request->height,
                                      request->dither,
                                      request->output);
+        if (cpu_mask_fallback) {
+            request->dither->gpu_policy = SIXEL_GPU_POLICY_AUTO;
+        }
     }
 
     return status;

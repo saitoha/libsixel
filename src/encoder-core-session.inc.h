@@ -525,7 +525,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     sixel_dither_encode_allocation_t allocation;
     sixel_indexed_subgraph_t graph;
     size_t pixels;
-    int threads, include_mask;
+    int threads, clear, capture, include_mask, saved_gpu_policy;
     sixel_output_deferred_t local, *prepared;
     sixel_palette_apply_resolve_request_t resolve;
     double resolve_started, emit_started, history_started;
@@ -534,15 +534,25 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     dither = request->dither;
     output = request->output;
     session = output->session;
+    clear = !sixel_indexed_accepts_transparency(dither, output);
+    capture = sixel_output_is_resolve_only(output);
+    saved_gpu_policy = dither->gpu_policy;
     /* No change to the legacy mono shortcut, explicit precision or output
      * interpretation is allowed merely to qualify for this physical plan. */
     if (output->indexed_disabled ||
             !sixel_encode_delta_is_legacy(dither, output) ||
             output->source_colorspace != SIXEL_COLORSPACE_GAMMA ||
-            !sixel_indexed_accepts_transparency(dither, output) ||
+            (clear && (saved_gpu_policy == SIXEL_GPU_POLICY_FORCE ||
+                       !capture)) ||
             ((dither->pipeline_accumulation_result_enabled ||
               dither->pipeline_6delta_enabled) && session == NULL)) {
         return SIXEL_FALSE;
+    }
+    if (clear) {
+        /* Resolve-only playback needs an indexed image for its packet
+         * writer. Apply the CPU dither and preserve omissions in the image. */
+        dither->diffuse_on_gpu = 0;
+        dither->gpu_policy = SIXEL_GPU_POLICY_OFF;
     }
     threads = sixel_threads_resolve();
 
@@ -566,8 +576,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     if (prepared == NULL || prepared->solution == NULL) {
         /* With no deferred GPU solution, the packet writer still needs a
          * complete indexed image. Give ordinary apply the bound coverage. */
-        include_mask = sixel_output_is_resolve_only(output) &&
-            dither->keycolor >= 0 &&
+        include_mask = capture && dither->keycolor >= 0 &&
             dither->pipeline_transparent_mask != NULL;
         status = sixel_indexed_prepare(request, NULL, &local, include_mask);
         if (status != SIXEL_OK) goto end;
@@ -669,7 +678,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         graph.consumed = 1;
     }
     header.parameter_count = description.transparent_background ? 2 : 0;
-    header.parameter1 = description.transparent_background;
+    header.parameter1 = clear ? 0 : description.transparent_background;
     header.width = description.encoded_width;
     header.height = description.encoded_height;
     header.use_raster_attributes = 1;
@@ -804,6 +813,9 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     }
     ++output->indexed_count;
 end:
+    if (clear) {
+        dither->gpu_policy = saved_gpu_policy;
+    }
     if (graph.consumed && output->core != NULL) {
         (void)output->core->vtbl->abort(output->core);
     }

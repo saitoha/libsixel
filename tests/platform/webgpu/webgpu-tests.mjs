@@ -10,13 +10,13 @@ for (let i = header.length; i < image.length; ++i) {
 }
 
 function convert(createConverter, policy, method, lookup = 'none',
-                 palette = 'xterm256') {
+                 palette = 'xterm256', extra = []) {
     return new Promise((resolve, reject) => {
         let fs;
         createConverter({
             arguments: ['--gpu-policy=' + policy, '--lookup-policy=' + lookup,
                 '--precision-policy=8bit', '-d' + method, '-b' + palette,
-                '-o', 'output.six', 'input.ppm'],
+                ...extra, '-o', 'output.six', 'input.ppm'],
             preRun: [module => {
                 fs = module.FS;
                 fs.writeFile('input.ppm', image);
@@ -235,12 +235,42 @@ async function diffusionEquivalence(createConverter) {
     }
 }
 
+async function autoOutputFallback(createConverter) {
+    const proto = GPUComputePassEncoder.prototype;
+    const dispatch = proto.dispatchWorkgroups;
+    let submissions = 0;
+    proto.dispatchWorkgroups = function (...args) {
+        ++submissions;
+        return dispatch.apply(this, args);
+    };
+    try {
+        // Normal gamma must run actual diffusion compute passes. This
+        // positive control keeps a CPU-only run from masking a regression.
+        const control = await convert(createConverter, 'auto', 'fs', 'ordered');
+        if (submissions < 8 || !control.length)
+            throw Error('gamma output did not dispatch GPU diffusion');
+        for (const extra of [['-O'], ['-U', 'linear'], ['-U', 'smpte-c']]) {
+            const cpu = await convert(createConverter, 'off', 'fs', 'ordered',
+                                      'xterm256', extra);
+            const auto = await convert(createConverter, 'auto', 'fs', 'ordered',
+                                       'xterm256', extra);
+            if (!cpu.length || cpu.length !== auto.length ||
+                    !cpu.every((v, i) => v === auto[i]))
+                throw Error(extra.join(' ') + ' CPU fallback output differs');
+        }
+        return 'ok 1 - WebGPU auto falls back for unsupported outputs';
+    } finally {
+        proto.dispatchWorkgroups = dispatch;
+    }
+}
+
 // Both entry points report the same TAP result, including capability skips.
 export async function runTest(name, createConverter) {
     try {
         if (!await globalThis.navigator?.gpu?.requestAdapter())
             return 'ok 1 # SKIP no WebGPU adapter';
-        const tests = {paletteByteEquivalence, forceExitStatus, diffusionEquivalence};
+        const tests = {paletteByteEquivalence, forceExitStatus,
+                       diffusionEquivalence, autoOutputFallback};
         return await tests[name](createConverter);
     } catch (error) {
         return 'not ok 1 - ' + String(error).replace(/[\r\n]+/g, ' ');

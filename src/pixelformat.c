@@ -408,25 +408,69 @@ sixel_rgb_read16(unsigned char const *data)
 }
 
 
-void
-sixel_pixelformat_swap_packed_rb(unsigned char *dst, unsigned char const *src,
-                                size_t bytes, int shift)
+int
+sixel_pixelformat_packed_rgb_shift(int format)
 {
-    unsigned int word, exchanged;
-    size_t i;
+    switch (format) {
+    case SIXEL_PIXELFORMAT_RGB555:
+    case SIXEL_PIXELFORMAT_BGR555:
+        return 10;
+    case SIXEL_PIXELFORMAT_RGB565:
+    case SIXEL_PIXELFORMAT_BGR565:
+        return 11;
+    default:
+        return 0;
+    }
+}
 
-    for (i = 0; i < bytes; i += 2u) {
-        word = sixel_rgb_read16(src + i);
-        /* XOR only the two five-bit fields. Preserve green and the unused
-         * bit in 555, including when source and destination alias. */
-        exchanged = ((word >> shift) ^ word) & 0x1fu;
-        word ^= exchanged | (exchanged << shift);
+void
+sixel_pixelformat_pack_rgb(unsigned char *dst, unsigned char const *src,
+                          size_t count, int source, int target,
+                          int src_shift, int dst_shift)
+{
+    unsigned int word, exchanged, high, green, low;
+    int swap, src_stride, green_bits;
+
+    swap = (source == SIXEL_PIXELFORMAT_BGR888 ||
+            source == SIXEL_PIXELFORMAT_BGR555 ||
+            source == SIXEL_PIXELFORMAT_BGR565) !=
+           (target == SIXEL_PIXELFORMAT_BGR555 ||
+            target == SIXEL_PIXELFORMAT_BGR565);
+    src_stride = src_shift == 0 ? 3 : 2;
+    green_bits = dst_shift - 5;
+    for (; count != 0; --count, src += src_stride, dst += 2) {
+        if (src_shift == dst_shift) {
+            word = sixel_rgb_read16(src);
+            /* Preserve green and the unused RGB555 bit when reordering. */
+            exchanged = ((word >> dst_shift) ^ word) & 0x1fu;
+            word ^= exchanged | (exchanged << dst_shift);
+        } else {
+            if (src_shift == 0) {
+                high = src[0] >> 3;
+                green = src[1] >> (8 - green_bits);
+                low = src[2] >> 3;
+            } else {
+                word = sixel_rgb_read16(src);
+                high = (word >> src_shift) & 0x1fu;
+                low = word & 0x1fu;
+                /* Drop the low bit for 6→5. Replicate the high bit
+                 * for 5→6 so black and full green keep their endpoints. */
+                if (src_shift == 11) {
+                    green = (word >> 6) & 0x1fu;
+                } else {
+                    green = (word >> 5) & 0x1fu;
+                    green = (green << 1) | (green >> 4);
+                }
+            }
+            word = swap ? (low << dst_shift) | (green << 5) | high
+                        : (high << dst_shift) | (green << 5) | low;
+        }
 #if SWAP_BYTES
-        dst[i] = (unsigned char)word;
-        dst[i + 1u] = (unsigned char)(word >> 8);
+        dst[0] = (unsigned char)word;
+        dst[1] = (unsigned char)(word >> 8);
 #else
-        dst[i] = (unsigned char)(word >> 8);
-        dst[i + 1u] = (unsigned char)word;
+        dst[0] = (unsigned char)(word >> 8);
+        dst[1] = (unsigned char)word;
 #endif
     }
 }

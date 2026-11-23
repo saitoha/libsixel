@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WebGPU phased automatic output fallback</title>
+<pre id="tap">1..1
+</pre>
+<script src="webgpu-test.js"></script>
+<script type="module">
+import {runTest} from './webgpu-tests.mjs';
+document.getElementById('tap').append(await runTest('autoOutputFallback', globalThis.createConverter) + '\n');
+</script>

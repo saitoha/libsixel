@@ -8479,7 +8479,8 @@ jobs:
             check_target: >-
               check TESTS='platform/webgpu/0001_palette_byte_equivalence.t
               platform/webgpu/0002_force_exit_status.t
-              platform/webgpu/0003_diffusion_equivalence.t'
+              platform/webgpu/0003_diffusion_equivalence.t
+              platform/webgpu/0004_auto_output_fallback.t'
             extra_packages: >-
               libvulkan1
               mesa-vulkan-drivers
