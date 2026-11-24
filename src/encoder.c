@@ -118,6 +118,7 @@
 #include "palette-heckbert.h"
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
+#include "palette-kmeans-gpu.h"
 #include "palette-kmedoids.h"
 #include "palette-plan.h"
 #include "sample-stream.h"
@@ -5352,6 +5353,7 @@ typedef struct sixel_encode_dag_context {
     int palette_job_initialized;
     sixel_palette_job_failure_stage_t palette_job_failure_stage;
     SIXELSTATUS palette_job_failure_status;
+    int resident_indexed;
     int palette_ready;
     sixel_encoding_planner_t *planner;
     int clip_active;
@@ -5532,6 +5534,276 @@ sixel_encoder_latest_launch(sixel_encode_dag_context_t *context)
     return SIXEL_OK;
 }
 
+#if defined(HAVE_METAL)
+/* Admit only requests whose sampling, numeric space and output semantics
+ * match the fused Metal pipeline. LATEST keeps its snapshot selection and
+ * therefore uses the ordinary palette DAG. */
+static SIXELSTATUS
+sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
+{
+    sixel_encoder_t *encoder;
+    sixel_kmeans_resident_request_t request;
+    sixel_palette_frame_state_t state;
+    sixel_filter_sample_config_t sampling;
+    sixel_palette_cover_options_t cover;
+    sixel_palette_snap_options_t snap;
+    sixel_frame_t *indexed;
+    sixel_frame_interface_t *source_if;
+    sixel_frame_interface_t *indexed_if;
+    sixel_frame_timeline_t timeline;
+    sixel_frame_pixels_request_t storage;
+    sixel_dither_t *dither;
+    unsigned char *pixels;
+    unsigned char *palette;
+    size_t count, samples;
+    unsigned int colors;
+    int prune, option_lock;
+    SIXELSTATUS status;
+
+    encoder = context->encoder;
+    if (context->latest || context->palette_source != NULL ||
+            context->clip_active ||
+            context->palette.sampling.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
+            context->palette.sampling.effective !=
+                SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID ||
+            context->palette.binning.policy.requested !=
+                SIXEL_PALETTE_BINNING_HARD ||
+            context->current_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+            context->target_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+            context->current_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
+            encoder->output_icc != NULL || encoder->gamut_mapper != NULL ||
+            encoder->gpu_policy != SIXEL_GPU_POLICY_FORCE ||
+            encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
+            !encoder->quantize_model_kmeans_backend_override ||
+            encoder->quantize_model_kmeans_backend !=
+                SIXEL_PALETTE_KMEANS_BACKEND_GPU ||
+            !encoder->quantize_model_kmeans_init_override ||
+            encoder->quantize_model_kmeans_init_type !=
+                SIXEL_PALETTE_KMEANS_INIT_PCA ||
+            !encoder->quantize_model_kmeans_binbits_override ||
+            encoder->quantize_model_kmeans_binbits != 5u ||
+            !encoder->quantize_model_kmeans_iter_override ||
+            !encoder->merge_policy_override ||
+            encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
+            encoder->palette_sample_solid || encoder->force_palette ||
+            encoder->reserved_palette_count || encoder->palette_output ||
+            encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT ||
+            encoder->method_for_diffuse != SIXEL_DIFFUSE_NONE ||
+            encoder->lut_policy != SIXEL_LUT_POLICY_6BIT ||
+            encoder->pixelwidth > 0 || encoder->pixelheight > 0 ||
+            encoder->percentwidth > 0 || encoder->percentheight > 0 ||
+            encoder->sixdelta_enabled || encoder->presentation ||
+            encoder->progressive_context || encoder->fdrcs ||
+            encoder->fuse_macro || encoder->macro_number >= 0 ||
+            encoder->ormode || encoder->output_is_png ||
+            sixel_frame_get_transparent(context->frame) >= 0 ||
+            sixel_encoder_frame_has_transparent_mask(context->frame))
+        return SIXEL_FALSE;
+
+    /* Treat environment and option values exactly as the ordinary builder
+     * does. These getters also provide defaults for unset sub-options. */
+    memset(&request, 0, sizeof(request));
+    option_lock = sixel_encoder_quantize_override_lock_acquire();
+    prune = encoder->quantize_model_kmeans_prune_override ?
+        encoder->quantize_model_kmeans_prune_policy :
+        (int)sixel_get_kmeans_prune_policy();
+    if ((encoder->quantize_model_kmeans_mapping_override ?
+                encoder->quantize_model_kmeans_mapping_mode :
+                (int)sixel_get_kmeans_mapping_mode()) !=
+            SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM ||
+            (encoder->quantize_model_kmeans_restarts_override ?
+                encoder->quantize_model_kmeans_restarts :
+                sixel_get_kmeans_restarts()) > 1u ||
+            (encoder->quantize_model_kmeans_polish_iter_override ?
+                encoder->quantize_model_kmeans_polish_iter :
+                sixel_get_kmeans_polish_iter()) != 0u ||
+            (encoder->quantize_model_kmeans_feedback_override ?
+                encoder->quantize_model_kmeans_feedback_mode :
+                (int)sixel_get_kmeans_feedback_mode()) !=
+            SIXEL_PALETTE_KMEANS_FEEDBACK_OFF ||
+            prune == SIXEL_PALETTE_KMEANS_PRUNE_AABB ||
+            prune == SIXEL_PALETTE_KMEANS_PRUNE_ELKAN ||
+            prune == SIXEL_PALETTE_KMEANS_PRUNE_YINYANG) {
+        sixel_encoder_quantize_override_lock_release(option_lock);
+        return SIXEL_FALSE;
+    }
+    request.max_iterations = encoder->quantize_model_kmeans_iter;
+    request.min_iterations = encoder->quantize_model_kmeans_miniter_override ?
+        encoder->quantize_model_kmeans_miniter : sixel_get_kmeans_miniter();
+    if (request.min_iterations > request.max_iterations)
+        request.min_iterations = request.max_iterations;
+    request.threshold = encoder->quantize_model_kmeans_threshold_override ?
+        (float)encoder->quantize_model_kmeans_threshold :
+        (float)sixel_palette_kmeans_threshold();
+
+    memset(&cover, 0, sizeof(cover));
+    cover.policy_override = encoder->cover_policy_override;
+    cover.policy = encoder->cover_policy;
+    cover.grow_override = encoder->cover_policy_grow_override;
+    cover.grow = encoder->cover_policy_grow;
+    cover.mode_override = encoder->cover_policy_mode_override;
+    cover.mode = encoder->cover_policy_mode;
+    sixel_set_palette_cover_override(cover.policy_override ||
+        cover.grow_override || cover.mode_override, &cover);
+    request.cover = (unsigned int)sixel_palette_cover_policy();
+    request.soft = sixel_palette_cover_mode() == SIXEL_PALETTE_COVER_MODE_SOFT;
+    request.grow = sixel_palette_cover_grow_enabled();
+    sixel_set_palette_cover_override(0, NULL);
+
+    memset(&snap, 0, sizeof(snap));
+    snap.policy_override = encoder->snap_policy_override;
+    snap.policy = encoder->snap_policy;
+    snap.timing_override = encoder->snap_policy_timing_override;
+    snap.timing = encoder->snap_policy_timing;
+    sixel_set_palette_snap_override(&snap);
+    request.snap = sixel_palette_snap_is_enabled();
+    if (request.snap && (!sixel_palette_should_snap(
+            SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT) ||
+            sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_SAMPLE) ||
+            sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED) ||
+            sixel_palette_should_snap(
+                SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER) ||
+            sixel_palette_should_snap(
+                SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE) ||
+            sixel_palette_should_snap(
+                SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER))) {
+        sixel_set_palette_snap_override(NULL);
+        sixel_encoder_quantize_override_lock_release(option_lock);
+        return SIXEL_FALSE;
+    }
+    sixel_set_palette_snap_override(NULL);
+    request.snap_rate = 1.0;
+    if (encoder->snap_policy_approach_rate_override) {
+        request.snap_rate = encoder->snap_policy_approach_rate;
+    } else {
+        (void)sixel_option_resolve_registered_double_binding(
+            SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
+            SIXEL_SUBOPTION_BINDING_ID_2(snap_policy_approach_rate,
+                                        snap_policy_approach_rate_override),
+            &request.snap_rate);
+    }
+    sixel_encoder_quantize_override_lock_release(option_lock);
+
+    source_if = sixel_frame_as_interface(context->frame);
+    status = source_if->vtbl->get_timeline(source_if, &timeline);
+    if (status != SIXEL_OK)
+        return status;
+    request.width = (unsigned int)sixel_frame_get_width(context->frame);
+    request.height = (unsigned int)sixel_frame_get_height(context->frame);
+    request.colors = (unsigned int)encoder->reqcolors;
+    if (!request.width || !request.height || !request.colors ||
+            request.colors > 256 || request.width > UINT_MAX/request.height)
+        return SIXEL_FALSE;
+    count = (size_t)request.width * request.height;
+    if (count > UINT_MAX / 3u)
+        return SIXEL_FALSE;
+    memset(&sampling, 0, sizeof(sampling));
+    sampling.reqcolors = encoder->reqcolors;
+    sampling.quality_mode = encoder->quality_mode;
+    sampling.palette_sample_override = encoder->palette_sample_override;
+    sampling.palette_sample_target = encoder->palette_sample_target;
+    if (sampling.palette_sample_override && !sampling.palette_sample_target)
+        return SIXEL_FALSE;
+    request.stride = (unsigned int)sixel_filter_sample_select_stride(&sampling,
+        (int)request.width, (int)request.height);
+    samples = ((request.width - 1) / request.stride + 1u) *
+        ((request.height - 1) / request.stride + 1u);
+    if (samples > 32768u)
+        return SIXEL_FALSE;
+
+    if (sixel_encoder_is_cancel_requested(encoder))
+        return SIXEL_INTERRUPTED;
+
+    /* Keep the fallback input and plan intact until PAL8 owns the result. */
+    state = context->palette;
+    status = sixel_palette_policy_mark_executed(&state.sampling);
+    if (status == SIXEL_OK)
+        status = sixel_palette_policy_resolve(&state.quantizer,
+            SIXEL_QUANTIZE_MODEL_KMEANS, SIXEL_PALETTE_RESOLUTION_EXPLICIT);
+    if (status == SIXEL_OK)
+        status = sixel_palette_policy_mark_executed(&state.quantizer);
+    if (status == SIXEL_OK)
+        status = sixel_palette_binning_resolve(&state.binning,
+            SIXEL_PALETTE_BINNING_HARD, 5u, SIXEL_PALETTE_BINNING_GRID_UNIFORM,
+            SIXEL_PALETTE_BINNING_KERNEL_NONE,
+            SIXEL_PALETTE_BINNING_BACKEND_COMPACT_SPARSE,
+            samples, SIXEL_PALETTE_RESOLUTION_EXPLICIT);
+    if (status == SIXEL_OK)
+        status = sixel_palette_policy_mark_executed(&state.binning.policy);
+    if (status != SIXEL_OK)
+        return status;
+
+    indexed = NULL;
+    dither = NULL;
+    pixels = sixel_allocator_malloc(encoder->allocator, count);
+    palette = sixel_allocator_malloc(encoder->allocator, 3u*256u);
+    status = SIXEL_BAD_ALLOCATION;
+    if (pixels == NULL || palette == NULL)
+        goto end;
+    status = sixel_kmeans_metal_resident(&request,
+        sixel_frame_get_pixels(context->frame), pixels, palette, &colors);
+    if (status != SIXEL_OK) {
+        if (status != SIXEL_FALSE)
+            sixel_helper_set_additional_message(
+                "Metal resident k-means failed to produce an indexed frame.");
+        goto end;
+    }
+    if (sixel_encoder_is_cancel_requested(encoder)) {
+        status = SIXEL_INTERRUPTED;
+        goto end;
+    }
+    status = sixel_frame_create_interface_from_factory(encoder->allocator,
+                                                       &indexed_if);
+    if (status != SIXEL_OK)
+        goto end;
+    indexed = (sixel_frame_t *)indexed_if;
+    status = sixel_dither_new(&dither, (int)colors, encoder->allocator);
+    if (status != SIXEL_OK)
+        goto end;
+    sixel_dither_set_palette(dither, palette);
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_PAL8);
+    dither->resident_indexed = 1;
+    dither->gpu_policy = encoder->gpu_policy;
+    dither->palette_snap_exact = request.snap && request.snap_rate >= 1.0;
+    sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_NONE);
+    storage.pixels = pixels;
+    storage.palette = palette;
+    storage.width = (int)request.width;
+    storage.height = (int)request.height;
+    storage.pixelformat = SIXEL_PIXELFORMAT_PAL8;
+    storage.colorspace = SIXEL_COLORSPACE_GAMMA;
+    storage.ncolors = (int)colors;
+    storage.kind = SIXEL_FRAME_PIXELS_U8;
+    status = indexed_if->vtbl->init_pixels(indexed_if, &storage);
+    if (status != SIXEL_OK)
+        goto end;
+    pixels = palette = NULL;
+    timeline.handoff_shareable = 0;
+    status = indexed_if->vtbl->set_timeline(indexed_if, &timeline);
+    if (status != SIXEL_OK)
+        goto end;
+    context->frame = indexed;
+    context->dither = dither;
+    context->palette = state;
+    context->current_pixelformat = SIXEL_PIXELFORMAT_PAL8;
+    context->resident_indexed = 1;
+    indexed = NULL;
+    dither = NULL;
+    sixel_trace_topic_message("kmeans_backend",
+        "LSXKMRESIDENT1|backend=metal|colors=%u|snap=%u|cover=%u|soft=%u",
+        colors, request.snap, request.cover, request.soft);
+end:
+    sixel_allocator_free(encoder->allocator, pixels);
+    sixel_allocator_free(encoder->allocator, palette);
+    sixel_frame_unref(indexed);
+    sixel_dither_unref(dither);
+    return status;
+}
+#endif
+
 static SIXELSTATUS
 sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
 {
@@ -5545,6 +5817,11 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
         return SIXEL_BAD_ARGUMENT;
     }
 
+#if defined(HAVE_METAL)
+    status = sixel_encoder_metal_resident(context);
+    if (status != SIXEL_FALSE)
+        return status;
+#endif
     if (context->palette.sampling.phase == SIXEL_PALETTE_POLICY_BYPASSED) {
         return SIXEL_OK;
     }
@@ -5656,6 +5933,9 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
 #if defined(HAVE_VULKAN)
     sixel_frame_t *preplan_input;
 #endif
+
+    if (context != NULL && context->resident_indexed)
+        return SIXEL_OK;
 
     status = SIXEL_OK;
     height = 0;
@@ -5901,6 +6181,9 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+
+    if (context != NULL && context->resident_indexed)
+        return SIXEL_OK;
 
     status = SIXEL_OK;
     if (context->auto_eligible) {
@@ -6237,6 +6520,9 @@ sixel_encode_dag_node_dither_plan(sixel_encode_dag_context_t *context)
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+
+    if (context != NULL && context->resident_indexed)
+        return SIXEL_OK;
 
     index = 0;
     appended_dither = 0;
@@ -10934,7 +11220,7 @@ sixel_encoder_output_without_macro(
 
     memset(&session, 0, sizeof(session));
     p = NULL;
-    borrowed = sixel_output_is_resolve_only(output);
+    borrowed = dither->resident_indexed || sixel_output_is_resolve_only(output);
     output_colorspace = SIXEL_COLORSPACE_GAMMA;
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -12335,8 +12621,8 @@ sixel_encoder_frame_job_release(sixel_encoder_frame_job_t *job,
          * baseline is established, repair must not trust that history. */
         (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
     }
-    if (encoder != NULL && encoder->gamut_mapper != NULL &&
-            job->context.frame != frame) {
+    if (job->context.frame != frame && (job->context.resident_indexed ||
+            (encoder != NULL && encoder->gamut_mapper != NULL))) {
         sixel_frame_unref(job->context.frame);
     }
     if (encoder) {

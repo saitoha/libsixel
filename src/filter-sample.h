@@ -73,6 +73,10 @@ typedef struct sixel_filter_sample_config {
     int share_gpu_input;
 } sixel_filter_sample_config_t;
 
+SIXEL_INTERNAL_API size_t
+sixel_filter_sample_select_stride(sixel_filter_sample_config_t const *config,
+                                  int width, int height);
+
 SIXELSTATUS
 sixel_filter_sample_init(sixel_filter_t *filter,
                          const sixel_filter_sample_config_t *config);

@@ -70,6 +70,23 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
                         unsigned int *iterations);
 
+#if defined(HAVE_METAL)
+typedef struct sixel_kmeans_resident_request {
+    unsigned int width, height, stride, colors;
+    unsigned int min_iterations, max_iterations;
+    float threshold;
+    unsigned int snap, cover, soft, grow;
+    double snap_rate;
+} sixel_kmeans_resident_request_t;
+
+/* A single Metal submission owns every intermediate. Caller storage is
+ * published only after a successful indexed solve. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_kmeans_metal_resident(sixel_kmeans_resident_request_t const *request,
+    unsigned char const *rgb, unsigned char *indices,
+    unsigned char *palette, unsigned int *colors);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

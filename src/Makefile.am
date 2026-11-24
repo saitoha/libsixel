@@ -39,6 +39,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-mahalanobis-gpu.metal \
     $(srcdir)/lookup-policy-certlut-gpu.metal \
     $(srcdir)/palette-heckbert-gpu.metal \
+    $(srcdir)/palette-kmeans-resident.metal \
     $(srcdir)/gpu-palette-legacy-types.metal \
     $(srcdir)/gpu-palette-legacy-query.metal \
     $(srcdir)/lookup-policy-gridlut-gpu.metal \
@@ -229,6 +230,7 @@ generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
 # The phased top-level build requests objects directly, bypassing all and
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
+    libsixel_la-palette-kmeans-metal.lo \
     libsixel_la-dither-policy-lso2-gpu-metal.lo \
     libsixel_la-dither-policy-none-gpu.lo \
     libsixel_la-dither-policy-a-dither-gpu.lo \

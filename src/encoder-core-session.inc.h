@@ -186,54 +186,26 @@ sixel_indexed_copy_source_mask(sixel_frame_t *source,
     return status;
 }
 
-/* Freeze palette, geometry, source frame and application capability
- * before acquiring retained state. This helper also serves direct encoding. */
+/* Freeze the selected palette into immutable SIXEL color definitions. */
 static SIXELSTATUS
-sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
-    sixel_frame_t *frame, sixel_output_deferred_t *prepared, int include_mask)
+sixel_indexed_wire_palette(sixel_dither_t *dither, sixel_output_t *output,
+                           sixel_wire_palette_t **wire)
 {
-    sixel_dither_t *dither;
-    sixel_output_t *output;
-    sixel_encode_session_t *session;
-    sixel_palette_apply_interface_t *apply;
-    sixel_frame_t *source;
-    sixel_wire_palette_t *wire;
     sixel_palette_entries_view_t entries;
     sixel_wire_color_definition_t definitions[SIXEL_PALETTE_MAX];
     unsigned char colors[SIXEL_PALETTE_MAX * 3];
     sixel_wire_palette_request_t wire_request;
-    sixel_indexed_frame_description_t description;
-    sixel_dither_policy_prepare_request_t configuration;
-    sixel_palette_apply_prepare_request_t prepare;
-    sixel_dither_encode_allocation_t allocation;
     double rgb[3];
-    void *object;
-    size_t pixels, i;
-    int channel, threads, gpu_policy;
+    size_t i;
+    int channel;
     SIXELSTATUS status;
 
-    dither = request->dither;
-    output = request->output;
-    session = output->session;
-    threads = sixel_threads_resolve();
-    gpu_policy = dither->gpu_policy;
-prepare:
-    source = NULL;
-    wire = NULL;
-    apply = NULL;
-    memset(&prepare, 0, sizeof(prepare));
-    status = sixel_dither_prepare_indexed_components(dither, threads > 1, 0,
-                                                     include_mask);
-    if (status != SIXEL_OK) goto end;
-    pixels = (size_t)request->width * (size_t)request->height;
     memset(&wire_request, 0, sizeof(wire_request));
-    memset(&description, 0, sizeof(description));
-    memset(&prepare, 0, sizeof(prepare));
     status = dither->palette->vtbl->get_entries(dither->palette, &entries);
-    if (SIXEL_FAILED(status)) goto end;
+    if (SIXEL_FAILED(status)) return status;
     if (entries.entry_count == 0 || entries.entry_count > SIXEL_PALETTE_MAX) {
         status = SIXEL_BAD_ARGUMENT;
-        goto end;
+        return status;
     }
     memcpy(colors, entries.entries, entries.entry_count * 3);
     if (dither->palette_snap_exact) {
@@ -259,8 +231,47 @@ prepare:
     wire_request.count = entries.entry_count;
     wire_request.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     wire_request.colorspace = SIXEL_COLORSPACE_GAMMA;
-    status = sixel_wire_palette_new(&wire, &wire_request, dither->allocator);
-    if (SIXEL_FAILED(status)) goto end;
+    status = sixel_wire_palette_new(wire, &wire_request, dither->allocator);
+    return status;
+}
+
+/* Resolve geometry and application before acquiring retained state. */
+static SIXELSTATUS
+sixel_indexed_prepare(sixel_legacy_encode_request_t const *request,
+    sixel_frame_t *frame, sixel_output_deferred_t *prepared, int include_mask)
+{
+    sixel_dither_t *dither;
+    sixel_output_t *output;
+    sixel_encode_session_t *session;
+    sixel_palette_apply_interface_t *apply;
+    sixel_frame_t *source;
+    sixel_wire_palette_t *wire;
+    sixel_indexed_frame_description_t description;
+    sixel_dither_policy_prepare_request_t configuration;
+    sixel_palette_apply_prepare_request_t prepare;
+    sixel_dither_encode_allocation_t allocation;
+    void *object;
+    size_t pixels;
+    int threads, gpu_policy;
+    SIXELSTATUS status;
+
+    dither = request->dither;
+    output = request->output;
+    session = output->session;
+    threads = sixel_threads_resolve();
+    gpu_policy = dither->gpu_policy;
+prepare:
+    source = NULL;
+    wire = NULL;
+    apply = NULL;
+    memset(&prepare, 0, sizeof(prepare));
+    status = sixel_dither_prepare_indexed_components(dither, threads > 1, 0,
+                                                     include_mask);
+    if (status != SIXEL_OK) goto end;
+    pixels = (size_t)request->width * (size_t)request->height;
+    memset(&description, 0, sizeof(description));
+    status = sixel_indexed_wire_palette(dither, output, &wire);
+    if (status != SIXEL_OK) goto end;
     description.width = request->width;
     description.height = request->height;
     description.encoded_x = output->transparent_offset_left;
@@ -497,6 +508,75 @@ sixel_output_encode_resolved(sixel_output_t *output,
 end:
     if (status != SIXEL_OK) (void)output->core->vtbl->abort(output->core);
     if (opened) (void)output->writer->vtbl->abort_image(output->writer);
+    return status;
+}
+
+/* A resident solver supplies complete PAL8 indexes. Borrow the result only
+ * until it has been copied into the immutable indexed packet input. */
+static SIXELSTATUS
+sixel_encode_resident_indexed(sixel_legacy_encode_request_t const *request)
+{
+    sixel_output_t *output;
+    sixel_allocator_t *allocator;
+    sixel_indexed_frame_take_request_t take;
+    sixel_output_resolved_t result;
+    size_t pixels;
+    SIXELSTATUS status;
+
+    output = request->output;
+    allocator = request->dither->allocator;
+    memset(&result, 0, sizeof(result));
+    memset(&take, 0, sizeof(take));
+    take.description.width = take.description.plane_width = request->width;
+    take.description.height = take.description.plane_height = request->height;
+    take.description.encoded_x = output->transparent_offset_left;
+    take.description.encoded_y = output->transparent_offset_top;
+    take.description.keycolor = -1;
+    take.description.transparent_background = output->require_keep_header ||
+        sixel_output_has_transparent_offset(output);
+    status = sixel_output_compute_transparent_extent(output, request->width,
+        request->height, &take.description.encoded_width,
+        &take.description.encoded_height);
+    if (status != SIXEL_OK)
+        return status;
+    status = sixel_indexed_wire_palette(request->dither, output,
+                                        &take.description.palette);
+    if (status != SIXEL_OK)
+        return status;
+
+    pixels = (size_t)request->width * (size_t)request->height;
+    take.indexes = sixel_allocator_malloc(allocator, pixels);
+    status = SIXEL_BAD_ALLOCATION;
+    if (take.indexes == NULL)
+        goto end;
+    memcpy(take.indexes, request->pixels, pixels);
+    take.indexes_size = pixels;
+    status = sixel_indexed_frame_take(&result.image, &take, allocator);
+    if (status != SIXEL_OK)
+        goto end;
+    result.options.has_gri_arg_limit = output->has_gri_arg_limit;
+    result.options.encode_policy = output->encode_policy;
+    result.options.emit_palette = 1;
+    result.header.parameter_count = take.description.transparent_background
+        ? 2 : 0;
+    result.header.parameter1 = take.description.transparent_background;
+    result.header.width = take.description.encoded_width;
+    result.header.height = take.description.encoded_height;
+    result.header.use_raster_attributes = 1;
+    result.threads = sixel_threads_resolve();
+    result.gpu_body = request->dither->gpu_policy != SIXEL_GPU_POLICY_OFF;
+    if (sixel_output_is_resolve_only(output)) {
+        *output->deferred->capture = result;
+        result.image = NULL;
+    } else {
+        status = sixel_output_encode_resolved(output, &result);
+    }
+    if (status == SIXEL_OK)
+        ++output->indexed_count;
+end:
+    sixel_indexed_frame_unref(result.image);
+    sixel_allocator_free(allocator, take.indexes);
+    sixel_wire_palette_unref(take.description.palette);
     return status;
 }
 

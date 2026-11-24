@@ -2269,6 +2269,7 @@ sixel_dither_new(
     (*ppdither)->clamp_policy = SIXEL_DITHER_CLAMP_AUTO;
     (*ppdither)->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
     (*ppdither)->palette_snap_exact = 0;
+    (*ppdither)->resident_indexed = 0;
     (*ppdither)->use_rgb101_palette = 0;
     (*ppdither)->standalone_palette_colors = 0;
     (*ppdither)->standalone_palette_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;

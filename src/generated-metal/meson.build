@@ -1,6 +1,7 @@
 # Embed source at build time; no shader files are loaded at runtime.
 metal_headers = []
 metal_sources = files(
+  '../palette-kmeans-resident.metal',
   '../dither-policy-none-gpu-prefix.metal',
   '../dither-policy-none-gpu.metal',
   '../dither-policy-none-gpu-query.metal',

@@ -98,7 +98,7 @@ static sixel_filter_vtbl_t const sixel_filter_sample_vtbl = {
     NULL
 };
 
-static size_t
+size_t
 sixel_filter_sample_select_stride(
         sixel_filter_sample_config_t const *config,
         int width,

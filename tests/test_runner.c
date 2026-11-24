@@ -2573,6 +2573,8 @@ int test_kmgpu_0005_range_fallback_atomicity(int argc, char **argv);
 int test_kmgpu_0006_option_atomicity(int argc, char **argv);
 int test_kmgpu_0014_request_isolation(int argc, char **argv);
 int test_kmgpu_available(int argc, char **argv);
+int test_kmgpu_resident_available(int argc, char **argv);
+int test_kmgpu_resident_playback(int argc, char **argv);
 int test_kmgpu_0082_numeric_auto_fallback(int argc, char **argv);
 int test_kmgpu_0083_numeric_force_rejection(int argc, char **argv);
 int test_kmgpu_0084_gpu_latest_frontier(int argc, char **argv);
@@ -11229,6 +11231,8 @@ static test_entry_t const test_entries[] = {
       test_kmgpu_0090_auto_minimum },
     { "gpu-kmeans/available",
       test_kmgpu_available },
+    { "gpu-kmeans/resident-available", test_kmgpu_resident_available },
+    { "gpu-kmeans/resident-playback", test_kmgpu_resident_playback },
     { "palette/0001_kmeans_init", test_palette_0001_kmeans_init },
     { "palette/0002_kmedoids_constraints",
       test_palette_0002_kmedoids_constraints },

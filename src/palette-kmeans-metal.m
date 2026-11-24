@@ -18,6 +18,9 @@
 #include "options.h"
 #include "timer.h"
 #include "gpu-runtime-metal.h"
+#include "palette-common-cover.h"
+#include "palette-common-snap.h"
+#include "pixelformat.h"
 
 /* Only immutable pipelines and a thread-safe command queue are shared. Each
  * palette attempt owns all buffers, including its convergence state. */
@@ -694,6 +697,331 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
                         split ? submit_ms[index] : phase_ms[4]);
             }
         }
+    }
+    return status;
+}
+/* The resident path reuses the production Lloyd and 6bit lookup shaders. */
+static char const *const sixel_km_resident_sources[] = {
+#include <generated-metal/lookup-policy-6bit-gpu-shader.inc.h>
+#include <generated-metal/lookup-policy-6bit-gpu-query-shader.inc.h>
+#include <generated-metal/palette-kmeans-resident-shader.inc.h>
+};
+
+enum {
+    KM_HISTOGRAM, KM_COUNT, KM_PREFIX, KM_COMPACT, KM_MOMENTS, KM_AXIS,
+    KM_TILES, KM_MERGE, KM_SEED, KM_ASSIGN, KM_PARTIAL, KM_REDUCE, KM_UPDATE,
+    KM_SCORE, KM_OBJECTIVE, KM_PACK, KM_SNAP, KM_COVER_HIST, KM_COVER_GAPS,
+    KM_COVER, KM_LUT, KM_APPLY, KM_STAGE_COUNT
+};
+
+enum {
+    KM_RGB = 10, KM_HIST = 11, KM_GEOMETRY = 12, KM_OFFSETS = 13,
+    KM_DISPATCH = 14, KM_FIRST_KEYS = 17, KM_SECOND_KEYS = 18,
+    KM_ARGUMENT = 19, KM_PALETTE = 21, KM_TABLE = 22, KM_INDICES = 23,
+    KM_POLICY = 24, KM_SNAP_TABLE = 25, KM_COVER_BINS = 26,
+    KM_ANCHORS = 28, KM_RESULT = 29, KM_BUFFER_COUNT = 30
+};
+
+static pthread_mutex_t sixel_km_resident_lock = PTHREAD_MUTEX_INITIALIZER;
+static id<MTLDevice> sixel_km_resident_device;
+static id<MTLCommandQueue> sixel_km_resident_queue;
+static id<MTLComputePipelineState> sixel_km_resident_stages[KM_STAGE_COUNT];
+static id<MTLBuffer> sixel_km_resident_buffers[KM_BUFFER_COUNT];
+
+typedef struct sixel_km_geometry {
+    uint32_t width, height, stride, colors, min_iterations;
+    float threshold;
+} sixel_km_geometry_t;
+
+static SIXELSTATUS
+sixel_km_resident_prepare(void)
+{
+    static char const *const names[] = {
+        "histogram", "count_bins", "prefix", "compact", "moments", "axis",
+        "tiles", "merge_keys", "seed", "km_assign", "km_partial", "km_reduce",
+        "km_update", "score", "objective", "pack", "final_snap",
+        "cover_histogram", "cover_gaps", "cover_repair", "lookup_6bit_build",
+        "apply_palette"
+    };
+    NSMutableString *source;
+    MTLCompileOptions *options;
+    id<MTLLibrary> library;
+    id<MTLFunction> function;
+    unsigned int i;
+
+    if (sixel_km_resident_stages[KM_APPLY] != nil)
+        return SIXEL_OK;
+    if (sixel_km_resident_device == nil)
+        sixel_km_resident_device = MTLCreateSystemDefaultDevice();
+    if (sixel_km_resident_device == nil)
+        return SIXEL_FALSE;
+    if (sixel_km_resident_queue == nil)
+        sixel_km_resident_queue = [sixel_km_resident_device newCommandQueue];
+    if (sixel_km_resident_queue == nil)
+        return SIXEL_BAD_ALLOCATION;
+    source = [NSMutableString string];
+    for (i = 0; i < sizeof(sixel_km_metal_source) /
+                    sizeof(sixel_km_metal_source[0]); ++i)
+        [source appendString:@(sixel_km_metal_source[i])];
+    for (i = 0; i < sizeof(sixel_km_resident_sources) /
+                    sizeof(sixel_km_resident_sources[0]); ++i)
+        [source appendString:@(sixel_km_resident_sources[i])];
+    options = [[MTLCompileOptions alloc] init];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    options.fastMathEnabled = NO;
+#pragma clang diagnostic pop
+    library = [sixel_km_resident_device newLibraryWithSource:source
+                                                   options:options error:nil];
+    [options release];
+    if (library == nil)
+        return SIXEL_FEATURE_ERROR;
+    for (i = 0; i < KM_STAGE_COUNT; ++i) {
+        [sixel_km_resident_stages[i] release];
+        function = [library newFunctionWithName:@(names[i])];
+        sixel_km_resident_stages[i] = function == nil ? nil :
+            [sixel_km_resident_device newComputePipelineStateWithFunction:
+                function error:nil];
+        [function release];
+        if (sixel_km_resident_stages[i] == nil) {
+            [library release];
+            return SIXEL_FEATURE_ERROR;
+        }
+    }
+    [library release];
+    return SIXEL_OK;
+}
+
+static int
+sixel_km_resident_storage(unsigned int samples, unsigned int pixels)
+{
+    NSUInteger padded;
+    NSUInteger groups;
+    NSUInteger lengths[KM_BUFFER_COUNT];
+    id<MTLBuffer> buffer;
+    MTLResourceOptions mode;
+    unsigned int i;
+
+    padded = (samples + 127u) & ~127u;
+    groups = (padded + 511u) / 512u;
+    {
+        NSUInteger needed[] = {
+            12*padded, 4*padded, 3072, 4*padded, 4*padded,
+            16*256*groups, 16*256, 20, 68*groups, 24,
+            3*(NSUInteger)pixels, 16*32768, 0, 4*256, 24,
+            48*((padded+63)/64), 16, 8*padded, 8*padded, 0, 4,
+            768, 262144, pixels, 0, 256, 16*4096, 4*4096, 78, 776
+        };
+        memcpy(lengths, needed, sizeof(lengths));
+    }
+    for (i = 0; i < KM_BUFFER_COUNT; ++i) {
+        if (sixel_km_resident_buffers[i].length >= lengths[i])
+            continue;
+        mode = i == KM_RGB || i == KM_INDICES || i == KM_SNAP_TABLE ||
+            i == KM_ANCHORS || i == KM_RESULT
+            ? MTLResourceStorageModeShared : MTLResourceStorageModePrivate;
+        buffer = [sixel_km_resident_device newBufferWithLength:lengths[i]
+                                                      options:mode];
+        if (buffer == nil)
+            return 0;
+        [sixel_km_resident_buffers[i] release];
+        sixel_km_resident_buffers[i] = buffer;
+    }
+    return 1;
+}
+
+static int
+sixel_km_resident_dispatch(id<MTLCommandBuffer> command, unsigned int stage,
+    unsigned int count, unsigned int lanes, int indirect, unsigned int arg,
+    int reverse, sixel_km_geometry_t const *geometry, uint32_t const policy[4])
+{
+    id<MTLComputeCommandEncoder> encoder;
+    id<MTLBuffer> *buffers;
+    MTLSize group;
+    unsigned int i;
+
+    buffers = sixel_km_resident_buffers;
+    if (lanes > sixel_km_resident_stages[stage].maxTotalThreadsPerThreadgroup)
+        return 0;
+    encoder = [command computeCommandEncoder];
+    if (encoder == nil)
+        return 0;
+    [encoder setComputePipelineState:sixel_km_resident_stages[stage]];
+    for (i = 0; i < KM_RESULT; ++i) {
+        if (buffers[i] != nil)
+            [encoder setBuffer:buffers[i] offset:0 atIndex:i];
+    }
+    if (reverse) {
+        [encoder setBuffer:buffers[KM_SECOND_KEYS] offset:0
+                    atIndex:KM_FIRST_KEYS];
+        [encoder setBuffer:buffers[KM_FIRST_KEYS] offset:0
+                    atIndex:KM_SECOND_KEYS];
+    }
+    [encoder setBytes:geometry length:sizeof(*geometry) atIndex:KM_GEOMETRY];
+    [encoder setBytes:&arg length:sizeof(arg) atIndex:KM_ARGUMENT];
+    [encoder setBytes:policy length:4*sizeof(*policy) atIndex:KM_POLICY];
+    if (stage == KM_LUT) {
+        [encoder setBuffer:buffers[KM_TABLE] offset:0 atIndex:0];
+        [encoder setBuffer:buffers[KM_PALETTE] offset:0 atIndex:1];
+        [encoder setBuffer:buffers[9] offset:4 atIndex:2];
+    }
+    group = MTLSizeMake(lanes, 1, 1);
+    if (indirect >= 0) {
+        [encoder dispatchThreadgroupsWithIndirectBuffer:buffers[KM_DISPATCH]
+            indirectBufferOffset:(NSUInteger)indirect
+            threadsPerThreadgroup:group];
+    } else {
+        [encoder dispatchThreadgroups:MTLSizeMake((count+lanes-1)/lanes, 1, 1)
+                 threadsPerThreadgroup:group];
+    }
+    [encoder endEncoding];
+    return 1;
+}
+
+SIXELSTATUS
+sixel_kmeans_metal_resident(sixel_kmeans_resident_request_t const *request,
+    unsigned char const *rgb, unsigned char *indices, unsigned char *palette,
+    unsigned int *colors)
+{
+    sixel_km_geometry_t geometry;
+    uint32_t policy[4];
+    uint32_t const *result;
+    unsigned int samples, pixels, stride, i, run;
+    int reverse;
+    SIXELSTATUS status;
+    id<MTLBuffer> *buffers;
+    id<MTLCommandBuffer> command;
+    id<MTLBlitCommandEncoder> blit;
+    unsigned char *table;
+    float value, target;
+
+    if (request == NULL || rgb == NULL || indices == NULL ||
+            palette == NULL || colors == NULL || request->colors == 0 ||
+            request->colors > SIXEL_PALETTE_MAX ||
+            request->max_iterations == 0 || request->max_iterations > 116u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    stride = request->stride;
+    if (!stride || !request->width || !request->height ||
+            request->width > UINT32_MAX / request->height)
+        return SIXEL_FALSE;
+    pixels = request->width * request->height;
+    samples = ((request->width - 1) / stride + 1) *
+              ((request->height - 1) / stride + 1);
+    if (samples > 32768u || pixels > UINT32_MAX / 3u)
+        return SIXEL_FALSE;
+    geometry = (sixel_km_geometry_t){request->width, request->height, stride,
+        request->colors, request->min_iterations, request->threshold};
+    policy[0] = request->snap;
+    policy[1] = request->cover;
+    policy[2] = request->soft;
+    policy[3] = request->grow;
+    buffers = sixel_km_resident_buffers;
+    pthread_mutex_lock(&sixel_km_resident_lock);
+    @autoreleasepool {
+        status = sixel_km_resident_prepare();
+        if (status != SIXEL_OK)
+            goto end;
+        status = SIXEL_BAD_ALLOCATION;
+        if (!sixel_km_resident_storage(samples, pixels))
+            goto end;
+        memcpy(buffers[KM_RGB].contents, rgb, 3*(size_t)pixels);
+        if (request->snap) {
+            table = buffers[KM_SNAP_TABLE].contents;
+            for (i = 0; i < 256; ++i) {
+                value = sixel_pixelformat_byte_to_float(
+                    SIXEL_PIXELFORMAT_RGB888, 0, (unsigned char)i);
+                target = sixel_pixelformat_byte_to_float(
+                    SIXEL_PIXELFORMAT_RGB888, 0,
+                    sixel_palette_reversible_value(i));
+                value += (target-value)*(float)request->snap_rate;
+                table[i] = sixel_pixelformat_float_channel_to_byte(
+                    SIXEL_PIXELFORMAT_RGB888, 0, value);
+            }
+        }
+        if (request->cover && !request->soft) {
+            table = buffers[KM_ANCHORS].contents;
+            for (i = 0; i < SIXEL_PALETTE_COVER_ANCHOR_MAX; ++i)
+                memcpy(table+3*i, sixel_palette_cover_fixed_anchor(i), 3);
+        }
+
+        status = SIXEL_RUNTIME_ERROR;
+        command = [sixel_km_resident_queue commandBuffer];
+        blit = [command blitCommandEncoder];
+        if (blit == nil)
+            goto end;
+        [blit fillBuffer:buffers[KM_HIST]
+                   range:NSMakeRange(0,16*32768) value:0];
+        [blit fillBuffer:buffers[SIXEL_KM_STATE]
+                   range:NSMakeRange(0,20) value:0];
+        if (request->cover && request->soft)
+            [blit fillBuffer:buffers[KM_COVER_BINS]
+                       range:NSMakeRange(0,16*4096) value:0];
+        [blit endEncoding];
+
+#define RUN(stage, count, lanes, indirect, arg, reverse) \
+        if (!sixel_km_resident_dispatch(command, stage, count, lanes, \
+                 indirect, arg, reverse, &geometry, policy)) goto end
+        RUN(KM_HISTOGRAM, samples, 128, -1, 0, 0);
+        RUN(KM_COUNT, 256, 64, -1, 0, 0);
+        RUN(KM_PREFIX, 1, 1, -1, 0, 0);
+        RUN(KM_COMPACT, 256, 64, -1, 0, 0);
+        RUN(KM_MOMENTS, (samples+63)/64, 32, -1, 0, 0);
+        RUN(KM_AXIS, 1, 1, -1, 0, 0);
+        RUN(KM_TILES, 0, 128, 0, 0, 0);
+        reverse = 0;
+        for (run = 128; run < samples; run *= 2) {
+            RUN(KM_MERGE, 0, 128, 0, run, reverse);
+            reverse = !reverse;
+        }
+        RUN(KM_SEED, 1, 1, -1, 0, reverse);
+        for (i = 0; i < request->max_iterations; ++i) {
+            RUN(KM_ASSIGN, 0, 128, 0, 0, 0);
+            RUN(KM_PARTIAL, 0, 128, 12, 0, 0);
+            RUN(KM_REDUCE, request->colors, 128, -1, 0, 0);
+            RUN(KM_UPDATE, 1, 1, -1, 0, 0);
+        }
+        RUN(KM_SCORE, 0, 128, 0, 0, 0);
+        RUN(KM_OBJECTIVE, 1, 1, -1, 0, 0);
+        RUN(KM_PACK, request->colors, 128, -1, 0, 0);
+        if (request->snap) {
+            RUN(KM_SNAP, request->colors, 128, -1, 0, 0);
+        }
+        if (request->cover && request->soft) {
+            RUN(KM_COVER_HIST, samples, 128, -1, 0, 0);
+            RUN(KM_COVER_GAPS, 4096, 128, -1, samples, 0);
+        }
+        if (request->cover) {
+            RUN(KM_COVER, 256, 256, -1, 0, 0);
+        }
+        RUN(KM_LUT, 262144, 128, -1, 0, 0);
+        RUN(KM_APPLY, pixels, 128, -1, 0, 0);
+#undef RUN
+        /* Publish only after the entire indexed result is ready. */
+        blit = [command blitCommandEncoder];
+        if (blit == nil)
+            goto end;
+        [blit copyFromBuffer:buffers[KM_PALETTE] sourceOffset:0
+                    toBuffer:buffers[KM_RESULT] destinationOffset:8 size:768];
+        [blit copyFromBuffer:buffers[9] sourceOffset:4
+                    toBuffer:buffers[KM_RESULT] destinationOffset:0 size:4];
+        [blit copyFromBuffer:buffers[SIXEL_KM_STATE] sourceOffset:8
+                    toBuffer:buffers[KM_RESULT] destinationOffset:4 size:4];
+        [blit endEncoding];
+        [command commit];
+        [command waitUntilCompleted];
+        sixel_gpu_statistics_record_metal(command);
+        if (command.status != MTLCommandBufferStatusCompleted)
+            goto end;
+        result = buffers[KM_RESULT].contents;
+        if (result[1] || result[0] == 0 || result[0] > 256)
+            goto end;
+        *colors = result[0];
+        memcpy(palette, result+2, 3*result[0]);
+        memcpy(indices, buffers[KM_INDICES].contents, pixels);
+        status = SIXEL_OK;
+end:
+        pthread_mutex_unlock(&sixel_km_resident_lock);
     }
     return status;
 }

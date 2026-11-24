@@ -5738,6 +5738,8 @@ sixel_encoder_core_encode_dispatch(
     }
 
     (void)request->depth;
+    if (request->dither->resident_indexed)
+        return sixel_encode_resident_indexed(request);
     if (request->dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR &&
             request->dither->diffuse_on_gpu) {
         sixel_helper_set_additional_message(
