@@ -1167,27 +1167,47 @@ endif
 
 # Test the cancellation behavior needed to recover a product's roundoff.
 # FP_FAST_FMA describes speed, not whether a particular libm is correct.
-# A cross build without an executable wrapper uses compensated arithmetic.
+working_fma = false
 if meson.can_run_host_binaries()
   fma_probe = cc.run('''
     #include <math.h>
     int main(void)
     {
+      double (*volatile libm_fma)(double, double, double) = fma;
       volatile double a = 1.0 + 0x1p-23;
       volatile double b = 0.5 + 0x1p-31;
       volatile double product = a * b;
-      int inexact = fma(a, b, -product) != 0x1p-54 ||
-          fma(-a, b, product) != -0x1p-54;
+      int inexact = libm_fma(a, b, -product) != 0x1p-54 ||
+          libm_fma(-a, b, product) != -0x1p-54;
       /* MinGW's MSVCRT fma can lose low bits of a non-power-of-two tail. */
       a = -0x1.c083126e978d5p-2;
       b = 0x1.47ae147ae147bp-1;
       product = a * b;
-      return inexact || fma(a, b, -product) != 0x1.143bf727136a4p-57;
+      return inexact || libm_fma(a, b, -product) != 0x1.143bf727136a4p-57;
     }
     ''', dependencies: m_dep, name: 'fma preserves product residuals')
-  if fma_probe.compiled() and fma_probe.returncode() == 0
-    conf.set('HAVE_WORKING_FMA', 1)
-  endif
+  working_fma = fma_probe.compiled() and fma_probe.returncode() == 0
+endif
+
+if working_fma
+  conf.set('HAVE_WORKING_FMA', 1)
+elif cc.links('''
+    #include <immintrin.h>
+    __attribute__((target("avx,fma")))
+    static double residual(double a, double b, double product)
+    {
+      return _mm_cvtsd_f64(_mm_fmsub_sd(_mm_set_sd(a), _mm_set_sd(b),
+                                      _mm_set_sd(product)));
+    }
+    int main(void)
+    {
+      volatile double a = 1.0;
+      if (__builtin_cpu_supports("avx") && __builtin_cpu_supports("fma"))
+        return residual(a, a, a) != 0.0;
+      return 0;
+    }
+    ''', name: 'FMA3 residuals with runtime dispatch')
+  conf.set('HAVE_ICC_FMA3', 1)
 endif
 
 png_opt = get_option('png')
