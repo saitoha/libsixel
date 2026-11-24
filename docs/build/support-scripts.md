@@ -75,6 +75,8 @@ The real library, converters, subsequent compiler probes, and runtime tests rema
 
 Fallback means failure to launch a helper, not every nonzero helper result. A GCC command that runs and reports a compilation error keeps that error. Successful Meson setup through this adapter must be interpreted together with actual PCC compilation and the test results.
 
+Ubuntu's PCC 1.2 development build can report `pprop op error 67` when a conditional pointer expression needs conversion to `void *` inside a braced initializer. This affects named structures and compound literals. Evaluate conditional members in a separate local variable, then pass that value into the initializer. The [C AST checker](../../tests/_static/python/staticcheck_c_ast.py) enforces this source pattern across project C code because it does not resolve destination types.
+
 ### Emscripten: sanity adaptation and a Node entry point
 
 `emcc-meson` uses the same two sanity-output patterns as `cosmocc-meson` and substitutes the host's `true` for those checks. Other invocations run `emcc`. After a successful command whose recorded `-o` output ends in `.js`, it creates a sibling file with that suffix removed, prepends `#!/usr/bin/env node`, copies the JavaScript payload, and makes the sibling executable.

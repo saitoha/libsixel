@@ -1620,6 +1620,7 @@ sixel_builtin_hdr_assign_decoded_frame(
     int hdr_pixelformat,
     int hdr_colorspace)
 {
+    sixel_frame_pixels_kind_t kind;
     SIXELSTATUS status;
 
     status = SIXEL_FALSE;
@@ -1629,6 +1630,8 @@ sixel_builtin_hdr_assign_decoded_frame(
     }
 
     sixel_frame_set_loop_count(frame, 1);
+    kind = SIXEL_WORKFORMAT_IS_FLOAT32(hdr_pixelformat)
+        ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
@@ -1639,9 +1642,7 @@ sixel_builtin_hdr_assign_decoded_frame(
             hdr_pixelformat,
             hdr_colorspace,
             -1,
-            SIXEL_WORKFORMAT_IS_FLOAT32(hdr_pixelformat)
-            ? SIXEL_FRAME_PIXELS_FLOAT32
-            : SIXEL_FRAME_PIXELS_U8
+            kind
         });
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, pixels);

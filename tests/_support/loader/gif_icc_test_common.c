@@ -459,6 +459,7 @@ gifc_fail_canvas(size_t size)
 int
 gif_icc_failure_test(int specimen)
 {
+    int fail_at;
     unsigned char bytes[128];
     unsigned char index[4] = {0u, 1u, 2u, 3u};
     edge_writer_t writer;
@@ -484,7 +485,8 @@ gif_icc_failure_test(int specimen)
     edge_gif_local_image(&writer, 0u, 0u, 2u, 2u,
                          edge_palette_rgb, index, 4u);
     edge_put_u8(&writer, 0x3bu);
-    fault = (gifc_fault_t){0, 0, specimen == 30 ? 0 : 2};
+    fail_at = specimen == 30 ? 0 : 2;
+    fault = (gifc_fault_t){0, 0, fail_at};
     color = (sixel_gif_color_t){gifc_fail_palette, &fault, {0.0f, 0.0f, 0.0f}};
     callback.function = gifc_count_frame;
     status = load_gif_with_color(bytes, (int)writer.length, NULL, 0, 256, 1,

@@ -1449,6 +1449,7 @@ load_with_libjpeg(
     void                      /* in/out */ *context,
     int                       /* in */     prefer_float32)
 {
+    sixel_frame_pixels_kind_t kind;
     SIXELSTATUS status;
     sixel_frame_t *frame;
     unsigned char *pixels;
@@ -1496,6 +1497,8 @@ load_with_libjpeg(
         goto end;
     }
 
+    kind = SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)
+        ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
@@ -1506,9 +1509,7 @@ load_with_libjpeg(
             pixelformat,
             -1,
             -1,
-            SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)
-            ? SIXEL_FRAME_PIXELS_FLOAT32
-            : SIXEL_FRAME_PIXELS_U8
+            kind
         });
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, pixels);

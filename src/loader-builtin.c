@@ -5908,6 +5908,7 @@ sixel_builtin_load_psd_single_frame(
     unsigned char **mask,
     size_t *mask_size)
 {
+    sixel_frame_pixels_kind_t kind;
     SIXELSTATUS status;
     sixel_chunk_bytes_view_t chunk_view;
     unsigned char *pixels;
@@ -6078,6 +6079,8 @@ sixel_builtin_load_psd_single_frame(
         }
     }
 
+    kind = SIXEL_WORKFORMAT_IS_FLOAT32(psd_pixelformat)
+        ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
@@ -6088,9 +6091,7 @@ sixel_builtin_load_psd_single_frame(
             psd_pixelformat,
             psd_colorspace,
             -1,
-            SIXEL_WORKFORMAT_IS_FLOAT32(psd_pixelformat)
-            ? SIXEL_FRAME_PIXELS_FLOAT32
-            : SIXEL_FRAME_PIXELS_U8
+            kind
         });
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, pixels);
@@ -6837,6 +6838,7 @@ static SIXELSTATUS
 sixel_builtin_load_with_builtin_impl(
     sixel_builtin_load_with_builtin_args_t const *args)
 {
+    sixel_frame_pixels_kind_t kind;
     int decoded_format;
     sixel_chunk_t const *pchunk;
     int fstatic;
@@ -7002,6 +7004,8 @@ sixel_builtin_load_with_builtin_impl(
             goto end;
         }
         sixel_frame_assign_format(frame, decoded_format);
+        kind = (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
+            ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
         status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
             sixel_frame_as_interface(frame),
             &(sixel_frame_pixels_request_t){
@@ -7012,9 +7016,7 @@ sixel_builtin_load_with_builtin_impl(
                 sixel_frame_format(frame),
                 -1,
                 frame->ncolors,
-                (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
-                ? SIXEL_FRAME_PIXELS_FLOAT32
-                : SIXEL_FRAME_PIXELS_U8
+                kind
             });
         if (SIXEL_FAILED(status)) {
             sixel_allocator_free(frame->allocator, pixels);
@@ -7050,6 +7052,8 @@ sixel_builtin_load_with_builtin_impl(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        kind = SIXEL_WORKFORMAT_IS_FLOAT32(pnm_pixelformat)
+            ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
         status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
             sixel_frame_as_interface(frame),
             &(sixel_frame_pixels_request_t){
@@ -7060,9 +7064,7 @@ sixel_builtin_load_with_builtin_impl(
                 pnm_pixelformat,
                 -1,
                 frame->ncolors,
-                SIXEL_WORKFORMAT_IS_FLOAT32(pnm_pixelformat)
-                ? SIXEL_FRAME_PIXELS_FLOAT32
-                : SIXEL_FRAME_PIXELS_U8
+                kind
             });
         if (SIXEL_FAILED(status)) {
             sixel_allocator_free(frame->allocator, pixels);

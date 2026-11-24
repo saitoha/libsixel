@@ -226,6 +226,68 @@ class NonfiniteStaticInitializerRule(Rule):
                     pending.extend(reversed(child.named_children))
 
 
+class ConditionalBracedInitializerRule(Rule):
+    name = "conditional-braced-initializer"
+    path_prefixes = NonfiniteStaticInitializerRule.path_prefixes
+
+    def should_check(self, relpath: str) -> bool:
+        # Bundled stb headers follow upstream source conventions.
+        return (relpath not in ("src/stb_image.h", "src/stb_image_write.h") and
+                super().should_check(relpath))
+
+    def check(self, unit: SourceUnit) -> Iterable[Finding]:
+        for node in walk(unit.tree.root_node):
+            if node.type != "conditional_expression":
+                continue
+            value = node
+            parent = value.parent
+            while parent is not None and parent.type in (
+                    "parenthesized_expression", "cast_expression",
+                    "initializer_pair"):
+                if (parent.type == "initializer_pair" and
+                        parent.child_by_field_name("value") != value):
+                    break
+                value = parent
+                parent = value.parent
+            # The C grammar can read embedded script macro bodies as malformed
+            # initializers. Only inspect syntactically valid initializer lists.
+            if (parent is not None and parent.type == "initializer_list" and
+                    not parent.has_error):
+                yield Finding(
+                    unit.path, unit.line(node),
+                    "evaluate a conditional initializer in a separate local "
+                    "before the braced initializer (PCC portability)",
+                )
+
+
+def check_conditional_initializer_fixtures(src_root: Path, parser) -> None:
+    fixtures = (
+        ("compound literal", b"void f(void) { use(&(req){c ? a : b}); }", [1]),
+        ("named aggregate", b"void f(void) { req r = {c ? a : b}; }", [1]),
+        ("nested designated cast", b"""void f(void) {
+req r = {.members = {{.data = (void *)(c ? a : b)}}};
+}""", [2]),
+        ("separate local", b"""void f(void) {
+void *data = c ? a : b;
+use(&(req){data});
+}""", []),
+        ("ordinary assignment", b"void f(void) { r.data = c ? a : b; }", []),
+        ("conditional call argument",
+         b"void f(void) { req r = {pick(c ? a : b)}; }", []),
+        ("text only", b'char const *s = "{c ? a : b}"; /* {c ? a : b} */', []),
+    )
+    rule = ConditionalBracedInitializerRule()
+    for name, source, expected in fixtures:
+        unit = SourceUnit(src_root, src_root / "src/staticcheck-fixture.c",
+                          parser, source)
+        actual = [finding.line for finding in rule.check(unit)]
+        if unit.tree.root_node.has_error or actual != expected:
+            raise RuntimeError(
+                f"conditional initializer fixture {name}: "
+                f"expected lines {expected}, got {actual}"
+            )
+
+
 def check_nonfinite_initializer_fixtures(src_root: Path, parser) -> None:
     # Exercise the production rule without compiling C or writing fixtures.
     # Keep both the original nested-array failure and implicit file storage.
@@ -311,10 +373,12 @@ def main(argv: Sequence[str]) -> int:
     src_root = Path(argv[1]).resolve()
     parser = make_parser()
     check_nonfinite_initializer_fixtures(src_root, parser)
+    check_conditional_initializer_fixtures(src_root, parser)
     rules: Sequence[Rule] = (
         TimelineLogPathRule(),
         StatusAdditionalMessageStorageRule(),
         NonfiniteStaticInitializerRule(),
+        ConditionalBracedInitializerRule(),
     )
     findings: List[Finding] = []
 
