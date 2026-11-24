@@ -13617,6 +13617,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	data/color-numeric/png-extended-trc.h \
 	data/color-numeric/red-alpha-p3.apng \
 	data/color-numeric/register-feedback-mpet.icc \
+	data/color-numeric/output-target-gray.ppm \
 	data/color-numeric/red-alpha-p3.webp \
 	data/color-numeric/named-output.h \
 	data/color-numeric/generate-named-output.py \
