@@ -499,7 +499,11 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #define sixel_cms_profile_has_mpet cmf_cms_profile_has_mpet
 #define sixel_cms_prepare_bpc cmf_cms_prepare_bpc
 #define sixel_cms_apply_bpc cmf_cms_apply_bpc
+#define sixel_cdef_matches_srgb cmf_local_13_same_rgb_matches_srgb
+#define sixel_cdef_frame_input_ready cmf_local_13_same_rgb_frame_input_ready
 #include "src/cms.c"
+#undef sixel_cdef_frame_input_ready
+#undef sixel_cdef_matches_srgb
 #undef sixel_cms_apply_bpc
 #undef sixel_cms_prepare_bpc
 #undef sixel_cdef_slots

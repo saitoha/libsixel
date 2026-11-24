@@ -13,6 +13,7 @@
 #include "src/chunk.h"
 #include "src/chunk-factory.h"
 #include "src/frame-private.h"
+#include "src/frame-normalize.h"
 #include "src/loader.h"
 #include "src/loader-libtiff.h"
 #include "tests/data/color-numeric/tiff-logluv.h"
@@ -183,7 +184,7 @@ tlf_target(sixel_frame_t *frame, int format)
         ++tlf_injected;
         return SIXEL_BAD_INPUT;
     }
-    return sixel_frame_set_pixelformat(frame, format);
+    return sixel_frame_convert_workformat(frame, format);
 }
 
 #define g_sixel_loader_libtiff_vtbl tlf_local_0
@@ -229,7 +230,7 @@ tlf_target(sixel_frame_t *frame, int format)
 #define TIFFReadScanline tlf_read
 #define TIFFReadRGBAImageOriented tlf_rgba
 #define sixel_allocator_malloc tlf_allocate
-#define sixel_frame_set_pixelformat tlf_target
+#define sixel_frame_convert_workformat tlf_target
 #define tiff_convert_samples_to_linear luf_byte
 #define tiff_try_load_integer_alpha luf_alpha
 #define tiff_read_separate_uint16 b1_namespace_2
@@ -299,7 +300,7 @@ tlf_target(sixel_frame_t *frame, int format)
 #undef TIFFReadScanline
 #undef TIFFReadRGBAImageOriented
 #undef sixel_allocator_malloc
-#undef sixel_frame_set_pixelformat
+#undef sixel_frame_convert_workformat
 
 typedef struct tlf_capture_state {
     int calls;

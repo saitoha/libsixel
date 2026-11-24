@@ -1543,7 +1543,7 @@ sixel_filter_sample_copy_frame(
         return status;
     }
 
-    status = frame_if->vtbl->get_pixels(frame_if, &source_view);
+    status = sixel_frame_get_work_pixels(frame_if, &source_view);
     if (SIXEL_FAILED(status)) {
         return status;
     }

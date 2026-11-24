@@ -28,7 +28,7 @@ output_bpc_check_geometry(sixel_frame_t *frame, unsigned int history,
     iface = sixel_frame_as_interface(frame);
     source = (float const *)sixel_frame_get_pixels(frame);
     ok = SIXEL_SUCCEEDED(iface->vtbl->clone(iface, NULL, &copy)) &&
-        SIXEL_SUCCEEDED(copy->vtbl->get_pixels(copy, &view)) &&
+        SIXEL_SUCCEEDED(sixel_frame_get_work_pixels(copy, &view)) &&
         view.colorspace == SIXEL_COLORSPACE_LINEAR &&
         view.width == 6 && view.height == 1 &&
         view.pixels_float32 != source &&
@@ -39,7 +39,7 @@ output_bpc_check_geometry(sixel_frame_t *frame, unsigned int history,
         goto end;
     }
     ok = SIXEL_SUCCEEDED(copy->vtbl->clip(copy, 3, 0, 2, 1)) &&
-        SIXEL_SUCCEEDED(copy->vtbl->get_pixels(copy, &view)) &&
+        SIXEL_SUCCEEDED(sixel_frame_get_work_pixels(copy, &view)) &&
         view.colorspace == SIXEL_COLORSPACE_LINEAR &&
         view.width == 2 && view.height == 1 &&
         memcmp(view.pixels_float32, source + 9, 6u * sizeof(float)) == 0 &&
@@ -54,7 +54,7 @@ output_bpc_check_geometry(sixel_frame_t *frame, unsigned int history,
     midpoint = (expected[3] + expected[4]) * 0.5;
     ok = SIXEL_SUCCEEDED(copy->vtbl->resize_float32(copy, 1, 1,
                                                    SIXEL_RES_BILINEAR)) &&
-        SIXEL_SUCCEEDED(copy->vtbl->get_pixels(copy, &view)) &&
+        SIXEL_SUCCEEDED(sixel_frame_get_work_pixels(copy, &view)) &&
         view.colorspace == SIXEL_COLORSPACE_LINEAR &&
         view.width == 1 && view.height == 1 &&
         ((sixel_frame_t *)copy)->cms_history == history;

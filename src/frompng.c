@@ -30,6 +30,7 @@
 #endif
 
 #include <stdlib.h>
+#include "frame-normalize.h"
 #include <string.h>
 
 #if HAVE_STDINT_H
@@ -1797,7 +1798,7 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
         target = loader_cms_target_pixelformat();
         /* The setter keeps gamma in double until the final byte rounding.
          * An intermediate gamma float store could cross a half-byte tie. */
-        status = sixel_frame_set_pixelformat(frame, target);
+        status = sixel_frame_convert_workformat(frame, target);
     }
 
 cleanup:

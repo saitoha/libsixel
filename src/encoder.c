@@ -2621,7 +2621,7 @@ sixel_encoder_frame_get_pixels_view(sixel_frame_t const *frame,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return frame_if->vtbl->get_pixels(frame_if, view);
+    return sixel_frame_get_work_pixels(frame_if, view);
 }
 
 static SIXELSTATUS
@@ -3927,7 +3927,7 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
         return SIXEL_OK;
     }
 
-    status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+    status = sixel_frame_convert_workformat(frame, SIXEL_PIXELFORMAT_RGB888);
     if (SIXEL_SUCCEEDED(status)) {
         sixel_frame_set_ncolors(frame, -1);
     }
@@ -5083,7 +5083,7 @@ load_image_callback_for_palette(
         callback_context->preserve_float_palette = 1;
     }
 
-    status = sixel_frame_set_pixelformat(
+    status = sixel_frame_convert_workformat(
         frame,
         sixel_pixelformat_for_colorspace(
             callback_context->working_colorspace,
@@ -11468,7 +11468,7 @@ sixel_encoder_frame_job_prepare(
     }
 
     if (encoder->gamut_mapper != NULL) {
-        status = sixel_frame_set_pixelformat(job->context.frame,
+        status = sixel_frame_convert_workformat(job->context.frame,
             sixel_pixelformat_for_colorspace(
                 sixel_frame_get_colorspace(job->context.frame), 1));
         if (SIXEL_FAILED(status)) {
@@ -20874,26 +20874,36 @@ sixel_playback_palette_source_matches(sixel_frame_t *frame,
 {
     sixel_frame_pixels_view_t image;
     sixel_frame_pixels_view_t palette;
-    int image_space;
-    int palette_space;
+    int image_layout;
+    int palette_layout;
 
     if (source == frame ||
         SIXEL_FAILED(sixel_encoder_frame_get_pixels_view(frame, &image)) ||
         SIXEL_FAILED(sixel_encoder_frame_get_pixels_view(source, &palette)) ||
         palette.width <= 0 || palette.height <= 0 ||
         (palette.pixels == NULL && palette.pixels_float32 == NULL) ||
-        (image.pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0 ||
-        image.pixelformat != palette.pixelformat) {
+        (image.pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0) {
         return 0;
     }
-    /* An unprofiled gamma RGB frame supplies the implicit sRGB model.
-     * Other fixed coordinates must still agree, including SMPTE-C. */
-    image_space = image.rgb_definition ? SIXEL_COLORSPACE_GAMMA :
-                                         image.colorspace;
-    palette_space = palette.rgb_definition ? SIXEL_COLORSPACE_GAMMA :
-                                             palette.colorspace;
-    return image_space == palette_space &&
-        sixel_cdef_same_rgb(image.rgb_definition, palette.rgb_definition);
+    image_layout = SIXEL_WORKFORMAT_IS_FLOAT32(image.pixelformat)
+        ? SIXEL_PIXELFORMAT_RGBFLOAT32 : image.pixelformat;
+    palette_layout = SIXEL_WORKFORMAT_IS_FLOAT32(palette.pixelformat)
+        ? SIXEL_PIXELFORMAT_RGBFLOAT32 : palette.pixelformat;
+    if (image_layout != palette_layout) {
+        return 0;
+    }
+    if (image.rgb_definition == NULL && palette.rgb_definition == NULL) {
+        return image.colorspace == palette.colorspace;
+    }
+    if (image.rgb_definition == NULL) {
+        return sixel_cdef_matches_srgb(palette.rgb_definition,
+                                       image.colorspace);
+    }
+    if (palette.rgb_definition == NULL) {
+        return sixel_cdef_matches_srgb(image.rgb_definition,
+                                       palette.colorspace);
+    }
+    return sixel_cdef_same_rgb(image.rgb_definition, palette.rgb_definition);
 }
 
 SIXELAPI SIXELSTATUS

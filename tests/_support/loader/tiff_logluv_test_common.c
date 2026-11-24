@@ -60,7 +60,7 @@ tlog_capture(sixel_frame_t *frame, void *context)
              ? ctx->variant - 10 : 0;
     byte_view = ctx->variant == 11 || ctx->variant == 15;
     iface = sixel_frame_as_interface(frame);
-    if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+    if (SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
         view.width != 4 || view.height != 2 || view.ncolors != -1 ||
         view.rgb_definition != NULL ||
         frame->transparent != -1 || frame->transparent_mask != NULL ||

@@ -3528,6 +3528,8 @@ typedef enum sixel_frame_pixels_kind {
     SIXEL_FRAME_PIXELS_FLOAT32 = 1
 } sixel_frame_pixels_kind_t;
 
+/* Pixel views report the storage layout. Float triplets share RGBFLOAT32
+ * and carry their coordinates separately in colorspace. */
 /* A view with an explicit RGB definition uses the profile's transfer and
  * primaries. Legacy fixed-space converters must resolve the definition. */
 #define SIXEL_FRAME_COLORSPACE_PROFILE_RGB 0x100

@@ -638,7 +638,11 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #define sixel_cms_builtin_pcs_candidates bf_cms_builtin_pcs_candidates
 #define sixel_cms_eval_builtin_pcs bf_cms_eval_builtin_pcs
 #define sixel_cms_pcs_to_device bf_cms_pcs_to_device
+#define sixel_cdef_matches_srgb bf_local_13_same_rgb_matches_srgb
+#define sixel_cdef_frame_input_ready bf_local_13_same_rgb_frame_input_ready
 #include "src/cms.c"
+#undef sixel_cdef_frame_input_ready
+#undef sixel_cdef_matches_srgb
 #undef sixel_cms_pcs_to_device
 #undef sixel_cms_eval_builtin_pcs
 #undef sixel_cms_builtin_pcs_candidates

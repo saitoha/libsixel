@@ -4,6 +4,7 @@
 #endif
 #if defined(HAVE_WEBGPU)
 #include <emscripten.h>
+#include "frame.h"
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -537,7 +538,7 @@ diffusion_run_impl(diffusion_plan_t *plan,
     memset(&source, 0, sizeof(source));
     memset(&transparency, 0, sizeof(transparency));
     if (mode != DIFFUSION_RESOLVE_ONLY) {
-        status = request->source->vtbl->get_pixels(request->source, &source);
+        status = sixel_frame_get_work_pixels(request->source, &source);
         if (status != SIXEL_OK) {
             return status;
         }

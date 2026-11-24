@@ -177,6 +177,10 @@ set -- \
     encoder/playback-palette/0030_palette_source_same_icc.t \
     encoder/playback-palette/0031_palette_source_different_icc.t \
     encoder/playback-palette/0032_gamma_display_p3_palette_pixels.t \
+    encoder/playback-palette/0033_explicit_image.t \
+    encoder/playback-palette/0034_explicit_source.t \
+    encoder/playback-palette/0035_linear_gamma_reject.t \
+    encoder/playback-palette/0036_linear_p3_reject.t \
     frame/alpha/0005_frame_alpha_clone.t \
     frame/alpha/0012_frame_alpha_resolve_allocation_atomic.t \
     frame/alpha/0016_frame_float_clone_color.t \
@@ -205,6 +209,7 @@ set -- \
     frame/storage/0019_profile_colorspace_lut.t \
     frame/storage/0020_profile_srgb_byte_tie.t \
     frame/storage/0077_public_rgbf32_init_retry.t \
+    frame/storage/0078_public_icc_input_direction.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

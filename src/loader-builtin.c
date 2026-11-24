@@ -56,6 +56,7 @@
 #endif
 
 #include <sixel.h>
+#include "frame-normalize.h"
 
 #include "allocator.h"
 #include "cms.h"
@@ -1678,7 +1679,7 @@ sixel_builtin_load_bmp_native(sixel_chunk_t const *chunk,
         mask = NULL;
     }
     if (source != NULL) {
-        status = sixel_frame_set_pixelformat(frame,
+        status = sixel_frame_convert_workformat(frame,
                                              loader_cms_target_pixelformat());
     }
     loader_trace_message("builtin BMP: canonical float path");
@@ -2603,7 +2604,7 @@ sixel_builtin_apng_reset_float(sixel_builtin_apng_canvas_t *canvas)
     sixel_frame_alpha_t alpha;
 
     iface = sixel_frame_as_interface(canvas->image);
-    iface->vtbl->get_pixels(iface, &pixels);
+    sixel_frame_get_work_pixels(iface, &pixels);
     iface->vtbl->get_alpha(iface, &alpha);
     memset(pixels.pixels_float32, 0, alpha.count * 3u * sizeof(float));
     memset(alpha.values, 0, alpha.count * sizeof(float));
@@ -2660,7 +2661,7 @@ sixel_builtin_apng_float_frame(sixel_builtin_apng_canvas_t *canvas,
         goto end;
     }
     rect = sixel_frame_as_interface(rectangle);
-    rect->vtbl->get_pixels(rect, &source);
+    sixel_frame_get_work_pixels(rect, &source);
     rect->vtbl->get_alpha(rect, &src_alpha);
     if (source.width != (int)control->width ||
         source.height != (int)control->height) {
@@ -2682,7 +2683,7 @@ sixel_builtin_apng_float_frame(sixel_builtin_apng_canvas_t *canvas,
             goto end;
         }
     }
-    iface->vtbl->get_pixels(iface, &destination);
+    sixel_frame_get_work_pixels(iface, &destination);
     iface->vtbl->get_alpha(iface, &dst_alpha);
     for (y = 0u; y < control->height; ++y) {
         for (x = 0u; x < control->width; ++x) {
@@ -2720,7 +2721,7 @@ sixel_builtin_apng_float_frame(sixel_builtin_apng_canvas_t *canvas,
             goto end;
         }
         if (composition.hdr) {
-            emitted->vtbl->get_pixels(emitted, &rendered);
+            sixel_frame_get_work_pixels(emitted, &rendered);
             if (!loader_hdr_finish(rendered.pixels_float32,
                     (size_t)canvas->width * (size_t)canvas->height)) {
                 status = SIXEL_RUNTIME_ERROR;
@@ -2728,7 +2729,7 @@ sixel_builtin_apng_float_frame(sixel_builtin_apng_canvas_t *canvas,
             }
         }
         if (composition.managed) {
-            status = emitted->vtbl->set_pixelformat(emitted,
+            status = sixel_frame_convert_workformat((sixel_frame_t *)emitted,
                 loader_cms_target_pixelformat());
             if (SIXEL_FAILED(status)) {
                 goto end;
@@ -4581,7 +4582,7 @@ sixel_builtin_gif_color_frame(sixel_frame_t *frame, void *data)
 
     /* Canonical cached frames reach this boundary independently on replay.
      * Target narrowing must never modify the decoder's persistent canvas. */
-    status = sixel_frame_set_pixelformat(frame,
+    status = sixel_frame_convert_workformat(frame,
                                          loader_cms_target_pixelformat());
     if (SIXEL_FAILED(status)) {
         return status;
@@ -5030,7 +5031,8 @@ sixel_builtin_load_tga_color(
         frame->alpha_zero_is_transparent = 1;
         mask = NULL;
     }
-    status = sixel_frame_set_pixelformat(frame, loader_cms_target_pixelformat());
+    status = sixel_frame_convert_workformat(frame,
+                                           loader_cms_target_pixelformat());
     if (SIXEL_SUCCEEDED(status)) {
         loader_trace_message("builtin TGA: color=%s -> canonical float",
                              color.table != NULL ? "table" : "gamma");

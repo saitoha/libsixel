@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
 #include "src/pixelformat.h"
 #include <6cells.h>
 #include "src/scale.h"
@@ -112,7 +113,7 @@ test_frame_0098_dynamic(int argc, char **argv)
             goto end;
         }
         iface = sixel_frame_as_interface(frame);
-        status = iface->vtbl->get_pixels(iface, &view);
+        status = sixel_frame_get_work_pixels(iface, &view);
         if (SIXEL_FAILED(status) || view.pixels != NULL
                 || view.pixels_float32 == NULL || view.width != dw
                 || view.height != dh

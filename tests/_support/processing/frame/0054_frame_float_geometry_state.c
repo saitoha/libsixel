@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
+#include "src/frame-normalize.h"
 #include "src/pixelformat.h"
 #include <6cells.h>
 #include "src/filter-clip.h"
@@ -162,7 +164,7 @@ fg_color(char const *operation)
                                                 SIXEL_RES_NEAREST);
             fg_fail_at = 0;
             if (status != SIXEL_BAD_ALLOCATION || !fg_failed ||
-                SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+                SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
                 SIXEL_FAILED(iface->vtbl->get_transparency(iface,
                                                           &transparency)) ||
                 view.pixels != NULL || view.pixels_float32 != storage ||
@@ -208,11 +210,12 @@ fg_color(char const *operation)
     }
 
     for (encoded = 0; encoded < 2; ++encoded) {
-        if (encoded && SIXEL_FAILED(iface->vtbl->set_pixelformat(
-                              iface, SIXEL_PIXELFORMAT_RGBFLOAT32))) {
+        if (encoded && SIXEL_FAILED(sixel_frame_convert_pixels(
+                (sixel_frame_t *)iface, SIXEL_PIXELFORMAT_RGBFLOAT32,
+                SIXEL_COLORSPACE_GAMMA))) {
             goto end;
         }
-        if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        if (SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
             SIXEL_FAILED(iface->vtbl->get_alpha(iface, &alpha)) ||
             SIXEL_FAILED(iface->vtbl->get_transparency(iface, &transparency)) ||
             view.pixels != NULL || view.pixels_float32 == NULL ||
@@ -421,7 +424,7 @@ test_frame_0054_geometry(int argc, char **argv)
     }
     mask_before = mask;
     mask = NULL;
-    status = iface->vtbl->get_pixels(iface, &before);
+    status = sixel_frame_get_work_pixels(iface, &before);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -478,7 +481,7 @@ test_frame_0054_geometry(int argc, char **argv)
             status, expected_status, fg_allocation);
         goto end;
     }
-    status = iface->vtbl->get_pixels(iface, &after);
+    status = sixel_frame_get_work_pixels(iface, &after);
     if (SIXEL_FAILED(status) || after.pixels != NULL
             || (mode == 9 && is_resize
                 ? after.pixels_float32 == before.pixels_float32

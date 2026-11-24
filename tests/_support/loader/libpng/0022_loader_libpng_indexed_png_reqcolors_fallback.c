@@ -4,6 +4,7 @@
  */
 
 #include "tests/_support/loader/pixelformat_test_common.h"
+#include "src/frame.h"
 
 #if HAVE_LIBPNG
 /* Match the actual two-byte pixel allocation to the loader's output view.
@@ -34,7 +35,7 @@ check_packed_png(sixel_frame_t *frame, void *context)
     int i;
     size_t size;
 
-    if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+    if (SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
         view.width != 16 || view.height != 1 || view.pixels == NULL ||
         view.ncolors != 2 || view.palette == NULL ||
         memcmp(view.palette, palette, sizeof(palette)) != 0) {

@@ -302,7 +302,7 @@ sixel_sample_stream_get_view(
                 frame_if->vtbl->get_transparency == NULL) {
             return status;
         }
-        status = frame_if->vtbl->get_pixels(frame_if, view);
+        status = sixel_frame_get_work_pixels(frame_if, view);
         if (SIXEL_FAILED(status)) {
             return status;
         }

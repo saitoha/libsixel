@@ -2,6 +2,7 @@
 #include "../../_support/processing/planner/colorspace_auto_common.h"
 
 #include <6cells.h>
+#include "src/frame.h"
 #include "tests/_support/planner/pipeline/playback_test_common.h"
 #include "tests/data/color-numeric/icc.h"
 
@@ -159,9 +160,92 @@ end:
     return result;
 }
 
+static int
+check_linear_palette(int mode)
+{
+    /* The palette supplies linear grays .25 and .50. Their sRGB encodings
+     * round to 54% and 74%, decoded as 138 and 189. Neither image gray
+     * (.20 and .60) would emit the same register on its own. */
+    static unsigned char const expected[] = {
+        138, 138, 138, 255, 189, 189, 189, 255
+    };
+    float pixels[] = {.2f, .2f, .2f, .6f, .6f, .6f};
+    float colors[] = {.25f, .25f, .25f, .5f, .5f, .5f};
+    sixel_frame_pixels_request_t implicit = {
+        colors, NULL, 2, 1, SIXEL_PIXELFORMAT_RGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32
+    };
+    sixel_frame_t *image = NULL, *source = NULL;
+    sixel_encoder_t *encoder = NULL;
+    sixel_output_t *output = NULL;
+    sixel_playback_t *playback = NULL;
+    sixel_color_def_t *linear, *different;
+    sixel_playback_options_t options;
+    playback_test_buffer_t stream = {NULL, 0, 0};
+    unsigned char *decoded = NULL;
+    int width, height;
+    SIXELSTATUS status;
+    int result = EXIT_FAILURE;
+
+    linear = sixel_color_def_new_named("linear-srgb");
+    different = sixel_color_def_new_named(mode == 2 ? "srgb" : "display-p3");
+    if (!linear || !different || sixel_frame_new(&image, NULL) ||
+            sixel_frame_new(&source, NULL) ||
+            sixel_encoder_new(&encoder, NULL) ||
+            sixel_encoder_setopt(encoder, 'd', "none") ||
+            sixel_encoder_setopt(encoder, 'p', "2") ||
+            sixel_encoder_setopt(encoder, '_', "none") ||
+            sixel_encoder_setopt(encoder, 't', "rgb") ||
+            sixel_encoder_setopt(encoder, '4', "full-frame") ||
+            sixel_output_new(&output, playback_test_write, &stream, NULL) ||
+            sixel_playback_new(&playback, encoder, output, NULL, NULL) ||
+            sixel_playback_options_init(&options, sizeof(options))) {
+        goto end;
+    }
+    if (mode == 1) {
+        implicit.pixels = pixels;
+        if (sixel_frame_borrow_pixels(image, &implicit) ||
+            sixel_frame_init_rgbf32_borrowed(source, colors, 2, 1, linear)) {
+            goto end;
+        }
+    } else if (sixel_frame_init_rgbf32_borrowed(
+                   image, pixels, 2, 1, mode == 0 ? linear : different) ||
+               sixel_frame_borrow_pixels(source, &implicit)) {
+        goto end;
+    }
+    options.palette_source = source;
+    status = sixel_playback_submit(playback, image, SIXEL_PLAYBACK_WAIT, -1,
+                                   &options);
+    if (mode >= 2) {
+        result = status == SIXEL_BAD_ARGUMENT ? EXIT_SUCCESS : EXIT_FAILURE;
+    } else if (status == SIXEL_OK &&
+            sixel_playback_drain(playback, -1) == SIXEL_OK &&
+            sixel_decode_direct(stream.bytes, (int)stream.size,
+                                &decoded, &width, &height, NULL) == SIXEL_OK &&
+            width == 2 && height == 1 &&
+            memcmp(decoded, expected, sizeof(expected)) == 0) {
+        result = EXIT_SUCCESS;
+    }
+end:
+    sixel_playback_unref(playback);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    sixel_frame_unref(image);
+    sixel_frame_unref(source);
+    sixel_color_def_free(linear);
+    sixel_color_def_free(different);
+    free(stream.bytes);
+    free(decoded);
+    return result;
+}
+
 int
 test_plan_0003_default_colorspace_auto(int argc, char **argv)
 {
+    if (argc == 3 && strcmp(argv[1], "linear-palette") == 0 &&
+            strlen(argv[2]) == 1 && argv[2][0] >= '0' && argv[2][0] <= '3') {
+        return check_linear_palette(argv[2][0] - '0');
+    }
     if (argc == 2 && strcmp(argv[1], "display-p3") == 0) {
         return check_p3_pixels(P3_AUTO);
     }

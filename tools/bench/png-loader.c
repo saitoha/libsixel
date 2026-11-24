@@ -45,7 +45,7 @@ observe(sixel_frame_t *frame, void *context)
         return SIXEL_OK;
     }
     iface = sixel_frame_as_interface(frame);
-    status = iface->vtbl->get_pixels(iface, &view);
+    status = sixel_frame_get_work_pixels(iface, &view);
     if (SIXEL_FAILED(status)) {
         return status;
     }

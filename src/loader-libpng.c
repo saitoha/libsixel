@@ -65,6 +65,7 @@
 #include <png.h>
 
 #include <sixel.h>
+#include "frame-normalize.h"
 
 #include "allocator.h"
 #include "cms.h"
@@ -3501,7 +3502,7 @@ load_with_libpng(
          * source interpretation and linear-light alpha composition. */
         /* The setter keeps gamma in double until the final byte rounding.
          * An intermediate gamma float store could cross a half-byte tie. */
-        status = sixel_frame_set_pixelformat(frame,
+        status = sixel_frame_convert_workformat(frame,
                                              loader_cms_target_pixelformat());
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3512,14 +3513,16 @@ load_with_libpng(
         if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL1 ||
             sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL2 ||
             sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL4) {
-            status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_PAL8);
+            status = sixel_frame_convert_workformat(frame,
+                                                  SIXEL_PIXELFORMAT_PAL8);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
         } else if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_G1 ||
                    sixel_frame_format(frame) == SIXEL_PIXELFORMAT_G2 ||
                    sixel_frame_format(frame) == SIXEL_PIXELFORMAT_G4) {
-            status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_G8);
+            status = sixel_frame_convert_workformat(frame,
+                                                  SIXEL_PIXELFORMAT_G8);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }

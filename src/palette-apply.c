@@ -3,6 +3,7 @@
 #include "config.h"
 #endif
 #include <limits.h>
+#include "frame.h"
 #include <string.h>
 #include "encode-result.h"
 #include "dither-policy-private.h"
@@ -751,7 +752,7 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
             desc->plane_height != apply->plan.output.plane_height) {
         return SIXEL_BAD_ARGUMENT;
     }
-    status = request->source->vtbl->get_pixels(request->source, &apply->pixels);
+    status = sixel_frame_get_work_pixels(request->source, &apply->pixels);
     if (SIXEL_FAILED(status)) {
         return status;
     }

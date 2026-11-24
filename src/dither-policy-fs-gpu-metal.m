@@ -6,6 +6,7 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 #include <limits.h>
+#include "frame.h"
 #include <pthread.h>
 #include <string.h>
 #include "dither-policy-fs-gpu.h"
@@ -468,7 +469,7 @@ fs_gpu_run_impl(fs_gpu_plan_t *plan,
             (size_t)params.columns * params.rows);
     pixels = (size_t)params.width * params.height;
     if (mode != 2) {
-        status = request->source->vtbl->get_pixels(request->source, &source);
+        status = sixel_frame_get_work_pixels(request->source, &source);
         if (status != SIXEL_OK)
             return status;
         if (source.pixels == NULL || source.width != (int)params.width ||

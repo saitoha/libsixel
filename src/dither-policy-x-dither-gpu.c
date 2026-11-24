@@ -3,6 +3,7 @@
 #include "config.h"
 #endif
 #include <math.h>
+#include "frame.h"
 #include <string.h>
 #include "dither-policy-x-dither-gpu.h"
 #include "gpu-palette.h"
@@ -152,7 +153,7 @@ d_x_dither_execute(d_x_dither_plan_t *plan,
         return SIXEL_BAD_ARGUMENT;
     if (run->cancel != NULL && run->cancel(run->cancel_context))
         return SIXEL_INTERRUPTED;
-    status = run->source->vtbl->get_pixels(run->source, &source);
+    status = sixel_frame_get_work_pixels(run->source, &source);
     if (status != SIXEL_OK) return status;
     if (source.width != desc->width || source.height != desc->height ||
             source.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
