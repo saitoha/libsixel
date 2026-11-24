@@ -147,7 +147,24 @@ void km_partial()
                 selected = begin + i;
             }
         }
-        maxima[group] = selected;
+        maxima[group * 17u] = selected;
+    }
+    // One tile maximum followed by up to sixteen block maxima.
+    if (lane < 16u) {
+        uint first = begin + lane * 32u;
+        uint end = min(first + 32u, begin + count);
+        if (first < end) {
+            uint pick = first;
+            float score = distances[first];
+            for (uint j = first + 1u; j < end; ++j) {
+                float candidate = distances[j];
+                if (candidate > score) {
+                    score = candidate;
+                    pick = j;
+                }
+            }
+            maxima[group * 17u + 1u + lane] = pick;
+        }
     }
     barrier();
     for (c = lane; c < p.centers; c += lanes) {
@@ -185,7 +202,7 @@ void km_update()
         float farthest = -1;
         uint selected = 0;
         for (uint g = 0; g < p.groups; ++g) {
-            uint i = maxima[g];
+            uint i = maxima[g * 17u];
             if (distances[i] > farthest) {
                 farthest = distances[i];
                 selected = i;
@@ -204,18 +221,34 @@ void km_update()
         sums[c] = moved;
         membership[selected] = c;
         distances[selected] = 0;
-        // Only the consumed donor changes residual. Refresh just its tile.
+        // Refresh only the donor's block. Ascending block order
+        // preserves the lowest sample index on equal residuals.
         uint group = selected / 512u, begin = group * 512u;
         uint end = min(begin + 512u, p.points);
+        uint block = (selected - begin) / 32u;
+        uint first = begin + block * 32u;
+        uint last = min(first + 32u, end);
+        uint base = group * 17u;
         farthest = -1;
-        selected = begin;
-        for (uint i = begin; i < end; ++i) {
-            if (distances[i] > farthest) {
-                farthest = distances[i];
+        selected = first;
+        for (uint i = first; i < last; ++i) {
+            float candidate = distances[i];
+            if (candidate > farthest) {
+                farthest = candidate;
                 selected = i;
             }
         }
-        maxima[group] = selected;
+        maxima[base + 1u + block] = selected;
+        farthest = -1;
+        for (uint b = 0; begin + b * 32u < end; ++b) {
+            uint i = maxima[base + 1u + b];
+            float candidate = distances[i];
+            if (candidate > farthest) {
+                farthest = candidate;
+                selected = i;
+            }
+        }
+        maxima[base] = selected;
     }
     float delta = 0;
     for (uint c = 0; c < p.centers; ++c) {

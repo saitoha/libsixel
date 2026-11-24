@@ -287,8 +287,8 @@ int kmgpu_contract_numeric(int mode)
 
 int kmgpu_contract_degenerate(int mode)
 {
-    double points[24], weights[8], centers[24];
-    unsigned int membership[8], iterations, i;
+    double points[513 * 3], weights[513], centers[24];
+    unsigned int membership[513], iterations, i, point_count;
     sixel_kmeans_gpu_request_t request;
     SIXELSTATUS status;
 
@@ -297,7 +297,9 @@ int kmgpu_contract_degenerate(int mode)
     memset(points, 0, sizeof(points));
     memset(centers, 0, sizeof(centers));
     memset(&request, 0, sizeof(request));
-    for (i = 0; i < 8; ++i) {
+    /* Equal residuals span a full tile and a one-point tail tile. */
+    point_count = mode == 0 ? 513u : 8u;
+    for (i = 0; i < point_count; ++i) {
         weights[i] = mode == 1 && i % 2 ? 0 : 1;
         points[i * 3] = mode == 2 ? (double)(i % 2) : 0;
     }
@@ -305,7 +307,8 @@ int kmgpu_contract_degenerate(int mode)
     request.weights = weights;
     request.centers = centers;
     request.membership = membership;
-    request.point_count = request.center_count = 8;
+    request.point_count = point_count;
+    request.center_count = 8;
     request.max_iterations = request.min_iterations = 4;
     iterations = 0;
     status = sixel_kmeans_gpu_refine(&request, &iterations);
@@ -315,8 +318,11 @@ int kmgpu_contract_degenerate(int mode)
         if (!isfinite(centers[i]) || centers[i] < 0 || centers[i] > 1)
             return 1;
     }
-    for (i = 0; i < 8; ++i) {
+    for (i = 0; i < point_count; ++i) {
         if (membership[i] >= 8)
+            return 1;
+        /* All repairs reuse sample zero when every residual is zero. */
+        if (mode == 0 && membership[i] != (i == 0 ? 7u : 0u))
             return 1;
     }
     return 0;

@@ -8,6 +8,10 @@
 extern "C" {
 #endif
 
+/* One tile maximum followed by sixteen 32-point block maxima. Keep
+ * this stride in sync with the Metal and GLSL shader constants. */
+#define SIXEL_KMEANS_GPU_MAXIMA_PER_TILE 17u
+
 /* This boundary consumes the weighted clustering coordinates, independent of
  * how sampling, color conversion and binning produced them. Centers are both
  * the initial seeds and the result. A failed attempt never changes them. */

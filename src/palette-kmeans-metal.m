@@ -67,10 +67,10 @@ typedef struct sixel_km_metal_state {
  * point is added once, in exactly the original ascending index order. This
  * avoids the per-center full tile scan without introducing FP32 atomics or
  * reordering sums. The second sum pass retains tile order.
- * Tile maxima accelerate empty repair: the serial update scans only one
- * candidate per tile and refreshes only the consumed donor's tile. Strict
- * comparisons and increasing tile order preserve lowest-index ties, even
- * when every residual is zero and a previously used donor is selected again.
+ * Each tile stores its maximum and a maximum for each 32-point block.
+ * Consuming a donor changes one residual. Refresh that block and scan
+ * the block maxima in ascending order to retain the lowest index on
+ * ties, including when every residual is zero.
  * All iterations are submitted together: no CPU readback occurs between
  * assignment, reduction, empty-cluster repair and convergence decisions. */
 static char const *const sixel_km_metal_source[] = {
@@ -147,7 +147,19 @@ static char const *const sixel_km_metal_source[] = {
     "    farthest = distances[begin+i]; selected = begin+i;\n"
     "   }\n"
     "  }\n"
-    "  maxima[group] = selected;\n"
+    "  maxima[group * 17u] = selected;\n"
+    " }\n"
+    " for (uint block = lane; block < 16u; block += lanes) {\n"
+    "  uint first = begin + block * 32u;\n"
+    "  uint end = min(first + 32u, begin + count);\n"
+    "  if (first >= end) continue;\n"
+    "  uint pick = first;\n"
+    "  float score = distances[first];\n"
+    "  for (uint j = first + 1u; j < end; ++j) {\n"
+    "   float candidate = distances[j];\n"
+    "   if (candidate > score) { score = candidate; pick = j; }\n"
+    "  }\n"
+    "  maxima[group * 17u + 1u + block] = pick;\n"
     " }\n"
     " threadgroup_barrier(mem_flags::mem_threadgroup);\n"
     " for (c = lane; c < p.centers; c += lanes) {\n"
@@ -189,7 +201,7 @@ static char const *const sixel_km_metal_source[] = {
     "  ++s.repairs;\n"
     "  float farthest = -1; uint selected = 0;\n"
     "  for (uint g = 0; g < p.groups; ++g) {\n"
-    "   uint i = maxima[g];\n"
+    "   uint i = maxima[g * 17u];\n"
     "   if (distances[i] > farthest) { farthest = distances[i]; selected = i; "
     "}\n"
     "  }\n"
@@ -201,15 +213,25 @@ static char const *const sixel_km_metal_source[] = {
     "   remaining.w = max(remaining.w, 0.0f); sums[old] = remaining;\n"
     "  }\n"
     "  sums[c] = moved; membership[selected] = c; distances[selected] = 0;\n"
-    "  // Only the consumed donor changes residual. Refresh just its tile.\n"
     "  uint group = selected / 512u, begin = group * 512u;\n"
     "  uint end = min(begin + 512u, p.points);\n"
-    "  farthest = -1; selected = begin;\n"
-    "  for (uint i = begin; i < end; ++i) {\n"
-    "   if (distances[i] > farthest) { farthest = distances[i]; selected = i; "
-    "}\n"
+    "  uint block = (selected - begin) / 32u;\n"
+    "  uint first = begin + block * 32u;\n"
+    "  uint last = min(first + 32u, end);\n"
+    "  uint base = group * 17u;\n"
+    "  farthest = -1; selected = first;\n"
+    "  for (uint i = first; i < last; ++i) {\n"
+    "   float candidate = distances[i];\n"
+    "   if (candidate > farthest) { farthest = candidate; selected = i; }\n"
     "  }\n"
-    "  maxima[group] = selected;\n"
+    "  maxima[base + 1u + block] = selected;\n"
+    "  farthest = -1;\n"
+    "  for (uint b = 0; begin + b * 32u < end; ++b) {\n"
+    "   uint i = maxima[base + 1u + b];\n"
+    "   float candidate = distances[i];\n"
+    "   if (candidate > farthest) { farthest = candidate; selected = i; }\n"
+    "  }\n"
+    "  maxima[base] = selected;\n"
     " }\n"
     " float delta = 0;\n"
     " for (uint c = 0; c < p.centers; ++c) {\n"
@@ -421,7 +443,8 @@ sixel_kmeans_metal_refine(sixel_kmeans_gpu_request_t const *request,
         (NSUInteger)params.groups * params.centers * 4u * sizeof(float);
     lengths[SIXEL_KM_SUMS] = (NSUInteger)params.centers * 4u * sizeof(float);
     lengths[SIXEL_KM_STATE] = sizeof(*state);
-    lengths[SIXEL_KM_MAXIMA] = (NSUInteger)params.groups * sizeof(uint32_t);
+    lengths[SIXEL_KM_MAXIMA] = (NSUInteger)params.groups *
+        SIXEL_KMEANS_GPU_MAXIMA_PER_TILE * sizeof(uint32_t);
     counts[0] = params.points;
     counts[1] = params.groups;
     counts[2] = params.centers;

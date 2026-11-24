@@ -112,7 +112,8 @@ sixel_kmeans_vulkan_refine(sixel_kmeans_gpu_request_t const *request,
         (size_t)params.groups * params.centers * 4 * sizeof(float);
     lengths[SIXEL_KM_SUMS] = (size_t)params.centers * 4 * sizeof(float);
     lengths[SIXEL_KM_STATE] = sizeof(*state);
-    lengths[SIXEL_KM_MAXIMA] = (size_t)params.groups * sizeof(uint32_t);
+    lengths[SIXEL_KM_MAXIMA] = (size_t)params.groups *
+        SIXEL_KMEANS_GPU_MAXIMA_PER_TILE * sizeof(uint32_t);
     lengths[SIXEL_KM_BUFFERS] = sizeof(params);
     groups[0] = (params.points + 255u) / 256u;
     groups[1] = params.groups;
