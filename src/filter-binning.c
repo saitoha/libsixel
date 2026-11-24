@@ -940,6 +940,16 @@ static sixel_filter_vtbl_t const sixel_filter_binning_vtbl = {
     NULL
 };
 
+static sixel_filter_vtbl_t const sixel_filter_binning_record_vtbl = {
+    "binning",
+    SIXEL_FILTER_KIND_BINNING,
+    sixel_filter_binning_apply,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
 static void
 sixel_filter_exact_table_clear(sixel_filter_exact_table_t *table)
 {
@@ -1908,6 +1918,7 @@ sixel_filter_binning_apply(sixel_filter_t *filter,
                            sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
+    sixel_filter_binning_config_t const *config;
     sixel_filter_binning_state_t *state;
     sixel_palette_binning_state_t *binning;
     sixel_palette_binning_policy_t policy;
@@ -1920,6 +1931,11 @@ sixel_filter_binning_apply(sixel_filter_t *filter,
     size_t source_point_count;
     double total_weight;
     int completed;
+
+    if (filter != NULL && filter->vtbl == &sixel_filter_binning_record_vtbl) {
+        config = filter->userdata;
+        return config->record(config->record_context, config->grid_input);
+    }
 
     status = SIXEL_FALSE;
     state = NULL;
@@ -2154,9 +2170,16 @@ sixel_filter_binning_init(
 
     status = SIXEL_FALSE;
     state = NULL;
-    if (filter == NULL || config == NULL ||
-            (config->binning == NULL &&
-             (config->heckbert == NULL || config->heckbert_output == NULL))) {
+    if (filter == NULL || config == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    if (config->record != NULL) {
+        if (config->grid_input == NULL)
+            return SIXEL_BAD_ARGUMENT;
+        return sixel_filter_init_with_vtbl(
+            filter, &sixel_filter_binning_record_vtbl, (void *)config);
+    }
+    if (config->binning == NULL &&
+            (config->heckbert == NULL || config->heckbert_output == NULL)) {
         return SIXEL_BAD_ARGUMENT;
     }
     if ((config->output_order != SIXEL_FILTER_BINNING_OUTPUT_NATIVE &&

@@ -52,6 +52,8 @@ test_resident_playback(int heckbert)
         char const *value;
     } const options[] = {
         { SIXEL_OPTFLAG_GPU_POLICY, "force" },
+        /* Keep body composition on the CPU when counting palette submits. */
+        { SIXEL_OPTFLAG_THREADING_POLICY, "greedy:global_budget=1" },
         { SIXEL_OPTFLAG_PRECISION_POLICY, "8bit" },
         { SIXEL_OPTFLAG_SAMPLING_POLICY, "adaptive-grid:solid=off" },
         { SIXEL_OPTFLAG_MERGE_POLICY, "none" },
@@ -69,6 +71,7 @@ test_resident_playback(int heckbert)
     sixel_playback_t *playback;
     sixel_playback_config_t config;
     resident_sink_t sink[2];
+    sixel_gpu_statistics_t before, after;
     size_t i;
     SIXELSTATUS status;
     int result;
@@ -121,14 +124,26 @@ test_resident_playback(int heckbert)
     RESIDENT_CHECK(sixel_frame_new(&frame, NULL));
     RESIDENT_CHECK(sixel_frame_init_borrowed(frame, rgb, 32, 32,
                                    SIXEL_PIXELFORMAT_RGB888, NULL, -1));
+    RESIDENT_CHECK(sixel_gpu_get_statistics(&before));
     RESIDENT_CHECK(sixel_encoder_encode_frame(encoder, frame, direct));
+    RESIDENT_CHECK(sixel_gpu_get_statistics(&after));
+    if (after.dispatches != before.dispatches + 1u) {
+        fprintf(stderr, "direct resident encode must submit once.\n");
+        goto end;
+    }
     /* Reuse the same caller-owned frame after the direct call. */
     RESIDENT_CHECK(sixel_playback_config_init(&config, sizeof(config)));
     RESIDENT_CHECK(sixel_playback_new(&playback, encoder, queued,
                                       &config, NULL));
+    RESIDENT_CHECK(sixel_gpu_get_statistics(&before));
     RESIDENT_CHECK(sixel_playback_submit(playback, frame, SIXEL_PLAYBACK_WAIT,
                                          -1, NULL));
     RESIDENT_CHECK(sixel_playback_drain(playback, -1));
+    RESIDENT_CHECK(sixel_gpu_get_statistics(&after));
+    if (after.dispatches != before.dispatches + 1u) {
+        fprintf(stderr, "queued resident encode must submit once.\n");
+        goto end;
+    }
 #undef RESIDENT_CHECK
     if (sink[0].length && sink[0].length == sink[1].length &&
             sink[0].hash == sink[1].hash) {

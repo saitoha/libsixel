@@ -63,6 +63,13 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_heckbert_alloc_table(sixel_heckbert_tuple_t ***result, unsigned int depth,
     unsigned int size, sixel_allocator_t *allocator);
 
+struct sixel_filter_sample_grid;
+
+/* A resident backend records binning into its already-open command buffer.
+ * The grid and backend context are borrowed for the filter run. */
+typedef SIXELSTATUS (*sixel_filter_binning_record_fn)(void *context,
+    struct sixel_filter_sample_grid const *grid);
+
 typedef struct sixel_filter_binning_config {
     sixel_palette_binning_state_t *binning;
     int input_is_float32;
@@ -76,6 +83,9 @@ typedef struct sixel_filter_binning_config {
      * place of the generic binning state and weighted point set. */
     sixel_heckbert_binning_request_t const *heckbert;
     sixel_heckbert_histogram_t *heckbert_output;
+    struct sixel_filter_sample_grid const *grid_input;
+    sixel_filter_binning_record_fn record;
+    void *record_context;
 } sixel_filter_binning_config_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS

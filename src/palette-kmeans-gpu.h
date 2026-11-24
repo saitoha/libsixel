@@ -71,8 +71,11 @@ sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
                         unsigned int *iterations);
 
 #if defined(HAVE_METAL)
+struct sixel_filter_sample_grid;
+
 typedef struct sixel_palette_resident_request {
-    unsigned int width, height, stride, colors;
+    struct sixel_filter_sample_grid const *grid;
+    unsigned int colors;
     int quantizer;
     unsigned int min_iterations, max_iterations;
     float threshold;

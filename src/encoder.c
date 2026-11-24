@@ -5545,6 +5545,8 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     sixel_palette_resident_request_t request;
     sixel_palette_frame_state_t state;
     sixel_filter_sample_config_t sampling;
+    sixel_filter_sample_grid_t grid;
+    sixel_filter_t sample_filter;
     sixel_palette_cover_options_t cover;
     sixel_palette_snap_options_t snap;
     sixel_frame_t *indexed;
@@ -5557,7 +5559,7 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     unsigned char *palette;
     size_t count, samples;
     unsigned int colors;
-    int prune, option_lock, heckbert;
+    int width, height, prune, option_lock, heckbert;
     SIXELSTATUS status;
 
     encoder = context->encoder;
@@ -5722,31 +5724,42 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     status = source_if->vtbl->get_timeline(source_if, &timeline);
     if (status != SIXEL_OK)
         return status;
-    request.width = (unsigned int)sixel_frame_get_width(context->frame);
-    request.height = (unsigned int)sixel_frame_get_height(context->frame);
+    width = sixel_frame_get_width(context->frame);
+    height = sixel_frame_get_height(context->frame);
     request.colors = (unsigned int)encoder->reqcolors;
-    if (!request.width || !request.height || !request.colors ||
-            request.colors > 256 || request.width > UINT_MAX/request.height)
+    if (width <= 0 || height <= 0 || !request.colors ||
+            request.colors > 256 || (unsigned int)width > UINT_MAX / 3u /
+                (unsigned int)height)
         return SIXEL_FALSE;
-    count = (size_t)request.width * request.height;
-    if (count > UINT_MAX / 3u)
+    count = (size_t)width * (unsigned int)height;
+    if (sixel_encoder_is_cancel_requested(encoder))
+        return SIXEL_INTERRUPTED;
+    if (encoder->palette_sample_override && !encoder->palette_sample_target)
         return SIXEL_FALSE;
     memset(&sampling, 0, sizeof(sampling));
+    sampling.policy = context->palette.sampling.effective;
+    sampling.source = context->palette.sampling_source;
+    sampling.skip_solid = 1;
+    sampling.grid_output = &grid;
     sampling.reqcolors = encoder->reqcolors;
     sampling.quality_mode = encoder->quality_mode;
     sampling.palette_sample_override = encoder->palette_sample_override;
     sampling.palette_sample_target = encoder->palette_sample_target;
-    if (sampling.palette_sample_override && !sampling.palette_sample_target)
-        return SIXEL_FALSE;
-    request.stride = (unsigned int)sixel_filter_sample_select_stride(&sampling,
-        (int)request.width, (int)request.height);
-    samples = ((request.width - 1) / request.stride + 1u) *
-        ((request.height - 1) / request.stride + 1u);
+    status = sixel_filter_factory_init_by_kind(SIXEL_FILTER_KIND_SAMPLE,
+                                              &sampling, &sample_filter);
+    if (status != SIXEL_OK)
+        return status;
+    sixel_filter_bind_input(&sample_filter, &context->frame,
+        SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_GAMMA);
+    status = sixel_filter_run(&sample_filter, encoder->allocator,
+                              encoder->logger);
+    sixel_filter_teardown(&sample_filter);
+    if (status != SIXEL_OK)
+        return status;
+    samples = grid.count;
     if (samples > 32768u)
         return SIXEL_FALSE;
-
-    if (sixel_encoder_is_cancel_requested(encoder))
-        return SIXEL_INTERRUPTED;
+    request.grid = &grid;
 
     indexed = NULL;
     dither = NULL;
@@ -5812,8 +5825,8 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_NONE);
     storage.pixels = pixels;
     storage.palette = palette;
-    storage.width = (int)request.width;
-    storage.height = (int)request.height;
+    storage.width = width;
+    storage.height = height;
     storage.pixelformat = SIXEL_PIXELFORMAT_PAL8;
     storage.colorspace = SIXEL_COLORSPACE_GAMMA;
     storage.ncolors = (int)colors;

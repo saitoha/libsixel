@@ -98,7 +98,17 @@ static sixel_filter_vtbl_t const sixel_filter_sample_vtbl = {
     NULL
 };
 
-size_t
+static sixel_filter_vtbl_t const sixel_filter_sample_grid_vtbl = {
+    "sample",
+    SIXEL_FILTER_KIND_SAMPLE,
+    sixel_filter_sample_apply,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+static size_t
 sixel_filter_sample_select_stride(
         sixel_filter_sample_config_t const *config,
         int width,
@@ -164,6 +174,19 @@ sixel_filter_sample_select_stride(
         SIXEL_PRINTF_SIZE(stride));
 
     return stride;
+}
+
+static void
+sixel_filter_sample_plan_grid(sixel_filter_sample_config_t const *config,
+    int width, int height, sixel_filter_sample_grid_t *grid)
+{
+    grid->width = (unsigned int)width;
+    grid->height = (unsigned int)height;
+    grid->stride = (unsigned int)sixel_filter_sample_select_stride(
+        config, width, height);
+    grid->columns = (grid->width - 1u) / grid->stride + 1u;
+    grid->rows = (grid->height - 1u) / grid->stride + 1u;
+    grid->count = (size_t)grid->columns * grid->rows;
 }
 
 static SIXELSTATUS
@@ -1431,6 +1454,7 @@ sixel_filter_sample_copy_frame(
     unsigned char *dst_pixels;
     unsigned char const *src_mask;
     unsigned char *dst_mask;
+    sixel_filter_sample_grid_t grid;
     size_t stride;
     size_t src_pixel_count;
     int clip_x;
@@ -1645,9 +1669,10 @@ sixel_filter_sample_copy_frame(
     width = clip_w;
     height = clip_h;
 
-    stride = sixel_filter_sample_select_stride(config, width, height);
-    sample_width = (width + (int)stride - 1) / (int)stride;
-    sample_height = (height + (int)stride - 1) / (int)stride;
+    sixel_filter_sample_plan_grid(config, width, height, &grid);
+    stride = grid.stride;
+    sample_width = (int)grid.columns;
+    sample_height = (int)grid.rows;
     if (sample_width <= 0 || sample_height <= 0) {
         sixel_allocator_free(allocator, normalized_src_pixels);
         return SIXEL_BAD_ARGUMENT;
@@ -1958,6 +1983,7 @@ sixel_filter_sample_apply(sixel_filter_t *filter,
                           sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
+    sixel_filter_sample_config_t const *config;
     sixel_filter_sample_state_t *state;
     sixel_frame_t *input_frame;
     int width;
@@ -1976,6 +2002,14 @@ sixel_filter_sample_apply(sixel_filter_t *filter,
     if (input_frame != NULL) {
         width = sixel_frame_get_width(input_frame);
         height = sixel_frame_get_height(input_frame);
+    }
+    if (filter != NULL && filter->vtbl == &sixel_filter_sample_grid_vtbl) {
+        config = filter->userdata;
+        if (width <= 0 || height <= 0)
+            return SIXEL_BAD_ARGUMENT;
+        sixel_filter_sample_plan_grid(config, width, height,
+                                      config->grid_output);
+        return SIXEL_OK;
     }
     state = filter != NULL
         ? (sixel_filter_sample_state_t *)filter->userdata : NULL;
@@ -2023,6 +2057,15 @@ sixel_filter_sample_init(sixel_filter_t *filter,
 
     if (filter == NULL || config == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (config->grid_output != NULL) {
+        if (config->policy != SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID ||
+                !config->skip_solid || config->clip_width > 0 ||
+                config->clip_height > 0)
+            return SIXEL_BAD_ARGUMENT;
+        return sixel_filter_init_with_vtbl(
+            filter, &sixel_filter_sample_grid_vtbl, (void *)config);
     }
 
     state = (sixel_filter_sample_state_t *)malloc(sizeof(*state));

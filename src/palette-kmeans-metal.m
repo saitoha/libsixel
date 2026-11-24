@@ -14,6 +14,9 @@
 #include <string.h>
 
 #include "palette-kmeans-gpu.h"
+#include "filter-binning.h"
+#include "filter-factory.h"
+#include "filter-sample.h"
 #include "compat_stub.h"
 #include "options.h"
 #include "timer.h"
@@ -949,16 +952,63 @@ sixel_km_resident_dispatch(id<MTLCommandBuffer> command, unsigned int stage,
     return 1;
 }
 
+typedef struct sixel_metal_binning_context {
+    id<MTLCommandBuffer> command;
+    sixel_km_geometry_t const *geometry;
+    uint32_t const *policy;
+    int heckbert;
+} sixel_metal_binning_context_t;
+
+static SIXELSTATUS
+sixel_metal_record_binning(void *context,
+    sixel_filter_sample_grid_t const *grid)
+{
+    sixel_metal_binning_context_t const *binning;
+    unsigned int samples, tiles, lanes;
+
+    binning = context;
+    samples = (unsigned int)grid->count;
+#define RECORD(stage, count, lanes, arg) \
+    if (!sixel_km_resident_dispatch(binning->command, stage, count, lanes, \
+             -1, arg, 0, binning->geometry, binning->policy)) \
+        return SIXEL_RUNTIME_ERROR
+    if (binning->heckbert) {
+        tiles = (samples + HB_GRID_TILE - 1u) / HB_GRID_TILE;
+        lanes = (unsigned int)
+            sixel_km_resident_stages[HB_COMPACT].threadExecutionWidth;
+        if (!lanes)
+            return SIXEL_RUNTIME_ERROR;
+
+        /* The first pass gathers sampled pixels directly from the RGB
+         * buffer and writes the first-seen cell index in the same launch. */
+        RECORD(HB_FIRST, samples, HB_GRID_TILE, 0);
+        RECORD(HB_ACCUMULATE, samples, HB_GRID_TILE, samples);
+        RECORD(HB_PREFIX, 1, 1, samples);
+        RECORD(HB_COMPACT, tiles * lanes, lanes, samples);
+    } else {
+        RECORD(KM_HISTOGRAM, samples, 128, 0);
+        RECORD(KM_COUNT, 256, 64, 0);
+        RECORD(KM_PREFIX, 1, 1, 0);
+        RECORD(KM_COMPACT, 256, 64, 0);
+    }
+#undef RECORD
+    return SIXEL_OK;
+}
+
 SIXELSTATUS
 sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     unsigned char const *rgb, unsigned char *indices,
     unsigned char *palette, unsigned int *colors)
 {
     sixel_km_geometry_t geometry;
-    NSUInteger simd, lanes, compact_lanes;
+    sixel_filter_sample_grid_t const *grid;
+    sixel_filter_binning_config_t binning;
+    sixel_metal_binning_context_t binning_context;
+    sixel_filter_t binning_filter;
+    NSUInteger simd, lanes;
     uint32_t policy[4];
     uint32_t const *result;
-    unsigned int samples, pixels, stride, i, run, tiles;
+    unsigned int samples, pixels, i, run, tiles;
     int reverse, heckbert;
     SIXELSTATUS status;
     id<MTLBuffer> *buffers;
@@ -976,16 +1026,14 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     if (!heckbert &&
             (request->max_iterations == 0 || request->max_iterations > 116u))
         return SIXEL_BAD_ARGUMENT;
-    stride = request->stride;
-    if (!stride || !request->width || !request->height ||
-            request->width > UINT32_MAX / request->height)
+    grid = request->grid;
+    if (grid == NULL || !grid->stride || !grid->width || !grid->height ||
+            !grid->count || grid->count > 32768u ||
+            grid->width > UINT32_MAX / 3u / grid->height)
         return SIXEL_FALSE;
-    pixels = request->width * request->height;
-    samples = ((request->width - 1) / stride + 1) *
-              ((request->height - 1) / stride + 1);
-    if (samples > 32768u || pixels > UINT32_MAX / 3u)
-        return SIXEL_FALSE;
-    geometry = (sixel_km_geometry_t){request->width, request->height, stride,
+    pixels = grid->width * grid->height;
+    samples = (unsigned int)grid->count;
+    geometry = (sixel_km_geometry_t){grid->width, grid->height, grid->stride,
         request->colors, request->min_iterations, request->threshold};
     tiles = (samples + HB_GRID_TILE - 1u) / HB_GRID_TILE;
     policy[0] = request->snap;
@@ -1044,16 +1092,30 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
                        range:NSMakeRange(0,16*4096) value:0];
         [blit endEncoding];
 
+        memset(&binning, 0, sizeof(binning));
+        binning_context = (sixel_metal_binning_context_t){
+            command, &geometry, policy, heckbert};
+        binning.grid_input = grid;
+        binning.record = sixel_metal_record_binning;
+        binning.record_context = &binning_context;
+        status = sixel_filter_factory_init_by_kind(SIXEL_FILTER_KIND_BINNING,
+                                                   &binning, &binning_filter);
+        if (status != SIXEL_OK)
+            goto end;
+        status = sixel_filter_run(&binning_filter, NULL, NULL);
+        sixel_filter_teardown(&binning_filter);
+        if (status != SIXEL_OK)
+            goto end;
+        status = SIXEL_RUNTIME_ERROR;
+
 #define RUN(stage, count, lanes, indirect, arg, reverse) \
         if (!sixel_km_resident_dispatch(command, stage, count, lanes, \
                  indirect, arg, reverse, &geometry, policy)) goto end
         if (heckbert) {
-            compact_lanes =
-                sixel_km_resident_stages[HB_COMPACT].threadExecutionWidth;
             simd = sixel_km_resident_stages[HB_SOLVE].threadExecutionWidth;
             lanes = sixel_km_resident_stages[HB_SOLVE]
                 .maxTotalThreadsPerThreadgroup;
-            if (!compact_lanes || !simd || 256u % simd != 0u)
+            if (!simd || 256u % simd != 0u)
                 goto end;
             if (lanes > 1024u)
                 lanes = 1024u;
@@ -1062,19 +1124,10 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
             lanes -= lanes % simd;
             if (lanes < 256u)
                 goto end;
-            RUN(HB_FIRST, samples, HB_GRID_TILE, -1, 0, 0);
-            RUN(HB_ACCUMULATE, samples, HB_GRID_TILE, -1, samples, 0);
-            RUN(HB_PREFIX, 1, 1, -1, samples, 0);
-            RUN(HB_COMPACT, tiles * (unsigned int)compact_lanes,
-                (unsigned int)compact_lanes, -1, samples, 0);
             RUN(HB_SOLVE, (unsigned int)lanes, (unsigned int)lanes,
                 -1, 0, 0);
             RUN(HB_REP, request->colors, 128, -1, 0, 0);
         } else {
-            RUN(KM_HISTOGRAM, samples, 128, -1, 0, 0);
-            RUN(KM_COUNT, 256, 64, -1, 0, 0);
-            RUN(KM_PREFIX, 1, 1, -1, 0, 0);
-            RUN(KM_COMPACT, 256, 64, -1, 0, 0);
             RUN(KM_MOMENTS, (samples+63)/64, 32, -1, 0, 0);
             RUN(KM_AXIS, 1, 1, -1, 0, 0);
             RUN(KM_TILES, 0, 128, 0, 0, 0);

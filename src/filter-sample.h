@@ -33,6 +33,13 @@
 #include "gpu-runtime-vulkan.h"
 #endif
 
+/* A deferred grid describes the input frame without gathering its pixels.
+ * Binning can fuse the gather while using the same grid as the CPU filter. */
+typedef struct sixel_filter_sample_grid {
+    unsigned int width, height, stride, columns, rows;
+    size_t count;
+} sixel_filter_sample_grid_t;
+
 /*
  * Sample filter configuration. The planner fills this before wiring the
  * filter so apply() can copy the requested region with the right density.
@@ -71,11 +78,10 @@ typedef struct sixel_filter_sample_config {
     int gpu_policy;
     /* Stage a loaded RGB frame for reuse if the pre-plan leaves it intact. */
     int share_gpu_input;
+    /* Set for a deferred grid edge. The filter borrows this configuration
+     * and publishes geometry without allocating or reading sample pixels. */
+    sixel_filter_sample_grid_t *grid_output;
 } sixel_filter_sample_config_t;
-
-SIXEL_INTERNAL_API size_t
-sixel_filter_sample_select_stride(sixel_filter_sample_config_t const *config,
-                                  int width, int height);
 
 SIXELSTATUS
 sixel_filter_sample_init(sixel_filter_t *filter,

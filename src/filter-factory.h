@@ -40,6 +40,11 @@ sixel_filter_factory_create_by_name(const char *name,
                                     const void *config,
                                     sixel_filter_t **filter_out);
 
+/* Initialize caller storage through the same component registry. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_filter_factory_init_by_kind(sixel_filter_kind_t kind,
+    const void *config, sixel_filter_t *filter);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_factory_create_by_kind(sixel_filter_kind_t kind,
                                     const void *config,

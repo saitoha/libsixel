@@ -381,27 +381,40 @@ sixel_filter_factory_create_by_name(const char *name,
     return SIXEL_BAD_ARGUMENT;
 }
 
+static sixel_filter_factory_entry_t const *
+sixel_filter_factory_find_kind(sixel_filter_kind_t kind)
+{
+    size_t index;
+
+    for (index = 0u; index < sizeof(sixel_filter_factory_entries)
+            / sizeof(sixel_filter_factory_entries[0]); ++index) {
+        if (sixel_filter_factory_entries[index].kind == kind)
+            return &sixel_filter_factory_entries[index];
+    }
+    return NULL;
+}
+
+SIXELSTATUS
+sixel_filter_factory_init_by_kind(sixel_filter_kind_t kind,
+    const void *config, sixel_filter_t *filter)
+{
+    sixel_filter_factory_entry_t const *entry;
+
+    entry = sixel_filter_factory_find_kind(kind);
+    return entry == NULL ? SIXEL_BAD_ARGUMENT
+        : entry->initializer(filter, config);
+}
+
 SIXELAPI SIXELSTATUS
 sixel_filter_factory_create_by_kind(sixel_filter_kind_t kind,
                                     const void *config,
                                     sixel_filter_t **filter_out)
 {
-    SIXELSTATUS status;
-    size_t index;
+    sixel_filter_factory_entry_t const *entry;
 
-    for (index = 0u; index < sizeof(sixel_filter_factory_entries)
-            / sizeof(sixel_filter_factory_entries[0]); ++index) {
-        if (sixel_filter_factory_entries[index].kind == kind) {
-            status = sixel_filter_factory_create_entry(
-                    &sixel_filter_factory_entries[index],
-                    config,
-                    filter_out);
-
-            return status;
-        }
-    }
-
-    return SIXEL_BAD_ARGUMENT;
+    entry = sixel_filter_factory_find_kind(kind);
+    return entry == NULL ? SIXEL_BAD_ARGUMENT
+        : sixel_filter_factory_create_entry(entry, config, filter_out);
 }
 
 /* emacs Local Variables:      */
