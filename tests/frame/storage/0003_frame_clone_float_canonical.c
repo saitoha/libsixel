@@ -2020,6 +2020,71 @@ end:
 }
 
 static int
+test_rgbf32_owned_slice(void)
+{
+    static float const expected[] = {0, 1, 0, 1, 0, 0};
+    float replacement[] = {0, 0, 1};
+    float *pixels;
+    sixel_frame_t *frame = NULL;
+    sixel_color_def_t *linear, *gamma;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_request_t request;
+    sixel_frame_pixels_view_t before, after;
+    int offset;
+    int result = EXIT_FAILURE;
+
+    linear = sixel_color_def_new_named("linear-srgb");
+    gamma = sixel_color_def_new_named("srgb");
+    if (!linear || !gamma || sixel_frame_new(&frame, NULL) != SIXEL_OK) {
+        goto end;
+    }
+    pixels = malloc(sizeof(expected));
+    if (pixels == NULL) {
+        goto end;
+    }
+    memcpy(pixels, expected, sizeof(expected));
+    iface = sixel_frame_as_interface(frame);
+    request = (sixel_frame_pixels_request_t){
+        pixels, NULL, 2, 1, SIXEL_PIXELFORMAT_RGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32
+    };
+    if (iface->vtbl->init_pixels(iface, &request) != SIXEL_OK) {
+        free(pixels);
+        goto end;
+    }
+    if (iface->vtbl->set_rgb_definition(iface, linear) != SIXEL_OK ||
+            iface->vtbl->get_pixels(iface, &before) != SIXEL_OK) {
+        goto end;
+    }
+    for (offset = 0; offset < 6; offset += 3) {
+        if (sixel_frame_init_rgbf32_borrowed(
+                frame, pixels + offset, 1, 1, gamma) != SIXEL_BAD_ARGUMENT ||
+            iface->vtbl->get_pixels(iface, &after) != SIXEL_OK ||
+            after.width != 2 || after.height != 1 ||
+            after.pixelformat != before.pixelformat ||
+            after.colorspace != before.colorspace ||
+            after.rgb_definition != before.rgb_definition ||
+            after.pixels_float32 != pixels ||
+            memcmp(after.pixels_float32, expected, sizeof(expected)) != 0) {
+            goto end;
+        }
+    }
+    if (sixel_frame_init_rgbf32_borrowed(frame, replacement, 1, 1, gamma) !=
+            SIXEL_OK ||
+        iface->vtbl->get_pixels(iface, &after) != SIXEL_OK ||
+        after.pixels_float32 != replacement ||
+        !sixel_cdef_same_rgb(after.rgb_definition, gamma)) {
+        goto end;
+    }
+    result = EXIT_SUCCESS;
+end:
+    sixel_frame_unref(frame);
+    sixel_color_def_free(gamma);
+    sixel_color_def_free(linear);
+    return result;
+}
+
+static int
 test_rgbf32_input_direction(void)
 {
     unsigned char bytes[sizeof(color_paired_lut)];
@@ -2780,6 +2845,9 @@ test_frame_0014_clone_float(int argc, char **argv)
     }
     if (argc == 2 && strcmp(argv[1], "public-icc-direction") == 0) {
         return test_rgbf32_input_direction();
+    }
+    if (argc == 2 && strcmp(argv[1], "public-rgbf32-owned-slice") == 0) {
+        return test_rgbf32_owned_slice();
     }
     if (argc == 2 && strcmp(argv[1], "public-rgbf32-retry") == 0) {
         return test_rgbf32_public_retry();

@@ -67,22 +67,8 @@ sources in a float format until the final palette is emitted.
    ``Encoder``.  This mirrors ``img2sixel -.float32``.
 3. Request the float precision flag through ``encoder.setopt('.',
    'float32')`` so that automatic image loading uses the expanded path.
-4. Select a working colorspace via ``encoder.setopt('W', 'linear')`` or
-   ``'oklab'``/``'cielab'``/``'din99d'`` if you want libsixel to convert the
-   source prior to quantization without dropping back to 8-bit.
-5. When passing custom buffers to ``encode_bytes`` choose one of the
-   float pixel format constants exposed via ``Libsixel::API``:
-
-   | Constant name                                      | Use case              |
-   | -------------------------------------------------- | --------------------- |
-   | ``SIXEL_PIXELFORMAT_RGBFLOAT32``                   | Gamma-encoded RGB     |
-   | ``SIXEL_PIXELFORMAT_LINEARRGBFLOAT32``             | Linear-light RGB data |
-   | ``SIXEL_PIXELFORMAT_OKLABFLOAT32``                 | OKLab intermediates   |
-   | ``SIXEL_PIXELFORMAT_CIELABFLOAT32``                | CIELAB intermediates  |
-   | ``SIXEL_PIXELFORMAT_DIN99DFLOAT32``                | [DIN99d coordinates divided by 100](../docs/concepts/din99d/README.md#coordinates-and-normalization) |
-
-   Supplying these constants prevents the implicit byte conversion
-   performed by legacy releases.
+4. Select the working color space with `encoder.setopt('W', 'linear')` or one of `'oklab'`, `'cielab'`, and `'din99d'`. The encoder converts the input to this space for processing.
+5. To pass sRGB float samples to `encode_bytes`, use `Libsixel::API::SIXEL_PIXELFORMAT_RGBFLOAT32` with tightly packed RGB triplets in native-endian float32. Supply sRGB-encoded channel values. For example, pack one red pixel with `[1.0, 0.0, 0.0].pack('f*')`.
 
 ```ruby
 require 'libsixel'
