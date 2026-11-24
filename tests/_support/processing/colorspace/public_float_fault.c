@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: float_fault_ */
 /* Exercise the real chunk controller with a deterministic short-lived pool. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"

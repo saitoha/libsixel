@@ -32,6 +32,8 @@ raw_symbols=$tmpdir/raw_symbols.tsv
 symbols=$tmpdir/symbols.tsv
 duplicates=$tmpdir/duplicates.tsv
 amalgamation_defines=$tmpdir/amalgamation-defines.h
+prefix_issues=$tmpdir/prefix-issues.log
+: > "$prefix_issues"
 
 awk -v src_base="$src_root/src" '
 {
@@ -149,7 +151,8 @@ awk -f "$src_root/build-aux/test-runner-amalgamation-defines.awk" \
 # Keep parsing state local to each translation unit while reusing one process.
 # Loading argv from the inventory also avoids the host command-length limit.
 awk -v units="$unit_files" -v tests_root="$src_root/tests/" \
-    -v src_dir="$src_root/src/" -v defines="$amalgamation_defines" '
+    -v src_dir="$src_root/src/" -v defines="$amalgamation_defines" \
+    -v prefix_issues="$prefix_issues" '
 function add_unit(path,    line, fragment) {
     if (path in scanned) return
     scanned[path] = 1
@@ -321,6 +324,27 @@ function emit_typedef(text,   name, parts, rest, tag, part_count) {
         emit_symbol(name, "ordinary")
     }
 }
+function record_variable(name) {
+    if (is_test) test_variables[FNR, name] = 1
+    emit_symbol(name, "ordinary")
+}
+# A test that compiles a private copy of production code needs its own
+# namespace for file-scope state, including fixture data and callbacks.
+# A variable can use the namespace itself or start with the namespace
+# followed by an underscore.
+function check_test_prefix(   variable, parts, required, namespace) {
+    if (!copies_source && test_prefix == "") return
+    required = test_prefix == "" ? "(add a Test variable prefix comment)" : test_prefix
+    namespace = substr(test_prefix, 1, length(test_prefix) - 1)
+    for (variable in test_variables) {
+        split(variable, parts, SUBSEP)
+        if (test_prefix == "" ||
+                (parts[2] != namespace && index(parts[2], test_prefix) != 1)) {
+            printf "# %s:%s: variable %s needs the test prefix %s\n", \
+                file, parts[1], parts[2], required > prefix_issues
+        }
+    }
+}
 function emit_variable(line,  declaration) {
     declaration = line
     sub(/[\[=;].*$/, "", declaration)
@@ -330,7 +354,7 @@ function emit_variable(line,  declaration) {
     }
     sub(/[[:space:]]+$/, "", declaration)
     match(declaration, /[A-Za-z_][A-Za-z0-9_]*$/)
-    emit_symbol(substr(declaration, RSTART, RLENGTH), "ordinary")
+    record_variable(substr(declaration, RSTART, RLENGTH))
 }
 function reset_state() {
     state = 0
@@ -379,7 +403,12 @@ function start_signature(line,   candidate, search) {
     return 1
 }
 FNR == 1 {
+    check_test_prefix()
     file = FILENAME
+    delete test_variables
+    test_prefix = ""
+    copies_source = 0
+    aggregate = 0
     delete macro_alias
     delete excluded_at
     delete taken_at
@@ -394,6 +423,16 @@ FNR == 1 {
     reset_state()
 }
 {
+    if (is_test && $0 ~ /^\/\* Test variable prefix: [a-z][a-z0-9][a-z0-9_]*_ \*\/$/) {
+        prefix = $0
+        sub(/^\/\* Test variable prefix: /, "", prefix)
+        sub(/ .*/, "", prefix)
+        if (test_prefix != "" || prefix in prefix_owner) {
+            print "# " file ":" FNR ": duplicate test variable prefix " prefix > prefix_issues
+        }
+        test_prefix = prefix
+        prefix_owner[prefix] = file
+    }
     line = trim(strip_comments($0))
     if (line == "" && define_text == "") {
         next
@@ -401,6 +440,10 @@ FNR == 1 {
 
     if (is_test && define_text == "" && line ~ /^#/) {
         track_guard(line)
+    }
+    if (is_test && line ~ /^#[[:space:]]*include[[:space:]]+"src\/[^"]+\.c"$/) {
+        copies_source = 1
+        if (!excluded) emit_source_copy(line)
     }
     if (excluded) next
 
@@ -424,9 +467,6 @@ FNR == 1 {
         sub(/[[:space:]].*$/, "", macro)
         delete macro_alias[macro]
         next
-    }
-    if (is_test && line ~ /^#[[:space:]]*include[[:space:]]+"src\/[^"]+\.c"$/) {
-        emit_source_copy(line)
     }
     if (line ~ /^#/) {
         next
@@ -454,6 +494,14 @@ FNR == 1 {
         next
     }
 
+    if (aggregate) {
+        if ($0 ~ /^}/) {
+            aggregate = 0
+            if (line ~ /^}[[:space:]]+/) emit_variable("static" substr(line, 2))
+        }
+        next
+    }
+
     if (state == 0) {
         if (index(file, src_dir) == 1 &&
                 $0 ~ /^[A-Za-z][A-Za-z0-9_]*\(/) {
@@ -461,10 +509,31 @@ FNR == 1 {
             start_signature(line)
             next
         }
+        if (is_test && $0 ~ /^[A-Za-z_]/) {
+            if (line ~ /^[^(]*\(\*/ &&
+                    match(line, /\(\*[[:space:]]*[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\)/)) {
+                pointer = substr(line, RSTART + 2, RLENGTH - 3)
+                record_variable(trim(pointer))
+                next
+            }
+            if (line ~ /^(static[[:space:]]+)?(struct|union|enum)[^=]*\{/) {
+                if (sub(/^[^}]*}/, "", line)) {
+                    if (line ~ /^[[:space:]]+/) emit_variable("static" line)
+                } else {
+                    aggregate = 1
+                }
+                next
+            }
+            if (line ~ /^[^(]*[\[=;]/ &&
+                    line !~ /^(extern[[:space:]]+|(struct|union|enum)[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]*;)/) {
+                emit_variable(line)
+                next
+            }
+        }
         if ($0 ~ /^static([[:space:]]|$)/) {
             if (line ~ /^[^(]*[\[=;]/) {
                 # Converter sources are built as separate frontends.
-                if (is_test || index(file, src_dir) == 1) emit_variable(line)
+                if (index(file, src_dir) == 1) emit_variable(line)
                 next
             }
             if (sub(/^static([[:space:]]+inline)?[[:space:]]+/, "", line)) {
@@ -528,7 +597,14 @@ FNR == 1 {
         }
     }
 }
+END { check_test_prefix() }
 ' > "$raw_symbols"
+
+if test -s "$prefix_issues"; then
+    cat "$prefix_issues"
+    echo "not ok 1 - test source copies isolate their file-scope variables"
+    exit 0
+fi
 
 if test ! -s "$raw_symbols"; then
     echo "ok 1 - amalgamation static symbols and test types are unique"

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: resident_ */
 /*
  * A decoder object keeps its parallel decode workers between calls.  Repeated
  * decodes through the object, including the bare-body entry, must match a
@@ -27,10 +28,10 @@
 #define RESIDENT_ROUNDS 6
 #define RESIDENT_RACERS 3
 
-static char g_stream[65536];
-static size_t g_stream_size;
-static unsigned char *g_expected;
-static size_t g_expected_size;
+static char resident_stream[65536];
+static size_t resident_stream_size;
+static unsigned char *resident_expected;
+static size_t resident_expected_size;
 
 /* Every band carries a carriage return so threaded gather has work. */
 static size_t
@@ -68,8 +69,9 @@ resident_matches(sixel_decode_result_t *result, char const *label)
     int ok;
 
     ok = result->pixels != NULL &&
-         (size_t)result->stride * (size_t)result->height == g_expected_size &&
-         memcmp(result->pixels, g_expected, g_expected_size) == 0;
+         (size_t)result->stride * (size_t)result->height ==
+             resident_expected_size &&
+         memcmp(result->pixels, resident_expected, resident_expected_size) == 0;
     if (!ok) {
         fprintf(stderr, "%s: pixels differ from the per-call decode\n", label);
     }
@@ -91,11 +93,13 @@ resident_decode(sixel_decoder_t *decoder, int body, char const *label)
     if (body) {
         /* Strip "ESC P q" and the string terminator. */
         status = sixel_decoder_decode_body_mapped(
-            decoder, (unsigned char const *)g_stream + 3, g_stream_size - 5u,
+            decoder, (unsigned char const *)resident_stream + 3,
+            resident_stream_size - 5u,
             NULL, 0u, &options, NULL, &result);
     } else {
         status = sixel_decoder_decode_mapped(
-            decoder, (unsigned char const *)g_stream, g_stream_size,
+            decoder, (unsigned char const *)resident_stream,
+            resident_stream_size,
             &options, NULL, &result);
     }
     if (SIXEL_FAILED(status)) {
@@ -144,12 +148,13 @@ test_decoder_0111(int argc, char **argv)
     (void)argc;
     (void)argv;
     decoder = NULL;
-    g_expected = NULL;
+    resident_expected = NULL;
     started = 0;
     ok = 0;
 
-    g_stream_size = resident_build(g_stream, sizeof(g_stream));
-    if (g_stream_size == 0u) {
+    resident_stream_size =
+        resident_build(resident_stream, sizeof(resident_stream));
+    if (resident_stream_size == 0u) {
         goto end;
     }
 
@@ -158,14 +163,14 @@ test_decoder_0111(int argc, char **argv)
     memset(&options, 0, sizeof(options));
     memset(&result, 0, sizeof(result));
     options.preferred_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    status = sixel_decode_pixels((unsigned char const *)g_stream,
-                                 g_stream_size, &options, &result, NULL);
+    status = sixel_decode_pixels((unsigned char const *)resident_stream,
+                                 resident_stream_size, &options, &result, NULL);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "reference decode failed\n");
         goto end;
     }
-    g_expected = result.pixels;
-    g_expected_size = (size_t)result.stride * (size_t)result.height;
+    resident_expected = result.pixels;
+    resident_expected_size = (size_t)result.stride * (size_t)result.height;
 
     status = sixel_decoder_new(&decoder, NULL);
     if (SIXEL_FAILED(status)) {
@@ -243,6 +248,6 @@ end:
         sixel_decoder_unref(decoder);
     }
     sixel_set_decoder_threads(1);
-    free(g_expected);
+    free(resident_expected);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: clf_ */
 /* Compile actual CMS/loader bodies once under isolated test names. Only
  * dependency calls are replaced; no runtime fault option or copied helper
  * algorithm is used. Keep the namespace aligned with the included sources.

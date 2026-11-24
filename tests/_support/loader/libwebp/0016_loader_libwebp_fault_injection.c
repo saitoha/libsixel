@@ -1,7 +1,7 @@
 /*
  * Verify libwebp loader diagnostics for fault-injection paths.
  */
-
+/* Test variable prefix: webpfi_ */
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
@@ -37,7 +37,7 @@ typedef enum webp_fi_failpoint {
     WEBP_FI_FAIL_ANMF_EXTRACT_ALLOC
 } webp_fi_failpoint_t;
 
-static webp_fi_failpoint_t g_webp_fi_failpoint = WEBP_FI_FAIL_NONE;
+static webp_fi_failpoint_t webpfi_failpoint = WEBP_FI_FAIL_NONE;
 
 #if defined(BUILD_TEST_RUNNER)
 static void webp_loader_libwebp_test_set_failpoint(int failpoint);
@@ -46,7 +46,7 @@ static void webp_loader_libwebp_test_set_failpoint(int failpoint);
 static void
 webpfi_set_failpoint(webp_fi_failpoint_t failpoint)
 {
-    g_webp_fi_failpoint = failpoint;
+    webpfi_failpoint = failpoint;
 #if defined(BUILD_TEST_RUNNER)
     webp_loader_libwebp_test_set_failpoint((int)failpoint);
 #endif
@@ -96,7 +96,7 @@ static void *(*g_real_sixel_allocator_malloc)(sixel_allocator_t *,
 static int
 webpfi_WebPAnimDecoderOptionsInit(WebPAnimDecoderOptions *options)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_OPTIONS_INIT) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_OPTIONS_INIT) {
         return 0;
     }
     return g_real_WebPAnimDecoderOptionsInit(options);
@@ -106,7 +106,7 @@ static WebPAnimDecoder *
 webpfi_WebPAnimDecoderNew(WebPData const *webp_data,
                           WebPAnimDecoderOptions const *decoder_options)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_NEW) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_DECODER_NEW) {
         return NULL;
     }
     return g_real_WebPAnimDecoderNew(webp_data, decoder_options);
@@ -120,12 +120,12 @@ webpfi_WebPAnimDecoderGetInfo(WebPAnimDecoder const *decoder,
 
     status = 0;
 
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_GET_INFO) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_DECODER_GET_INFO) {
         return 0;
     }
     status = g_real_WebPAnimDecoderGetInfo(decoder, anim_info);
     if (status != 0 &&
-        g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_FRAME_COUNT_LIMIT &&
+        webpfi_failpoint == WEBP_FI_FAIL_DECODER_FRAME_COUNT_LIMIT &&
         anim_info != NULL) {
         anim_info->frame_count = 65536u;
     }
@@ -137,7 +137,7 @@ webpfi_WebPAnimDecoderGetNext(WebPAnimDecoder *decoder,
                               uint8_t **buf_ptr,
                               int *timestamp)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_GET_NEXT) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_DECODER_GET_NEXT) {
         return 0;
     }
     return g_real_WebPAnimDecoderGetNext(decoder, buf_ptr, timestamp);
@@ -146,7 +146,7 @@ webpfi_WebPAnimDecoderGetNext(WebPAnimDecoder *decoder,
 static int
 webpfi_WebPAnimDecoderHasMoreFrames(WebPAnimDecoder const *decoder)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_DECODER_HAS_MORE_FRAMES) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_DECODER_HAS_MORE_FRAMES) {
         return 0;
     }
     return g_real_WebPAnimDecoderHasMoreFrames(decoder);
@@ -155,7 +155,7 @@ webpfi_WebPAnimDecoderHasMoreFrames(WebPAnimDecoder const *decoder)
 static int
 webpfi_WebPInitDecoderConfig(WebPDecoderConfig *config)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_LOSSY_INIT_CONFIG) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_LOSSY_INIT_CONFIG) {
         return 0;
     }
     return g_real_WebPInitDecoderConfig(config);
@@ -166,7 +166,7 @@ webpfi_WebPGetFeatures(uint8_t const *data,
                        size_t data_size,
                        WebPBitstreamFeatures *features)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_GET_FEATURES) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_GET_FEATURES) {
         return VP8_STATUS_BITSTREAM_ERROR;
     }
     return g_real_WebPGetFeatures(data, data_size, features);
@@ -180,7 +180,7 @@ webpfi_WebPDecode(uint8_t const *data,
     VP8StatusCode status;
 
     status = VP8_STATUS_OK;
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_LOSSY_DECODE) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_LOSSY_DECODE) {
         return VP8_STATUS_BITSTREAM_ERROR;
     }
 
@@ -192,7 +192,7 @@ webpfi_WebPDecode(uint8_t const *data,
         return status;
     }
 
-    switch (g_webp_fi_failpoint) {
+    switch (webpfi_failpoint) {
     case WEBP_FI_FAIL_LOSSY_YUV_PLANE_MISSING:
         config->output.u.YUVA.y = NULL;
         break;
@@ -216,7 +216,7 @@ webpfi_WebPDecodeRGBInto(uint8_t const *data,
                          size_t output_buffer_size,
                          int output_stride)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_STATIC_RGB_INTO) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_STATIC_RGB_INTO) {
         return NULL;
     }
     return g_real_WebPDecodeRGBInto(data,
@@ -233,7 +233,7 @@ webpfi_WebPDecodeRGBAInto(uint8_t const *data,
                           size_t output_buffer_size,
                           int output_stride)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_STATIC_RGBA_INTO) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_STATIC_RGBA_INTO) {
         return NULL;
     }
     return g_real_WebPDecodeRGBAInto(data,
@@ -246,7 +246,7 @@ webpfi_WebPDecodeRGBAInto(uint8_t const *data,
 static WebPDemuxer *
 webpfi_WebPDemux(WebPData const *webp_data)
 {
-    if (g_webp_fi_failpoint == WEBP_FI_FAIL_DEMUX) {
+    if (webpfi_failpoint == WEBP_FI_FAIL_DEMUX) {
         return NULL;
     }
     return WebPDemuxInternal(webp_data, 0, NULL, WEBP_DEMUX_ABI_VERSION);
@@ -255,7 +255,7 @@ webpfi_WebPDemux(WebPData const *webp_data)
 static void *
 webpfi_sixel_allocator_malloc(sixel_allocator_t *allocator, size_t nbytes)
 {
-    switch (g_webp_fi_failpoint) {
+    switch (webpfi_failpoint) {
     case WEBP_FI_FAIL_LOSSY_ALLOC:
     case WEBP_FI_FAIL_STATIC_ALLOC:
     case WEBP_FI_FAIL_ANIMATION_CANVAS_ALLOC:
@@ -533,7 +533,7 @@ typedef struct webp_lossy_decode_fault_case {
     char const *label;
 } webp_lossy_decode_fault_case_t;
 
-static webp_lossy_decode_fault_case_t const g_lossy_decode_fault_cases[] = {
+static webp_lossy_decode_fault_case_t const webpfi_lossy_cases[] = {
     { WEBP_FI_FAIL_LOSSY_INIT_CONFIG,
       SIXEL_WEBP_ERROR,
       "webp_decode_lossy_to_float32: WebPInitDecoderConfig failed.",
@@ -898,10 +898,10 @@ run_lossy_fault_case(webp_fi_failpoint_t failpoint)
     index = 0u;
     spec = NULL;
 
-    for (index = 0u; index < (sizeof(g_lossy_decode_fault_cases) /
-                              sizeof(g_lossy_decode_fault_cases[0])); index++) {
-        if (g_lossy_decode_fault_cases[index].failpoint == failpoint) {
-            spec = &g_lossy_decode_fault_cases[index];
+    for (index = 0u; index < (sizeof(webpfi_lossy_cases) /
+                              sizeof(webpfi_lossy_cases[0])); index++) {
+        if (webpfi_lossy_cases[index].failpoint == failpoint) {
+            spec = &webpfi_lossy_cases[index];
             break;
         }
     }

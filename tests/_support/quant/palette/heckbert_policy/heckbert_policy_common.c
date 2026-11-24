@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: policy_ */
 /* Private algorithm contracts use an isolated copy of the production code.
  * Symbol isolation also supports the amalgamated test runner. */
 #include "src/palette-heckbert.h"
@@ -391,13 +392,13 @@ heckbert_policy_check(int scenario)
 /* A sparse RGBA input needs one 4 MiB dense slot map, not dense channel
  * moments or a second dense reference map. Count all requested allocation
  * bytes so freeing a dense temporary cannot hide its cost. */
-static size_t bucket_mean_allocation_bytes;
+static size_t policy_bucket_mean_allocation_bytes;
 
 static void *
 bucket_mean_budget_malloc(size_t size)
 {
-    bucket_mean_allocation_bytes += size;
-    if (bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
+    policy_bucket_mean_allocation_bytes += size;
+    if (policy_bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
         return NULL;
     }
     return malloc(size);
@@ -406,8 +407,8 @@ bucket_mean_budget_malloc(size_t size)
 static void *
 bucket_mean_budget_calloc(size_t count, size_t size)
 {
-    bucket_mean_allocation_bytes += count * size;
-    if (bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
+    policy_bucket_mean_allocation_bytes += count * size;
+    if (policy_bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
         return NULL;
     }
     return calloc(count, size);
@@ -416,8 +417,8 @@ bucket_mean_budget_calloc(size_t count, size_t size)
 static void *
 bucket_mean_budget_realloc(void *ptr, size_t size)
 {
-    bucket_mean_allocation_bytes += size;
-    if (bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
+    policy_bucket_mean_allocation_bytes += size;
+    if (policy_bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
         return NULL;
     }
     return realloc(ptr, size);
@@ -458,7 +459,7 @@ heckbert_bucket_mean_check(int scenario)
                 ? 49U + i : 26U + (i != 0U) + channel * 8U);
         }
     }
-    bucket_mean_allocation_bytes = 0U;
+    policy_bucket_mean_allocation_bytes = 0U;
     if (SIXEL_FAILED(sixel_allocator_new(&allocator,
             scenario == 5 ? bucket_mean_budget_malloc : NULL,
             scenario == 5 ? bucket_mean_budget_calloc : NULL,

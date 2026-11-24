@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: band_ */
 /*
  * Band-column output (SIXEL_PIXELFORMAT_BANDCOLUMNS) must expand to exactly
  * the RGBA8888 decode of the same stream, through both mapped entries, with
@@ -27,7 +28,7 @@
 
 static char band_stream[65536];
 static size_t band_stream_size;
-static unsigned int g_flags;
+static unsigned int band_flags;
 
 /*
  * Every band carries a carriage return so the threaded gather has work.
@@ -143,7 +144,7 @@ band_decode(sixel_decoder_t *decoder, int body, int pixelformat,
     memset(&options, 0, sizeof(options));
     memset(result, 0, sizeof(*result));
     options.preferred_pixelformat = pixelformat;
-    options.flags = g_flags;
+    options.flags = band_flags;
     if (body) {
         /* Strip the introducer through 'q' and the string terminator. */
         q = strchr(band_stream, 'q');
@@ -343,7 +344,7 @@ test_decoder_0112(int argc, char **argv)
     ok = 0;
     transform.context = NULL;
     transform.map_rgb = band_swap_red_blue;
-    g_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
+    band_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
 
     /* Only threaded gathers keep columns; the budget caps every policy. */
     sixel_set_decoder_threads(4);
@@ -373,11 +374,11 @@ test_decoder_0112(int argc, char **argv)
         goto end;
     }
     /* Untrusted, the last band paints past the raster and grows the image. */
-    g_flags = 0u;
+    band_flags = 0u;
     if (!band_check(threaded, 0, NULL, 0, "grown raster")) {
         goto end;
     }
-    g_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
+    band_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
     band_stream_size = band_build(band_stream, sizeof(band_stream), 1, 1, 0);
     if (band_stream_size == 0u ||
             !band_check(threaded, 0, NULL, 1, "transparent stream") ||
@@ -402,11 +403,11 @@ test_decoder_0112(int argc, char **argv)
     }
     band_stream_size = band_build(band_stream, sizeof(band_stream), 1, 0, 1);
     /* Untrusted paint past the raster leaves the device result unused. */
-    g_flags = 0u;
+    band_flags = 0u;
     if (!band_check_gpu(threaded, gpu, 0, "grown gpu")) {
         goto end;
     }
-    g_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
+    band_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
 
     if (sixel_bandcolumns_to_rgba(NULL, 1, 1, rgba, 4u, 0) !=
                 SIXEL_BAD_ARGUMENT ||

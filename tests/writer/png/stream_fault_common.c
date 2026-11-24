@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: png_stream_ */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: mf_ */
 /* Compile the actual CMS and TIFF adapter under isolated names. Faults only
  * replace dependency calls; the publication algorithm is not copied. The
  * complete scratch is observed at release, after a real changed segment. */

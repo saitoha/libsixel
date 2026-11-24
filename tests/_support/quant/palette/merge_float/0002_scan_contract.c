@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: ward_scan_ */
 /* Exercise the real scan fallback by denying the dense Ward allocation. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: td_ */
 /* Literal source coordinates and independent PCS intervals are the oracle.
  * A private adapter copy observes the actual source/CMS boundary and injects
  * faults without replacing production color conversion or publication. */

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: tlf_ */
 /* Test-only hooks qualify real decoder progress before checking publication.
  * The included adapter has an isolated namespace and no production switch. */
 #include "config.h"

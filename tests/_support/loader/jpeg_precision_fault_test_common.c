@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: jf_ */
 /* Check the real decoder's packed CMS input and whole-source rollback after
  * a qualified shared-CMM apply has overwritten its destination prefix. */
 #include "config.h"

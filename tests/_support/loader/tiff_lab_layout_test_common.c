@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: lx_ */
 /* Small memory-only fixtures protect the format contract, independently of
  * the production decoder and of live CMS-generated expected values. */
 #include "config.h"
