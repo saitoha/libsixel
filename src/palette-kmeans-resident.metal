@@ -15,17 +15,22 @@ struct Cell {
 };
 #define ARG(i) [[buffer(i)]]
 #define GID uint i [[thread_position_in_grid]]
+static inline uint2 grid_position(uint i, constant Geometry &geometry)
+{
+    uint stride = geometry.stride;
+    uint width = (geometry.width + stride - 1) / stride;
+    return uint2(i % width, i / width) * stride;
+}
+
 /* Accel: KMEANS-RESIDENT-HISTOGRAM metal */
 kernel void histogram(device const packed_uchar3 *rgb ARG(10),
                       device Cell *bins ARG(11),
                       constant Geometry &geometry ARG(12), GID)
 {
-    uint stride = geometry.stride;
-    uint width = (geometry.width + stride - 1) / stride;
-    uint x = i % width * stride, y = i / width * stride;
-    if (y >= geometry.height)
+    uint2 xy = grid_position(i, geometry);
+    if (xy.y >= geometry.height)
         return;
-    uint3 c = uint3(uchar3(rgb[y * geometry.width + x]));
+    uint3 c = uint3(uchar3(rgb[xy.y * geometry.width + xy.x]));
     uint3 b = min(c * 32 / 255, uint3(31));
     uint key = (b.x << 10) + (b.y << 5) + b.z;
     for (uint j = 0; j < 3; ++j)
@@ -262,12 +267,10 @@ kernel void cover_histogram(device const packed_uchar3 *rgb ARG(10),
                             device Cell *bins ARG(26),
                             constant Geometry &geometry ARG(12), GID)
 {
-    uint stride = geometry.stride;
-    uint width = (geometry.width + stride - 1) / stride;
-    uint x = i % width * stride, y = i / width * stride;
-    if (y >= geometry.height)
+    uint2 xy = grid_position(i, geometry);
+    if (xy.y >= geometry.height)
         return;
-    uint3 c = uint3(uchar3(rgb[y * geometry.width + x])), b = c >> 4;
+    uint3 c = uint3(uchar3(rgb[xy.y * geometry.width + xy.x])), b = c >> 4;
     uint key = (b.x << 8) | (b.y << 4) | b.z;
     for (uint j = 0; j < 3; ++j)
         atomic_fetch_add_explicit(&bins[key].v[j], c[j], memory_order_relaxed);
@@ -432,6 +435,94 @@ kernel void cover_repair(device packed_uchar3 *pal ARG(21),
 }
 
 #if defined(SIXEL_HECKBERT_RESIDENT)
+#define HB_TILE 128u
+
+static inline uint hb_resident_key(uint3 snapped)
+{
+    uint3 bin = min((snapped + 4u) >> 2u, uint3(63u));
+    return (bin.x << 12u) | (bin.y << 6u) | bin.z;
+}
+
+/* Map the GPU grid directly onto the input RGB buffer. Record the first grid
+ * index in each reversible 6bit cell so parallel insertion cannot reorder
+ * equal-priority boxes or the direct palette for a low-color image. */
+/* Accel: HECKBERT-RESIDENT-REP metal */
+kernel void heckbert_histogram_first(device atomic_uint *first ARG(6),
+    device uint *samples ARG(8), device const packed_uchar3 *rgb ARG(10),
+    constant Geometry &geometry ARG(12), constant uchar *tones ARG(20), GID)
+{
+    uint2 xy = grid_position(i, geometry);
+    if (xy.y >= geometry.height)
+        return;
+    uchar3 c = uchar3(rgb[xy.y * geometry.width + xy.x]);
+    uint3 snapped = uint3(tones[c.x], tones[c.y], tones[c.z]);
+    samples[i] = (snapped.x << 16u) | (snapped.y << 8u) | snapped.z;
+    atomic_fetch_min_explicit(&first[hb_resident_key(snapped)], i,
+                              memory_order_relaxed);
+}
+
+/* Use the first occurrence as a dense index into sample-sized moment
+ * storage. The largest possible channel sum is 32768 * 255. */
+/* Accel: HECKBERT-RESIDENT-REP metal */
+kernel void heckbert_histogram_accumulate(device const uint *first ARG(6),
+    device Cell *moments ARG(7), device const uint *samples ARG(8),
+    device atomic_uint *tiles ARG(9), constant uint &total ARG(19), GID)
+{
+    if (i >= total)
+        return;
+    uint packed = samples[i];
+    uint3 snapped = uint3(packed >> 16u, (packed >> 8u) & 255u, packed & 255u);
+    uint index = first[hb_resident_key(snapped)];
+    for (uint axis = 0u; axis < 3u; ++axis)
+        atomic_fetch_add_explicit(&moments[index].v[axis], snapped[axis],
+                                  memory_order_relaxed);
+    atomic_fetch_add_explicit(&moments[index].v[3], 1u, memory_order_relaxed);
+    if (i == index)
+        atomic_fetch_add_explicit(&tiles[i / HB_TILE], 1u,
+                                  memory_order_relaxed);
+}
+
+/* Accel: HECKBERT-RESIDENT-REP metal */
+kernel void heckbert_histogram_prefix(device HeckbertParams &p ARG(4),
+    device uint *tiles ARG(9), constant Geometry &geometry ARG(12),
+    constant uint &total ARG(19))
+{
+    uint count = 0u;
+    for (uint tile = 0u; tile < (total + HB_TILE - 1u) / HB_TILE; ++tile) {
+        uint occupied = tiles[tile];
+        tiles[tile] = count;
+        count += occupied;
+    }
+    p = {count, geometry.colors, total, 1.0f, 1.0f, 1.0f};
+}
+
+/* One SIMD group per tile compacts the weighted points in grid order. As
+ * the pre-snap input sums are integral, half-up rounding is exact. */
+/* Accel: HECKBERT-RESIDENT-REP metal */
+kernel void heckbert_histogram_compact(device float4 *points ARG(0),
+    device const uint4 *moments ARG(7), device const uint *tiles ARG(9),
+    constant uint &total ARG(19), constant uchar *tones ARG(20),
+    uint tile [[threadgroup_position_in_grid]],
+    uint lane [[thread_index_in_simdgroup]],
+    uint width [[threads_per_simdgroup]])
+{
+    uint out = tiles[tile];
+    uint end = min(total, (tile + 1u) * HB_TILE);
+    for (uint base = tile * HB_TILE; base < end; base += width) {
+        uint i = base + lane;
+        uint4 cell = i < end ? moments[i] : uint4(0u);
+        uint occupied = cell.w != 0u;
+        uint position = out + simd_prefix_exclusive_sum(occupied);
+        if (occupied) {
+            uint3 c = (2u * cell.xyz + cell.w) / (2u * cell.w);
+            points[position] = float4(tones[c.x], tones[c.y], tones[c.z],
+                                      cell.w);
+        }
+        out += simd_sum(occupied);
+    }
+}
+#undef HB_TILE
+
 /* Match sumcompare and averagePixels on the reversible byte histogram.
  * The box priorities and membership come from the original Heckbert
  * solver. With at most 32768 samples, doubled RGB sums fit in uint. */
@@ -440,7 +531,7 @@ kernel void heckbert_representatives(
     device const float4 *points [[buffer(0)]],
     device const uint *order [[buffer(1)]],
     device const HeckbertBox *boxes [[buffer(3)]],
-    constant HeckbertParams &input [[buffer(4)]],
+    device const HeckbertParams &input [[buffer(4)]],
     device const uint *solved [[buffer(5)]],
     device State &state [[buffer(7)]],
     device Params &p [[buffer(9)]],

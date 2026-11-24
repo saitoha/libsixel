@@ -27,7 +27,8 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 case "$trace" in
-    *LSXHBRESIDENT1*backend=metal*colors=*snap=1*cover=3*soft=0*) true ;;
+    *LSXHBRESIDENT1*backend=metal*colors=*snap=1*cover=3*soft=0*\
+sample_backend=metal*histogram_backend=metal*) true ;;
     *) false ;;
 esac || {
     echo 'not ok 1 - Heckbert snap and hard cover did not use resident Metal'

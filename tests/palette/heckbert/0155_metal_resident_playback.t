@@ -19,7 +19,8 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 case "$trace" in
-    *LSXHBRESIDENT1*snap=1*soft=1*LSXHBRESIDENT1*snap=1*soft=1*) true ;;
+    *LSXHBRESIDENT1*snap=1*soft=1*sample_backend=metal*histogram_backend=metal*\
+LSXHBRESIDENT1*snap=1*soft=1*sample_backend=metal*histogram_backend=metal*) true ;;
     *) false ;;
 esac || {
     echo 'not ok 1 - direct and playback calls did not both use resident Metal'

@@ -184,7 +184,11 @@ heckbert_solve(device const float4 *points [[buffer(0)]],
                device uint *order [[buffer(1)]],
                device uint *scratch [[buffer(2)]],
                device HeckbertBox *boxes [[buffer(3)]],
+#if defined(SIXEL_HECKBERT_RESIDENT)
+               device const HeckbertParams &p [[buffer(4)]],
+#else
                constant HeckbertParams &p [[buffer(4)]],
+#endif
                device uint *result [[buffer(5)]],
                uint tid [[thread_index_in_threadgroup]],
                uint threads [[threads_per_threadgroup]],
@@ -213,6 +217,11 @@ heckbert_solve(device const float4 *points [[buffer(0)]],
     uint small_limit = HB_SLOTS * simd_width;
     uint i;
 
+#if defined(SIXEL_HECKBERT_RESIDENT)
+    // The representatives stage copies these buckets in first-seen order.
+    if (p.count <= p.colors)
+        return;
+#endif
     for (i = tid; i < p.count; i += threads) {
         order[i] = i;
     }
