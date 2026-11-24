@@ -20916,7 +20916,7 @@ fi
 # FP_FAST_FMA describes speed, not whether a particular libm is correct.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether fma preserves product residuals" >&5
 printf %s "checking whether fma preserves product residuals... " >&6; }
-if test ${sixel_cv_exact_fma+y}
+if test ${sixel_cv_exact_libm_fma+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
@@ -20927,7 +20927,7 @@ else case e in #(
   CPPFLAGS=""
   if test "$cross_compiling" = yes
 then :
-  sixel_cv_exact_fma=no
+  sixel_cv_exact_libm_fma=no
 else case e in #(
   e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -20936,16 +20936,17 @@ int
 main (void)
 {
 
+    double (*volatile libm_fma)(double, double, double) = fma;
     volatile double a = 1.0 + 0x1p-23;
     volatile double b = 0.5 + 0x1p-31;
     volatile double product = a * b;
-    int inexact = fma(a, b, -product) != 0x1p-54 ||
-        fma(-a, b, product) != -0x1p-54;
+    int inexact = libm_fma(a, b, -product) != 0x1p-54 ||
+        libm_fma(-a, b, product) != -0x1p-54;
     /* MinGW's MSVCRT fma can lose low bits of a non-power-of-two tail. */
     a = -0x1.c083126e978d5p-2;
     b = 0x1.47ae147ae147bp-1;
     product = a * b;
-    return inexact || fma(a, b, -product) != 0x1.143bf727136a4p-57;
+    return inexact || libm_fma(a, b, -product) != 0x1.143bf727136a4p-57;
 
   ;
   return 0;
@@ -20953,9 +20954,9 @@ main (void)
 _ACEOF
 if ac_fn_c_try_run "$LINENO"
 then :
-  sixel_cv_exact_fma=yes
+  sixel_cv_exact_libm_fma=yes
 else case e in #(
-  e) sixel_cv_exact_fma=no ;;
+  e) sixel_cv_exact_libm_fma=no ;;
 esac
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
@@ -20968,15 +20969,72 @@ fi
  ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_exact_fma" >&5
-printf "%s\n" "$sixel_cv_exact_fma" >&6; }
-if test "x$sixel_cv_exact_fma" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_exact_libm_fma" >&5
+printf "%s\n" "$sixel_cv_exact_libm_fma" >&6; }
+if test "x$sixel_cv_exact_libm_fma" = xyes
 then :
 
 
 printf "%s\n" "#define HAVE_WORKING_FMA 1" >>confdefs.h
 
 
+else case e in #(
+  e)
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FMA3 residuals with runtime dispatch" >&5
+printf %s "checking for FMA3 residuals with runtime dispatch... " >&6; }
+if test ${sixel_cv_icc_fma3+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      #include <immintrin.h>
+      __attribute__((target("avx,fma")))
+      static double residual(double a, double b, double product)
+      {
+        return _mm_cvtsd_f64(_mm_fmsub_sd(_mm_set_sd(a), _mm_set_sd(b),
+                                        _mm_set_sd(product)));
+      }
+
+int
+main (void)
+{
+
+      volatile double a = 1.0;
+      if (__builtin_cpu_supports("avx") && __builtin_cpu_supports("fma"))
+        return residual(a, a, a) != 0.0;
+      return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_icc_fma3=yes
+else case e in #(
+  e) sixel_cv_icc_fma3=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_icc_fma3" >&5
+printf "%s\n" "$sixel_cv_icc_fma3" >&6; }
+  if test "x$sixel_cv_icc_fma3" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_ICC_FMA3 1" >>confdefs.h
+
+
+fi
+ ;;
+esac
 fi
 
 # Checks for header files.

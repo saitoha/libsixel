@@ -3024,30 +3024,53 @@ AS_IF([test "x$ac_cv_lib_m_floor" = xyes], [
 # Test the cancellation behavior needed to recover a product's roundoff.
 # FP_FAST_FMA describes speed, not whether a particular libm is correct.
 AC_CACHE_CHECK([whether fma preserves product residuals],
-               [sixel_cv_exact_fma], [
+               [sixel_cv_exact_libm_fma], [
   sixel_fma_save_CFLAGS="$CFLAGS"
   sixel_fma_save_CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CPPFLAGS $CFLAGS"
   CPPFLAGS=""
   AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <math.h>]], [[
+    double (*volatile libm_fma)(double, double, double) = fma;
     volatile double a = 1.0 + 0x1p-23;
     volatile double b = 0.5 + 0x1p-31;
     volatile double product = a * b;
-    int inexact = fma(a, b, -product) != 0x1p-54 ||
-        fma(-a, b, product) != -0x1p-54;
+    int inexact = libm_fma(a, b, -product) != 0x1p-54 ||
+        libm_fma(-a, b, product) != -0x1p-54;
     /* MinGW's MSVCRT fma can lose low bits of a non-power-of-two tail. */
     a = -0x1.c083126e978d5p-2;
     b = 0x1.47ae147ae147bp-1;
     product = a * b;
-    return inexact || fma(a, b, -product) != 0x1.143bf727136a4p-57;
-  ]])], [sixel_cv_exact_fma=yes], [sixel_cv_exact_fma=no],
-        [sixel_cv_exact_fma=no])
+    return inexact || libm_fma(a, b, -product) != 0x1.143bf727136a4p-57;
+  ]])], [sixel_cv_exact_libm_fma=yes], [sixel_cv_exact_libm_fma=no],
+        [sixel_cv_exact_libm_fma=no])
   CFLAGS="$sixel_fma_save_CFLAGS"
   CPPFLAGS="$sixel_fma_save_CPPFLAGS"
 ])
-AS_IF([test "x$sixel_cv_exact_fma" = xyes], [
+AS_IF([test "x$sixel_cv_exact_libm_fma" = xyes], [
   AC_DEFINE([HAVE_WORKING_FMA], [1],
             [Define to 1 if fma preserves product residuals.])
+], [
+  AC_CACHE_CHECK([for FMA3 residuals with runtime dispatch],
+                 [sixel_cv_icc_fma3], [
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+      #include <immintrin.h>
+      __attribute__((target("avx,fma")))
+      static double residual(double a, double b, double product)
+      {
+        return _mm_cvtsd_f64(_mm_fmsub_sd(_mm_set_sd(a), _mm_set_sd(b),
+                                        _mm_set_sd(product)));
+      }
+    ]], [[
+      volatile double a = 1.0;
+      if (__builtin_cpu_supports("avx") && __builtin_cpu_supports("fma"))
+        return residual(a, a, a) != 0.0;
+      return 0;
+    ]])], [sixel_cv_icc_fma3=yes], [sixel_cv_icc_fma3=no])
+  ])
+  AS_IF([test "x$sixel_cv_icc_fma3" = xyes], [
+    AC_DEFINE([HAVE_ICC_FMA3], [1],
+              [Define if ICC FMA3 residuals compile for runtime dispatch.])
+  ])
 ])
 
 # Checks for header files.

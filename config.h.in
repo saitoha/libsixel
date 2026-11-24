@@ -306,6 +306,9 @@
 /* gettimeofday timezone argument is void* */
 #undef HAVE_GETTIMEOFDAY_TZ_VOID
 
+/* Define if ICC FMA3 residuals compile for runtime dispatch. */
+#undef HAVE_ICC_FMA3
+
 /* Define to 1 if img2sixel is enabled */
 #undef HAVE_IMG2SIXEL
 

@@ -32,6 +32,9 @@
 #if HAVE_MATH_H
 #include <math.h>
 #endif
+#if !HAVE_WORKING_FMA && HAVE_ICC_FMA3
+#include <immintrin.h>
+#endif
 
 #include <stddef.h>
 #include <float.h>
@@ -158,6 +161,17 @@ sixel_icc_add_compensated(double *sum, double *residual, double term)
     *sum = next;
 }
 
+#if !HAVE_WORKING_FMA && HAVE_ICC_FMA3
+/* Keep AVX and FMA instructions out of the baseline code path. */
+__attribute__((target("avx,fma")))
+static double
+sixel_icc_fma3_residual(double a, double b, double product)
+{
+    return _mm_cvtsd_f64(_mm_fmsub_sd(_mm_set_sd(a), _mm_set_sd(b),
+                                    _mm_set_sd(product)));
+}
+#endif
+
 /* Recover the rounding error of the product as well as of the sum. */
 static void
 sixel_icc_add_product(double *sum, double *residual, double a, double b)
@@ -178,6 +192,13 @@ sixel_icc_add_product(double *sum, double *residual, double a, double b)
 #if HAVE_WORKING_FMA
     *residual += fma(a, b, -product);
 #else
+# if HAVE_ICC_FMA3
+    /* AVX availability includes the OS support for saving its registers. */
+    if (__builtin_cpu_supports("avx") && __builtin_cpu_supports("fma")) {
+        *residual += sixel_icc_fma3_residual(a, b, product);
+        return;
+    }
+# endif
     /* Some libm implementations, including MSYS newlib, implement fma as
      * a separately rounded multiply and add. Split each double into high
      * and low parts instead, then recover the product's rounding error.
