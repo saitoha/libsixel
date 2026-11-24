@@ -530,7 +530,9 @@ runs:
       run: |
         set -exv
         emsdk_archive="$RUNNER_TEMP/emsdk-source.tar.gz"
-        for attempt in 1 2 3; do
+        # Leave time for hosted runner network failures to clear. A zero
+        # delay marks the final attempt.
+        for retry_delay in 10 30 60 180 600 1200 0; do
           rm -rf emsdk
           if git clone --depth 1 https://github.com/emscripten-core/emsdk.git; then
             break
@@ -546,11 +548,12 @@ runs:
               test -f emsdk/emsdk; then
             break
           fi
-          if [ "$attempt" -eq 3 ]; then
-            echo "Failed to fetch emsdk after ${attempt} attempts." >&2
+          if [ "$retry_delay" -eq 0 ]; then
+            echo "Failed to fetch emsdk after all retries." >&2
             exit 1
           fi
-          sleep $((attempt * 10))
+          echo "Retrying emsdk fetch in ${retry_delay}s." >&2
+          sleep "$retry_delay"
         done
         for attempt in 1 2 3; do
           if sh emsdk/emsdk install latest; then

@@ -6,6 +6,8 @@ This document owns the `__EMSCRIPTEN__` boundary and the WebAssembly/JavaScript 
 
 ## Build contract
 
+The shared Emscripten CI action, including the macOS UBSan jobs, fetches the emsdk source before installing the SDK. The action tries a shallow Git clone and falls back to GitHub's source archive. If both transfers fail, the delays before subsequent attempts are 10 seconds, 30 seconds, 1 minute, 3 minutes, 10 minutes, and 20 minutes.
+
 Autotools detects Emscripten intent from the host triple or `emcc` before generic compiler discovery, normalizes the inferred host to wasm32 Emscripten, and chooses `emar`, `emranlib`, and related companion tools. Meson uses its Emscripten host identity. Moving detection later risks probing the build host or selecting native binutils.
 
 Emscripten `-s` settings are final-link settings. `-sRETAIN_COMPILER_SETTINGS=1`, `-sNODERAWFS=1`, `-sFETCH=1`, codec ports, stack size, memory size, and environment settings must reach the executable link without being mistaken for ordinary C compile flags. The compiler settings are retained because runtime path handling queries `NODERAWFS`.
