@@ -695,6 +695,7 @@ struct sixel_palette_build_request {
     int output_color_definition;
     int output_colorspace;
     int precision_requested;
+    int apply_8bit;
     int prefer_float32;
     int quality_mode;
     int quantize_model;
@@ -4893,6 +4894,24 @@ sixel_encoder_clear_dither_cache(sixel_encoder_t *encoder)
     encoder->fixed_palette_source = NULL;
 }
 
+/* The GPU application backends accept gamma RGB888. Resolve an automatic
+ * working space and precision for forced byte application, preserving
+ * explicit native output, colorspaces and GPU K-means construction. */
+int
+sixel_encoder_force_byte_apply(sixel_encoder_t const *encoder)
+{
+    return encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE &&
+        !encoder->prefer_float32 &&
+        encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+        encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY &&
+        (!encoder->working_colorspace_set ||
+         encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA) &&
+        (!encoder->clustering_colorspace_set ||
+         encoder->clustering_colorspace == SIXEL_COLORSPACE_GAMMA) &&
+        (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
+         !sixel_encoder_gpu_kmeans(encoder));
+}
+
 /* AUTO follows the typed source coordinates, independently of the previous
  * frame's resolved settings. Loader-side planner snapshots use this pure
  * query while an output worker may still be encoding the preceding frame.
@@ -4909,7 +4928,8 @@ sixel_encoder_frame_working_colorspace(sixel_encoder_t const *encoder,
     /* Explicit byte application only supports gamma coordinates. AUTO
      * satisfies that requested boundary; an explicit non-gamma -W still
      * reports its existing conflict instead of silently changing space. */
-    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
+    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
+            sixel_encoder_force_byte_apply(encoder)) {
         return SIXEL_COLORSPACE_GAMMA;
     }
     colorspace = sixel_frame_get_colorspace((sixel_frame_t *)frame);
@@ -5069,7 +5089,8 @@ sixel_encoder_copy_lookup_options(sixel_encoder_t const *encoder,
     /* Every dither route passes here, so the palette-application precision
      * reaches fixed, mapfile and generated palettes alike. */
     dither->apply_8bit =
-        encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT;
+        encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
+        sixel_encoder_force_byte_apply(encoder);
     dither->lut_policy_shared_instance_override =
         encoder->lut_policy_shared_instance_override;
     dither->lut_policy_shared_instance =
@@ -5129,8 +5150,7 @@ sixel_palette_request_lookup_options(
         request->lut_policy_override);
     /* Preserve the frozen application precision on the generated palette;
      * the builder must not consult the encoder again after launch. */
-    dither->apply_8bit =
-        request->precision_requested == SIXEL_OPTION_PRECISION_8BIT;
+    dither->apply_8bit = request->apply_8bit;
     dither->lut_policy_shared_instance_override =
         request->lut_policy_shared_instance_override;
     dither->lut_policy_shared_instance =
@@ -8806,7 +8826,8 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
     }
     /* 8bit applies the palette on bytes, so the native float palette is
      * not retained. Validation has rejected the named destinations above. */
-    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
+    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
+            sixel_encoder_force_byte_apply(encoder)) {
         return 0;
     }
     /* A non-gamma clustering view already requires float arithmetic even
@@ -8905,11 +8926,35 @@ static SIXELSTATUS
 sixel_encoder_validate_output_definition_frame(sixel_encoder_t const *encoder,
                                                sixel_frame_t *frame)
 {
+    int pixelformat;
     SIXELSTATUS status;
 
     status = sixel_encoder_validate_output_definition(encoder);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    /* A predictable forced-application error belongs before DCS creation.
+     * Already indexed input and native GPU K-means keep their own paths. */
+    if (sixel_encoder_gpu_apply_policy(encoder, 1) == SIXEL_GPU_POLICY_FORCE &&
+            encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR &&
+            (pixelformat & (SIXEL_FORMATTYPE_PALETTE |
+                            SIXEL_FORMATTYPE_GRAYSCALE)) == 0) {
+        if (encoder->working_colorspace_set &&
+                encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) {
+            sixel_helper_set_additional_message(
+                "forced GPU palette application requires -W gamma.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+                encoder->clustering_colorspace_set &&
+                encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA &&
+                encoder->precision_requested != SIXEL_OPTION_PRECISION_8BIT) {
+            sixel_helper_set_additional_message(
+                "forced GPU palette application cannot use a native float "
+                "palette from -X with automatic or float32 precision.");
+            return SIXEL_BAD_ARGUMENT;
+        }
     }
     if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
             encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
@@ -9194,6 +9239,9 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     request->output_color_definition = encoder->output_color_definition;
     request->output_colorspace = encoder->output_colorspace;
     request->precision_requested = encoder->precision_requested;
+    request->apply_8bit =
+        encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
+        sixel_encoder_force_byte_apply(encoder);
     request->prefer_float32 = encoder->prefer_float32;
     request->quality_mode = encoder->quality_mode;
     request->quantize_model = encoder->quantize_model;

@@ -198,7 +198,7 @@ Independent fixtures in [`tests/data/color-numeric`](../../../tests/data/color-n
 img2sixel --cms-engine=auto image.png
 ```
 
-The loader may normalize a recognized source profile. Default auto working and clustering spaces follow the resulting typed frame; a linear float result therefore keeps linear coordinates for palette generation, lookup and dithering. The emitted palette is converted to gamma sRGB by the default output policy. Explicit `-W` and `-X` can request other processing coordinates.
+The loader may normalize a recognized source profile. By default, auto working and clustering spaces follow the resulting typed frame. A linear float result keeps linear coordinates for palette generation, lookup and dithering unless the selected application path requires [gamma RGB888](../palette-application/working-colorspace/README.md). The emitted palette is converted to gamma sRGB by the default output policy. Explicit `-W` and `-X` can request other processing coordinates.
 
 ### Perceptual palette construction with gamma lookup
 

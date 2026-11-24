@@ -755,6 +755,13 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
         working_colorspace_effective,
         prefer_float32_effective);
 
+    /* A forced GPU consumer needs RGB888 at the application boundary.
+     * Resize can still use the source or a temporary linear float buffer. */
+    if (sixel_encoder_force_byte_apply(encoder)) {
+        target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        prefer_float32_effective = 0;
+    }
+
     /*
      * PAL sources that already satisfy the requested palette size do not need
      * to round-trip through RGB and a new palette solve. Keep the existing

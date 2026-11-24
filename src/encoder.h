@@ -596,6 +596,9 @@ SIXEL_INTERNAL_API int
 sixel_encoder_is_cancel_requested(sixel_encoder_t const *encoder);
 
 
+SIXEL_INTERNAL_API int
+sixel_encoder_force_byte_apply(sixel_encoder_t const *encoder);
+
 /* Pure per-source AUTO resolution, also safe for loader planner snapshots. */
 SIXEL_INTERNAL_API int
 sixel_encoder_frame_working_colorspace(sixel_encoder_t const *encoder,
