@@ -1383,6 +1383,107 @@ sixel_kmeans_prepare_bounds(sixel_kmeans_bounds_t *bounds,
     return SIXEL_OK;
 }
 
+#define SIXEL_KMEANS_DONOR_BLOCK_SIZE 32u
+#define SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE 16u
+#define SIXEL_KMEANS_DONOR_TILE_CAPACITY 32u
+#define SIXEL_KMEANS_DONOR_BLOCK_CAPACITY \
+    (SIXEL_KMEANS_DONOR_TILE_CAPACITY * SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE)
+
+typedef struct sixel_kmeans_donor_cache {
+    unsigned int blocks[SIXEL_KMEANS_DONOR_BLOCK_CAPACITY];
+    unsigned int tiles[SIXEL_KMEANS_DONOR_TILE_CAPACITY];
+    /* A fresh assignment invalidates every entry. */
+    unsigned int previous;
+} sixel_kmeans_donor_cache_t;
+
+static unsigned int
+sixel_kmeans_donor_scan(double const *distances,
+                       unsigned int begin, unsigned int end)
+{
+    unsigned int index, best;
+    double farthest, distance;
+
+    best = begin;
+    farthest = -1.0;
+    for (index = begin; index < end; ++index) {
+        distance = distances[index];
+        if (distance > farthest) {
+            best = index;
+            farthest = distance;
+        }
+    }
+    return best;
+}
+
+static unsigned int
+sixel_kmeans_donor_maximum(double const *distances,
+                          unsigned int const *candidates, unsigned int count)
+{
+    unsigned int index, best;
+    double farthest, distance;
+
+    best = candidates[0];
+    farthest = -1.0;
+    for (index = 0u; index < count; ++index) {
+        distance = distances[candidates[index]];
+        if (distance > farthest) {
+            best = candidates[index];
+            farthest = distance;
+        }
+    }
+    return best;
+}
+
+static unsigned int
+sixel_kmeans_find_donor(sixel_kmeans_donor_cache_t *cache,
+                       double const *distances, unsigned int points)
+{
+    unsigned int blocks, tiles, first_block, last_block, block;
+    unsigned int first_tile, last_tile, tile, begin, end;
+
+    /* Match the GPU tile layout with bounded stack storage. Very small
+     * and larger point sets can use the linear search without a cache. */
+    if (points <= SIXEL_KMEANS_DONOR_BLOCK_SIZE ||
+            points > SIXEL_KMEANS_DONOR_BLOCK_CAPACITY *
+                     SIXEL_KMEANS_DONOR_BLOCK_SIZE) {
+        return sixel_kmeans_donor_scan(distances, 0u, points);
+    }
+    blocks = (points + SIXEL_KMEANS_DONOR_BLOCK_SIZE - 1u) /
+        SIXEL_KMEANS_DONOR_BLOCK_SIZE;
+    tiles = (blocks + SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE - 1u) /
+        SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE;
+    first_block = 0u;
+    last_block = blocks;
+    first_tile = 0u;
+    last_tile = tiles;
+    if (cache->previous < points) {
+        /* Repair sets just the consumed donor's residual to zero. */
+        first_block = cache->previous / SIXEL_KMEANS_DONOR_BLOCK_SIZE;
+        last_block = first_block + 1u;
+        first_tile = first_block / SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE;
+        last_tile = first_tile + 1u;
+    }
+    /* Visit blocks and tiles in increasing order. Strict comparisons
+     * preserve the lowest index on ties, including the zero-residual case.
+     * Build lazily because many iterations have no empty clusters. */
+    for (block = first_block; block < last_block; ++block) {
+        begin = block * SIXEL_KMEANS_DONOR_BLOCK_SIZE;
+        end = begin + SIXEL_KMEANS_DONOR_BLOCK_SIZE;
+        cache->blocks[block] = sixel_kmeans_donor_scan(
+            distances, begin, end < points ? end : points);
+    }
+    for (tile = first_tile; tile < last_tile; ++tile) {
+        begin = tile * SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE;
+        end = begin + SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE;
+        cache->tiles[tile] = sixel_kmeans_donor_maximum(
+            distances, cache->blocks + begin,
+            (end < blocks ? end : blocks) - begin);
+    }
+    cache->previous = sixel_kmeans_donor_maximum(
+        distances, cache->tiles, tiles);
+    return cache->previous;
+}
+
 static SIXELSTATUS
 build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
 {
@@ -1445,6 +1546,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     unsigned int feedback_interval;
     unsigned int best_index;
     unsigned int old_cluster;
+    sixel_kmeans_donor_cache_t donor_cache;
     unsigned int farthest_index;
     unsigned int fill;
     unsigned int source;
@@ -1472,7 +1574,6 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     double distance;
     double diff;
     double update;
-    double farthest_distance;
     double delta;
     double center_move_sq;
     double max_center_shift;
@@ -1643,7 +1744,6 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     distance = 0.0;
     diff = 0.0;
     update = 0.0;
-    farthest_distance = 0.0;
     farthest_base = 0U;
     delta = 0.0;
     center_move_sq = 0.0;
@@ -2414,19 +2514,13 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     }
                 }
             }
+            donor_cache.previous = work_sample_count;
             for (center_index = 0u; center_index < k; ++center_index) {
                 if (cluster_weights[center_index] > 0.0) {
                     continue;
                 }
-                farthest_distance = -1.0;
-                farthest_index = 0u;
-                for (sample_index = 0u; sample_index < work_sample_count;
-                        ++sample_index) {
-                    if (distance_cache[sample_index] > farthest_distance) {
-                        farthest_distance = distance_cache[sample_index];
-                        farthest_index = sample_index;
-                    }
-                }
+                farthest_index = sixel_kmeans_find_donor(
+                    &donor_cache, distance_cache, work_sample_count);
                 old_cluster = membership[farthest_index];
                 farthest_base = (size_t)farthest_index * 3u;
                 farthest_sample_weight = 1.0;
@@ -3035,19 +3129,13 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     }
                 }
             }
+            donor_cache.previous = work_sample_count;
             for (center_index = 0U; center_index < k; ++center_index) {
                 if (cluster_weights[center_index] > 0.0) {
                     continue;
                 }
-                farthest_distance = -1.0;
-                farthest_index = 0U;
-                for (sample_index = 0U; sample_index < work_sample_count;
-                        ++sample_index) {
-                    if (distance_cache[sample_index] > farthest_distance) {
-                        farthest_distance = distance_cache[sample_index];
-                        farthest_index = sample_index;
-                    }
-                }
+                farthest_index = sixel_kmeans_find_donor(
+                    &donor_cache, distance_cache, work_sample_count);
                 old_cluster = membership[farthest_index];
                 farthest_base = (size_t)farthest_index * 3U;
                 farthest_sample_weight = 1.0;
