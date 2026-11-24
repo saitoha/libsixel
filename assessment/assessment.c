@@ -1159,7 +1159,7 @@ frame_to_rgb_float(sixel_frame_t *frame,
     converted = (float *)xmalloc(count * sizeof(float));
     if (float_pixels != NULL) {
         memcpy(converted, float_pixels, count * sizeof(float));
-    } else {
+    } else if (pixels != NULL) {
         /* Initialize and remap each channel in one pass. The channel index
          * stays within count even when analyzing a symbolic image size. */
         for (index = 0; index < count; ++index) {
@@ -1177,6 +1177,9 @@ frame_to_rgb_float(sixel_frame_t *frame,
                 converted[index] = (converted[index] - 0.5f) * 2;
             }
         }
+    } else {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
     }
     *pixels_out = converted;
     *width_out = width;
