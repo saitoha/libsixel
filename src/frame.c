@@ -1747,12 +1747,20 @@ sixel_frame_init_rgbf32_borrowed(sixel_frame_t *frame, float *pixels,
 {
     sixel_color_def_t *copy;
     SIXELSTATUS status;
+    uintptr_t storage;
+    uintptr_t input;
 
-    if (frame == NULL || pixels == NULL || definition == NULL ||
-        (frame->owns_pixels && (void *)pixels == frame->pixels.u8ptr)) {
+    if (frame == NULL || pixels == NULL || definition == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
+    /* Reinitialization releases owned storage, including any borrowed slice. */
+    storage = (uintptr_t)sixel_frame_pixel_storage(frame);
+    input = (uintptr_t)pixels;
+    if (frame->owns_pixels && input >= storage &&
+        (input == storage || input - storage < frame->pixel_extent)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (!sixel_cdef_frame_input_ready(definition)) {
         sixel_helper_set_additional_message(
             "RGB definition has no frame input path.");
