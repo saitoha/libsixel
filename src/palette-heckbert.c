@@ -918,6 +918,50 @@ cleanup:
     return status;
 }
 
+#if defined(HAVE_METAL)
+SIXELSTATUS
+sixel_heckbert_resident_histogram(unsigned char const *rgb, unsigned int width,
+    unsigned int height, unsigned int stride, unsigned int colors,
+    sixel_allocator_t *allocator, float *points, unsigned int *count)
+{
+    tupletable2 table;
+    unsigned char *samples;
+    unsigned int columns, rows, bytes, x, y, i;
+    SIXELSTATUS status;
+
+    columns = (width - 1u) / stride + 1u;
+    rows = (height - 1u) / stride + 1u;
+    samples = sixel_allocator_malloc(allocator, 3u*(size_t)columns*rows);
+    if (samples == NULL)
+        return SIXEL_BAD_ALLOCATION;
+
+    /* Match the adaptive-grid filter with solid augmentation disabled. The
+     * reversible 6bit histogram retains its original occupancy and order. */
+    bytes = 0;
+    for (y = 0; y < height; y += stride) {
+        for (x = 0; x < width; x += stride) {
+            memcpy(samples+bytes, rgb+3u*((size_t)y*width+x), 3u);
+            bytes += 3u;
+        }
+    }
+    status = sixel_lut_build_histogram(samples, bytes, 3u, 3u,
+        SIXEL_PIXELFORMAT_RGB888, SIXEL_QUALITY_LOW, 1, SIXEL_LUT_POLICY_6BIT,
+        colors, NULL, &table, allocator);
+    sixel_allocator_free(allocator, samples);
+    if (status != SIXEL_OK)
+        return status;
+    for (i = 0; i < table.size; ++i) {
+        points[4u*i] = (float)table.table[i]->tuple[0];
+        points[4u*i+1u] = (float)table.table[i]->tuple[1];
+        points[4u*i+2u] = (float)table.table[i]->tuple[2];
+        points[4u*i+3u] = (float)table.table[i]->value;
+    }
+    *count = table.size;
+    sixel_allocator_free(allocator, table.table);
+    return table.size != 0 ? SIXEL_OK : SIXEL_BAD_INPUT;
+}
+#endif
+
 typedef struct box *boxVector;
 struct box {
     unsigned int ind;

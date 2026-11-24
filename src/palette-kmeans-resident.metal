@@ -430,3 +430,66 @@ kernel void cover_repair(device packed_uchar3 *pal ARG(21),
     if (lane == 0)
         p.centers = count;
 }
+
+#if defined(SIXEL_HECKBERT_RESIDENT)
+/* Match sumcompare and averagePixels on the reversible byte histogram.
+ * The box priorities and membership come from the original Heckbert
+ * solver. With at most 32768 samples, doubled RGB sums fit in uint. */
+/* Accel: HECKBERT-RESIDENT-REP metal */
+kernel void heckbert_representatives(
+    device const float4 *points [[buffer(0)]],
+    device const uint *order [[buffer(1)]],
+    device const HeckbertBox *boxes [[buffer(3)]],
+    constant HeckbertParams &input [[buffer(4)]],
+    device const uint *solved [[buffer(5)]],
+    device State &state [[buffer(7)]],
+    device Params &p [[buffer(9)]],
+    device packed_uchar3 *palette [[buffer(21)]], GID)
+{
+    /* With few enough buckets the byte CPU builder preserves histogram order
+     * and uses each bucket directly. It never runs the split kernel. */
+    uint count = min(input.count, input.colors);
+    if (i == 0)
+        p.centers = count;
+    if (i >= count)
+        return;
+    if (input.count <= input.colors) {
+        palette[i] = uchar3(points[i].xyz);
+        return;
+    }
+    if (solved[0] != count) {
+        atomic_store_explicit(&state.failed, 1u, memory_order_relaxed);
+        return;
+    }
+    HeckbertBox box = boxes[i];
+    uint rank = 0;
+    uint population = 0;
+    uint3 sums = 0;
+    if (!box.size || box.start >= input.count || !isfinite(box.priority) ||
+            box.size > input.count - box.start) {
+        atomic_store_explicit(&state.failed, 1u, memory_order_relaxed);
+        return;
+    }
+    for (uint j = 0; j < count; ++j) {
+        HeckbertBox other = boxes[j];
+        rank += other.priority > box.priority ||
+                (other.priority == box.priority && other.start < box.start);
+    }
+    for (uint j = 0; j < box.size; ++j) {
+        uint index = order[box.start + j];
+        if (index >= input.count) {
+            atomic_store_explicit(&state.failed, 1u, memory_order_relaxed);
+            return;
+        }
+        float4 point = points[index];
+        uint mass = uint(point.w);
+        sums += uint3(point.xyz) * mass;
+        population += mass;
+    }
+    if (!population || population != box.sum) {
+        atomic_store_explicit(&state.failed, 1u, memory_order_relaxed);
+        return;
+    }
+    palette[rank] = uchar3((2 * sums + population) / (2 * population));
+}
+#endif

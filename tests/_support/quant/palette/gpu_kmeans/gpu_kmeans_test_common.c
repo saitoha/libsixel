@@ -43,20 +43,17 @@ resident_write(char *bytes, int length, void *context)
 }
 #endif
 
-int
-test_kmgpu_resident_playback(int argc, char **argv)
+static int
+test_resident_playback(int heckbert)
 {
 #if defined(HAVE_METAL)
     static struct {
         int option;
         char const *value;
     } const options[] = {
-        { SIXEL_OPTFLAG_QUANTIZE_MODEL,
-          "kmeans:backend=gpu:inittype=pca:binbits=5:iter=6" },
         { SIXEL_OPTFLAG_GPU_POLICY, "force" },
         { SIXEL_OPTFLAG_PRECISION_POLICY, "8bit" },
         { SIXEL_OPTFLAG_SAMPLING_POLICY, "adaptive-grid:solid=off" },
-        { SIXEL_OPTFLAG_BINNING_POLICY, "hard" },
         { SIXEL_OPTFLAG_MERGE_POLICY, "none" },
         { SIXEL_OPTFLAG_LUT_POLICY, "6bit" },
         { SIXEL_OPTFLAG_DIFFUSION, "none" },
@@ -77,8 +74,7 @@ test_kmgpu_resident_playback(int argc, char **argv)
     int result;
 #endif
 
-    (void)argc;
-    (void)argv;
+    (void)heckbert;
 #if !defined(HAVE_METAL)
     return 77;
 #else
@@ -106,6 +102,17 @@ test_kmgpu_resident_playback(int argc, char **argv)
     } \
 } while (0)
     RESIDENT_CHECK(sixel_encoder_new(&encoder, NULL));
+    RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_QUANTIZE_MODEL,
+        heckbert ? "heckbert:cut=sse:order=sse" :
+            "kmeans:backend=gpu:inittype=pca:binbits=5:iter=6"));
+    RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_BINNING_POLICY,
+                                        heckbert ? "auto" : "hard"));
+    if (heckbert) {
+        RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_FIND_LARGEST,
+                                            "norm"));
+        RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SELECT_COLOR,
+                                            "histogram"));
+    }
     for (i = 0; i < sizeof(options)/sizeof(options[0]); ++i)
         RESIDENT_CHECK(sixel_encoder_setopt(encoder, options[i].option,
                                    options[i].value));
@@ -138,4 +145,20 @@ end:
     sixel_encoder_unref(encoder);
     return result;
 #endif
+}
+
+int
+test_kmgpu_resident_playback(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return test_resident_playback(0);
+}
+
+int
+test_heckbert_resident_playback(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return test_resident_playback(1);
 }

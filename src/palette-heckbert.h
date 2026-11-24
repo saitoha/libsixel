@@ -66,6 +66,14 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
                                      char const *engine_name,
                                      sixel_palette_telemetry_t *telemetry);
 
+#if defined(HAVE_METAL)
+/* Reversible byte buckets for the Metal SSE/norm splitter. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_heckbert_resident_histogram(unsigned char const *rgb, unsigned int width,
+    unsigned int height, unsigned int stride, unsigned int colors,
+    sixel_allocator_t *allocator, float *points, unsigned int *count);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

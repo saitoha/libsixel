@@ -67,6 +67,8 @@
     policy_sixel_palette_heckbert_split_attempt
 #define splitBox policy_splitBox
 #define sixel_palette_heckbert_solve_gpu policy_sixel_palette_heckbert_solve_gpu
+#define sixel_heckbert_resident_histogram \
+    policy_sixel_heckbert_resident_histogram
 #define mediancut policy_mediancut
 #define sixel_heckbert_native_compare policy_sixel_heckbert_native_compare
 #define sixel_heckbert_native_histogram policy_sixel_heckbert_native_histogram
@@ -99,6 +101,7 @@
 #define findBoxBoundariesAndWeightAvx2 \
     policy_findBoxBoundariesAndWeightAvx2
 #include "src/palette-heckbert.c"
+#undef sixel_heckbert_resident_histogram
 #undef sixel_heckbert_box_sse_avx2
 #undef sixel_heckbert_error_avx2
 #undef findBoxBoundariesAndWeightAvx2

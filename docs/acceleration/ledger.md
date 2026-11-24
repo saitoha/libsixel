@@ -23,6 +23,7 @@ Rows are sorted by ID. The prefix names the stage: `DECODE` for the SIXEL decode
 | HECKBERT-BOX-BOUNDS | Box bounds and weight over RGB tuples | done | done | planned | done | planned | n/a | n/a | |
 | HECKBERT-BOX-SCORE | Squared-error score of a box over RGB tuples | done | done | planned | done | planned | n/a | n/a | |
 | HECKBERT-MEDIAN-CUT | Solve the median cut on the GPU | done | n/a | n/a | n/a | n/a | done | done | Vulkan uses a separate compute queue when available and the shared measured GPU headroom rule, with CPU median cut as the fallback. |
+| HECKBERT-RESIDENT-REP | Order SSE boxes and compute RGB888 representatives in the resident palette path | done | n/a | n/a | n/a | n/a | done | planned | |
 | ICC-PRODUCT-RESIDUAL | Recover the double-precision product residual for ICC arithmetic | done | n/a | done | n/a | n/a | n/a | n/a | The x86 128-bit implementation requires FMA3 and OS AVX support. |
 | KMEANS-RESIDENT-COVER | Select soft or hard RGB888 anchors and repair the palette before lookup | done | n/a | n/a | n/a | n/a | done | planned | |
 | KMEANS-RESIDENT-HISTOGRAM | Sample the adaptive grid and compact weighted RGB888 histogram bins | done | n/a | n/a | n/a | n/a | done | planned | |

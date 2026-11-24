@@ -5542,7 +5542,7 @@ static SIXELSTATUS
 sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
 {
     sixel_encoder_t *encoder;
-    sixel_kmeans_resident_request_t request;
+    sixel_palette_resident_request_t request;
     sixel_palette_frame_state_t state;
     sixel_filter_sample_config_t sampling;
     sixel_palette_cover_options_t cover;
@@ -5557,17 +5557,16 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     unsigned char *palette;
     size_t count, samples;
     unsigned int colors;
-    int prune, option_lock;
+    int prune, option_lock, heckbert;
     SIXELSTATUS status;
 
     encoder = context->encoder;
+    heckbert = encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT;
     if (context->latest || context->palette_source != NULL ||
             context->clip_active ||
             context->palette.sampling.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
             context->palette.sampling.effective !=
                 SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID ||
-            context->palette.binning.policy.requested !=
-                SIXEL_PALETTE_BINNING_HARD ||
             context->current_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             context->target_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             context->current_colorspace != SIXEL_COLORSPACE_GAMMA ||
@@ -5576,16 +5575,6 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->output_icc != NULL || encoder->gamut_mapper != NULL ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_FORCE ||
-            encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
-            !encoder->quantize_model_kmeans_backend_override ||
-            encoder->quantize_model_kmeans_backend !=
-                SIXEL_PALETTE_KMEANS_BACKEND_GPU ||
-            !encoder->quantize_model_kmeans_init_override ||
-            encoder->quantize_model_kmeans_init_type !=
-                SIXEL_PALETTE_KMEANS_INIT_PCA ||
-            !encoder->quantize_model_kmeans_binbits_override ||
-            encoder->quantize_model_kmeans_binbits != 5u ||
-            !encoder->quantize_model_kmeans_iter_override ||
             !encoder->merge_policy_override ||
             encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
             encoder->palette_sample_solid || encoder->force_palette ||
@@ -5603,41 +5592,77 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
             sixel_encoder_frame_has_transparent_mask(context->frame))
         return SIXEL_FALSE;
 
+    if (heckbert) {
+        /* The resident path is deliberately opt-in: the existing Metal SSE
+         * splitter can cost more than the CPU solver for small palettes. */
+        if (!encoder->heckbert_cut_override || !encoder->heckbert_cut ||
+                !encoder->heckbert_order_override || !encoder->heckbert_order ||
+                encoder->heckbert_weights_override ||
+                encoder->method_for_largest != SIXEL_LARGE_NORM ||
+                (encoder->method_for_rep != SIXEL_REP_AUTO &&
+                 encoder->method_for_rep != SIXEL_REP_AVERAGE_PIXELS) ||
+                !encoder->snap_policy_override ||
+                encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE ||
+                (context->palette.binning.policy.requested !=
+                    SIXEL_PALETTE_BINNING_AUTO &&
+                 context->palette.binning.policy.requested !=
+                    SIXEL_PALETTE_BINNING_NONE))
+            return SIXEL_FALSE;
+    } else if (context->palette.binning.policy.requested !=
+                   SIXEL_PALETTE_BINNING_HARD ||
+            encoder->quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS ||
+            !encoder->quantize_model_kmeans_backend_override ||
+            encoder->quantize_model_kmeans_backend !=
+                SIXEL_PALETTE_KMEANS_BACKEND_GPU ||
+            !encoder->quantize_model_kmeans_init_override ||
+            encoder->quantize_model_kmeans_init_type !=
+                SIXEL_PALETTE_KMEANS_INIT_PCA ||
+            !encoder->quantize_model_kmeans_binbits_override ||
+            encoder->quantize_model_kmeans_binbits != 5u ||
+            !encoder->quantize_model_kmeans_iter_override) {
+        return SIXEL_FALSE;
+    }
+
     /* Treat environment and option values exactly as the ordinary builder
      * does. These getters also provide defaults for unset sub-options. */
     memset(&request, 0, sizeof(request));
+    request.quantizer = encoder->quantize_model;
     option_lock = sixel_encoder_quantize_override_lock_acquire();
-    prune = encoder->quantize_model_kmeans_prune_override ?
-        encoder->quantize_model_kmeans_prune_policy :
-        (int)sixel_get_kmeans_prune_policy();
-    if ((encoder->quantize_model_kmeans_mapping_override ?
-                encoder->quantize_model_kmeans_mapping_mode :
-                (int)sixel_get_kmeans_mapping_mode()) !=
-            SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM ||
-            (encoder->quantize_model_kmeans_restarts_override ?
-                encoder->quantize_model_kmeans_restarts :
-                sixel_get_kmeans_restarts()) > 1u ||
-            (encoder->quantize_model_kmeans_polish_iter_override ?
-                encoder->quantize_model_kmeans_polish_iter :
-                sixel_get_kmeans_polish_iter()) != 0u ||
-            (encoder->quantize_model_kmeans_feedback_override ?
-                encoder->quantize_model_kmeans_feedback_mode :
-                (int)sixel_get_kmeans_feedback_mode()) !=
-            SIXEL_PALETTE_KMEANS_FEEDBACK_OFF ||
-            prune == SIXEL_PALETTE_KMEANS_PRUNE_AABB ||
-            prune == SIXEL_PALETTE_KMEANS_PRUNE_ELKAN ||
-            prune == SIXEL_PALETTE_KMEANS_PRUNE_YINYANG) {
-        sixel_encoder_quantize_override_lock_release(option_lock);
-        return SIXEL_FALSE;
+    if (!heckbert) {
+        prune = encoder->quantize_model_kmeans_prune_override ?
+            encoder->quantize_model_kmeans_prune_policy :
+            (int)sixel_get_kmeans_prune_policy();
+        if ((encoder->quantize_model_kmeans_mapping_override ?
+                    encoder->quantize_model_kmeans_mapping_mode :
+                    (int)sixel_get_kmeans_mapping_mode()) !=
+                SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM ||
+                (encoder->quantize_model_kmeans_restarts_override ?
+                    encoder->quantize_model_kmeans_restarts :
+                    sixel_get_kmeans_restarts()) > 1u ||
+                (encoder->quantize_model_kmeans_polish_iter_override ?
+                    encoder->quantize_model_kmeans_polish_iter :
+                    sixel_get_kmeans_polish_iter()) != 0u ||
+                (encoder->quantize_model_kmeans_feedback_override ?
+                    encoder->quantize_model_kmeans_feedback_mode :
+                    (int)sixel_get_kmeans_feedback_mode()) !=
+                SIXEL_PALETTE_KMEANS_FEEDBACK_OFF ||
+                prune == SIXEL_PALETTE_KMEANS_PRUNE_AABB ||
+                prune == SIXEL_PALETTE_KMEANS_PRUNE_ELKAN ||
+                prune == SIXEL_PALETTE_KMEANS_PRUNE_YINYANG) {
+            sixel_encoder_quantize_override_lock_release(option_lock);
+            return SIXEL_FALSE;
+        }
+        request.max_iterations = encoder->quantize_model_kmeans_iter;
+        request.min_iterations =
+            encoder->quantize_model_kmeans_miniter_override
+            ? encoder->quantize_model_kmeans_miniter
+            : sixel_get_kmeans_miniter();
+        if (request.min_iterations > request.max_iterations)
+            request.min_iterations = request.max_iterations;
+        request.threshold = encoder->quantize_model_kmeans_threshold_override ?
+            (float)encoder->quantize_model_kmeans_threshold :
+            (float)sixel_palette_kmeans_threshold();
     }
-    request.max_iterations = encoder->quantize_model_kmeans_iter;
-    request.min_iterations = encoder->quantize_model_kmeans_miniter_override ?
-        encoder->quantize_model_kmeans_miniter : sixel_get_kmeans_miniter();
-    if (request.min_iterations > request.max_iterations)
-        request.min_iterations = request.max_iterations;
-    request.threshold = encoder->quantize_model_kmeans_threshold_override ?
-        (float)encoder->quantize_model_kmeans_threshold :
-        (float)sixel_palette_kmeans_threshold();
 
     memset(&cover, 0, sizeof(cover));
     cover.policy_override = encoder->cover_policy_override;
@@ -5658,6 +5683,8 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     snap.policy = encoder->snap_policy;
     snap.timing_override = encoder->snap_policy_timing_override;
     snap.timing = encoder->snap_policy_timing;
+    snap.approach_rate_override = encoder->snap_policy_approach_rate_override;
+    snap.approach_rate = encoder->snap_policy_approach_rate;
     sixel_set_palette_snap_override(&snap);
     request.snap = sixel_palette_snap_is_enabled();
     if (request.snap && (!sixel_palette_should_snap(
@@ -5686,6 +5713,10 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
             &request.snap_rate);
     }
     sixel_encoder_quantize_override_lock_release(option_lock);
+    /* Reversible input buckets are the numeric contract of the Heckbert
+     * representative shader. A zero approach rate disables that histogram. */
+    if (heckbert && !request.snap)
+        return SIXEL_FALSE;
 
     source_if = sixel_frame_as_interface(context->frame);
     status = source_if->vtbl->get_timeline(source_if, &timeline);
@@ -5722,10 +5753,18 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     status = sixel_palette_policy_mark_executed(&state.sampling);
     if (status == SIXEL_OK)
         status = sixel_palette_policy_resolve(&state.quantizer,
-            SIXEL_QUANTIZE_MODEL_KMEANS, SIXEL_PALETTE_RESOLUTION_EXPLICIT);
+            request.quantizer, SIXEL_PALETTE_RESOLUTION_EXPLICIT);
     if (status == SIXEL_OK)
         status = sixel_palette_policy_mark_executed(&state.quantizer);
-    if (status == SIXEL_OK)
+    if (status == SIXEL_OK && heckbert)
+        status = sixel_palette_binning_resolve(&state.binning,
+            SIXEL_PALETTE_BINNING_NONE, 0u, SIXEL_PALETTE_BINNING_GRID_NONE,
+            SIXEL_PALETTE_BINNING_KERNEL_NONE,
+            SIXEL_PALETTE_BINNING_BACKEND_DIRECT, samples,
+            state.binning.policy.requested == SIXEL_PALETTE_BINNING_AUTO
+                ? SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY
+                : SIXEL_PALETTE_RESOLUTION_EXPLICIT);
+    if (status == SIXEL_OK && !heckbert)
         status = sixel_palette_binning_resolve(&state.binning,
             SIXEL_PALETTE_BINNING_HARD, 5u, SIXEL_PALETTE_BINNING_GRID_UNIFORM,
             SIXEL_PALETTE_BINNING_KERNEL_NONE,
@@ -5743,12 +5782,13 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     status = SIXEL_BAD_ALLOCATION;
     if (pixels == NULL || palette == NULL)
         goto end;
-    status = sixel_kmeans_metal_resident(&request,
-        sixel_frame_get_pixels(context->frame), pixels, palette, &colors);
+    status = sixel_palette_metal_resident(&request,
+        sixel_frame_get_pixels(context->frame), encoder->allocator,
+        pixels, palette, &colors);
     if (status != SIXEL_OK) {
         if (status != SIXEL_FALSE)
             sixel_helper_set_additional_message(
-                "Metal resident k-means failed to produce an indexed frame.");
+                "Metal resident palette failed to produce an indexed frame.");
         goto end;
     }
     if (sixel_encoder_is_cancel_requested(encoder)) {
@@ -5792,9 +5832,14 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     context->resident_indexed = 1;
     indexed = NULL;
     dither = NULL;
-    sixel_trace_topic_message("kmeans_backend",
-        "LSXKMRESIDENT1|backend=metal|colors=%u|snap=%u|cover=%u|soft=%u",
-        colors, request.snap, request.cover, request.soft);
+    if (heckbert)
+        sixel_trace_topic_message("palette_contract",
+            "LSXHBRESIDENT1|backend=metal|colors=%u|snap=%u|cover=%u|soft=%u",
+            colors, request.snap, request.cover, request.soft);
+    else
+        sixel_trace_topic_message("kmeans_backend",
+            "LSXKMRESIDENT1|backend=metal|colors=%u|snap=%u|cover=%u|soft=%u",
+            colors, request.snap, request.cover, request.soft);
 end:
     sixel_allocator_free(encoder->allocator, pixels);
     sixel_allocator_free(encoder->allocator, palette);
