@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: hdr_ */
 /* Exercise the real staging allocation without a runtime fault switch. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"

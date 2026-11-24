@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: pmfi_ */
 /* Inject failures at the PNG source-selection and paired-apply boundaries.
  * The included production source is namespaced, not copied. A tiny decoder
  * double supplies the independently recorded integers; the public loader

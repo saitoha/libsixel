@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: ti_ */
 /* Literal integer/coordinate oracles own source accuracy. The actual CMM
  * applied to that independent source qualifies adapter publication only;
  * CMM arithmetic remains covered by the shared numerical tests. */

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: yc_ */
 /* Observe the actual adapter after libtiff's decoded RGB8 boundary. The
  * original YCbCr conversion and the following ICC arithmetic have separate
  * independent selected-sample oracles; this is not a new source decoder. */

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: ts_ */
 /* Include the actual CMS and adapter. Only dependency calls are replaced;
  * the conversion, selection, rollback and publication code stays unchanged.
  * Literal integer/F32 tables own source accuracy. Direct contiguous output

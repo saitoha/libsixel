@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: cmf_ */
 /* Include the actual CMS body under isolated test names. Faults intercept
  * allocation and native dependencies, never a copied grouping algorithm. */
 #if defined(HAVE_CONFIG_H)

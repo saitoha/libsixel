@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: uf_ */
 /* Private actual-adapter probe: read qualification is separate from publish. */
 #include "config.h"
 #include <stdint.h>

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: lc_ */
 /* Observe the actual adapter under isolated names. Original strip samples
  * have a literal oracle; successful colors use the existing byte CMM as an
  * adapter reference, not as independent evidence of CMM numeric accuracy. */

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Test variable prefix: pau_ */
 /* Exercise the actual loader manager and PNG decoder with an unavailable
  * arithmetic backend. Only factory lookup and the selected core build fail.
  * The implementation is included, not copied or replaced with decode stubs.
