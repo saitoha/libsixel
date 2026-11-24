@@ -16,6 +16,8 @@ The compatibility API retains `__declspec(dllexport)` on `_WIN32` so helper symb
 
 Keep MSVCRT and UCRT configuration sites distinct. Headers, startup objects, and import libraries from MinGW, MSYS, Cygwin, or another runtime family are not interchangeable even when the compiler accepts them.
 
+The MinGW MSVCRT implementation of double-precision `fma` can lose low bits when recovering the rounding error of a product. Autotools and Meson probe exact product residuals, including a non-power-of-two residual. ICC arithmetic uses the software product split if the probe fails or the build cannot run it.
+
 ## Maintenance checklist
 
 - Run format warnings with the same printf archetype and runtime family used for the final link.
