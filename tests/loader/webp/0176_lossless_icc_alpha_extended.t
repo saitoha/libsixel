@@ -15,8 +15,11 @@ test "$status" -ne 77 || {
 }
 printf '%s\n' "$trace" >&2
 # Clipping and ignoring ICC both yield the same red over black. Require
-# evidence of a bounded RGBA8 (CMS pixel format 3) conversion.
+# evidence of bounded builtin conversion. Builds with Little CMS support
+# transform RGBA8 (3) directly. Other builds transform packed RGB8 (2)
+# and copy back the color channels while preserving the original alpha.
 case "$status:$trace" in
+    42:*'LSXCMS2|event=apply|engine=builtin|path=bounded-device|src=2|dst=2|ok=1'*|\
     42:*'LSXCMS2|event=apply|engine=builtin|path=bounded-device|src=3|dst=3|ok=1'*)
         echo 'not ok 1 - WebP clips Display P3 red before alpha composition # TODO known result'
         exit 0 ;;
