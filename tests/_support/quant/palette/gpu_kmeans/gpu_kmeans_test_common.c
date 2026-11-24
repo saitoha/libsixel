@@ -56,7 +56,6 @@ test_resident_playback(int heckbert)
         { SIXEL_OPTFLAG_THREADING_POLICY, "greedy:global_budget=1" },
         { SIXEL_OPTFLAG_PRECISION_POLICY, "8bit" },
         { SIXEL_OPTFLAG_SAMPLING_POLICY, "adaptive-grid:solid=off" },
-        { SIXEL_OPTFLAG_MERGE_POLICY, "none" },
         { SIXEL_OPTFLAG_LUT_POLICY, "6bit" },
         { SIXEL_OPTFLAG_DIFFUSION, "none" },
         { SIXEL_OPTFLAG_COLORS, "32" },
@@ -106,13 +105,11 @@ test_resident_playback(int heckbert)
 } while (0)
     RESIDENT_CHECK(sixel_encoder_new(&encoder, NULL));
     RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_QUANTIZE_MODEL,
-        heckbert ? "heckbert:cut=sse:order=sse" :
+        heckbert ? "heckbert" :
             "kmeans:backend=gpu:inittype=pca:binbits=5:iter=6"));
     RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_BINNING_POLICY,
                                         heckbert ? "auto" : "hard"));
     if (heckbert) {
-        RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_FIND_LARGEST,
-                                            "norm"));
         RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SELECT_COLOR,
                                             "histogram"));
     }

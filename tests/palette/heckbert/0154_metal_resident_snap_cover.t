@@ -17,9 +17,9 @@ test "$probe_status" -eq 0 || {
     exit 0
 }
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.8bit -Gforce -Fnone -p64 \
-    --lookup-policy=6bit -dnone -4adaptive-grid:solid=off -fnorm -shistogram \
-    -Qheckbert:cut=sse:order=sse -_reversible:timing=once \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.8bit -Gforce -Fauto -p64 \
+    --lookup-policy=6bit -dnone -4adaptive-grid:solid=off -shistogram \
+    -Qauto -_reversible:timing=once \
     -aedges:cover_mode=hard:cover_grow=1 -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1) || {
     echo 'not ok 1 - Heckbert indexed encoding failed'

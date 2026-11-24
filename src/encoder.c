@@ -5576,6 +5576,8 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     sixel_encoder_t *encoder;
     sixel_palette_resident_request_t request;
     sixel_palette_frame_state_t state;
+    sixel_palette_quantizer_resolver_input_t quantizer_input;
+    sixel_palette_quantizer_selection_t quantizer;
     sixel_filter_sample_config_t sampling;
     sixel_filter_sample_grid_t grid;
     sixel_filter_t sample_filter;
@@ -5595,7 +5597,6 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     SIXELSTATUS status;
 
     encoder = context->encoder;
-    heckbert = encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT;
     if (context->latest || context->palette_source != NULL ||
             context->clip_active ||
             context->palette.sampling.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
@@ -5609,8 +5610,8 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->output_icc != NULL || encoder->gamut_mapper != NULL ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_FORCE ||
-            !encoder->merge_policy_override ||
-            encoder->final_merge_mode != SIXEL_FINAL_MERGE_NONE ||
+            sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
+                SIXEL_FINAL_MERGE_NONE ||
             encoder->palette_sample_solid || encoder->force_palette ||
             encoder->reserved_palette_count || encoder->palette_output ||
             encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT ||
@@ -5626,13 +5627,22 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
             sixel_encoder_frame_has_transparent_mask(context->frame))
         return SIXEL_FALSE;
 
+    quantizer_input.requested = context->palette.quantizer.requested;
+    quantizer_input.binning_requested =
+        context->palette.binning.policy.requested;
+    status = sixel_palette_quantizer_select(&quantizer_input, &quantizer);
+    if (status != SIXEL_OK)
+        return SIXEL_FALSE;
+    heckbert = quantizer.effective == SIXEL_QUANTIZE_MODEL_MEDIANCUT;
     if (heckbert) {
-        /* The resident path is deliberately opt-in: the existing Metal SSE
-         * splitter can cost more than the CPU solver for small palettes. */
-        if (!encoder->heckbert_cut_override || !encoder->heckbert_cut ||
-                !encoder->heckbert_order_override || !encoder->heckbert_order ||
+        /* The ordinary Heckbert builder defaults to SSE cut/order and
+         * resolves the automatic largest-axis policy to norm. */
+        if ((encoder->heckbert_cut_override && !encoder->heckbert_cut) ||
+                (encoder->heckbert_order_override &&
+                 !encoder->heckbert_order) ||
                 encoder->heckbert_weights_override ||
-                encoder->method_for_largest != SIXEL_LARGE_NORM ||
+                (encoder->method_for_largest != SIXEL_LARGE_AUTO &&
+                 encoder->method_for_largest != SIXEL_LARGE_NORM) ||
                 (encoder->method_for_rep != SIXEL_REP_AUTO &&
                  encoder->method_for_rep != SIXEL_REP_AVERAGE_PIXELS) ||
                 !encoder->snap_policy_override ||
@@ -5660,7 +5670,7 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     /* Treat environment and option values exactly as the ordinary builder
      * does. These getters also provide defaults for unset sub-options. */
     memset(&request, 0, sizeof(request));
-    request.quantizer = encoder->quantize_model;
+    request.quantizer = quantizer.effective;
     option_lock = sixel_encoder_quantize_override_lock_acquire();
     if (!heckbert) {
         prune = encoder->quantize_model_kmeans_prune_override ?
@@ -5802,7 +5812,7 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     status = sixel_palette_policy_mark_executed(&state.sampling);
     if (status == SIXEL_OK)
         status = sixel_palette_policy_resolve(&state.quantizer,
-            request.quantizer, SIXEL_PALETTE_RESOLUTION_EXPLICIT);
+            request.quantizer, quantizer.reason);
     if (status == SIXEL_OK)
         status = sixel_palette_policy_mark_executed(&state.quantizer);
     if (status == SIXEL_OK && heckbert)
