@@ -38,6 +38,7 @@ endif
 # failures instead of silently accepting an empty or partial test suite.
 override TESTS := $(if $(filter __SIXEL_TEST_DISCOVERY_FAILED__,$(TESTS)),$(error could not discover tests in $(srcdir)),$(if $(filter 1,$(SIXEL_INSTALLCHECK_GENERIC)),$(filter-out extension/quicklook-installed/%,$(TESTS)),$(TESTS)))
 XFAIL_TESTS = \
+    palette/kmeans/0117_aabb_gpu_force_dispatch.t \
     loader-psd/blending/0010_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
     loader-psd/effects/0010_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t \
     loader-psd/stroke/0001_loader_builtin_psd_psdtools_effects_stroke_composite_hardcase_lsqa.t

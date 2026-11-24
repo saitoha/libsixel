@@ -432,6 +432,7 @@ if tests_text != ''
 endif
 
 xfail_tests = [
+  'palette/kmeans/0117_aabb_gpu_force_dispatch.t',
   'loader-psd/blending/0010_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t',
   'loader-psd/effects/0010_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t',
   'loader-psd/stroke/0001_loader_builtin_psd_psdtools_effects_stroke_composite_hardcase_lsqa.t',

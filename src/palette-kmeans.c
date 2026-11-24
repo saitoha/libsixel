@@ -925,6 +925,8 @@ sixel_kmeans_prune_policy_to_string(sixel_kmeans_prune_policy policy)
         return "elkan";
     case SIXEL_PALETTE_KMEANS_PRUNE_YINYANG:
         return "yinyang";
+    case SIXEL_PALETTE_KMEANS_PRUNE_AABB:
+        return "aabb";
     case SIXEL_PALETTE_KMEANS_PRUNE_AUTO:
     default:
         return "auto";
@@ -968,6 +970,7 @@ sixel_kmeans_resolve_prune_policy(sixel_kmeans_prune_policy policy)
 {
     switch (policy) {
     case SIXEL_PALETTE_KMEANS_PRUNE_AUTO:
+        return SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
     case SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY:
         return SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
     case SIXEL_PALETTE_KMEANS_PRUNE_NONE:
@@ -976,6 +979,8 @@ sixel_kmeans_resolve_prune_policy(sixel_kmeans_prune_policy policy)
         return SIXEL_PALETTE_KMEANS_PRUNE_ELKAN;
     case SIXEL_PALETTE_KMEANS_PRUNE_YINYANG:
         return SIXEL_PALETTE_KMEANS_PRUNE_YINYANG;
+    case SIXEL_PALETTE_KMEANS_PRUNE_AABB:
+        return SIXEL_PALETTE_KMEANS_PRUNE_AABB;
     default:
         return SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
     }
@@ -1004,7 +1009,7 @@ sixel_get_kmeans_prune_policy(void)
     int value;
 
     parsed = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
-    resolved = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    resolved = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
     value = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
     if (sixel_kmeans_prune_policy_override_enabled) {
         return sixel_kmeans_resolve_prune_policy(

@@ -1599,7 +1599,8 @@ static sixel_suboption_choice_t const g_kmeans_prune_choices[] = {
     { "none", SIXEL_PALETTE_KMEANS_PRUNE_NONE },
     { "hamerly", SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY },
     { "elkan", SIXEL_PALETTE_KMEANS_PRUNE_ELKAN },
-    { "yinyang", SIXEL_PALETTE_KMEANS_PRUNE_YINYANG }
+    { "yinyang", SIXEL_PALETTE_KMEANS_PRUNE_YINYANG },
+    { "aabb", SIXEL_PALETTE_KMEANS_PRUNE_AABB }
 };
 
 static sixel_suboption_choice_t const g_kmedoids_algo_choices[] = {

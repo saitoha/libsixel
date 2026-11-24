@@ -168,6 +168,24 @@ sixel_kmeans_assign_samples(double const *centers,
                             double *cluster_weights,
                             double *accum);
 
+/* Immutable point hierarchy with per-assignment candidate scratch. */
+typedef struct sixel_kmeans_aabb sixel_kmeans_aabb_t;
+
+sixel_kmeans_aabb_t *
+sixel_kmeans_aabb_new(double const *points, unsigned int count, unsigned int k,
+                      int byte_coordinates, sixel_allocator_t *allocator);
+
+void
+sixel_kmeans_aabb_free(sixel_kmeans_aabb_t *tree, sixel_allocator_t *allocator);
+
+/* A null hierarchy takes the exhaustive path with the same tie rule. */
+double
+sixel_kmeans_assign_samples_aabb(
+    sixel_kmeans_aabb_t *tree, double const *centers, unsigned int k,
+    double const *samples, double const *weights, unsigned int sample_count,
+    unsigned int *membership, double *distance_cache, double *cluster_weights,
+    double *accum);
+
 #ifdef __cplusplus
 }
 #endif

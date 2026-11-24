@@ -342,7 +342,7 @@ Supported k-means suboptions:
 .br
 \fBbackend\fP (short form \fBGNAME\fP): \fBcpu\fP (default), \fBgpu\fP or \fBauto\fP.
 GPU Lloyd iteration requires a Metal-enabled build and an available device.
-It uses FP32 arithmetic and full center scans. Explicit \fBprune=elkan|yinyang\fP
+It uses FP32 arithmetic and full center scans. Explicit \fBprune=elkan|yinyang|aabb\fP
 requests CPU iteration under AUTO and conflicts with FORCE.
 The \fBauto\fP backend adds a construction workload floor and uses CPU
 when no device is available, including under FORCE. Native float and named
@@ -374,8 +374,10 @@ requirement; for example, use \fB--lookup-policy=none -dnone\fP.
 .br
 \fBfeedback\fP (short form \fBF0\fP or \fBF1\fP): 0 or 1.
 .br
-\fBprune\fP: \fBauto\fP, \fBnone\fP, \fBhamerly\fP, \fBelkan\fP, or
-\fByinyang\fP.
+\fBprune\fP: \fBauto\fP, \fBnone\fP, \fBhamerly\fP, \fBelkan\fP,
+\fByinyang\fP, or \fBaabb\fP. AABB uses a hierarchy of axis-aligned
+bounding boxes to filter CPU candidates with the exhaustive tie rules.
+CPU AUTO selects AABB for larger workloads and Hamerly for smaller ones.
 .br
 \fBseed\fP (short form \fBSVALUE\fP): integer value in 0-4294967295.
 .br

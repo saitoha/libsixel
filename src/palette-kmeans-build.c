@@ -97,6 +97,8 @@ sixel_kmeans_build_prune_policy_to_string(sixel_kmeans_prune_policy policy)
         return "elkan";
     case SIXEL_PALETTE_KMEANS_PRUNE_YINYANG:
         return "yinyang";
+    case SIXEL_PALETTE_KMEANS_PRUNE_AABB:
+        return "aabb";
     default:
         return "auto";
     }
@@ -1596,6 +1598,9 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     sixel_kmeans_feedback_mode feedback_mode;
     sixel_kmeans_prune_policy prune_policy;
     sixel_kmeans_bounds_t bounds;
+    sixel_kmeans_aabb_t *aabb;
+    int aabb_prepared;
+    int auto_prune;
     double *merge_weights;
     double *cluster_weights;
     double *accum;
@@ -1799,6 +1804,9 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     softdist_mode = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
     feedback_mode = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
     prune_policy = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    aabb = NULL;
+    aabb_prepared = 0;
+    auto_prune = 0;
     hamerly_active = 0;
     elkan_active = 0;
     yinyang_active = 0;
@@ -1941,6 +1949,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     softdist_mode = sixel_get_kmeans_softdist_mode();
     feedback_mode = sixel_get_kmeans_feedback_mode();
     prune_policy = sixel_get_kmeans_prune_policy();
+    auto_prune = prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
+    if (auto_prune) prune_policy = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
     restart_count = sixel_get_kmeans_restarts();
     feedback_slots = sixel_get_kmeans_feedback_slots();
     feedback_interval = sixel_get_kmeans_feedback_interval();
@@ -2143,7 +2153,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                    work_sample_count,
                    k,
                    sixel_kmeans_build_init_type_to_string(init_type),
-                   sixel_kmeans_build_prune_policy_to_string(prune_policy),
+                   sixel_kmeans_build_prune_policy_to_string(auto_prune
+                       ? SIXEL_PALETTE_KMEANS_PRUNE_AUTO : prune_policy),
                    restart_count);
     sixel_palette_kmeans_log_finish(logger,
                                     job_init,
@@ -2180,13 +2191,15 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                 sixel_palette_should_snap(
                     SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER)) {
             selection_reason = "iteration-snap";
-        } else if (elkan_active || yinyang_active) {
+        } else if (elkan_active || yinyang_active ||
+                prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_AABB) {
             selection_reason = "explicit-prune";
         }
         if (strcmp(selection_reason, "eligible") != 0) {
             if (gpu_required) {
                 sixel_helper_set_additional_message(
-                    elkan_active || yinyang_active
+                    elkan_active || yinyang_active ||
+                    prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_AABB
                     ? "gpu k-means: explicit prune requires CPU iteration."
                     : "gpu k-means: feedback or iteration snap "
                       "is not supported.");
@@ -2315,6 +2328,19 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             }
         }
         if (!gpu_completed) {
+            /* Small jobs cannot amortize sorting and building the tree. */
+            if (!aabb_prepared &&
+                    (prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_AABB ||
+                     (auto_prune && k >= 64u && work_sample_count >= 2048u &&
+                      max_iterations >= 4u))) {
+                aabb = sixel_kmeans_aabb_new(work_samples, work_sample_count,
+                    k, !input_is_float32, allocator);
+                aabb_prepared = 1;
+                if (aabb != NULL) {
+                    prune_policy = SIXEL_PALETTE_KMEANS_PRUNE_AABB;
+                    hamerly_active = 0;
+                }
+            }
             status = sixel_kmeans_prepare_bounds(&bounds, work_sample_count,
                 k, prune_policy, allocator);
             if (status != SIXEL_OK) {
@@ -2467,6 +2493,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                         bounds.lower_bounds,
                         bounds.half_center_dist);
                 }
+            } else if (aabb != NULL) {
+                objective = sixel_kmeans_assign_samples_aabb(aabb,
+                    centers, k, work_samples, work_weights, work_sample_count,
+                    membership, distance_cache, cluster_weights, accum);
             } else {
                 for (sample_index = 0u; sample_index < work_sample_count;
                         ++sample_index) {
@@ -2743,15 +2773,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         }
 
         solved = trace_kmeans ? sixel_timer_now() : 0.0;
-        objective = sixel_kmeans_assign_samples(centers,
-                                                k,
-                                                work_samples,
-                                                work_weights,
-                                                work_sample_count,
-                                                membership,
-                                                distance_cache,
-                                                cluster_weights,
-                                                accum);
+        objective = sixel_kmeans_assign_samples_aabb(
+            gpu_completed ? NULL : aabb, centers, k, work_samples,
+            work_weights, work_sample_count, membership, distance_cache,
+            cluster_weights, accum);
         /* Trace the executed backend, including policy/platform fallback.
          * This is separate from the requested option and remains available
          * in release builds without creating a diagnostic log file. */
@@ -2776,7 +2801,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                 (unsigned int)gpu_status, gpu_reason, work_sample_count, k,
                 restart_index + 1u, gpu_completed ? "none" :
                     sixel_kmeans_build_prune_policy_to_string(prune_policy),
-                gpu_completed, bounds.upper_bounds != NULL, max_iterations,
+                gpu_completed, bounds.upper_bounds != NULL || aabb != NULL,
+                max_iterations,
                 objective);
         }
         if (restart_index == 0u || objective < best_objective) {
@@ -2799,15 +2825,9 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                best_centers,
                (size_t)k * 3u * sizeof(double));
     }
-    objective = sixel_kmeans_assign_samples(centers,
-                                            k,
-                                            work_samples,
-                                            work_weights,
-                                            work_sample_count,
-                                            membership,
-                                            distance_cache,
-                                            cluster_weights,
-                                            accum);
+    objective = sixel_kmeans_assign_samples_aabb(aabb,
+        centers, k, work_samples, work_weights, work_sample_count, membership,
+        distance_cache, cluster_weights, accum);
     (void)objective;
     merge_start = iterate_stop;
     merge_stop = iterate_stop;
@@ -2936,6 +2956,19 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             }
         }
         if (refine_iterations > 0u) {
+            /* Small jobs cannot amortize sorting and building the tree. */
+            if (!aabb_prepared &&
+                    (prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_AABB ||
+                     (auto_prune && k >= 64u && work_sample_count >= 2048u &&
+                      refine_iterations >= 4u))) {
+                aabb = sixel_kmeans_aabb_new(work_samples, work_sample_count,
+                    k, !input_is_float32, allocator);
+                aabb_prepared = 1;
+                if (aabb != NULL) {
+                    prune_policy = SIXEL_PALETTE_KMEANS_PRUNE_AABB;
+                    hamerly_active = 0;
+                }
+            }
             status = sixel_kmeans_prepare_bounds(&bounds, work_sample_count,
                 k, prune_policy, allocator);
             if (status != SIXEL_OK) {
@@ -3081,6 +3114,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                         bounds.lower_bounds,
                         bounds.half_center_dist);
                 }
+            } else if (aabb != NULL) {
+                objective = sixel_kmeans_assign_samples_aabb(aabb,
+                    centers, k, work_samples, work_weights, work_sample_count,
+                    membership, distance_cache, cluster_weights, accum);
             } else {
                 for (sample_index = 0U; sample_index < work_sample_count;
                         ++sample_index) {
@@ -3615,6 +3652,7 @@ end:
     if (samples != NULL) {
         sixel_allocator_free(allocator, samples);
     }
+    sixel_kmeans_aabb_free(aabb, allocator);
     sixel_weighted_point_set_dispose(&point_set);
     if (merge_sums != NULL) {
         sixel_allocator_free(allocator, merge_sums);
