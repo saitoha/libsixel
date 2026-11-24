@@ -716,7 +716,57 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #define sixel_cms_prepare_bpc ts_cms_prepare_bpc
 #define sixel_cms_apply_bpc ts_cms_apply_bpc
 #define sixel_cms_builtin_black_y ts_cms_builtin_black_y
+#define sixel_cms_adapter_layout ts_cms_adapter_layout
+#define sixel_cms_adapter_read ts_cms_adapter_read
+#define sixel_cms_adapter_write ts_cms_adapter_write
+#define sixel_cms_apply_adapter ts_cms_apply_adapter
+#define sixel_cms_builtin_legacy_pair_index ts_cms_builtin_legacy_pair_index
+#define sixel_cms_builtin_needs_ordered_pcs ts_cms_builtin_needs_ordered_pcs
+#define sixel_cms_builtin_pixel_stride ts_cms_builtin_pixel_stride
+#define sixel_cms_builtin_select_absolute ts_cms_builtin_select_absolute
+#define sixel_cms_create_adapter ts_cms_create_adapter
+#define sixel_cms_do_builtin_legacy ts_cms_do_builtin_legacy
+#define sixel_cms_do_builtin_pcs ts_cms_do_builtin_pcs
+#define sixel_cms_has_absolute_endpoint ts_cms_has_absolute_endpoint
+#define sixel_cms_has_colorspace_fallback ts_cms_has_colorspace_fallback
+#define sixel_cms_has_legacy_slot ts_cms_has_legacy_slot
+#define sixel_cms_has_matrix_trc ts_cms_has_matrix_trc
+#define sixel_cms_has_mpet ts_cms_has_mpet
+#define sixel_cms_has_prior_intent ts_cms_has_prior_intent
+#define sixel_cms_has_slot ts_cms_has_slot
+#define sixel_cms_media_white ts_cms_media_white
+#define sixel_cms_pcs_white ts_cms_pcs_white
+#define sixel_cms_profile_has_mpet ts_cms_profile_has_mpet
+#define sixel_cdef_slots ts_cdef_slots
+#define sixel_cms_builtin_pcs_candidates ts_cms_builtin_pcs_candidates
+#define sixel_cms_eval_builtin_pcs ts_cms_eval_builtin_pcs
+#define sixel_cms_pcs_to_device ts_cms_pcs_to_device
 #include "src/cms.c"
+#undef sixel_cms_pcs_to_device
+#undef sixel_cms_eval_builtin_pcs
+#undef sixel_cms_builtin_pcs_candidates
+#undef sixel_cdef_slots
+#undef sixel_cms_profile_has_mpet
+#undef sixel_cms_pcs_white
+#undef sixel_cms_media_white
+#undef sixel_cms_has_slot
+#undef sixel_cms_has_prior_intent
+#undef sixel_cms_has_mpet
+#undef sixel_cms_has_matrix_trc
+#undef sixel_cms_has_legacy_slot
+#undef sixel_cms_has_colorspace_fallback
+#undef sixel_cms_has_absolute_endpoint
+#undef sixel_cms_do_builtin_pcs
+#undef sixel_cms_do_builtin_legacy
+#undef sixel_cms_create_adapter
+#undef sixel_cms_builtin_select_absolute
+#undef sixel_cms_builtin_pixel_stride
+#undef sixel_cms_builtin_needs_ordered_pcs
+#undef sixel_cms_builtin_legacy_pair_index
+#undef sixel_cms_apply_adapter
+#undef sixel_cms_adapter_write
+#undef sixel_cms_adapter_read
+#undef sixel_cms_adapter_layout
 #undef sixel_cms_builtin_black_y
 #undef sixel_cms_apply_bpc
 #undef sixel_cms_prepare_bpc
