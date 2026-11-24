@@ -1467,20 +1467,24 @@ sixel_kmeans_find_donor(sixel_kmeans_donor_cache_t *cache,
     }
     /* Visit blocks and tiles in increasing order. Strict comparisons
      * preserve the lowest index on ties, including the zero-residual case.
-     * Build lazily because many iterations have no empty clusters. */
-    for (block = first_block; block < last_block; ++block) {
+     * Build lazily because many iterations have no empty clusters.
+     * Both ranges are nonempty: a fresh cache visits all blocks and tiles,
+     * and an incremental update visits the donor's block and tile. */
+    block = first_block;
+    do {
         begin = block * SIXEL_KMEANS_DONOR_BLOCK_SIZE;
         end = begin + SIXEL_KMEANS_DONOR_BLOCK_SIZE;
         cache->blocks[block] = sixel_kmeans_donor_scan(
             distances, begin, end < points ? end : points);
-    }
-    for (tile = first_tile; tile < last_tile; ++tile) {
+    } while (++block < last_block);
+    tile = first_tile;
+    do {
         begin = tile * SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE;
         end = begin + SIXEL_KMEANS_DONOR_BLOCKS_PER_TILE;
         cache->tiles[tile] = sixel_kmeans_donor_maximum(
             distances, cache->blocks + begin,
             (end < blocks ? end : blocks) - begin);
-    }
+    } while (++tile < last_tile);
     cache->previous = sixel_kmeans_donor_maximum(
         distances, cache->tiles, tiles);
     return cache->previous;
