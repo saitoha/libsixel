@@ -7,6 +7,7 @@
 #include "builtin_jpeg_icc_test_common.h"
 #include "tests/data/color-numeric/builtin-jpeg-icc.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 
 typedef struct {
     int fixture;

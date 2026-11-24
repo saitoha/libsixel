@@ -44,6 +44,7 @@
 #endif  /* HAVE_MATH_H */
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 /* Load the public header's integer limits before supplying a fallback. */
 #ifndef SIZE_MAX

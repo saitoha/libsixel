@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* AUTO preserves typed linear coordinates without a round trip. */
 #include <sixel.h>
+#include "src/pixelformat.h"
 int test_auto_cover_values(unsigned int, unsigned int, int, int, int);
 
 int

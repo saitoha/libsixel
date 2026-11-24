@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/loader-common.h"
+#include "src/pixelformat.h"
 #include "src/loader-manager.h"
 #include "src/cms.h"
 

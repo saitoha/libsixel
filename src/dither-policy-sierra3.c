@@ -569,7 +569,7 @@ sixel_dither_policy_sierra3_build_context(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(request->pixelformat)) {
         context->pixels_float = (float *)(void *)request->data;
     }
 

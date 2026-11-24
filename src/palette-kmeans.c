@@ -1411,7 +1411,7 @@ sixel_kmeans_seed_pca(double *centers,
         for (channel = 0U; channel < 3U; ++channel) {
             centers[bucket * 3U + channel] = sum[channel] / bucket_weight;
         }
-        if (use_reversible || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        if (use_reversible || !SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
             sixel_palette_snap_triple(&centers[bucket * 3U],
                                       use_reversible,
                                       pixelformat,
@@ -1668,7 +1668,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
      * refinement begins.
      */
     if (SIXEL_SUCCEEDED(status) &&
-            (use_reversible || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat))) {
+            (use_reversible || !SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat))) {
         for (center_index = 0U; center_index < k; ++center_index) {
             for (channel = 0U; channel < 3U; ++channel) {
                 snapped[channel]

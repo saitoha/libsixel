@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/allocator.h"
 #include "src/loader-libjpeg.h"
 #include "tests/_support/loader/chunk_test_common.h"

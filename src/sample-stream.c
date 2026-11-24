@@ -31,6 +31,8 @@
 #include <string.h>
 
 #include <sixel.h>
+#include "frame.h"
+#include "pixelformat.h"
 
 #include "sample-stream.h"
 
@@ -164,7 +166,7 @@ sixel_sample_stream_bind(
     stream->policy = policy;
     stream->source = source;
     stream->point_count = width * height;
-    stream->pixelformat = sixel_frame_get_pixelformat(frame);
+    stream->pixelformat = sixel_frame_format(frame);
     stream->colorspace = sixel_frame_get_colorspace(frame);
     return SIXEL_OK;
 }
@@ -232,7 +234,7 @@ sixel_sample_stream_refresh(sixel_sample_stream_t *stream)
     }
 
     stream->point_count = width * height;
-    stream->pixelformat = sixel_frame_get_pixelformat(stream->frame);
+    stream->pixelformat = sixel_frame_format(stream->frame);
     stream->colorspace = sixel_frame_get_colorspace(stream->frame);
     return SIXEL_OK;
 }
@@ -284,7 +286,7 @@ sixel_sample_stream_get_view(
         }
         view->pixelformat = stream->pixelformat;
         view->colorspace = stream->colorspace;
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(stream->pixelformat)) {
+        if (SIXEL_WORKFORMAT_IS_FLOAT32(stream->pixelformat)) {
             view->pixels_float32 = (float *)(void *)stream->buffer;
         } else {
             view->pixels = (unsigned char *)(void *)stream->buffer;
@@ -325,7 +327,7 @@ sixel_sample_stream_get_view(
     if (depth <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
-    input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(view->pixelformat);
+    input_is_float32 = SIXEL_WORKFORMAT_IS_FLOAT32(view->pixelformat);
     if (input_is_float32) {
         if (depth != 3 * (int)sizeof(float) ||
                 view->pixels_float32 == NULL) {

@@ -51,6 +51,7 @@
 #include "options-registry.h"
 #include "pthread-once.h"
 #include <sixel.h>
+#include "pixelformat.h"
 
 #ifndef SIZE_MAX
 # define SIZE_MAX ((size_t)-1)

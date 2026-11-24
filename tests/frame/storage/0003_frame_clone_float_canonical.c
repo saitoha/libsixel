@@ -6,6 +6,8 @@
 #include <string.h>
 #include <time.h>
 #include <sixel.h>
+#include "src/frame.h"
+#include "src/pixelformat.h"
 #include <6cells.h>
 #include "src/chunk-factory.h"
 #include "src/cms.h"
@@ -200,12 +202,14 @@ test_linear_packed_gray(int format)
     int result = EXIT_FAILURE;
 
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_borrowed(frame, width == 4 ? g2 : g4,
-            width, 1, format, NULL, -1))) {
+        SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
+            &(sixel_frame_pixels_request_t){
+                width == 4 ? g2 : g4, NULL, width, 1, format,
+                SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_U8
+            }))) {
         goto end;
     }
     iface = sixel_frame_as_interface(frame);
-    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_LINEAR);
     if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
             SIXEL_PIXELFORMAT_RGB888)) ||
         SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
@@ -256,7 +260,7 @@ test_alpha_composite(int format, int composite)
             format, NULL, -1)) &&
         SIXEL_SUCCEEDED(sixel_frame_strip_alpha(
             frame, composite ? background : NULL)) &&
-        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 &&
+        sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGB888 &&
         memcmp(sixel_frame_get_pixels(frame), expected[composite],
                sizeof(expected[0])) == 0) {
         result = EXIT_SUCCESS;
@@ -501,15 +505,17 @@ test_indexed_delivery(int format, int key, int linear, int target,
 
     memcpy(indices, pattern, sizeof(indices));
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_borrowed(frame,
-            format == SIXEL_PIXELFORMAT_PAL8 ? indices : packed, 4, 2,
-            format, palette, 2))) {
+        SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
+            &(sixel_frame_pixels_request_t){
+                format == SIXEL_PIXELFORMAT_PAL8 ? indices : packed,
+                palette, 4, 2, format,
+                linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
+                2, SIXEL_FRAME_PIXELS_U8
+            }))) {
         goto end;
     }
     iface = sixel_frame_as_interface(frame);
-    if (linear) {
-        sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_LINEAR);
-    } else {
+    if (!linear) {
         coverage.transparent = key;
         coverage.alpha_zero_is_transparent = 1;
         coverage.transparent_mask_size = sizeof(hidden);
@@ -600,9 +606,11 @@ test_linear_strip(void)
     int result = EXIT_FAILURE;
 
     if (SIXEL_SUCCEEDED(sixel_frame_new(&frame, NULL)) &&
-        SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, pixel, 1, 1,
-            SIXEL_PIXELFORMAT_RGBA8888, NULL, -1))) {
-        sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_LINEAR);
+        SIXEL_SUCCEEDED(sixel_frame_borrow_pixels(frame,
+            &(sixel_frame_pixels_request_t){
+                pixel, NULL, 1, 1, SIXEL_PIXELFORMAT_RGBA8888,
+                SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_U8
+            }))) {
         if (SIXEL_SUCCEEDED(sixel_frame_strip_alpha(frame, NULL)) &&
             sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_LINEAR &&
             SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
@@ -1073,13 +1081,16 @@ test_smptec_to_srgb(int byte_source, int target)
     int c;
 
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_borrowed(frame,
-            byte_source ? (void *)bytes : (void *)pixel, 1, 1,
-            byte_source ? SIXEL_PIXELFORMAT_RGB888 :
-                          SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1))) {
+        SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
+            &(sixel_frame_pixels_request_t){
+                byte_source ? (void *)bytes : (void *)pixel, NULL, 1, 1,
+                byte_source ? SIXEL_PIXELFORMAT_RGB888 :
+                              SIXEL_PIXELFORMAT_RGBFLOAT32,
+                SIXEL_COLORSPACE_SMPTEC, -1,
+                byte_source ? SIXEL_FRAME_PIXELS_U8 : SIXEL_FRAME_PIXELS_FLOAT32
+            }))) {
         goto end;
     }
-    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_SMPTEC);
     iface = sixel_frame_as_interface(frame);
     if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface, target)) ||
         SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
@@ -1355,7 +1366,7 @@ test_packed_rgb_swap(int bits)
         SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 2, 1,
             source, NULL, -1)) &&
         SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame, target)) &&
-        sixel_frame_get_pixelformat(frame) == target &&
+        sixel_frame_format(frame) == target &&
         memcmp(input, original, sizeof(input)) == 0 &&
         memcmp(sixel_frame_get_pixels(frame), swapped, sizeof(swapped)) == 0 &&
         SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame, source)) &&
@@ -1407,7 +1418,7 @@ test_packed_rgb_matrix(void)
                     formats[source], NULL, -1) != SIXEL_OK ||
                 sixel_frame_set_pixelformat(frame, formats[target])
                     != SIXEL_OK ||
-                sixel_frame_get_pixelformat(frame) != formats[target] ||
+                sixel_frame_format(frame) != formats[target] ||
                 memcmp(sixel_frame_get_pixels(frame), expected,
                        (size_t)width) != 0) {
                 fprintf(stderr, "packed RGB layouts %d to %d\n",
@@ -1434,7 +1445,7 @@ test_packed_rgb_reject(void)
             SIXEL_PIXELFORMAT_G8, NULL, -1) == SIXEL_OK &&
         SIXEL_FAILED(sixel_frame_set_pixelformat(frame,
             SIXEL_PIXELFORMAT_BGR565)) &&
-        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_G8 &&
+        sixel_frame_format(frame) == SIXEL_PIXELFORMAT_G8 &&
         sixel_frame_get_pixels(frame) == gray &&
         gray[0] == 128 && gray[1] == 128;
     sixel_frame_unref(frame);
@@ -1930,6 +1941,17 @@ test_rgbf32_public_retry(void)
             !sixel_cdef_same_rgb(view.rgb_definition, gamma)) {
         goto end;
     }
+    /* Internal opponent coordinates share the public float storage layout. */
+    if (SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
+                &(sixel_frame_pixels_request_t){
+                    gray, NULL, 1, 1, SIXEL_PIXELFORMAT_RGBFLOAT32,
+                    SIXEL_COLORSPACE_OKLAB, -1, SIXEL_FRAME_PIXELS_FLOAT32
+                })) ||
+            sixel_frame_get_pixelformat(frame) !=
+                SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+            sixel_frame_format(frame) != SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+        goto end;
+    }
     result = EXIT_SUCCESS;
 end:
     sixel_color_def_free(gamma);
@@ -2078,14 +2100,16 @@ test_linear_unpack(int format, int bits)
     rows[0] = (unsigned char)(1 << (8 - 2 * bits));
     rows[1] = (unsigned char)(1 << (8 - bits));
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_borrowed(frame, rows, 2, 2, format,
-                                               palette, 2))) {
+        SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
+            &(sixel_frame_pixels_request_t){
+                rows, palette, 2, 2, format, SIXEL_COLORSPACE_LINEAR,
+                2, SIXEL_FRAME_PIXELS_U8
+            }))) {
         goto end;
     }
-    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_LINEAR);
     if (SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
             SIXEL_PIXELFORMAT_PAL8)) &&
-        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_PAL8 &&
+        sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL8 &&
         sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_LINEAR &&
         sixel_frame_get_palette(frame) == palette &&
         memcmp(sixel_frame_get_pixels(frame), expected, 4) == 0 &&
@@ -2124,7 +2148,7 @@ test_float_bgr(int profile)
     }
     if (SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
             SIXEL_PIXELFORMAT_BGR888)) &&
-        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_BGR888 &&
+        sixel_frame_format(frame) == SIXEL_PIXELFORMAT_BGR888 &&
         memcmp(sixel_frame_get_pixels(frame), expected, sizeof(expected)) == 0
         && sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA) {
         result = EXIT_SUCCESS;
@@ -2247,7 +2271,7 @@ test_byte_bgr(int indexed)
             SIXEL_PIXELFORMAT_RGB888, indexed ? rgb : NULL, indexed ? 2 : -1))
         && SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
             SIXEL_PIXELFORMAT_BGR888)) &&
-        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_BGR888 &&
+        sixel_frame_format(frame) == SIXEL_PIXELFORMAT_BGR888 &&
         memcmp(sixel_frame_get_pixels(frame), expected, sizeof(expected)) == 0
         && memcmp(rgb, original, sizeof(rgb)) == 0;
     sixel_frame_unref(frame);

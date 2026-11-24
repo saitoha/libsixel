@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "tests/data/color-numeric/p3-palette.h"
 
 typedef struct p3_capture {

@@ -53,6 +53,7 @@
 #endif
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "cpu.h"
 #include "timeline-logger.h"

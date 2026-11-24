@@ -6,6 +6,7 @@
 #include <math.h>
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/loader-common.h"
+#include "src/pixelformat.h"
 
 #if HAVE_WEBP
 static double

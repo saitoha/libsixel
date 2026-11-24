@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/encoder.h"
+#include "src/frame.h"
 #include "src/dither.h"
 #include "src/palette.h"
 #include "playback_test_common.h"
@@ -208,7 +209,7 @@ feature_selected(void *context, uint64_t sequence,
                 state->encoder->sixdelta_error_mode);
             status = sixel_encode(sixel_frame_get_pixels(frame),
                 FEATURE_WIDTH, FEATURE_HEIGHT,
-                sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame)),
+                sixel_helper_compute_depth(sixel_frame_format(frame)),
                 copy, output);
         }
         state->failed |= status != SIXEL_OK || frame == NULL;

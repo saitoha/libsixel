@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/colorspace.h"
+#include "src/pixelformat.h"
 #include "src/frame-private.h"
 #include "src/loader.h"
 
@@ -92,7 +93,7 @@ output_bpc_check_float(sixel_frame_t *frame, void *context)
     if (test->enabled) {
         history |= SIXEL_FRAME_CMS_OUTPUT_BPC;
     }
-    if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
         || frame->cms_history != history
         || sixel_frame_get_width(frame) != 6
         || sixel_frame_get_height(frame) != 1) {

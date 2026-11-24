@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/frame-private.h"
 #include "src/loader.h"
 #include "src/loader-manager.h"
@@ -53,10 +54,10 @@ tiff_numeric_capture(sixel_frame_t *frame, void *context)
     space = probe->managed ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA;
     if (frame->width != color_tiff_cases[fixture].width ||
         frame->height != color_tiff_cases[fixture].height ||
-        sixel_frame_get_pixelformat(frame) != format ||
+        sixel_frame_format(frame) != format ||
         frame->format.coordinates != space || frame->transparent_mask != NULL) {
         fprintf(stderr, "TIFF frame %dx%d format=%x space=%d\n",
-            frame->width, frame->height, sixel_frame_get_pixelformat(frame),
+            frame->width, frame->height, sixel_frame_format(frame),
             frame->format.coordinates);
         return SIXEL_BAD_INPUT;
     }

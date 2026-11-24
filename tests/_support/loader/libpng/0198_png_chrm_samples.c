@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/factory.h"
 #include "src/frame-private.h"
 #include "src/loader.h"

@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/frame-private.h"
 #include "src/loader.h"
 #include "src/loader-manager.h"
@@ -31,7 +32,7 @@ cms_input_frame_capture(sixel_frame_t *frame, void *context)
     state = context;
     ++state->calls;
     if (frame->width != 16 || frame->height != 16 ||
-        sixel_frame_get_pixelformat(frame) !=
+        sixel_frame_format(frame) !=
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
         frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
         return SIXEL_BAD_INPUT;

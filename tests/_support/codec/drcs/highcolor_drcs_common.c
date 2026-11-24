@@ -14,6 +14,7 @@
 #include <unistd.h>
 #endif
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/encoder.h"
 #include "src/dither.h"
 #include "src/output.h"
@@ -335,7 +336,7 @@ test_highcolor_drcs(int mode)
             if (SIXEL_FAILED(status) || dither == NULL ||
                     (mode == 4 ?
                         dither->pixelformat != SIXEL_PIXELFORMAT_RGB888 :
-                        !SIXEL_PIXELFORMAT_IS_FLOAT32(dither->pixelformat)) ||
+                        !SIXEL_WORKFORMAT_IS_FLOAT32(dither->pixelformat)) ||
                     !hd_check(&capture, mode, !encoder->fdrcs,
                         width, height, expected)) {
                 goto end;

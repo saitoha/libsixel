@@ -10,9 +10,9 @@ This document explains the storage contract and the operations that can promote 
 
 `RGB888` stores red, green, and blue as integers from 0 through 255. It occupies three bytes per pixel, before stride, alignment, ownership metadata, and any concurrent buffers are counted. The name means 8 bits per channel, not 8 bits per complete pixel.
 
-The float32 family stores three 32-bit floating-point channels and therefore occupies twelve bytes per pixel under the same simplifying assumptions. The format name also identifies the coordinates:
+A float triplet stores three 32-bit floating-point channels and occupies twelve bytes per pixel under the same simplifying assumptions. The public frame layout is `RGBFLOAT32`. The coordinates are tracked separately. Planner diagnostics describe the working representation using the following names:
 
-| Pixel format | Storage | Color-space interpretation |
+| Working representation | Storage | Color-space interpretation |
 | --- | --- | --- |
 | `RGB888` | 3 x unsigned 8-bit | gamma-encoded sRGB |
 | `RGBFLOAT32` (`rgb-f32` in planner diagnostics) | 3 x float32 | gamma-encoded sRGB |

@@ -1,6 +1,7 @@
 /* Fix representative Lab32 ZIP-prediction conversion samples. */
 
 #include "loader_builtin_memory_test_common.h"
+#include "src/pixelformat.h"
 
 int
 test_loader_0153_loader_builtin_psd_lab32_zip_pred_numeric(int argc,

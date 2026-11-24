@@ -185,7 +185,7 @@ sixel_filter_gradient_build_luma_map(
         return SIXEL_BAD_ALLOCATION;
     }
 
-    source_pixelformat = sixel_frame_get_pixelformat(frame);
+    source_pixelformat = sixel_frame_format(frame);
     status = sixel_helper_normalize_pixelformat(normalized,
                                                 &normalized_pixelformat,
                                                 sixel_frame_get_pixels(frame),

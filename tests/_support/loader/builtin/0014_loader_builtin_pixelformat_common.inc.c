@@ -139,7 +139,7 @@ capture_hdr_numeric_probe(sixel_frame_t *frame, void *data)
     }
 
     context->callback_count += 1;
-    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->pixelformat = sixel_frame_format(frame);
     context->colorspace = sixel_frame_get_colorspace(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
@@ -147,7 +147,7 @@ capture_hdr_numeric_probe(sixel_frame_t *frame, void *data)
     context->first_pixel[1] = 0.0f;
     context->first_pixel[2] = 0.0f;
 
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(context->pixelformat) ||
+    if (!SIXEL_WORKFORMAT_IS_FLOAT32(context->pixelformat) ||
         context->width <= 0 ||
         context->height <= 0) {
         return SIXEL_OK;

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/frame-private.h"
 #include "src/loader.h"
 #include "src/loader-manager.h"
@@ -55,7 +56,7 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
 
     probe = (png_numeric_t *)context;
     ++probe->calls;
-    format = sixel_frame_get_pixelformat(frame);
+    format = sixel_frame_format(frame);
     channels = sixel_helper_compute_depth(format);
     bytes = sixel_frame_get_pixels(frame);
     pixels = (float const *)bytes;
@@ -116,7 +117,7 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
             return SIXEL_BAD_INPUT;
         }
         for (c = 0; c < 3; ++c) {
-            if (SIXEL_PIXELFORMAT_IS_FLOAT32(format)) {
+            if (SIXEL_WORKFORMAT_IS_FLOAT32(format)) {
                 actual = pixels[p * 3 + c];
             } else {
                 actual = bytes[p * channels + c] / 255.0;

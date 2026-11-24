@@ -27,6 +27,8 @@ The implementation may reuse storage, clone only the palette-building view, or s
 
 C callers can initialize tightly packed RGB float samples with `sixel_frame_init_rgbf32_borrowed()` and an explicit definition from `sixel_color_def_new_named()` or `sixel_color_def_new_icc()`. Initialization borrows mutable pixel storage and copies the definition, so the caller may free the definition immediately while retaining the pixels until the frame is reset or released. The definition describes the supplied samples, and the encoder converts them when a subsequent stage requires different coordinates.
 
+`sixel_frame_get_pixelformat()` exposes the storage layout. Float triplets share `SIXEL_PIXELFORMAT_RGBFLOAT32`, while the frame retains the coordinates separately for operations that interpret the samples. Callers supplying already encoded or linear RGB samples specify the matching color definition at initialization.
+
 ## Lazy conversion at operation boundaries
 
 Float-buffer conversion may reuse exact promoted-byte sRGB transfer values and previously converted triplets within each worker chunk. These are exact arithmetic caches: they do not snap coordinates, approximate cube roots, or change failure publication. The [float conversion arithmetic contract](../../concepts/pixelformat-precision/README.md#float-conversion-arithmetic) defines their scope and equivalence coverage.
@@ -36,8 +38,8 @@ Here, "lazy" means converting when a consuming operation needs different coordin
 | Trigger | Why conversion occurs | Where it happens |
 | --- | --- | --- |
 | A loader applies a recognized source profile | Source device values must acquire a known interpretation. | Loader CMS connects through the profile transform and produces the effective `cms_target` representation, subject to loader precision/path rules. |
-| A loader takes a linear-light background-composition path | Foreground and background must share a linear basis before weighted addition. | Composition happens during loading; the returned frame can already be `LINEARRGBFLOAT32`. |
-| Default resize processing is requested | Resampling combines contributions from multiple source pixels. | The planner requests `LINEARRGBFLOAT32` before resize and the effective working format afterward. |
+| A loader takes a linear-light background-composition path | Foreground and background must share a linear basis before weighted addition. | Composition happens during loading; the returned float frame can already contain linear RGB. |
+| Default resize processing is requested | Resampling combines contributions from multiple source pixels. | The planner requests a linear RGB float buffer before resize and the effective working representation afterward. |
 | `-X` or `-W` requires different coordinates | Palette decisions need the selected geometry, even without composition or resize. | Conversion affects the palette-building view or main work view respectively. |
 | Final palette coordinates differ from `-U` | The serialized RGB numbers must have the requested output interpretation. | The final palette entries are converted before writing; this does not require converting all image pixels back to output RGB. |
 

@@ -37,6 +37,7 @@
 #include <float.h>
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "colorspace.h"
 #include "cpu.h"
@@ -2846,7 +2847,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
     loader_timeline_optional_mark("post/colorspace");
 
     /* Float conversion uses its own exact promoted grid, not byte LUTs. */
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         return sixel_convert_pixels_via_linear_float((float *)pixels,
                                                      size,
                                                      colorspace_src,

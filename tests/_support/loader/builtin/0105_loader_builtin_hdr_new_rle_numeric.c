@@ -1,6 +1,7 @@
 /* Verify Radiance component RLE produces exact linear float samples. */
 
 #include <stdio.h>
+#include "src/pixelformat.h"
 #include <string.h>
 
 #include "loader_builtin_memory_test_common.h"

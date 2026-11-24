@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 #include <float.h>
+#include "src/pixelformat.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>

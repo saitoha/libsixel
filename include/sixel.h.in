@@ -240,10 +240,6 @@ typedef int SIXELSTATUS;
 #define SIXEL_PIXELFORMAT_XBGR8888 (SIXEL_FORMATTYPE_COLOR | 0x16) /* 32bpp */
 #define SIXEL_PIXELFORMAT_BGRX8888 (SIXEL_FORMATTYPE_COLOR | 0x17) /* 32bpp */
 #define SIXEL_PIXELFORMAT_RGBFLOAT32 (SIXEL_FORMATTYPE_COLOR   | 0x20) /* 96bpp float */
-#define SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x21)
-#define SIXEL_PIXELFORMAT_OKLABFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x22)
-#define SIXEL_PIXELFORMAT_CIELABFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x23)
-#define SIXEL_PIXELFORMAT_DIN99DFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x24)
 #define SIXEL_PIXELFORMAT_G1       (SIXEL_FORMATTYPE_GRAYSCALE | 0x00) /* 1bpp grayscale */
 #define SIXEL_PIXELFORMAT_G2       (SIXEL_FORMATTYPE_GRAYSCALE | 0x01) /* 2bpp grayscale */
 #define SIXEL_PIXELFORMAT_G4       (SIXEL_FORMATTYPE_GRAYSCALE | 0x02) /* 4bpp grayscale */
@@ -280,11 +276,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_RES_LANCZOS4         9   /* Use lanczos-4 filter */
 
 #define SIXEL_PIXELFORMAT_IS_FLOAT32(fmt) \
-    ((fmt) == SIXEL_PIXELFORMAT_RGBFLOAT32 || \
-     (fmt) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 || \
-     (fmt) == SIXEL_PIXELFORMAT_OKLABFLOAT32 || \
-     (fmt) == SIXEL_PIXELFORMAT_CIELABFLOAT32 || \
-     (fmt) == SIXEL_PIXELFORMAT_DIN99DFLOAT32)
+    ((fmt) == SIXEL_PIXELFORMAT_RGBFLOAT32)
 
 /* image format */
 #define SIXEL_FORMAT_GIF           0x0 /* read only */
@@ -1842,7 +1834,7 @@ sixel_frame_set_ncolors(
     sixel_frame_t /* in */ *frame,
     int            /* in */ ncolors);
 
-/* get pixelformat */
+/* Get the storage layout. All float triplets report RGBFLOAT32. */
 SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
 
@@ -1855,12 +1847,6 @@ sixel_frame_set_pixelformat(
 /* get colorspace */
 SIXELAPI int
 sixel_frame_get_colorspace(sixel_frame_t /* in */ *frame);  /* frame object */
-
-/* set colorspace */
-SIXELAPI void
-sixel_frame_set_colorspace(
-    sixel_frame_t /* in */ *frame,
-    int            /* in */ colorspace);
 
 /* get transparent */
 SIXELAPI int

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/filter-factory.h"
+#include "src/pixelformat.h"
 #include "src/filter-palette-colors.h"
 #include "src/filter-binning.h"
 #include "filter_test_common.h"

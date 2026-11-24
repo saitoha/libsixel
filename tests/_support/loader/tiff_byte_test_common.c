@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/colorspace.h"
 #include "src/loader.h"
 #include "tests/data/color-numeric/tiff-byte.h"

@@ -4,6 +4,7 @@
  * Fixed display-color expectations use an independent scalar HSV/sRGB
  * oracle; they never call the production renderer or a CMM. */
 #include <math.h>
+#include "src/pixelformat.h"
 #include <stdio.h>
 #include <string.h>
 #include "loader_builtin_memory_test_common.h"

@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "tests/_support/loader/chunk_test_common.h"
 #include "src/frompng.h"
 #include "src/loader-builtin.h"
@@ -416,7 +417,7 @@ test_loader_0193_png_metadata_failures(int argc, char **argv)
     }
     pixels = sixel_frame_get_pixels(frame);
     if (pmfi_mode == 1) {
-        if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 ||
+        if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGB888 ||
             sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_GAMMA) {
             goto cleanup;
         }
@@ -428,7 +429,7 @@ test_loader_0193_png_metadata_failures(int argc, char **argv)
             }
         }
     } else {
-        if (sixel_frame_get_pixelformat(frame) !=
+        if (sixel_frame_format(frame) !=
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
             sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_LINEAR) {
             goto cleanup;

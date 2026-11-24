@@ -11796,7 +11796,7 @@ build_palette_kmedoids(unsigned char **result,
     }
 
     input_is_float32 = (treat_input_as_float32
-                        && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
+                        && SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat));
     if (input_is_float32) {
         for (channel = 0u; channel < 3u; ++channel) {
             float_minimum = sixel_pixelformat_float_channel_min(

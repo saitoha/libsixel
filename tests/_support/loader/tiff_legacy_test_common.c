@@ -368,7 +368,7 @@ lc_strip(sixel_frame_t *frame, unsigned char *background)
 
     ++lc.endpoints;
     pixels = sixel_frame_get_pixels(frame);
-    lc.ok &= sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGBA8888;
+    lc.ok &= sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGBA8888;
     for (i = 0u; i < lc.n && lc.ok; ++i) {
         for (channel = 0u; channel < 4u; ++channel) {
             lc.ok &= pixels[i * 4u + channel] ==

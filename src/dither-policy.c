@@ -27,6 +27,7 @@
 #endif
 
 #include "dither-policy.h"
+#include "pixelformat.h"
 
 
 static char const g_dither_policy_name_none_8bit[] = "dither/none.8bit";
@@ -77,7 +78,7 @@ sixel_dither_policy_select_prefers_float32(
         return 0;
     }
 
-    return SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
+    return SIXEL_WORKFORMAT_IS_FLOAT32(request->pixelformat);
 }
 
 char const *

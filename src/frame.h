@@ -41,6 +41,15 @@ extern "C" {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_factory_new(sixel_allocator_t *allocator, void **object);
 
+/* Project the layout and coordinates for internal working-buffer consumers. */
+SIXEL_INTERNAL_API int
+sixel_frame_format(sixel_frame_t const *frame);
+
+/* Borrow native samples whose layout and coordinates are known separately. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_borrow_pixels(sixel_frame_t *frame,
+                         sixel_frame_pixels_request_t const *request);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1499,7 +1499,7 @@ sixel_filter_sample_copy_frame(
         return SIXEL_BAD_ARGUMENT;
     }
     frame_if = sixel_frame_as_interface(frame);
-    src_pixelformat = sixel_frame_get_pixelformat(frame);
+    src_pixelformat = sixel_frame_format(frame);
     if ((src_pixelformat & SIXEL_FORMATTYPE_PALETTE)) {
         /*
          * Sampling must not mutate the loader frame, because preprocessing
@@ -1753,7 +1753,7 @@ sixel_filter_sample_copy_frame(
     pixels_request.colorspace = source_view.rgb_definition != NULL
         ? -1 : source_view.colorspace;
     pixels_request.ncolors = (-1);
-    pixels_request.kind = SIXEL_PIXELFORMAT_IS_FLOAT32(src_pixelformat)
+    pixels_request.kind = SIXEL_WORKFORMAT_IS_FLOAT32(src_pixelformat)
         ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
 
     status = sample_vtbl->init_pixels(sample_if, &pixels_request);

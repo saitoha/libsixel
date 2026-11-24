@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 #include "src/frame.h"
 
@@ -93,7 +94,7 @@ frame_float_request_fails(void)
         status = SIXEL_LOGIC_ERROR;
         goto end;
     }
-    if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGB888 ||
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGB888 ||
             sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_GAMMA) {
         status = SIXEL_LOGIC_ERROR;
         goto end;

@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "filter-palette-colors.h"
+#include "pixelformat.h"
 #include "frame-normalize.h"
 #include "sample-statistics.h"
 #include "loader-common.h"
@@ -153,7 +154,7 @@ sixel_filter_palette_colors_apply(sixel_filter_t *filter,
         count = samples_out->point_count;
         colorspace = samples_out->colorspace;
         byte_coordinates =
-            !SIXEL_PIXELFORMAT_IS_FLOAT32(samples_out->pixelformat);
+            !SIXEL_WORKFORMAT_IS_FLOAT32(samples_out->pixelformat);
     }
     if (config->collect_statistics) {
         status = sixel_sample_statistics_new(&statistics,

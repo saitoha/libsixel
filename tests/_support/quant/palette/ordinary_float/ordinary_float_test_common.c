@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Ordinary generate() must preserve coordinates without native admission. */
 #include "ordinary_float_test_common.h"
+#include "src/pixelformat.h"
 
 static int ordinary_fail_next;
 static int ordinary_fail_hits;
@@ -95,7 +96,7 @@ ordinary_build_rep(sixel_palette_t *palette, void *pixels, unsigned int count,
     memset(attempt, 0, sizeof(*attempt));
     request.data = pixels;
     request.length = count * 3u *
-        (SIXEL_PIXELFORMAT_IS_FLOAT32(format) ? sizeof(float) : 1u);
+        (SIXEL_WORKFORMAT_IS_FLOAT32(format) ? sizeof(float) : 1u);
     request.pixelformat = format;
     request.requested_colors = colors;
     request.method_for_rep = representative;

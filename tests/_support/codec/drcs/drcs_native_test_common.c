@@ -14,6 +14,7 @@
 #include <unistd.h>
 #endif
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/encoder.h"
 #include "src/dither.h"
 #include "src/palette.h"

@@ -74,7 +74,7 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
     int source_stride;
     int byte_format;
 
-    source_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
+    source_float = SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat);
     target_float = dither->method_for_diffuse == SIXEL_DIFFUSE_NONE;
     source_stride = source_float ? (int)sizeof(sample) : 3;
     *stride = target_float ? (int)sizeof(sample) : 3;
@@ -912,7 +912,7 @@ sixel_encode_highcolor(
     stride = 3;
     use_float = 0;
     if (pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
-            !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            !SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         /* normalize pixelformat */
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(
             dither->allocator,
@@ -933,7 +933,7 @@ sixel_encode_highcolor(
         pixels = normalized_pixels;
     }
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat) ||
             output->source_colorspace != output->colorspace ||
             dither->highcolor_output_definition !=
                 SIXEL_PALETTE_OUTPUT_LEGACY) {

@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/encoder.h"
+#include "src/frame.h"
+#include "src/pixelformat.h"
 #include "playback_test_common.h"
 #include "reserved_palette_test_common.h"
 
@@ -300,7 +302,7 @@ reserved_palette_test(int scenario)
         failed = 0;
     }
     for (i = 0; i < 4 && scenario == 6; ++i) {
-        if (sixel_frame_get_pixelformat(retained[i]) !=
+        if (sixel_frame_format(retained[i]) !=
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
                 memcmp(original, sixel_frame_get_pixels(retained[i]),
                     sizeof(original)) != 0) {

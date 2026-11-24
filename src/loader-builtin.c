@@ -6088,7 +6088,7 @@ sixel_builtin_load_psd_single_frame(
             psd_pixelformat,
             psd_colorspace,
             -1,
-            SIXEL_PIXELFORMAT_IS_FLOAT32(psd_pixelformat)
+            SIXEL_WORKFORMAT_IS_FLOAT32(psd_pixelformat)
             ? SIXEL_FRAME_PIXELS_FLOAT32
             : SIXEL_FRAME_PIXELS_U8
         });
@@ -7060,7 +7060,7 @@ sixel_builtin_load_with_builtin_impl(
                 pnm_pixelformat,
                 -1,
                 frame->ncolors,
-                SIXEL_PIXELFORMAT_IS_FLOAT32(pnm_pixelformat)
+                SIXEL_WORKFORMAT_IS_FLOAT32(pnm_pixelformat)
                 ? SIXEL_FRAME_PIXELS_FLOAT32
                 : SIXEL_FRAME_PIXELS_U8
             });

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/dither.h"
+#include "src/pixelformat.h"
 #include "dither-policy-private.h"
 #include "src/lookup-policy.h"
 #include "src/encoder.h"

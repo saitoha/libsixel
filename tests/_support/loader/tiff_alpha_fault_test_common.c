@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/icc-apply.h"
 #include "src/loader-libtiff.h"
 #include "src/loader-common.h"

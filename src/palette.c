@@ -651,12 +651,12 @@ sixel_palette_apply_typed_engine(sixel_palette_t *palette,
     sixel_palette_quant_engine_t const *engine;
 
     if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS &&
-            SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         /* Byte lookup caches cannot represent the Lloyd float coordinates. */
         SIXEL_PALETTE_CONTEXT(palette)->lut_policy = SIXEL_LUT_POLICY_NONE;
     }
     engine = sixel_palette_quant_engine_lookup(quantize_model,
-        SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
+        SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat));
     if (engine == NULL) {
         return SIXEL_LOGIC_ERROR;
     }
@@ -1415,7 +1415,7 @@ sixel_palette_generate_internal(
         }
         /* FORCE must survive the byte dispatcher as well: trying another
          * CPU quantizer here would hide the selected GPU stage's failure. */
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat) ||
+        if (SIXEL_WORKFORMAT_IS_FLOAT32(request->pixelformat) ||
                 (context.gpu_policy == SIXEL_GPU_POLICY_FORCE &&
                  sixel_get_kmeans_backend() !=
                     SIXEL_PALETTE_KMEANS_BACKEND_CPU)) {
@@ -1432,7 +1432,7 @@ sixel_palette_generate_internal(
             depth = (unsigned int)storage->depth;
             goto success;
         }
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+        if (SIXEL_WORKFORMAT_IS_FLOAT32(request->pixelformat)) {
             /* Preserve the original failure and the requested numeric type. */
             goto end;
         }
@@ -1447,7 +1447,7 @@ sixel_palette_generate_internal(
             depth = (unsigned int)storage->depth;
             goto success;
         }
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+        if (SIXEL_WORKFORMAT_IS_FLOAT32(request->pixelformat)) {
             /* Preserve the original failure and the requested numeric type. */
             goto end;
         }
@@ -1719,7 +1719,7 @@ sixel_palette_generate_extended(
                  SIXEL_FINAL_MERGE_NONE &&
              sixel_resolve_final_merge_mode(request->final_merge_mode) !=
                  SIXEL_FINAL_MERGE_WARD) ||
-            !SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+            !SIXEL_WORKFORMAT_IS_FLOAT32(request->pixelformat)) {
         return SIXEL_BAD_ARGUMENT;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);

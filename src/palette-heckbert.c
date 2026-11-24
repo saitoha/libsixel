@@ -219,7 +219,7 @@ sixel_palette_reversible_tuple(sample *tuple_values,
         components[plane] = 0.0;
     }
     for (plane = 0U; plane < depth && plane < 3U; ++plane) {
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
             /* Typed histograms use zero-origin, nominal-span scaling. */
             components[plane] = tuple_values[plane] / 255.0
                 * sixel_pixelformat_float_channel_range(
@@ -233,7 +233,7 @@ sixel_palette_reversible_tuple(sample *tuple_values,
                               pixelformat,
                               SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
     for (plane = 0U; plane < depth && plane < 3U; ++plane) {
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
             tuple_values[plane] = components[plane] * 255.0
                 / sixel_pixelformat_float_channel_range(
                     pixelformat, (int)plane);
@@ -682,7 +682,7 @@ sixel_lut_build_histogram(unsigned char const *data,
     }
 
     channel_stride = pixel_stride / depth;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) || channel_stride != 1U) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat) || channel_stride != 1U) {
         sixel_helper_set_additional_message(
             "sixel_lut_build_histogram: requires byte input.");
         return SIXEL_BAD_ARGUMENT;
@@ -1796,7 +1796,7 @@ sixel_heckbert_axis_weights(int pixelformat, int method,
     }
     maximum = 0.0;
     for (plane = 0U; plane < 3U; ++plane) {
-        ranges[plane] = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+        ranges[plane] = SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)
             ? sixel_pixelformat_float_channel_range(pixelformat, (int)plane)
             : 1.0;
         if (options != NULL && options->weights[0] > 0.0) {
@@ -4348,7 +4348,7 @@ sixel_heckbert_native_histogram(unsigned char const *data,
     struct tupleint *entry;
 
     histogram->preserve_extended = 1;
-    if (data == NULL || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
+    if (data == NULL || !SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat) ||
             sixel_helper_compute_depth(pixelformat) != 3 * sizeof(float) ||
             length == 0U || length % (3U * sizeof(float)) != 0U) {
         return SIXEL_BAD_ARGUMENT;
@@ -4475,7 +4475,7 @@ sixel_palette_heckbert_colormap(
 
     colormapP->size = 0U;
     colormapP->table = NULL;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         status = sixel_heckbert_native_histogram(data, length, pixelformat,
                                                 &colorfreqtable, allocator);
     } else {
@@ -4656,7 +4656,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     }
     pixel_stride = (unsigned int)depth_result;
     bytes_per_channel = 1U;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         bytes_per_channel = (unsigned int)sizeof(float);
     }
     if (pixel_stride == 0U || bytes_per_channel == 0U
@@ -4677,7 +4677,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     colormap.size = 0U;
     colormap.table = NULL;
     origcolors = 0U;
-    input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
+    input_is_float32 = SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat);
     float_entries = NULL;
     float_stride = 0;
     reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;
@@ -4863,7 +4863,7 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
                                      char const *engine_name,
                                      sixel_palette_telemetry_t *telemetry)
 {
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (!SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         sixel_helper_set_additional_message(
             "sixel_palette_build_heckbert_float32: "
             "requires RGBFLOAT32 input.");

@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
+#include "src/pixelformat.h"
 #include "tests/data/color-numeric/frame-byte.h"
 
 static int
@@ -145,14 +147,14 @@ precision_frame_samples(int mode, int linear)
         expected_format = mode == 3 ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
                                      SIXEL_PIXELFORMAT_RGBFLOAT32;
         if (SIXEL_FAILED(status) || count == 0 ||
-            sixel_frame_get_pixelformat(frame) != expected_format ||
+            sixel_frame_format(frame) != expected_format ||
             sixel_frame_get_colorspace(frame) !=
                 (mode == 3 ? SIXEL_COLORSPACE_LINEAR :
                              SIXEL_COLORSPACE_GAMMA) ||
             sixel_frame_get_width(frame) != (mode >= 4 ? 2 : 4) ||
             sixel_frame_get_height(frame) != (mode >= 4 ? 1 : 2)) {
             fprintf(stderr, "mode=%d linear=%d status=%x got=%x expected=%x\n",
-                mode, linear, status, sixel_frame_get_pixelformat(frame),
+                mode, linear, status, sixel_frame_format(frame),
                 expected_format);
             failed = 1;
         } else {

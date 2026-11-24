@@ -3,6 +3,7 @@
 #define SIXEL_TEST_GAMUT_ENCODE_COMMON_H
 
 #include "gamut_test_common.h"
+#include "src/pixelformat.h"
 #include "tests/data/color-numeric/edge-reference.h"
 #include "tests/data/color-numeric/ray-reference.h"
 

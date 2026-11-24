@@ -54,6 +54,7 @@
 #endif  /* SIXEL_WRITER_USE_LIBPNG */
 
 #include <sixel.h>
+#include "pixelformat.h"
 #include "stdio_stub.h"
 #include "timeline-logger.h"
 #include "writer.h"

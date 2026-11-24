@@ -24,6 +24,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #include "simd-config.h"
+#include "frame.h"
 #endif
 
 /* STDC_HEADERS */
@@ -3915,7 +3916,7 @@ sixel_decoder_decode(
                 sy = sixel_frame_get_height(frame);
                 output_pixels = sixel_frame_get_pixels(frame);
                 output_palette = NULL;
-                output_pixelformat = sixel_frame_get_pixelformat(frame);
+                output_pixelformat = sixel_frame_format(frame);
             }
         }
     }

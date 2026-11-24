@@ -28,6 +28,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include "filter-gamut.h"
+#include "pixelformat.h"
 
 /* This component has no geometry or color-conversion side effects. It maps
  * only the visible samples of an owned application or palette-sample plane.
@@ -58,7 +59,7 @@ sixel_filter_gamut_apply(sixel_filter_t *filter,
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat) ||
+    if (!SIXEL_WORKFORMAT_IS_FLOAT32(view.pixelformat) ||
             view.pixels_float32 == NULL || view.width <= 0 ||
             view.height <= 0 || (size_t)view.width >
                 SIZE_MAX / (size_t)view.height) {

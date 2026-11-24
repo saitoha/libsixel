@@ -154,6 +154,10 @@ set -- \
     color/icc/0134_mpet_nonrelative_gamut.t \
     color/icc/0135_builtin_png_extended_trc.t \
     color/icc/0136_libpng_png_extended_trc.t \
+    color/gamut/0063_pipeline_minde_linear_b2.t \
+    color/gamut/0064_pipeline_failure.t \
+    color/gamut/0067_pipeline_mask.t \
+    color/gamut/0072_pipeline_minde_oklab_b2.t \
     decoder/parser/0106_normal_columns_wide_fallback.t \
     encoder/pipeline/0124_encode_bytes_g1_levels.t \
     encoder/pipeline/0125_encode_bytes_g2_levels.t \
@@ -272,6 +276,7 @@ set -- \
     loader-tiff/color-transform/0023_logluv_stonits_scale.t \
     loader/webp/0175_lossless_alpha_linear_output.t \
     frame/resize/0177_profile_byte_resize_retry.t \
+    palette/sampling/0027_sample_stream.t \
     palette/sampling/0111_profiled_grid.t \
     palette/sampling/0112_indexed_default_capacity.t \
     palette/output-color/0103_profile_reuse.t \

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/dither.h"
 
 /* A countdown spans both construction and output-cache allocation. */

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/loader.h"
 #include "tests/data/color-numeric/tiff-managed.h"
 #include "tiff_managed_test_common.h"

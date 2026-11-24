@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
+#include "src/pixelformat.h"
 #include "src/colorspace.h"
 #include "src/compat_stub.h"
 #include "src/threading.h"
@@ -46,7 +48,7 @@ parallel_convert(float *pixels, int src, int dst, int frame_api)
         status = sixel_frame_set_pixelformat(frame, parallel_formats[dst]);
     }
     if (SIXEL_FAILED(status) && frame != NULL &&
-            (sixel_frame_get_pixelformat(frame) != parallel_formats[src] ||
+            (sixel_frame_format(frame) != parallel_formats[src] ||
              sixel_frame_get_colorspace(frame) != parallel_spaces[src])) {
         status = SIXEL_LOGIC_ERROR;
     }

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 #include "src/encoder.h"
 #include "src/frame.h"

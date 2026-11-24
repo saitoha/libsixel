@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/compat_stub.h"
 #include "src/encoder.h"
 #include "src/dither.h"
@@ -320,7 +321,7 @@ test_highcolor_macro(int mode, char const *directory)
             goto end;
         }
         dither = encoder->diagnostic_dither;
-        mode_float = SIXEL_PIXELFORMAT_IS_FLOAT32(dither->pixelformat);
+        mode_float = SIXEL_WORKFORMAT_IS_FLOAT32(dither->pixelformat);
         if (mode_float != (mode != 6)) {
             goto end;
         }

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 int
 test_frame_format_0067_normalize_din99d_chroma(int argc, char **argv)

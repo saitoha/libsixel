@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/compat_stub.h"
 #include "src/factory.h"
 

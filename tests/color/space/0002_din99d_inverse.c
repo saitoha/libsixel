@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 int
 test_color_0002_din99d_inverse(int argc, char **argv)

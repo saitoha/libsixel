@@ -30,6 +30,7 @@
 #include <string.h>
 #include "filter-pipeline.h"
 #include "frame-factory.h"
+#include "frame-private.h"
 #include "pixelformat.h"
 #include "threading.h"
 
@@ -42,8 +43,8 @@ sixel_filter_pipeline_eligible(int source, int target, size_t count,
 {
 #if SIXEL_ENABLE_THREADS
     return threads > 1 && count >= 2u * SIXEL_FILTER_TILE_PIXELS &&
-        SIXEL_PIXELFORMAT_IS_FLOAT32(source) &&
-        SIXEL_PIXELFORMAT_IS_FLOAT32(target);
+        SIXEL_WORKFORMAT_IS_FLOAT32(source) &&
+        SIXEL_WORKFORMAT_IS_FLOAT32(target);
 #else
     (void)source;
     (void)target;
@@ -87,13 +88,15 @@ sixel_filter_pipeline_consume(sixel_thread_pool_job_t job,
     if (count > SIXEL_FILTER_TILE_PIXELS) {
         count = SIXEL_FILTER_TILE_PIXELS;
     }
-    status = sixel_frame_init_borrowed(ctx->consumer_frame,
-        ctx->pixels + first * 3u, (int)count, 1,
-        ctx->pixelformat, NULL, 0);
+    status = sixel_frame_borrow_pixels(ctx->consumer_frame,
+        &(sixel_frame_pixels_request_t){
+            ctx->pixels + first * 3u, NULL, (int)count, 1,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, ctx->colorspace, 0,
+            SIXEL_FRAME_PIXELS_FLOAT32
+        });
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    sixel_frame_set_colorspace(ctx->consumer_frame, ctx->colorspace);
     /* The original mask is immutable. A tile's frame owns only its copied
      * mask prefix; samples beyond a short original mask remain visible. */
     if (ctx->transparency.transparent_mask != NULL &&
@@ -264,13 +267,15 @@ sixel_filter_pipeline_run(sixel_filter_t *first, sixel_filter_t *second,
         }
         memcpy(ctx.pixels + offset * 3u, view.pixels_float32 + offset * 3u,
             length * 3u * sizeof(float));
-        status = sixel_frame_init_borrowed(producer_frame,
-            ctx.pixels + offset * 3u, (int)length, 1,
-            view.pixelformat, NULL, 0);
+        status = sixel_frame_borrow_pixels(producer_frame,
+            &(sixel_frame_pixels_request_t){
+                ctx.pixels + offset * 3u, NULL, (int)length, 1,
+                SIXEL_PIXELFORMAT_RGBFLOAT32, view.colorspace, 0,
+                SIXEL_FRAME_PIXELS_FLOAT32
+            });
         if (SIXEL_FAILED(status)) {
             break;
         }
-        sixel_frame_set_colorspace(producer_frame, view.colorspace);
         job.band_index = (int)(offset / SIXEL_FILTER_TILE_PIXELS);
         sixel_timeline_logger_logf(logger, "controller", "filter-pipeline",
             "produce-start", job.band_index);
@@ -295,20 +300,14 @@ sixel_filter_pipeline_run(sixel_filter_t *first, sixel_filter_t *second,
     sixel_frame_unref(producer_frame);
     sixel_frame_unref(ctx.consumer_frame);
     if (SIXEL_SUCCEEDED(status)) {
-        /* Same float storage: after validation this setter only installs the
-         * format tag. Conversion sees identical source/target coordinates. */
-        sixel_frame_set_colorspace(frame, ctx.colorspace);
-        status = sixel_frame_set_pixelformat(frame, ctx.pixelformat);
-        if (SIXEL_SUCCEEDED(status)) {
-            memcpy(view.pixels_float32, ctx.pixels,
-                count * 3u * sizeof(float));
-            first->progress.total_units = view.height;
-            second->progress.total_units = view.height;
-            sixel_filter_update_progress(first, view.height);
-            sixel_filter_update_progress(second, view.height);
-        } else {
-            sixel_frame_set_colorspace(frame, view.colorspace);
-        }
+        /* Both filters finished in scratch. Publish their produced samples
+         * and the matching coordinates into the original float frame. */
+        memcpy(view.pixels_float32, ctx.pixels, count * 3u * sizeof(float));
+        sixel_frame_assign_format(frame, ctx.pixelformat);
+        first->progress.total_units = view.height;
+        second->progress.total_units = view.height;
+        sixel_filter_update_progress(first, view.height);
+        sixel_filter_update_progress(second, view.height);
     }
     sixel_allocator_free(allocator, ctx.pixels);
     sixel_timeline_logger_logf(logger, "controller", "filter-pipeline",

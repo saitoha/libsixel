@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
 #include "src/encoder.h"
 #include "src/dither.h"
 #include "src/palette.h"
@@ -141,7 +142,7 @@ test_cluster_precision(int mode)
                 (mode != 9 && dither->quantize_model != model) ||
                 dither->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
                 encoder->prefer_float32 != 0 ||
-                sixel_frame_get_pixelformat(frame) !=
+                sixel_frame_format(frame) !=
                     SIXEL_PIXELFORMAT_RGB888 ||
                 memcmp(pixels, original, sizeof(pixels)) != 0 ||
                 SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(

@@ -132,7 +132,7 @@ sixel_palette_cover_float(float *entries, unsigned int *entry_count,
             capacity == 0 || capacity > SIXEL_PALETTE_MAX ||
             *entry_count > capacity || length == 0 ||
             length % (3u * sizeof(float)) != 0 ||
-            !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
+            !SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat) ||
             (mode != SIXEL_PALETTE_COVER_MODE_SOFT &&
              mode != SIXEL_PALETTE_COVER_MODE_HARD)) {
         return SIXEL_BAD_ARGUMENT;

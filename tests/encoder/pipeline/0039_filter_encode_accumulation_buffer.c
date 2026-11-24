@@ -239,7 +239,6 @@ accumulation_make_frame(sixel_allocator_t *allocator,
         goto end;
     }
     pixels = NULL;
-    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_GAMMA);
     *frame_out = frame;
     frame = NULL;
     status = SIXEL_OK;
@@ -309,7 +308,6 @@ accumulation_make_rgba_frame(sixel_allocator_t *allocator,
         goto end;
     }
     pixels = NULL;
-    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_GAMMA);
     *frame_out = frame;
     frame = NULL;
     status = SIXEL_OK;

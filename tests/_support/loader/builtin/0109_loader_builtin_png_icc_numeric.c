@@ -1,6 +1,7 @@
 /* Fix builtin-CMS float output for an embedded-profile PNG. */
 
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "tests/data/color-numeric/legacy-png-icc.h"
 #include "loader_builtin_memory_test_common.h"
 

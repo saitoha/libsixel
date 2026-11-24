@@ -6,7 +6,9 @@
 #include <string.h>
 
 #include "tests/_support/loader/pixelformat_test_common.h"
+#include "src/frame.h"
 #include "src/loader-common.h"
+#include "src/pixelformat.h"
 
 #if HAVE_COREGRAPHICS
 static SIXELSTATUS
@@ -245,7 +247,7 @@ coregraphics_capture_first_rgb_sample(sixel_frame_t *frame, int rgb[3])
         return 0;
     }
 
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
         pixels_u8 = sixel_frame_get_pixels(frame);
@@ -369,7 +371,7 @@ capture_coregraphics_indexed_keycolor_policy_probe(sixel_frame_t *frame,
     }
 
     probe->callback_count += 1;
-    probe->pixelformat = sixel_frame_get_pixelformat(frame);
+    probe->pixelformat = sixel_frame_format(frame);
     probe->width = sixel_frame_get_width(frame);
     probe->height = sixel_frame_get_height(frame);
     probe->transparent = sixel_frame_get_transparent(frame);

@@ -408,7 +408,7 @@ sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
         gamut_pipeline = work_tail == colorspace_post_node &&
             colorspace_post_node >= 0 && planner->main_threads > 1 &&
             sixel_threading_policy_mode() != SIXEL_THREADING_POLICY_LAZY &&
-            SIXEL_PIXELFORMAT_IS_FLOAT32(planner->scale_pixelformat);
+            SIXEL_WORKFORMAT_IS_FLOAT32(planner->scale_pixelformat);
         sixel_encoding_planner_dag_add_edge(planner, work_tail, gamut_node,
             gamut_pipeline);
         work_tail = gamut_node;
@@ -502,7 +502,7 @@ sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
         return 0;
     }
 
-    source_pixelformat = sixel_frame_get_pixelformat(frame);
+    source_pixelformat = sixel_frame_format(frame);
     source_ncolors = sixel_frame_get_ncolors(frame);
     effective_reqcolors = encoder->reqcolors;
     if (effective_reqcolors <= 0 || effective_reqcolors > SIXEL_PALETTE_MAX) {
@@ -617,7 +617,7 @@ sixel_encoding_palette_job_eligible(sixel_encoder_t *encoder,
         return 0;
     }
 
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     if ((pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0) {
         return 0;
     }
@@ -670,8 +670,8 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     colorspace_before_scale = 0;
     working_colorspace_effective =
         sixel_encoder_frame_working_colorspace(encoder, frame);
-    source_pixelformat = sixel_frame_get_pixelformat(frame);
-    source_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(source_pixelformat);
+    source_pixelformat = sixel_frame_format(frame);
+    source_is_float32 = SIXEL_WORKFORMAT_IS_FLOAT32(source_pixelformat);
     source_ncolors = sixel_frame_get_ncolors(frame);
     effective_reqcolors = encoder->reqcolors;
     if (effective_reqcolors <= 0 || effective_reqcolors > SIXEL_PALETTE_MAX) {
@@ -1454,7 +1454,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     fprintf(stream,
             "  formats: source=%s work=%s scale_out=%s\n",
             sixel_encoding_planner_pixelformat_label(
-                sixel_frame_get_pixelformat(frame)),
+                sixel_frame_format(frame)),
             sixel_encoding_planner_pixelformat_label(
                 planner->working_pixelformat),
             sixel_encoding_planner_pixelformat_label(

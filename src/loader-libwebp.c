@@ -48,6 +48,7 @@
 #include <webp/demux.h>
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "allocator.h"
 #include "cms.h"

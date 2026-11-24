@@ -216,17 +216,19 @@ else
             }
             ' "$components_header" &&
             awk '
+            function frame_adapter(line) {
+                return line ~ /sixel_frame_(factory_new|format|borrow_pixels)[[:space:]]*\(/
+            }
             /^SIXEL_INTERNAL_API/ {
                 if ($0 ~ /sixel_[A-Za-z0-9_]+[[:space:]]*\(/ &&
-                    $0 !~ /sixel_frame_factory_new[[:space:]]*\(/) {
+                    !frame_adapter($0)) {
                     print FNR ":" $0
                     found = 1
                 }
                 pending = 1
                 next
             }
-            pending == 1 &&
-                    /^sixel_frame_factory_new[[:space:]]*\(/ {
+            pending == 1 && frame_adapter($0) {
                 pending = 0
                 next
             }

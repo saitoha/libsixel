@@ -18,7 +18,7 @@ capture_bmp_numeric_probe(sixel_frame_t *frame, void *data)
     }
 
     context->callback_count += 1;
-    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->pixelformat = sixel_frame_format(frame);
     context->colorspace = sixel_frame_get_colorspace(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
@@ -37,7 +37,7 @@ capture_bmp_numeric_probe(sixel_frame_t *frame, void *data)
         return SIXEL_OK;
     }
     sample_count = (size_t)context->width * (size_t)context->height * 3u;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(context->pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(context->pixelformat)) {
         if (frame->pixels.f32ptr == NULL) {
             return SIXEL_OK;
         }
@@ -3226,7 +3226,7 @@ run_builtin_loader_bmp_v5_embedded_icc_rgb_cms_on_numeric_test(void)
                 "unexpected transparency metadata\n");
         return 1;
     }
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(probe.pixelformat)) {
+    if (!SIXEL_WORKFORMAT_IS_FLOAT32(probe.pixelformat)) {
         fprintf(stderr,
                 "builtin loader bmp v5 embedded icc rgb cms on numeric: "
                 "unexpected non-float pixelformat (%d)\n",

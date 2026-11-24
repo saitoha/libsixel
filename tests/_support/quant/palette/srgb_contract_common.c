@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/palette.h"
 #include "src/lookup-policy-none.h"
 #include "srgb_contract_common.h"

@@ -14,6 +14,7 @@
 
 #include <sixel.h>
 
+#include "src/pixelformat.h"
 #include "src/sample-stream.h"
 
 static int
@@ -117,7 +118,11 @@ sample_stream_ownership_is_valid(void)
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;
     }
-    sixel_frame_set_colorspace(stream.frame, SIXEL_COLORSPACE_OKLAB);
+    status = sixel_frame_set_pixelformat(stream.frame,
+                                        SIXEL_PIXELFORMAT_OKLABFLOAT32);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
     status = sixel_sample_stream_refresh(&stream);
     if (SIXEL_FAILED(status) ||
             stream.colorspace != SIXEL_COLORSPACE_OKLAB ||

@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 #define FUZZ_MAX_INPUT_BYTES (4u * 1024u * 1024u)
 #define FUZZ_HEADER_BYTES 4u

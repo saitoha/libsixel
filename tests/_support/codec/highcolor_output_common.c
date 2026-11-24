@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
+#include "src/pixelformat.h"
 #include "src/encoder.h"
 #include "src/dither.h"
 #include "src/output.h"
@@ -236,8 +238,8 @@ test_highcolor_output(int scenario)
                     height, format, NULL, -1)) ||
                 SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
                     output)) || encoder->diagnostic_dither == NULL ||
-                !SIXEL_PIXELFORMAT_IS_FLOAT32(
-                    sixel_frame_get_pixelformat(frame))) {
+                !SIXEL_WORKFORMAT_IS_FLOAT32(
+                    sixel_frame_format(frame))) {
             goto end;
         }
         ok = hc_decode(&stream, width, height, expected, 0, 0);
@@ -466,13 +468,15 @@ test_highcolor_p3(int scenario)
         memcpy(saved, samples, (size_t)width * (size_t)height * 3U *
             sizeof(float));
         if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-                SIXEL_FAILED(sixel_frame_init_borrowed(frame, input, width,
-                    height, format, NULL, -1))) {
+                SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
+                    &(sixel_frame_pixels_request_t){
+                        input, NULL, width, height, format,
+                        reject && scenario == 34 ? SIXEL_COLORSPACE_LINEAR
+                                                 : -1,
+                        -1, SIXEL_WORKFORMAT_IS_FLOAT32(format)
+                            ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8
+                    }))) {
             goto end;
-        }
-        if (reject && scenario == 34) {
-            /* Packed storage is admitted only in gamma source coordinates. */
-            sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_LINEAR);
         }
         if (reject && scenario == 26) {
             mask = calloc(1, 1);

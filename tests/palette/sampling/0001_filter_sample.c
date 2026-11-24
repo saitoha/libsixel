@@ -15,6 +15,8 @@
 #include <string.h>
 
 #include <sixel.h>
+#include "src/frame.h"
+#include "src/pixelformat.h"
 
 #include "src/cms.h"
 #include "src/filter-factory.h"
@@ -388,12 +390,12 @@ test_sample_full_frame_is_borrowed(void)
 
     sixel_filter_bind_input(filter,
                             &input_frame,
-                            sixel_frame_get_pixelformat(input_frame),
+                            sixel_frame_format(input_frame),
                             sixel_frame_get_colorspace(input_frame));
     sixel_filter_bind_sample_output(
         filter,
         &samples,
-        sixel_frame_get_pixelformat(input_frame),
+        sixel_frame_format(input_frame),
         sixel_frame_get_colorspace(input_frame));
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 

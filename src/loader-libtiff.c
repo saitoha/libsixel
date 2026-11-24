@@ -56,6 +56,7 @@
 #include <tiffio.h>
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "allocator.h"
 #include "cms.h"
@@ -2634,7 +2635,7 @@ load_with_libtiff(
         goto end;
     }
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         /* The decoder has already expressed native XYZ and managed input
          * in the linear sRGB basis. Unmanaged RGB retains gamma coordinates. */
         status = sixel_frame_init_rgb_float(frame, (float *)(void *)pixels,
@@ -2662,7 +2663,7 @@ load_with_libtiff(
         mask = NULL;
     }
 
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (!SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         status = sixel_frame_strip_alpha(frame, bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;

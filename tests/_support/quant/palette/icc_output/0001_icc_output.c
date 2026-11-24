@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/color-option.h"
 #include "src/compat_stub.h"
 #include "tests/data/color-numeric/icc-output.h"

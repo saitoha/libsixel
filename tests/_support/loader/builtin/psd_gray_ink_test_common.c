@@ -3,6 +3,7 @@
  * Fixed sRGB references distinguish both endpoints and unequal midtones.
  * Each in-memory image has full, partial and zero spot coverage. */
 #include <math.h>
+#include "src/pixelformat.h"
 #include <stdio.h>
 #include <string.h>
 #include "cms.h"

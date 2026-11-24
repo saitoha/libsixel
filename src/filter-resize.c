@@ -28,6 +28,7 @@
 /* STDC_HEADERS */
 #include <stdlib.h>
 #include <sixel.h>
+#include "frame.h"
 
 #include "filter-resize.h"
 #include "filter.h"
@@ -258,8 +259,8 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
          * filter.  Planner preferences describe intent, but cannot make a
          * byte RGB buffer valid input to the float32 resize implementation.
          */
-        use_float_resize = SIXEL_PIXELFORMAT_IS_FLOAT32(
-            sixel_frame_get_pixelformat(frame));
+        use_float_resize = SIXEL_WORKFORMAT_IS_FLOAT32(
+            sixel_frame_format(frame));
         if (use_float_resize != 0) {
             status = sixel_frame_resize_float32(
                 frame,

@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "src/loader.h"
+#include "src/pixelformat.h"
 #include "src/frame-private.h"
 #include "tests/data/color-numeric/png-keycolor.h"
 

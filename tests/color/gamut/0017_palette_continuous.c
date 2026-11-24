@@ -3,6 +3,7 @@
  * Policy: docs/encoder/output/gamut-mapping.md
  */
 #include "../../_support/processing/gamut/gamut_test_common.h"
+#include "src/pixelformat.h"
 
 int
 test_gamut_0017_palette_continuous(int argc, char **argv)

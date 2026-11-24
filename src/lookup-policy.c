@@ -27,6 +27,7 @@
 #endif
 
 #include "lookup-policy.h"
+#include "pixelformat.h"
 #include "options.h"
 
 
@@ -140,7 +141,7 @@ sixel_lookup_policy_select_prefers_float32(
         return 0;
     }
 
-    return SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
+    return SIXEL_WORKFORMAT_IS_FLOAT32(request->pixelformat);
 }
 
 static char const *

@@ -4,6 +4,7 @@
  */
 #include "../../_support/processing/gamut/gamut_filter_common.h"
 #include "src/encoder.h"
+#include "src/pixelformat.h"
 #include "src/planner.h"
 
 int

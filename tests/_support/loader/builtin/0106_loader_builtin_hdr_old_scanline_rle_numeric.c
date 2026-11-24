@@ -1,6 +1,7 @@
 /* Verify old Radiance scanline RLE after a modern scanline. */
 
 #include <stdio.h>
+#include "src/pixelformat.h"
 #include <string.h>
 
 #include "loader_builtin_memory_test_common.h"

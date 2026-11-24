@@ -49,6 +49,7 @@
 #endif
 
 #include <sixel.h>
+#include "pixelformat.h"
 #include <6cells.h>
 
 #include "cms.h"
@@ -1638,7 +1639,7 @@ sixel_builtin_hdr_assign_decoded_frame(
             hdr_pixelformat,
             hdr_colorspace,
             -1,
-            SIXEL_PIXELFORMAT_IS_FLOAT32(hdr_pixelformat)
+            SIXEL_WORKFORMAT_IS_FLOAT32(hdr_pixelformat)
             ? SIXEL_FRAME_PIXELS_FLOAT32
             : SIXEL_FRAME_PIXELS_U8
         });

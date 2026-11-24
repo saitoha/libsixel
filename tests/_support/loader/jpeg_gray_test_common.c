@@ -6,6 +6,7 @@
 #include "tests/_support/loader/builtin/loader_builtin_memory_test_common.h"
 #include "jpeg_gray_test_common.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 
 typedef struct {
     edge_writer_t writer;

@@ -10,6 +10,8 @@
 #include <string.h>
 
 #include <6cells.h>
+#include "src/frame.h"
+#include "src/pixelformat.h"
 
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/cms.h"
@@ -173,7 +175,7 @@ edge_capture_frame(sixel_frame_t *frame, void *data)
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     depth = sixel_helper_compute_depth(pixelformat);
     ncolors = sixel_frame_get_ncolors(frame);
     probe->width[frame_index] = width;
@@ -860,7 +862,7 @@ edge_capture_allocator_frame(sixel_frame_t *frame, void *data)
     }
     capture->width = sixel_frame_get_width(frame);
     capture->height = sixel_frame_get_height(frame);
-    capture->pixelformat = sixel_frame_get_pixelformat(frame);
+    capture->pixelformat = sixel_frame_format(frame);
     capture->colorspace = sixel_frame_get_colorspace(frame);
     depth = sixel_helper_compute_depth(capture->pixelformat);
     pixels = sixel_frame_get_pixels(frame);
@@ -1403,7 +1405,7 @@ edge_expect_float_samples(char const *label,
     if (label == NULL || probe == NULL || sample_pixels == NULL ||
         expected_samples == NULL || expected_width <= 0 ||
         expected_height <= 0 || tolerance < 0.0f ||
-        !SIXEL_PIXELFORMAT_IS_FLOAT32(expected_pixelformat)) {
+        !SIXEL_WORKFORMAT_IS_FLOAT32(expected_pixelformat)) {
         return 1;
     }
     pixel_count = (size_t)expected_width * (size_t)expected_height;

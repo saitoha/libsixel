@@ -1,9 +1,11 @@
 /* SPDX-License-Identifier: MIT */
 #include <math.h>
 #include "tests/_support/loader/pixelformat_test_common.h"
+#include "src/frame.h"
 #include "tests/_support/loader/png_hdr_composition_common.h"
 #include "tests/_support/loader/png_hdr_composition_expected.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/loader-common.h"
 
 static void
@@ -180,7 +182,7 @@ hdrp_capture(sixel_frame_t *frame, void *context)
     probe = context;
     if (probe->count >= probe->frames || sixel_frame_get_width(frame) != 4 ||
         sixel_frame_get_height(frame) != 1 ||
-        sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
         || sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_LINEAR) {
         fprintf(stderr, "HDR frame dimensions/count/float representation\n");
         return SIXEL_BAD_INPUT;

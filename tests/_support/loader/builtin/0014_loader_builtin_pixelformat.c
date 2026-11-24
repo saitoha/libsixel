@@ -27,7 +27,9 @@
 #include <string.h>
 
 #include "tests/_support/loader/pixelformat_test_common.h"
+#include "src/frame.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/frombmp.h"
 #include "src/frompsd.h"
 #include "src/loader-common.h"
@@ -181,7 +183,7 @@ capture_pic_rgba_alpha_probe(sixel_frame_t *frame, void *data)
     }
 
     context->callback_count += 1;
-    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->pixelformat = sixel_frame_format(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
     context->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
@@ -389,7 +391,7 @@ capture_tga_rgba_alpha_probe(sixel_frame_t *frame, void *data)
     }
 
     context->callback_count += 1;
-    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->pixelformat = sixel_frame_format(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
     context->transparent = sixel_frame_get_transparent(frame);
@@ -422,7 +424,7 @@ capture_tga_pal_rgba_probe(sixel_frame_t *frame, void *data)
     }
 
     context->callback_count += 1;
-    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->pixelformat = sixel_frame_format(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
     context->ncolors = sixel_frame_get_ncolors(frame);
@@ -682,7 +684,7 @@ capture_pnm_numeric_probe(sixel_frame_t *frame, void *data)
     }
 
     context->callback_count += 1;
-    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->pixelformat = sixel_frame_format(frame);
     context->colorspace = sixel_frame_get_colorspace(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
@@ -694,7 +696,7 @@ capture_pnm_numeric_probe(sixel_frame_t *frame, void *data)
     }
     sample_count = (size_t)context->width * (size_t)context->height * 3u;
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(context->pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(context->pixelformat)) {
         if (frame->pixels.f32ptr == NULL) {
             return SIXEL_OK;
         }

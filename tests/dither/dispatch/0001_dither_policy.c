@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include <6cells.h>
 
 #include "src/factory.h"
@@ -110,7 +111,7 @@ prepare_none_lookup_policy(sixel_dither_t *dither,
     }
 
     class_name = "lookup/none.8bit";
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         class_name = "lookup/none.float32";
     }
 

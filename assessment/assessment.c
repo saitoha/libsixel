@@ -78,6 +78,8 @@
 #include <string.h>
 
 #include <sixel.h>
+#include "frame.h"
+#include "pixelformat.h"
 
 #include "assessment.h"
 #include "compat_stub.h"
@@ -726,7 +728,7 @@ sixel_assessment_record_source_frame(sixel_assessment_t *assessment,
     }
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     colorspace = sixel_frame_get_colorspace(frame);
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth <= 0 || width <= 0 || height <= 0) {
@@ -1044,7 +1046,7 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     if (frame_width <= 0 || frame_height <= 0 ||
             (size_t)frame_width > SIZE_MAX / (size_t)frame_height / 3u) {
         return SIXEL_BAD_INPUT;
@@ -1124,8 +1126,8 @@ frame_to_rgb_float(sixel_frame_t *frame,
     }
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    pixelformat = sixel_frame_get_pixelformat(frame);
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    pixelformat = sixel_frame_format(frame);
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         status = sixel_assessment_frame_get_pixels_view(frame, &view);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
@@ -3805,8 +3807,8 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     assessment->signal_space = signal;
     assessment->current_space[0] = sixel_frame_get_colorspace(reference);
     assessment->current_space[1] = sixel_frame_get_colorspace(output);
-    assessment->current_format[0] = sixel_frame_get_pixelformat(reference);
-    assessment->current_format[1] = sixel_frame_get_pixelformat(output);
+    assessment->current_format[0] = sixel_frame_format(reference);
+    assessment->current_format[1] = sixel_frame_format(output);
 
     assessment->last_error = SIXEL_OK;
     assessment->error_message[0] = '\0';
@@ -3892,13 +3894,13 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     if (!assessment_color_pixels(buffers->ref_pixels, buffers->ref_xyz, pixels,
             assessment->current_space[0], assessment->signal_space,
             assessment->signal_bytes,
-            !SIXEL_PIXELFORMAT_IS_FLOAT32(assessment->current_format[0]),
+            !SIXEL_WORKFORMAT_IS_FLOAT32(assessment->current_format[0]),
             assessment->grayscale)
             || !assessment_color_pixels(buffers->out_pixels,
             buffers->out_xyz, pixels,
             assessment->current_space[1], assessment->signal_space,
             assessment->signal_bytes,
-            !SIXEL_PIXELFORMAT_IS_FLOAT32(assessment->current_format[1]),
+            !SIXEL_WORKFORMAT_IS_FLOAT32(assessment->current_format[1]),
             assessment->grayscale)) {
         status = SIXEL_BAD_INPUT;
         goto cleanup;

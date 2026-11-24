@@ -461,7 +461,7 @@ sixel_palette_reversible_palette(unsigned char *palette,
     if (!sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT)) {
         return;
     }
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         sixel_palette_reversible_palette_float((float *)palette,
                                                colors,
                                                pixelformat);
@@ -593,7 +593,7 @@ sixel_palette_snap_entries(unsigned char *entries,
         return;
     }
     if (entries_float32 == NULL
-            || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            || !SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         sixel_palette_reversible_palette(entries, colors,
                                          SIXEL_PIXELFORMAT_RGB888);
         return;
@@ -831,7 +831,7 @@ sixel_palette_snap_triple(double *components,
     if (active && g_snap_grid != NULL) {
         ++g_snap_stages[stage];
     }
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         /* An inactive stage must not narrow solver doubles to float32,
          * clamp nominal channel ranges, or even change signed zero. */
         if (!active) {
