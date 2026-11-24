@@ -25,8 +25,8 @@
 #define BAND_HEIGHT (BAND_BANDS * 6 - 2)
 #define BAND_LONG_BANDS 40
 
-static char g_stream[65536];
-static size_t g_stream_size;
+static char band_stream[65536];
+static size_t band_stream_size;
 static unsigned int g_flags;
 
 /*
@@ -146,14 +146,14 @@ band_decode(sixel_decoder_t *decoder, int body, int pixelformat,
     options.flags = g_flags;
     if (body) {
         /* Strip the introducer through 'q' and the string terminator. */
-        q = strchr(g_stream, 'q');
+        q = strchr(band_stream, 'q');
         return sixel_decoder_decode_body_mapped(
             decoder, (unsigned char const *)q + 1,
-            g_stream_size - (size_t)(q + 1 - g_stream) - 2u, NULL, 0u,
+            band_stream_size - (size_t)(q + 1 - band_stream) - 2u, NULL, 0u,
             &options, transform, result);
     }
     return sixel_decoder_decode_mapped(
-        decoder, (unsigned char const *)g_stream, g_stream_size, &options,
+        decoder, (unsigned char const *)band_stream, band_stream_size, &options,
         transform, result);
 }
 
@@ -362,8 +362,8 @@ test_decoder_0112(int argc, char **argv)
     }
 
     /* Opaque, then transparent with holes, through both entries. */
-    g_stream_size = band_build(g_stream, sizeof(g_stream), 0, 0, 0);
-    if (g_stream_size == 0u ||
+    band_stream_size = band_build(band_stream, sizeof(band_stream), 0, 0, 0);
+    if (band_stream_size == 0u ||
             !band_check(threaded, 0, NULL, 1, "opaque stream") ||
             !band_check(threaded, 1, NULL, 1, "opaque body") ||
             !band_check(threaded, 0, &transform, 1, "opaque transform") ||
@@ -378,29 +378,29 @@ test_decoder_0112(int argc, char **argv)
         goto end;
     }
     g_flags = SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE;
-    g_stream_size = band_build(g_stream, sizeof(g_stream), 1, 1, 0);
-    if (g_stream_size == 0u ||
+    band_stream_size = band_build(band_stream, sizeof(band_stream), 1, 1, 0);
+    if (band_stream_size == 0u ||
             !band_check(threaded, 0, NULL, 1, "transparent stream") ||
             !band_check(threaded, 1, &transform, 1, "transparent body") ||
             !band_check_keep(threaded) ||
             !band_check_gpu(threaded, gpu, 0, "transparent gpu")) {
         goto end;
     }
-    g_stream_size = band_build(g_stream, sizeof(g_stream), 1, 0, 1);
-    if (g_stream_size == 0u ||
+    band_stream_size = band_build(band_stream, sizeof(band_stream), 1, 0, 1);
+    if (band_stream_size == 0u ||
             !band_check(threaded, 0, NULL, 1, "carried stream") ||
             !band_check_gpu(threaded, gpu, 0, "carried gpu") ||
             !band_check_gpu(threaded, gpu, 1, "carried gpu body")) {
         goto end;
     }
-    g_stream_size = band_build_long(g_stream, sizeof(g_stream));
-    if (g_stream_size == 0u ||
+    band_stream_size = band_build_long(band_stream, sizeof(band_stream));
+    if (band_stream_size == 0u ||
             !band_check(threaded, 0, NULL, 1, "long stream") ||
             !band_check_gpu(threaded, gpu, 0, "long gpu") ||
             !band_check_gpu(threaded, gpu, 1, "long gpu body")) {
         goto end;
     }
-    g_stream_size = band_build(g_stream, sizeof(g_stream), 1, 0, 1);
+    band_stream_size = band_build(band_stream, sizeof(band_stream), 1, 0, 1);
     /* Untrusted paint past the raster leaves the device result unused. */
     g_flags = 0u;
     if (!band_check_gpu(threaded, gpu, 0, "grown gpu")) {

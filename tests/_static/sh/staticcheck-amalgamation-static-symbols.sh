@@ -31,8 +31,7 @@ unit_files=$tmpdir/unit_files.txt
 raw_symbols=$tmpdir/raw_symbols.tsv
 symbols=$tmpdir/symbols.tsv
 duplicates=$tmpdir/duplicates.tsv
-cms_copy_issues=$tmpdir/cms-copy-issues.log
-: > "$cms_copy_issues"
+amalgamation_defines=$tmpdir/amalgamation-defines.h
 
 awk -v src_base="$src_root/src" '
 {
@@ -143,10 +142,14 @@ if test ! -s "$unit_files"; then
     exit 0
 fi
 
+# Use the same test selectors as the generated amalgamated runner.
+awk -f "$src_root/build-aux/test-runner-amalgamation-defines.awk" \
+    "$tests_makefile" > "$amalgamation_defines"
+
 # Keep parsing state local to each translation unit while reusing one process.
 # Loading argv from the inventory also avoids the host command-length limit.
 awk -v units="$unit_files" -v tests_root="$src_root/tests/" \
-    -v src_dir="$src_root/src/" -v cms_issues="$cms_copy_issues" '
+    -v src_dir="$src_root/src/" -v defines="$amalgamation_defines" '
 function add_unit(path,    line, fragment) {
     if (path in scanned) return
     scanned[path] = 1
@@ -164,6 +167,12 @@ function add_unit(path,    line, fragment) {
     close(path)
 }
 BEGIN {
+    amalgamation_macro["SIXEL_AMALGAMATION"] = 1
+    while ((getline line < defines) > 0) {
+        split(line, definition, " ")
+        amalgamation_macro[definition[2]] = 1
+    }
+    close(defines)
     while ((getline file < units) > 0) add_unit(file)
     close(units)
 }
@@ -216,15 +225,69 @@ function count_brace_close(s, t) {
     t = s
     return gsub(/\}/, "", t)
 }
-function emit_private(name, namespace, resolved) {
-    if (file == src_dir "palette-heckbert.c" && namespace == "ordinary") {
-        heckbert_statics[name] = 1
-    }
+function emit_symbol(name, namespace, resolved) {
     resolved = (name in macro_alias) ? macro_alias[name] : name
     if (namespace == "tag") {
         resolved = "tag:" resolved
     }
+    if (index(file, src_dir) == 1 && namespace == "ordinary") {
+        source_symbols[file, ++source_count[file]] = name
+    }
+    # Alternate backends may export the same function. Only compare an
+    # exported function against a test that includes its own source file.
+    if (external_function) return
     printf "%s\t%s\n", resolved, file
+}
+# Evaluate the simple guards used around sources that are built separately.
+# Other preprocessor conditions are unknown and leave an include eligible.
+function guard_value(line,  macro) {
+    macro = line
+    gsub(/[[:space:]()]/, "", macro)
+    if (sub(/^#(ifndef|if!defined|elif!defined)/, "", macro)) {
+        return macro in amalgamation_macro ? -1 : 0
+    }
+    if (sub(/^#(ifdef|ifdefined|elifdefined)/, "", macro)) {
+        return macro in amalgamation_macro ? 1 : 0
+    }
+    return 0
+}
+function track_guard(line,  value) {
+    if (line ~ /^#[[:space:]]*if(n?def)?[[:space:](]/) {
+        ++if_depth
+        value = guard_value(line)
+    } else if (line ~ /^#[[:space:]]*(elif|else|endif)([[:space:](]|$)/) {
+        if (if_depth in excluded_at) {
+            delete excluded_at[if_depth]
+            --excluded
+        }
+        if (line ~ /^#[[:space:]]*endif([[:space:]]|$)/) {
+            delete taken_at[if_depth]
+            --if_depth
+            return
+        }
+        value = if_depth in taken_at ? -1 : guard_value(line)
+    } else {
+        return
+    }
+    if (value > 0) {
+        taken_at[if_depth] = 1
+    } else if (value < 0) {
+        excluded_at[if_depth] = 1
+        ++excluded
+    }
+}
+function emit_source_copy(line,  source, i, original, alias) {
+    source = line
+    sub(/^[^"]*"src\//, src_dir, source)
+    sub(/".*$/, "", source)
+    # The merged source keeps these includes intact. Account for every
+    # definition again using the aliases in scope at the include.
+    for (i = 1; i <= source_count[source]; ++i) {
+        original = source_symbols[source, i]
+        alias = (original in macro_alias) ? macro_alias[original] : original
+        printf "%s\t%s\n", original, source
+        printf "%s\t%s:%d\n", alias, file, FNR
+    }
 }
 function emit_typedef(text,   name, parts, rest, tag, part_count) {
     if (!is_test) {
@@ -237,7 +300,7 @@ function emit_typedef(text,   name, parts, rest, tag, part_count) {
         tag = rest
         sub(/[^A-Za-z0-9_].*$/, "", tag)
         if (tag ~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
-            emit_private(tag, "tag")
+            emit_symbol(tag, "tag")
         }
     }
 
@@ -255,17 +318,23 @@ function emit_typedef(text,   name, parts, rest, tag, part_count) {
         name = parts[part_count]
     }
     if (name ~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
-        emit_private(name, "ordinary")
+        emit_symbol(name, "ordinary")
     }
 }
-function emit_guarded_variable(line,   name) {
-    if (line ~ /(^|[^A-Za-z0-9_])tracked_allocator_free_count([^A-Za-z0-9_]|$)/) {
-        name = "tracked_allocator_free_count"
-        emit_private(name, "ordinary")
+function emit_variable(line,  declaration) {
+    declaration = line
+    sub(/[\[=;].*$/, "", declaration)
+    if (declaration !~ /[[:space:]*][A-Za-z_][A-Za-z0-9_]*[[:space:]]*$/ ||
+            declaration ~ /[({]/) {
+        return
     }
+    sub(/[[:space:]]+$/, "", declaration)
+    match(declaration, /[A-Za-z_][A-Za-z0-9_]*$/)
+    emit_symbol(substr(declaration, RSTART, RLENGTH), "ordinary")
 }
 function reset_state() {
     state = 0
+    external_function = 0
     name = ""
     depth = 0
 }
@@ -299,7 +368,7 @@ function start_signature(line,   candidate, search) {
     }
     if (depth <= 0) {
         if (line ~ /\{/) {
-            emit_private(name, "ordinary")
+            emit_symbol(name, "ordinary")
             reset_state()
             return 0
         }
@@ -312,6 +381,10 @@ function start_signature(line,   candidate, search) {
 FNR == 1 {
     file = FILENAME
     delete macro_alias
+    delete excluded_at
+    delete taken_at
+    excluded = 0
+    if_depth = 0
     define_text = ""
     in_comment = 0
     is_test = index(file, tests_root) == 1
@@ -325,6 +398,11 @@ FNR == 1 {
     if (line == "" && define_text == "") {
         next
     }
+
+    if (is_test && define_text == "" && line ~ /^#/) {
+        track_guard(line)
+    }
+    if (excluded) next
 
     if (define_text != "" || line ~ /^#[[:space:]]*define[[:space:]]+/) {
         define_text = define_text == "" ? line : define_text " " line
@@ -347,25 +425,8 @@ FNR == 1 {
         delete macro_alias[macro]
         next
     }
-    if (is_test && line ~ /^#[[:space:]]*include[[:space:]]+"src\/palette-heckbert\.c"$/) {
-        # The production unit was read before the test sources. Its private
-        # helpers are defined again using the aliases active at this include.
-        for (helper in heckbert_statics) emit_private(helper, "ordinary")
-    }
-    if (is_test && line ~ /^#[[:space:]]*include[[:space:]]+"src\/cms\.c"$/) {
-        # These helpers are defined inside every private copy of cms.c.
-        # Check aliases at the include site, where the compiler sees them.
-        cms_count = split("sixel_cms_prepare_bpc sixel_cms_apply_bpc " \
-            "sixel_cms_builtin_black_y sixel_cms_rgb_output_bpc " \
-            "sixel_cdef_black_y", cms_names, " ")
-        for (n = 1; n <= cms_count; ++n) {
-            original = cms_names[n]
-            alias = macro_alias[original]
-            if (alias == "" || alias == original || alias in cms_aliases) {
-                print "# " file ":" FNR ": needs a unique alias for " original > cms_issues
-            }
-            cms_aliases[alias] = 1
-        }
+    if (is_test && line ~ /^#[[:space:]]*include[[:space:]]+"src\/[^"]+\.c"$/) {
+        emit_source_copy(line)
     }
     if (line ~ /^#/) {
         next
@@ -394,23 +455,20 @@ FNR == 1 {
     }
 
     if (state == 0) {
-        if (line ~ /^static([[:space:]]|$)/) {
-            # File-scope definitions start at column one. Indented arrays
-            # inside function bodies have their own scope.
-            if (index(file, src_dir) == 1 && $0 ~ /^static[[:space:]]/ &&
-                    match(line, /[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\[[^]]*\][[:space:]]*=/)) {
-                name = substr(line, RSTART, RLENGTH)
-                sub(/[[:space:]]*\[.*$/, "", name)
-                emit_private(name, "ordinary")
-                reset_state()
-                next
-            }
-            if (line ~ /;[[:space:]]*$/ && line !~ /\(/) {
-                emit_guarded_variable(line)
+        if (index(file, src_dir) == 1 &&
+                $0 ~ /^[A-Za-z][A-Za-z0-9_]*\(/) {
+            external_function = 1
+            start_signature(line)
+            next
+        }
+        if ($0 ~ /^static([[:space:]]|$)/) {
+            if (line ~ /^[^(]*[\[=;]/) {
+                # Converter sources are built as separate frontends.
+                if (is_test || index(file, src_dir) == 1) emit_variable(line)
                 next
             }
             if (sub(/^static([[:space:]]+inline)?[[:space:]]+/, "", line)) {
-                if (line ~ /=/ || line ~ /\[/ ||
+                if (line ~ /^[^(]*[=\[]/ ||
                     (line ~ /\{/ && line !~ /\(/)) {
                     reset_state()
                     next
@@ -425,7 +483,7 @@ FNR == 1 {
     }
 
     if (state == 1) {
-        if (line ~ /=/ || line ~ /\[/ ||
+        if (line ~ /^[^(]*[=\[]/ ||
             (line ~ /\{/ && line !~ /\(/)) {
             reset_state()
             next
@@ -450,7 +508,7 @@ FNR == 1 {
             next
         }
         if (line ~ /\{/) {
-            emit_private(name, "ordinary")
+            emit_symbol(name, "ordinary")
             reset_state()
             next
         }
@@ -464,19 +522,13 @@ FNR == 1 {
             next
         }
         if (line ~ /\{/) {
-            emit_private(name, "ordinary")
+            emit_symbol(name, "ordinary")
             reset_state()
             next
         }
     }
 }
 ' > "$raw_symbols"
-
-if test -s "$cms_copy_issues"; then
-    cat "$cms_copy_issues"
-    echo 'not ok 1 - CMS test copies isolate their BPC symbols'
-    exit 0
-fi
 
 if test ! -s "$raw_symbols"; then
     echo "ok 1 - amalgamation static symbols and test types are unique"
@@ -485,10 +537,7 @@ fi
 
 LC_ALL=C sort -u "$raw_symbols" > "$symbols"
 
-if awk -F '\t' -v src_root="$src_root" '
-function is_test_file(file) {
-    return index(file, src_root "/tests/") == 1
-}
+if awk -F '\t' '
 {
     symbol = $1
     file = $2
@@ -499,11 +548,6 @@ function is_test_file(file) {
         files[symbol] = file
         seen[symbol SUBSEP file] = 1
         symbol_count[symbol] = 1
-        if (is_test_file(file)) {
-            test_count[symbol] = 1
-        } else {
-            non_test_count[symbol] = 1
-        }
         next
     }
     if ((symbol SUBSEP file) in seen) {
@@ -511,11 +555,6 @@ function is_test_file(file) {
     }
     seen[symbol SUBSEP file] = 1
     symbol_count[symbol] += 1
-    if (is_test_file(file)) {
-        test_count[symbol] += 1
-    } else {
-        non_test_count[symbol] += 1
-    }
     files[symbol] = files[symbol] ", " file
 }
 END {
