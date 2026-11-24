@@ -14,7 +14,8 @@
 #include <string.h>
 
 #include "palette-kmeans-gpu.h"
-#include "palette-heckbert.h"
+#include "filter-binning.h"
+#include "frame.h"
 #include "compat_stub.h"
 #include "options.h"
 #include "timer.h"
@@ -732,7 +733,8 @@ static id<MTLDevice> sixel_km_resident_device;
 static id<MTLCommandQueue> sixel_km_resident_queue;
 static id<MTLComputePipelineState> sixel_km_resident_stages[KM_STAGE_COUNT];
 static id<MTLBuffer> sixel_km_resident_buffers[KM_BUFFER_COUNT];
-static id<MTLBuffer> sixel_hb_resident_buffers[6];
+enum { HB_COVER_INPUT = 6, HB_BUFFER_COUNT };
+static id<MTLBuffer> sixel_hb_resident_buffers[HB_BUFFER_COUNT];
 
 typedef struct sixel_hb_resident_params {
     uint32_t count, colors, total;
@@ -837,11 +839,11 @@ sixel_resident_buffers_allocate(id<MTLBuffer> *buffers,
 
 static int
 sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
-                          int heckbert)
+                          int heckbert, int soft_cover)
 {
     NSUInteger padded, groups;
     NSUInteger lengths[KM_BUFFER_COUNT];
-    NSUInteger hb_lengths[6];
+    NSUInteger hb_lengths[HB_BUFFER_COUNT];
     uint32_t shared;
 
     padded = (samples + 127u) & ~127u;
@@ -859,7 +861,8 @@ sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
         /* The shared palette tail uses only state, parameters and slots
          * 10 onward. The Heckbert split has its own typed buffers. */
         memcpy(hb_lengths, (NSUInteger[]){
-            16*samples, 4*samples, 4*samples, 16*SIXEL_PALETTE_MAX, 0, 4
+            16*samples, 4*samples, 4*samples, 16*SIXEL_PALETTE_MAX, 0, 4,
+            soft_cover ? 3*samples : 0
         }, sizeof(hb_lengths));
         memset(lengths, 0, SIXEL_KM_STATE*sizeof(*lengths));
         lengths[SIXEL_KM_MAXIMA] = 0;
@@ -867,7 +870,8 @@ sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
         memset(lengths + KM_OFFSETS, 0, (KM_PALETTE-KM_OFFSETS)*
                                             sizeof(*lengths));
         if (!sixel_resident_buffers_allocate(sixel_hb_resident_buffers,
-                hb_lengths, sizeof(hb_lengths)/sizeof(hb_lengths[0]), 1u))
+                hb_lengths, HB_BUFFER_COUNT,
+                1u | (1u << HB_COVER_INPUT)))
             return 0;
     }
     return sixel_resident_buffers_allocate(sixel_km_resident_buffers,
@@ -897,12 +901,15 @@ sixel_km_resident_dispatch(id<MTLCommandBuffer> command, unsigned int stage,
             [encoder setBuffer:buffers[i] offset:0 atIndex:i];
     }
     if (stage == HB_SOLVE || stage == HB_REP) {
-        for (i = 0; i < 6u; ++i) {
+        for (i = 0; i < HB_COVER_INPUT; ++i) {
             if (sixel_hb_resident_buffers[i] != nil)
                 [encoder setBuffer:sixel_hb_resident_buffers[i] offset:0
                             atIndex:i];
         }
         [encoder setBytes:hb length:sizeof(*hb) atIndex:4];
+    } else if (stage == KM_COVER_HIST && hb != NULL) {
+        [encoder setBuffer:sixel_hb_resident_buffers[HB_COVER_INPUT]
+                    offset:0 atIndex:KM_RGB];
     }
     if (reverse) {
         [encoder setBuffer:buffers[KM_SECOND_KEYS] offset:0
@@ -933,11 +940,15 @@ sixel_km_resident_dispatch(id<MTLCommandBuffer> command, unsigned int stage,
 
 SIXELSTATUS
 sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
-    unsigned char const *rgb, sixel_allocator_t *allocator,
-    unsigned char *indices, unsigned char *palette, unsigned int *colors)
+    unsigned char const *rgb, unsigned char *indices,
+    unsigned char *palette, unsigned int *colors)
 {
-    sixel_km_geometry_t geometry;
+    sixel_km_geometry_t geometry, cover_geometry;
     sixel_hb_resident_params_t hb;
+    sixel_heckbert_histogram_t const *histogram;
+    sixel_sample_stream_t const *stream;
+    sixel_heckbert_tuple_t const *entry;
+    float *points;
     NSUInteger simd, lanes;
     uint32_t policy[4];
     uint32_t const *result;
@@ -966,10 +977,26 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     pixels = request->width * request->height;
     samples = ((request->width - 1) / stride + 1) *
               ((request->height - 1) / stride + 1);
+    histogram = request->heckbert_histogram;
+    stream = request->heckbert_samples;
+    if (heckbert) {
+        if (histogram == NULL || stream == NULL || histogram->size == 0u ||
+                histogram->size > stream->point_count ||
+                stream->point_count > 32768u)
+            return SIXEL_BAD_ARGUMENT;
+        samples = (unsigned int)stream->point_count;
+    }
     if (samples > 32768u || pixels > UINT32_MAX / 3u)
         return SIXEL_FALSE;
     geometry = (sixel_km_geometry_t){request->width, request->height, stride,
         request->colors, request->min_iterations, request->threshold};
+    cover_geometry = geometry;
+    if (heckbert) {
+        /* Cover the same materialized samples that fed the box splitter. */
+        cover_geometry.width = (unsigned int)stream->width;
+        cover_geometry.height = (unsigned int)stream->height;
+        cover_geometry.stride = 1u;
+    }
     policy[0] = request->snap;
     policy[1] = request->cover;
     policy[2] = request->soft;
@@ -981,17 +1008,24 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
         if (status != SIXEL_OK)
             goto end;
         status = SIXEL_BAD_ALLOCATION;
-        if (!sixel_km_resident_storage(samples, pixels, heckbert))
+        if (!sixel_km_resident_storage(samples, pixels, heckbert,
+                request->cover && request->soft))
             goto end;
         memcpy(buffers[KM_RGB].contents, rgb, 3*(size_t)pixels);
         if (heckbert) {
-            hb = (sixel_hb_resident_params_t){0, request->colors, samples,
-                                            1.0f, 1.0f, 1.0f};
-            status = sixel_heckbert_resident_histogram(rgb, request->width,
-                request->height, stride, request->colors, allocator,
-                sixel_hb_resident_buffers[0].contents, &hb.count);
-            if (status != SIXEL_OK)
-                goto end;
+            hb = (sixel_hb_resident_params_t){histogram->size,
+                request->colors, samples, 1.0f, 1.0f, 1.0f};
+            points = sixel_hb_resident_buffers[0].contents;
+            for (i = 0; i < histogram->size; ++i) {
+                entry = histogram->table[i];
+                points[4u*i] = (float)entry->components[0];
+                points[4u*i+1u] = (float)entry->components[1];
+                points[4u*i+2u] = (float)entry->components[2];
+                points[4u*i+3u] = (float)entry->value;
+            }
+            if (request->cover && request->soft)
+                memcpy(sixel_hb_resident_buffers[HB_COVER_INPUT].contents,
+                    sixel_frame_get_pixels(stream->frame), 3u * samples);
         }
         if (request->snap) {
             table = buffers[KM_SNAP_TABLE].contents;
@@ -1029,8 +1063,9 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
 
 #define RUN(stage, count, lanes, indirect, arg, reverse) \
         if (!sixel_km_resident_dispatch(command, stage, count, lanes, \
-                 indirect, arg, reverse, &geometry, policy, \
-                 heckbert ? &hb : NULL)) goto end
+                 indirect, arg, reverse, \
+                 (stage) == KM_COVER_HIST ? &cover_geometry : &geometry, \
+                 policy, heckbert ? &hb : NULL)) goto end
         if (heckbert) {
             if (hb.count > hb.colors) {
                 simd = sixel_km_resident_stages[HB_SOLVE].threadExecutionWidth;

@@ -60,6 +60,26 @@ sixel_filter_factory_create_binning(
     return SIXEL_OK;
 }
 
+SIXELSTATUS
+sixel_filter_run_heckbert_binning(
+    sixel_heckbert_binning_request_t const *request,
+    sixel_heckbert_histogram_t *histogram, sixel_allocator_t *allocator,
+    sixel_timeline_logger_t *logger)
+{
+    sixel_filter_binning_config_t config = {0};
+    sixel_filter_t *filter;
+    SIXELSTATUS status;
+
+    config.heckbert = request;
+    config.heckbert_output = histogram;
+    status = sixel_filter_factory_create_binning(&config, &filter);
+    if (status != SIXEL_OK)
+        return status;
+    status = sixel_filter_run(filter, allocator, logger);
+    sixel_filter_free(filter);
+    return status;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

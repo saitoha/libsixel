@@ -71,6 +71,9 @@ sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
                         unsigned int *iterations);
 
 #if defined(HAVE_METAL)
+struct sixel_heckbert_histogram;
+struct sixel_sample_stream;
+
 typedef struct sixel_palette_resident_request {
     unsigned int width, height, stride, colors;
     int quantizer;
@@ -78,14 +81,15 @@ typedef struct sixel_palette_resident_request {
     float threshold;
     unsigned int snap, cover, soft, grow;
     double snap_rate;
+    struct sixel_heckbert_histogram const *heckbert_histogram;
+    struct sixel_sample_stream const *heckbert_samples;
 } sixel_palette_resident_request_t;
 
 /* A single Metal submission owns every intermediate. Caller storage is
  * published only after a successful indexed solve. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
-    unsigned char const *rgb, sixel_allocator_t *allocator,
-    unsigned char *indices,
+    unsigned char const *rgb, unsigned char *indices,
     unsigned char *palette, unsigned int *colors);
 #endif
 

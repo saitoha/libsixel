@@ -39,6 +39,12 @@ sixel_filter_factory_create_binning(
     sixel_filter_binning_config_t const *config,
     sixel_filter_t **filter_out);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_filter_run_heckbert_binning(
+    sixel_heckbert_binning_request_t const *request,
+    sixel_heckbert_histogram_t *histogram, sixel_allocator_t *allocator,
+    sixel_timeline_logger_t *logger);
+
 #endif /* LIBSIXEL_FILTER_FACTORY_BINNING_H */
 
 /* emacs Local Variables:      */

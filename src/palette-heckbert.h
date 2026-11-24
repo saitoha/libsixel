@@ -31,6 +31,7 @@
 #define LIBSIXEL_PALETTE_HECKBERT_H
 
 #include "palette.h"
+#include "filter-binning.h"
 #include "timeline-logger.h"
 
 #ifdef __cplusplus
@@ -46,33 +47,14 @@ typedef enum sixel_heckbert_profile {
 
 SIXELSTATUS
 sixel_palette_build_heckbert(sixel_palette_t *palette,
-                             unsigned char const *data,
-                             unsigned int length,
+                             sixel_heckbert_histogram_t const *histogram,
+                             unsigned int depth,
                              int pixelformat,
                              sixel_allocator_t *allocator,
                              sixel_timeline_logger_t *logger,
                              int *job_seq,
                              char const *engine_name,
                              sixel_palette_telemetry_t *telemetry);
-
-SIXELSTATUS
-sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
-                                     float const *data,
-                                     unsigned int length,
-                                     int pixelformat,
-                                     sixel_allocator_t *allocator,
-                                     sixel_timeline_logger_t *logger,
-                                     int *job_seq,
-                                     char const *engine_name,
-                                     sixel_palette_telemetry_t *telemetry);
-
-#if defined(HAVE_METAL)
-/* Reversible byte buckets for the Metal SSE/norm splitter. */
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_heckbert_resident_histogram(unsigned char const *rgb, unsigned int width,
-    unsigned int height, unsigned int stride, unsigned int colors,
-    sixel_allocator_t *allocator, float *points, unsigned int *count);
-#endif
 
 #ifdef __cplusplus
 }

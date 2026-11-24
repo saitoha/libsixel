@@ -35,6 +35,34 @@ typedef enum sixel_filter_binning_output_order {
     SIXEL_FILTER_BINNING_OUTPUT_BIN_KEY_ASCENDING
 } sixel_filter_binning_output_order_t;
 
+/* Binning publishes byte buckets in first-seen order and preserves native
+ * float values. The solver may reorder the table while splitting boxes.
+ * The caller owns the table and releases it with its allocator. */
+enum { SIXEL_HECKBERT_MAX_CHANNELS = 4 };
+
+typedef struct sixel_heckbert_tuple {
+    unsigned int value;
+    double components[1];
+} sixel_heckbert_tuple_t;
+
+typedef struct sixel_heckbert_histogram {
+    unsigned int size;
+    sixel_heckbert_tuple_t **table;
+    int preserve_extended;
+} sixel_heckbert_histogram_t;
+
+typedef struct sixel_heckbert_binning_request {
+    unsigned char const *data;
+    unsigned int length, depth, pixel_stride;
+    int pixelformat, reversible, lut_policy;
+    unsigned int requested_colors;
+    sixel_sample_statistics_t *statistics;
+} sixel_heckbert_binning_request_t;
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_heckbert_alloc_table(sixel_heckbert_tuple_t ***result, unsigned int depth,
+    unsigned int size, sixel_allocator_t *allocator);
+
 typedef struct sixel_filter_binning_config {
     sixel_palette_binning_state_t *binning;
     int input_is_float32;
@@ -44,6 +72,10 @@ typedef struct sixel_filter_binning_config {
     unsigned int requested_colors;
     int quantize_model;
     sixel_filter_binning_output_order_t output_order;
+    /* Heckbert owns a distinct tuple representation. Use this pair in
+     * place of the generic binning state and weighted point set. */
+    sixel_heckbert_binning_request_t const *heckbert;
+    sixel_heckbert_histogram_t *heckbert_output;
 } sixel_filter_binning_config_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS

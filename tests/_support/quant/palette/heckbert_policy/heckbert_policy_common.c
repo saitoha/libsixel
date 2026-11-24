@@ -2,6 +2,7 @@
 /* Test variable prefix: policy_ */
 /* Private algorithm contracts use an isolated copy of the production code.
  * Symbol isolation also supports the amalgamated test runner. */
+#include "src/filter-factory-binning.h"
 #include "src/palette-heckbert.h"
 #include "src/palette-private.h"
 #include "src/palette-common-merge.h"
@@ -9,19 +10,6 @@
 #define sixel_palette_heckbert_log_finish \
     policy_sixel_palette_heckbert_log_finish
 #define sixel_palette_reversible_tuple policy_sixel_palette_reversible_tuple
-#define alloctupletable policy_alloctupletable
-#define histogram_dense_size policy_histogram_dense_size
-#define histogram_control_make_for_policy \
-    policy_histogram_control_make_for_policy
-#define histogram_add_slot policy_histogram_add_slot
-#define histogram_quantize policy_histogram_quantize
-#define histogram_build_quantize_lut policy_histogram_build_quantize_lut
-#define histogram_build_fast_pack_lut policy_histogram_build_fast_pack_lut
-#define histogram_pack_color_fast_rgb policy_histogram_pack_color_fast_rgb
-#define histogram_pack_color_fast_rgba policy_histogram_pack_color_fast_rgba
-#define histogram_pack_color policy_histogram_pack_color
-#define histogram_pack_color_from_lut policy_histogram_pack_color_from_lut
-#define sixel_lut_build_histogram policy_sixel_lut_build_histogram
 #define compareplane_lexicographic policy_compareplane_lexicographic
 #define sixel_pca_entry_compare policy_sixel_pca_entry_compare
 #define sixel_pca_entry_swap policy_sixel_pca_entry_swap
@@ -67,21 +55,13 @@
     policy_sixel_palette_heckbert_split_attempt
 #define splitBox policy_splitBox
 #define sixel_palette_heckbert_solve_gpu policy_sixel_palette_heckbert_solve_gpu
-#define sixel_heckbert_resident_histogram \
-    policy_sixel_heckbert_resident_histogram
 #define mediancut policy_mediancut
-#define sixel_heckbert_native_compare policy_sixel_heckbert_native_compare
-#define sixel_heckbert_native_histogram policy_sixel_heckbert_native_histogram
 #define sixel_palette_heckbert_colormap policy_sixel_palette_heckbert_colormap
 #define sixel_palette_build_heckbert policy_sixel_palette_build_heckbert
-#define sixel_palette_build_heckbert_float32 \
-    policy_sixel_palette_build_heckbert_float32
 #define sample policy_sample
 #define tuple policy_tuple
-#define tupleint policy_tupleint
 #define tupletable policy_tupletable
 #define tupletable2 policy_tupletable2
-#define histogram_control policy_histogram_control
 #define box policy_box
 #define boxVector policy_boxVector
 #define sixel_pca_sort_entry policy_sixel_pca_sort_entry
@@ -89,8 +69,6 @@
 #define compareplanePcaAxis policy_compareplanePcaAxis
 #define compareplanePcaDimensions policy_compareplanePcaDimensions
 #define compareplaneTieDepth policy_compareplaneTieDepth
-#define sixel_palette_heckbert_max_channels \
-    policy_sixel_palette_heckbert_max_channels
 #define sixel_palette_heckbert_colormap_request \
     policy_sixel_palette_heckbert_colormap_request
 #define sixel_palette_heckbert_colormap_request_t \
@@ -101,7 +79,6 @@
 #define findBoxBoundariesAndWeightAvx2 \
     policy_findBoxBoundariesAndWeightAvx2
 #include "src/palette-heckbert.c"
-#undef sixel_heckbert_resident_histogram
 #undef sixel_heckbert_box_sse_avx2
 #undef sixel_heckbert_error_avx2
 #undef findBoxBoundariesAndWeightAvx2
@@ -110,18 +87,6 @@
 #undef sixel_palette_heckbert_log_start
 #undef sixel_palette_heckbert_log_finish
 #undef sixel_palette_reversible_tuple
-#undef alloctupletable
-#undef histogram_dense_size
-#undef histogram_control_make_for_policy
-#undef histogram_add_slot
-#undef histogram_quantize
-#undef histogram_build_quantize_lut
-#undef histogram_build_fast_pack_lut
-#undef histogram_pack_color_fast_rgb
-#undef histogram_pack_color_fast_rgba
-#undef histogram_pack_color
-#undef histogram_pack_color_from_lut
-#undef sixel_lut_build_histogram
 #undef compareplane_lexicographic
 #undef sixel_pca_entry_compare
 #undef sixel_pca_entry_swap
@@ -161,17 +126,12 @@
 #undef splitBox
 #undef sixel_palette_heckbert_solve_gpu
 #undef mediancut
-#undef sixel_heckbert_native_compare
-#undef sixel_heckbert_native_histogram
 #undef sixel_palette_heckbert_colormap
 #undef sixel_palette_build_heckbert
-#undef sixel_palette_build_heckbert_float32
 #undef sample
 #undef tuple
-#undef tupleint
 #undef tupletable
 #undef tupletable2
-#undef histogram_control
 #undef box
 #undef boxVector
 #undef sixel_pca_sort_entry
@@ -179,7 +139,6 @@
 #undef compareplanePcaAxis
 #undef compareplanePcaDimensions
 #undef compareplaneTieDepth
-#undef sixel_palette_heckbert_max_channels
 #undef sixel_palette_heckbert_axis_bins
 
 /* Exact comparisons use binary64 constants, not excess x87 precision. */
@@ -236,12 +195,12 @@ heckbert_policy_check(int scenario)
     for (i = 0; i < 5; ++i) {
         table.table[i]->value = 1U;
         for (j = 0; j < 3; ++j) {
-            table.table[i]->policy_tuple[j] = 0.0;
+            table.table[i]->components[j] = 0.0;
         }
     }
     ok = 0;
     if (scenario < 3) {
-        table.table[1]->policy_tuple[0] = 1.0;
+        table.table[1]->components[0] = 1.0;
         if (scenario == 0) {
             policy_centerBox(0, 2, table, 3, actual);
         } else if (scenario == 1) {
@@ -252,8 +211,8 @@ heckbert_policy_check(int scenario)
         ok = actual[0] == 1.0;
     } else if (scenario < 9) {
         table.size = 3;
-        table.table[1]->policy_tuple[0] = 2.0;
-        table.table[2]->policy_tuple[0] = 9.0;
+        table.table[1]->components[0] = 2.0;
+        table.table[2]->components[0] = 9.0;
         table.table[2]->value = 6U;
         table.preserve_extended = 1;
         method = scenario % 3 == 0 ? SIXEL_REP_CENTER_BOX
@@ -269,7 +228,7 @@ heckbert_policy_check(int scenario)
             SIXEL_PIXELFORMAT_RGBFLOAT32, &output, allocator,
             &request, &options);
         ok = SIXEL_SUCCEEDED(status) && output.size == 1 &&
-            fabs(output.table[0]->policy_tuple[0] - expected) < 1e-12;
+            fabs(output.table[0]->components[0] - expected) < 1e-12;
         sixel_set_final_merge_target_factor_override(0, 1.81);
         sixel_set_final_merge_lloyd_iterations_override(0, 3);
     } else if (scenario < 13) {
@@ -312,8 +271,8 @@ heckbert_policy_check(int scenario)
         /* Independent exhaustive residual sums, not moment subtraction. */
         table.preserve_extended = scenario >= 15;
         for (i = 0; i < 5; ++i) {
-            table.table[i]->policy_tuple[0] = i == 4 ? 100.0 : (double)i;
-            table.table[i]->policy_tuple[1] = (double)(i % 2);
+            table.table[i]->components[0] = i == 4 ? 100.0 : (double)i;
+            table.table[i]->components[1] = (double)(i % 2);
             table.table[i]->value = i + 1;
         }
         options.cut_sse = 1;
@@ -334,13 +293,13 @@ heckbert_policy_check(int scenario)
                     for (i = side == 0 ? 0 : k;
                             i < (side == 0 ? k : 5); ++i) {
                         population += table.table[i]->value;
-                        mean += table.table[i]->policy_tuple[j]
+                        mean += table.table[i]->components[j]
                             * table.table[i]->value;
                     }
                     mean /= population;
                     for (i = side == 0 ? 0 : k;
                             i < (side == 0 ? k : 5); ++i) {
-                        expected = table.table[i]->policy_tuple[j] - mean;
+                        expected = table.table[i]->components[j] - mean;
                         error += expected * expected * table.table[i]->value;
                     }
                 }
@@ -360,10 +319,10 @@ heckbert_policy_check(int scenario)
         table.size = 4;
         table.preserve_extended = 1;
         table.table[0]->value = 100;
-        table.table[1]->policy_tuple[0] = 5;
-        table.table[2]->policy_tuple[0] = 9;
+        table.table[1]->components[0] = 5;
+        table.table[2]->components[0] = 9;
         table.table[2]->value = 3;
-        table.table[3]->policy_tuple[0] = 10;
+        table.table[3]->components[0] = 10;
         memset(stats, 0, sizeof(stats));
         memset(cluster_sums, 0, sizeof(cluster_sums));
         cluster_weights[0] = 100;
@@ -432,7 +391,8 @@ bucket_mean_budget_realloc(void *ptr, size_t size)
 int
 heckbert_bucket_mean_check(int scenario)
 {
-    policy_tupletable2 table;
+    sixel_heckbert_histogram_t table;
+    sixel_heckbert_binning_request_t request;
     sixel_allocator_t *allocator;
     unsigned char pixels[12];
     unsigned int depth;
@@ -470,9 +430,18 @@ heckbert_bucket_mean_check(int scenario)
             scenario == 5 ? free : NULL))) {
         return 1;
     }
-    status = policy_sixel_lut_build_histogram(pixels, 3U * depth, depth,
-        depth, SIXEL_PIXELFORMAT_RGB888, SIXEL_QUALITY_AUTO, reversible,
-        policy, SIXEL_PALETTE_MAX, NULL, &table, allocator);
+    request = (sixel_heckbert_binning_request_t){
+        .data = pixels,
+        .length = 3U * depth,
+        .depth = depth,
+        .pixel_stride = depth,
+        .pixelformat = SIXEL_PIXELFORMAT_RGB888,
+        .reversible = reversible,
+        .lut_policy = policy,
+        .requested_colors = SIXEL_PALETTE_MAX
+    };
+    status = sixel_filter_run_heckbert_binning(&request, &table, allocator,
+                                             NULL);
     ok = SIXEL_SUCCEEDED(status) && table.size ==
         (scenario == 3 ? 2U : 1U);
     if (ok) {
@@ -483,7 +452,7 @@ heckbert_bucket_mean_check(int scenario)
                 expected = reversible ? 51.0 : scenario == 3
                     ? 26.0 + i + channel * 8.0
                     : 80.0 / 3.0 + channel * 8.0;
-                ok = ok && fabs(table.table[i]->policy_tuple[channel]
+                ok = ok && fabs(table.table[i]->components[channel]
                     - expected) < 1e-12;
             }
         }
@@ -518,13 +487,13 @@ heckbert_fractional_axis_check(void)
         return 1;
     }
     for (i = 0U; i < 6U; ++i) {
-        table.table[i]->policy_tuple[0] = values[i];
+        table.table[i]->components[0] = values[i];
     }
     status = policy_sortBoxByAxisBuckets(table, 0U, 6U, 0U,
         NULL, NULL, NULL, keys);
     ok = SIXEL_SUCCEEDED(status);
     for (i = 0U; i < 6U; ++i) {
-        ok = ok && table.table[i]->policy_tuple[0] == expected[i];
+        ok = ok && table.table[i]->components[0] == expected[i];
     }
     sixel_allocator_free(allocator, table.table);
     sixel_allocator_unref(allocator);
@@ -538,7 +507,7 @@ heckbert_score_avx2_check(int edge)
 {
 #if SIXEL_SIMD_AVX2 && HAVE_DOUBLE_EVAL_NO_EXCESS
     policy_tupletable2 table;
-    struct policy_tupleint *entries[65];
+    sixel_heckbert_tuple_t *entries[65];
     double weights[4];
     double children[2][2];
     double score[2];
@@ -577,11 +546,11 @@ heckbert_score_avx2_check(int edge)
                 : state % 1000U;
             for (j = 0U; j < 3U; ++j) {
                 state = state * 1664525U + 1013904223U;
-                entries[i]->policy_tuple[j] = edge
+                entries[i]->components[j] = edge
                     ? (run % 2U == 0U ? 255.0 : (double)(i % 2U))
                     : (double)(int32_t)state / 16777216.0;
             }
-            entries[i]->policy_tuple[3] = 0.0;
+            entries[i]->components[3] = 0.0;
         }
         score[0] = policy_sixel_heckbert_box_sse(table, 1U, size, 4U,
             weights, &cuts[0], &lower[0], children[0]);
@@ -628,7 +597,7 @@ heckbert_bounds_avx2_check(int edge)
 {
 #if SIXEL_SIMD_AVX2
     policy_tupletable2 table;
-    struct policy_tupleint *entries[65];
+    sixel_heckbert_tuple_t *entries[65];
     double low[2][4];
     double high[2][4];
     unsigned int bins[2][4][256];
@@ -663,12 +632,12 @@ heckbert_bounds_avx2_check(int edge)
                 : state % 1000U;
             for (j = 0U; j < 3U; ++j) {
                 state = state * 1664525U + 1013904223U;
-                entries[i]->policy_tuple[j] = edge
+                entries[i]->components[j] = edge
                     ? (run % 2U ? (i % 2U ? -0.0 : 0.0)
                         : (i % 2U ? 255.0 : (double)UINT_MAX))
                     : (double)state / 1677721.6;
             }
-            entries[i]->policy_tuple[3] = 0.0;
+            entries[i]->components[3] = 0.0;
         }
         memset(bins, 0xa5, sizeof(bins));
         low[1][3] = high[1][3] = -1234.0;
@@ -690,7 +659,7 @@ heckbert_bounds_avx2_check(int edge)
         }
         /* Extended coordinates only request bounds, without axis bins. */
         for (i = 0U; i < 65U; ++i) {
-            entries[i]->policy_tuple[0] -= 2048.0;
+            entries[i]->components[0] -= 2048.0;
         }
         for (j = 0U; j < 2U; ++j) {
             policy_findBoxBoundariesAndWeight(table, 4U - j, 1U, size,

@@ -71,8 +71,6 @@
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
 #include "palette-heckbert-gpu.h"
-#include "palette-bin-histogram.h"
-#include "palette-sample.h"
 #include "palette-private.h"
 #include "pixelformat.h"
 #include "status.h"
@@ -94,44 +92,17 @@
 int palette_test_kmeans_float32_two_colors(void);
 int palette_test_kmeans_float32_merge_scaling(void);
 
-/*
- * Tuple table primitives live exclusively inside the Heckbert implementation.
- * Exposing them here avoids leaking histogram internals into palette.c.
- */
-/* Double tuples retain byte-bucket means as well as native float input.
- * Only final byte representatives are rounded, after cluster selection. */
+/* The binning filter supplies double tuples for both byte-bucket means and
+ * native float input. Round byte representatives only after clustering. */
 typedef double sample;
 typedef sample *tuple;
 
 enum {
-    sixel_palette_heckbert_max_channels = 4,
     sixel_palette_heckbert_axis_bins = 256
 };
 
-struct tupleint {
-    unsigned int value;
-    sample tuple[1];
-};
-
-typedef struct tupleint **tupletable;
-
-typedef struct {
-    unsigned int size;
-    tupletable table;
-    int preserve_extended;
-} tupletable2;
-
-/*
- * Median-cut histogram configuration is private to this module.  Keeping the
- * structure here prevents unrelated lookup code from depending on Heckbert
- * internals.
- */
-struct histogram_control {
-    unsigned int channel_shift;
-    unsigned int channel_bits;
-    unsigned int channel_mask;
-    int reversible_rounding;
-};
+typedef sixel_heckbert_tuple_t **tupletable;
+typedef sixel_heckbert_histogram_t tupletable2;
 
 static int
 sixel_palette_heckbert_log_start(sixel_timeline_logger_t *logger,
@@ -243,724 +214,6 @@ sixel_palette_reversible_tuple(sample *tuple_values,
     }
 }
 
-/*
- * Allocate a tuple table with enough space to store "size" tuples of the
- * specified depth.  The helper is now private to the Heckbert implementation
- * because the k-means path keeps its samples in a separate reservoir.
- */
-static SIXELSTATUS
-alloctupletable(tupletable *result,
-                unsigned int depth,
-                unsigned int size,
-                sixel_allocator_t *allocator)
-{
-    SIXELSTATUS status;
-    enum { message_buffer_size = 256 };
-    char message[message_buffer_size];
-    int nwrite;
-    unsigned int mainTableSize;
-    unsigned int tupleIntSize;
-    unsigned int allocSize;
-    void *pool;
-    tupletable tbl;
-    unsigned int i;
-
-    status = SIXEL_FALSE;
-    if (result == NULL || allocator == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (UINT_MAX / sizeof(struct tupleint) < size) {
-        nwrite = sixel_compat_snprintf(message,
-                                       sizeof(message),
-                                       "size %u is too big for arithmetic",
-                                       size);
-        if (nwrite > 0) {
-            sixel_helper_set_additional_message(message);
-        }
-        status = SIXEL_RUNTIME_ERROR;
-        goto end;
-    }
-
-    mainTableSize = size * sizeof(struct tupleint *);
-    /* The tuple pool must remain double-aligned on 32-bit hosts too. */
-    if (mainTableSize > UINT_MAX - (sizeof(sample) - 1U)) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    mainTableSize = (mainTableSize + sizeof(sample) - 1U)
-        / sizeof(sample) * sizeof(sample);
-    if ((UINT_MAX - mainTableSize) / sizeof(struct tupleint) < size) {
-        nwrite = sixel_compat_snprintf(message,
-                                       sizeof(message),
-                                       "size %u is too big for arithmetic",
-                                       size);
-        if (nwrite > 0) {
-            sixel_helper_set_additional_message(message);
-        }
-        status = SIXEL_RUNTIME_ERROR;
-        goto end;
-    }
-
-    tupleIntSize = sizeof(struct tupleint) + (depth - 1U) * sizeof(sample);
-    if ((UINT_MAX - mainTableSize) / tupleIntSize < size) {
-        nwrite = sixel_compat_snprintf(message,
-                                       sizeof(message),
-                                       "size %u is too big for arithmetic",
-                                       size);
-        if (nwrite > 0) {
-            sixel_helper_set_additional_message(message);
-        }
-        status = SIXEL_RUNTIME_ERROR;
-        goto end;
-    }
-
-    allocSize = mainTableSize + size * tupleIntSize;
-
-    pool = sixel_allocator_malloc(allocator, allocSize);
-    if (pool == NULL) {
-        sixel_compat_snprintf(message,
-                              sizeof(message),
-                              "unable to allocate %u bytes for a %u-entry "
-                              "tuple table",
-                              allocSize,
-                              size);
-        sixel_helper_set_additional_message(message);
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    tbl = (tupletable)pool;
-
-    for (i = 0U; i < size; ++i) {
-        tbl[i] = (struct tupleint *)((char *)pool
-            + mainTableSize + i * tupleIntSize);
-    }
-
-    *result = tbl;
-
-    status = SIXEL_OK;
-
-end:
-    if (status != SIXEL_OK) {
-        *result = NULL;
-    }
-
-    return status;
-}
-
-/*
- * Determine the dense histogram size for a given depth and quantization
- * policy.  The ladder illustrates the exponent calculation:
- *
- *   slots = 2^(depth * channel_bits)
- *
- * The guard against SIZE_MAX keeps the allocator from wrapping on 32-bit
- * hosts where the histogram would grow beyond addressable memory.
- */
-static size_t
-histogram_dense_size(unsigned int depth,
-                     struct histogram_control const *control)
-{
-    size_t size;
-    unsigned int exponent;
-    unsigned int i;
-
-    size = 1U;
-    exponent = depth * control->channel_bits;
-    for (i = 0U; i < exponent; ++i) {
-        if (size > SIZE_MAX / 2U) {
-            size = SIZE_MAX;
-            break;
-        }
-        size <<= 1U;
-    }
-
-    return size;
-}
-
-/*
- * Configure histogram binning for the requested LUT policy.  Median-cut
- * inherits the original pnmcolormap heuristics: 5bit keeps wider buckets while
- * 6bit retains finer resolution for shallow depths.
- */
-static struct histogram_control
-histogram_control_make_for_policy(unsigned int depth, int lut_policy)
-{
-    struct histogram_control control;
-
-    control.reversible_rounding = 0;
-    control.channel_shift = 2U;
-    if (depth > 3U) {
-        control.channel_shift = 3U;
-    }
-    if (lut_policy == SIXEL_LUT_POLICY_5BIT) {
-        control.channel_shift = 3U;
-    } else if (lut_policy == SIXEL_LUT_POLICY_6BIT) {
-        control.channel_shift = 2U;
-        if (depth > 3U) {
-            control.channel_shift = 3U;
-        }
-    } else if (lut_policy == SIXEL_LUT_POLICY_NONE) {
-        control.channel_shift = 0U;
-    } else if (lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
-        control.channel_shift = 2U;
-    }
-    control.channel_bits = 8U - control.channel_shift;
-    control.channel_mask = (1U << control.channel_bits) - 1U;
-
-    return control;
-}
-
-/* Bucket keys group nearby samples; they do not encode representative colors.
- * Keep the reversible grouping offset to preserve its occupied-cell contract.
- * Representatives are computed from the actual samples in each bucket. */
-static unsigned int
-histogram_quantize(unsigned int sample8,
-                   struct histogram_control const *control)
-{
-    unsigned int quantized;
-    unsigned int shift;
-    unsigned int mask;
-    unsigned int rounding;
-
-    shift = control->channel_shift;
-    mask = control->channel_mask;
-    if (shift == 0U) {
-        quantized = sample8;
-    } else {
-        if (control->reversible_rounding) {
-            rounding = 1U << shift;
-        } else {
-            rounding = 1U << (shift - 1U);
-        }
-        quantized = (sample8 + rounding) >> shift;
-        if (quantized > mask) {
-            quantized = mask;
-        }
-    }
-
-    return quantized;
-}
-
-/*
- * Build an 8-bit quantization table so the histogram pass can avoid
- * per-channel shift/rounding branches.
- */
-static void
-histogram_build_quantize_lut(struct histogram_control const *control,
-                             unsigned int quantized_lut[256])
-{
-    unsigned int sample8;
-
-    for (sample8 = 0U; sample8 < 256U; ++sample8) {
-        quantized_lut[sample8] = histogram_quantize(sample8, control);
-    }
-}
-
-/*
- * Build plane-indexed packed values for depth 3/4 RGB(A) fast-path packing.
- */
-static void
-histogram_build_fast_pack_lut(unsigned int depth,
-                              unsigned int bits,
-                              unsigned int const quantized_lut[256],
-                              uint32_t packed_lut[4][256])
-{
-    unsigned int plane;
-    unsigned int sample8;
-    unsigned int shift;
-
-    for (plane = 0U; plane < 4U; ++plane) {
-        for (sample8 = 0U; sample8 < 256U; ++sample8) {
-            packed_lut[plane][sample8] = 0U;
-        }
-    }
-    for (plane = 0U; plane < depth; ++plane) {
-        shift = (depth - 1U - plane) * bits;
-        for (sample8 = 0U; sample8 < 256U; ++sample8) {
-            packed_lut[plane][sample8]
-                = (uint32_t)quantized_lut[sample8] << shift;
-        }
-    }
-}
-
-static uint32_t
-histogram_pack_color_fast_rgb(unsigned char const *data,
-                              uint32_t packed_lut[4][256])
-{
-    return packed_lut[0][data[0]]
-           | packed_lut[1][data[1]]
-           | packed_lut[2][data[2]];
-}
-
-static uint32_t
-histogram_pack_color_fast_rgba(unsigned char const *data,
-                               uint32_t packed_lut[4][256])
-{
-    return packed_lut[0][data[0]]
-           | packed_lut[1][data[1]]
-           | packed_lut[2][data[2]]
-           | packed_lut[3][data[3]];
-}
-
-/*
- * Pack a pixel into a dense histogram index.  Colour channels are processed in
- * reverse order so the least significant bits store the first component.
- */
-static unsigned int
-histogram_pack_color(unsigned char const *data,
-                     unsigned int depth,
-                     struct histogram_control const *control)
-{
-    uint32_t packed;
-    unsigned int n;
-    unsigned int sample8;
-    unsigned int bits;
-
-    packed = 0U;
-    bits = control->channel_bits;
-    if (control->channel_shift == 0U) {
-        for (n = 0U; n < depth; ++n) {
-            packed |= (uint32_t)data[depth - 1U - n] << (n * bits);
-        }
-        return packed;
-    }
-
-    for (n = 0U; n < depth; ++n) {
-        sample8 = (unsigned int)data[depth - 1U - n];
-        packed |= histogram_quantize(sample8, control) << (n * bits);
-    }
-
-    return packed;
-}
-
-/*
- * Generic LUT-based packer used when the 3/4-channel fast paths are not
- * applicable.
- */
-static unsigned int
-histogram_pack_color_from_lut(unsigned char const *data,
-                              unsigned int depth,
-                              unsigned int bits,
-                              unsigned int const quantized_lut[256])
-{
-    unsigned int n;
-    uint32_t packed;
-    unsigned int sample8;
-
-    packed = 0U;
-    for (n = 0U; n < depth; ++n) {
-        sample8 = (unsigned int)data[depth - 1U - n];
-        packed |= (uint32_t)quantized_lut[sample8] << (n * bits);
-    }
-
-    return packed;
-}
-
-/* Grow only the occupied-cell statistics. Each slot stores an exact count
- * followed by depth channel sums; the dense map stores only slot + 1, with
- * zero reserved for an unseen bucket. Slot order is first occurrence order,
- * the same order formerly recorded by refmap. The byte-length bound keeps
- * every count and 255 * count safely within uint64_t. */
-static SIXELSTATUS
-histogram_add_slot(uint64_t **moments,
-                    size_t *capacity,
-                    unsigned int slot,
-                    unsigned int depth,
-                    size_t limit,
-                    sixel_allocator_t *allocator)
-{
-    size_t grown;
-    size_t stride;
-    uint64_t *replacement;
-
-    stride = (size_t)depth + 1U;
-    if ((size_t)slot == *capacity) {
-        grown = *capacity == 0U ? 256U : *capacity * 2U;
-        if (grown > limit) {
-            grown = limit;
-        }
-        if (grown <= (size_t)slot ||
-                grown > SIZE_MAX / stride / sizeof(uint64_t)) {
-            return SIXEL_BAD_INTEGER_OVERFLOW;
-        }
-        replacement = sixel_allocator_realloc(allocator, *moments,
-            grown * stride * sizeof(uint64_t));
-        if (replacement == NULL) {
-            sixel_helper_set_additional_message(
-                "unable to allocate occupied histogram statistics.");
-            return SIXEL_BAD_ALLOCATION;
-        }
-        *moments = replacement;
-        *capacity = grown;
-    }
-    memset(*moments + (size_t)slot * stride, 0,
-        stride * sizeof(uint64_t));
-    return SIXEL_OK;
-}
-
-/*
- * Construct the histogram consumed by the median-cut splitter.  The control
- * flow is intentionally verbose:
- *
- *   1. Consume every byte pixel supplied by upstream sampling.
- *   2. Quantize each pixel into the dense histogram space.
- *   3. Accumulate exact counts/sums only for occupied cells.
- *   4. Export fractional means, independently of saturated tuple weights.
- */
-static SIXELSTATUS
-sixel_lut_build_histogram(unsigned char const *data,
-                          unsigned int length,
-                          unsigned int depth,
-                          unsigned int pixel_stride,
-                          int pixelformat,
-                          int quality_mode,
-                          int use_reversible,
-                          int policy,
-                          unsigned int requested_colors,
-                          sixel_sample_statistics_t *statistics,
-                          tupletable2 *colorfreqtable,
-                          sixel_allocator_t *allocator)
-{
-    sixel_sample_statistics_t *owned_statistics;
-    SIXELSTATUS status;
-    typedef uint32_t unit_t;
-    unit_t *slotmap;
-    uint64_t *moments;
-    uint64_t *moment;
-    size_t capacity;
-    size_t limit;
-    unsigned int slots;
-    unit_t slot;
-    unsigned int bucket_index;
-    unsigned int step;
-    size_t hist_size;
-    struct histogram_control control;
-    unsigned int depth_u;
-    unsigned char reversible_pixel[sixel_palette_heckbert_max_channels];
-    unsigned int i;
-    unsigned int n;
-    unsigned int plane;
-    unsigned int channel_stride;
-    unsigned char const *bucket_input;
-    unsigned int quantized_lut[256];
-    uint32_t packed_lut[4][256];
-    unsigned int bits;
-    int use_fast_pack;
-    sixel_palette_bin_range_t range;
-    unsigned int value;
-    unsigned int address;
-    unsigned int strength;
-    sixel_sample_stream_t gate_samples;
-
-    owned_statistics = NULL;
-    status = SIXEL_FALSE;
-    slotmap = NULL;
-    moments = NULL;
-    capacity = 0U;
-    slots = 0U;
-    bucket_input = NULL;
-    if (colorfreqtable == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    colorfreqtable->preserve_extended = 0;
-    colorfreqtable->size = 0U;
-    colorfreqtable->table = NULL;
-
-    if (depth == 0U || data == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (pixel_stride == 0U || pixel_stride % depth != 0U) {
-        sixel_helper_set_additional_message(
-            "sixel_lut_build_histogram: invalid pixel stride.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (depth > sixel_palette_heckbert_max_channels) {
-        sixel_helper_set_additional_message(
-            "sixel_lut_build_histogram: unsupported channel count.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    channel_stride = pixel_stride / depth;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) || channel_stride != 1U) {
-        sixel_helper_set_additional_message(
-            "sixel_lut_build_histogram: requires byte input.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    (void)quality_mode;
-
-    /*
-     * The encoder now owns sampling, so the histogram walks every supplied
-     * pixel.  The stride stays aligned to the caller's layout to avoid losing
-     * information after the upstream down-sampler trimmed the dataset.
-     * Stop at the last complete pixel without adding stride to the loop
-     * index in the comparison: that addition can wrap at UINT_MAX.
-     */
-    step = pixel_stride;
-
-    sixel_debugf("making histogram...");
-
-    depth_u = depth;
-    control = histogram_control_make_for_policy(depth_u, policy);
-    if (use_reversible) {
-        control.reversible_rounding = 1;
-    }
-    histogram_build_quantize_lut(&control, quantized_lut);
-    bits = control.channel_bits;
-    use_fast_pack = 0;
-    if (channel_stride == 1U && (depth_u == 3U || depth_u == 4U)) {
-        histogram_build_fast_pack_lut(depth_u,
-                                      bits,
-                                      quantized_lut,
-                                      packed_lut);
-        use_fast_pack = 1;
-    }
-    strength = sixel_palette_bin_range_get_strength();
-    if (strength != 0u && use_fast_pack && !use_reversible &&
-            policy == SIXEL_LUT_POLICY_AUTO) {
-        /* Retain the sampled RGB values. Only the grouping LUT changes;
-         * occupied moments below still accumulate the original bytes.
-         * Alpha retains its nominal grid, as it is not a color axis. */
-        sixel_palette_bin_range_init(&range, 1u << bits);
-        if (statistics == NULL) {
-            status = sixel_palette_prepare_sample_statistics(data,
-                length - length % pixel_stride, pixelformat,
-                sixel_pixelformat_get_colorspace(pixelformat), 0,
-                &owned_statistics, allocator, NULL);
-            if (SIXEL_FAILED(status)) {
-                goto cleanup;
-            }
-            statistics = owned_statistics;
-        }
-        sixel_sample_stream_init(&gate_samples);
-        status = sixel_sample_stream_bind_borrowed_buffer(&gate_samples,
-            data, length - length % pixel_stride, pixelformat,
-            statistics->colorspace, NULL, SIXEL_PALETTE_SAMPLING_FULL_FRAME,
-            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME);
-        if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_palette_bin_range_prepare(&range, statistics,
-                &gate_samples, NULL, requested_colors, NULL, NULL,
-                SIXEL_PALETTE_BINNING_GRID_NONE, 1, quantized_lut,
-                strength, SIXEL_QUANTIZE_MODEL_MEDIANCUT);
-        }
-        sixel_sample_stream_dispose(&gate_samples);
-        if (SIXEL_FAILED(status)) {
-            goto cleanup;
-        }
-        if (range.active[0] || range.active[1] || range.active[2]) {
-            for (plane = 0u; plane < 3u; ++plane) {
-                for (value = 0u; value < 256u; ++value) {
-                    address = sixel_palette_bin_range_sample_index(&range,
-                        plane, quantized_lut[value], (double)value, 0u);
-                    packed_lut[plane][value] =
-                        (uint32_t)address << ((depth_u - 1u - plane) * bits);
-                }
-            }
-        }
-    }
-    hist_size = histogram_dense_size(depth_u, &control);
-    if (hist_size > SIZE_MAX / sizeof(unit_t)) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto cleanup;
-    }
-    slotmap = (unit_t *)sixel_allocator_calloc(allocator,
-                                                hist_size,
-                                                sizeof(unit_t));
-    if (slotmap == NULL) {
-        sixel_helper_set_additional_message(
-            "unable to allocate memory for histogram slot map.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
-    }
-    limit = length / pixel_stride;
-    if (limit > hist_size) {
-        limit = hist_size;
-    }
-
-    if (limit == 0U) {
-        goto export_histogram;
-    }
-    /* Reserve the first occupied-cell block before entering the hot loops.
-     * Slot insertion still initializes only the cells actually visited. */
-    capacity = limit < 256U ? limit : 256U;
-    moments = sixel_allocator_malloc(allocator,
-        capacity * (depth_u + 1U) * sizeof(*moments));
-    if (moments == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
-    }
-
-    /*
-     * Keep the dominant 8bit RGB/RGBA path branch-light so histogram packing
-     * does not pay per-pixel reversible checks.
-     */
-    if (!use_reversible
-            && use_fast_pack
-            && depth_u == 3U) {
-        for (i = 0U; i < length - length % pixel_stride; i += step) {
-            bucket_index = histogram_pack_color_fast_rgb(data + i,
-                                                         packed_lut);
-            slot = slotmap[bucket_index];
-            if (slot == 0U) {
-                status = histogram_add_slot(&moments, &capacity, slots,
-                    depth_u, limit, allocator);
-                if (SIXEL_FAILED(status)) {
-                    goto cleanup;
-                }
-                slot = ++slots;
-                slotmap[bucket_index] = slot;
-            }
-            moment = moments + (size_t)(slot - 1U) * 4U;
-            ++moment[0];
-            moment[1] += data[i + 0U];
-            moment[2] += data[i + 1U];
-            moment[3] += data[i + 2U];
-        }
-    } else if (!use_reversible
-               && use_fast_pack
-               && depth_u == 4U) {
-        for (i = 0U; i < length - length % pixel_stride; i += step) {
-            bucket_index = histogram_pack_color_fast_rgba(data + i,
-                                                          packed_lut);
-            slot = slotmap[bucket_index];
-            if (slot == 0U) {
-                status = histogram_add_slot(&moments, &capacity, slots,
-                    depth_u, limit, allocator);
-                if (SIXEL_FAILED(status)) {
-                    goto cleanup;
-                }
-                slot = ++slots;
-                slotmap[bucket_index] = slot;
-            }
-            moment = moments + (size_t)(slot - 1U) * 5U;
-            ++moment[0];
-            moment[1] += data[i + 0U];
-            moment[2] += data[i + 1U];
-            moment[3] += data[i + 2U];
-            moment[4] += data[i + 3U];
-        }
-    } else {
-        for (i = 0U; i < length - length % pixel_stride; i += step) {
-            bucket_input = data + i;
-            if (use_reversible) {
-                for (plane = 0U; plane < depth_u; ++plane) {
-                    reversible_pixel[plane]
-                        = sixel_palette_reversible_value(bucket_input[plane]);
-                }
-                bucket_input = reversible_pixel;
-            }
-            if (use_fast_pack && depth_u == 3U) {
-                bucket_index = histogram_pack_color_fast_rgb(bucket_input,
-                                                             packed_lut);
-            } else if (use_fast_pack && depth_u == 4U) {
-                bucket_index = histogram_pack_color_fast_rgba(bucket_input,
-                                                              packed_lut);
-            } else if (control.channel_shift == 0U) {
-                bucket_index = histogram_pack_color(bucket_input,
-                                                    depth_u,
-                                                    &control);
-            } else {
-                bucket_index = histogram_pack_color_from_lut(bucket_input,
-                                                             depth_u,
-                                                             bits,
-                                                             quantized_lut);
-            }
-            slot = slotmap[bucket_index];
-            if (slot == 0U) {
-                status = histogram_add_slot(&moments, &capacity, slots,
-                    depth_u, limit, allocator);
-                if (SIXEL_FAILED(status)) {
-                    goto cleanup;
-                }
-                slot = ++slots;
-                slotmap[bucket_index] = slot;
-            }
-            moment = moments + (size_t)(slot - 1U) * (depth_u + 1U);
-            ++moment[0];
-            for (plane = 0U; plane < depth_u; ++plane) {
-                moment[plane + 1U] += bucket_input[plane];
-            }
-        }
-    }
-
-export_histogram:
-    colorfreqtable->size = slots;
-    status = alloctupletable(&colorfreqtable->table, depth, slots, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    for (i = 0U; i < slots; ++i) {
-        moment = moments + (size_t)i * (depth_u + 1U);
-        colorfreqtable->table[i]->value = moment[0] > UINT32_MAX
-            ? UINT32_MAX : (unsigned int)moment[0];
-        for (n = 0U; n < depth; ++n) {
-            colorfreqtable->table[i]->tuple[n]
-                = (sample)moment[n + 1U] / (sample)moment[0];
-            if (use_reversible) {
-                /* Average the snapped input, then restore its tone grid.
-                 * Rounding here is part of reversible mapping only. */
-                colorfreqtable->table[i]->tuple[n]
-                    = sixel_palette_reversible_value((unsigned int)floor(
-                        colorfreqtable->table[i]->tuple[n] + 0.5));
-            }
-        }
-    }
-
-    sixel_debugf("%u colors found", colorfreqtable->size);
-    status = SIXEL_OK;
-
-cleanup:
-    sixel_sample_statistics_unref(owned_statistics);
-    sixel_allocator_free(allocator, moments);
-    sixel_allocator_free(allocator, slotmap);
-
-    return status;
-}
-
-#if defined(HAVE_METAL)
-SIXELSTATUS
-sixel_heckbert_resident_histogram(unsigned char const *rgb, unsigned int width,
-    unsigned int height, unsigned int stride, unsigned int colors,
-    sixel_allocator_t *allocator, float *points, unsigned int *count)
-{
-    tupletable2 table;
-    unsigned char *samples;
-    unsigned int columns, rows, bytes, x, y, i;
-    SIXELSTATUS status;
-
-    columns = (width - 1u) / stride + 1u;
-    rows = (height - 1u) / stride + 1u;
-    samples = sixel_allocator_malloc(allocator, 3u*(size_t)columns*rows);
-    if (samples == NULL)
-        return SIXEL_BAD_ALLOCATION;
-
-    /* Match the adaptive-grid filter with solid augmentation disabled. The
-     * reversible 6bit histogram retains its original occupancy and order. */
-    bytes = 0;
-    for (y = 0; y < height; y += stride) {
-        for (x = 0; x < width; x += stride) {
-            memcpy(samples+bytes, rgb+3u*((size_t)y*width+x), 3u);
-            bytes += 3u;
-        }
-    }
-    status = sixel_lut_build_histogram(samples, bytes, 3u, 3u,
-        SIXEL_PIXELFORMAT_RGB888, SIXEL_QUALITY_LOW, 1, SIXEL_LUT_POLICY_6BIT,
-        colors, NULL, &table, allocator);
-    sixel_allocator_free(allocator, samples);
-    if (status != SIXEL_OK)
-        return status;
-    for (i = 0; i < table.size; ++i) {
-        points[4u*i] = (float)table.table[i]->tuple[0];
-        points[4u*i+1u] = (float)table.table[i]->tuple[1];
-        points[4u*i+2u] = (float)table.table[i]->tuple[2];
-        points[4u*i+3u] = (float)table.table[i]->value;
-    }
-    *count = table.size;
-    sixel_allocator_free(allocator, table.table);
-    return table.size != 0 ? SIXEL_OK : SIXEL_BAD_INPUT;
-}
-#endif
 
 typedef struct box *boxVector;
 struct box {
@@ -976,18 +229,18 @@ static unsigned int compareplanePcaDimensions;
 static unsigned int compareplaneTieDepth;
 
 struct sixel_pca_sort_entry {
-    struct tupleint *entry;
+    sixel_heckbert_tuple_t *entry;
     unsigned int weight;
     double key;
 };
 
 static int
-compareplane_lexicographic(struct tupleint const *lhs,
-                           struct tupleint const *rhs,
+compareplane_lexicographic(sixel_heckbert_tuple_t const *lhs,
+                           sixel_heckbert_tuple_t const *rhs,
                            unsigned int depth);
 static int compareplanePcaCached(const void *arg1, const void *arg2);
 static unsigned int sixel_palette_heckbert_entry_weight(
-    struct tupleint const *entry);
+    sixel_heckbert_tuple_t const *entry);
 
 static int
 sixel_pca_entry_compare(struct sixel_pca_sort_entry const *lhs,
@@ -1173,8 +426,8 @@ sixel_pca_select_weighted_median(struct sixel_pca_sort_entry cache[],
 }
 
 static int
-compareplane_lexicographic(struct tupleint const *lhs,
-                           struct tupleint const *rhs,
+compareplane_lexicographic(sixel_heckbert_tuple_t const *lhs,
+                           sixel_heckbert_tuple_t const *rhs,
                            unsigned int depth)
 {
     unsigned int plane;
@@ -1185,8 +438,8 @@ compareplane_lexicographic(struct tupleint const *lhs,
         return 0;
     }
     for (plane = 0U; plane < depth; ++plane) {
-        lhs_value = lhs->tuple[plane];
-        rhs_value = rhs->tuple[plane];
+        lhs_value = lhs->components[plane];
+        rhs_value = rhs->components[plane];
         if (lhs_value < rhs_value) {
             return -1;
         }
@@ -1213,16 +466,16 @@ compareplanePca(const void *arg1, const void *arg2)
     double rhs;
     unsigned int plane;
     int diff;
-    typedef const struct tupleint *const *const sortarg;
+    typedef const sixel_heckbert_tuple_t *const *const sortarg;
     sortarg comparandPP = (sortarg)arg1;
     sortarg comparatorPP = (sortarg)arg2;
 
     lhs = 0.0;
     rhs = 0.0;
     for (plane = 0U; plane < compareplanePcaDimensions; ++plane) {
-        lhs += (double)(*comparandPP)->tuple[plane]
+        lhs += (double)(*comparandPP)->components[plane]
                * compareplanePcaAxis[plane];
-        rhs += (double)(*comparatorPP)->tuple[plane]
+        rhs += (double)(*comparatorPP)->components[plane]
                * compareplanePcaAxis[plane];
     }
 
@@ -1366,7 +619,8 @@ newColorMap(unsigned int newcolors,
     status = SIXEL_FALSE;
     colormap.preserve_extended = 0;
     colormap.size = 0U;
-    status = alloctupletable(&colormap.table, depth, newcolors, allocator);
+    status = sixel_heckbert_alloc_table(&colormap.table, depth, newcolors,
+                                       allocator);
     if (SIXEL_FAILED(status)) {
         return colormap;
     }
@@ -1375,7 +629,7 @@ newColorMap(unsigned int newcolors,
             unsigned int plane;
 
             for (plane = 0U; plane < depth; ++plane) {
-                colormap.table[i]->tuple[plane] = 0;
+                colormap.table[i]->components[plane] = 0;
             }
         }
         colormap.size = newcolors;
@@ -1410,7 +664,7 @@ newBoxVector(unsigned int colors,
 }
 
 static unsigned int
-sixel_palette_heckbert_entry_weight(struct tupleint const *entry)
+sixel_palette_heckbert_entry_weight(sixel_heckbert_tuple_t const *entry)
 {
     unsigned long weight;
 
@@ -1441,10 +695,10 @@ findBoxBoundariesAndWeightNeon3(tupletable2 const colorfreqtable,
                                 sample maxval[],
                                 unsigned long *total_weight,
                                 unsigned int axis_count
-                                    [sixel_palette_heckbert_max_channels]
+                                    [SIXEL_HECKBERT_MAX_CHANNELS]
                                     [sixel_palette_heckbert_axis_bins])
 {
-    struct tupleint const *entry;
+    sixel_heckbert_tuple_t const *entry;
     float64x2_t low;
     float64x2_t low_min;
     float64x2_t low_max;
@@ -1458,8 +712,8 @@ findBoxBoundariesAndWeightNeon3(tupletable2 const colorfreqtable,
     unsigned int i;
 
     entry = colorfreqtable.table[boxStart];
-    low_min = low_max = vld1q_f64(entry->tuple);
-    high_min = high_max = entry->tuple[2];
+    low_min = low_max = vld1q_f64(entry->components);
+    high_min = high_max = entry->components[2];
     weight = 0UL;
     if (axis_count != NULL) {
         memset(axis_count, 0, 3U * sizeof(axis_count[0]));
@@ -1468,8 +722,8 @@ findBoxBoundariesAndWeightNeon3(tupletable2 const colorfreqtable,
     for (i = 0U; i < boxSize; ++i) {
         entry = colorfreqtable.table[boxStart + i];
         weight += (unsigned long)sixel_palette_heckbert_entry_weight(entry);
-        low = vld1q_f64(entry->tuple);
-        value = entry->tuple[2];
+        low = vld1q_f64(entry->components);
+        value = entry->components[2];
         low_min = vbslq_f64(vcltq_f64(low, low_min), low, low_min);
         low_max = vbslq_f64(vcgtq_f64(low, low_max), low, low_max);
         high_min = value < high_min ? value : high_min;
@@ -1510,7 +764,7 @@ findBoxBoundariesAndWeightAvx2(tupletable2 const colorfreqtable,
                               sample minval[], sample maxval[],
                               unsigned long *total_weight,
                               unsigned int axis_count
-                                  [sixel_palette_heckbert_max_channels]
+                                  [SIXEL_HECKBERT_MAX_CHANNELS]
                                   [sixel_palette_heckbert_axis_bins])
 {
     __m256i mask;
@@ -1519,13 +773,13 @@ findBoxBoundariesAndWeightAvx2(tupletable2 const colorfreqtable,
     __m256d high;
     __m256d last_bin;
     __m128i bins;
-    struct tupleint const *entry;
+    sixel_heckbert_tuple_t const *entry;
     unsigned long weight;
     unsigned int i;
 
     mask = _mm256_set_epi64x(0, -1, -1, -1);
     entry = colorfreqtable.table[boxStart];
-    low = high = _mm256_maskload_pd(entry->tuple, mask);
+    low = high = _mm256_maskload_pd(entry->components, mask);
     last_bin = _mm256_set1_pd(sixel_palette_heckbert_axis_bins - 1U);
     weight = 0UL;
     if (axis_count != NULL) {
@@ -1534,7 +788,7 @@ findBoxBoundariesAndWeightAvx2(tupletable2 const colorfreqtable,
     for (i = 0U; i < boxSize; ++i) {
         entry = colorfreqtable.table[boxStart + i];
         weight += (unsigned long)sixel_palette_heckbert_entry_weight(entry);
-        value = _mm256_maskload_pd(entry->tuple, mask);
+        value = _mm256_maskload_pd(entry->components, mask);
         low = _mm256_blendv_pd(low, value,
             _mm256_cmp_pd(value, low, _CMP_LT_OQ));
         high = _mm256_blendv_pd(high, value,
@@ -1567,12 +821,12 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
                            sample maxval[],
                            unsigned long *total_weight,
                            unsigned int axis_count
-                               [sixel_palette_heckbert_max_channels]
+                               [SIXEL_HECKBERT_MAX_CHANNELS]
                                [sixel_palette_heckbert_axis_bins])
 {
     unsigned int plane;
     unsigned int i;
-    struct tupleint const *entry;
+    sixel_heckbert_tuple_t const *entry;
     unsigned int weight;
     unsigned int axis_value;
     sample value;
@@ -1594,7 +848,7 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
     }
 #endif
     for (plane = 0U; plane < depth; ++plane) {
-        minval[plane] = colorfreqtable.table[boxStart]->tuple[plane];
+        minval[plane] = colorfreqtable.table[boxStart]->components[plane];
         maxval[plane] = minval[plane];
     }
     if (total_weight != NULL) {
@@ -1615,7 +869,7 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
             *total_weight += (unsigned long)weight;
         }
         for (plane = 0U; plane < depth; ++plane) {
-            value = entry->tuple[plane];
+            value = entry->components[plane];
             if (value < minval[plane]) {
                 minval[plane] = value;
             }
@@ -1645,7 +899,7 @@ sortAxisFractions(tupletable entries, unsigned int count, unsigned int axis)
     unsigned int child;
     unsigned int end;
     unsigned int start;
-    struct tupleint *entry;
+    sixel_heckbert_tuple_t *entry;
     int differs;
 
     if (count < 2U) {
@@ -1653,7 +907,7 @@ sortAxisFractions(tupletable entries, unsigned int count, unsigned int axis)
     }
     differs = 0;
     for (i = 1U; i < count; ++i) {
-        if (entries[i]->tuple[axis] != entries[0]->tuple[axis]) {
+        if (entries[i]->components[axis] != entries[0]->components[axis]) {
             differs = 1;
             break;
         }
@@ -1675,11 +929,11 @@ sortAxisFractions(tupletable entries, unsigned int count, unsigned int axis)
         root = start;
         while (root < end / 2U) {
             child = root * 2U + 1U;
-            if (child + 1U < end && entries[child]->tuple[axis]
-                    < entries[child + 1U]->tuple[axis]) {
+            if (child + 1U < end && entries[child]->components[axis]
+                    < entries[child + 1U]->components[axis]) {
                 ++child;
             }
-            if (entry->tuple[axis] >= entries[child]->tuple[axis]) {
+            if (entry->components[axis] >= entries[child]->components[axis]) {
                 break;
             }
             entries[root] = entries[child];
@@ -1705,7 +959,7 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
                       * in newer standards, but we build with -std=c99.
                       */
                      unsigned int axis_count
-                         [sixel_palette_heckbert_max_channels]
+                         [SIXEL_HECKBERT_MAX_CHANNELS]
                          [sixel_palette_heckbert_axis_bins],
                      sample const minval[],
                      sample const maxval[],
@@ -1722,9 +976,9 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
     unsigned int axis_value;
     unsigned int target;
     unsigned char key;
-    struct tupleint *entry;
+    sixel_heckbert_tuple_t *entry;
 
-    if (axis >= sixel_palette_heckbert_max_channels) {
+    if (axis >= SIXEL_HECKBERT_MAX_CHANNELS) {
         sixel_helper_set_additional_message(
             "Internal error: invalid split axis in sortBoxByAxisBuckets.");
         return SIXEL_BAD_ARGUMENT;
@@ -1738,7 +992,7 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
      * the entries instead of loading every entry again. */
     for (index = 0U; index < boxSize; ++index) {
         entry = colorfreqtable.table[boxStart + index];
-        axis_value = (unsigned int)entry->tuple[axis];
+        axis_value = (unsigned int)entry->components[axis];
         if (axis_value >= sixel_palette_heckbert_axis_bins) {
             axis_value = sixel_palette_heckbert_axis_bins - 1U;
         }
@@ -1915,7 +1169,7 @@ computePcaAxis(tupletable2 const colorfreqtable,
     double normalized_second;
     double cov_value;
     double projected;
-    struct tupleint *entry;
+    sixel_heckbert_tuple_t *entry;
     double weight;
 
     dims = depth < 3U ? depth : 3U;
@@ -1953,7 +1207,7 @@ computePcaAxis(tupletable2 const colorfreqtable,
         }
         weight_sum += weight;
         for (plane = 0U; plane < dims; ++plane) {
-            tuple_value[plane] = (double)entry->tuple[plane];
+            tuple_value[plane] = (double)entry->components[plane];
             mean[plane] += weight * tuple_value[plane];
         }
         for (plane = 0U; plane < dims; ++plane) {
@@ -1975,7 +1229,7 @@ computePcaAxis(tupletable2 const colorfreqtable,
             entry = colorfreqtable.table[boxStart + i];
             weight = (double)entry->value;
             for (plane = 0U; plane < dims; ++plane) {
-                tuple_value[plane] = entry->tuple[plane] - mean[plane];
+                tuple_value[plane] = entry->components[plane] - mean[plane];
             }
             for (plane = 0U; plane < dims; ++plane) {
                 for (other = plane; other < dims; ++other) {
@@ -2081,7 +1335,7 @@ sortBoxByPcaProjection(tupletable2 const colorfreqtable,
     struct sixel_pca_sort_entry *owned_cache;
     unsigned int i;
     unsigned int plane;
-    struct tupleint *entry;
+    sixel_heckbert_tuple_t *entry;
     double key;
 
     cache = NULL;
@@ -2106,7 +1360,7 @@ sortBoxByPcaProjection(tupletable2 const colorfreqtable,
         entry = colorfreqtable.table[boxStart + i];
         key = 0.0;
         for (plane = 0U; plane < dimensions; ++plane) {
-            key += (double)entry->tuple[plane] * axis[plane];
+            key += (double)entry->components[plane] * axis[plane];
         }
         cache[i].entry = entry;
         cache[i].weight = sixel_palette_heckbert_entry_weight(entry);
@@ -2146,7 +1400,7 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
     struct sixel_pca_sort_entry *owned_cache;
     unsigned int i;
     unsigned int plane;
-    struct tupleint *entry;
+    sixel_heckbert_tuple_t *entry;
     double key;
     unsigned int index;
     unsigned int lower;
@@ -2189,7 +1443,7 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
         entry = colorfreqtable.table[boxStart + i];
         key = 0.0;
         for (plane = 0U; plane < dimensions; ++plane) {
-            key += (double)entry->tuple[plane] * axis[plane];
+            key += (double)entry->components[plane] * axis[plane];
         }
         cache[i].entry = entry;
         cache[i].weight = sixel_palette_heckbert_entry_weight(entry);
@@ -2240,10 +1494,10 @@ centerBox(unsigned int boxStart,
     unsigned int i;
 
     for (plane = 0U; plane < depth; ++plane) {
-        minval = colorfreqtable.table[boxStart]->tuple[plane];
+        minval = colorfreqtable.table[boxStart]->components[plane];
         maxval = minval;
         for (i = 1U; i < boxSize; ++i) {
-            v = colorfreqtable.table[boxStart + i]->tuple[plane];
+            v = colorfreqtable.table[boxStart + i]->components[plane];
             if (v < minval) {
                 minval = v;
             }
@@ -2279,7 +1533,7 @@ averageColors(unsigned int boxStart,
     for (plane = 0U; plane < depth; ++plane) {
         sum = 0;
         for (i = 0U; i < boxSize; ++i) {
-            sum += colorfreqtable.table[boxStart + i]->tuple[plane];
+            sum += colorfreqtable.table[boxStart + i]->components[plane];
         }
         newTuple[plane] = sum / boxSize;
         if (!colorfreqtable.preserve_extended) {
@@ -2308,7 +1562,7 @@ averagePixels(unsigned int boxStart,
     for (plane = 0U; plane < depth; ++plane) {
         sum = 0;
         for (i = 0U; i < boxSize; ++i) {
-            sum += colorfreqtable.table[boxStart + i]->tuple[plane]
+            sum += colorfreqtable.table[boxStart + i]->components[plane]
                 * (unsigned int)colorfreqtable.table[boxStart + i]->value;
         }
         if (n != 0U) {
@@ -2349,21 +1603,21 @@ colormapFromBv(unsigned int newcolors,
                       bv[bi].colors,
                       colorfreqtable,
                       depth,
-                      colormap.table[bi]->tuple);
+                      colormap.table[bi]->components);
             break;
         case SIXEL_REP_AVERAGE_COLORS:
             averageColors(bv[bi].ind,
                           bv[bi].colors,
                           colorfreqtable,
                           depth,
-                          colormap.table[bi]->tuple);
+                          colormap.table[bi]->components);
             break;
         case SIXEL_REP_AVERAGE_PIXELS:
             averagePixels(bv[bi].ind,
                           bv[bi].colors,
                           colorfreqtable,
                           depth,
-                          colormap.table[bi]->tuple);
+                          colormap.table[bi]->components);
             break;
         default:
 #if HAVE_ASSERT
@@ -2372,7 +1626,7 @@ colormapFromBv(unsigned int newcolors,
             break;
         }
         if (use_reversible && !sixel_palette_snap_destination_active()) {
-            sixel_palette_reversible_tuple(colormap.table[bi]->tuple,
+            sixel_palette_reversible_tuple(colormap.table[bi]->components,
                                           depth,
                                           pixelformat);
         }
@@ -2433,7 +1687,8 @@ force_palette_completion(tupletable2 *colormapP,
         return SIXEL_OK;
     }
 
-    status = alloctupletable(&new_table, depth, reqColors, allocator);
+    status = sixel_heckbert_alloc_table(&new_table, depth, reqColors,
+                                       allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2460,8 +1715,8 @@ force_palette_completion(tupletable2 *colormapP,
     for (fill = 0U; fill < current; ++fill) {
         new_table[fill]->value = colormapP->table[fill]->value;
         for (plane = 0U; plane < depth; ++plane) {
-            new_table[fill]->tuple[plane]
-                = colormapP->table[fill]->tuple[plane];
+            new_table[fill]->components[plane]
+                = colormapP->table[fill]->components[plane];
         }
     }
 
@@ -2474,8 +1729,8 @@ force_palette_completion(tupletable2 *colormapP,
             index = order[candidate];
             new_table[fill]->value = colorfreqtable.table[index]->value;
             for (plane = 0U; plane < depth; ++plane) {
-                new_table[fill]->tuple[plane]
-                    = colorfreqtable.table[index]->tuple[plane];
+                new_table[fill]->components[plane]
+                    = colorfreqtable.table[index]->components[plane];
             }
             ++fill;
             ++candidate;
@@ -2485,7 +1740,7 @@ force_palette_completion(tupletable2 *colormapP,
     if (fill < reqColors && fill == 0U) {
         new_table[fill]->value = 0U;
         for (plane = 0U; plane < depth; ++plane) {
-            new_table[fill]->tuple[plane] = 0U;
+            new_table[fill]->components[plane] = 0U;
         }
         ++fill;
     }
@@ -2494,7 +1749,8 @@ force_palette_completion(tupletable2 *colormapP,
     while (fill < reqColors) {
         new_table[fill]->value = new_table[source]->value;
         for (plane = 0U; plane < depth; ++plane) {
-            new_table[fill]->tuple[plane] = new_table[source]->tuple[plane];
+            new_table[fill]->components[plane] =
+                new_table[source]->components[plane];
         }
         ++fill;
         ++source;
@@ -2528,7 +1784,7 @@ end:
 /* Rebuild these statistics from assignments, never from rounded centers. */
 static void
 sixel_heckbert_rep_add(sixel_palette_rep_stats_t *stats,
-                       struct tupleint const *entry, unsigned int depth)
+                       sixel_heckbert_tuple_t const *entry, unsigned int depth)
 {
     unsigned int plane;
     double value;
@@ -2537,7 +1793,7 @@ sixel_heckbert_rep_add(sixel_palette_rep_stats_t *stats,
         return;
     }
     for (plane = 0U; plane < depth; ++plane) {
-        value = entry->tuple[plane];
+        value = entry->components[plane];
         stats->sums[plane] += value;
         if (stats->colors == 0U || value < stats->min[plane]) {
             stats->min[plane] = value;
@@ -2589,7 +1845,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     int center_changed;
     double previous_center;
     unsigned int executed;
-    struct tupleint *entry;
+    sixel_heckbert_tuple_t *entry;
 
     distance = 0.0;
     best_distance = 0.0;
@@ -2727,9 +1983,9 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
              * the per-component loop overhead in the nearest-center search.
              */
             if (depth == 3U) {
-                entry0 = (double)entry->tuple[0U];
-                entry1 = (double)entry->tuple[1U];
-                entry2 = (double)entry->tuple[2U];
+                entry0 = (double)entry->components[0U];
+                entry1 = (double)entry->components[1U];
+                entry2 = (double)entry->components[2U];
                 offset = (size_t)best_cluster * (size_t)SIXEL_MAX_CHANNELS;
                 diff = entry0 - centers[offset + 0U];
                 best_distance = diff * diff;
@@ -2762,10 +2018,10 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                     }
                 }
             } else if (depth == 4U) {
-                entry0 = (double)entry->tuple[0U];
-                entry1 = (double)entry->tuple[1U];
-                entry2 = (double)entry->tuple[2U];
-                entry3 = (double)entry->tuple[3U];
+                entry0 = (double)entry->components[0U];
+                entry1 = (double)entry->components[1U];
+                entry2 = (double)entry->components[2U];
+                entry3 = (double)entry->components[3U];
                 offset = (size_t)best_cluster * (size_t)SIXEL_MAX_CHANNELS;
                 diff = entry0 - centers[offset + 0U];
                 best_distance = diff * diff;
@@ -2807,7 +2063,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 best_distance = 0.0;
                 offset = (size_t)best_cluster * (size_t)SIXEL_MAX_CHANNELS;
                 for (component = 0U; component < depth; ++component) {
-                    diff = (double)entry->tuple[component]
+                    diff = (double)entry->components[component]
                         - centers[offset + (size_t)component];
                     best_distance += diff * diff;
                 }
@@ -2820,7 +2076,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                     offset = (size_t)cluster_index
                         * (size_t)SIXEL_MAX_CHANNELS;
                     for (component = 0U; component < depth; ++component) {
-                        diff = (double)entry->tuple[component]
+                        diff = (double)entry->components[component]
                             - centers[offset + (size_t)component];
                         distance += diff * diff;
                         if (distance > best_distance) {
@@ -2860,7 +2116,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
             } else {
                 for (component = 0U; component < depth; ++component) {
                     cluster_sums_local[offset + (size_t)component]
-                        += (double)entry->tuple[component] * weighted_value;
+                        += entry->components[component] * weighted_value;
                 }
             }
         }
@@ -2999,11 +2255,11 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
             if (!preserve_extended && component > 255.0) {
                 component = 255.0;
             }
-            colormap.table[index]->tuple[plane]
+            colormap.table[index]->components[plane]
                 = preserve_extended ? component : floor(component + 0.5);
         }
         if (use_reversible && !sixel_palette_snap_destination_active()) {
-            sixel_palette_reversible_tuple(colormap.table[index]->tuple,
+            sixel_palette_reversible_tuple(colormap.table[index]->components,
                                           depth,
                                           pixelformat);
         }
@@ -3111,13 +2367,13 @@ sixel_heckbert_box_sse_neon3(tupletable2 table, unsigned int start,
     double value;
     double best;
     double score;
-    struct tupleint const *entry;
+    sixel_heckbert_tuple_t const *entry;
     unsigned int i;
     unsigned int plane;
 
     zero = vdupq_n_f64(0.0);
     for (plane = 0U; plane < 3U; ++plane) {
-        origin[plane] = table.table[start]->tuple[plane];
+        origin[plane] = table.table[start]->components[plane];
         total[plane] = zero;
         left[plane] = zero;
     }
@@ -3127,7 +2383,7 @@ sixel_heckbert_box_sse_neon3(tupletable2 table, unsigned int start,
         weight = (double)sixel_palette_heckbert_entry_weight(entry);
         population += weight;
         for (plane = 0U; plane < 3U; ++plane) {
-            value = (entry->tuple[plane] - origin[plane]) * weights[plane];
+            value = (entry->components[plane] - origin[plane]) * weights[plane];
             factor = vsetq_lane_f64(weight * value, vdupq_n_f64(weight), 1);
             total[plane] = vfmaq_f64(total[plane], factor,
                 vdupq_n_f64(value));
@@ -3156,7 +2412,7 @@ sixel_heckbert_box_sse_neon3(tupletable2 table, unsigned int start,
             vdupq_n_f64(left_population), 1);
         errors = zero;
         for (plane = 0U; plane < 3U; ++plane) {
-            value = (entry->tuple[plane] - origin[plane]) * weights[plane];
+            value = (entry->components[plane] - origin[plane]) * weights[plane];
             factor = vsetq_lane_f64(weight * value, vdupq_n_f64(weight), 1);
             left[plane] = vfmaq_f64(left[plane], factor, vdupq_n_f64(value));
             right = vsubq_f64(total[plane], left[plane]);
@@ -3238,7 +2494,7 @@ sixel_heckbert_box_sse_avx2(tupletable2 table, unsigned int start,
     double weight;
     double best;
     double errors[2];
-    struct tupleint const *entry;
+    sixel_heckbert_tuple_t const *entry;
     unsigned int i;
 
     /* Empty boxes have no origin tuple to load. */
@@ -3251,7 +2507,7 @@ sixel_heckbert_box_sse_avx2(tupletable2 table, unsigned int start,
         return 0.0;
     }
     mask = _mm256_set_epi64x(0, -1, -1, -1);
-    origin = _mm256_maskload_pd(table.table[start]->tuple, mask);
+    origin = _mm256_maskload_pd(table.table[start]->components, mask);
     factors = _mm256_maskload_pd(weights, mask);
     sums = squares = _mm256_setzero_pd();
     left_sums = left_squares = _mm256_setzero_pd();
@@ -3261,7 +2517,7 @@ sixel_heckbert_box_sse_avx2(tupletable2 table, unsigned int start,
         weight = (double)sixel_palette_heckbert_entry_weight(entry);
         population += weight;
         value = _mm256_mul_pd(_mm256_sub_pd(
-            _mm256_maskload_pd(entry->tuple, mask), origin), factors);
+            _mm256_maskload_pd(entry->components, mask), origin), factors);
         product = _mm256_mul_pd(_mm256_set1_pd(weight), value);
         sums = _mm256_add_pd(sums, product);
         squares = _mm256_add_pd(squares, _mm256_mul_pd(product, value));
@@ -3279,7 +2535,7 @@ sixel_heckbert_box_sse_avx2(tupletable2 table, unsigned int start,
         weight = (double)sixel_palette_heckbert_entry_weight(entry);
         left_population += weight;
         value = _mm256_mul_pd(_mm256_sub_pd(
-            _mm256_maskload_pd(entry->tuple, mask), origin), factors);
+            _mm256_maskload_pd(entry->components, mask), origin), factors);
         product = _mm256_mul_pd(_mm256_set1_pd(weight), value);
         left_sums = _mm256_add_pd(left_sums, product);
         left_squares = _mm256_add_pd(left_squares,
@@ -3348,8 +2604,8 @@ sixel_heckbert_box_sse(tupletable2 table, unsigned int start,
             table.table[start + i]);
         population += weight;
         for (plane = 0U; plane < depth; ++plane) {
-            value = (table.table[start + i]->tuple[plane]
-                - table.table[start]->tuple[plane]) * weights[plane];
+            value = (table.table[start + i]->components[plane]
+                - table.table[start]->components[plane]) * weights[plane];
             sums[plane] += weight * value;
             squares[plane] += weight * value * value;
         }
@@ -3366,8 +2622,8 @@ sixel_heckbert_box_sse(tupletable2 table, unsigned int start,
             table.table[start + i]);
         left_population += weight;
         for (plane = 0U; plane < depth; ++plane) {
-            value = (table.table[start + i]->tuple[plane]
-                - table.table[start]->tuple[plane]) * weights[plane];
+            value = (table.table[start + i]->components[plane]
+                - table.table[start]->components[plane]) * weights[plane];
             left_sums[plane] += weight * value;
             left_squares[plane] += weight * value * value;
             right_sums[plane] = sums[plane] - left_sums[plane];
@@ -3427,7 +2683,7 @@ sixel_palette_heckbert_split_attempt(
     unsigned int boxSize,
     sample minval[],
     sample maxval[],
-    unsigned int axis_count[sixel_palette_heckbert_max_channels]
+    unsigned int axis_count[SIXEL_HECKBERT_MAX_CHANNELS]
                            [sixel_palette_heckbert_axis_bins],
     int methodForLargest,
     unsigned int sum,
@@ -3611,7 +2867,7 @@ splitBox(boxVector bv,
     unsigned int split_method_count;
     unsigned int split_attempt;
     unsigned int old_boxes;
-    unsigned int axis_count[sixel_palette_heckbert_max_channels]
+    unsigned int axis_count[SIXEL_HECKBERT_MAX_CHANNELS]
                            [sixel_palette_heckbert_axis_bins];
     unsigned int (*axis_count_ptr)[sixel_palette_heckbert_axis_bins];
     int split_method;
@@ -3810,13 +3066,11 @@ end:
  * Share this request across colormap construction and median-cut telemetry. */
 typedef struct sixel_palette_heckbert_colormap_request {
     sixel_palette_t *palette;
-    unsigned char const *data;
-    unsigned int length;
+    sixel_heckbert_histogram_t const *histogram;
     unsigned int depth;
     int use_reversible;
     tupletable2 *colormap;
     unsigned int *origcolors;
-    unsigned int pixel_stride;
     int pixelformat;
     sixel_allocator_t *allocator;
     sixel_timeline_logger_t *logger;
@@ -3854,7 +3108,7 @@ sixel_palette_heckbert_solve_gpu(tupletable2 const colorfreqtable,
     unsigned int *order;
     unsigned int *box_fields;
     double *box_priority;
-    struct tupleint **entries;
+    sixel_heckbert_tuple_t **entries;
     double axis_weights[4];
     unsigned int count;
     unsigned int box_count;
@@ -3892,9 +3146,9 @@ sixel_palette_heckbert_solve_gpu(tupletable2 const colorfreqtable,
         goto end;
     }
     for (i = 0U; i < count; ++i) {
-        tuples[i * 3U + 0U] = colorfreqtable.table[i]->tuple[0];
-        tuples[i * 3U + 1U] = colorfreqtable.table[i]->tuple[1];
-        tuples[i * 3U + 2U] = colorfreqtable.table[i]->tuple[2];
+        tuples[i * 3U + 0U] = colorfreqtable.table[i]->components[0];
+        tuples[i * 3U + 1U] = colorfreqtable.table[i]->components[1];
+        tuples[i * 3U + 2U] = colorfreqtable.table[i]->components[2];
         weights[i] = sixel_palette_heckbert_entry_weight(
             colorfreqtable.table[i]);
     }
@@ -3976,7 +3230,7 @@ mediancut(tupletable2 const colorfreqtable,
     unsigned int offset;
     unsigned int size;
     unsigned long value;
-    struct tupleint *entry;
+    sixel_heckbert_tuple_t *entry;
     SIXELSTATUS merge_status;
     unsigned int iteration_limit;
     unsigned int iteration_actual;
@@ -4209,7 +3463,7 @@ mediancut(tupletable2 const colorfreqtable,
                 cluster_weight[bi] = value;
                 for (plane = 0U; plane < depth; ++plane) {
                     cluster_sums[(size_t)bi * (size_t)depth + plane]
-                        = (double)entry->tuple[plane] * (double)value;
+                        = (double)entry->components[plane] * (double)value;
                 }
                 continue;
             }
@@ -4223,7 +3477,7 @@ mediancut(tupletable2 const colorfreqtable,
                 cluster_weight[bi] += value;
                 for (plane = 0U; plane < depth; ++plane) {
                     cluster_sums[(size_t)bi * (size_t)depth + plane]
-                        += (double)entry->tuple[plane] * (double)value;
+                        += (double)entry->components[plane] * (double)value;
                 }
             }
         }
@@ -4348,121 +3602,6 @@ end:
     return status;
 }
 
-/* Typed float histogram entries retain sub-byte differences and out-of-gamut
- * coordinates. Occurrence weights describe identical triples, not cells on
- * a bounded lookup grid. Lookup selection is independent of this histogram.
- * Scale the nominal span to 255 for existing split/merge metrics, but do not
- * translate signed axes: subtracting an offset would erase tiny values.
- * Snap converts this zero-origin scale back to typed coordinates explicitly. */
-static int
-sixel_heckbert_native_compare(void const *left, void const *right)
-{
-    float const *a;
-    float const *b;
-    unsigned int channel;
-
-    a = *(float const *const *)left;
-    b = *(float const *const *)right;
-    for (channel = 0U; channel < 3U; ++channel) {
-        if (a[channel] < b[channel]) {
-            return -1;
-        }
-        if (a[channel] > b[channel]) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-static SIXELSTATUS
-sixel_heckbert_native_histogram(unsigned char const *data,
-                               unsigned int length,
-                               int pixelformat,
-                               tupletable2 *histogram,
-                               sixel_allocator_t *allocator)
-{
-    SIXELSTATUS status;
-    float const *pixels;
-    float const **sorted;
-    double range[3];
-    unsigned int count;
-    unsigned int index;
-    unsigned int channel;
-    unsigned int unique;
-    struct tupleint *entry;
-
-    histogram->preserve_extended = 1;
-    if (data == NULL || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
-            sixel_helper_compute_depth(pixelformat) != 3 * sizeof(float) ||
-            length == 0U || length % (3U * sizeof(float)) != 0U) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    count = length / (3U * sizeof(float));
-    pixels = (float const *)(void const *)data;
-    for (channel = 0U; channel < 3U; ++channel) {
-        range[channel] = sixel_pixelformat_float_channel_range(
-            pixelformat, (int)channel);
-    }
-    /* Sort borrowed input references first. Allocating double tuples for
-     * every pixel before deduplication exceeds the allocation limit even
-     * for a repeated-color 4K image. Only distinct triples need tuples.
-     * Positive per-axis scaling preserves order and equality, including
-     * signed zero, so sorting finite source values gives the same bins. */
-    /* count is nonzero here. Divide by it so this guard also compiles
-     * when size_t can represent every unsigned int allocation count. */
-    if (sizeof(*sorted) > (size_t)-1 / count) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    sorted = sixel_allocator_malloc(allocator, count * sizeof(*sorted));
-    if (sorted == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-    for (index = 0U; index < count; ++index) {
-        sorted[index] = pixels + index * 3U;
-        for (channel = 0U; channel < 3U; ++channel) {
-            if (!isfinite(sorted[index][channel])) {
-                status = SIXEL_BAD_ARGUMENT;
-                goto end;
-            }
-        }
-    }
-    qsort(sorted, count, sizeof(*sorted), sixel_heckbert_native_compare);
-    unique = 1U;
-    for (index = 1U; index < count; ++index) {
-        if (sixel_heckbert_native_compare(sorted + index - 1U,
-                                         sorted + index) != 0) {
-            unique++;
-        }
-    }
-    status = alloctupletable(&histogram->table, 3U, unique, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    unique = 0U;
-    entry = NULL;
-    for (index = 0U; index < count; ++index) {
-        if (index != 0U &&
-                sixel_heckbert_native_compare(sorted + index - 1U,
-                                             sorted + index) == 0) {
-            entry->value++;
-            continue;
-        }
-        entry = histogram->table[unique++];
-        entry->value = 1U;
-        for (channel = 0U; channel < 3U; ++channel) {
-            entry->tuple[channel] =
-                (double)sorted[index][channel] * 255.0 / range[channel];
-        }
-    }
-    histogram->size = unique;
-    status = SIXEL_OK;
-end:
-    sixel_allocator_free(allocator, sorted);
-    return status;
-}
-
-
-
 static SIXELSTATUS
 sixel_palette_heckbert_colormap(
     sixel_palette_heckbert_colormap_request_t const *request)
@@ -4471,13 +3610,10 @@ sixel_palette_heckbert_colormap(
     sixel_heckbert_options_t const *options;
     SIXELSTATUS status;
     sixel_palette_t *palette;
-    unsigned char const *data;
-    unsigned int length;
     unsigned int depth;
     int use_reversible;
     tupletable2 *colormapP;
     unsigned int *origcolors;
-    unsigned int pixel_stride;
     int pixelformat;
     sixel_allocator_t *allocator;
     tupletable2 colorfreqtable;
@@ -4486,11 +3622,9 @@ sixel_palette_heckbert_colormap(
     int representative;
 
     status = SIXEL_FALSE;
-    colorfreqtable.preserve_extended = 0;
-    colorfreqtable.size = 0U;
-    colorfreqtable.table = NULL;
     if (request == NULL || request->colormap == NULL
-            || request->allocator == NULL || request->palette == NULL) {
+            || request->allocator == NULL || request->palette == NULL
+            || request->histogram == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     palette = request->palette;
@@ -4507,44 +3641,16 @@ sixel_palette_heckbert_colormap(
         representative, options->cut_sse ? "sse" : "median",
         options->order_sse ? "sse" : "population",
         options->weights[0], options->weights[1], options->weights[2]);
-    data = request->data;
-    length = request->length;
     depth = request->depth;
     use_reversible = request->use_reversible;
     colormapP = request->colormap;
     origcolors = request->origcolors;
-    pixel_stride = request->pixel_stride;
     pixelformat = request->pixelformat;
     allocator = request->allocator;
 
     colormapP->size = 0U;
     colormapP->table = NULL;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        status = sixel_heckbert_native_histogram(data, length, pixelformat,
-                                                &colorfreqtable, allocator);
-    } else {
-        status = sixel_lut_build_histogram(data,
-                                           length,
-                                           depth,
-                                           pixel_stride,
-                                           pixelformat,
-                                           SIXEL_PALETTE_CONTEXT(palette)
-                                               ->quality_mode,
-                                           use_reversible,
-                                           SIXEL_PALETTE_CONTEXT(palette)
-                                               ->lut_policy,
-                                           SIXEL_PALETTE_STORAGE(palette)
-                                               ->requested_colors,
-                                           sixel_palette_sample_statistics_for(
-                                               SIXEL_PALETTE_CONTEXT(palette)
-                                                   ->attempt,
-                                               data, length, pixelformat),
-                                           &colorfreqtable,
-                                           allocator);
-    }
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
+    colorfreqtable = *request->histogram;
     if (origcolors != NULL) {
         *origcolors = colorfreqtable.size;
     }
@@ -4555,22 +3661,20 @@ sixel_palette_heckbert_colormap(
                      "same colors.",
                      SIXEL_PALETTE_STORAGE(palette)->requested_colors);
         colormapP->size = colorfreqtable.size;
-        status = alloctupletable(&colormapP->table,
-                                 depth,
-                                 colorfreqtable.size,
-                                 allocator);
+        status = sixel_heckbert_alloc_table(&colormapP->table, depth,
+                                           colorfreqtable.size, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
         for (i = 0U; i < colorfreqtable.size; ++i) {
             colormapP->table[i]->value = colorfreqtable.table[i]->value;
             for (n = 0U; n < depth; ++n) {
-                colormapP->table[i]->tuple[n]
-                    = colorfreqtable.table[i]->tuple[n];
+                colormapP->table[i]->components[n]
+                    = colorfreqtable.table[i]->components[n];
             }
             if (use_reversible && !sixel_palette_snap_destination_active()) {
                 sixel_palette_reversible_tuple(
-                    colormapP->table[i]->tuple,
+                    colormapP->table[i]->components,
                     depth,
                     pixelformat);
             }
@@ -4611,17 +3715,13 @@ sixel_palette_heckbert_colormap(
     status = SIXEL_OK;
 
 end:
-    if (colorfreqtable.table != NULL) {
-        sixel_allocator_free(allocator, colorfreqtable.table);
-    }
-
     return status;
 }
 
 SIXELSTATUS
 sixel_palette_build_heckbert(sixel_palette_t *palette,
-                             unsigned char const *data,
-                             unsigned int length,
+                             sixel_heckbert_histogram_t const *histogram,
+                             unsigned int depth,
                              int pixelformat,
                              sixel_allocator_t *allocator,
                              sixel_timeline_logger_t *logger,
@@ -4634,10 +3734,6 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     sixel_allocator_t *work_allocator;
     tupletable2 colormap;
     unsigned int origcolors;
-    int depth_result;
-    unsigned int depth;
-    unsigned int pixel_stride;
-    unsigned int bytes_per_channel;
     size_t payload_size;
     unsigned int index;
     unsigned int plane;
@@ -4692,31 +3788,6 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                                                 "palette/init",
                                                 "init");
 
-    depth_result = sixel_helper_compute_depth(pixelformat);
-    if (depth_result <= 0) {
-        sixel_helper_set_additional_message(
-            "sixel_palette_build_heckbert: invalid pixel format depth.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-    pixel_stride = (unsigned int)depth_result;
-    bytes_per_channel = 1U;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        bytes_per_channel = (unsigned int)sizeof(float);
-    }
-    if (pixel_stride == 0U || bytes_per_channel == 0U
-        || pixel_stride % bytes_per_channel != 0U) {
-        sixel_helper_set_additional_message(
-            "sixel_palette_build_heckbert: unsupported pixel stride.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-    depth = pixel_stride / bytes_per_channel;
-    if (depth == 0U
-        || depth > (unsigned int)sixel_palette_heckbert_max_channels) {
-        sixel_helper_set_additional_message(
-            "sixel_palette_build_heckbert: invalid channel count.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
     colormap.preserve_extended = 0;
     colormap.size = 0U;
     colormap.table = NULL;
@@ -4726,13 +3797,11 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float_stride = 0;
     reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;
     colormap_request.palette = palette;
-    colormap_request.data = data;
-    colormap_request.length = length;
+    colormap_request.histogram = histogram;
     colormap_request.depth = depth;
     colormap_request.use_reversible = reversible_for_quantizer;
     colormap_request.colormap = &colormap;
     colormap_request.origcolors = &origcolors;
-    colormap_request.pixel_stride = pixel_stride;
     colormap_request.pixelformat = pixelformat;
     colormap_request.allocator = work_allocator;
     colormap_request.logger = logger;
@@ -4804,7 +3873,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         for (index = 0U; index < colormap.size; ++index) {
             for (plane = 0U; plane < depth; ++plane) {
                 if (input_is_float32) {
-                    component = colormap.table[index]->tuple[plane]
+                    component = colormap.table[index]->components[plane]
                         / 255.0 * sixel_pixelformat_float_channel_range(
                             pixelformat, (int)plane);
                     float_entries[index * depth + plane] = (float)component;
@@ -4817,7 +3886,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                 /* The few-colors shortcut also exports bucket means. */
                 SIXEL_PALETTE_STORAGE(palette)->entries[index * depth + plane]
                     = (unsigned char)floor(
-                        colormap.table[index]->tuple[plane] + 0.5);
+                        colormap.table[index]->components[plane] + 0.5);
             }
         }
     }
@@ -4895,37 +3964,6 @@ end:
 
     return status;
 }
-
-SIXELSTATUS
-sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
-                                     float const *data,
-                                     unsigned int length,
-                                     int pixelformat,
-                                     sixel_allocator_t *allocator,
-                                     sixel_timeline_logger_t *logger,
-                                     int *job_seq,
-                                     char const *engine_name,
-                                     sixel_palette_telemetry_t *telemetry)
-{
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        sixel_helper_set_additional_message(
-            "sixel_palette_build_heckbert_float32: "
-            "requires RGBFLOAT32 input.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    return sixel_palette_build_heckbert(palette,
-                                        (unsigned char const *)data,
-                                        length,
-                                        pixelformat,
-                                        allocator,
-                                        logger,
-                                        job_seq,
-                                        engine_name,
-                                        telemetry);
-}
-
-
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

@@ -68,6 +68,9 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
+#include "filter-factory-binning.h"
+#include "palette-sample.h"
+#include "timer.h"
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
@@ -340,44 +343,58 @@ sixel_palette_build_heckbert_dispatch(sixel_palette_t *palette,
                                       char const *engine_name,
                                       sixel_palette_telemetry_t *telemetry)
 {
-    unsigned char const *bytes;
+    sixel_heckbert_binning_request_t request;
+    sixel_heckbert_histogram_t histogram = {0};
+    sixel_palette_build_context_t const *context;
+    sixel_allocator_t *work_allocator;
+    int pixel_stride;
+    unsigned int bytes_per_channel;
+    double histogram_start, histogram_ms;
+    SIXELSTATUS status;
 
-    bytes = (unsigned char const *)data;
-    return sixel_palette_build_heckbert(palette,
-                                        bytes,
-                                        length,
-                                        pixelformat,
-                                        allocator,
-                                        logger,
-                                        job_seq,
-                                        engine_name,
-                                        telemetry);
-}
+    work_allocator = allocator != NULL ? allocator
+        : SIXEL_PALETTE_STORAGE(palette)->allocator;
+    if (work_allocator == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    pixel_stride = sixel_helper_compute_depth(pixelformat);
+    bytes_per_channel = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+        ? (unsigned int)sizeof(float) : 1u;
+    if (pixel_stride <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_build_heckbert: invalid pixel format depth.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((unsigned int)pixel_stride % bytes_per_channel != 0u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_build_heckbert: unsupported pixel stride.");
+        return SIXEL_BAD_ARGUMENT;
+    }
 
-static SIXELSTATUS
-sixel_palette_build_heckbert_float32_dispatch(
-    sixel_palette_t *palette,
-    void const *data,
-    unsigned int length,
-    int pixelformat,
-    sixel_allocator_t *allocator,
-    sixel_timeline_logger_t *logger,
-    int *job_seq,
-    char const *engine_name,
-    sixel_palette_telemetry_t *telemetry)
-{
-    float const *samples;
-
-    samples = (float const *)data;
-    return sixel_palette_build_heckbert_float32(palette,
-                                                samples,
-                                                length,
-                                                pixelformat,
-                                                allocator,
-                                                logger,
-                                                job_seq,
-                                                engine_name,
-                                                telemetry);
+    context = SIXEL_PALETTE_CONTEXT(palette);
+    request.data = data;
+    request.length = length;
+    request.pixel_stride = (unsigned int)pixel_stride;
+    request.depth = request.pixel_stride / bytes_per_channel;
+    request.pixelformat = pixelformat;
+    request.reversible = context->use_reversible;
+    request.lut_policy = context->lut_policy;
+    request.requested_colors = SIXEL_PALETTE_STORAGE(palette)->requested_colors;
+    request.statistics = sixel_palette_sample_statistics_for(
+        context->attempt, data, length, pixelformat);
+    histogram_start = telemetry != NULL ? sixel_timer_now() : 0.0;
+    status = sixel_filter_run_heckbert_binning(&request, &histogram,
+                                              work_allocator, logger);
+    histogram_ms = telemetry != NULL
+        ? (sixel_timer_now() - histogram_start) * 1000.0 : 0.0;
+    if (status == SIXEL_OK) {
+        status = sixel_palette_build_heckbert(palette, &histogram,
+            request.depth, pixelformat, work_allocator, logger, job_seq,
+            engine_name, telemetry);
+        if (telemetry != NULL)
+            telemetry->init_ms += histogram_ms;
+    }
+    sixel_allocator_free(work_allocator, histogram.table);
+    return status;
 }
 
 typedef struct sixel_palette_quant_engine {
@@ -404,7 +421,7 @@ static sixel_palette_quant_engine_t const sixel_palette_quant_engines[] = {
         "heckbert-float32",
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         1,
-        sixel_palette_build_heckbert_float32_dispatch,
+        sixel_palette_build_heckbert_dispatch,
     },
     {
         "kmedoids-float32",

@@ -139,6 +139,7 @@
 #include "filter-clip.h"
 #include "filter-colors.h"
 #include "filter-palette-colors.h"
+#include "filter-factory-binning.h"
 #include "filter-factory-palette-colors.h"
 #include "filter-dither.h"
 #include "filter-gradient.h"
@@ -5543,6 +5544,9 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
 {
     sixel_encoder_t *encoder;
     sixel_palette_resident_request_t request;
+    sixel_sample_stream_t heckbert_samples;
+    sixel_heckbert_binning_request_t binning;
+    sixel_heckbert_histogram_t histogram;
     sixel_palette_frame_state_t state;
     sixel_filter_sample_config_t sampling;
     sixel_palette_cover_options_t cover;
@@ -5738,6 +5742,7 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     sampling.palette_sample_target = encoder->palette_sample_target;
     if (sampling.palette_sample_override && !sampling.palette_sample_target)
         return SIXEL_FALSE;
+    /* Bound resident storage before materializing the Heckbert samples. */
     request.stride = (unsigned int)sixel_filter_sample_select_stride(&sampling,
         (int)request.width, (int)request.height);
     samples = ((request.width - 1) / request.stride + 1u) *
@@ -5747,6 +5752,45 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
 
     if (sixel_encoder_is_cancel_requested(encoder))
         return SIXEL_INTERRUPTED;
+
+    indexed = NULL;
+    dither = NULL;
+    pixels = NULL;
+    palette = NULL;
+    memset(&histogram, 0, sizeof(histogram));
+    sixel_sample_stream_init(&heckbert_samples);
+    if (heckbert) {
+        status = sixel_encoder_sample_frame(encoder, context->frame,
+            encoder->allocator, context->palette.sampling.effective,
+            context->palette.sampling_source, &heckbert_samples, NULL);
+        if (status != SIXEL_OK)
+            goto end;
+        if (heckbert_samples.frame == NULL ||
+                heckbert_samples.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+                heckbert_samples.point_count == 0u ||
+                heckbert_samples.point_count > 32768u) {
+            status = SIXEL_FALSE;
+            goto end;
+        }
+        samples = heckbert_samples.point_count;
+        binning = (sixel_heckbert_binning_request_t){
+            .data = sixel_frame_get_pixels(heckbert_samples.frame),
+            .length = (unsigned int)(3u * samples),
+            .depth = 3u,
+            .pixel_stride = 3u,
+            .pixelformat = SIXEL_PIXELFORMAT_RGB888,
+            .reversible = 1,
+            .lut_policy = SIXEL_LUT_POLICY_6BIT,
+            .requested_colors = request.colors,
+            .statistics = heckbert_samples.statistics
+        };
+        status = sixel_filter_run_heckbert_binning(&binning, &histogram,
+            encoder->allocator, encoder->logger);
+        if (status != SIXEL_OK)
+            goto end;
+        request.heckbert_histogram = &histogram;
+        request.heckbert_samples = &heckbert_samples;
+    }
 
     /* Keep the fallback input and plan intact until PAL8 owns the result. */
     state = context->palette;
@@ -5773,18 +5817,15 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     if (status == SIXEL_OK)
         status = sixel_palette_policy_mark_executed(&state.binning.policy);
     if (status != SIXEL_OK)
-        return status;
+        goto end;
 
-    indexed = NULL;
-    dither = NULL;
     pixels = sixel_allocator_malloc(encoder->allocator, count);
     palette = sixel_allocator_malloc(encoder->allocator, 3u*256u);
     status = SIXEL_BAD_ALLOCATION;
     if (pixels == NULL || palette == NULL)
         goto end;
     status = sixel_palette_metal_resident(&request,
-        sixel_frame_get_pixels(context->frame), encoder->allocator,
-        pixels, palette, &colors);
+        sixel_frame_get_pixels(context->frame), pixels, palette, &colors);
     if (status != SIXEL_OK) {
         if (status != SIXEL_FALSE)
             sixel_helper_set_additional_message(
@@ -5841,6 +5882,8 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
             "LSXKMRESIDENT1|backend=metal|colors=%u|snap=%u|cover=%u|soft=%u",
             colors, request.snap, request.cover, request.soft);
 end:
+    sixel_allocator_free(encoder->allocator, histogram.table);
+    sixel_sample_stream_dispose(&heckbert_samples);
     sixel_allocator_free(encoder->allocator, pixels);
     sixel_allocator_free(encoder->allocator, palette);
     sixel_frame_unref(indexed);
