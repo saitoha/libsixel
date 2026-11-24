@@ -2856,10 +2856,21 @@ static SIXELSTATUS
 webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
                                 unsigned char *pixels)
 {
+    int pixelformat;
+    int colorspace;
+    sixel_frame_pixels_kind_t kind;
+
     if (frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
+    pixelformat = sixel_frame_format(frame);
+    /* YUVA with a background already contains linear samples. Mark them
+     * as linear so finalization does not decode them twice. */
+    colorspace = pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+        ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA;
+    kind = (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
+        ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
     return sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
@@ -2867,16 +2878,10 @@ webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
             frame->palette,
             frame->width,
             frame->height,
-            sixel_frame_format(frame),
-            /* YUVA with a background already contains linear samples.
-             * The fresh frame's default gamma tag would decode them twice
-             * when finalization requests the CMS target representation. */
-            sixel_frame_format(frame) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-            ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
+            pixelformat,
+            colorspace,
             frame->ncolors,
-            (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
-            ? SIXEL_FRAME_PIXELS_FLOAT32
-            : SIXEL_FRAME_PIXELS_U8
+            kind
         });
 }
 

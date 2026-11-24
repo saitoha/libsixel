@@ -326,6 +326,8 @@ static double const hc_p3_work[5][3][3] = {
 int
 test_highcolor_p3(int scenario)
 {
+    int colorspace;
+    sixel_frame_pixels_kind_t kind;
     static char const *const spaces[5] = {
         "gamma", "linear", "oklab", "cielab", "din99d"
     };
@@ -467,14 +469,15 @@ test_highcolor_p3(int scenario)
         }
         memcpy(saved, samples, (size_t)width * (size_t)height * 3U *
             sizeof(float));
+        colorspace = reject && scenario == 34 ? SIXEL_COLORSPACE_LINEAR : -1;
+        kind = SIXEL_WORKFORMAT_IS_FLOAT32(format)
+            ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
         if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
                 SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
                     &(sixel_frame_pixels_request_t){
                         input, NULL, width, height, format,
-                        reject && scenario == 34 ? SIXEL_COLORSPACE_LINEAR
-                                                 : -1,
-                        -1, SIXEL_WORKFORMAT_IS_FLOAT32(format)
-                            ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8
+                        colorspace,
+                        -1, kind
                     }))) {
             goto end;
         }

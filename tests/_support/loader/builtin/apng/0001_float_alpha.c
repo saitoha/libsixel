@@ -392,9 +392,11 @@ test_apng_byte_canvas(int dispose, int opaque_over)
         0, 255, 255, 0, 255,  255, 0, 255, 255,
         0, 255, 0, 0, 255,    0, 255, 0, 255
     };
+    unsigned char disposed_alpha = dispose == 2 ? 255 : 0;
+    unsigned char over_alpha = opaque_over ? 255 : 0;
     unsigned char const expected[] = {
         255, 255, 0,  255, 0, 255,
-        255, 0, 0,  0, dispose == 2 ? 255 : 0, opaque_over ? 255 : 0
+        255, 0, 0,  0, disposed_alpha, over_alpha
     };
     ap_fixture_t fixture;
     ap_probe_t probe;

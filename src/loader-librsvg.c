@@ -1638,6 +1638,7 @@ librsvg_commit_frame_pixels(sixel_frame_t *frame,
                             int inspect_alpha,
                             int has_non_opaque_alpha)
 {
+    int pixelformat;
     SIXELSTATUS status;
     int preserve_alpha;
 
@@ -1656,6 +1657,8 @@ librsvg_commit_frame_pixels(sixel_frame_t *frame,
         librsvg_collapse_opaque_rgba_to_rgb(pixels, pixel_total);
     }
 
+    pixelformat = preserve_alpha
+        ? SIXEL_PIXELFORMAT_RGBA8888 : SIXEL_PIXELFORMAT_RGB888;
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
@@ -1663,7 +1666,7 @@ librsvg_commit_frame_pixels(sixel_frame_t *frame,
             NULL,
             frame->width,
             frame->height,
-            preserve_alpha ? SIXEL_PIXELFORMAT_RGBA8888 : SIXEL_PIXELFORMAT_RGB888,
+            pixelformat,
             SIXEL_COLORSPACE_GAMMA,
             -1,
             SIXEL_FRAME_PIXELS_U8

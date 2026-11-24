@@ -187,6 +187,7 @@ end:
 static int
 test_linear_packed_gray(int format)
 {
+    void *source_pixels;
     /* sRGB OETF evaluated at k/15 and rounded to the nearest byte.
      * Every fifth value also gives the four levels of a G2 ramp. */
     static unsigned char const expected[] = {
@@ -201,10 +202,13 @@ test_linear_packed_gray(int format)
     int i, c, width = format == SIXEL_PIXELFORMAT_G2 ? 4 : 16;
     int result = EXIT_FAILURE;
 
+    /* PCC can fail when converting a conditional pointer to void * inside
+     * a braced initializer. Convert it in a separate assignment. */
+    source_pixels = width == 4 ? g2 : g4;
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
         SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
             &(sixel_frame_pixels_request_t){
-                width == 4 ? g2 : g4, NULL, width, 1, format,
+                source_pixels, NULL, width, 1, format,
                 SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_U8
             }))) {
         goto end;
@@ -485,6 +489,8 @@ static int
 test_indexed_delivery(int format, int key, int linear, int target,
                       int explicit_capacity)
 {
+    void *source_pixels;
+    int colorspace;
     unsigned char const pattern[] = {0, 1, 1, 0, 1, 0, 0, 1};
     unsigned char indices[sizeof(pattern)];
     unsigned char packed[] = {0x60, 0x90};
@@ -504,12 +510,14 @@ test_indexed_delivery(int format, int key, int linear, int target,
     int result = EXIT_FAILURE;
 
     memcpy(indices, pattern, sizeof(indices));
+    source_pixels = format == SIXEL_PIXELFORMAT_PAL8 ? indices : packed;
+    colorspace = linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA;
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
         SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
             &(sixel_frame_pixels_request_t){
-                format == SIXEL_PIXELFORMAT_PAL8 ? indices : packed,
+                source_pixels,
                 palette, 4, 2, format,
-                linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
+                colorspace,
                 2, SIXEL_FRAME_PIXELS_U8
             }))) {
         goto end;
@@ -1067,6 +1075,9 @@ end:
 static int
 test_smptec_to_srgb(int byte_source, int target)
 {
+    void *source_pixels;
+    int pixelformat;
+    sixel_frame_pixels_kind_t kind;
     static double const expected[][3] = {
         {.78376865, .21796907, .06316951},
         {.78402677, .21994704, .23991341}
@@ -1080,14 +1091,17 @@ test_smptec_to_srgb(int byte_source, int target)
     int result = EXIT_FAILURE;
     int c;
 
+    source_pixels = byte_source ? (void *)bytes : (void *)pixel;
+    pixelformat = byte_source
+        ? SIXEL_PIXELFORMAT_RGB888 : SIXEL_PIXELFORMAT_RGBFLOAT32;
+    kind = byte_source ? SIXEL_FRAME_PIXELS_U8 : SIXEL_FRAME_PIXELS_FLOAT32;
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
         SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
             &(sixel_frame_pixels_request_t){
-                byte_source ? (void *)bytes : (void *)pixel, NULL, 1, 1,
-                byte_source ? SIXEL_PIXELFORMAT_RGB888 :
-                              SIXEL_PIXELFORMAT_RGBFLOAT32,
+                source_pixels, NULL, 1, 1,
+                pixelformat,
                 SIXEL_COLORSPACE_SMPTEC, -1,
-                byte_source ? SIXEL_FRAME_PIXELS_U8 : SIXEL_FRAME_PIXELS_FLOAT32
+                kind
             }))) {
         goto end;
     }
@@ -1346,8 +1360,8 @@ test_packed_rgb_swap(int bits)
     /* Red (31), green (21), blue (3), followed by full blue. */
     unsigned char input[] = {0xfa, 0xa3, 0, 0x1f};
     unsigned char swapped[] = {0x1a, 0xbf, 0xf8, 0};
-    unsigned char const rgb[] = {248, bits == 565 ? 84 : 168, 24,
-                                 0, 0, 248};
+    unsigned char green = bits == 565 ? 84 : 168;
+    unsigned char const rgb[] = {248, green, 24, 0, 0, 248};
     int source = bits == 565 ? SIXEL_PIXELFORMAT_RGB565
                              : SIXEL_PIXELFORMAT_RGB555;
     int target = bits == 565 ? SIXEL_PIXELFORMAT_BGR565
@@ -1741,8 +1755,9 @@ test_byte_tie(char const *name)
     int const d60 = strcmp(name, "d60") == 0;
     /* For the unequal second triplet, D60-to-D65 Bradford adaptation
      * gives green * 255 = 127.499999968, just below the rounding tie. */
+    unsigned char green = d60 ? 127 : 128;
     unsigned char const expected[] = {
-        128, 128, 128, 127, d60 ? 127 : 128, 128,
+        128, 128, 128, 127, green, 128,
         127, 127, 127, 128, 128, 128
     };
     sixel_color_def_t *definition;

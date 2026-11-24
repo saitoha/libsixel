@@ -471,6 +471,15 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install C AST checker dependencies
+        shell: bash
+        run: |
+          ast_env="$RUNNER_TEMP/libsixel-staticcheck-venv"
+          python3 -m venv "$ast_env"
+          "$ast_env/bin/python3" -m pip install tree-sitter==0.25.2 tree-sitter-c==0.24.2
+          "$ast_env/bin/python3" tests/_static/python/staticcheck_c_ast.py --probe
+          echo "$ast_env/bin" >> "$GITHUB_PATH"
+
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:

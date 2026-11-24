@@ -18,6 +18,8 @@ OpenBSD needs the BSD namespace for sysctl types and avoids assumptions around g
 
 `_SC_NPROCESSORS_ONLN` and `_POSIX_VERSION` are runtime-capability markers used for fallback selection. Preserve fallback ordering instead of turning one libc's preferred query into a universal requirement.
 
+Ubuntu 24.04 ships a PCC build that can fail during brace initialization when a conditional pointer is converted to `void *`. See the [PCC initializer compatibility rule](../../build/support-scripts.md#pcc-translate-compiler-identity-and-selected-preprocessing) for the source pattern and its static check.
+
 ## Maintenance checklist
 
 - Place feature-test definitions before system headers and retain separate capability probes.
